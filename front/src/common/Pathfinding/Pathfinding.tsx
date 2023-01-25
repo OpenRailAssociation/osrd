@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useReducer, useContext } from 'react';
+import React, { useState, useEffect, useReducer, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
@@ -153,6 +153,7 @@ interface PathfindingProps {
 
 function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const [pathfindingRequest, setPathfindingRequest] = useState<any>();
   const { openModal } = useContext(ModalContext);
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID, isEqual);
@@ -231,20 +232,27 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     return {};
   };
 
-  const startPathFinding = async (zoom = true) => {
+  const startPathFinding = (zoom = true) => {
     if (!pathfindingState.running) {
-      try {
-        pathfindingDispatch({ type: 'PATHFINDING_STARTED' });
-        const params = generatePathfindingParams();
-        const itineraryCreated = await postPathfinding({ pathQuery: params }).unwrap();
-        correctWaypointsGPS(itineraryCreated);
-        dispatch(updateItinerary(itineraryCreated));
-        dispatch(updatePathfindingID(itineraryCreated.id));
-        if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
-        pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
-      } catch (e: any) {
-        pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
-      }
+      pathfindingDispatch({ type: 'PATHFINDING_STARTED' });
+      const params = generatePathfindingParams();
+      const request = postPathfinding({ pathQuery: params });
+      setPathfindingRequest(request);
+      request
+        .unwrap()
+        .then((itineraryCreated) => {
+          correctWaypointsGPS(itineraryCreated);
+          dispatch(updateItinerary(itineraryCreated));
+          dispatch(updatePathfindingID(itineraryCreated.id));
+          if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
+          pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
+        })
+        .catch((e: any) => {
+          if (e?.name === 'AbortError') {
+            // pathfindingDispatch(canceled)
+          }
+          pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
+        });
     }
   };
 
@@ -290,6 +298,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
         <span className="sr-only">Loading...</span>
       </div>
       {t('pathfindingInProgress')}
+      <button onClick={pathfindingRequest?.abort}>cancel</button>
     </div>
   );
 
