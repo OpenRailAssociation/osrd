@@ -18,7 +18,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CgLoadbar } from 'react-icons/cg';
-import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal';
+import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal/ChartModal';
 import { GiResize } from 'react-icons/gi';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import PropTypes from 'prop-types';

@@ -17,6 +17,7 @@ import SimulationResultsMap from 'applications/operationalStudies/components/Sim
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/operationalStudies/components/SimulationResults/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart';
+import SpaceTimeChartIsolated from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
 import TimeButtons from 'applications/operationalStudies/components/SimulationResults/TimeButtons';
 import TimeLine from 'applications/operationalStudies/components/SimulationResults/TimeLine/TimeLine';
@@ -141,36 +142,18 @@ export default function SimulationResults() {
           <TimeLine />
 
           {/* SIMULATION : SPACE TIME CHART */}
+
           <div className="osrd-simulation-container d-flex mb-2">
             <div
               className="spacetimechart-container"
               style={{ height: `${heightOfSpaceTimeChart}px` }}
             >
               {displaySimulation && (
-                <Rnd
-                  default={{
-                    x: 0,
-                    y: 0,
-                    width: '100%',
-                    height: `${heightOfSpaceTimeChart}px`,
-                  }}
-                  minHeight={CHART_MIN_HEIGHT}
-                  disableDragging
-                  enableResizing={{
-                    bottom: true,
-                  }}
-                  onResizeStart={() => setInitialHeightOfSpaceTimeChart(heightOfSpaceTimeChart)}
-                  onResize={(_e, _dir, _refToElement, delta) => {
-                    setHeightOfSpaceTimeChart(initialHeightOfSpaceTimeChart + delta.height);
-                  }}
-                  onResizeStop={() => {
-                    dispatch(updateMustRedraw(true));
-                  }}
-                >
-                  <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
-                </Rnd>
+                <SpaceTimeChartIsolated
+                  initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
+                  onSetBaseHeightOfSpaceTimeChart={setHeightOfSpaceTimeChart}
+                />
               )}
-              <ContextMenu />
             </div>
           </div>
 

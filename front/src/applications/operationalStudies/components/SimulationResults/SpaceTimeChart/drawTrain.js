@@ -28,6 +28,7 @@ export default function drawTrain(
   simulation,
   isStdcm
 ) {
+
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
@@ -70,6 +71,7 @@ export default function drawTrain(
     .on('end', () => {
       dragTimeOffset(dragFullOffset, true);
       setDragEnding(true);
+      //setDragEnding(true); // SHIT
       dispatch(updateMustRedraw(true));
     })
     .on('start', () => {
@@ -108,9 +110,9 @@ export default function drawTrain(
   const currentAllowanceSettings = allowancesSettings
     ? allowancesSettings[dataSimulation.id]
     : undefined;
-
   if (direction && currentAllowanceSettings) {
     // Let's draw route_aspects
+
     dataSimulation.routeAspects.forEach((routeAspect) => {
       drawRect(
         chart,

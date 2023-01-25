@@ -51,14 +51,13 @@ export default function createChart(
     ),
   ] as any);
 
-
-
   const defineX = chart === undefined || reset ? defineTime(d3.extent(xValues)) : chart.x;
 
   const defineY =
     chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
 
-  const width = parseInt(d3select(`#container-${chartID}`).style('width'), 10);
+    const width = parseInt(d3select(`#container-${chartID}`)?.style('width'), 10);
+
   const chartLocal = defineChart(
     width,
     heightOfSpaceTimeChart,
