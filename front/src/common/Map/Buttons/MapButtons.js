@@ -12,7 +12,6 @@ import ButtonFullscreen from 'common/ButtonFullscreen';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
 import MapKey from 'common/Map/MapKey';
-import InfraSelector from 'common/InfraSelector/InfraSelector';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
 
@@ -78,7 +77,6 @@ export default function MapButtons(props) {
         toggleMapSettings={() => toggleMapModal('settings')}
       />
       <MapKey active={showMapModal.key} toggleMapKey={() => toggleMapModal('key')} />
-      <InfraSelector modalOnly modalID="infra-selector-modal-map" />
     </div>
   );
 }
