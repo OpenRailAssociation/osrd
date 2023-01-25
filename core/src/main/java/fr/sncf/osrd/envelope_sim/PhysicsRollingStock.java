@@ -26,10 +26,7 @@ public interface PhysicsRollingStock {
     /** The first derivative of the resistance to movement at a given speed, in kg/s */
     double getRollingResistanceDeriv(double speed);
 
-    /** The second derivative of the resistance to movement at a given speed, in kg/m */
-    double getRollingResistanceSecDeriv(double speed);
-
-    /** The effort curves to use depending on the position on the path */
+    /** The effort curves to use depending on the position on the path and the comfort level */
     RangeMap<Double, TractiveEffortPoint[]> mapTractiveEffortCurves(PhysicsPath path, Comfort comfort);
 
     /** Get the effort the train can apply at a given speed, in newtons */
