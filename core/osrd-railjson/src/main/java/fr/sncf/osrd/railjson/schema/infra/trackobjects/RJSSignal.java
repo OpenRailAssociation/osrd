@@ -29,11 +29,15 @@ public class RJSSignal extends RJSTrackObject implements Identified {
 
     /** Constructor */
     public RJSSignal(
+            String track,
+            double position,
             String id,
             EdgeDirection direction,
             double sightDistance,
             String linkedDetector
     ) {
+        this.position = position;
+        this.track = track;
         this.id = id;
         this.direction = direction;
         this.sightDistance = sightDistance;

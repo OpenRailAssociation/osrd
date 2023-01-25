@@ -216,7 +216,7 @@ public class InfraHelpers {
                 ),
                 new ArrayList<>(),
                 List.of(
-                        new RJSSignal("signal", EdgeDirection.START_TO_STOP, 400, "d1")
+                        new RJSSignal("track", 30, "signal", EdgeDirection.START_TO_STOP, 400, "d1")
                 ),
                 List.of(
                         new RJSBufferStop("bs_start", 0, "track"),
