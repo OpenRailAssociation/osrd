@@ -7,7 +7,6 @@ import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
-import java.util.Set;
 
 public class TrackSectionImpl implements TrackSection {
 

@@ -18,7 +18,7 @@ class TrainData:
 
 @dataclass(frozen=True)
 class Simulation:
-    signal_updates: List[Dict]
+    route_occupation: Dict
     train_data: TrainData
 
 
@@ -29,7 +29,7 @@ class RouteOffsets:
 
 
 @dataclass(frozen=True)
-class SignalUse:
+class RouteUse:
     train_data: TrainData
     time_start: float
     time_end: float
@@ -81,7 +81,7 @@ def _get_simulations(timetable) -> List[Simulation]:
         else:
             sim = schedule.base_simulation
         simulations.append(
-            Simulation(sim["signal_updates"], TrainData(schedule.pk, schedule.train_name, schedule.departure_time))
+            Simulation(sim["route_occupancies"], TrainData(schedule.pk, schedule.train_name, schedule.departure_time))
         )
     return simulations
 
@@ -102,22 +102,21 @@ def _make_route_offsets(path: PathPayload) -> Dict[str, RouteOffsets]:
 def _find_conflicts(simulations: List[Simulation], route_offsets: Dict[str, RouteOffsets]) -> Set[Conflict]:
     conflicts = set()
 
-    signal_use_per_route = defaultdict(list)
+    routes_usage = defaultdict(list)
     for sim in simulations:
-        for signal_update in sim.signal_updates:
-            signal_use = SignalUse(
-                sim.train_data,
-                signal_update["time_start"] + sim.train_data.departure_time,
-                signal_update["time_end"] + sim.train_data.departure_time,
+        for route_id, occupancy in sim.route_occupation.items():
+            routes_usage[route_id].append(
+                RouteUse(
+                    sim.train_data,
+                    occupancy["time_head_occupy"] + sim.train_data.departure_time,
+                    occupancy["time_tail_free"] + sim.train_data.departure_time,
+                )
             )
-            for route_id in signal_update["route_ids"]:
-                signal_use_per_route[route_id].append(signal_use)
 
-    print(route_offsets)
-    for route in signal_use_per_route:
-        signal_uses = signal_use_per_route[route]
-        signal_uses.sort(key=lambda s: s.time_start)
-        for first, second in zip(signal_uses[:-1], signal_uses[1:]):
+    for route in routes_usage:
+        route_uses = routes_usage[route]
+        route_uses.sort(key=lambda s: s.time_start)
+        for first, second in zip(route_uses[:-1], route_uses[1:]):
             if first.time_end > second.time_start:
                 if route in route_offsets:
                     position_start = route_offsets[route].start
