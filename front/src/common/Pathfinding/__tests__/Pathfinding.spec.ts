@@ -27,6 +27,39 @@ describe('reducer', () => {
       mustBeLaunched: false,
     });
   });
+  test('pathfinding got started, previously cancelled', () => {
+    const state = {
+      ...initialState,
+      cancelled: true,
+      mustBeLaunched: true,
+    };
+    const action = { type: 'PATHFINDING_STARTED' };
+    expect(reducer(state, action)).toEqual({
+      ...initialState,
+      running: true,
+      cancelled: false,
+      mustBeLaunched: false,
+    });
+  });
+  test('pathfinding cancelled', () => {
+    const state = {
+      ...initialState,
+      running: true,
+      done: true,
+      error: 'abcd',
+      mustBeLaunched: true,
+      cancelled: false,
+    };
+    const action = { type: 'PATHFINDING_CANCELLED' };
+    expect(reducer(state, action)).toEqual({
+      ...initialState,
+      running: false,
+      done: false,
+      error: '',
+      mustBeLaunched: false,
+      cancelled: true,
+    });
+  });
   test('pathfinding got started, previously in error', () => {
     const state = {
       ...initialState,
@@ -54,6 +87,21 @@ describe('reducer', () => {
       done: true,
       running: false,
       mustBeLaunched: false,
+    });
+  });
+  test('pathfinding request finished, but user cancelled before it ended', () => {
+    const state = {
+      ...initialState,
+      cancelled: true,
+      mustBeLaunched: true,
+    };
+    const action = { type: 'PATHFINDING_FINISHED' };
+    expect(reducer(state, action)).toEqual({
+      ...initialState,
+      done: false,
+      running: false,
+      mustBeLaunched: false,
+      cancelled: true,
     });
   });
   test('pathfinding finished running, previously in error', () => {

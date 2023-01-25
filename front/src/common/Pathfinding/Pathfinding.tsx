@@ -35,6 +35,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 
 import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
+
 import './pathfinding.scss';
 
 interface PathfindingState {
@@ -44,6 +45,7 @@ interface PathfindingState {
   missingParam: boolean;
   mustBeLaunched: boolean;
   mustBeLaunchedManually: boolean;
+  cancelled: boolean;
 }
 
 export const initialState: PathfindingState = {
@@ -53,6 +55,7 @@ export const initialState: PathfindingState = {
   missingParam: false,
   mustBeLaunched: false,
   mustBeLaunchedManually: false,
+  cancelled: false,
 };
 
 interface Action {
@@ -75,9 +78,29 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
         done: false,
         error: '',
         mustBeLaunched: false,
+        cancelled: false,
+      };
+    }
+    case 'PATHFINDING_CANCELLED': {
+      return {
+        ...state,
+        running: false,
+        done: false,
+        error: '',
+        mustBeLaunched: false,
+        cancelled: true,
       };
     }
     case 'PATHFINDING_FINISHED': {
+      if (state.cancelled) {
+        return {
+          ...state,
+          running: false,
+          done: false,
+          error: '',
+          mustBeLaunched: false,
+        };
+      }
       return {
         ...state,
         running: false,
@@ -248,10 +271,9 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
         })
         .catch((e: any) => {
-          if (e?.name === 'AbortError') {
-            // pathfindingDispatch(canceled)
+          if (e?.data?.message) {
+            pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
           }
-          pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
         });
     }
   };
@@ -293,12 +315,25 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   );
 
   const loaderPathfindingInProgress = (
-    <div className="loader-pathfinding-in-progress">
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
+    <div className="pathfinding-in-progress">
+      <div className="pathfinding-in-progress-card">
+        <div className="pathfinding-in-progress-title-container">
+          <div className="spinner-border" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+          <h2 className="pathfinding-in-progress-title">{t('pathfindingInProgress')}</h2>
+        </div>
+        <button
+          className="btn btn-sm btn-primary"
+          type="button"
+          onClick={() => {
+            pathfindingRequest?.abort();
+            pathfindingDispatch({ type: 'PATHFINDING_CANCELLED' });
+          }}
+        >
+          {t('cancelPathfinding')}
+        </button>
       </div>
-      {t('pathfindingInProgress')}
-      <button onClick={pathfindingRequest?.abort}>cancel</button>
     </div>
   );
 
