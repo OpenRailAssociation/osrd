@@ -5,14 +5,15 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
-use self::edition::edit;
+use std::pin::Pin;
 
+use self::edition::edit;
 use super::params::List;
 use crate::error::Result;
 use crate::infra::{Infra, InfraName};
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::schema::SwitchType;
+use crate::schema::{ObjectType, SwitchType};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, scope, Data, Json, Path, Query};
@@ -20,9 +21,13 @@ use actix_web::{delete, get, post, put, HttpResponse, Responder};
 use chashmap::CHashMap;
 use diesel::sql_types::{BigInt, Double, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use futures::future::join_all;
+use futures::Future;
 use redis::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
+use std::result::Result as StdResult;
+use strum::IntoEnumIterator;
 
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -33,6 +38,7 @@ pub fn routes() -> impl HttpServiceFactory {
                 .service((
                     get,
                     delete,
+                    clone,
                     edit,
                     rename,
                     lock,
@@ -156,6 +162,63 @@ async fn create(db_pool: Data<DbPool>, data: Json<InfraName>) -> Result<impl Res
     .await
     .unwrap()?;
     Ok(HttpResponse::Created().json(infra))
+}
+
+/// Duplicate an infra
+#[post("/clone")]
+async fn clone(
+    infra: Path<i64>,
+    db_pool: Data<DbPool>,
+    new_name: Query<InfraName>,
+) -> Result<Json<i64>> {
+    let db_pool_ref = db_pool.get_ref();
+    let db_pool_clone = db_pool_ref.clone();
+    let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
+
+    let infra = infra.into_inner();
+    let cloned_infra = block::<_, Result<_>>(move || {
+        let name = new_name.name.clone();
+        let mut conn = db_pool_clone.get().expect("Failed to get DB connection");
+        Infra::clone(infra, &mut conn, name)
+    })
+    .await
+    .unwrap()?;
+
+    for object in ObjectType::iter() {
+        let model_table = object.get_table();
+        let db_pool_clone = db_pool_ref.clone();
+        let model = block::<_, Result<_>>(move || {
+            let mut conn = db_pool_clone.get().expect("Failed to get DB connection");
+            sql_query(format!(
+                "INSERT INTO {model_table}(id, obj_id,data,infra_id) SELECT nextval('{model_table}_id_seq'), obj_id,data,$1 FROM {model_table} WHERE infra_id=$2"
+            ))
+            .bind::<BigInt, _>(cloned_infra.id)
+            .bind::<BigInt, _>(infra)
+            .execute(&mut conn).map_err(|err| err.into())
+        });
+        futures.push(Box::pin(model));
+
+        if object != ObjectType::SwitchType && object != ObjectType::Route {
+            let layer_table = object.get_geometry_layer_table().unwrap().to_string();
+            let db_pool_clone = db_pool_ref.clone();
+            let layer = block::<_, Result<_>>(move || {
+                let mut conn = db_pool_clone.get().expect("Failed to get DB connection");
+                sql_query(format!(
+                    "INSERT INTO {layer_table}(id, obj_id,geographic,schematic,infra_id) SELECT nextval('{layer_table}_id_seq'), obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2"
+                ))
+                .bind::<BigInt, _>(cloned_infra.id)
+                .bind::<BigInt, _>(infra)
+                .execute(&mut conn).map_err(|err| err.into())
+            });
+            futures.push(Box::pin(layer));
+        }
+    }
+
+    let res = join_all(futures).await;
+    let res: Vec<_> = res.into_iter().collect::<StdResult<_, _>>().unwrap();
+    res.into_iter().collect::<Result<Vec<usize>>>()?;
+
+    Ok(Json(cloned_infra.id))
 }
 
 /// Delete an infra
@@ -330,6 +393,23 @@ mod tests {
             .uri(format!("/infra/{infra_id}/").as_str())
             .set_json(json!([operation]))
             .to_request()
+    }
+
+    #[actix_test]
+    async fn infra_clone() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("clone_infra_test")).await;
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/clone/?name=cloned_infra/", infra.id).as_str())
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let cloned_infra_id: i64 = read_body_json(response).await;
+        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let response = call_service(&app, delete_infra_request(cloned_infra_id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[actix_test]
