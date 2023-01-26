@@ -11,7 +11,7 @@
     @extend .pathfinding-subsection;
     
     .title {
-      color: green;
+      color: var(--success-green);
     }
 
     .details {
@@ -21,12 +21,12 @@
 
   .pathfinding-error {
     @extend .pathfinding-subsection;
-    color: red;
+    color: var(--error-red);
   }
 
   .missing-params {
     @extend .pathfinding-subsection;
-    color: #ffb612;
+    color: var(--warning-orange);
   }
 
   .pathfinding-in-progress {
@@ -36,7 +36,7 @@
     left: 0;
     min-width: 100%;
     min-height: 100%;
-    background-color: rgba(0,0,0,0.1);
+    background-color: var(--modal-gray-transparent-background);
     z-index: 2;
 
     display: flex;
@@ -48,7 +48,7 @@
       width: 50%;
       border-radius: 4px;
       padding: 1rem 1.5rem;
-      background: white;
+      background: var(--card-background-white);
 
       display: flex;
       flex-direction: column;
