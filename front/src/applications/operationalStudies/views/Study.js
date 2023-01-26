@@ -23,7 +23,7 @@ function BreadCrumbs(props) {
   const { projectName, studyName } = props;
   return (
     <div className="navbar-breadcrumbs">
-      <Link to="/osrd">{t('projectsList')}</Link>
+      <Link to="/operational-studies">{t('projectsList')}</Link>
       <i className="icons-arrow-next icons-size-x75 text-muted" />
       <Link to="/operational-studies/project">{projectName}</Link>
       <i className="icons-arrow-next icons-size-x75 text-muted" />
