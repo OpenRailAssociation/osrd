@@ -1,3 +1,9 @@
+
+/*
+*
+*   CHIPS
+*
+*/
 .form-control-container .chips-input {
   width: auto !important;
   flex-grow: 1;
@@ -11,4 +17,11 @@
 }
 button.chips.chips-btn {
   min-height: 2rem;
+  &:hover {
+    background-color: var(--secondary);
+    color: var(--white) !important;
+  }
+}
+.chips {
+  border: none !important;
 }
