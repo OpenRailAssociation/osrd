@@ -208,8 +208,7 @@ export default function StandardAllowanceDefault(props) {
   }, [getAllowanceTypes, typeKey]);
 
   useEffect(() => {
-    if (allowanceTypes.label === 'percentage')
-      allowanceTypes.label = t('allowanceTypes.percentage');
+    if (allowanceTypes.label === 'time') allowanceTypes.label = t('allowanceTypes.time');
   }, [allowanceTypes, t]);
 
   console.log(allowanceTypes);
@@ -317,9 +316,9 @@ StandardAllowanceDefault.defaultProps = {
   selectedTrain: 0,
   allowanceTypes: [
     {
-      id: 'percentage',
-      label: 'percentage',
-      unit: ALLOWANCE_UNITS_KEYS.percentage,
+      id: 'time',
+      label: 'time',
+      unit: ALLOWANCE_UNITS_KEYS.time,
     },
   ],
 };

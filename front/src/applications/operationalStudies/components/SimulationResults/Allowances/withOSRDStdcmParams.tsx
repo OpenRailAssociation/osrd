@@ -22,9 +22,9 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
 
     const allowanceTypes = [
       {
-        id: 'percentage',
-        label: t('allowanceTypes.percentage'),
-        unit: ALLOWANCE_UNITS_KEYS.percentage,
+        id: 'time',
+        label: t('allowanceTypes.time'),
+        unit: ALLOWANCE_UNITS_KEYS.time,
       },
     ];
 
