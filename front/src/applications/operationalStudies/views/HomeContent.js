@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/projects.svg';
 import { projectsListJSON } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
+import AddAndEditProjectModal from 'applications/operationalStudies/components/Project/AddAndEditProjectModal';
 import ProjectCard from 'applications/operationalStudies/components/HomeContent/ProjectCard';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
@@ -10,9 +11,11 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import osrdLogo from 'assets/pictures/osrd.png';
 import Loader from 'common/Loader';
 import { FaPlus } from 'react-icons/fa';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 export default function HomeContent() {
   const { t } = useTranslation('operationalStudies/home');
+  const { openModal } = useContext(ModalContext);
   const [projectsList, setProjectsList] = useState();
   const [filter, setFilter] = useState('');
   const [sortOption, setSortOption] = useState('byName');
@@ -69,7 +72,11 @@ export default function HomeContent() {
               selectedValue={sortOption}
               options={sortOptions}
             />
-            <button className="btn btn-primary" type="button">
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={() => openModal(<AddAndEditProjectModal />, 'lg')}
+            >
               <FaPlus />
               <span className="ml-2">{t('createProject')}</span>
             </button>
