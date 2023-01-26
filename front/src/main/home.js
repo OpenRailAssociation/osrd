@@ -30,7 +30,7 @@ export default function Home() {
               <Card
                 img={operationalStudiesImg}
                 title={t('operationalStudies')}
-                link="/operational-studies/scenario"
+                link="/operational-studies"
                 data-testid="operationalStudies"
               />
             </div>

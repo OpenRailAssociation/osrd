@@ -150,7 +150,11 @@ export default function Timetable(props) {
   return (
     <div className="scenario-timetable">
       <div className="scenario-timetable-toolbar">
-        <div className="">{t('trainCount', { count: trainsList ? trainsList.length : 0 })}</div>
+        <div className="">
+          {t('trainCount', {
+            count: trainsList ? trainsList.filter((train) => !train.isFiltered).length : 0,
+          })}
+        </div>
         <div className="flex-grow-1">
           <InputSNCF
             type="text"
