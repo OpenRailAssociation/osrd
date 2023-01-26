@@ -256,7 +256,8 @@
     "traincompo": "Matériel"
   },
   "NavBar": {
-    "disconnect": "Déconnexion"
+    "disconnect": "Déconnexion",
+    "informations": "Informations"
   },
   "osrd": {
     "nav": {
@@ -266,5 +267,8 @@
       "simulation": "Simulation",
       "traincompo": "Matériel"
     }
+  },
+  "informations": {
+    "releaseInformations": "Informations de version"
   }
 }
