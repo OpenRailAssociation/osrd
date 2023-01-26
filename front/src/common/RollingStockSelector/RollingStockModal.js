@@ -51,11 +51,11 @@ function RollingStockModal(props) {
     let filteredRollingStockListNew = rollingStock.filter(
       (el) =>
         el.name.toLowerCase().includes(filters.text) ||
-        (el.detail && el.detail.toLowerCase().includes(filters.text)) ||
-        (el.reference && el.reference.toLowerCase().includes(filters.text)) ||
-        (el.series && el.series.toLowerCase().includes(filters.text)) ||
-        (el.type && el.type.toLowerCase().includes(filters.text)) ||
-        (el.grouping && el.grouping.toLowerCase().includes(filters.text))
+        (el.metadata.detail && el.metadata.detail.toLowerCase().includes(filters.text)) ||
+        (el.metadata.reference && el.metadata.reference.toLowerCase().includes(filters.text)) ||
+        (el.metadata.series && el.metadata.series.toLowerCase().includes(filters.text)) ||
+        (el.metadata.type && el.metadata.type.toLowerCase().includes(filters.text)) ||
+        (el.metadata.grouping && el.metadata.grouping.toLowerCase().includes(filters.text))
     );
 
     // checkbox filters
