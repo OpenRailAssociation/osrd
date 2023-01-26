@@ -356,6 +356,11 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     </div>
   );
 
+  const missingElements = conditionalStringConcat([
+    [!origin, t('origin')],
+    [!destination, t('destination')],
+    [!rollingStockID, t('rollingstock')],
+  ]);
   return (
     <div className="pathfinding-main-container">
       {pathfindingState.done && !pathfindingState.error && (
@@ -370,18 +375,13 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       {pathfindingState.error && (
         <div className="pathfinding-error">
           <BiXCircle />
-          {t('pathfindingError')} {t(pathfindingState.error)}
+          {t('pathfindingError', { errorMessage: t(pathfindingState.error) })}
         </div>
       )}
       {pathfindingState.missingParam && (
         <div className="missing-params">
           <BiErrorCircle />
-          {t('pathfindingMissingParams')}
-          {conditionalStringConcat([
-            [!origin, t('origin')],
-            [!destination, t('destination')],
-            [!rollingStockID, t('rollingstock')],
-          ])}
+          {t('pathfindingMissingParams', { missingElements })}
         </div>
       )}
       {pathfindingState.running && loaderPathfindingInProgress}
