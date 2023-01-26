@@ -1,17 +1,20 @@
-import { FaPowerOff } from 'react-icons/fa';
+import { FaPowerOff, FaInfoCircle } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useContext } from 'react';
 // import englishFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/english.svg';
 // import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
 // import i18n from 'i18next';
 import { logout } from 'reducers/user';
 import { useTranslation } from 'react-i18next';
+import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
+import { ModalContext } from './ModalSNCF/ModalProvider';
 
 export default function LegacyNavBarSNCF(props) {
+  const { openModal } = useContext(ModalContext);
   const user = useSelector((state) => state.user);
   const { fullscreen } = useSelector((state) => state.main);
   const { appName, logo } = props;
@@ -59,6 +62,18 @@ export default function LegacyNavBarSNCF(props) {
             }
             type={DROPDOWN_STYLE_TYPES.transparent}
             items={[
+              // Button to open modal displaying release version
+              <button
+                type="button"
+                className="btn-link text-reset"
+                onClick={() => openModal(<ReleaseInformations />)}
+                key="release"
+              >
+                <span className="mr-2">
+                  <FaInfoCircle />
+                </span>
+                {t('NavBar.informations')}
+              </button>,
               <button type="button" className="btn-link text-reset" onClick={toLogout} key="logout">
                 <span className="mr-2">
                   <FaPowerOff />
