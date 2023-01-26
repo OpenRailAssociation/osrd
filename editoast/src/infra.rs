@@ -6,7 +6,7 @@ use crate::tables::osrd_infra_infra::dsl;
 use actix_web::http::StatusCode;
 use chrono::{NaiveDateTime, Utc};
 use diesel::result::Error as DieselError;
-use diesel::sql_types::Text;
+use diesel::sql_types::{BigInt, Bool, Nullable, Text};
 use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use serde::{Deserialize, Serialize};
@@ -177,6 +177,28 @@ impl Infra {
         match delete(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
             Ok(_) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(err) => Err(err.into()),
+        }
+    }
+
+    pub fn clone(infra_id: i64, conn: &mut PgConnection, new_name: String) -> Result<Infra> {
+        let infra_to_clone = Infra::retrieve(conn, infra_id)?;
+        match sql_query(
+            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked, created, modified
+            )
+            SELECT $1, $2, '00000000-0000-0000-0000-000000000000', $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM osrd_infra_infra
+             WHERE id = $6
+             RETURNING *",
+        )
+        .bind::<Text, _>(new_name)
+        .bind::<Text, _>(RAILJSON_VERSION)
+        .bind::<Text,_>(infra_to_clone.version)
+        .bind::<Nullable<Text>,_>(infra_to_clone.generated_version)
+        .bind::<Bool,_>(infra_to_clone.locked)
+        .bind::<BigInt,_>(infra_id)
+        .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
             Err(err) => Err(err.into()),
         }
     }

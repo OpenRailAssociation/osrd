@@ -730,6 +730,27 @@ paths:
                     schematic:
                       type: object
                       description: object's schematic in geojson format
+  /infra/{id}/clone:
+    post:
+      tags:
+        - infra
+      summary: Duplicate an infra
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra id
+          required: true
+      responses:
+        201:
+          description: The duplicated infra id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer }
 
   /electrical_profile_set/:
     get:
@@ -793,7 +814,7 @@ paths:
             application/json:
               schema:
                 type: object
-                additionalProperties: 
+                additionalProperties:
                   type: array
                   items:
                     type: string

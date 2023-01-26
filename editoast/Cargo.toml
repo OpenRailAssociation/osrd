@@ -44,3 +44,4 @@ tempfile = "3.3.0"
 editoast_derive = { path = "./editoast_derive" }
 mvt = "0.7.0"
 pointy = "0.2.1"
+futures = "0.3.26"
