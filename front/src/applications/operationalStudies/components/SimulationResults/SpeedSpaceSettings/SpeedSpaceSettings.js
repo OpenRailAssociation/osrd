@@ -1,10 +1,19 @@
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState }  from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function SpeedSpaceSettings(props) {
-  const { showSettings, speedSpaceSettings, toggleSetting } = props;
+  const { showSettings, speedSpaceSettings, onSetSettings } = props;
+
+  const [settings, setSettings] = useState(speedSpaceSettings);
+
+  const toggleSetting = (settingName, settings) => {
+    const newSettings = Object.assign({}, settings);
+    newSettings[settingName] = !settings[settingName]
+    setSettings(newSettings)
+    onSetSettings(newSettings)
+  }
   const { t } = useTranslation(['simulation']);
 
   return (
@@ -17,32 +26,33 @@ export default function SpeedSpaceSettings(props) {
         id="speedSpaceSettings-altitude"
         name="speedSpaceSettings-altitude"
         label={t('speedSpaceSettings.altitude')}
-        checked={speedSpaceSettings.altitude}
-        onChange={() => toggleSetting('altitude')}
+        checked={settings.altitude}
+        onChange={() => toggleSetting('altitude',
+        settings)}
         type="checkbox"
       />
       <CheckboxRadioSNCF
         id="speedSpaceSettings-curves"
         name="speedSpaceSettings-curves"
         label={t('speedSpaceSettings.curves')}
-        checked={speedSpaceSettings.curves}
-        onChange={() => toggleSetting('curves')}
+        checked={settings.curves}
+        onChange={() => toggleSetting('curves', settings)}
         type="checkbox"
       />
       <CheckboxRadioSNCF
         id="speedSpaceSettings-maxSpeed"
         name="speedSpaceSettings-maxSpeed"
         label={t('speedSpaceSettings.maxSpeed')}
-        checked={speedSpaceSettings.maxSpeed}
-        onChange={() => toggleSetting('maxSpeed')}
+        checked={settings.maxSpeed}
+        onChange={() => toggleSetting('maxSpeed', settings)}
         type="checkbox"
       />
       <CheckboxRadioSNCF
         id="speedSpaceSettings-slopes"
         name="speedSpaceSettings-slopes"
         label={t('speedSpaceSettings.slopes')}
-        checked={speedSpaceSettings.slopes}
-        onChange={() => toggleSetting('slopes')}
+        checked={settings.slopes}
+        onChange={() => toggleSetting('slopes', settings)}
         type="checkbox"
       />
     </div>
@@ -51,12 +61,17 @@ export default function SpeedSpaceSettings(props) {
 
 SpeedSpaceSettings.propTypes = {
   showSettings: PropTypes.bool,
-  toggleSetting: PropTypes.func,
   speedSpaceSettings: PropTypes.object,
+  onSetSettings: PropTypes.func
 };
 
 SpeedSpaceSettings.defaultProps = {
   showSettings: false,
-  toggleSetting: () => {},
-  speedSpaceSettings: {},
+  speedSpaceSettings: {
+    altitude: false,
+    curves: false,
+    settings: false,
+    slopes: false
+  },
+  onSetSettings: () => {}
 };

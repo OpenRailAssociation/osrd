@@ -1,6 +1,7 @@
 import React from 'react';
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
+import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import 'styles/main.css';
 export default {
   /* 👇 The title prop is optional.
@@ -12,11 +13,15 @@ export default {
 };
 
 const Template: ComponentStory<typeof SpeedSpaceChart> = (args) => (
-  <div className="speedspacechart-container simulation-results">
-    <div className="spacetime-chart">
-      <SpeedSpaceChart {...args} />
+  <div className="simulation-results">
+    <div className="speedspacechart-container">
+      <SpeedSpaceChart initialHeightOfSpeedSpaceChart={400} {...args} />
     </div>
   </div>
 );
 
 export const Standard = Template.bind({});
+
+Standard.args = {
+  timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
+};
