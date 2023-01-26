@@ -16,7 +16,6 @@ import ContextMenu from 'applications/operationalStudies/components/SimulationRe
 import SimulationResultsMap from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap';
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/operationalStudies/components/SimulationResults/SpaceCurvesSlopes';
-import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart';
 import SpaceTimeChartIsolated from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
 import TimeButtons from 'applications/operationalStudies/components/SimulationResults/TimeButtons';
@@ -164,28 +163,10 @@ export default function SimulationResults() {
               style={{ height: `${heightOfSpeedSpaceChart}px` }}
             >
               {displaySimulation && (
-                <Rnd
-                  default={{
-                    x: 0,
-                    y: 0,
-                    width: '100%',
-                    height: `${heightOfSpeedSpaceChart}px`,
-                  }}
-                  minHeight={CHART_MIN_HEIGHT}
-                  disableDragging
-                  enableResizing={{
-                    bottom: true,
-                  }}
-                  onResizeStart={() => setInitialHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart)}
-                  onResize={(_e, _dir, _refToElement, delta) => {
-                    setHeightOfSpeedSpaceChart(initialHeightOfSpeedSpaceChart + delta.height);
-                  }}
-                  onResizeStop={() => {
-                    dispatch(updateMustRedraw(true));
-                  }}
-                >
-                  <SpeedSpaceChart heightOfSpeedSpaceChart={heightOfSpeedSpaceChart} />
-                </Rnd>
+                <SpeedSpaceChart
+                  initialHeightOfSpeedSpaceChart={heightOfSpeedSpaceChart}
+                  onSetBaseHeightOfSpeedSpaceChart={setHeightOfSpeedSpaceChart}
+                />
               )}
             </div>
           </div>

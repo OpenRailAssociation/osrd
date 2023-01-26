@@ -34,7 +34,10 @@ function createChart(
         )
       : chart.y;
 
-  const width = parseInt(d3.select(`#container-${CHART_ID}`)?.style('width'), 10);
+  const width =
+    d3.select(`#container-${CHART_ID}`) !== null
+      ? parseInt(d3.select(`#container-${CHART_ID}`)?.style('width'), 10)
+      : 250;
   /*
   if (resetChart) {
     dispatch(updateChartXGEV(defineX));

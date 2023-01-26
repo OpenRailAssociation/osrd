@@ -13,8 +13,11 @@ import {
   updateMustRedraw,
   updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
-
-import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { datetime2sec, sec2datetime } from 'utils/timeManipulation';
+import {
+  LIST_VALUES_NAME_SPACE_TIME,
+  LIST_VALUES_NAME_SPEED_SPACE,
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import drawGuideLines from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawGuideLines';
 import { store } from 'Store';
 
@@ -310,7 +313,32 @@ const enableInteractivity = (
         const positionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
+        // const timePositionLocal = interpolateOnPosition;
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
+        const immediatePositionsValuesForPointer = interpolateOnTime(
+          dataSimulation,
+          keyValues,
+          LIST_VALUES_NAME_SPEED_SPACE,
+          datetime2sec(timePositionLocal)
+        );
+
+        // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenitn pointer update
+        LIST_VALUES_NAME_SPEED_SPACE.forEach((name) => {
+          if (
+            immediatePositionsValuesForPointer[name] &&
+            !Number.isNaN(immediatePositionsValuesForPointer[name]?.time) &&
+            !Number.isNaN(immediatePositionsValuesForPointer[name]?.speed)
+          ) {
+            immediatePositionsValuesForPointer[name].speed /= 3.6;
+            immediatePositionsValuesForPointer[name].time = sec2datetime(
+              immediatePositionsValuesForPointer[name].time
+            );
+          }
+        });
+
+        updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
+
+        dataSimulation, keyValues, positionLocal;
         if (timePositionLocal) {
           debounceUpdateTimePositionValues(timePositionLocal, null, 15);
         }

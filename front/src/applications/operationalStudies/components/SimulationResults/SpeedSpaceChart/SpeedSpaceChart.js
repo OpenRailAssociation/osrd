@@ -1,9 +1,9 @@
 import * as d3 from 'd3';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
-
+import { Rnd } from 'react-rnd';
 import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import enableInteractivity, {
   traceVerticalLine,
@@ -16,6 +16,7 @@ import {
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
 const CHART_ID = 'SpeedSpaceChart';
+const CHART_MIN_HEIGHT = 250
 /**
  * A chart to see the evolution of speed of one train on its journey
  * Features:
@@ -25,8 +26,7 @@ const CHART_ID = 'SpeedSpaceChart';
  *
  */ export default function SpeedSpaceChart(props) {
   const {
-    heightOfSpeedSpaceChart,
-    simulation,
+     simulation,
     chartXGEV,
     dispatch,
     mustRedraw,
@@ -35,7 +35,10 @@ const CHART_ID = 'SpeedSpaceChart';
     speedSpaceSettings,
     timePosition,
     consolidatedSimulation,
-    toggleSetting,
+    initialHeightOfSpeedSpaceChart,
+    onSetSettings,
+    onSetBaseHeightOfSpeedSpaceChart,
+    dispatchUpdateMustRedraw,
   } = props;
 
   const [showSettings, setShowSettings] = useState(false);
@@ -44,12 +47,29 @@ const CHART_ID = 'SpeedSpaceChart';
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
+  const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
+
+  const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(
+    initialHeightOfSpeedSpaceChart
+  );
+
+  const [baseHeightOfSpeedSpaceChart, setBaseHeightOfSpeedSpaceChart] =
+    useState(heightOfSpeedSpaceChart);
+
+
   const ref = useRef();
   const keyValues = ['position', 'speed'];
 
-  // Prepare data
-  const dataSimulation = prepareData(simulation, selectedTrain, keyValues);
+  const onLocalSetSettings = (settings) => {
+    setLocalSettings(settings);
+    onSetSettings(settings);
+  };
 
+  // Prepare data
+  const dataSimulation = useMemo(
+    () => prepareData(simulation, selectedTrain, keyValues),
+    [simulation, selectedTrain, keyValues]
+  );
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
@@ -129,7 +149,7 @@ const CHART_ID = 'SpeedSpaceChart';
       keyValues,
       positionValues,
       rotate,
-      speedSpaceSettings,
+      localSettings,
       mustRedraw,
       setChart,
       setYPosition,
@@ -145,7 +165,7 @@ const CHART_ID = 'SpeedSpaceChart';
       setResetChart,
       true
     );
-  }, [chart, mustRedraw, rotate, consolidatedSimulation]);
+  }, [chart, mustRedraw, rotate, consolidatedSimulation, localSettings]);
 
   // draw or redraw the position line indictator when usefull
   useEffect(() => {
@@ -176,7 +196,6 @@ const CHART_ID = 'SpeedSpaceChart';
         createChart(
           CHART_ID,
           chart,
-          CHART_ID,
           resetChart,
           dataSimulation,
           rotate,
@@ -193,52 +212,81 @@ const CHART_ID = 'SpeedSpaceChart';
       timeOutFunctionId = setTimeout(resizeDrawTrain, 500);
     };
     window.addEventListener('resize', timeOutResize);
+    return () => {
+      window.removeEventListener('resize', timeOutResize);
+    };
   }, []);
 
   // reset chart
   useEffect(() => resetChartToggle(), [resetChart]);
 
   return (
-    <div
-      id={`container-${CHART_ID}`}
-      className="speedspace-chart w-100"
-      style={{ height: `${heightOfSpeedSpaceChart}px` }}
+    <Rnd
+      default={{
+        x: 0,
+        y: 0,
+        width: '100%',
+        height: `${heightOfSpeedSpaceChart}px`,
+      }}
+      minHeight={CHART_MIN_HEIGHT}
+      disableDragging
+      enableResizing={{
+        bottom: true,
+      }}
+      onResizeStart={() => {
+        setBaseHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart);
+        onSetBaseHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart);
+      }}
+      onResize={(_e, _dir, _refToElement, delta) => {
+        setHeightOfSpeedSpaceChart(baseHeightOfSpeedSpaceChart + delta.height);
+        onSetBaseHeightOfSpeedSpaceChart(baseHeightOfSpeedSpaceChart + delta.height);
+      }}
+      onResizeStop={() => {
+        dispatchUpdateMustRedraw(true);
+      }}
     >
-      <button
-        type="button"
-        className="showSettingsButton"
-        onClick={() => setShowSettings(!showSettings)}
+      <div
+        id={`container-${CHART_ID}`}
+        className="speedspace-chart w-100"
+        style={{ height: `${heightOfSpeedSpaceChart}px` }}
       >
-        <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
-      </button>
-      <SpeedSpaceSettings
-        showSettings={showSettings}
-        toggleSetting={toggleSetting}
-        SpeedSpaceSettings={speedSpaceSettings}
-      />
-      <div ref={ref} className="w-100" />
-      <button
-        type="button"
-        className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
-        onClick={() => setResetChart(true)}
-      >
-        <GiResize />
-      </button>
-      <button
-        type="button"
-        className="btn-rounded btn-rounded-white box-shadow btn-rotate"
-        onClick={() => toggleRotation(rotate, setRotate)}
-      >
-        <i className="icons-refresh" />
-      </button>
-      <div className="handle-tab-resize">
-        <CgLoadbar />
+        <button
+          type="button"
+          className="showSettingsButton"
+          onClick={() => setShowSettings(!showSettings)}
+        >
+          <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
+        </button>
+        <SpeedSpaceSettings
+          showSettings={showSettings}
+          onSetSettings={onLocalSetSettings}
+          speedSpaceSettings={speedSpaceSettings}
+        />
+        <div ref={ref} className="w-100" />
+        <button
+          type="button"
+          className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
+          onClick={() => setResetChart(true)}
+        >
+          <GiResize />
+        </button>
+        <button
+          type="button"
+          className="btn-rounded btn-rounded-white box-shadow btn-rotate"
+          onClick={() => toggleRotation(rotate, setRotate)}
+        >
+          <i className="icons-refresh" />
+        </button>
+        <div className="handle-tab-resize">
+          <CgLoadbar />
+        </div>
       </div>
-    </div>
+    </Rnd>
   );
 }
 
 SpeedSpaceChart.propTypes = {
+  dispatchUpdateMustRedraw: PropTypes.func,
   /**
    * height of chart
    */
@@ -297,4 +345,11 @@ SpeedSpaceChart.defaultProps = {
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
   toggleSetting: () => {},
+  onSetSettings: () => {},
+  dispatchUpdateMustRedraw: () => {
+    console.log('dispatchUpdateMustRedraw called');
+  },
+  onSetBaseHeightOfSpeedSpaceChart: ({ ...args }) => {
+    console.log('onOffsetTimeByDragging called');
+  },
 };

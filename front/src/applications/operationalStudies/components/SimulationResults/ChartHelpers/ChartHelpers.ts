@@ -320,12 +320,10 @@ export const interpolateOnTime = (
     let bisection;
     // If not array of array
     if (listValue === 'speed' || listValue === 'speeds') {
-      if (
-        dataSimulation?.[listValue] &&
-        dataSimulation?.[listValue][0] &&
-        timePositionLocal >= dataSimulation?.[listValue][0][keyValues[0]]
-      ) {
-        const index = bisect(dataSimulation[listValue], timePositionLocal, 1);
+      const comparator = dataSimulation?.[listValue] || dataSimulation?.[listValue][0]
+      if (comparator) {
+        const timeBisect = d3.bisector<any, any>((d) => d['time']).left;
+        const index = timeBisect(dataSimulation[listValue], timePositionLocal, 1);
         bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
       }
     } else if (dataSimulation?.[listValue]) {
