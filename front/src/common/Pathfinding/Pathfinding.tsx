@@ -300,7 +300,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   }, []);
 
   useEffect(() => {
-    console.log('vias changed');
     pathfindingDispatch({
       type: 'VIAS_CHANGED',
       params: {
@@ -357,7 +356,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     </div>
   );
 
-  console.log(pathfindingState.mustBeLaunchedManually);
   return (
     <div className="pathfinding-main-container">
       {pathfindingState.done && !pathfindingState.error && (
