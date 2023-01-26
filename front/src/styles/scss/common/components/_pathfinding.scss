@@ -11,7 +11,7 @@
     @extend .pathfinding-subsection;
     
     .title {
-      color: var(--success-green);
+      color: var(--success);
     }
 
     .details {
@@ -22,12 +22,12 @@
 
   .pathfinding-error {
     @extend .pathfinding-subsection;
-    color: var(--error-red);
+    color: var(--danger);
   }
 
   .missing-params {
     @extend .pathfinding-subsection;
-    color: var(--warning-orange);
+    color: var(--warning);
   }
 
   .pathfinding-in-progress {
@@ -49,7 +49,7 @@
       width: 50%;
       border-radius: 4px;
       padding: 1rem 1.5rem;
-      background: var(--card-background-white);
+      background: var(--white);
 
       display: flex;
       flex-direction: column;

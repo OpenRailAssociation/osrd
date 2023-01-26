@@ -38,8 +38,6 @@ import {
 
 import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
 
-import 'styles/scss/common/pathfinding.scss';
-
 interface PathfindingState {
   running: boolean;
   done: boolean;
