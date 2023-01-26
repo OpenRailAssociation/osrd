@@ -75,7 +75,7 @@ export default function HomeContent() {
             <button
               className="btn btn-primary"
               type="button"
-              onClick={() => openModal(<AddAndEditProjectModal />, 'lg')}
+              onClick={() => openModal(<AddAndEditProjectModal />, 'xl')}
             >
               <FaPlus />
               <span className="ml-2">{t('createProject')}</span>
