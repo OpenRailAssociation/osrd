@@ -55,7 +55,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     }
                 }
 
-                private val capacity: Int = buffer.size
+                private val capacity: Int get() = buffer.size
 
                 private fun ensureBufferSpace(expectedAdditions: Int) {
                     val requiredCapacity = usedElements + expectedAdditions
