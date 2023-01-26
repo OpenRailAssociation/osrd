@@ -28,7 +28,7 @@ class InputSNCF extends React.Component {
     // Basic input props
     id: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
-    label: PropTypes.string,
+    label: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
     placeholder: PropTypes.string,
     onChange: PropTypes.func,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

@@ -4,6 +4,7 @@ faker.setLocale('fr');
 
 function chooseRandomIMG() {
   // return `https://placebacon.com/400/300?image=${Math.floor(Math.random() * 9)}`;
+  // return `http://localhost/place-osrd-team-picture/?${Math.random()}`;
   return `https://placeredpanda.osrd.fr/?${Math.random()}`;
   /*
   const x = Math.floor(Math.random() * 400) + 640;
