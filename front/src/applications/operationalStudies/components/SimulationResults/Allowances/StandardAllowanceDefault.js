@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import debounce from 'lodash/debounce';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
 export default function StandardAllowanceDefault(props) {
@@ -206,6 +207,10 @@ export default function StandardAllowanceDefault(props) {
     if (getAllowanceTypes) setAllowanceTypes(getAllowanceTypes(typeKey));
   }, [getAllowanceTypes, typeKey]);
 
+  useEffect(() => {
+    if (allowanceTypes.label === 'time') allowanceTypes.label = t('allowanceTypes.time');
+  }, [allowanceTypes, t]);
+
   return (
     <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
       <div className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}>
@@ -230,14 +235,33 @@ export default function StandardAllowanceDefault(props) {
             </>
           )}
           <div className="col">
-            <InputGroupSNCF
-              id="standardAllowanceTypeSelect"
-              options={allowanceTypes}
-              handleType={handleType}
-              value={value.value}
-              type={value.type}
-              sm
-            />
+            {allowanceTypes.length > 1 ? (
+              <InputGroupSNCF
+                id="standardAllowanceTypeSelect"
+                options={allowanceTypes}
+                handleType={handleType}
+                value={value.value}
+                type={value.type}
+                sm
+              />
+            ) : (
+              <InputSNCF
+                id="standardAllowanceType"
+                label={allowanceTypes[0].label}
+                onChange={(e) =>
+                  handleType({
+                    type: allowanceTypes[0].id,
+                    value: e.target.value,
+                  })
+                }
+                value={value.value}
+                unit={allowanceTypes[0].unit}
+                type="text"
+                sm
+                noMargin
+                isFlex
+              />
+            )}
           </div>
         </div>
       </div>
@@ -266,7 +290,8 @@ export default function StandardAllowanceDefault(props) {
 StandardAllowanceDefault.propTypes = {
   // distributions: PropTypes.array.isRequired,
   distributionsTypes: PropTypes.array.isRequired,
-  getAllowanceTypes: PropTypes.func.isRequired,
+  allowanceTypes: PropTypes.array,
+  getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
   selectedTrain: PropTypes.number,
@@ -287,4 +312,11 @@ StandardAllowanceDefault.defaultProps = {
   mutateSingleAllowance: undefined,
   title: '',
   selectedTrain: 0,
+  allowanceTypes: [
+    {
+      id: 'time',
+      label: 'time',
+      unit: ALLOWANCE_UNITS_KEYS.time,
+    },
+  ],
 };
