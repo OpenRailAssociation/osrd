@@ -73,12 +73,12 @@
         },
         "is_electric": false
       },
-      "1500": {
+      "25000": {
         "curves": [
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "A"
+              "electrical_profile_level": "22500"
             },
             "curve": {
               "speeds": [
@@ -126,7 +126,7 @@
           {
             "cond": {
               "comfort": "STANDARD",
-              "electrical_profile_level": "A1"
+              "electrical_profile_level": "20000"
             },
             "curve": {
               "speeds": [
@@ -174,7 +174,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "O"
+              "electrical_profile_level": "25000"
             },
             "curve": {
               "speeds": [
@@ -222,7 +222,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "A"
+              "electrical_profile_level": "22500"
             },
             "curve": {
               "speeds": [
@@ -270,7 +270,7 @@
           {
             "cond": {
               "comfort": "AC",
-              "electrical_profile_level": "A1"
+              "electrical_profile_level": "20000"
             },
             "curve": {
               "speeds": [

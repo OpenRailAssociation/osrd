@@ -52,7 +52,7 @@ public class StandaloneTrainSchedule {
 
     @Override
     public int hashCode() {
-        return Objects.hash(rollingStock, initialSpeed, stops, allowances);
+        return Objects.hash(rollingStock, initialSpeed, stops, allowances, comfort);
     }
 
     /**

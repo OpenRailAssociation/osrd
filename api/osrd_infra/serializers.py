@@ -1,3 +1,4 @@
+from typing import Dict
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework_gis.fields import GeometryField
@@ -131,14 +132,14 @@ class StandaloneSimulationSerializer(Serializer):
     path = serializers.PrimaryKeyRelatedField(queryset=PathModel.objects.all())
     schedules = serializers.ListField(min_length=1, child=Schedule())
 
-    def validate(self, data):
+    def validate(self, data: Dict) -> Dict:
         path = data["path"]
         timetable = data["timetable"]
         if path.infra != timetable.infra:
             raise serializers.ValidationError("path and timteable doesn't have the same infra")
         return data
 
-    def create(self, validated_data):
+    def create(self, validated_data) -> list[TrainScheduleModel]:
         schedules = []
         timetable = validated_data["timetable"]
         path = validated_data["path"]

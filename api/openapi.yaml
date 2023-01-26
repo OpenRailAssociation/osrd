@@ -459,9 +459,15 @@ paths:
               properties:
                 infra:
                   type: number
+                electrical_profile_set:
+                  type: number
+                  nullable: true
+                  description: Electrical profile set id (if any)
                 name:
                   type: string
-        required: true
+              required: 
+                - infra
+                - name
       responses:
         201:
           description: The timetable created
@@ -476,6 +482,9 @@ paths:
                     type: string
                   infra:
                     type: number
+                  electrical_profile_set:
+                    type: number
+                    nullable: true
   /timetable/{id}/:
     get:
       tags:
@@ -502,6 +511,9 @@ paths:
                     type: string
                   infra:
                     type: number
+                  electrical_profile_set:
+                    type: number
+                    nullable: true
                   train_schedule:
                     type: array
                     items:
@@ -551,7 +563,12 @@ paths:
                   type: number
                 name:
                   type: string
-        required: true
+                electrical_profile_set:
+                  type: number
+                  nullable: true
+              required:
+                - infra
+                - name
       responses:
         200:
           description: The timetable updated
@@ -570,7 +587,7 @@ paths:
     post:
       tags:
         - train_schedule
-      summary: Create a batch of train schedule
+      summary: Create a batch of train schedule and run simulations accordingly
       requestBody:
         description: Standalone simulation parameters
         content:
@@ -580,7 +597,7 @@ paths:
         required: true
       responses:
         201:
-          description: The id of the train_schedule created
+          description: The ids of the train_schedules created
           content:
             application/json:
               schema:
@@ -628,7 +645,7 @@ paths:
     patch:
       tags:
         - train_schedule
-      summary: Update a train_schedule
+      summary: Update a train_schedule and run a simulation accordingly
       parameters:
         - in: path
           name: id
@@ -654,7 +671,7 @@ paths:
     get:
       tags:
         - train_schedule
-      summary: Compute and format the simulation result
+      summary: Retrieve a simulation result
       parameters:
         - in: path
           name: id
@@ -678,7 +695,7 @@ paths:
     get:
       tags:
         - train_schedule
-      summary: Compute and format the simulation result of multiple train schedule
+      summary: Retrieve the simulation result of multiple train schedules
       parameters:
         - in: query
           name: path
@@ -995,6 +1012,32 @@ components:
             - type: object
               properties:
                 error: { type: string }
+        modes_and_profiles:
+          type: array
+          items:
+            description: The catenary mode and electrical profiles seen along the path. <mode_seen> and <profile_seen> are filled only if they differ from those used.
+            type: array
+            items:
+              type: object
+              properties:
+                start:
+                  type: number
+                  format: double
+                stop:
+                  type: number
+                  format: double
+                mode_used:
+                  type: string
+                profile_used:
+                  type: string
+                  nullable: true
+                mode_seen:
+                  type: string
+                  nullable: true
+                profile_seen:
+                  type: string
+                  nullable: true
+
     PathQuery:
       properties:
         infra:

@@ -391,7 +391,7 @@ public class PathfindingTest extends ApiTest {
     }
 
     /** Runs a pathfinding on a given infra. Looks into the simulation file to find a possible path */
-    private static void runTestOnExampleInfra(String rootPath, boolean inverted) throws Exception {
+    private void runTestOnExampleInfra(String rootPath, boolean inverted) throws Exception {
         var req = requestFromExampleInfra(
                 rootPath + "/infra.json",
                 rootPath + "/simulation.json",

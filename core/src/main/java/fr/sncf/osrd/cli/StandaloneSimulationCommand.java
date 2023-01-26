@@ -33,21 +33,21 @@ import java.util.*;
 public class StandaloneSimulationCommand implements CliCommand {
 
     @Parameter(
-            names = { "--infra_path" },
+            names = {"--infra_path"},
             description = "Path to the infra railjson file to load",
             required = true
     )
     private String infraFilePath;
 
     @Parameter(
-            names = { "--sim_path" },
+            names = {"--sim_path"},
             description = "Path to the sim railjson file to load",
             required = true
     )
     private String simFilePath;
 
     @Parameter(
-            names = { "--res_path" },
+            names = {"--res_path"},
             description = "Path to the result file to save",
             required = true
     )
@@ -84,7 +84,7 @@ public class StandaloneSimulationCommand implements CliCommand {
             }
 
             // Add allowance
-            var allowance = new RJSAllowance[] {
+            var allowance = new RJSAllowance[]{
                     new RJSAllowance.StandardAllowance(RJSAllowanceDistribution.LINEAR,
                             new RJSAllowanceValue.Percent(5)),
             };
@@ -116,7 +116,7 @@ public class StandaloneSimulationCommand implements CliCommand {
                         signalingInfra, 2.0, rollingStocks::get, standSched, trainsPath, envelopePath));
 
                 // Calculate the result for the given train path and schedules
-                var result = StandaloneSim.run(signalingInfra, trainsPath, trainSchedules, 2.0);
+                var result = StandaloneSim.run(signalingInfra, trainsPath, envelopePath, trainSchedules, 2.0);
                 result.warnings = recorder.warnings;
 
                 simulations.add(result);

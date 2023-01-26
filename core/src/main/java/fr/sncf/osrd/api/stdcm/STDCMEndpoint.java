@@ -10,6 +10,7 @@ import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -189,6 +190,7 @@ public class STDCMEndpoint implements Take {
         var standaloneResult = StandaloneSim.run(
                 infra,
                 path,
+                EnvelopeTrainPath.from(path),
                 List.of(new StandaloneTrainSchedule(
                         rollingStock,
                         0,

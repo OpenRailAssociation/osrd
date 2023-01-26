@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List
 
-import json
 from railjson_generator.schema.infra.range_elements import TrackRange
 
 from schemas import external_generated_inputs
@@ -37,6 +36,9 @@ class ExternalGeneratedInputs:
             f.write(self.to_rjs().json(indent=2))
 
     def to_rjs(self):
-        return external_generated_inputs.ElectricalProfilesList(
-            __root__=[profile.to_rjs() for profile in self.electrical_profiles]
+        return external_generated_inputs.ElectricalProfileSet(
+            levels=[profile.to_rjs() for profile in self.electrical_profiles],
+            level_order={
+                "25000": ["25000", "22500", "20000"],
+            },
         )
