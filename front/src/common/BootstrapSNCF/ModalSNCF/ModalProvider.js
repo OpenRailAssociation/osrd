@@ -1,12 +1,13 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 
 const ModalContext = createContext({
   isModalOpen: false,
   modalContent: null,
-  openModal: (content, size, optionalClasses = '') => {},
+  openModal: (content, size, optionalClasses = '', withCloseButton = false) => {},
   closeModal: () => {},
   size: undefined,
   optionalClasses: '',
+  withCloseButton: false,
 });
 
 function ModalProvider({ children }) {
@@ -15,12 +16,19 @@ function ModalProvider({ children }) {
   const [size, setSize] = useState(undefined);
   const [optionalClasses, setOptionalClasses] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const [withCloseButton, setWithCloseButton] = useState(false);
 
-  const openModal = (content, size, optionalClasses = '') => {
+  const openModal = (
+    content,
+    sizeSetting,
+    optionalClassesSetting = '',
+    withCloseButtonSetting = false
+  ) => {
     setModalContent(content);
     setIsModalOpen(true);
-    setSize(size);
-    setOptionalClasses(optionalClasses);
+    setSize(sizeSetting);
+    setOptionalClasses(optionalClassesSetting);
+    setWithCloseButton(withCloseButtonSetting);
     document.body.classList.add('modal-open');
     setTimeout(() => setIsVisible(true), 0);
   };
@@ -36,7 +44,17 @@ function ModalProvider({ children }) {
 
   return (
     <ModalContext.Provider
-      value={{ isModalOpen, modalContent, openModal, closeModal, optionalClasses, size, isVisible }}
+      // eslint-disable-next-line react/jsx-no-constructed-context-values
+      value={{
+        isModalOpen,
+        modalContent,
+        openModal,
+        closeModal,
+        optionalClasses,
+        size,
+        isVisible,
+        withCloseButton,
+      }}
     >
       {children}
       {isModalOpen && modalContent && (
@@ -60,7 +78,7 @@ function ModalSNCF() {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
+    return function cleanup() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isModalOpen, closeModal]);
