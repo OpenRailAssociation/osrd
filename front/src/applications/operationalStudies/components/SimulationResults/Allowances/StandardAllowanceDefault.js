@@ -208,8 +208,11 @@ export default function StandardAllowanceDefault(props) {
   }, [getAllowanceTypes, typeKey]);
 
   useEffect(() => {
-    if (allowanceTypes.label === 'time') allowanceTypes.label = t('allowanceTypes.time');
+    if (allowanceTypes.label === 'percentage')
+      allowanceTypes.label = t('allowanceTypes.percentage');
   }, [allowanceTypes, t]);
+
+  console.log(allowanceTypes);
 
   return (
     <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
@@ -314,9 +317,9 @@ StandardAllowanceDefault.defaultProps = {
   selectedTrain: 0,
   allowanceTypes: [
     {
-      id: 'time',
-      label: 'time',
-      unit: ALLOWANCE_UNITS_KEYS.time,
+      id: 'percentage',
+      label: 'percentage',
+      unit: ALLOWANCE_UNITS_KEYS.percentage,
     },
   ],
 };
