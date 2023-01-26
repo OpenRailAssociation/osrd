@@ -171,15 +171,21 @@ function init({
   pathfindingID,
   geojson,
   mapTrackSources,
+  origin,
+  destination,
+  rollingStockID,
 }: {
   pathfindingID?: number;
   geojson?: Path;
   mapTrackSources: 'geographic' | 'schematic';
+  origin?: PointOnMap;
+  destination?: PointOnMap;
+  rollingStockID?: number;
 }): PathfindingState {
   if (!pathfindingID || !geojson?.[mapTrackSources]) {
     return {
       ...initialState,
-      mustBeLaunched: true,
+      mustBeLaunched: Boolean(origin) && Boolean(destination) && Boolean(rollingStockID),
     };
   }
   return initialState;
@@ -206,6 +212,9 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     pathfindingID,
     geojson,
     mapTrackSources,
+    origin,
+    destination,
+    rollingStockID,
   };
   const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
   const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
@@ -309,7 +318,9 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   }, [vias]);
 
   useEffect(() => {
-    startPathFinding();
+    if (pathfindingState.mustBeLaunched) {
+      startPathFinding();
+    }
   }, [pathfindingState.mustBeLaunched]);
 
   useEffect(() => {
