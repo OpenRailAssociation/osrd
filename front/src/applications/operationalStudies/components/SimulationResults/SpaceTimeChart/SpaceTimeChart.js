@@ -1,12 +1,11 @@
 import * as d3 from 'd3';
 
 import React, { useEffect, useRef, useState } from 'react';
-import enableInteractivity, {
+import {
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
 import {
-  handleWindowResize,
   interpolateOnTime,
   timeShiftTrain,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
@@ -21,32 +20,32 @@ import createTrain from 'applications/operationalStudies/components/SimulationRe
 import { useTranslation } from 'react-i18next';
 
 import {
-  drawOPs,
   drawAllTrains,
 } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/d3Helpers';
 
 const CHART_ID = 'SpaceTimeChart';
-const CHART_MIN_HEIGHT = 200;
-/*
-const drawAxisTitle = (chart, rotate) => {
-  chart.drawZone
-    .append('text')
-    .attr('class', 'axis-unit')
-    .attr('text-anchor', 'end')
-    .attr('transform', rotate ? 'rotate(0)' : 'rotate(-90)')
-    .attr('x', rotate ? chart.width - 10 : -10)
-    .attr('y', rotate ? chart.height - 10 : 20)
-    .text('KM');
-};
-*/
+const CHART_MIN_HEIGHT = 250
 
+/**
+ * @summary A Important chart to study evolution of trains vs time and inside block occupancies
+ *
+ * @version 1.0
+ *
+ * Features:
+ * - Possible to slide a train and update its departure time
+ * - Type " + " or " - " to update departure time by second
+ * - use ctrl + third mouse button to zoom it / out
+ * - use shift + hold left mouse button to pan
+ * - Right-Bottom bottom to switch Scales
+ * - Resize vertically
+ *
+ */
 export default function SpaceTimeChart(props) {
   const ref = useRef();
   //const dispatch = useDispatch();
   const { t } = useTranslation(['allowances']);
   const {
     allowancesSettings,
-    mustRedraw,
     positionValues,
     selectedProjection,
     selectedTrain,
@@ -55,7 +54,6 @@ export default function SpaceTimeChart(props) {
     dispatch,
     onOffsetTimeByDragging,
     onSetBaseHeightOfSpaceTimeChart,
-    onDragEnding,
     dispatchUpdateMustRedraw,
     dispatchUpdatePositionValues,
     dispatchUpdateChart,
@@ -65,7 +63,6 @@ export default function SpaceTimeChart(props) {
 
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
-  const [isResizeActive, setResizeActive] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [resetChart, setResetChart] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -75,7 +72,7 @@ export default function SpaceTimeChart(props) {
   const [dragOffset, setDragOffset] = useState(0);
   const [dragEnding, setDragEnding] = useState(false);
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(
-    initialHeightOfSpaceTimeChart || CHART_MIN_HEIGHT
+    initialHeightOfSpaceTimeChart
   );
 
   const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] =
@@ -152,7 +149,7 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(
         resetChart,
         newDataSimulation,
-        mustRedraw,
+        false,
         chart,
         heightOfSpaceTimeChart,
         keyValues,
@@ -183,7 +180,7 @@ export default function SpaceTimeChart(props) {
       // Reprogram !
       //handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
-  }, [mustRedraw, rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
+  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
@@ -201,7 +198,7 @@ export default function SpaceTimeChart(props) {
       );
       dispatchUpdatePositionValues(newPositionValues);
     }
-  }, [chart, mustRedraw]);
+  }, [chart]);
 
   useEffect(() => {
     if (dataSimulation) {
@@ -300,7 +297,6 @@ SpaceTimeChart.defaultProps = {
   simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   allowancesSettings: ORSD_GEV_SAMPLE_DATA.allowancesSettings,
   dispatch: () => {},
-  mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,

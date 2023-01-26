@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
+import { updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
 
 import SpeedSpaceSettings from './SpeedSpaceSettings';
 
@@ -15,18 +15,16 @@ const withOSRDData = (Component) =>
     const dispatch = useDispatch();
     const speedSpaceSettings = useSelector((state) => state.osrdsimulation.speedSpaceSettings);
 
-    const toggleSetting = (settingName) => {
-      dispatch(
-        updateSpeedSpaceSettings({
-          ...speedSpaceSettings,
-          [settingName]: !speedSpaceSettings[settingName],
-        })
-      );
-      dispatch(updateMustRedraw(true));
+    const onSetSettings = (settings) => {
+      dispatch(updateSpeedSpaceSettings(settings));
+      console.log('on set settings')
     };
-    return <Component {...props} toggleSetting={toggleSetting} speedSpaceSettings={speedSpaceSettings} />;
+
+    return (
+      <Component {...props} onSetSettings={onSetSettings} speedSpaceSettings={speedSpaceSettings} />
+    );
   };
 
-const OSRDSpeedSpaceSettings = withOSRDData(SpeedSpaceSettings);
+export const OSRDSpeedSpaceSettings = withOSRDData(SpeedSpaceSettings);
 
-export default OSRDSpeedSpaceSettings;
+export default withOSRDData;
