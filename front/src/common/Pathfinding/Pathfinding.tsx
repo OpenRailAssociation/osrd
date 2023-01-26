@@ -120,7 +120,8 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
         mustBeLaunched: false,
       };
     }
-    case 'PATHFINDING_PARAM_CHANGED': {
+    case 'PATHFINDING_PARAM_CHANGED':
+    case 'VIAS_CHANGED': {
       if (!action.params || state.running) {
         return state;
       }
@@ -132,32 +133,12 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
           error: '',
           done: false,
           missingParam: true,
-          mustBeLaunchedManually: false,
         };
       }
       return {
         ...state,
         mustBeLaunched: true,
         missingParam: false,
-        mustBeLaunchedManually: false,
-      };
-    }
-    case 'VIAS_CHANGED': {
-      if (!action.params || isEmpty(action.params.vias)) {
-        return state;
-      }
-      return {
-        ...state,
-        mustBeLaunchedManually: true,
-      };
-    }
-    case 'START_MANUALLY': {
-      return {
-        ...state,
-        running: false,
-        done: false,
-        mustBeLaunched: true,
-        mustBeLaunchedManually: false,
       };
     }
     default:
@@ -311,6 +292,9 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       type: 'VIAS_CHANGED',
       params: {
         vias,
+        origin,
+        destination,
+        rollingStockID,
       },
     });
   }, [vias]);
@@ -394,16 +378,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
         </div>
       )}
       {pathfindingState.running && loaderPathfindingInProgress}
-      <button
-        className="btn btn-sm btn-primary"
-        type="button"
-        disabled={!pathfindingState.mustBeLaunchedManually}
-        onClick={() => {
-          pathfindingDispatch({ type: 'START_MANUALLY' });
-        }}
-      >
-        {t('restartPathfinding')}
-      </button>
     </div>
   );
 }
