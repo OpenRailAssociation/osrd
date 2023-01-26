@@ -78,7 +78,7 @@ TextareaSNCF.defaultProps = {
 TextareaSNCF.propTypes = {
   // Basic input props
   id: PropTypes.string.isRequired,
-  label: PropTypes.oneOfType(['element', 'string']),
+  label: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   placeholder: PropTypes.string,
   onChange: PropTypes.func,
   value: PropTypes.string,

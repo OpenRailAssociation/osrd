@@ -11,6 +11,17 @@
   "objectives": "objectifs",
   "openStudy": "Ouvrir",
   "projectsList": "Projets",
+  "projectCreationTitle": "Créer un projet",
+  "projectName": "Nom du projet",
+  "projectNameMissing": "Vous devez renseigner un nom pour le projet",
+  "projectDescription": "Description du projet",
+  "projectObjectives": "Objectifs du projet",
+  "projectObjectivesMarkdown": "Objectifs mis en forme",
+  "projectFunders": "Détails du financement",
+  "projectBudget": "Budget estimé",
+  "projectTags": "Étiquettes",
+  "projectCancel": "Annuler",
+  "projectCreateButton": "Créer le projet",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
