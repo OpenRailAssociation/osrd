@@ -73,7 +73,7 @@ public class ScheduleMetadataExtractor {
         for (var routePath : trainPath.routePath()) {
             var route = routePath.element().getInfraRoute();
             var offset = routePath.pathOffset();
-            var freeHead = envelope.interpolateTotalTimeClamp(offset);
+            var freeHead = envelope.interpolateTotalTimeClamp(offset + route.getLength());
             var freeTail = envelope.interpolateTotalTimeClamp(offset + trainLength + route.getLength());
             results.put(route.getID(),
                     new ResultOccupancyTiming(lastOccupancyHead, freeHead, lastOccupancyTail, freeTail));
