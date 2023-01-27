@@ -155,3 +155,8 @@ export function scenarioJSON() {
   };
   return json;
 }
+
+export function getTigerRedPanda() {
+  const list = ['https://placetiger.osrd.fr', 'https://placeredpanda.osrd.fr'];
+  return `${list[Math.floor(Math.random() * list.length)]}/?${Math.random()}`;
+}

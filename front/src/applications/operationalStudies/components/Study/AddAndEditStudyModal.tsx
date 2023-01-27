@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useState } from 'react';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -11,17 +12,21 @@ import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import { FaPlus } from 'react-icons/fa';
 import { MdBusinessCenter, MdDescription, MdList, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine } from 'react-icons/ri';
+import { useSelector } from 'react-redux';
+import { getProjectID } from 'reducers/osrdconf/selectors';
+import { post } from 'common/requests';
+import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
   name: '',
   type: '',
   description: '',
-  serviceCode: '',
-  businessCode: '',
-  startDate: null,
-  estimatedEndingDate: null,
-  realEndingDate: null,
-  step: '',
+  service_code: '',
+  business_code: '',
+  start_date_study: null,
+  expected_end_date: null,
+  actual_end_date: null,
+  state: '',
   tags: [],
   budget: 0,
 };
@@ -30,12 +35,12 @@ type configItemsTypes = {
   name: string;
   type: string;
   description: string;
-  serviceCode: string;
-  businessCode: string;
-  startDate: any;
-  estimatedEndingDate: any;
-  realEndingDate: any;
-  step: string;
+  service_code: string;
+  business_code: string;
+  start_date_study: any;
+  expected_end_date: any;
+  actual_end_date: any;
+  state: string;
   tags: string[];
   budget: number;
 };
@@ -45,6 +50,7 @@ export default function AddAndEditStudyModal() {
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
+  const projectID = useSelector(getProjectID);
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(configItems.tags);
@@ -58,9 +64,15 @@ export default function AddAndEditStudyModal() {
     setConfigItems({ ...configItems, tags: newTags });
   };
 
-  const createStudy = () => {
+  const createStudy = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
+    } else {
+      try {
+        const result = await post(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, configItems);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -142,8 +154,10 @@ export default function AddAndEditStudyModal() {
                   {t('studyStartDate')}
                 </div>
               }
-              value={configItems.startDate}
-              onChange={(e: any) => setConfigItems({ ...configItems, startDate: e.target.value })}
+              value={configItems.start_date_study}
+              onChange={(e: any) =>
+                setConfigItems({ ...configItems, start_date_study: e.target.value })
+              }
             />
             <InputSNCF
               id="studyInputEstimatedEndingDate"
@@ -157,9 +171,9 @@ export default function AddAndEditStudyModal() {
                   {t('studyEstimatedEndingDate')}
                 </div>
               }
-              value={configItems.estimatedEndingDate}
+              value={configItems.expected_end_date}
               onChange={(e: any) =>
-                setConfigItems({ ...configItems, estimatedEndingDate: e.target.value })
+                setConfigItems({ ...configItems, expected_end_date: e.target.value })
               }
             />
             <InputSNCF
@@ -174,9 +188,9 @@ export default function AddAndEditStudyModal() {
                   {t('studyRealEndingDate')}
                 </div>
               }
-              value={configItems.realEndingDate}
+              value={configItems.actual_end_date}
               onChange={(e: any) =>
-                setConfigItems({ ...configItems, realEndingDate: e.target.value })
+                setConfigItems({ ...configItems, actual_end_date: e.target.value })
               }
             />
           </div>
@@ -195,8 +209,10 @@ export default function AddAndEditStudyModal() {
                   {t('studyServiceCode')}
                 </div>
               }
-              value={configItems.serviceCode}
-              onChange={(e: any) => setConfigItems({ ...configItems, serviceCode: e.target.value })}
+              value={configItems.service_code}
+              onChange={(e: any) =>
+                setConfigItems({ ...configItems, service_code: e.target.value })
+              }
             />
           </div>
           <div className="col-lg-4">
@@ -212,9 +228,9 @@ export default function AddAndEditStudyModal() {
                   {t('studyBusinessCode')}
                 </div>
               }
-              value={configItems.businessCode}
+              value={configItems.business_code}
               onChange={(e: any) =>
-                setConfigItems({ ...configItems, businessCode: e.target.value })
+                setConfigItems({ ...configItems, business_code: e.target.value })
               }
             />
           </div>
