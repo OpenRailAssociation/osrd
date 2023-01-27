@@ -2,8 +2,10 @@
 import { expect, Locator, Page } from '@playwright/test';
 
 export class PlaywrightHomePage {
+  // The current page object
   readonly page: Page;
 
+  // Locators for links
   readonly getStudiesLink: Locator;
 
   readonly getCartoLink: Locator;
@@ -14,12 +16,15 @@ export class PlaywrightHomePage {
 
   readonly getImportLink: Locator;
 
+  // Locator for all links
   readonly getLinks: Locator;
 
+  // Locator for the "back to home" logo
   readonly getBackHomeLogo: Locator;
 
   constructor(page: Page) {
     this.page = page;
+    // Initialize locators using roles and text content
     this.getStudiesLink = page.getByRole('link', { name: /Études d'exploitation/ });
     this.getCartoLink = page.getByRole('link', { name: /Cartographie/ });
     this.getEditorLink = page.getByRole('link', { name: /Éditeur d'infrastructure/ });
@@ -29,14 +34,17 @@ export class PlaywrightHomePage {
     this.getBackHomeLogo = page.locator('.mastheader-logo');
   }
 
+  // Navigate to the Home page
   async goToHomePage() {
     await this.page.goto('/');
   }
 
+  // Click on the logo to navigate back to the home page
   async backToHomePage() {
     await this.getBackHomeLogo.click();
   }
 
+  // Assert that the expected links are displayed on the page
   async getDisplayLinks() {
     expect(this.getLinks).toContainText([
       "Études d'exploitation",
@@ -47,6 +55,7 @@ export class PlaywrightHomePage {
     ]);
   }
 
+  // Navigate to the different pages
   async goToStudiesPage() {
     await this.getStudiesLink.click();
   }
