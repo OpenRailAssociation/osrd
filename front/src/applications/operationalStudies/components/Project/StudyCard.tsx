@@ -7,19 +7,21 @@ import { FcCalendar } from 'react-icons/fc';
 import studyLogo from 'assets/pictures/views/study.svg';
 import { budgetFormat } from 'utils/numbers';
 import { dateTimeFrenchFormatting } from 'utils/date';
+import { useDispatch } from 'react-redux';
+import { updateStudyID } from 'reducers/osrdconf';
 
 type Props = {
   details: {
-    id: string;
+    id: number;
     name: string;
     description: string;
-    geremiCode: string;
-    affairCode: string;
-    creationDate: Date;
-    startDate: Date;
-    estimatedEndingDate: Date;
-    realEndingDate: Date;
-    lastModifiedDate: Date;
+    service_code: string;
+    business_code: string;
+    creation_date: Date;
+    start_date_study: Date;
+    expected_end_date: Date;
+    actual_end_date: Date;
+    last_modification: Date;
     step: string;
     budget: bigint;
     type: string;
@@ -31,8 +33,10 @@ type Props = {
 export default function StudyCard({ details }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleClick = () => {
+    dispatch(updateStudyID(details.id));
     navigate('/operational-studies/study');
   };
 
@@ -55,11 +59,11 @@ export default function StudyCard({ details }: Props) {
         <div className="studies-list-card-financials-infos">
           <div className="studies-list-card-financials-infos-item">
             <h3>{t('geremiCode')}</h3>
-            <div>{details.geremiCode}</div>
+            <div>{details.service_code}</div>
           </div>
           <div className="studies-list-card-financials-infos-item">
             <h3>{t('affairCode')}</h3>
-            <div>{details.affairCode}</div>
+            <div>{details.business_code}</div>
           </div>
         </div>
         <div className="studies-list-card-financials-amount">
@@ -81,7 +85,7 @@ export default function StudyCard({ details }: Props) {
             <FcCalendar />
           </span>
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dateTimeFrenchFormatting(details.lastModifiedDate)}
+          {dateTimeFrenchFormatting(details.last_modification)}
         </div>
       </div>
     </div>
