@@ -1,0 +1,21 @@
+.scenario-edition-modal {
+  .scenario-edition-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding-bottom: 1rem;
+    img {
+      height: 2rem;
+    }
+    border-bottom: 1px solid var(--coolgray3);
+  }
+  .scenario-edition-modal-name {
+  }
+  .scenario-edition-modal-description {
+    margin-bottom: 1rem;
+    textarea {
+      min-height: auto;
+    }
+  }
+}
