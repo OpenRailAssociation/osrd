@@ -4,26 +4,24 @@ import logo from 'assets/pictures/views/studies.svg';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import {
-  getTigerRedPanda,
-  projectJSON,
-  studiesListJSON,
-} from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
+import { getRandomImage } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 import StudyCard from 'applications/operationalStudies/components/Project/StudyCard';
 import Loader from 'common/Loader';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
-import { FaPlus } from 'react-icons/fa';
+import { FaPencilAlt, FaPlus } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { getProjectID } from 'reducers/osrdconf/selectors';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { get } from 'common/requests';
+import { setSuccess } from 'reducers/main';
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import { get } from 'common/requests';
+import AddAndEditProjectModal from '../components/Project/AddAndEditProjectModal';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -44,6 +42,7 @@ export default function Project() {
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');
   const [sortOption, setSortOption] = useState('byName');
+  const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
 
   const sortOptions = [
@@ -57,10 +56,18 @@ export default function Project() {
     },
   ];
 
-  const getProjectDetail = async () => {
+  const getProjectDetail = async (withNotification = false) => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
       setProjectDetails(result);
+      if (withNotification) {
+        dispatch(
+          setSuccess({
+            title: t('projectUpdated'),
+            text: t('projectUpdatedDetails', { name: projectDetails.name }),
+          })
+        );
+      }
     } catch (error) {
       console.error(error);
     }
@@ -98,12 +105,33 @@ export default function Project() {
                 <div className="row w-100">
                   <div className="col-lg-4 col-md-4">
                     <div className="project-details-title-img">
-                      <img src={getTigerRedPanda()} alt="project logo" />
+                      <img src={getRandomImage()} alt="project logo" />
                     </div>
                   </div>
                   <div className="col-lg-8 col-md-8">
                     <div className="project-details-title-content">
-                      <div className="project-details-title-name">{projectDetails.name}</div>
+                      <div className="project-details-title-name">
+                        {projectDetails.name}
+                        <button
+                          className="project-details-title-modify-button"
+                          type="button"
+                          onClick={() =>
+                            openModal(
+                              <AddAndEditProjectModal
+                                editionMode
+                                details={projectDetails}
+                                getProjectDetail={getProjectDetail}
+                              />,
+                              'xl'
+                            )
+                          }
+                        >
+                          <span className="project-details-title-modify-button-text">
+                            {t('modifyProject')}
+                          </span>
+                          <FaPencilAlt />
+                        </button>
+                      </div>
                       <div className="row">
                         <div className="col-xl-6">
                           <div className="project-details-title-description">
