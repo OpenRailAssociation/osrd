@@ -83,13 +83,13 @@ public class STDCMEndpoint implements Take {
                 );
             if (Double.isNaN(startTime))
                 throw new RuntimeException("STDCM requests with unspecified start time are not supported yet");
-            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
-            var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
-            var comfort = RJSRollingStockParser.parseComfort(request.comfort);
+            final var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
+            final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
+            final var startLocations = findRoutes(infra, request.startPoints);
+            final var endLocations = findRoutes(infra, request.endPoints);
+            final String tag = request.speedLimitComposition;
             var occupancies = request.routeOccupancies;
-            var startLocations = findRoutes(infra, request.startPoints);
-            var endLocations = findRoutes(infra, request.endPoints);
-            String tag = request.speedLimitComposition;
             AllowanceValue standardAllowance = null;
             if (request.standardAllowance != null)
                 standardAllowance = RJSStandaloneTrainScheduleParser.parseAllowanceValue(
@@ -98,9 +98,9 @@ public class STDCMEndpoint implements Take {
 
             assert Double.isFinite(startTime);
 
-
-            occupancies = addWarningOccupancies(infra, occupancies); // temporary workaround, to remove with new signaling
             // Build the unavailable space
+            // temporary workaround, to remove with new signaling
+            occupancies = addWarningOccupancies(infra, occupancies);
             var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
                     infra,
                     occupancies,
