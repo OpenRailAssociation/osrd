@@ -8,7 +8,7 @@ import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateProjectID } from 'reducers/osrdconf';
-import { getTigerRedPanda } from '../Helpers/genFakeDataForProjects';
+import { getRandomImage } from '../Helpers/genFakeDataForProjects';
 
 type Props = {
   details: {
@@ -35,7 +35,7 @@ export default function ProjectCard({ details }: Props) {
   return (
     <div className="projects-list-project-card">
       <div className="projects-list-project-card-img">
-        <LazyLoadImage src={getTigerRedPanda()} alt="project logo" />
+        <LazyLoadImage src={getRandomImage()} alt="project logo" />
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
           <span className="mr-2">{t('openProject')}</span>
           <AiFillFolderOpen />
