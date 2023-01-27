@@ -191,9 +191,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Path"
+                $ref: "#/components/schemas/Path"
   /pathfinding/op/:
     post:
       tags:
@@ -1014,7 +1012,9 @@ components:
                 items: { type: number, format: float }
                 minItems: 2
                 maxItems: 2
-        mechanical_energy_consumed: { type: number, format: float }
+        mechanical_energy_consumed:
+          type: number
+          format: float
     TrainScheduleResult:
       properties:
         id:
@@ -1206,9 +1206,29 @@ components:
         geographic:
           type: object
           description: GeoJson format
+          properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                  format: float
+            type:
+              type: string
         schematic:
           type: object
           description: GeoJson format
+          properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                  format: float
+            type:
+              type: string
         slopes:
           description: Slopes on the path
           type: array

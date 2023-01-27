@@ -1,0 +1,71 @@
+.pathfinding-main-container {
+  margin-left: 1.5rem;
+
+  .pathfinding-subsection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .pathfinding-done {
+    @extend .pathfinding-subsection;
+    
+    .title {
+      color: var(--success);
+    }
+
+    .details {
+      margin-left: 0.25rem;
+      font-weight: 400;
+    }
+  }
+
+  .pathfinding-error {
+    @extend .pathfinding-subsection;
+    color: var(--danger);
+  }
+
+  .missing-params {
+    @extend .pathfinding-subsection;
+    color: var(--warning);
+  }
+
+  .pathfinding-in-progress {
+    border-radius: 4px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    background-color: var(--modal-gray-transparent-background);
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .pathfinding-in-progress-card {
+      width: 50%;
+      border-radius: 4px;
+      padding: 1rem 1.5rem;
+      background: var(--white);
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      .pathfinding-in-progress-title-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+  
+        .pathfinding-in-progress-title {
+          margin: 0 1rem;
+        }
+      }
+    }
+  }
+}

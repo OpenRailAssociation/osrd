@@ -39,8 +39,8 @@ export interface MapSearchMarker {
 export interface MapState {
   ref: unknown;
   url: typeof MAP_URL;
-  mapStyle: string;
-  mapTrackSources: string;
+  mapStyle: 'normal' | 'dark' | 'blueprint';
+  mapTrackSources: 'geographic' | 'schematic';
   showIGNBDORTHO: boolean;
   showIGNSCAN25: boolean;
   showIGNCadastre: boolean;
