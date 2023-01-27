@@ -2,27 +2,18 @@ import React from 'react';
 import nextId from 'react-id-generator';
 import PropTypes from 'prop-types';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import mlgTraffic from 'common/RollingStockSelector/consts/mlgtraffic.json';
-import { mlgTrafficURL } from 'common/RollingStockSelector/consts/consts';
-
-function cleanGifName(gifName) {
-  const regex = /http:\/\/www\.mlgtraffic\.net\/images\/|\.gif/gi;
-  return gifName.replaceAll(regex, '');
-}
 
 export default function RollingStock2Img(props) {
-  const { name } = props;
-  return name && mlgTraffic[name]
-    ? mlgTraffic[name].map((gif) => (
-        <LazyLoadImage src={`${mlgTrafficURL}${cleanGifName(gif)}.gif`} alt={name} key={nextId()} />
-      ))
-    : null;
+  const { rollingStock } = props;
+  if (!rollingStock || !Array.isArray(rollingStock.liveries)) return null;
+  const defaultLivery = rollingStock.liveries.find((livery) => livery.name === 'default');
+  return defaultLivery?.url ? (
+    <LazyLoadImage src={defaultLivery.url} alt={rollingStock?.name} key={nextId()} />
+  ) : null;
 }
 
-RollingStock2Img.defaultProps = {
-  name: undefined,
-};
+RollingStock2Img.defaultProps = {};
 
 RollingStock2Img.propTypes = {
-  name: PropTypes.string,
+  rollingStock: PropTypes.object.isRequired,
 };
