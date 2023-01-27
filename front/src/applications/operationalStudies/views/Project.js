@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import {
+  getTigerRedPanda,
   projectJSON,
   studiesListJSON,
 } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
@@ -18,7 +19,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { getProjectID } from 'reducers/osrdconf/selectors';
+import { useSelector } from 'react-redux';
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
+import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
+import { get } from 'common/requests';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -39,6 +44,7 @@ export default function Project() {
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');
   const [sortOption, setSortOption] = useState('byName');
+  const projectID = useSelector(getProjectID);
 
   const sortOptions = [
     {
@@ -51,13 +57,31 @@ export default function Project() {
     },
   ];
 
+  const getProjectDetail = async () => {
+    try {
+      const result = await get(`${PROJECTS_URI}${projectID}/`);
+      setProjectDetails(result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getStudyList = async () => {
+    try {
+      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`);
+      setStudiesList(data.results);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleSortOptions = (e) => {
     setSortOption(e.target.value);
   };
 
   useEffect(() => {
-    setProjectDetails(projectJSON());
-    setStudiesList(studiesListJSON());
+    getProjectDetail();
+    getStudyList();
   }, []);
 
   return (
@@ -71,10 +95,10 @@ export default function Project() {
           {projectDetails ? (
             <div className="project-details">
               <div className="project-details-title">
-                <div className="row">
+                <div className="row w-100">
                   <div className="col-lg-4 col-md-4">
                     <div className="project-details-title-img">
-                      <img src={projectDetails.image} alt="project logo" />
+                      <img src={getTigerRedPanda()} alt="project logo" />
                     </div>
                   </div>
                   <div className="col-lg-8 col-md-8">
@@ -107,7 +131,7 @@ export default function Project() {
               <div className="project-details-financials">
                 <div className="project-details-financials-infos">
                   <h3>{t('fundedBy')}</h3>
-                  <div>{projectDetails.financials}</div>
+                  <div>{projectDetails.funders}</div>
                 </div>
                 <div className="project-details-financials-amount">
                   <span className="project-details-financials-amount-text">{t('totalBudget')}</span>
