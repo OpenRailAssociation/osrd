@@ -115,6 +115,9 @@ export interface OsrdConfState {
   mode: ValueOf<typeof MODES>;
   stdcmMode: ValueOf<typeof STDCM_MODES>;
   labels: string[];
+  projectID?: number;
+  studyID?: number;
+  scenarioID?: number;
   infraID?: number;
   switchTypes?: SwitchType[];
   pathfindingID?: number;

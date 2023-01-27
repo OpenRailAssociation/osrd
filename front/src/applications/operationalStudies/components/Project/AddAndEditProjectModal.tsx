@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useState } from 'react';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -15,6 +16,8 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import { FaPlus } from 'react-icons/fa';
+import { post } from 'common/requests';
+import { PROJECTS_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
   name: '',
@@ -60,9 +63,19 @@ export default function AddAndEditProjectModal() {
     setConfigItems({ ...configItems, tags: newTags });
   };
 
-  const createProject = () => {
+  const createProject = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
+    } else {
+      try {
+        const result = await post(PROJECTS_URI, {
+          ...configItems,
+          funders: configItems.funders ? [configItems.funders] : null,
+        });
+        console.log(result);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
