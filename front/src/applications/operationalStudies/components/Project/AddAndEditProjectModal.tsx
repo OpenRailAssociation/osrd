@@ -15,44 +15,46 @@ import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { FaPlus } from 'react-icons/fa';
-import { post } from 'common/requests';
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
+import { deleteRequest, post, put } from 'common/requests';
 import { updateProjectID } from 'reducers/osrdconf';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { setSuccess } from 'reducers/main';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
+import { getRandomImage } from '../Helpers/genFakeDataForProjects';
 
 const configItemsDefaults = {
   name: '',
   description: '',
   objectives: '',
-  funders: '',
+  funders: [],
   tags: [],
   budget: 0,
 };
 
 type configItemsTypes = {
+  id?: number;
   name: string;
   description: string;
   objectives: string;
-  funders: string;
+  funders: string[];
   tags: string[];
   budget: number;
 };
 
-function ProjectPictureChoice() {
-  return (
-    <div className="project-edition-modal-picture" role="button" tabIndex={0} onClick={() => {}}>
-      <img src="https://placeredpanda.osrd.fr" alt="Project pic" />
-    </div>
-  );
-}
+type Props = {
+  editionMode: false;
+  details?: configItemsTypes;
+  getProjectDetail?: any;
+};
 
-export default function AddAndEditProjectModal() {
+export default function AddAndEditProjectModal({ editionMode, details, getProjectDetail }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(configItemsDefaults);
+  const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
+  const [picture] = useState(getRandomImage());
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -73,13 +75,43 @@ export default function AddAndEditProjectModal() {
       setDisplayErrors(true);
     } else {
       try {
-        const result = await post(PROJECTS_URI, {
-          ...configItems,
-          funders: configItems.funders ? [configItems.funders] : null,
-        });
+        const result = await post(PROJECTS_URI, configItems);
         dispatch(updateProjectID(result.id));
         navigate('/operational-studies/project');
         closeModal();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const modifyProject = async () => {
+    if (!configItems.name) {
+      setDisplayErrors(true);
+    } else if (details) {
+      try {
+        await put(`${PROJECTS_URI}${details.id}/`, configItems);
+        getProjectDetail(true);
+        closeModal();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const deleteProject = async () => {
+    if (details) {
+      try {
+        await deleteRequest(`${PROJECTS_URI}${details.id}/`);
+        dispatch(updateProjectID(undefined));
+        navigate('/operational-studies');
+        closeModal();
+        dispatch(
+          setSuccess({
+            title: t('projectDeleted'),
+            text: t('projectDeletedDetails', { name: details.name }),
+          })
+        );
       } catch (error) {
         console.error(error);
       }
@@ -93,13 +125,20 @@ export default function AddAndEditProjectModal() {
       <ModalHeaderSNCF>
         <h1 className="project-edition-modal-title">
           <img src={projectLogo} alt="Project Logo" />
-          {t('projectCreationTitle')}
+          {editionMode ? t('projectModificationTitle') : t('projectCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <div className="row mb-3">
           <div className="col-lg-4">
-            <ProjectPictureChoice />
+            <div
+              className="project-edition-modal-picture"
+              role="button"
+              tabIndex={0}
+              onClick={() => {}}
+            >
+              <img src={picture} alt="Project pic" />
+            </div>
           </div>
           <div className="col-lg-8">
             <div className="project-edition-modal-name">
@@ -188,8 +227,8 @@ export default function AddAndEditProjectModal() {
                   {t('projectFunders')}
                 </div>
               }
-              value={configItems.funders}
-              onChange={(e: any) => setConfigItems({ ...configItems, funders: e.target.value })}
+              value={configItems.funders.join()}
+              onChange={(e: any) => setConfigItems({ ...configItems, funders: [e.target.value] })}
             />
           </div>
           <div className="col-lg-4">
@@ -221,15 +260,36 @@ export default function AddAndEditProjectModal() {
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="d-flex justify-content-end w-100">
+          {editionMode && (
+            <button
+              className="btn btn-outline-danger mr-auto"
+              type="button"
+              onClick={deleteProject}
+            >
+              <span className="mr-2">
+                <FaTrash />
+              </span>
+              {t('projectDeleteButton')}
+            </button>
+          )}
           <button className="btn btn-secondary mr-2" type="button" onClick={closeModal}>
             {t('projectCancel')}
           </button>
-          <button className="btn btn-primary" type="button" onClick={createProject}>
-            <span className="mr-2">
-              <FaPlus />
-            </span>
-            {t('projectCreateButton')}
-          </button>
+          {editionMode ? (
+            <button className="btn btn-warning" type="button" onClick={modifyProject}>
+              <span className="mr-2">
+                <FaPencilAlt />
+              </span>
+              {t('projectModifyButton')}
+            </button>
+          ) : (
+            <button className="btn btn-primary" type="button" onClick={createProject}>
+              <span className="mr-2">
+                <FaPlus />
+              </span>
+              {t('projectCreateButton')}
+            </button>
+          )}
         </div>
       </ModalFooterSNCF>
     </div>

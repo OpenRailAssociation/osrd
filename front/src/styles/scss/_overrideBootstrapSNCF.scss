@@ -25,3 +25,15 @@ button.chips.chips-btn {
 .chips {
   border: none !important;
 }
+
+/*
+*
+*   BLOCKQUOTE
+*
+*/
+blockquote {
+  font-size: 0.9rem;
+  border-left: 3px solid var(--secondary);
+  background-color: var(--coolgray1);
+  padding-left: 0.5rem;
+}
