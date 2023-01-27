@@ -86,7 +86,7 @@ export default function RollingStockCard(props) {
         <div className="rollingstock-body-container-img">
           <div className="rollingstock-body-img">
             <div className="rollingstock-img">
-              <RollingStock2Img name={data.name} />
+              <RollingStock2Img rollingStock={data} />
             </div>
           </div>
         </div>

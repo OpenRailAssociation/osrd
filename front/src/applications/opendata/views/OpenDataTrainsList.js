@@ -1,14 +1,15 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
 import { get } from 'axios';
-import nextId from 'react-id-generator';
 import TrainDetail from 'applications/opendata/components/TrainDetail';
 import OpenDataImportModal from 'applications/opendata/views/OpenDataImportModal';
 import { GoRocket } from 'react-icons/go';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { keyBy } from 'lodash';
 import { GRAOU_URL } from '../consts';
+import rollingstockOpenData2OSRD from '../components/rollingstock_opendata2osrd.json';
 
 function LoadingIfSearching(props) {
   const { t } = useTranslation(['opendata']);
@@ -26,6 +27,11 @@ export default function OpenDataTrainsList(props) {
   const { config, rollingStockDB, setMustUpdateTimetable } = props;
   const [trainsList, setTrainList] = useState();
   const [isSearching, setIsSearching] = useState(false);
+
+  const rollingStockDict = useMemo(
+    () => keyBy(rollingStockDB, (rollingStock) => rollingStock.name),
+    [rollingStockDB]
+  );
 
   async function getTrains() {
     setTrainList(undefined);
@@ -79,7 +85,12 @@ export default function OpenDataTrainsList(props) {
         </div>
         <div className="opendata-trainlist-results">
           {trainsList.map((train, idx) => (
-            <TrainDetail trainData={train} idx={idx} key={nextId()} />
+            <TrainDetail
+              trainData={train}
+              idx={idx}
+              key={rollingstockOpenData2OSRD[train.type_em]}
+              rollingStock={rollingStockDict[rollingstockOpenData2OSRD[train.type_em]]}
+            />
           ))}
         </div>
       </div>
