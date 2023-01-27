@@ -24,5 +24,19 @@
   "scenario": "Scénario",
   "scenariosCount_zero": "Aucun scénario",
   "scenariosCount_one": "1 scénario",
-  "scenariosCount_other": "{{count}} scénarios"
+  "scenariosCount_other": "{{count}} scénarios",
+  "studyCreationTitle": "Créer une étude",
+  "studyName": "Nom de l'étude",
+  "studyNameMissing": "Vous devez renseigner un nom pour l'étude",
+  "studyType": "Type",
+  "studyDescription": "Description",
+  "studyServiceCode": "Code service",
+  "studyBusinessCode": "Code business",
+  "studyBudget": "Budget",
+  "studyTags": "Étiquettes",
+  "studyCancel": "Annuler",
+  "studyCreateButton": "Créer l'étude",
+  "studyStartDate": "Début de l'étude",
+  "studyEstimatedEndingDate": "Fin estimée",
+  "studyRealEndingDate": "Fin réalisée"
 }
