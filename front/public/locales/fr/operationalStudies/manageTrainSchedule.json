@@ -28,6 +28,7 @@
     "unableToRetrieveTimetable": "Récupération grille horaire impossible",
     "unableToRetrieveTimetableList": "Récupération liste de grilles horaires impossible"
   },
+  "pathfinding": "Recherche d’itinéraire",
   "pathfindingStatus": "Statut recherche d’itinéraire",
   "pathfindingInProgress": "Recherche d’itinéraire en cours",
   "pathfindingError": "Erreur dans la recherche d’itinéraire : {{errorMessage}}",
@@ -36,6 +37,7 @@
   "No path could be found": "Aucun itinéraire trouvé",
   "No path could be found after loading Gauge constraints": "Aucun itinéraire trouvé avec ce gabarit de matériel",
   "No path could be found after loading Electrification constraints": "Aucun itinéraire trouvé pour un matériel avec ce type d’électrification",
+  "failedRequest": "La requête a échoué",
   "cancelPathfinding": "Annuler",
   "restartPathfinding": "Relancer la recherche",
   "gare": "Gare, poste",
