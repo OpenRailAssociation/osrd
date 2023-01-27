@@ -18,7 +18,7 @@ type Props = {
     service_code: string;
     business_code: string;
     creation_date: Date;
-    start_date_study: Date;
+    start_date: Date;
     expected_end_date: Date;
     actual_end_date: Date;
     last_modification: Date;

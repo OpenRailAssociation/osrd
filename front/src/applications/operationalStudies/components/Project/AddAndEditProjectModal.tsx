@@ -17,6 +17,9 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import { FaPlus } from 'react-icons/fa';
 import { post } from 'common/requests';
+import { updateProjectID } from 'reducers/osrdconf';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
@@ -50,6 +53,8 @@ export default function AddAndEditProjectModal() {
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(configItems.tags);
@@ -72,7 +77,9 @@ export default function AddAndEditProjectModal() {
           ...configItems,
           funders: configItems.funders ? [configItems.funders] : null,
         });
-        console.log(result);
+        dispatch(updateProjectID(result.id));
+        navigate('/operational-studies/project');
+        closeModal();
       } catch (error) {
         console.error(error);
       }
