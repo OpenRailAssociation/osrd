@@ -17,7 +17,7 @@ type Props = {
     description: string;
     image: string;
     last_modification: Date;
-    operational_studies: Array<1>;
+    studies: Array<1>;
     tags: Array<1>;
   };
 };
@@ -52,7 +52,7 @@ export default function ProjectCard({ details }: Props) {
           <span className="mr-1">
             <RiFoldersLine />
           </span>
-          {t('studiesCount', { count: details.operational_studies.length })}
+          {t('studiesCount', { count: details.studies.length })}
         </div>
       </div>
       <div className="projects-list-project-card-name">{details.name}</div>

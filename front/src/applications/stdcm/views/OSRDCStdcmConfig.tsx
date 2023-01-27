@@ -10,7 +10,6 @@ import Itinerary from 'applications/operationalStudies/components/ManageTrainSch
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
-import TimetableSelector from 'applications/operationalStudies/components/ManageTrainSchedule/TimetableSelector';
 
 import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
 
@@ -60,21 +59,9 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
       {/* use class from new workflow in future */}
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-md-7 col-lg-6">
-          <div className="row">
-            <div className="col-xl-6">
-              <InfraSelector />
-              <RollingStockSelector />
-              <SpeedLimitByTagSelector />
-            </div>
-            <div className="col-xl-6">
-              <TimetableSelector
-                mustUpdateTimetable={mustUpdateTimetable}
-                setMustUpdateTimetable={setMustUpdateTimetable}
-              />
-            </div>
-          </div>
+          <RollingStockSelector />
+          <SpeedLimitByTagSelector />
           <Itinerary {...itineraryProps} />
-
           <div className="row">
             <div className="col-xl-6">
               <div className="osrd-config-item mb-2 osrd-config-item-container">
