@@ -17,8 +17,12 @@ import {
 } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 import { budgetFormat } from 'utils/numbers';
 import { dateTimeFrenchFormatting } from 'utils/date';
-import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useSelector } from 'react-redux';
+import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
+import { get } from 'common/requests';
+import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
+import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -63,6 +67,8 @@ export default function Study() {
   const [scenariosList, setScenariosList] = useState();
   const [filter, setFilter] = useState('');
   const [sortOption, setSortOption] = useState('byName');
+  const projectID = useSelector(getProjectID);
+  const studyID = useSelector(getStudyID);
 
   const sortOptions = [
     {
@@ -79,10 +85,36 @@ export default function Study() {
     setSortOption(e.target.value);
   };
 
+  const getProjectDetail = async () => {
+    try {
+      const result = await get(`${PROJECTS_URI}${projectID}/`);
+      setProjectDetails(result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const getStudyDetail = async () => {
+    try {
+      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      setStudyDetails(result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getScenarioList = async () => {
+    try {
+      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`);
+      setScenariosList(data.results);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
-    setProjectDetails(projectJSON());
-    setStudyDetails(studyJSON());
-    setScenariosList(scenariosListJSON());
+    getProjectDetail();
+    getStudyDetail();
+    getScenarioList();
   }, []);
   return (
     <>
@@ -100,16 +132,16 @@ export default function Study() {
           {projectDetails && studyDetails ? (
             <div className="study-details">
               <div className="study-details-dates">
-                <DateBox date={studyDetails.creationDate} css="creation" translation="creation" />
-                <DateBox date={studyDetails.startDate} css="start" translation="start" />
+                <DateBox date={studyDetails.creation_date} css="creation" translation="creation" />
+                <DateBox date={studyDetails.start_date_study} css="start" translation="start" />
                 <DateBox
-                  date={studyDetails.estimatedEndingDate}
+                  date={studyDetails.expected_end_date}
                   css="estimatedend"
                   translation="estimatedend"
                 />
-                <DateBox date={studyDetails.realEndingDate} css="realend" translation="realend" />
+                <DateBox date={studyDetails.actual_end_date} css="realend" translation="realend" />
                 <DateBox
-                  date={studyDetails.lastModifiedDate}
+                  date={studyDetails.last_modification}
                   css="modified"
                   translation="modified"
                 />
@@ -135,29 +167,32 @@ export default function Study() {
                         <VscFiles />
                       </span>
                       {t('filesAndLinks')}
-                      <span className="ml-auto">{studyDetails.files.length}</span>
+                      <span className="ml-auto">
+                        {studyDetails.files ? studyDetails.files.length : 0}
+                      </span>
                     </div>
                     <div className="study-details-files-list">
-                      {studyDetails.files.map((file) => {
-                        const isUrl = Math.random() > 0.5;
-                        return (
-                          <a
-                            href={file.url}
-                            key={nextId()}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={isUrl ? 'url' : 'file'}
-                          >
-                            <span className="study-details-files-list-name">
-                              <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
-                              {file.name}
-                            </span>
-                            <span className="study-details-files-list-link">
-                              {isUrl ? file.url : file.filename}
-                            </span>
-                          </a>
-                        );
-                      })}
+                      {studyDetails.files &&
+                        studyDetails.files.map((file) => {
+                          const isUrl = Math.random() > 0.5;
+                          return (
+                            <a
+                              href={file.url}
+                              key={nextId()}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={isUrl ? 'url' : 'file'}
+                            >
+                              <span className="study-details-files-list-name">
+                                <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
+                                {file.name}
+                              </span>
+                              <span className="study-details-files-list-link">
+                                {isUrl ? file.url : file.filename}
+                              </span>
+                            </a>
+                          );
+                        })}
                     </div>
                   </div>
                 </div>
@@ -167,11 +202,11 @@ export default function Study() {
                 <div className="study-details-financials-infos">
                   <div className="study-details-financials-infos-item">
                     <h3>{t('geremiCode')}</h3>
-                    <div>{studyDetails.geremiCode}</div>
+                    <div>{studyDetails.service_code}</div>
                   </div>
                   <div className="study-details-financials-infos-item">
                     <h3>{t('affairCode')}</h3>
-                    <div>{studyDetails.affairCode}</div>
+                    <div>{studyDetails.business_code}</div>
                   </div>
                 </div>
                 <div className="study-details-financials-amount">

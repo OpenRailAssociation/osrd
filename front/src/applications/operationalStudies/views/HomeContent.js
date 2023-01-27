@@ -12,6 +12,8 @@ import osrdLogo from 'assets/pictures/osrd.png';
 import Loader from 'common/Loader';
 import { FaPlus } from 'react-icons/fa';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { get } from 'common/requests';
+import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
 
 export default function HomeContent() {
   const { t } = useTranslation('operationalStudies/home');
@@ -36,8 +38,18 @@ export default function HomeContent() {
     console.log(e);
   };
 
+  const getProjectList = async () => {
+    try {
+      const data = await get(PROJECTS_URI);
+      setProjectsList(data.results);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
-    setProjectsList(projectsListJSON());
+    // setProjectsList(projectsListJSON());
+    getProjectList();
   }, []);
 
   return (
