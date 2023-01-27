@@ -15,7 +15,6 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import { FaPlus } from 'react-icons/fa';
-import { config } from 'process';
 
 const configItemsDefaults = {
   name: '',
@@ -73,7 +72,7 @@ export default function AddAndEditProjectModal() {
     <div className="project-edition-modal">
       <ModalHeaderSNCF>
         <h1 className="project-edition-modal-title">
-          <img src={projectLogo} alt="Projects Logo" />
+          <img src={projectLogo} alt="Project Logo" />
           {t('projectCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
@@ -93,7 +92,7 @@ export default function AddAndEditProjectModal() {
                     <span className="mr-2">
                       <MdTitle />
                     </span>
-                    {t('projectName')}
+                    <span className="font-weight-bold">{t('projectName')}</span>
                   </div>
                 }
                 value={configItems.name}
