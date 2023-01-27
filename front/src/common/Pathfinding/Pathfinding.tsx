@@ -4,8 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
-import { last, isEmpty, isEqual } from 'lodash';
+import { last, isEqual } from 'lodash';
 import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
+
+import { getMapTrackSources } from 'reducers/map/selectors';
+import { setFailure } from 'reducers/main';
 
 import { ArrayElement } from 'utils/types';
 import { adjustPointOnTrack } from 'utils/pathfinding';
@@ -15,8 +18,6 @@ import { lengthFromLineCoordinates } from 'utils/geometry';
 import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { PointOnMap } from 'applications/operationalStudies/consts';
-
-import { getMapTrackSources } from 'reducers/map/selectors';
 
 import {
   replaceVias,
@@ -274,7 +275,15 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
         })
         .catch((e: any) => {
-          if (e?.data?.message) {
+          if (e.error) {
+            dispatch(
+              setFailure({
+                name: t('pathfinding'),
+                message: e.error,
+              })
+            );
+            pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: 'failedRequest' });
+          } else if (e?.data?.message) {
             pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
           }
         });
