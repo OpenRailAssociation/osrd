@@ -1,5 +1,6 @@
 import produce from 'immer';
 import { AnyAction, Dispatch } from 'redux';
+import { omit } from 'lodash';
 
 import {
   DEFAULT_MODE,
@@ -75,11 +76,11 @@ export const initialState: OsrdConfState = {
   vias: [],
   suggeredVias: [],
   trainCompo: undefined,
-  geojson: [],
+  geojson: undefined,
   featureInfoClick: { displayPopup: false },
   gridMarginBefore: 0,
   gridMarginAfter: 0,
-  standardStdcmAllowance: undefined
+  standardStdcmAllowance: undefined,
 };
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
@@ -196,7 +197,7 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         draft.origin = undefined;
         draft.vias = [];
         draft.destination = undefined;
-        draft.geojson = [];
+        draft.geojson = undefined;
         draft.originTime = undefined;
         draft.pathfindingID = undefined;
         break;
@@ -476,7 +477,10 @@ export function updateFeatureInfoClickOSRD(featureInfoClick: OsrdConfState['feat
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
-      featureInfoClick,
+      featureInfoClick: {
+        ...featureInfoClick,
+        feature: omit(featureInfoClick.feature, ['_vectorTileFeature']),
+      },
     });
   };
 }

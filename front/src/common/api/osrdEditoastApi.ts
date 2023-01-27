@@ -1,4 +1,4 @@
-import { emptySplitApi as api } from './emptyApi';
+import { baseEditoastApi as api } from './emptyApi';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -9,6 +9,15 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     getLayersInfo: build.query<GetLayersInfoApiResponse, GetLayersInfoApiArg>({
       query: () => ({ url: `/layers/info/` }),
+    }),
+    getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
+      GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
+      GetLayersLayerByLayerSlugMvtAndViewSlugApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/layers/layer/${queryArg.layerSlug}/mvt/${queryArg.viewSlug}/`,
+        params: { infra: queryArg.infra },
+      }),
     }),
     getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
       query: () => ({ url: `/infra/` }),
@@ -99,6 +108,17 @@ const injectedRtkApi = api.injectEndpoints({
         params: { routes: queryArg.routes },
       }),
     }),
+    postInfraByIdPathfinding: build.mutation<
+      PostInfraByIdPathfindingApiResponse,
+      PostInfraByIdPathfindingApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/infra/${queryArg.id}/pathfinding/`,
+        method: 'POST',
+        body: queryArg.body,
+        params: { number: queryArg['number'] },
+      }),
+    }),
     postInfraByIdObjectsAndObjectType: build.mutation<
       PostInfraByIdObjectsAndObjectTypeApiResponse,
       PostInfraByIdObjectsAndObjectTypeApiArg
@@ -121,6 +141,13 @@ export type GetVersionApiResponse = /** status 200 Return the service version */
 export type GetVersionApiArg = void;
 export type GetLayersInfoApiResponse = /** status 200 Successful Response */ Layer[];
 export type GetLayersInfoApiArg = void;
+export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
+  /** status 200 Successful Response */ ViewMetadata;
+export type GetLayersLayerByLayerSlugMvtAndViewSlugApiArg = {
+  layerSlug: string;
+  viewSlug: string;
+  infra: number;
+};
 export type GetInfraApiResponse = /** status 200 The infra list */ Infra[];
 export type GetInfraApiArg = void;
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
@@ -259,19 +286,40 @@ export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
 export type GetInfraByIdRoutesTrackRangesApiResponse =
   /** status 200 Foreach route, the track ranges through which it passes or an error */ (
     | ({
-        type: 'NotFound';
-      } & NotFound)
+        type: 'RouteTrackRangesNotFoundError';
+      } & RouteTrackRangesNotFoundError)
     | ({
-        type: 'CantComputePath';
-      } & CantComputePath)
+        type: 'RouteTrackRangesCantComputePathError';
+      } & RouteTrackRangesCantComputePathError)
     | ({
-        type: 'Computed';
-      } & Computed)
+        type: 'RouteTrackRangesComputed';
+      } & RouteTrackRangesComputed)
   )[];
 export type GetInfraByIdRoutesTrackRangesApiArg = {
   /** Infra ID */
   id: number;
   routes: string;
+};
+export type PostInfraByIdPathfindingApiResponse =
+  /** status 200 Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned. */ {
+    track_ranges?: DirectionalTrackRange[];
+    detectors?: string[];
+    switches_directions?: {
+      [key: string]: string;
+    };
+  }[];
+export type PostInfraByIdPathfindingApiArg = {
+  /** Infra ID */
+  id: number;
+  /** Maximum number of paths to return */
+  number?: number;
+  /** Starting and ending track location */
+  body: {
+    starting?: TrackLocation & {
+      direction?: Direction;
+    };
+    ending?: TrackLocation;
+  };
 };
 export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
   railjson?: object;
@@ -301,6 +349,16 @@ export type Layer = {
   views?: MapLayerView[];
   id_field?: string;
   attribution?: string;
+};
+export type ViewMetadata = {
+  type?: string;
+  name?: string;
+  promotedId?: object;
+  scheme?: string;
+  tiles?: string[];
+  attribution?: string;
+  minzoom?: number;
+  maxzoom?: number;
 };
 export type Infra = {
   id?: number;
@@ -388,18 +446,24 @@ export type InfraError = {
   schematic?: object | null;
   information?: object;
 };
-export type NotFound = {
+export type RouteTrackRangesNotFoundError = {
   type?: 'NotFound';
 };
-export type CantComputePath = {
+export type RouteTrackRangesCantComputePathError = {
   type?: 'CantComputePath';
 };
-export type Computed = {
+export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
+export type DirectionalTrackRange = {
+  track?: string;
+  begin?: number;
+  end?: number;
+  direction?: Direction;
+};
+export type RouteTrackRangesComputed = {
   type?: 'Computed';
-  track_ranges?: {
-    track?: string;
-    begin?: number;
-    end?: number;
-    applicable_directions?: 'START_TO_STOP' | 'STOP_TO_START';
-  }[];
+  track_ranges?: DirectionalTrackRange[];
+};
+export type TrackLocation = {
+  track?: string;
+  offset?: number;
 };

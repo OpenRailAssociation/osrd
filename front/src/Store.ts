@@ -4,11 +4,12 @@ import {
   legacy_createStore as createStore,
   combineReducers,
 } from 'redux';
+import thunk from 'redux-thunk';
+import { persistStore } from 'redux-persist';
 import { composeWithDevTools, Config } from '@redux-devtools/extension';
 
-import { persistStore } from 'redux-persist';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import persistedReducer, { rootReducer, rootInitialState, RootState } from 'reducers';
-import thunk from 'redux-thunk';
 
 const reduxDevToolsOptions: Config = {
   serialize: {
@@ -21,7 +22,7 @@ const reduxDevToolsOptions: Config = {
 // const composeEnhancers = composeWithDevToolsLogOnlyInProduction(reduxDevToolsOptions);
 const composeEnhancers = composeWithDevTools(reduxDevToolsOptions) || compose;
 
-const enhancers = composeEnhancers(applyMiddleware(thunk));
+const enhancers = composeEnhancers(applyMiddleware(thunk, osrdMiddlewareApi.middleware));
 const store = createStore(persistedReducer, enhancers);
 
 const persistor = persistStore(store);

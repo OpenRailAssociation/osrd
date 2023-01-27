@@ -6,17 +6,19 @@ import cx from 'classnames';
 
 import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
 
+import Pathfinding from 'common/Pathfinding';
 import Origin from './Origin';
 import Vias from './Vias';
 import Destination from './Destination';
 
 interface DisplayItineraryProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
   viaModalContent: string;
 }
 
 export default function DisplayItinerary(props: DisplayItineraryProps) {
-  const { zoomToFeaturePoint, viaModalContent } = props;
+  const { zoomToFeaturePoint, zoomToFeature, viaModalContent } = props;
 
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
@@ -35,6 +37,8 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
         viaModalContent={viaModalContent}
       />
       <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
+
+      <Pathfinding zoomToFeature={zoomToFeature} />
     </div>
   );
 }

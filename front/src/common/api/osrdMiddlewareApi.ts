@@ -1,4 +1,4 @@
-import { emptySplitApi as api } from './emptyApi';
+import { baseApi as api } from './emptyApi';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -199,7 +199,7 @@ export type GetInfraByIdRailjsonApiArg = {
   /** Whether the railjson should contain extensions */
   excludeExtensions?: boolean;
 };
-export type PostPathfindingApiResponse = /** status 201 The path */ Path[];
+export type PostPathfindingApiResponse = /** status 201 The path */ Path;
 export type PostPathfindingApiArg = {
   /** Steps of the path */
   pathQuery: PathQuery;
@@ -405,8 +405,14 @@ export type Path = {
   id?: number;
   owner?: string;
   created?: string;
-  geographic?: object;
-  schematic?: object;
+  geographic?: {
+    coordinates?: number[][];
+    type?: string;
+  };
+  schematic?: {
+    coordinates?: number[][];
+    type?: string;
+  };
   slopes?: {
     gradient?: number;
     position?: number;
