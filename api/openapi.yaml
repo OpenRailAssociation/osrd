@@ -361,14 +361,14 @@ paths:
             type: integer
           description: Rolling Stock Livery ID
           required: true
-        - responses:
-          200:
-            description: The livery compound image
-            content:
-              'image/png':
-                schema:
-                  type: string
-                  format: binary        
+      responses:
+        200:
+          description: The livery compound image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
   /rolling_stock_livery/:
     post:
       tags:
@@ -387,9 +387,17 @@ paths:
                   type: number
                 images:
                   type: array
-                    items:
-                      type: file
-        required: true
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        200:
+          description: The rolling stock livery
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
   /light_rolling_stock/:
     get:
       tags:
@@ -513,7 +521,7 @@ paths:
                   description: Electrical profile set id (if any)
                 name:
                   type: string
-              required: 
+              required:
                 - infra
                 - name
       responses:
