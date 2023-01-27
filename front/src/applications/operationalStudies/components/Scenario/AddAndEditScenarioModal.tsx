@@ -11,18 +11,25 @@ import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import { FaPlus } from 'react-icons/fa';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
+import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
+import { useSelector } from 'react-redux';
+import { post } from 'common/requests';
+import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { updateScenarioID } from 'reducers/osrdconf';
 
 const configItemsDefaults = {
   name: '',
   description: '',
-  infraID: undefined,
+  infra: undefined,
   tags: [],
 };
 
 type configItemsTypes = {
   name: string;
   description: string;
-  infraID: number | undefined;
+  infra: number | undefined;
   tags: string[];
 };
 
@@ -31,6 +38,11 @@ export default function AddAndEditScenarioModal() {
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const projectID = useSelector(getProjectID);
+  const studyID = useSelector(getStudyID);
+  const infraID = useSelector(getInfraID);
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(configItems.tags);
@@ -44,9 +56,21 @@ export default function AddAndEditScenarioModal() {
     setConfigItems({ ...configItems, tags: newTags });
   };
 
-  const createScenario = () => {
+  const createScenario = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
+    } else {
+      try {
+        const result = await post(
+          `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
+          { ...configItems, infra: infraID }
+        );
+        dispatch(updateScenarioID(result.id));
+        navigate('/operational-studies/scenario');
+        closeModal();
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 

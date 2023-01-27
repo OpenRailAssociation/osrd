@@ -5,7 +5,7 @@ import { FaLock } from 'react-icons/fa';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDispatch, useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { updateInfraID, updateTimetableID, deleteItinerary } from 'reducers/osrdconf';
+import { updateInfraID, deleteItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
@@ -23,7 +23,6 @@ export default function InfraSelectorModalBodyStandard(props) {
 
   const setInfraID = (id) => {
     dispatch(updateInfraID(id));
-    dispatch(updateTimetableID(undefined));
     dispatch(deleteItinerary());
   };
 

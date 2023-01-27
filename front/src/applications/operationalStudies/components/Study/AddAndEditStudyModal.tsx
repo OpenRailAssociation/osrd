@@ -16,6 +16,9 @@ import { useSelector } from 'react-redux';
 import { getProjectID } from 'reducers/osrdconf/selectors';
 import { post } from 'common/requests';
 import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { updateStudyID } from 'reducers/osrdconf';
 
 const configItemsDefaults = {
   name: '',
@@ -23,7 +26,7 @@ const configItemsDefaults = {
   description: '',
   service_code: '',
   business_code: '',
-  start_date_study: null,
+  start_date: null,
   expected_end_date: null,
   actual_end_date: null,
   state: '',
@@ -37,7 +40,7 @@ type configItemsTypes = {
   description: string;
   service_code: string;
   business_code: string;
-  start_date_study: any;
+  start_date: any;
   expected_end_date: any;
   actual_end_date: any;
   state: string;
@@ -51,6 +54,8 @@ export default function AddAndEditStudyModal() {
   const [configItems, setConfigItems] = useState<configItemsTypes>(configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const projectID = useSelector(getProjectID);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(configItems.tags);
@@ -70,6 +75,9 @@ export default function AddAndEditStudyModal() {
     } else {
       try {
         const result = await post(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, configItems);
+        dispatch(updateStudyID(result.id));
+        navigate('/operational-studies/study');
+        closeModal();
       } catch (error) {
         console.error(error);
       }
@@ -154,10 +162,8 @@ export default function AddAndEditStudyModal() {
                   {t('studyStartDate')}
                 </div>
               }
-              value={configItems.start_date_study}
-              onChange={(e: any) =>
-                setConfigItems({ ...configItems, start_date_study: e.target.value })
-              }
+              value={configItems.start_date}
+              onChange={(e: any) => setConfigItems({ ...configItems, start_date: e.target.value })}
             />
             <InputSNCF
               id="studyInputEstimatedEndingDate"
