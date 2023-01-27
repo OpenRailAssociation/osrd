@@ -98,6 +98,8 @@ public class STDCMEndpoint implements Take {
 
             assert Double.isFinite(startTime);
 
+
+            occupancies = addWarningOccupancies(infra, occupancies); // temporary workaround, to remove with new signaling
             // Build the unavailable space
             var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
                     infra,
@@ -155,6 +157,29 @@ public class STDCMEndpoint implements Take {
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
         }
+    }
+
+    /** The inputs only contains occupied blocks, we need to add the warning in the previous one (assuming BAL).
+     * To be removed with new signaling. */
+    private static Collection<STDCMRequest.RouteOccupancy> addWarningOccupancies(
+            SignalingInfra infra,
+            Collection<STDCMRequest.RouteOccupancy> occupancies
+    ) {
+        var result = new HashSet<>(occupancies);
+        var routeGraph = infra.getSignalingRouteGraph();
+        for (var occupancy : occupancies) {
+            var route = infra.findSignalingRoute(occupancy.id, "BAL3");
+            assert route != null;
+            var startRouteNode = routeGraph.incidentNodes(route).nodeU();
+            var predecessorRoutes = routeGraph.inEdges(startRouteNode);
+            for (var predecessor : predecessorRoutes)
+                result.add(new STDCMRequest.RouteOccupancy(
+                        predecessor.getInfraRoute().getID(),
+                        occupancy.startOccupancyTime,
+                        occupancy.endOccupancyTime
+                ));
+        }
+        return result;
     }
 
     /** Find the minimum run time to go from start to end, assuming the timetable is empty.
