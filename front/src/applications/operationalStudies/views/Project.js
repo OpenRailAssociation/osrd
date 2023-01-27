@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,8 @@ import { FaPlus } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -32,6 +34,7 @@ function BreadCrumbs(props) {
 
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
+  const { openModal } = useContext(ModalContext);
   const [projectDetails, setProjectDetails] = useState();
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');
@@ -148,7 +151,11 @@ export default function Project() {
               selectedValue={sortOption}
               options={sortOptions}
             />
-            <button className="btn btn-primary" type="button">
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={() => openModal(<AddAndEditStudyModal />, 'xl')}
+            >
               <FaPlus />
               <span className="ml-2">{t('createStudy')}</span>
             </button>
