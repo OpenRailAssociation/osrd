@@ -8,11 +8,14 @@ import infraLogo from 'assets/pictures/components/tracks.svg';
 import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
 import { useSelector, useDispatch } from 'react-redux';
 import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { updateMode } from 'reducers/osrdconf';
+import { updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
+import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
+import { get } from 'common/requests';
 import SimulationResults from './SimulationResults';
-import { projectJSON, scenarioJSON, studyJSON } from '../components/Helpers/genFakeDataForProjects';
 import ManageTrainSchedule from './ManageTrainSchedule';
+import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
+import getTimetable from '../components/Scenario/getTimetable';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -40,14 +43,46 @@ export default function Scenario() {
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
+  const projectID = useSelector(getProjectID);
+  const studyID = useSelector(getStudyID);
+  const scenarioID = useSelector(getScenarioID);
+
+  const getProjectDetail = async () => {
+    try {
+      const result = await get(`${PROJECTS_URI}${projectID}/`);
+      setProjectDetails(result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const getStudyDetail = async () => {
+    try {
+      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      setStudyDetails(result);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const getScenarioDetail = async () => {
+    try {
+      const result = await get(
+        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
+      );
+      setScenarioDetails(result);
+      dispatch(updateTimetableID(result.timetable));
+      getTimetable(result.timetable);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
-    setProjectDetails(projectJSON());
-    setStudyDetails(studyJSON());
-    setScenarioDetails(scenarioJSON());
+    getProjectDetail();
+    getStudyDetail();
+    getScenarioDetail();
     dispatch(updateMode(MODES.simulation));
   }, []);
-  return (
+  return scenarioDetails ? (
     <>
       <NavBarSNCF
         appName={
@@ -103,5 +138,5 @@ export default function Scenario() {
         </div>
       </main>
     </>
-  );
+  ) : null;
 }

@@ -48,7 +48,6 @@ export default function HomeContent() {
   };
 
   useEffect(() => {
-    // setProjectsList(projectsListJSON());
     getProjectList();
   }, []);
 

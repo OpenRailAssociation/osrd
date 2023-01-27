@@ -203,20 +203,6 @@
   }
 }
 
-.osrd-config-timetableselector {
-  .osrd-config-timetableselector-item {
-    border-radius: 4px;
-    padding: 0.25rem;
-    background-color: var(--coolgray1);
-    cursor: pointer;
-    transition: 0.2s;
-    margin-bottom: 0.25rem;
-    &:hover {
-      background-color: var(--coolgray3);
-    }
-  }
-}
-
 .osrd-config-stdcm-apply {
   text-align: right;
   margin-bottom: 0.5rem;

@@ -21,7 +21,7 @@ export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_PROJECT_ID = 'osrdconf/UPDATE_PROJECT_ID';
 export const UPDATE_STUDY_ID = 'osrdconf/UPDATE_STUDY_ID';
-export const UPDATE_SCENARIO_ID = 'osrdconf/UPDATE_UPDATE_SCENARIO_IDINFRA_ID';
+export const UPDATE_SCENARIO_ID = 'osrdconf/UPDATE_SCENARIO_ID';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
@@ -307,7 +307,7 @@ export function updateStudyID(studyID: any) {
 export function updateScenarioID(scenarioID: any) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_PATHFINDING_ID,
+      type: UPDATE_SCENARIO_ID,
       scenarioID,
     });
   };

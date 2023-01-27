@@ -93,7 +93,6 @@ The operational studies application enables capacity studies to be carried out o
   * **Scenario/**
   * **SimulationResults/**
   * **Study/**
-  * **TimetableSelector/**
 - consts.ts
 - Home.tsx
 - **views/**

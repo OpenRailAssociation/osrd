@@ -5,14 +5,16 @@ import { RiFolderChartLine } from 'react-icons/ri';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import { dateTimeFrenchFormatting } from 'utils/date';
+import { useDispatch } from 'react-redux';
+import { updateScenarioID } from 'reducers/osrdconf';
 
 type Props = {
   details: {
-    id: string;
+    id: number;
     name: string;
     description: string;
-    creationDate: Date;
-    lastModifiedDate: Date;
+    creation_date: Date;
+    last_modification: Date;
     infra_name: string;
   };
 };
@@ -20,8 +22,10 @@ type Props = {
 export default function StudyCard({ details }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleClick = () => {
+    dispatch(updateScenarioID(details.id));
     navigate('/operational-studies/scenario');
   };
 
@@ -45,7 +49,7 @@ export default function StudyCard({ details }: Props) {
         </div>
         <div className="scenarios-list-card-date">
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dateTimeFrenchFormatting(details.lastModifiedDate)}
+          {dateTimeFrenchFormatting(details.last_modification)}
         </div>
       </div>
     </div>

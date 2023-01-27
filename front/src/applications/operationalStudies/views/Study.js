@@ -133,7 +133,7 @@ export default function Study() {
             <div className="study-details">
               <div className="study-details-dates">
                 <DateBox date={studyDetails.creation_date} css="creation" translation="creation" />
-                <DateBox date={studyDetails.start_date_study} css="start" translation="start" />
+                <DateBox date={studyDetails.start_date} css="start" translation="start" />
                 <DateBox
                   date={studyDetails.expected_end_date}
                   css="estimatedend"
