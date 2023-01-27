@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,8 @@ import {
 } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 import { budgetFormat } from 'utils/numbers';
 import { dateTimeFrenchFormatting } from 'utils/date';
+import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -55,6 +57,7 @@ function StateStep(props) {
 
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
+  const { openModal } = useContext(ModalContext);
   const [projectDetails, setProjectDetails] = useState();
   const [studyDetails, setStudyDetails] = useState();
   const [scenariosList, setScenariosList] = useState();
@@ -218,7 +221,11 @@ export default function Study() {
               options={sortOptions}
               sm
             />
-            <button className="btn btn-primary btn-sm" type="button">
+            <button
+              className="btn btn-primary btn-sm"
+              type="button"
+              onClick={() => openModal(<AddAndEditScenarioModal />, 'xl')}
+            >
               <FaPlus />
               <span className="ml-2">{t('createScenario')}</span>
             </button>
