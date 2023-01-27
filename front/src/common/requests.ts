@@ -18,7 +18,7 @@ function formatPath(path: string): string {
 /**
  * Get the axios configuration for the authentification.
  */
-function getAuthConfig(): AxiosRequestConfig {
+export function getAuthConfig(): AxiosRequestConfig {
   return {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('access_token')}`,
