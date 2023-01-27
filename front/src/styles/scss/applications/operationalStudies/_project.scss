@@ -4,6 +4,7 @@
     position: relative;
     gap: 1rem;
     margin-bottom: .5rem;
+    min-height: 15rem;
     .project-details-title-img {
       position: absolute;
       overflow: hidden;
@@ -26,9 +27,34 @@
     }
     .project-details-title-content {
       .project-details-title-name {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         color: var(--purple);
         font-size: 2rem;
         font-weight: 500;
+        .project-details-title-modify-button {
+          background-color: transparent;
+          border: none;
+          color: var(--purple);
+          transition: 0.2s;
+          padding: 0.25rem 1rem;
+          font-size: 1.5rem;
+          border-radius: 4px;
+          .project-details-title-modify-button-text {
+            transition: opacity 0.2s;
+            opacity: 0;
+            font-size: 1.25rem;
+            margin-right: 1rem;
+          }
+          &:hover {
+            background-color: var(--purple);
+            color: var(--white);
+            .project-details-title-modify-button-text {
+              opacity: 1;
+            }
+          }
+        }
       }
       h3 {
         color: var(--coolgray9);

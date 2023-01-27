@@ -6,7 +6,7 @@
   "description": "description",
   "filterPlaceholder": "Rechercher…",
   "fundedBy": "Financement",
-  "geremiCode": "Code GEREMI",
+  "modifyProject": "Modifier le projet",
   "modifiedOn": "Modifiée le",
   "objectives": "objectifs",
   "openStudy": "Ouvrir",
@@ -22,6 +22,13 @@
   "projectTags": "Étiquettes",
   "projectCancel": "Annuler",
   "projectCreateButton": "Créer le projet",
+  "projectUpdated": "Mise à jour réussie !",
+  "projectUpdatedDetails": "Le project {{ name }} a bien été mis à jour.",
+  "projectModificationTitle": "Modifier le projet",
+  "projectModifyButton": "Modifier",
+  "projectDeleteButton": "Supprimer",
+  "projectDeleted": "Suppression réussie !",
+  "projectDeletedDetails": "Le project {{ name }} a bien été supprimé.",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
