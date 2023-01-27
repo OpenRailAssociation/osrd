@@ -16,7 +16,7 @@ test('testing if all mandatory elements for configure a simulation are loaded in
   expect(page.getByTestId('timetableSelector')).not.toEqual(null);
   expect(page.getByTestId('speed-limit-by-tag-selector')).not.toEqual(null);
   // Here is how to create a locator for a specific element
-  const itinerary = await page.getByTestId('itinerary');
+  const itinerary = page.getByTestId('itinerary');
   expect(itinerary).not.toEqual(null);
   // here is how get locator inside another locator
   expect(itinerary.getByTestId('display-itinerary')).not.toEqual(null);
