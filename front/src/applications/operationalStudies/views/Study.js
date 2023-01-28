@@ -9,7 +9,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
-import { FaPlus } from 'react-icons/fa';
+import { FaPencilAlt, FaPlus } from 'react-icons/fa';
 import {
   projectJSON,
   scenariosListJSON,
@@ -23,6 +23,9 @@ import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
+import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
+import { useDispatch } from 'react-redux';
+import { setSuccess } from 'reducers/main';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -67,6 +70,7 @@ export default function Study() {
   const [scenariosList, setScenariosList] = useState();
   const [filter, setFilter] = useState('');
   const [sortOption, setSortOption] = useState('byName');
+  const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
 
@@ -93,10 +97,18 @@ export default function Study() {
       console.error(error);
     }
   };
-  const getStudyDetail = async () => {
+  const getStudyDetail = async (withNotification = false) => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
       setStudyDetails(result);
+      if (withNotification) {
+        dispatch(
+          setSuccess({
+            title: t('studyUpdated'),
+            text: t('studyUpdatedDetails', { name: studyDetails.name }),
+          })
+        );
+      }
     } catch (error) {
       console.error(error);
     }
@@ -115,6 +127,7 @@ export default function Study() {
     getProjectDetail();
     getStudyDetail();
     getScenarioList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <>
@@ -148,7 +161,26 @@ export default function Study() {
               </div>
               <div className="row">
                 <div className="col-xl-9 col-lg-8 col-md-7">
-                  <div className="study-details-name">{studyDetails.name}</div>
+                  <div className="study-details-name">
+                    {studyDetails.name}
+                    <button
+                      className="study-details-modify-button"
+                      type="button"
+                      onClick={() =>
+                        openModal(
+                          <AddAndEditStudyModal
+                            editionMode
+                            details={studyDetails}
+                            getStudyDetail={getStudyDetail}
+                          />,
+                          'xl'
+                        )
+                      }
+                    >
+                      <span className="study-details-modify-button-text">{t('modifyStudy')}</span>
+                      <FaPencilAlt />
+                    </button>
+                  </div>
                   <div className="study-details-type">{studyDetails.type}</div>
                   <div className="study-details-description">{studyDetails.description}</div>
                   <div className="study-details-state">

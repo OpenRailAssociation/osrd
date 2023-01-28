@@ -25,6 +25,7 @@
   "scenariosCount_zero": "Aucun scénario",
   "scenariosCount_one": "1 scénario",
   "scenariosCount_other": "{{count}} scénarios",
+  "studyModificationTitle": "Modifier une étude",
   "studyCreationTitle": "Créer une étude",
   "studyName": "Nom de l'étude",
   "studyNameMissing": "Vous devez renseigner un nom pour l'étude",
@@ -38,5 +39,12 @@
   "studyCreateButton": "Créer l'étude",
   "studyStartDate": "Début de l'étude",
   "studyEstimatedEndingDate": "Fin estimée",
-  "studyRealEndingDate": "Fin réalisée"
+  "studyRealEndingDate": "Fin réalisée",
+  "studyModifyButton": "Modifier",
+  "studyDeleteButton": "Supprimer",
+  "studyDeleted": "Suppression réussie !",
+  "studyDeletedDetails": "L'étude {{ name }} a bien été supprimée.",
+  "studyUpdated": "Mise à jour réussie !",
+  "studyUpdatedDetails": "L'étude {{ name }} a bien été mise à jour.",
+  "modifyStudy": "Modifier l'étude"
 }
