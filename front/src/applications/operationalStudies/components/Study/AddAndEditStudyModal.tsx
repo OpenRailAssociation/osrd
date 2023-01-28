@@ -9,16 +9,16 @@ import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { FaPlus } from 'react-icons/fa';
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdBusinessCenter, MdDescription, MdList, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine } from 'react-icons/ri';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { getProjectID } from 'reducers/osrdconf/selectors';
-import { post } from 'common/requests';
-import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
-import { useDispatch } from 'react-redux';
+import { deleteRequest, patch, post } from 'common/requests';
 import { useNavigate } from 'react-router-dom';
 import { updateStudyID } from 'reducers/osrdconf';
+import { setSuccess } from 'reducers/main';
+import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
   name: '',
@@ -35,23 +35,30 @@ const configItemsDefaults = {
 };
 
 type configItemsTypes = {
+  id?: number;
   name: string;
   type: string;
   description: string;
   service_code: string;
   business_code: string;
-  start_date: any;
-  expected_end_date: any;
-  actual_end_date: any;
+  start_date: string | null;
+  expected_end_date: string | null;
+  actual_end_date: string | null;
   state: string;
   tags: string[];
   budget: number;
 };
 
-export default function AddAndEditStudyModal() {
+type Props = {
+  editionMode: false;
+  details?: configItemsTypes;
+  getStudyDetail?: any;
+};
+
+export default function AddAndEditStudyModal({ editionMode, details, getStudyDetail }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(configItemsDefaults);
+  const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
@@ -84,12 +91,46 @@ export default function AddAndEditStudyModal() {
     }
   };
 
+  const modifyStudy = async () => {
+    if (!configItems.name) {
+      setDisplayErrors(true);
+    } else if (details) {
+      try {
+        console.log(configItems);
+        await patch(`${PROJECTS_URI}${projectID}${STUDIES_URI}${details.id}/`, configItems);
+        getStudyDetail(true);
+        closeModal();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const deleteStudy = async () => {
+    if (details) {
+      try {
+        await deleteRequest(`${PROJECTS_URI}${projectID}${STUDIES_URI}${details.id}/`);
+        dispatch(updateStudyID(undefined));
+        navigate('/operational-studies/project');
+        closeModal();
+        dispatch(
+          setSuccess({
+            title: t('studyDeleted'),
+            text: t('studyDeletedDetails', { name: details.name }),
+          })
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
   return (
     <div className="study-edition-modal">
       <ModalHeaderSNCF>
         <h1 className="study-edition-modal-title">
           <img src={studyLogo} alt="Study Logo" />
-          {t('studyCreationTitle')}
+          {editionMode ? t('studyModificationTitle') : t('studyCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
@@ -162,7 +203,7 @@ export default function AddAndEditStudyModal() {
                   {t('studyStartDate')}
                 </div>
               }
-              value={configItems.start_date}
+              value={configItems.start_date && configItems.start_date.substr(0, 10)}
               onChange={(e: any) => setConfigItems({ ...configItems, start_date: e.target.value })}
             />
             <InputSNCF
@@ -177,7 +218,7 @@ export default function AddAndEditStudyModal() {
                   {t('studyEstimatedEndingDate')}
                 </div>
               }
-              value={configItems.expected_end_date}
+              value={configItems.expected_end_date && configItems.expected_end_date.substr(0, 10)}
               onChange={(e: any) =>
                 setConfigItems({ ...configItems, expected_end_date: e.target.value })
               }
@@ -194,7 +235,7 @@ export default function AddAndEditStudyModal() {
                   {t('studyRealEndingDate')}
                 </div>
               }
-              value={configItems.actual_end_date}
+              value={configItems.actual_end_date && configItems.actual_end_date.substr(0, 10)}
               onChange={(e: any) =>
                 setConfigItems({ ...configItems, actual_end_date: e.target.value })
               }
@@ -269,15 +310,32 @@ export default function AddAndEditStudyModal() {
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="d-flex justify-content-end w-100">
+          {editionMode && (
+            <button className="btn btn-outline-danger mr-auto" type="button" onClick={deleteStudy}>
+              <span className="mr-2">
+                <FaTrash />
+              </span>
+              {t('studyDeleteButton')}
+            </button>
+          )}
           <button className="btn btn-secondary mr-2" type="button" onClick={closeModal}>
             {t('studyCancel')}
           </button>
-          <button className="btn btn-primary" type="button" onClick={createStudy}>
-            <span className="mr-2">
-              <FaPlus />
-            </span>
-            {t('studyCreateButton')}
-          </button>
+          {editionMode ? (
+            <button className="btn btn-warning" type="button" onClick={modifyStudy}>
+              <span className="mr-2">
+                <FaPencilAlt />
+              </span>
+              {t('studyModifyButton')}
+            </button>
+          ) : (
+            <button className="btn btn-primary" type="button" onClick={createStudy}>
+              <span className="mr-2">
+                <FaPlus />
+              </span>
+              {t('studyCreateButton')}
+            </button>
+          )}
         </div>
       </ModalFooterSNCF>
     </div>
