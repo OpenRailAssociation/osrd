@@ -31,13 +31,15 @@
   }
   .project-edition-modal-description {
     textarea {
-      min-height: auto ;
+      min-height: auto;
     }
   }
   .project-edition-modal-objectives {
     textarea {
       height: 20vh;
-      font-size: 0.8rem;
+      padding: 0.5rem;
+      font-size: 0.7rem;
+      font-family: monospace;
     }
   }
   .project-edition-modal-objectives-md {

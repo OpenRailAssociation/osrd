@@ -35,7 +35,7 @@ export default function ProjectCard({ details }: Props) {
   return (
     <div className="projects-list-project-card">
       <div className="projects-list-project-card-img">
-        <LazyLoadImage src={getRandomImage()} alt="project logo" />
+        <LazyLoadImage src={getRandomImage(details.id)} alt="project logo" />
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
           <span className="mr-2">{t('openProject')}</span>
           <AiFillFolderOpen />
