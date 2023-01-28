@@ -45,9 +45,33 @@
   }
   .study-details-name {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: 2rem;
     font-weight: 500;
     color: var(--primary);
+    .study-details-modify-button {
+      background-color: transparent;
+      border: none;
+      color: var(--primary);
+      transition: 0.2s;
+      padding: 0.25rem 1rem;
+      font-size: 1.5rem;
+      border-radius: 4px;
+      .study-details-modify-button-text {
+        transition: opacity 0.2s;
+        opacity: 0;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+      }
+      &:hover {
+        background-color: var(--primary);
+        color: var(--white);
+        .study-details-modify-button-text {
+          opacity: 1;
+        }
+      }
+    }
   }
   .study-details-type {
     color: var(--secondary);
