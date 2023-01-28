@@ -105,7 +105,7 @@ export default function Project() {
                 <div className="row w-100">
                   <div className="col-lg-4 col-md-4">
                     <div className="project-details-title-img">
-                      <img src={getRandomImage()} alt="project logo" />
+                      <img src={getRandomImage(projectDetails.id)} alt="project logo" />
                     </div>
                   </div>
                   <div className="col-lg-8 col-md-8">
