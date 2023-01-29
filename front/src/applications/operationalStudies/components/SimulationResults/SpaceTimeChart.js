@@ -211,6 +211,10 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    return () => {
+      window.removeEventListener('resize');
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mustRedraw, rotate, selectedTrain, consolidatedSimulation]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
@@ -223,6 +227,10 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(resetChart, true, newDataSimulation);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    return () => {
+      window.removeEventListener('resize');
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation.trains]);
 
   useEffect(() => {

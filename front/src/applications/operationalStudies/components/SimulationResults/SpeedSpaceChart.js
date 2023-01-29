@@ -321,11 +321,19 @@ export default function SpeedSpaceChart(props) {
   useEffect(() => {
     drawTrain();
     handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
+    return () => {
+      window.removeEventListener('resize');
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, mustRedraw, rotate]);
 
   useEffect(() => {
     drawTrain(true);
     handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
+    return () => {
+      window.removeEventListener('resize');
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consolidatedSimulation]);
 
   useEffect(() => {
@@ -339,12 +347,14 @@ export default function SpeedSpaceChart(props) {
       rotate,
       timePosition
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, mustRedraw, positionValues, timePosition]);
 
   useEffect(() => {
     if (chartXGEV) {
       setChart({ ...chart, x: chartXGEV });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartXGEV]);
 
   return (
