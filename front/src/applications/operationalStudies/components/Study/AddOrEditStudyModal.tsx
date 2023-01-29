@@ -28,9 +28,9 @@ const configItemsDefaults = {
   description: '',
   service_code: '',
   business_code: '',
-  start_date: null,
-  expected_end_date: null,
-  actual_end_date: null,
+  start_date: '',
+  expected_end_date: '',
+  actual_end_date: '',
   state: '',
   tags: [],
   budget: 0,
@@ -43,9 +43,9 @@ type configItemsTypes = {
   description: string;
   service_code: string;
   business_code: string;
-  start_date: string | null;
-  expected_end_date: string | null;
-  actual_end_date: string | null;
+  start_date: string;
+  expected_end_date: string;
+  actual_end_date: string;
   state: string;
   tags: string[];
   budget: number;
