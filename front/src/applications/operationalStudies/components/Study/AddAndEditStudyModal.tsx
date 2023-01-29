@@ -127,7 +127,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
 
   return (
     <div className="study-edition-modal">
-      <ModalHeaderSNCF>
+      <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="study-edition-modal-title">
           <img src={studyLogo} alt="Study Logo" />
           {editionMode ? t('studyModificationTitle') : t('studyCreationTitle')}
