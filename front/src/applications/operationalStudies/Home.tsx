@@ -2,7 +2,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
-import { NotificationsState } from 'common/Notifications';
 import HomeContent from './views/HomeContent';
 import Project from './views/Project';
 import Study from './views/Study';
@@ -17,7 +16,6 @@ function HomeOSRD() {
         <Route path="/study" element={<Study />} />
         <Route path="/scenario" element={<Scenario />} />
       </Routes>
-      <NotificationsState />
     </>
   );
 }
