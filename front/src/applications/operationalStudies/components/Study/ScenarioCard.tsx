@@ -8,6 +8,9 @@ import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
+import { FcCalendar } from 'react-icons/fc';
+import { MdTrain } from 'react-icons/md';
+import nextId from 'react-id-generator';
 
 type Props = {
   details: {
@@ -17,6 +20,8 @@ type Props = {
     creation_date: Date;
     last_modification: Date;
     infra_name: string;
+    trains_count: number;
+    tags: Array<1>;
   };
 };
 
@@ -44,12 +49,29 @@ export default function StudyCard({ details }: Props) {
         </button>
       </div>
       <div className="scenarios-list-card-description">{details.description}</div>
+
+      <div className="scenarios-list-card-tags">
+        {details.tags.map((tag) => (
+          <div className="scenarios-list-card-tags-tag" key={nextId()}>
+            {tag}
+          </div>
+        ))}
+      </div>
       <div className="scenarios-list-card-footer">
         <div className="scenarios-list-card-infra">
           <img src={infraLogo} alt="infra logo" />
           {details.infra_name}
         </div>
+        <div className="scenarios-list-card-trains-count ml-auto">
+          <span className="mr-1">
+            <MdTrain />
+          </span>
+          {details.trains_count}
+        </div>
         <div className="scenarios-list-card-date">
+          <span className="mr-1">
+            <FcCalendar />
+          </span>
           <span className="mr-1">{t('modifiedOn')}</span>
           {dateTimeFrenchFormatting(details.last_modification)}
         </div>
