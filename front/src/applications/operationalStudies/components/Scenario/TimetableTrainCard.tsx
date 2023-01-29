@@ -20,7 +20,7 @@ type Props = {
   isSelected: boolean;
   projectionPathIsUsed: boolean;
   idx: number;
-  changeisSelected: (idx: number) => void;
+  changeSelectedTrain: (idx: number) => void;
   deleteTrain: (train: trainType) => void;
   selectPathProjection: (train: trainType) => void;
   duplicateTrain: (train: trainType) => void;
@@ -31,20 +31,20 @@ export default function TimetableTrainCard({
   isSelected,
   projectionPathIsUsed,
   idx,
-  changeisSelected,
+  changeSelectedTrain,
   deleteTrain,
   selectPathProjection,
   duplicateTrain,
 }: Props) {
   const { t } = useTranslation(['simulation']);
 
-  return !train.isFiltered ? (
+  return (
     <div className={`scenario-timetable-train ${isSelected ? 'selected' : ''}`}>
       <div
         className="scenario-timetable-train-container"
         role="button"
         tabIndex={0}
-        onClick={() => changeisSelected(idx)}
+        onClick={() => changeSelectedTrain(idx)}
       >
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
@@ -104,5 +104,5 @@ export default function TimetableTrainCard({
         </button>
       </div>
     </div>
-  ) : null;
+  );
 }

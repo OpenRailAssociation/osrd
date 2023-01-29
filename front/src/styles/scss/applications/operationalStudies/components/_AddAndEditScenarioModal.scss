@@ -16,4 +16,9 @@
       min-height: auto;
     }
   }
+  .scenario-edition-modal-infraselector {
+    .modal-header, .modal-body {
+      padding: 0 !important;
+    }
+  }
 }

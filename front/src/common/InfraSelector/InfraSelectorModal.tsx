@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -8,25 +8,30 @@ import { get } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import Loader from 'common/Loader';
 import { MdEditNote, MdList } from 'react-icons/md';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 import { INFRA_URL } from './Consts';
 
-export default function InfraSelectorModal() {
+type InfraListType = { id: number; name: string }[];
+type InfraType = { name: string };
+type Props = {
+  onlySelectionMode?: boolean;
+};
+
+export default function InfraSelectorModal({ onlySelectionMode = false }: Props) {
+  console.log(onlySelectionMode);
   const [infrasList, setInfrasList] = useState([]);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [filter, setFilter] = useState('');
-  const [filteredInfrasList, setFilteredInfrasList] = useState([]);
+  const [filteredInfrasList, setFilteredInfrasList] = useState<InfraListType>([]);
   const [editionMode, setEditionMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  const { closeModal } = useContext(ModalContext);
 
   const debouncedFilter = useDebounce(filter, 250);
 
-  function filterInfras(filteredInfrasListLocal) {
+  function filterInfras(filteredInfrasListLocal: InfraListType) {
     if (debouncedFilter && debouncedFilter !== '') {
-      filteredInfrasListLocal = infrasList.filter((infra) =>
+      filteredInfrasListLocal = infrasList.filter((infra: InfraType) =>
         infra.name.toLowerCase().includes(debouncedFilter.toLowerCase())
       );
     }
@@ -61,7 +66,7 @@ export default function InfraSelectorModal() {
 
   return (
     <>
-      <ModalHeaderSNCF>
+      <ModalHeaderSNCF withCloseButton={!onlySelectionMode}>
         <div className="d-flex align-items-center h1 w-100">
           <img src={editionMode ? iconEdition : icon} alt="infra schema" width="32px" />
           <div className="w-100 text-center d-flex">
@@ -70,28 +75,27 @@ export default function InfraSelectorModal() {
                 ? t('infraManagement:infraManagement')
                 : t('infraManagement:infraChoice')}
             </span>
-            <button
-              className="infra-switch-mode"
-              type="button"
-              onClick={() => setEditionMode(!editionMode)}
-            >
-              {editionMode ? (
-                <>
-                  <MdList />
-                  <span className="ml-1">{t('infraManagement:goToStandardMode')}</span>
-                </>
-              ) : (
-                <>
-                  <MdEditNote />
-                  <span className="ml-1">{t('infraManagement:goToEditionMode')}</span>
-                </>
-              )}
-            </button>
+            {!onlySelectionMode && (
+              <button
+                className="infra-switch-mode"
+                type="button"
+                onClick={() => setEditionMode(!editionMode)}
+              >
+                {editionMode ? (
+                  <>
+                    <MdList />
+                    <span className="ml-1">{t('infraManagement:goToStandardMode')}</span>
+                  </>
+                ) : (
+                  <>
+                    <MdEditNote />
+                    <span className="ml-1">{t('infraManagement:goToEditionMode')}</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
-        <button type="button" className="close" aria-label="Close" onClick={closeModal}>
-          <span aria-hidden="true">&times;</span>
-        </button>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         {isFetching ? (
@@ -111,6 +115,7 @@ export default function InfraSelectorModal() {
             infrasList={filteredInfrasList}
             setFilter={setFilter}
             filter={filter}
+            onlySelectionMode={onlySelectionMode}
           />
         )}
       </ModalBodySNCF>
