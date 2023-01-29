@@ -12,12 +12,11 @@ import { FaPlus } from 'react-icons/fa';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { post } from 'common/requests';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../operationalStudiesConsts';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { updateScenarioID } from 'reducers/osrdconf';
+import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
   name: '',
@@ -76,7 +75,7 @@ export default function AddAndEditScenarioModal() {
 
   return (
     <div className="scenario-edition-modal">
-      <ModalHeaderSNCF>
+      <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
           <img src={scenarioLogo} alt="scenario Logo" />
           {t('scenarioCreationTitle')}
@@ -116,6 +115,7 @@ export default function AddAndEditScenarioModal() {
                   </div>
                 }
                 value={configItems.description}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(e: any) =>
                   setConfigItems({ ...configItems, description: e.target.value })
                 }
