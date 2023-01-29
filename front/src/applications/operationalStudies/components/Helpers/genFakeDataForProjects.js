@@ -158,6 +158,7 @@ export function scenarioJSON() {
 
 export function getRandomImage(seed) {
   const urlSeed = seed ? `/?seed=${seed}` : `/?${Math.random()}`;
-  const list = [`http://localhost/place-train${urlSeed}`]; // `https://placetiger.osrd.fr${urlSeed}`, `https://placeredpanda.osrd.fr${urlSeed}`];
+  // const list = [`http://localhost/place-train${urlSeed}`]; // `https://placetiger.osrd.fr${urlSeed}`, `https://placeredpanda.osrd.fr${urlSeed}`];
+  const list = [`https://placeredpanda.osrd.fr${urlSeed}`];
   return list[Math.floor(Math.random() * list.length)];
 }
