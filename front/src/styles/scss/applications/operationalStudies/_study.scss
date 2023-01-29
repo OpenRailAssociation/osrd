@@ -299,6 +299,28 @@
       height: 6rem;
       overflow: auto;
     }
+    .scenarios-list-card-tags {    
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .25rem;
+      padding: 0 0.5rem;
+      height: 1.5rem;
+      overflow: auto;
+      .scenarios-list-card-tags-tag {   
+        font-size: .8rem;
+        font-weight: 500;
+        color: var(--secondary);
+        background-color: var(--teal);
+        border-radius: 4px;
+        padding: 0 0.25rem;
+        transition: 0.2s;
+        cursor: pointer;
+        &:hover {
+          opacity: 0.65;
+        }
+      }
+    }
     .scenarios-list-card-footer {
       display: flex;
       align-items: center;
@@ -311,12 +333,19 @@
           margin-right: .5rem;
         }
       }
-      .scenarios-list-card-date {
+      .scenarios-list-card-trains-count, .scenarios-list-card-date {
+        display: flex;
+        align-items: baseline;
+        height: 1rem;
+        white-space: nowrap;
         color: var(--coolgray9);
         font-size: .6rem;
         text-transform: uppercase;
         text-align: right;
         padding: .25rem .5rem;
+        svg {
+          margin-bottom: 0.15rem;
+        }
       }
     }
   }
