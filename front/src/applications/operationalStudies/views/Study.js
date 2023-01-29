@@ -4,44 +4,23 @@ import logo from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
 import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import { FaPencilAlt, FaPlus } from 'react-icons/fa';
 import { budgetFormat } from 'utils/numbers';
-import { dateTimeFrenchFormatting } from 'utils/date';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
+import { setSuccess } from 'reducers/main';
+import DateBox from 'applications/operationalStudies/components/Study/DateBox';
+import StateStep from 'applications/operationalStudies/components/Study/StateStep';
+import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
-import BreadCrumbs from '../components/HomeContent/BreadCrumbs';
-import { useDispatch } from 'react-redux';
-import { setSuccess } from 'reducers/main';
-
-function DateBox(props) {
-  const { t } = useTranslation('operationalStudies/study');
-  const { date, css, translation } = props;
-  return (
-    <div className={`study-details-dates-date ${css}`}>
-      <span className="study-details-dates-date-label">{t(`dates.${translation}`)}</span>
-      <span className="study-details-dates-date-value">{dateTimeFrenchFormatting(date)}</span>
-    </div>
-  );
-}
-
-function StateStep(props) {
-  const { number, label, done } = props;
-  return (
-    <div className={`study-details-state-step ${done ? 'done' : null}`}>
-      <span className="study-details-state-step-number">{number}</span>
-      <span className="study-details-state-step-label">{label}</span>
-    </div>
-  );
-}
+import BreadCrumbs from '../components/BreadCrumbs';
 
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
@@ -50,7 +29,7 @@ export default function Study() {
   const [studyDetails, setStudyDetails] = useState();
   const [scenariosList, setScenariosList] = useState();
   const [filter, setFilter] = useState('');
-  const [sortOption, setSortOption] = useState('byName');
+  const [sortOption, setSortOption] = useState('-last_modification');
   const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
@@ -58,11 +37,11 @@ export default function Study() {
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
-      value: 'byName',
+      value: 'name',
     },
     {
       label: t('sortOptions.byRecentDate'),
-      value: 'byRecentDate',
+      value: '-last_modification',
     },
   ];
 
@@ -97,7 +76,16 @@ export default function Study() {
 
   const getScenarioList = async () => {
     try {
-      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`);
+      const params = {
+        ordering: sortOption,
+        name: filter,
+        description: filter,
+        tag: filter,
+      };
+      const data = await get(
+        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
+        params
+      );
       setScenariosList(data.results);
     } catch (error) {
       console.error(error);
@@ -107,9 +95,14 @@ export default function Study() {
   useEffect(() => {
     getProjectDetail();
     getStudyDetail();
-    getScenarioList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    getScenarioList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortOption, filter]);
+
   return (
     <>
       <NavBarSNCF
@@ -249,18 +242,7 @@ export default function Study() {
               {t('scenariosCount', { count: scenariosList ? scenariosList.length : 0 })}
             </div>
             <div className="flex-grow-1">
-              <InputSNCF
-                type="text"
-                id="scenarios-filter"
-                name="scenarios-filter"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder={t('filterPlaceholder')}
-                whiteBG
-                noMargin
-                unit={<i className="icons-search" />}
-                sm
-              />
+              <FilterTextField setFilter={setFilter} id="scenarios-filter" sm />
             </div>
             <OptionsSNCF
               name="projects-sort-filter"
