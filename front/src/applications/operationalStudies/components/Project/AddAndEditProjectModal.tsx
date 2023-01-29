@@ -122,7 +122,7 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
 
   return (
     <div className="project-edition-modal">
-      <ModalHeaderSNCF>
+      <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="project-edition-modal-title">
           <img src={projectLogo} alt="Project Logo" />
           {editionMode ? t('projectModificationTitle') : t('projectCreationTitle')}
