@@ -16,12 +16,12 @@ RUN yarn build
 # Copy & serve app
 FROM nginx:alpine
 
+RUN apk add npm
+
 ARG NGINX_CONFIG=nginx.conf
 COPY --from=build /app/build /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx/$NGINX_CONFIG /etc/nginx/conf.d
-
-RUN apk add npm
 
 EXPOSE 80
 
