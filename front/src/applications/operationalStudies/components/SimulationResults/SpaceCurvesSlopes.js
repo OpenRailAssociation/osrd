@@ -3,7 +3,6 @@ import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   defineLinear,
-  handleWindowResize,
   mergeDatasAreaConstant,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import enableInteractivity, {
@@ -224,10 +223,6 @@ export default function SpaceCurvesSlopes(props) {
 
   useEffect(() => {
     drawTrain();
-    handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
-    return () => {
-      window.removeEventListener('resize');
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, mustRedraw, rotate]);
 
@@ -251,6 +246,19 @@ export default function SpaceCurvesSlopes(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartXGEV]);
+
+  useEffect(() => {
+    let timeOutFunctionId;
+    const timeOutResize = () => {
+      clearTimeout(timeOutFunctionId);
+      timeOutFunctionId = setTimeout(() => dispatch(updateMustRedraw(true)), 500);
+    };
+    window.addEventListener('resize', timeOutResize);
+    return () => {
+      window.removeEventListener('resize', timeOutResize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
