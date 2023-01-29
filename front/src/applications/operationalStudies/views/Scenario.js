@@ -81,6 +81,10 @@ export default function Scenario() {
     getStudyDetail();
     getScenarioDetail();
     dispatch(updateMode(MODES.simulation));
+    return () => {
+      dispatch(updateTimetableID(undefined));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return scenarioDetails ? (
     <>
