@@ -78,28 +78,6 @@ export const makeStairCase = (data) => {
   });
   return newData;
 };
-export const handleWindowResize = (
-  chartID,
-  dispatch,
-  drawTrain,
-  isResizeActive,
-  setResizeActive
-) => {
-  if (!isResizeActive) {
-    let timeOutFunctionId;
-    const resizeDrawTrain = () => {
-      d3.select(`#${chartID}`).remove();
-      dispatch(updateMustRedraw(true));
-      drawTrain();
-    };
-    const timeOutResize = () => {
-      clearTimeout(timeOutFunctionId);
-      timeOutFunctionId = setTimeout(resizeDrawTrain, 500);
-    };
-    window.addEventListener('resize', timeOutResize);
-    setResizeActive(true);
-  }
-};
 
 // Time shift a train
 export const timeShiftTrain = (train, value) => ({
