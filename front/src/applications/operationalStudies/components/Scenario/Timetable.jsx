@@ -138,7 +138,7 @@ export default function Timetable(props) {
       setTrainsList(
         departureArrivalTimes.map((train) => ({
           ...train,
-          isFiltered: !train.name.includes(debouncedTerm),
+          isFiltered: !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()),
         }))
       );
     } else {
@@ -182,19 +182,21 @@ export default function Timetable(props) {
       <div className="scenario-timetable-trains">
         {trainsList &&
           selectedProjection &&
-          trainsList.map((train, idx) => (
-            <TimetableTrainCard
-              train={train}
-              key={nextId()}
-              isSelected={selectedTrain === idx}
-              projectionPathIsUsed={selectedProjection.id === train.id}
-              idx={idx}
-              changeSelectedTrain={changeSelectedTrain}
-              deleteTrain={deleteTrain}
-              duplicateTrain={duplicateTrain}
-              selectPathProjection={selectPathProjection}
-            />
-          ))}
+          trainsList.map((train, idx) =>
+            !train.isFiltered ? (
+              <TimetableTrainCard
+                train={train}
+                key={nextId()}
+                isSelected={selectedTrain === idx}
+                projectionPathIsUsed={selectedProjection.id === train.id}
+                idx={idx}
+                changeSelectedTrain={changeSelectedTrain}
+                deleteTrain={deleteTrain}
+                duplicateTrain={duplicateTrain}
+                selectPathProjection={selectPathProjection}
+              />
+            ) : null
+          )}
       </div>
     </div>
   );
