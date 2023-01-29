@@ -3,7 +3,6 @@ import { Route, Routes } from 'react-router-dom';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { NotificationsState } from 'common/Notifications';
 import React, { useContext } from 'react';
 import logo from 'assets/pictures/home/customget.svg';
 import { useTranslation } from 'react-i18next';
@@ -45,7 +44,6 @@ function HomeCustomGET() {
       <Routes>
         <Route path="" element={<CustomGET />} />
       </Routes>
-      <NotificationsState />
     </div>
   );
 }
