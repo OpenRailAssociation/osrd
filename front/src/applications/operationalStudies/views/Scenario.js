@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
@@ -10,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
+import BreadCrumbs from 'applications/operationalStudies/components/HomeContent/BreadCrumbs';
 import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
 import SimulationResults from './SimulationResults';
@@ -20,22 +20,6 @@ import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioMo
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { FaPencilAlt } from 'react-icons/fa';
 import { setSuccess } from 'reducers/main';
-
-function BreadCrumbs(props) {
-  const { t } = useTranslation('operationalStudies/project');
-  const { projectName, studyName, scenarioName } = props;
-  return (
-    <div className="navbar-breadcrumbs">
-      <Link to="/operational-studies">{t('projectsList')}</Link>
-      <i className="icons-arrow-next icons-size-x75 text-muted" />
-      <Link to="/operational-studies/project">{projectName}</Link>
-      <i className="icons-arrow-next icons-size-x75 text-muted" />
-      <Link to="/operational-studies/study">{studyName}</Link>
-      <i className="icons-arrow-next icons-size-x75 text-muted" />
-      {scenarioName}
-    </div>
-  );
-}
 
 export default function Scenario() {
   const dispatch = useDispatch();

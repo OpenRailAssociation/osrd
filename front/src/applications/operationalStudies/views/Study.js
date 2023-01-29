@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
@@ -10,11 +9,6 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import { FaPencilAlt, FaPlus } from 'react-icons/fa';
-import {
-  projectJSON,
-  scenariosListJSON,
-  studyJSON,
-} from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 import { budgetFormat } from 'utils/numbers';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -24,22 +18,9 @@ import { get } from 'common/requests';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
+import BreadCrumbs from '../components/HomeContent/BreadCrumbs';
 import { useDispatch } from 'react-redux';
 import { setSuccess } from 'reducers/main';
-
-function BreadCrumbs(props) {
-  const { t } = useTranslation('operationalStudies/project');
-  const { projectName, studyName } = props;
-  return (
-    <div className="navbar-breadcrumbs">
-      <Link to="/operational-studies">{t('projectsList')}</Link>
-      <i className="icons-arrow-next icons-size-x75 text-muted" />
-      <Link to="/operational-studies/project">{projectName}</Link>
-      <i className="icons-arrow-next icons-size-x75 text-muted" />
-      {studyName}
-    </div>
-  );
-}
 
 function DateBox(props) {
   const { t } = useTranslation('operationalStudies/study');
