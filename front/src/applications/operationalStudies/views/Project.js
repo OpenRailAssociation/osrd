@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { getRandomImage } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
@@ -22,18 +21,7 @@ import { setSuccess } from 'reducers/main';
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddAndEditProjectModal from '../components/Project/AddAndEditProjectModal';
-
-function BreadCrumbs(props) {
-  const { t } = useTranslation('operationalStudies/project');
-  const { name } = props;
-  return (
-    <div className="navbar-breadcrumbs">
-      <Link to="/operational-studies">{t('projectsList')}</Link>
-      <i className="icons-arrow-next icons-size-x75 text-muted" />
-      {name}
-    </div>
-  );
-}
+import BreadCrumbs from '../components/HomeContent/BreadCrumbs';
 
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
@@ -94,7 +82,7 @@ export default function Project() {
   return (
     <>
       <NavBarSNCF
-        appName={<BreadCrumbs name={projectDetails ? projectDetails.name : null} />}
+        appName={<BreadCrumbs projectName={projectDetails ? projectDetails.name : null} />}
         logo={logo}
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
