@@ -9,6 +9,7 @@ import { budgetFormat } from 'utils/numbers';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateStudyID } from 'reducers/osrdconf';
+import { RiFolderChartLine } from 'react-icons/ri';
 
 type Props = {
   details: {
@@ -57,19 +58,25 @@ export default function StudyCard({ details }: Props) {
 
       <div className="studies-list-card-financials">
         <div className="studies-list-card-financials-infos">
-          <div className="studies-list-card-financials-infos-item">
-            <h3>{t('geremiCode')}</h3>
-            <div>{details.service_code}</div>
-          </div>
-          <div className="studies-list-card-financials-infos-item">
-            <h3>{t('affairCode')}</h3>
-            <div>{details.business_code}</div>
-          </div>
+          {details.service_code && (
+            <div className="studies-list-card-financials-infos-item">
+              <h3>{t('geremiCode')}</h3>
+              <div>{details.service_code}</div>
+            </div>
+          )}
+          {details.business_code && (
+            <div className="studies-list-card-financials-infos-item">
+              <h3>{t('affairCode')}</h3>
+              <div>{details.business_code}</div>
+            </div>
+          )}
         </div>
-        <div className="studies-list-card-financials-amount">
-          <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
-          {budgetFormat(details.budget)}
-        </div>
+        {details.budget > 0 && (
+          <div className="studies-list-card-financials-amount">
+            <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
+            {budgetFormat(details.budget)}
+          </div>
+        )}
       </div>
 
       <div className="studies-list-card-footer">
@@ -79,6 +86,12 @@ export default function StudyCard({ details }: Props) {
               {tag}
             </div>
           ))}
+        </div>
+        <div className="studies-list-card-scenarios-count ml-auto">
+          <span className="mr-1">
+            <RiFolderChartLine />
+          </span>
+          {t('scenariosCount', { count: details.scenarios.length })}
         </div>
         <div className="studies-list-card-date">
           <span className="mr-1">

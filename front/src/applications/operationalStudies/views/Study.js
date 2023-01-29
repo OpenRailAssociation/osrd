@@ -300,7 +300,7 @@ export default function Study() {
 
           <div className="scenarios-list">
             {scenariosList ? (
-              <div className="row">
+              <div className="row no-gutters">
                 {scenariosList.map((details) => (
                   <div className="col-xl-4 col-lg-6" key={nextId()}>
                     <ScenarioCard details={details} />

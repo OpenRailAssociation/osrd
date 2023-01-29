@@ -215,7 +215,7 @@ export default function Project() {
 
           <div className="studies-list">
             {studiesList ? (
-              <div className="row">
+              <div className="row no-gutters">
                 {studiesList.map((details) => (
                   <div className="col-xl-6" key={nextId()}>
                     <StudyCard details={details} />
