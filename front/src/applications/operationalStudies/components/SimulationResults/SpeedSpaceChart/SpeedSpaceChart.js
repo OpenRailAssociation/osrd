@@ -192,6 +192,9 @@ const CHART_ID = 'SpeedSpaceChart';
       timeOutFunctionId = setTimeout(resizeDrawTrain, 500);
     };
     window.addEventListener('resize', timeOutResize);
+    return function cleanup() {
+      window.removeEventListener('resize', timeOutResize);
+    };
   }, []);
 
   // reset chart
