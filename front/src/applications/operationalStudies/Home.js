@@ -1,12 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/projects.svg';
-import { projectsListJSON } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 import AddAndEditProjectModal from 'applications/operationalStudies/components/Project/AddAndEditProjectModal';
-import ProjectCard from 'applications/operationalStudies/components/HomeContent/ProjectCard';
+import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import osrdLogo from 'assets/pictures/osrd.png';
 import Loader from 'common/Loader';
@@ -14,42 +12,50 @@ import { FaPlus } from 'react-icons/fa';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { get } from 'common/requests';
 import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
+import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 
-export default function HomeContent() {
+export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
   const { openModal } = useContext(ModalContext);
   const [projectsList, setProjectsList] = useState();
+  const [sortOption, setSortOption] = useState('-last_modification');
   const [filter, setFilter] = useState('');
-  const [sortOption, setSortOption] = useState('byName');
 
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
-      value: 'byName',
+      value: 'name',
     },
     {
       label: t('sortOptions.byRecentDate'),
-      value: 'byRecentDate',
+      value: '-last_modification',
     },
   ];
 
-  const handleSortOptions = (e) => {
-    setSortOption(e.target.value);
-    console.log(e);
-  };
-
   const getProjectList = async () => {
     try {
-      const data = await get(PROJECTS_URI);
+      const params = {
+        ordering: sortOption,
+        name: filter,
+        description: filter,
+        tag: filter,
+      };
+      const data = await get(PROJECTS_URI, params);
       setProjectsList(data.results);
     } catch (error) {
       console.error(error);
     }
   };
 
+  const handleSortOptions = (e) => {
+    setSortOption(e.target.value);
+    console.log('pouet');
+  };
+
   useEffect(() => {
     getProjectList();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortOption, filter]);
 
   return (
     <>
@@ -65,17 +71,7 @@ export default function HomeContent() {
               {t('projectsCount', { count: projectsList ? projectsList.length : 0 })}
             </div>
             <div className="flex-grow-1">
-              <InputSNCF
-                type="text"
-                id="projects-filter"
-                name="projects-filter"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder={t('filterPlaceholder')}
-                whiteBG
-                noMargin
-                unit={<i className="icons-search" />}
-              />
+              <FilterTextField id="projects-filter" setFilter={setFilter} />
             </div>
             <OptionsSNCF
               name="projects-sort-filter"
