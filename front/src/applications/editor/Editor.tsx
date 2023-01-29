@@ -10,7 +10,6 @@ import 'common/Map/Map.scss';
 import './Editor.scss';
 
 import { LoaderState } from '../../common/Loader';
-import { NotificationsState } from '../../common/Notifications';
 import { loadDataModel, reset } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
 import { updateViewport, Viewport } from '../../reducers/map';
@@ -335,7 +334,6 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         </div>
 
         <LoaderState />
-        <NotificationsState />
 
         {modal &&
           React.createElement(modal.component, {
