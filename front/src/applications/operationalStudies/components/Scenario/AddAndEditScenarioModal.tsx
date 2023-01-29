@@ -1,4 +1,5 @@
-import React, { useContext, useState } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useContext, useEffect, useState } from 'react';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import scenarioLogo from 'assets/pictures/views/studies.svg';
@@ -8,14 +9,15 @@ import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { FaPlus } from 'react-icons/fa';
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-import { post } from 'common/requests';
+import { deleteRequest, patch, post } from 'common/requests';
 import { useNavigate } from 'react-router-dom';
 import { updateScenarioID } from 'reducers/osrdconf';
+import { setSuccess } from 'reducers/main';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
@@ -26,16 +28,27 @@ const configItemsDefaults = {
 };
 
 type configItemsTypes = {
+  id?: number;
   name: string;
   description: string;
   infra: number | undefined;
   tags: string[];
 };
 
-export default function AddAndEditScenarioModal() {
+type Props = {
+  editionMode: false;
+  details?: configItemsTypes;
+  getScenarioDetail?: any;
+};
+
+export default function AddAndEditScenarioModal({
+  editionMode,
+  details,
+  getScenarioDetail,
+}: Props) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(configItemsDefaults);
+  const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -56,7 +69,7 @@ export default function AddAndEditScenarioModal() {
   };
 
   const createScenario = async () => {
-    if (!configItems.name) {
+    if (!configItems.name || !configItems.infra) {
       setDisplayErrors(true);
     } else {
       try {
@@ -73,17 +86,60 @@ export default function AddAndEditScenarioModal() {
     }
   };
 
+  const modifyScenario = async () => {
+    if (!configItems.name) {
+      setDisplayErrors(true);
+    } else if (details) {
+      try {
+        await patch(
+          `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${details.id}/`,
+          configItems
+        );
+        getScenarioDetail(true);
+        closeModal();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const deleteScenario = async () => {
+    if (details) {
+      try {
+        await deleteRequest(
+          `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${details.id}/`
+        );
+        dispatch(updateScenarioID(undefined));
+        navigate('/operational-studies/study');
+        closeModal();
+        dispatch(
+          setSuccess({
+            title: t('scenarioDeleted'),
+            text: t('scenarioDeletedDetails', { name: details.name }),
+          })
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    setConfigItems({ ...configItems, infra: infraID });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [infraID]);
+
   return (
     <div className="scenario-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
           <img src={scenarioLogo} alt="scenario Logo" />
-          {t('scenarioCreationTitle')}
+          {editionMode ? t('scenarioModificationTitle') : t('scenarioCreationTitle')}
         </h1>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <div className="row">
-          <div className="col-lg-6">
+          <div className={editionMode ? 'col-lg-12' : 'col-lg-6'}>
             <div className="scenario-edition-modal-name">
               <InputSNCF
                 id="scenarioInputName"
@@ -129,24 +185,53 @@ export default function AddAndEditScenarioModal() {
               color="secondary"
             />
           </div>
-          <div className="col-lg-6">
-            <div className="scenario-edition-modal-infraselector">
-              <InfraSelectorModal onlySelectionMode />
+          {!editionMode && (
+            <div className="col-lg-6">
+              <div
+                className={`scenario-edition-modal-infraselector ${
+                  displayErrors && !configItems.infra
+                    ? 'scenario-edition-modal-infraselector-missing'
+                    : null
+                }`}
+              >
+                <InfraSelectorModal onlySelectionMode />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </ModalBodySNCF>
       <ModalFooterSNCF>
-        <div className="d-flex justify-content-end w-100">
-          <button className="btn btn-secondary mr-2" type="button" onClick={closeModal}>
+        <div className="d-flex justify-content-end w-100 mt-3">
+          {editionMode && (
+            <button
+              className="btn btn-sm btn-outline-danger mr-auto"
+              type="button"
+              onClick={deleteScenario}
+            >
+              <span className="mr-2">
+                <FaTrash />
+              </span>
+              {t('scenarioDeleteButton')}
+            </button>
+          )}
+          <button className="btn btn-sm btn-secondary mr-2" type="button" onClick={closeModal}>
             {t('scenarioCancel')}
           </button>
-          <button className="btn btn-primary" type="button" onClick={createScenario}>
-            <span className="mr-2">
-              <FaPlus />
-            </span>
-            {t('scenarioCreateButton')}
-          </button>
+          {editionMode ? (
+            <button className="btn btn-sm btn-warning" type="button" onClick={modifyScenario}>
+              <span className="mr-2">
+                <FaPencilAlt />
+              </span>
+              {t('scenarioModifyButton')}
+            </button>
+          ) : (
+            <button className="btn btn-sm btn-primary" type="button" onClick={createScenario}>
+              <span className="mr-2">
+                <FaPlus />
+              </span>
+              {t('scenarioCreateButton')}
+            </button>
+          )}
         </div>
       </ModalFooterSNCF>
     </div>

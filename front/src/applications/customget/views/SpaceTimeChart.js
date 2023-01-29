@@ -54,7 +54,6 @@ export default function SpaceTimeChart(props) {
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
-  const [isResizeActive, setResizeActive] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [resetChart, setResetChart] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
