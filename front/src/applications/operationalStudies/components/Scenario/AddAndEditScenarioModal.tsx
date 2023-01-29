@@ -130,7 +130,9 @@ export default function AddAndEditScenarioModal() {
             />
           </div>
           <div className="col-lg-6">
-            <InfraSelectorModal />
+            <div className="scenario-edition-modal-infraselector">
+              <InfraSelectorModal onlySelectionMode />
+            </div>
           </div>
         </div>
       </ModalBodySNCF>

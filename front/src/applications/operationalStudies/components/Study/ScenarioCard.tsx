@@ -7,6 +7,7 @@ import { AiFillFolderOpen } from 'react-icons/ai';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateScenarioID } from 'reducers/osrdconf';
+import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 
 type Props = {
   details: {
@@ -26,6 +27,7 @@ export default function StudyCard({ details }: Props) {
 
   const handleClick = () => {
     dispatch(updateScenarioID(details.id));
+    dispatch(updateSelectedProjection(undefined));
     navigate('/operational-studies/scenario');
   };
 
