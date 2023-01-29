@@ -26,6 +26,7 @@ export default function ProjectCard({ details }: Props) {
   const { t } = useTranslation('operationalStudies/home');
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  console.log('pouet');
 
   const handleClick = () => {
     dispatch(updateProjectID(details.id));

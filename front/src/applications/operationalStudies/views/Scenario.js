@@ -9,17 +9,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
-import BreadCrumbs from 'applications/operationalStudies/components/HomeContent/BreadCrumbs';
+import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { FaPencilAlt } from 'react-icons/fa';
+import { setSuccess } from 'reducers/main';
 import SimulationResults from './SimulationResults';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import getTimetable from '../components/Scenario/getTimetable';
 import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { FaPencilAlt } from 'react-icons/fa';
-import { setSuccess } from 'reducers/main';
 
 export default function Scenario() {
   const dispatch = useDispatch();
