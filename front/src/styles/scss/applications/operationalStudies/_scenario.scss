@@ -53,9 +53,34 @@
       flex-direction: column;
       height: 8rem;
       .scenario-details-name {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         color: var(--secondary);
         font-weight: 500;
         font-size: 1.5rem;
+        .scenario-details-modify-button {
+          background-color: transparent;
+          border: none;
+          color: var(--secondary);
+          transition: 0.2s;
+          padding: 0.25rem 0.5rem;
+          font-size: 1rem;
+          border-radius: 4px;
+          .scenario-details-modify-button-text {
+            transition: opacity 0.2s;
+            opacity: 0;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+          }
+          &:hover {
+            background-color: var(--secondary);
+            color: var(--white);
+            .scenario-details-modify-button-text {
+              opacity: 1;
+            }
+          }
+        }
       }
       .scenario-details-infra-name {
         display: flex;
