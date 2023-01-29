@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,10 @@ import SimulationResults from './SimulationResults';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import getTimetable from '../components/Scenario/getTimetable';
+import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { FaPencilAlt } from 'react-icons/fa';
+import { setSuccess } from 'reducers/main';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -43,6 +47,7 @@ export default function Scenario() {
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
+  const { openModal } = useContext(ModalContext);
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
@@ -63,7 +68,7 @@ export default function Scenario() {
       console.error(error);
     }
   };
-  const getScenarioDetail = async () => {
+  const getScenarioDetail = async (withNotification = false) => {
     try {
       const result = await get(
         `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
@@ -72,6 +77,14 @@ export default function Scenario() {
       dispatch(updateTimetableID(result.timetable));
       dispatch(updateInfraID(result.infra));
       getTimetable(result.timetable);
+      if (withNotification) {
+        dispatch(
+          setSuccess({
+            title: t('studyUpdated'),
+            text: t('studyUpdatedDetails', { name: studyDetails.name }),
+          })
+        );
+      }
     } catch (error) {
       console.error(error);
     }
@@ -108,7 +121,27 @@ export default function Scenario() {
               <div className="scenario-sidemenu">
                 {scenarioDetails && (
                   <div className="scenario-details">
-                    <div className="scenario-details-name">{scenarioDetails.name}</div>
+                    <div className="scenario-details-name">
+                      {scenarioDetails.name}
+                      <button
+                        className="scenario-details-modify-button"
+                        type="button"
+                        onClick={() =>
+                          openModal(
+                            <AddAndEditScenarioModal
+                              editionMode
+                              details={scenarioDetails}
+                              getScenarioDetail={getScenarioDetail}
+                            />
+                          )
+                        }
+                      >
+                        <span className="scenario-details-modify-button-text">
+                          {t('modifyScenario')}
+                        </span>
+                        <FaPencilAlt />
+                      </button>
+                    </div>
                     <div className="scenario-details-infra-name">
                       <img src={infraLogo} alt="Infra logo" className="mr-2" />
                       {scenarioDetails.infra_name}

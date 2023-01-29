@@ -1,6 +1,7 @@
 {
   "copy": "copie",
   "filterPlaceholder": "Filtre, étiquettes",
+  "modifyScenario": "Modifier le scénario",
   "isUpdating": "Mise à jour...",
   "timetable": {
     "trainDeleted": "Le train {{name}} a bien été supprimé."
@@ -13,5 +14,11 @@
   "scenarioDescription": "Description",
   "scenarioTags": "Étiquettes",
   "scenarioCancel": "Annuler",
-  "scenarioCreateButton": "Créer le scénario"
+  "scenarioCreateButton": "Créer le scénario",
+  "scenarioModificationTitle": "Modifier le scénario",
+  "scenarioDeleted": "Suppression réussie !",
+  "scenarioDeletedDetails": "Le scénario {{ name }} a bien été supprimé.",
+  "scenarioModifyButton": "Modifier",
+  "scenarioDeleteButton": "Supprimer",
+  "scenarioNameMissing": "Vous devez renseigner un nom pour le scénario"
 }
