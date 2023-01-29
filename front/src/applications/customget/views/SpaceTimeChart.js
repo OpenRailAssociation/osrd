@@ -198,6 +198,9 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    return () => {
+      window.removeEventListener('resize');
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mustRedraw, rotate, selectedTrain, consolidatedSimulation]);
 
@@ -211,6 +214,9 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(resetChart, true, newDataSimulation);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    return () => {
+      window.removeEventListener('resize');
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation.trains]);
 
