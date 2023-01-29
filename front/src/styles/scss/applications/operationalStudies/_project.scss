@@ -144,10 +144,12 @@
 .studies-list {
   overflow: auto;
   max-height: 50vh;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
   .studies-list-card {
     position: relative;
     border-radius: 4px;
-    margin-bottom: 1rem;
+    margin: 0 0.5rem 1rem;
     transition: .4s;
     background-color: var(--white);
     border: 2px solid var(--coolgray3);
@@ -192,6 +194,7 @@
       padding: .5rem;
       margin: .5rem .5rem 0;
       border-radius: 4px;
+      min-height: 3.5rem;
       .studies-list-card-financials-infos {
         display: flex;
         gap: 1rem;
@@ -252,9 +255,11 @@
           }
         }
       }
-      .studies-list-card-date {
+      .studies-list-card-scenarios-count, .studies-list-card-date {
         display: flex;
-        align-items: center;
+        align-items: baseline;
+        height: 1rem;
+        white-space: nowrap;
         padding: 0 .5rem;
         font-size: .7rem;
         text-transform: uppercase;

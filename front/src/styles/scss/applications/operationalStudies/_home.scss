@@ -69,6 +69,7 @@
     text-align: right;
     font-size: .7rem;
     color: var(--coolgray11);
+    height: 1.5rem;
     div {
       white-space: nowrap;
     }
@@ -87,7 +88,7 @@
     padding: 0 .5rem;
     height: 5rem;
     overflow: auto;
-    font-size: .9rem;
+    font-size: .8rem;
     &::first-letter {
       text-transform:capitalize;
     }

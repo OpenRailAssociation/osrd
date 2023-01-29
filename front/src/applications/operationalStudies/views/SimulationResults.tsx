@@ -97,10 +97,13 @@ export default function SimulationResults() {
   }, []);
 
   useEffect(() => {
-    getTimetable();
+    if (timetableID) {
+      getTimetable();
+    }
     return function cleanup() {
       dispatch(updateSimulation({ trains: [] }));
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProjection, timetableID]);
 
   useEffect(() => {
@@ -111,6 +114,7 @@ export default function SimulationResults() {
         })
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
 
   const waitingLoader =

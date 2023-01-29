@@ -8,7 +8,7 @@ import infraLogo from 'assets/pictures/components/tracks.svg';
 import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
 import { useSelector, useDispatch } from 'react-redux';
 import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { updateMode, updateTimetableID } from 'reducers/osrdconf';
+import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
 import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
@@ -70,6 +70,7 @@ export default function Scenario() {
       );
       setScenarioDetails(result);
       dispatch(updateTimetableID(result.timetable));
+      dispatch(updateInfraID(result.infra));
       getTimetable(result.timetable);
     } catch (error) {
       console.error(error);
@@ -83,6 +84,7 @@ export default function Scenario() {
     dispatch(updateMode(MODES.simulation));
     return () => {
       dispatch(updateTimetableID(undefined));
+      dispatch(updateInfraID(undefined));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
