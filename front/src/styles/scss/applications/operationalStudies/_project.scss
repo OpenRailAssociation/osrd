@@ -266,6 +266,9 @@
         text-align: right;
         font-weight: 500;
         color: var(--coolgray9);
+        svg {
+          margin-bottom: 0.15rem;
+        }
       }
     }
   }
