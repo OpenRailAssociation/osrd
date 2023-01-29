@@ -87,7 +87,6 @@ The operational studies application enables capacity studies to be carried out o
 #### Folder's tree
 - **components/**
   * **Helpers/**
-  * **HomeContent/**
   * **ManageTrainSchedule/**
   * **Project/**
   * **Scenario/**
@@ -96,7 +95,6 @@ The operational studies application enables capacity studies to be carried out o
 - consts.ts
 - Home.tsx
 - **views/**
-  * HomeContent.js
   * ManageTrainSchedule.jsx
   * Project.js
   * Scenario.js
@@ -104,7 +102,7 @@ The operational studies application enables capacity studies to be carried out o
   * Study.js
 
 The functional workflow works as follows:
-- create a project `applications/operationalStudies/views/HomeContent.js`
+- create a project `applications/operationalStudies/Home.js`
 - create a study in this project `applications/operationalStudies/views/Project.js`
 - choose an infrastructure to create a scenario in the study `applications/operationalStudies/views/Study.js`
 

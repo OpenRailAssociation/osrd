@@ -6,7 +6,6 @@ import nextId from 'react-id-generator';
 import { getRandomImage } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 import StudyCard from 'applications/operationalStudies/components/Project/StudyCard';
 import Loader from 'common/Loader';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
 import { FaPencilAlt, FaPlus } from 'react-icons/fa';
@@ -18,10 +17,11 @@ import { getProjectID } from 'reducers/osrdconf/selectors';
 import { useSelector, useDispatch } from 'react-redux';
 import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
+import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddAndEditProjectModal from '../components/Project/AddAndEditProjectModal';
-import BreadCrumbs from '../components/HomeContent/BreadCrumbs';
+import BreadCrumbs from '../components/BreadCrumbs';
 
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
@@ -29,18 +29,18 @@ export default function Project() {
   const [projectDetails, setProjectDetails] = useState();
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');
-  const [sortOption, setSortOption] = useState('byName');
+  const [sortOption, setSortOption] = useState('-last_modification');
   const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
 
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
-      value: 'byName',
+      value: 'name',
     },
     {
       label: t('sortOptions.byRecentDate'),
-      value: 'byRecentDate',
+      value: '-last_modification',
     },
   ];
 
@@ -63,7 +63,13 @@ export default function Project() {
 
   const getStudyList = async () => {
     try {
-      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`);
+      const params = {
+        ordering: sortOption,
+        name: filter,
+        description: filter,
+        tag: filter,
+      };
+      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, params);
       setStudiesList(data.results);
     } catch (error) {
       console.error(error);
@@ -76,8 +82,13 @@ export default function Project() {
 
   useEffect(() => {
     getProjectDetail();
-    getStudyList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    getStudyList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortOption, filter]);
 
   return (
     <>
@@ -173,17 +184,7 @@ export default function Project() {
               {t('studiesCount', { count: studiesList ? studiesList.length : 0 })}
             </div>
             <div className="flex-grow-1">
-              <InputSNCF
-                type="text"
-                id="studies-filter"
-                name="studies-filter"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder={t('filterPlaceholder')}
-                whiteBG
-                noMargin
-                unit={<i className="icons-search" />}
-              />
+              <FilterTextField setFilter={setFilter} id="studies-filter" />
             </div>
             <OptionsSNCF
               name="projects-sort-filter"
