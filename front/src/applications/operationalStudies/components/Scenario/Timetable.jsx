@@ -180,21 +180,21 @@ export default function Timetable(props) {
         </button>
       </div>
       <div className="scenario-timetable-trains">
-        {trainsList
-          ? trainsList.map((train, idx) => (
-              <TimetableTrainCard
-                train={train}
-                key={nextId()}
-                selectedTrain={selectedTrain === idx}
-                selectedProjection={selectedProjection}
-                idx={idx}
-                changeSelectedTrain={changeSelectedTrain}
-                deleteTrain={deleteTrain}
-                duplicateTrain={duplicateTrain}
-                selectPathProjection={selectPathProjection}
-              />
-            ))
-          : null}
+        {trainsList &&
+          selectedProjection &&
+          trainsList.map((train, idx) => (
+            <TimetableTrainCard
+              train={train}
+              key={nextId()}
+              isSelected={selectedTrain === idx}
+              projectionPathIsUsed={selectedProjection.id === train.id}
+              idx={idx}
+              changeSelectedTrain={changeSelectedTrain}
+              deleteTrain={deleteTrain}
+              duplicateTrain={duplicateTrain}
+              selectPathProjection={selectPathProjection}
+            />
+          ))}
       </div>
     </div>
   );
