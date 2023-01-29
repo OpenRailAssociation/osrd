@@ -54,7 +54,7 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
-  const [picture] = useState(getRandomImage());
+  const [picture] = useState(getRandomImage(details ? details.id : undefined));
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
