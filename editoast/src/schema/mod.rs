@@ -95,19 +95,20 @@ impl ObjectType {
         }
     }
 
-    pub fn get_geometry_layer_table(&self) -> Result<&'static str, &'static str> {
+    /// Returns the layer table name.
+    /// Returns `None` for objects that doesn't have a layer such as routes or switch types.
+    pub fn get_geometry_layer_table(&self) -> Option<&'static str> {
         match *self {
-            ObjectType::TrackSection => Ok("osrd_infra_tracksectionlayer"),
-            ObjectType::Signal => Ok("osrd_infra_signallayer"),
-            ObjectType::SpeedSection => Ok("osrd_infra_speedsectionlayer"),
-            ObjectType::Detector => Ok("osrd_infra_detectorlayer"),
-            ObjectType::TrackSectionLink => Ok("osrd_infra_tracksectionlinklayer"),
-            ObjectType::Switch => Ok("osrd_infra_switchlayer"),
-            ObjectType::SwitchType => Err("SwitchType has no geometry"),
-            ObjectType::BufferStop => Ok("osrd_infra_bufferstoplayer"),
-            ObjectType::Route => Ok("osrd_infra_routelayer"),
-            ObjectType::OperationalPoint => Ok("osrd_infra_operationalpointlayer"),
-            ObjectType::Catenary => Ok("osrd_infra_catenarylayer"),
+            ObjectType::TrackSection => Some("osrd_infra_tracksectionlayer"),
+            ObjectType::Signal => Some("osrd_infra_signallayer"),
+            ObjectType::SpeedSection => Some("osrd_infra_speedsectionlayer"),
+            ObjectType::Detector => Some("osrd_infra_detectorlayer"),
+            ObjectType::TrackSectionLink => Some("osrd_infra_tracksectionlinklayer"),
+            ObjectType::Switch => Some("osrd_infra_switchlayer"),
+            ObjectType::BufferStop => Some("osrd_infra_bufferstoplayer"),
+            ObjectType::OperationalPoint => Some("osrd_infra_operationalpointlayer"),
+            ObjectType::Catenary => Some("osrd_infra_catenarylayer"),
+            _ => None,
         }
     }
 }
