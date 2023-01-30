@@ -19,7 +19,6 @@ type Props = {
 };
 
 export default function InfraSelectorModal({ onlySelectionMode = false }: Props) {
-  console.log(onlySelectionMode);
   const [infrasList, setInfrasList] = useState([]);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [filter, setFilter] = useState('');

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,22 @@ import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operatio
 import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
+
+function displayScenariosList(scenariosList) {
+  return scenariosList ? (
+    <div className="row no-gutters">
+      {scenariosList.map((details) => (
+        <div className="col-xl-4 col-lg-6" key={nextId()}>
+          <ScenarioCard details={details} />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <span className="mt-5">
+      <Loader position="center" />
+    </span>
+  );
+}
 
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
@@ -262,19 +278,7 @@ export default function Study() {
           </div>
 
           <div className="scenarios-list">
-            {scenariosList ? (
-              <div className="row no-gutters">
-                {scenariosList.map((details) => (
-                  <div className="col-xl-4 col-lg-6" key={nextId()}>
-                    <ScenarioCard details={details} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <span className="mt-5">
-                <Loader position="center" />
-              </span>
-            )}
+            {useMemo(() => displayScenariosList(scenariosList), [scenariosList])}
           </div>
         </div>
       </main>
