@@ -14,13 +14,13 @@ import { get } from 'common/requests';
 import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 
-function displayCards(projectsList) {
+function displayCards(projectsList, setFilterChips) {
   return projectsList ? (
     <div className="projects-list">
       <div className="row">
         {projectsList.map((details) => (
           <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
-            <ProjectCard details={details} />
+            <ProjectCard details={details} setFilterChips={setFilterChips} />
           </div>
         ))}
       </div>
@@ -38,6 +38,7 @@ export default function Home() {
   const [projectsList, setProjectsList] = useState();
   const [sortOption, setSortOption] = useState('-last_modification');
   const [filter, setFilter] = useState('');
+  const [filterChips, setFilterChips] = useState('');
 
   const sortOptions = [
     {
@@ -88,7 +89,11 @@ export default function Home() {
               {t('projectsCount', { count: projectsList ? projectsList.length : 0 })}
             </div>
             <div className="flex-grow-1">
-              <FilterTextField id="projects-filter" setFilter={setFilter} />
+              <FilterTextField
+                id="projects-filter"
+                setFilter={setFilter}
+                filterChips={filterChips}
+              />
             </div>
             <OptionsSNCF
               name="projects-sort-filter"
@@ -105,7 +110,7 @@ export default function Home() {
               <span className="ml-2">{t('createProject')}</span>
             </button>
           </div>
-          {useMemo(() => displayCards(projectsList), [projectsList])}
+          {useMemo(() => displayCards(projectsList, setFilterChips), [projectsList])}
         </div>
       </main>
     </>
