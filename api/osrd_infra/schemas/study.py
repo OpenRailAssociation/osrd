@@ -3,25 +3,25 @@ from enum import Enum
 
 class StudyState(str, Enum):
     """
-    This class allows to know the state of the operational study.
+    This class allows to know the state of the study.
     """
 
-    Started = "Started"
-    InProgress = "In progress"
-    Finish = "Finish"
+    Started = "started"
+    InProgress = "inProgress"
+    Finish = "finish"
 
 
 class StudyType(str, Enum):
     """
-    This class allows to know the type of the operational study.
+    This class allows to know the type of the study.
     """
 
-    TimeTable = "Time tables"
-    FlowRate = "Flow rate"
-    ParkSizing = "Park sizing"
-    GarageRequirement = "Garage requirement bearings"
-    OperationOrSizing = "Operation or sizing of a maintenance centre or garage"
-    Operability = "Operability"
-    StrategicPlanning = "Strategic planning"
-    ChartStability = "Chart Stability"
-    Disturbance = "Disturbance tests"
+    TimeTable = "timeTables"
+    FlowRate = "flowRate"
+    ParkSizing = "parkSizing"
+    GarageRequirement = "garageRequirement"
+    OperationOrSizing = "operationOrSizing"
+    Operability = "operability"
+    StrategicPlanning = "strategicPlanning"
+    ChartStability = "chartStability"
+    Disturbance = "disturbanceTests"

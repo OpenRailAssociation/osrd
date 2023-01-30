@@ -897,7 +897,7 @@ paths:
       summary: Paginated list of projects
       parameters:
         - in: query
-          name: oredering
+          name: ordering
           schema:
             type: string
             enum:
@@ -1020,6 +1020,19 @@ paths:
         - studies
       summary: Create a new operational study
       parameters:
+        - in: query
+          name: ordering
+          schema:
+            type: string
+            enum:
+              [
+                "name",
+                "-name",
+                "creation_date",
+                "-creation_date",
+                "last_modification",
+                "-last_modification",
+              ]
         - in: query
           name: project_id
           schema:
@@ -1170,6 +1183,19 @@ paths:
         - scenarios
       summary: Create a new scenario
       parameters:
+        - in: query
+          name: ordering
+          schema:
+            type: string
+            enum:
+              [
+                "name",
+                "-name",
+                "creation_date",
+                "-creation_date",
+                "last_modification",
+                "-last_modification",
+              ]
         - in: query
           name: project_id
           schema:
@@ -2135,20 +2161,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["Started", "InProgress", "Finish"]
+          enum: ["started", "inProgress", "finish"]
         type:
           type: string
           enum:
             [
-              "TimeTable",
-              "FlowRate",
-              "ParkSizing",
-              "GarageRequirement",
-              "OperationOrSizing",
-              "Operability",
-              "StrategicPlanning",
-              "ChartStability",
-              "Disturbance",
+              "timeTables",
+              "flowRate",
+              "parkSizing",
+              "garageRequirement",
+              "operationOrSizing",
+              "operability",
+              "trategicPlanning",
+              "chartStability",
+              "disturbanceTests",
             ]
       required:
         - "name"
@@ -2187,20 +2213,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["Started", "InProgress", "Finish"]
+          enum: ["started", "inProgress", "finish"]
         type:
           type: string
           enum:
             [
-              "TimeTable",
-              "FlowRate",
-              "ParkSizing",
-              "GarageRequirement",
-              "OperationOrSizing",
-              "Operability",
-              "StrategicPlanning",
-              "ChartStability",
-              "Disturbance",
+              "timeTables",
+              "flowRate",
+              "parkSizing",
+              "garageRequirement",
+              "operationOrSizing",
+              "operability",
+              "trategicPlanning",
+              "chartStability",
+              "disturbanceTests",
             ]
     ScenarioRequest:
       properties:
