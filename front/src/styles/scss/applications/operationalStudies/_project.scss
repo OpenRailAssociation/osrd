@@ -232,7 +232,7 @@
     }
     .studies-list-card-footer {  
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
       .studies-list-card-tags {    
         display: flex;
@@ -240,7 +240,7 @@
         flex-wrap: wrap;
         gap: .25rem;
         padding: .5rem;
-        height: 2.25rem;
+        min-height: 2.25rem;
         overflow: auto;
         .studies-list-card-tags-tag {   
           font-size: .9rem;   
