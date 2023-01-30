@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,22 @@ import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddAndEditProjectModal from '../components/Project/AddAndEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
+
+function displayStudiesList(studiesList) {
+  return studiesList ? (
+    <div className="row no-gutters">
+      {studiesList.map((details) => (
+        <div className="col-xl-6" key={nextId()}>
+          <StudyCard details={details} />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <span className="mt-5">
+      <Loader position="center" />
+    </span>
+  );
+}
 
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
@@ -203,19 +219,7 @@ export default function Project() {
           </div>
 
           <div className="studies-list">
-            {studiesList ? (
-              <div className="row no-gutters">
-                {studiesList.map((details) => (
-                  <div className="col-xl-6" key={nextId()}>
-                    <StudyCard details={details} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <span className="mt-5">
-                <Loader position="center" />
-              </span>
-            )}
+            {useMemo(() => displayStudiesList(studiesList), [studiesList])}
           </div>
         </div>
       </main>
