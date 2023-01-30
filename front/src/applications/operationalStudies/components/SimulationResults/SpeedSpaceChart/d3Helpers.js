@@ -38,11 +38,7 @@ function createChart(
     d3.select(`#container-${CHART_ID}`) !== null
       ? parseInt(d3.select(`#container-${CHART_ID}`)?.style('width'), 10)
       : 250;
-  /*
-  if (resetChart) {
-    dispatch(updateChartXGEV(defineX));
-  }
-  */
+
   setResetChart(false);
   return defineChart(
     width,
