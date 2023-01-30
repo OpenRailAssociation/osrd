@@ -313,7 +313,6 @@ const enableInteractivity = (
         const positionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
-        // const timePositionLocal = interpolateOnPosition;
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
         const immediatePositionsValuesForPointer = interpolateOnTime(
           dataSimulation,
@@ -325,9 +324,8 @@ const enableInteractivity = (
         // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenitn pointer update
         LIST_VALUES_NAME_SPEED_SPACE.forEach((name) => {
           if (
-            immediatePositionsValuesForPointer[name] &&
-            !Number.isNaN(immediatePositionsValuesForPointer[name]?.time) &&
-            !Number.isNaN(immediatePositionsValuesForPointer[name]?.speed)
+            !Number.isNaN(immediatePositionsValuesForPointer?.[name]?.time) &&
+            !Number.isNaN(immediatePositionsValuesForPointer?.[name]?.speed)
           ) {
             immediatePositionsValuesForPointer[name].speed /= 3.6;
             immediatePositionsValuesForPointer[name].time = sec2datetime(

@@ -17,7 +17,6 @@ const withOSRDData = (Component) =>
 
     const onSetSettings = (settings) => {
       dispatch(updateSpeedSpaceSettings(settings));
-      console.log('on set settings')
     };
 
     return (
