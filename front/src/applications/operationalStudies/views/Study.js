@@ -22,12 +22,12 @@ import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioMo
 import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
-function displayScenariosList(scenariosList) {
+function displayScenariosList(scenariosList, setFilterChips) {
   return scenariosList ? (
     <div className="row no-gutters">
       {scenariosList.map((details) => (
         <div className="col-xl-4 col-lg-6" key={nextId()}>
-          <ScenarioCard details={details} />
+          <ScenarioCard details={details} setFilterChips={setFilterChips} />
         </div>
       ))}
     </div>
@@ -45,6 +45,7 @@ export default function Study() {
   const [studyDetails, setStudyDetails] = useState();
   const [scenariosList, setScenariosList] = useState();
   const [filter, setFilter] = useState('');
+  const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState('-last_modification');
   const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
@@ -258,7 +259,12 @@ export default function Study() {
               {t('scenariosCount', { count: scenariosList ? scenariosList.length : 0 })}
             </div>
             <div className="flex-grow-1">
-              <FilterTextField setFilter={setFilter} id="scenarios-filter" sm />
+              <FilterTextField
+                setFilter={setFilter}
+                filterChips={filterChips}
+                id="scenarios-filter"
+                sm
+              />
             </div>
             <OptionsSNCF
               name="projects-sort-filter"
@@ -278,7 +284,7 @@ export default function Study() {
           </div>
 
           <div className="scenarios-list">
-            {useMemo(() => displayScenariosList(scenariosList), [scenariosList])}
+            {useMemo(() => displayScenariosList(scenariosList, setFilterChips), [scenariosList])}
           </div>
         </div>
       </main>

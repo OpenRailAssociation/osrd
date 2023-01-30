@@ -8,12 +8,19 @@ type Props = {
   id: string;
   setFilter: (arg0: string) => void;
   sm?: boolean;
+  filterChips?: string;
 };
 
-export default function FilterTextField({ id, setFilter, sm = false }: Props) {
+export default function FilterTextField({ id, setFilter, sm = false, filterChips = '' }: Props) {
   const [value, setValue] = useState('');
   const { t } = useTranslation('operationalStudies/home');
   const debouncedFilter = useDebounce(value, 500);
+
+  useEffect(() => {
+    if (filterChips !== '') {
+      setValue(filterChips);
+    }
+  }, [filterChips]);
 
   useEffect(() => {
     setFilter(debouncedFilter);
