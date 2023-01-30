@@ -13,6 +13,7 @@ interface gevPreparedata {
   slopesHistogram: Record<string, unknown>[];
   areaSlopesHistogram: Record<string, unknown>[];
   curvesHistogram: Record<string, unknown>[];
+  modesAndProfiles: {}[];
 }
 
 function prepareData(
@@ -30,11 +31,13 @@ function prepareData(
     slopesHistogram: [],
     areaSlopesHistogram: [],
     curvesHistogram: [],
+    modesAndProfiles: [],
   };
   dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map((step) => ({
     ...step,
     speed: step.speed * 3.6,
   }));
+  dataSimulation.modesAndProfiles = simulation.trains[selectedTrain].modes_and_profiles;
   if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
     dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
       (step: any) => ({

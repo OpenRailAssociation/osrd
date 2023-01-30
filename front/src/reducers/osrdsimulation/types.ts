@@ -92,6 +92,7 @@ export interface Regime {
 }
 
 export interface Train {
+  modes_and_profiles: {}[];
   id: number;
   labels: any[];
   path: number;
