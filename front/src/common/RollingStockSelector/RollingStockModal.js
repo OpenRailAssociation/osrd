@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
-import nextId from 'react-id-generator';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
@@ -26,7 +25,7 @@ function RollingStockModal(props) {
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStock, setRollingStock] = useState();
-  const [filteredRollingStockList, setFilteredRollingStockList] = useState();
+  const [filteredRollingStockList, setFilteredRollingStockList] = useState([]);
   const [filters, setFilters] = useState({
     text: '',
     elec: false,
@@ -110,20 +109,23 @@ function RollingStockModal(props) {
     }
   };
 
-  const listOfRollingStock = () =>
-    filteredRollingStockList.length > 0 ? (
-      filteredRollingStockList.map((item) => (
-        <RollingStockCard
-          data={item}
-          key={nextId()}
-          openedRollingStockCardId={openedRollingStockCardId}
-          setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-          ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
-        />
-      ))
-    ) : (
-      <RollingStockEmpty />
-    );
+  const listOfRollingStock = useMemo(
+    () =>
+      filteredRollingStockList.length > 0 ? (
+        filteredRollingStockList.map((item) => (
+          <RollingStockCard
+            data={item}
+            key={item.id}
+            isOpen={item.id === openedRollingStockCardId}
+            setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+            ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
+          />
+        ))
+      ) : (
+        <RollingStockEmpty />
+      ),
+    [filteredRollingStockList, openedRollingStockCardId, ref2scroll, rollingStockID]
+  );
 
   useEffect(() => {
     getAllRollingStock();
@@ -203,7 +205,7 @@ function RollingStockModal(props) {
         </div>
         <div className="rollingstock-search-list">
           {filteredRollingStockList !== undefined && !isFiltering ? (
-            listOfRollingStock()
+            listOfRollingStock
           ) : (
             <Loader msg={t('rollingstock:waitingLoader')} />
           )}

@@ -7,14 +7,25 @@ import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 export default function TrainDetail(props) {
   const { trainData, idx, rollingStock } = props;
   const [isOpened, setIsOpened] = useState(false);
+
+  const openCard = () => {
+    if (trainData.etapes.length > 2) {
+      setIsOpened(!isOpened);
+    }
+  };
+
   return (
     <div
-      className="opendata-traindetail"
+      className="opendata-traindetail opendata-traindetail-no-hover"
       role="button"
       tabIndex={0}
-      onClick={() => setIsOpened(!isOpened)}
+      onClick={openCard}
     >
-      <div className="opendata-traindetail-main">
+      <div
+        className={`opendata-traindetail-main ${
+          trainData.etapes.length > 2 ? 'opendata-traindetail-with-hover' : null
+        }`}
+      >
         <span className="opendata-traindetail-idx">{idx + 1}</span>
         <span className="opendata-traindetail-num">
           {trainData.num}
