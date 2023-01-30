@@ -10,7 +10,7 @@ RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
 WORKDIR /home/service
 
-RUN pip install --no-cache-dir poetry>=1.1.14
+RUN pip install --no-cache-dir poetry>=1.2.0
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
