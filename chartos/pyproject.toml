@@ -14,7 +14,7 @@ uvicorn = { version = "^0", extras = ["standard"] }
 
 # production
 gunicorn = { version = "20.1.0", optional = true }
-sentry-sdk = { version = "1.11.0", optional = true }
+sentry-sdk = { version = "1.14.0", optional = true }
 pydantic = "^1.10.2"
 
 [tool.poetry.extras]
