@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/projects.svg';
 import AddAndEditProjectModal from 'applications/operationalStudies/components/Project/AddAndEditProjectModal';
@@ -13,6 +13,24 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { get } from 'common/requests';
 import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+
+function displayCards(projectsList) {
+  return projectsList ? (
+    <div className="projects-list">
+      <div className="row">
+        {projectsList.map((details) => (
+          <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
+            <ProjectCard details={details} />
+          </div>
+        ))}
+      </div>
+    </div>
+  ) : (
+    <div className="mt-5">
+      <Loader position="center" />
+    </div>
+  );
+}
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
@@ -49,7 +67,6 @@ export default function Home() {
 
   const handleSortOptions = (e) => {
     setSortOption(e.target.value);
-    console.log('pouet');
   };
 
   useEffect(() => {
@@ -88,21 +105,7 @@ export default function Home() {
               <span className="ml-2">{t('createProject')}</span>
             </button>
           </div>
-          {projectsList ? (
-            <div className="projects-list">
-              <div className="row">
-                {projectsList.map((details) => (
-                  <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
-                    <ProjectCard details={details} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="mt-5">
-              <Loader position="center" />
-            </div>
-          )}
+          {useMemo(() => displayCards(projectsList), [projectsList])}
         </div>
       </main>
     </>

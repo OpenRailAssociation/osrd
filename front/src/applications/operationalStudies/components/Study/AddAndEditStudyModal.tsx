@@ -26,9 +26,9 @@ const configItemsDefaults = {
   description: '',
   service_code: '',
   business_code: '',
-  start_date: '',
-  expected_end_date: '',
-  actual_end_date: '',
+  start_date: null,
+  expected_end_date: null,
+  actual_end_date: null,
   state: '',
   tags: [],
   budget: 0,
@@ -41,9 +41,9 @@ type configItemsTypes = {
   description: string;
   service_code: string;
   business_code: string;
-  start_date: string;
-  expected_end_date: string;
-  actual_end_date: string;
+  start_date: string | null;
+  expected_end_date: string | null;
+  actual_end_date: string | null;
   state: string;
   tags: string[];
   budget: number;
@@ -63,6 +63,11 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const formatDateForInput = (date: string | null) => {
+    if (date === null) return '';
+    return date.substr(0, 10);
+  };
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(configItems.tags);
@@ -202,7 +207,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                   {t('studyStartDate')}
                 </div>
               }
-              value={configItems.start_date && configItems.start_date.substr(0, 10)}
+              value={formatDateForInput(configItems.start_date)}
               onChange={(e: any) => setConfigItems({ ...configItems, start_date: e.target.value })}
             />
             <InputSNCF
@@ -217,7 +222,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                   {t('studyEstimatedEndingDate')}
                 </div>
               }
-              value={configItems.expected_end_date && configItems.expected_end_date.substr(0, 10)}
+              value={formatDateForInput(configItems.expected_end_date)}
               onChange={(e: any) =>
                 setConfigItems({ ...configItems, expected_end_date: e.target.value })
               }
@@ -234,7 +239,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                   {t('studyRealEndingDate')}
                 </div>
               }
-              value={configItems.actual_end_date && configItems.actual_end_date.substr(0, 10)}
+              value={formatDateForInput(configItems.actual_end_date)}
               onChange={(e: any) =>
                 setConfigItems({ ...configItems, actual_end_date: e.target.value })
               }
