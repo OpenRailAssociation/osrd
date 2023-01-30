@@ -151,14 +151,9 @@
         .opendata-traindetail-main {
           display: flex;
           align-items: baseline;
-          // justify-content: space-between;
-          cursor: pointer;
           background-color: var(--coolgray1);
           padding: .5rem;
           transition: .2s;
-          &:hover {
-            background-color: var(--coolgray3);
-          }
           .opendata-traindetail-idx {
             width: 1.5rem;
             font-size: .7rem;
@@ -216,6 +211,12 @@
             width: 2rem;
             height: 2rem;
             text-align: center;
+          }
+        }
+        .opendata-traindetail-with-hover {
+          cursor: pointer;
+          &:hover {
+            background-color: var(--coolgray3);
           }
         }
         .opendata-traindetail-steps {
