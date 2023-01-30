@@ -1,4 +1,8 @@
+from io import BytesIO
+
 from django.db.models import Q
+from django.http import HttpResponse
+from PIL import Image
 from rest_framework import filters, generics, mixins, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -153,6 +157,19 @@ class ProjectView(
         if tags:
             filters = filters | Q(tags__icontains=tags)
         return queryset.filter(filters)
+
+    def retrieve(self, request, pk=None, project_pk=None):
+        queryset = Project.objects.all()
+        project = get_object_or_404(queryset, pk=pk)
+        image_db = project.image
+
+        stream = BytesIO(image_db)
+        image = Image.open(stream)
+
+        response = HttpResponse(content_type="image/png")
+        image.save(response, "PNG")
+        print(response)
+        return response
 
     def create(self, request, pk=None):
         input_serializer = ProjectSerializer(data=request.data, context={"request": request})
