@@ -96,7 +96,7 @@ export default function Study() {
         ordering: sortOption,
         name: filter,
         description: filter,
-        tag: filter,
+        tags: filter,
       };
       const data = await get(
         `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,

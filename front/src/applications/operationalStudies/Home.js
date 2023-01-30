@@ -56,7 +56,7 @@ export default function Home() {
         ordering: sortOption,
         name: filter,
         description: filter,
-        tag: filter,
+        tags: filter,
       };
       const data = await get(PROJECTS_URI, params);
       setProjectsList(data.results);

@@ -83,7 +83,7 @@ export default function Project() {
         ordering: sortOption,
         name: filter,
         description: filter,
-        tag: filter,
+        tags: filter,
       };
       const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, params);
       setStudiesList(data.results);
