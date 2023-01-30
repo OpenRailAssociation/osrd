@@ -69,17 +69,14 @@ const withOSRDData = (Component) =>
       }
     };
 
-    // WIP
     const dispatchUpdatePositionValues = (newPositionValues) => {
       dispatch(updatePositionValues(newPositionValues));
     };
 
-    // TO BE REMOVED !
     const dispatchUpdateMustRedraw = (newMustRedraw) => {
       dispatch(updateMustRedraw(newMustRedraw));
     };
 
-    // NO
     const dispatchUpdateContextMenu = (contextMenu) => {
       dispatch(updateContextMenu(contextMenu));
     };
@@ -106,7 +103,6 @@ const withOSRDData = (Component) =>
         dispatchUpdateContextMenu={dispatchUpdateContextMenu}
         dispatchUpdateChart={dispatchUpdateChart}
         dispatchUpdatePositionValues={dispatchUpdatePositionValues}
-
       />
     );
   };
