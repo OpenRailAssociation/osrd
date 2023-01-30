@@ -2,10 +2,9 @@
 name = "osrd"
 version = "0.1.0"
 description = ""
-authors = ["DGEX Solutions <contact@dgexsol.fr>"]
+authors = ["DGEX Solutions <contact@osrd.fr>"]
 
 [tool.poetry.dependencies]
-# base
 python = ">=3.9,<3.11"
 django = "4.1.5"
 numpy = "1.24.1"
@@ -27,17 +26,15 @@ uvloop = { version = "0.17.0", optional = true }
 httptools = { version = "0.5.0", optional = true }
 uvicorn = { version = "0.20.0", optional = true }
 
-# tests
-mock = "^5.0.0"
-
 [tool.poetry.extras]
 production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 
-[tool.poetry.dev-dependencies]
-django-debug-toolbar = "^3.8.1"
+[tool.poetry.group.dev.dependencies]
+mock = "^5.0.1"
 black = "^22.12.0"
-isort = "^5.11.4"
-pyproject-flake8 = "^6.0.0"
+isort = "^5.12.0"
+pyproject-flake8 = "^6.0.0.post1"
+django-debug-toolbar = "^3.8.1"
 django-cors-headers = "^3.13.0"
 
 [tool.flake8]

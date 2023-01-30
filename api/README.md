@@ -10,7 +10,7 @@ Multiple extension are used such as:
 
 ## Getting Started
 
-If you want to contribute to thise service you need:
+If you want to contribute to this service you need:
 
 - A running [postgres](https://www.postgresql.org/) server with [postgis](https://postgis.net/)
 extension.
