@@ -42,7 +42,6 @@ const CHART_MIN_HEIGHT = 250
  */
 export default function SpaceTimeChart(props) {
   const ref = useRef();
-  //const dispatch = useDispatch();
   const { t } = useTranslation(['allowances']);
   const {
     allowancesSettings,
@@ -86,11 +85,9 @@ export default function SpaceTimeChart(props) {
 
   // ACTIONS
 
-  // Everyhing should be done by Hoc, has no direct effect on Comp behavior
+  // Everything should be done by Hoc, has no direct effect on Comp behavior
   const offsetTimeByDragging = (offset) => {
-    // Data preop
     if (dataSimulation) {
-      // better define default props
       const trains = Array.from(dataSimulation.trains);
       trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
       setDataSimulation({ ...simulation, trains });
@@ -98,7 +95,6 @@ export default function SpaceTimeChart(props) {
     }
   };
 
-  // Ok, isolated
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
     setChart({ ...chart, x: chart.y, y: chart.x });
@@ -133,7 +129,6 @@ export default function SpaceTimeChart(props) {
       offsetTimeByDragging,
       false
     );
-    //dispatchUpdateMustRedraw(true);
   };
 
   useEffect(() => {

@@ -18,16 +18,7 @@ function ChartModal(props) {
       setShowModal('');
       const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
       offsetTimeByDragging(seconds);
-      /*
-      changeTrain(
-        {
-          departure_time: simulation.trains[selectedTrain].base.stops[0].time + seconds,
-        },
-        simulation.trains[selectedTrain].id
-      );
-      dispatch(updateMustRedraw(true));
-      */
-    }
+     }
   };
 
   useEffect(() => {
