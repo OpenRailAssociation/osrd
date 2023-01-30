@@ -319,10 +319,18 @@ class ProjectSerializer(HyperlinkedModelSerializer):
             "objectives",
             "description",
             "funders",
+            "image",
             "budget",
             "image",
             "creation_date",
             "last_modification",
             "studies",
             "tags",
+            "url",
         )
+        extra_kwargs = {
+            "url": {
+                "view_name": "projects-detail",
+            },
+            "image": {"write_only": True},
+        }
