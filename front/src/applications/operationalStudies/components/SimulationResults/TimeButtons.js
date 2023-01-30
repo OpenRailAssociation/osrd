@@ -71,7 +71,7 @@ export default function TimeButtons() {
 
   return (
     <div className="d-flex align-items-start">
-      <span className="mr-1">
+      <span className="mr-2">
         <InputSNCF
           noMargin
           type="time"
@@ -81,28 +81,24 @@ export default function TimeButtons() {
           sm
         />
       </span>
-      <button type="button" className="btn btn-sm btn-only-icon mr-1 btn-danger" onClick={stop}>
+      <button type="button" className="btn btn-sm btn-only-icon mr-2 btn-danger" onClick={stop}>
         <FaStop />
       </button>
       <button
         type="button"
-        className={`btn btn-sm btn-only-icon mr-1 ${playReverse ? 'btn-primary' : 'btn-white'}`}
+        className={`btn btn-sm btn-only-icon mr-2 ${playReverse ? 'btn-primary' : 'btn-white'}`}
         onClick={changeReverse}
       >
         <FaBackward />
       </button>
       {playInterval ? (
-        <button
-          type="button"
-          className="btn btn-sm btn-only-icon btn-warning mr-1"
-          onClick={pause}
-        >
+        <button type="button" className="btn btn-sm btn-only-icon btn-warning mr-2" onClick={pause}>
           <FaPause />
         </button>
       ) : (
         <button
           type="button"
-          className="btn btn-sm btn-only-icon btn-success mr-1"
+          className="btn btn-sm btn-only-icon btn-success mr-2"
           onClick={() => play(playReverse)}
         >
           <FaPlay />

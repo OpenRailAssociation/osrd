@@ -20,17 +20,20 @@ select.sm {
     position: sticky;
     border-radius: 4px;
     width: 100%;
-    background: var(--primary);
-    z-index: 2;
+    background: var(--secondary);
+    z-index: 1;
     top: 0;
     left: 0;
-    padding: 0.5rem 0.5rem 0.3rem;
+    padding: 0.5rem;
     margin-bottom: 0.5rem;
     .train-detail {
       min-width: 4.5rem;
       max-height: 2rem;
       padding: 0.1rem;
       line-height: 0.8rem;
+    }
+    .rounded, .form-control, .btn {
+      border-radius: 4px !important;
     }
   }
 
@@ -571,22 +574,22 @@ select.sm {
 
   /* TIMELINE */
   .timeline {
-    background-color: var(--coolgray13);
+    background-color: var(--secondary);
     padding: 0.5rem;
     border-radius: 4px;
     margin-bottom: 0.5rem;
     .tick {
-      color: var(--coolgray3);
+      color: var(--coolgray1);
     }
     .domain {
       opacity: 0.5;
       stroke: var(--coolgray3);
     }
     .grid .tick line {
-      stroke: var(--coolgray3);
+      stroke: var(--coolgray1);
     }
     .timeline-train {
-      stroke: var(--coolgray5);
+      stroke: var(--coolgray1);
       &.selected {
         stroke-width: 2;
         stroke: var(--teal);
