@@ -132,10 +132,10 @@ export default function SimulationResults() {
           {/* SIMULATION : STICKY BAR */}
           <div className="osrd-simulation-sticky-bar">
             <div className="row">
-              <div className="col-lg-4">
+              <div className="col-xl-4">
                 <TimeButtons />
               </div>
-              <div className="col-lg-8">
+              <div className="col-xl-8 d-flex justify-content-end mt-2 mt-xl-0">
                 <TrainDetails />
               </div>
             </div>
