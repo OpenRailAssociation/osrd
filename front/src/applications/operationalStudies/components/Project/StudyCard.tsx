@@ -12,6 +12,7 @@ import { updateStudyID } from 'reducers/osrdconf';
 import { RiFolderChartLine } from 'react-icons/ri';
 
 type Props = {
+  setFilterChips: (arg0: string) => void;
   details: {
     id: number;
     name: string;
@@ -27,11 +28,11 @@ type Props = {
     budget: bigint;
     type: string;
     scenarios: Array<1>;
-    tags: Array<1>;
+    tags: string[];
   };
 };
 
-export default function StudyCard({ details }: Props) {
+export default function StudyCard({ setFilterChips, details }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -82,7 +83,13 @@ export default function StudyCard({ details }: Props) {
       <div className="studies-list-card-footer">
         <div className="studies-list-card-tags">
           {details.tags.map((tag) => (
-            <div className="studies-list-card-tags-tag" key={nextId()}>
+            <div
+              className="studies-list-card-tags-tag"
+              key={nextId()}
+              role="button"
+              tabIndex={0}
+              onClick={() => setFilterChips(tag)}
+            >
               {tag}
             </div>
           ))}

@@ -11,6 +11,7 @@ import { updateProjectID } from 'reducers/osrdconf';
 import { getRandomImage } from '../Helpers/genFakeDataForProjects';
 
 type Props = {
+  setFilterChips: (arg0: string) => void;
   details: {
     id: number;
     name: string;
@@ -18,11 +19,11 @@ type Props = {
     image: string;
     last_modification: Date;
     studies: Array<1>;
-    tags: Array<1>;
+    tags: string[];
   };
 };
 
-export default function ProjectCard({ details }: Props) {
+export default function ProjectCard({ setFilterChips, details }: Props) {
   const { t } = useTranslation('operationalStudies/home');
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -59,7 +60,13 @@ export default function ProjectCard({ details }: Props) {
       <div className="projects-list-project-card-description">{details.description}</div>
       <div className="projects-list-project-card-tags">
         {details.tags.map((tag) => (
-          <div className="projects-list-project-card-tags-tag" key={nextId()}>
+          <div
+            className="projects-list-project-card-tags-tag"
+            key={nextId()}
+            role="button"
+            tabIndex={0}
+            onClick={() => setFilterChips(tag)}
+          >
             {tag}
           </div>
         ))}

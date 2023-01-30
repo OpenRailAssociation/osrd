@@ -23,12 +23,12 @@ import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConst
 import AddAndEditProjectModal from '../components/Project/AddAndEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
-function displayStudiesList(studiesList) {
+function displayStudiesList(studiesList, setFilterChips) {
   return studiesList ? (
     <div className="row no-gutters">
       {studiesList.map((details) => (
         <div className="col-xl-6" key={nextId()}>
-          <StudyCard details={details} />
+          <StudyCard details={details} setFilterChips={setFilterChips} />
         </div>
       ))}
     </div>
@@ -45,6 +45,7 @@ export default function Project() {
   const [projectDetails, setProjectDetails] = useState();
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');
+  const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState('-last_modification');
   const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
@@ -200,7 +201,11 @@ export default function Project() {
               {t('studiesCount', { count: studiesList ? studiesList.length : 0 })}
             </div>
             <div className="flex-grow-1">
-              <FilterTextField setFilter={setFilter} id="studies-filter" />
+              <FilterTextField
+                setFilter={setFilter}
+                filterChips={filterChips}
+                id="studies-filter"
+              />
             </div>
             <OptionsSNCF
               name="projects-sort-filter"
@@ -219,7 +224,7 @@ export default function Project() {
           </div>
 
           <div className="studies-list">
-            {useMemo(() => displayStudiesList(studiesList), [studiesList])}
+            {useMemo(() => displayStudiesList(studiesList, setFilterChips), [studiesList])}
           </div>
         </div>
       </main>
