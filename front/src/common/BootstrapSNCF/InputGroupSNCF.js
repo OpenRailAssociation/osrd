@@ -43,17 +43,12 @@ export default function InputGroupSNCF(props) {
             />
           </button>
           <div
-            className={`dropdown-menu dropdown-menu-right ${isDropdownShown ? 'show' : null}`}
+            className={`dropdown-menu dropdown-menu-right osrd-dropdown-sncf ${
+              isDropdownShown ? 'show' : null
+            }`}
             id={id}
             // eslint-disable-next-line react/no-unknown-property
             x-placement="bottom-end"
-            style={{
-              position: 'absolute',
-              transform: 'translate3d(-47.0333px, 30px, 0px)',
-              top: '0px',
-              left: '0px',
-              willChange: 'transform',
-            }}
           >
             {options.map((option) => (
               <React.Fragment key={nextId()}>
