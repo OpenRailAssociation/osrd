@@ -3,19 +3,29 @@ import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'applications/opendata/components/OpenDataHelpers';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
-import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
 
 export default function TrainDetail(props) {
-  const { trainData, idx } = props;
+  const { trainData, idx, rollingStock } = props;
   const [isOpened, setIsOpened] = useState(false);
+
+  const openCard = () => {
+    if (trainData.etapes.length > 2) {
+      setIsOpened(!isOpened);
+    }
+  };
+
   return (
     <div
-      className="opendata-traindetail"
+      className="opendata-traindetail opendata-traindetail-no-hover"
       role="button"
       tabIndex={0}
-      onClick={() => setIsOpened(!isOpened)}
+      onClick={openCard}
     >
-      <div className="opendata-traindetail-main">
+      <div
+        className={`opendata-traindetail-main ${
+          trainData.etapes.length > 2 ? 'opendata-traindetail-with-hover' : null
+        }`}
+      >
         <span className="opendata-traindetail-idx">{idx + 1}</span>
         <span className="opendata-traindetail-num">
           {trainData.num}
@@ -25,11 +35,13 @@ export default function TrainDetail(props) {
           {trainData.debut} - {trainData.fin}
         </span>
         <span className="opendata-traindetail-duration">{seconds2hhmmss(trainData.duree)}</span>
-        <span className="opendata-traindetail-rollingstock">
-          <span className="opendata-traindetail-rollingstock-img">
-            <RollingStock2Img name={rollingstockOpenData2OSRD[trainData.type_em]} />
+        {rollingStock ? (
+          <span className="opendata-traindetail-rollingstock">
+            <span className="opendata-traindetail-rollingstock-img">
+              <RollingStock2Img rollingStock={rollingStock} />
+            </span>
           </span>
-        </span>
+        ) : null}
         <span className="opendata-traindetail-transilien">{trainData.num_transilien}</span>
         <span
           className={`opendata-traindetail-stepnb ${
@@ -61,4 +73,5 @@ export default function TrainDetail(props) {
 TrainDetail.propTypes = {
   trainData: PropTypes.object.isRequired,
   idx: PropTypes.number.isRequired,
+  rollingStock: PropTypes.object.isRequired,
 };

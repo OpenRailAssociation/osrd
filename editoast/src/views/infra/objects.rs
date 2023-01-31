@@ -76,7 +76,7 @@ async fn get_objects(
     }
 
     // Prepare query
-    let query = if object_type == ObjectType::SwitchType {
+    let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&object_type) {
         format!(
             "SELECT obj_id as obj_id, data as railjson, NULL as geographic, NULL as schematic
                 FROM {} WHERE infra_id = $1 AND obj_id = ANY($2) ",

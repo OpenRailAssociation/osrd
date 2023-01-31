@@ -92,7 +92,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.gamma.type,
                 rjsRollingStock.loadingGauge,
                 modes,
-                rjsRollingStock.effortCurves.defaultMode
+                rjsRollingStock.effortCurves.defaultMode,
+                rjsRollingStock.powerClass
         );
     }
 
@@ -113,7 +114,7 @@ public class RJSRollingStockParser {
     ) {
         if (rjsCond == null)
             throw new MissingRollingStockField(fieldKey);
-        return new RollingStock.EffortCurveConditions(parseComfort(rjsCond.comfort));
+        return new RollingStock.EffortCurveConditions(parseComfort(rjsCond.comfort), rjsCond.electricalProfileLevel);
     }
 
     /** Parse rjsComfort into a RollingStock comfort */

@@ -562,7 +562,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         validators=[
                             osrd_infra.utils.PydanticValidator(
-                                osrd_infra.schemas.external_generated_inputs.ElectricalProfilesList
+                                osrd_infra.schemas.external_generated_inputs.ElectricalProfileSet
                             )
                         ]
                     ),

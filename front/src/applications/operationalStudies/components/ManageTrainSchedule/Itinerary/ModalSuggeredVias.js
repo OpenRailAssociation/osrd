@@ -1,12 +1,19 @@
 import React, { useContext } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
+
+import { adjustPointOnTrack } from 'utils/pathfinding';
+
+import { replaceVias } from 'reducers/osrdconf';
+import { getMapTrackSources } from 'reducers/map/selectors';
+import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
+
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 function LoaderPathfindingInProgress() {
@@ -20,18 +27,27 @@ function LoaderPathfindingInProgress() {
 }
 
 export default function ModalSugerredVias(props) {
-  const { suggeredVias, vias } = useSelector((state) => state.osrdconf);
-  const {
-    convertPathfindingVias,
-    inverseOD,
-    removeAllVias,
-    removeViaFromPath,
-    pathfindingInProgress,
-  } = props;
+  const dispatch = useDispatch();
+  const suggeredVias = useSelector(getSuggeredVias);
+  const vias = useSelector(getVias);
+  const mapTrackSources = useSelector(getMapTrackSources);
+
+  const { inverseOD, removeAllVias, removeViaFromPath, pathfindingInProgress } = props;
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias.length - 1;
   const selectedViasTracks = vias.map((via) => via.position);
   const { closeModal } = useContext(ModalContext);
+
+  const convertPathfindingVias = (steps, idxToAdd) => {
+    const newVias = steps.slice(1, -1).flatMap((step, idx) => {
+      if (!step.suggestion || idxToAdd === idx) {
+        return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
+      }
+      return [];
+    });
+
+    dispatch(replaceVias(newVias));
+  };
 
   const formatVia = (via, idx, idxTrueVia) => (
     <div
@@ -108,7 +124,6 @@ export default function ModalSugerredVias(props) {
 }
 
 ModalSugerredVias.propTypes = {
-  convertPathfindingVias: PropTypes.func.isRequired,
   inverseOD: PropTypes.func.isRequired,
   removeAllVias: PropTypes.func.isRequired,
   removeViaFromPath: PropTypes.func.isRequired,

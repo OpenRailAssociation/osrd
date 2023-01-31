@@ -5,14 +5,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /** An oriented view on a track range. Can be used to iterate over its content */
@@ -167,7 +165,7 @@ public class TrackRangeView {
     }
 
     /** Converts a RangeMap based on the original track so that the positions refer to the range */
-    private <T> ImmutableRangeMap<Double, T> convertMap(RangeMap<Double, T> map) {
+    public <T> ImmutableRangeMap<Double, T> convertMap(RangeMap<Double, T> map) {
         if (getLength() == 0)
             return ImmutableRangeMap.of();
         var builder = ImmutableRangeMap.<Double, T>builder();

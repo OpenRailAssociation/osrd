@@ -55,6 +55,7 @@ def mock_api_call(payload):
             "base_simulations": sim,
             "eco_simulations": sim,
             "speed_limits": [[]],
+            "modes_and_profiles": [[]]
         },
         "departure_time": 0,
     }

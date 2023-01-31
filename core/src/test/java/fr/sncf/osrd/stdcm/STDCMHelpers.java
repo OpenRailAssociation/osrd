@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -33,6 +34,7 @@ public class STDCMHelpers {
         var result = StandaloneSim.run(
                 infra,
                 trainPath,
+                EnvelopeTrainPath.from(trainPath),
                 List.of(new StandaloneTrainSchedule(
                         REALISTIC_FAST_TRAIN,
                         0,

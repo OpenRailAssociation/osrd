@@ -1,9 +1,11 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework_nested import routers
+from django.urls import path, include
 
 from osrd_infra.views import (
     InfraView,
     LightRollingStockView,
     PathfindingView,
+    RollingStockLiveryView,
     RollingStockView,
     TimetableView,
     VersionView,
@@ -11,7 +13,7 @@ from osrd_infra.views import (
 from osrd_infra.views.stdcm import STDCM
 from osrd_infra.views.train_schedule import TrainScheduleView
 
-router = DefaultRouter(trailing_slash=True)
+router = routers.DefaultRouter(trailing_slash=True)
 router.register("infra", InfraView, basename="infra")
 router.register("rolling_stock", RollingStockView, basename="rolling_stock")
 router.register("light_rolling_stock", LightRollingStockView, basename="light_rolling_stock")
@@ -21,4 +23,10 @@ router.register("train_schedule", TrainScheduleView, basename="train_schedule")
 router.register("version", VersionView, basename="version")
 router.register("stdcm", STDCM, basename="stdcm")
 
-urlpatterns = router.urls
+rolling_stock_router = routers.NestedSimpleRouter(router, "rolling_stock", lookup="rolling_stock")
+rolling_stock_router.register("livery", RollingStockLiveryView, basename="rolling_stock_livery")
+
+urlpatterns = [
+    path("", include(router.urls)),
+    path("", include(rolling_stock_router.urls)),
+]

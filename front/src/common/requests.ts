@@ -9,6 +9,9 @@ function formatPath(path: string): string {
   if (path.startsWith('/editoast')) {
     result = `${mainConfig.proxy_editoast}${path.replace('/editoast/', '/')}`;
   }
+  if (path.startsWith('/chartos')) {
+    result = `${mainConfig.proxy_chartis}${path.replace('/chartos/', '/')}`;
+  }
   if (path.startsWith('/layer')) {
     result = `${mainConfig.proxy_chartis}${path}`;
   }
@@ -18,7 +21,7 @@ function formatPath(path: string): string {
 /**
  * Get the axios configuration for the authentification.
  */
-function getAuthConfig(): AxiosRequestConfig {
+export function getAuthConfig(): AxiosRequestConfig {
   return {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('access_token')}`,

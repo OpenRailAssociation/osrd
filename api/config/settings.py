@@ -41,6 +41,7 @@ OSRD_ROOT_PATH = getenv("OSRD_ROOT_PATH", "")
 # contains the protocol needs to be configured for CSRF to work
 PROXY_PROTO_HEADER = getenv("PROXY_PROTO_HEADER")
 
+OSRD_API_URL = getenv("OSRD_API_URL", default="http://localhost:8000")
 OSRD_BACKEND_URL = getenv("OSRD_BACKEND_URL", default="http://localhost:8080")
 OSRD_BACKEND_TOKEN = getenv("OSRD_BACKEND_TOKEN", "")
 

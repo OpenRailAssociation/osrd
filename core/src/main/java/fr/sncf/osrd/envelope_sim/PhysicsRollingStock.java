@@ -27,7 +27,7 @@ public interface PhysicsRollingStock {
     double getRollingResistanceDeriv(double speed);
 
     /** The effort curves to use depending on the position on the path and the comfort level */
-    RangeMap<Double, TractiveEffortPoint[]> mapTractiveEffortCurves(PhysicsPath path, Comfort comfort);
+    CurvesAndConditions mapTractiveEffortCurves(PhysicsPath path, Comfort comfort);
 
     /** Get the effort the train can apply at a given speed, in newtons */
     static double getMaxEffort(double speed, TractiveEffortPoint[] tractiveEffortCurve) {
@@ -52,5 +52,9 @@ public interface PhysicsRollingStock {
 
     /** The maximum acceleration, in m/s^2, which can be applied at a given speed, in m/s */
     record TractiveEffortPoint(double speed, double maxEffort) {
+    }
+
+    record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
+                               RangeMap<Double, PhysicsPath.ModeAndProfile> conditions) {
     }
 }

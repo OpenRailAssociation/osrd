@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
@@ -6,7 +6,7 @@ from .infra import TrackRange
 
 
 class ElectricalProfile(BaseModel):
-    """This class is used to define the electrical profile of a track section.
+    """This class is used to model the power loss along a catenary (thus along ranges of track sections).
     There should be one value per power class, on every electrified track."""
 
     value: str = Field(description="Category of power loss along the range")
@@ -14,11 +14,14 @@ class ElectricalProfile(BaseModel):
     track_ranges: List[TrackRange] = Field(description="List of locations where this profile is applied")
 
 
-class ElectricalProfilesList(BaseModel):
-    """This class is used for storage schema validation."""
+class ElectricalProfileSet(BaseModel):
+    """This class is used to represent a set of electrical profiles, to use in simulation along an infrastructure."""
 
-    __root__: List[ElectricalProfile]
+    levels: List[ElectricalProfile] = Field(description="The list of electrical profiles")
+    level_order: Dict[str, List[str]] = Field(
+        description="A mapping from catenary modes to the electrical profile levels in decreasing order of magnitude"
+    )
 
 
 if __name__ == "__main__":
-    print(ElectricalProfile.schema_json(indent=4))
+    print(ElectricalProfileSet.schema_json(indent=4))

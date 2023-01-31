@@ -61,11 +61,12 @@ jobs:
         with:
           command: test
           args: --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
+      
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin
 
       - name: Coverage
-        uses: actions-rs/tarpaulin@v0.1
-        with:
-          args: "-r ./editoast -- --test-threads 1"
+        run: cargo tarpaulin -r ./editoast --out Xml -- --test-threads 1
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

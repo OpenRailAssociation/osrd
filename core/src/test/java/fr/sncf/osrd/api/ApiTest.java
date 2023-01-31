@@ -1,40 +1,63 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.railjson.parser.RJSParser.parseRailJSONFromFile;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
-import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
+import okhttp3.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 @ExtendWith(MockitoExtension.class)
 public class ApiTest {
-    @Mock
-    static InfraManager infraHandlerMock;
+    InfraManager infraHandlerMock = null;
+
+    ElectricalProfileSetManager electricalProfileSetManagerMock = null;
+
+    private static OkHttpClient mockHttpClient(String regex) throws IOException {
+        final OkHttpClient okHttpClient = mock(OkHttpClient.class);
+        final Call remoteCall = mock(Call.class);
+
+        ArgumentCaptor<Request> argument = ArgumentCaptor.forClass(Request.class);
+        lenient().when(okHttpClient.newCall(argument.capture())).thenReturn(remoteCall);
+        lenient().when(remoteCall.execute()).thenAnswer(
+                invocation -> new Response.Builder().protocol(Protocol.HTTP_1_1).request(argument.getValue())
+                        .code(200).message("OK")
+                        .body(ResponseBody.create(parseMockRequest(argument.getValue(), regex),
+                                MediaType.get("application/json; charset=utf-8"))).build());
+
+        return okHttpClient;
+    }
+
+    private static String parseMockRequest(Request request, String regex) throws IOException {
+        var url = request.url().toString();
+        var matcher = Pattern.compile(regex).matcher(url);
+        if (matcher.matches()) {
+            try {
+                var path = matcher.group(1);
+                return Files.readString(Paths.get(Helpers.getResourcePath(path).toUri()));
+            } catch (IOException e) {
+                throw new IOException("Failed to read mock file", e);
+            } catch (AssertionError e) {
+                return ""; // If we can't find the file we return an empty string
+            }
+        }
+        throw new RuntimeException("Could not parse the given url");
+    }
 
     /**
      * Setup infra handler mock
      */
     @BeforeEach
-    public void setUp() throws InterruptedException {
-        ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-        var wr = new DiagnosticRecorderImpl(true);
-        lenient().when(infraHandlerMock.load(argument.capture(), any(), any())).thenAnswer(
-                invocation ->
-                        SignalingInfraBuilder.fromRJSInfra(
-                                parseRailJSONFromFile(
-                                        Helpers.getResourcePath(argument.getValue()).toString()
-                                ), Set.of(new BAL3(wr)),
-                                wr
-                        )
-        );
+    public void setUp() throws IOException {
+        infraHandlerMock = new InfraManager("http://test.com/", "", mockHttpClient(".*/infra/(.*)/railjson.*"));
+        electricalProfileSetManagerMock = new ElectricalProfileSetManager("http://test.com/", "",
+                mockHttpClient(".*/electrical_profile_set/(.*)/"));
     }
 }

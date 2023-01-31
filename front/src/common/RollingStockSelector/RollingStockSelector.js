@@ -66,7 +66,7 @@ export default function RollingStockSelector() {
             <RollingStockInfos data={rollingStockSelected} showMiddle={false} showEnd={false} />
             <div className="rollingstock-container-img">
               <div className="rollingstock-img">
-                <RollingStock2Img name={rollingStockSelected.name} />
+                <RollingStock2Img rollingStock={rollingStockSelected} />
               </div>
             </div>
             <div className="rollingstock-minicard-end">

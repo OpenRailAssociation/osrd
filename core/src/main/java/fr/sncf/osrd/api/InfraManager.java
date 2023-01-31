@@ -2,25 +2,22 @@ package fr.sncf.osrd.api;
 
 import com.squareup.moshi.JsonDataException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
-public class InfraManager {
+public class InfraManager extends APIClient {
     static final Logger logger = LoggerFactory.getLogger(InfraManager.class);
 
     private final ConcurrentHashMap<String, InfraCacheEntry> infraCache = new ConcurrentHashMap<>();
@@ -51,21 +48,6 @@ public class InfraManager {
         }
     }
 
-    public static final class UnexpectedHttpResponse extends Exception {
-        private static final long serialVersionUID = 1052450937805248669L;
-
-        public final transient Response response;
-
-        UnexpectedHttpResponse(Response response) {
-            super(String.format("unexpected http response %d", response.code()));
-            this.response = response;
-        }
-
-        @Override
-        public String toString() {
-            return super.toString() + ": " + response.toString();
-        }
-    }
 
     public enum InfraStatus {
         INITIALIZING(false),
@@ -78,16 +60,16 @@ public class InfraManager {
         ERROR(true);
 
         static {
-            INITIALIZING.transitions = new InfraStatus[] { DOWNLOADING };
-            DOWNLOADING.transitions = new InfraStatus[] { PARSING_JSON, ERROR };
-            PARSING_JSON.transitions = new InfraStatus[] { PARSING_INFRA, ERROR };
-            PARSING_INFRA.transitions = new InfraStatus[] { CACHED, ERROR };
+            INITIALIZING.transitions = new InfraStatus[]{DOWNLOADING};
+            DOWNLOADING.transitions = new InfraStatus[]{PARSING_JSON, ERROR};
+            PARSING_JSON.transitions = new InfraStatus[]{PARSING_INFRA, ERROR};
+            PARSING_INFRA.transitions = new InfraStatus[]{CACHED, ERROR};
             // if a new version appears
-            CACHED.transitions = new InfraStatus[] { DOWNLOADING };
+            CACHED.transitions = new InfraStatus[]{DOWNLOADING};
             // at the next try
-            TRANSIENT_ERROR.transitions = new InfraStatus[] { DOWNLOADING };
+            TRANSIENT_ERROR.transitions = new InfraStatus[]{DOWNLOADING};
             // if a new version appears
-            ERROR.transitions = new InfraStatus[] { DOWNLOADING };
+            ERROR.transitions = new InfraStatus[]{DOWNLOADING};
         }
 
         private InfraStatus(boolean isStable) {
@@ -124,23 +106,9 @@ public class InfraManager {
         }
     }
 
-    private final OkHttpClient httpClient = new OkHttpClient.Builder()
-            .readTimeout(120, TimeUnit.SECONDS)
-            .build();
 
-    private final String baseUrl;
-    private final String authorizationToken;
-
-    public InfraManager(String baseUrl, String authorizationToken) {
-        this.baseUrl = baseUrl;
-        this.authorizationToken = authorizationToken;
-    }
-
-    private Request buildRequest(String endpointUrl) {
-        var builder = new Request.Builder().url(endpointUrl);
-        if (authorizationToken != null)
-                builder = builder.header("Authorization", authorizationToken);
-        return builder.build();
+    public InfraManager(String baseUrl, String authorizationToken, OkHttpClient httpClient) {
+        super(baseUrl, authorizationToken, httpClient);
     }
 
     @ExcludeFromGeneratedCodeCoverage
@@ -152,12 +120,12 @@ public class InfraManager {
             DiagnosticRecorder diagnosticRecorder
     ) throws InfraLoadException {
         // create a request
-        var endpointUrl = String.format("%sinfra/%s/railjson/?exclude_extensions=true", baseUrl, infraId);
-        var request = buildRequest(endpointUrl);
+        var endpointPath = String.format("infra/%s/railjson/?exclude_extensions=true", infraId);
+        var request = buildRequest(endpointPath);
 
         try {
             // use the client to send the request
-            logger.info("starting to download {}", endpointUrl);
+            logger.info("starting to download {}", request.url());
             cacheEntry.transitionTo(InfraStatus.DOWNLOADING);
 
             var response = httpClient.newCall(request).execute();
@@ -165,7 +133,7 @@ public class InfraManager {
                 throw new UnexpectedHttpResponse(response);
 
             // Parse the response
-            logger.info("parsing the JSON of {}", endpointUrl);
+            logger.info("parsing the JSON of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
 
             RJSInfra rjsInfra;
@@ -177,7 +145,7 @@ public class InfraManager {
                 throw new JsonDataException("RJSInfra is null");
 
             // Parse railjson into a proper infra
-            logger.info("parsing the infra of {}", endpointUrl);
+            logger.info("parsing the infra of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
             var infra = SignalingInfraBuilder.fromRJSInfra(
                     rjsInfra,
@@ -186,7 +154,7 @@ public class InfraManager {
             );
 
             // Cache the infra
-            logger.info("successfully cached {}", endpointUrl);
+            logger.info("successfully cached {}", request.url());
             cacheEntry.infra = infra;
             cacheEntry.expectedVersion = expectedVersion;
             cacheEntry.transitionTo(InfraStatus.CACHED);
@@ -200,7 +168,9 @@ public class InfraManager {
         }
     }
 
-    /** Load an infra given an id. Cache infra for optimized future call */
+    /**
+     * Load an infra given an id. Cache infra for optimized future call
+     */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
     public SignalingInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)

@@ -1,36 +1,54 @@
 package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EnvelopePath implements PhysicsPath {
     public final double length;
 
-    /** The grade curve points */
+    /**
+     * The grade curve points
+     */
     private final double[] gradePositions;
-    /** The grade values between each pair of consecutive points */
+    /**
+     * The grade values between each pair of consecutive points
+     */
     private final double[] gradeValues;
-    /** The cumulative sum of the gradient at each grade position */
+    /**
+     * The cumulative sum of the gradient at each grade position
+     */
     private final double[] gradeCumSum;
-    /** Catenary profiles ranges */
-    private final ImmutableRangeMap<Double, String> catenaryProfiles;
+
+    /**
+     * A range map of modeAndProfiles containing only the catenary electrification modes
+     */
+    private final ImmutableRangeMap<Double, ModeAndProfile> catenaryModeMap;
+
+    /**
+     * Mapping from rolling stock power class to electrical profiles and catenary modes on this path
+     */
+    private HashMap<String, RangeMap<Double, ModeAndProfile>> modeAndProfileMapsByPowerClass = null;
 
     /**
      * Creates a new envelope path, which can be used to perform envelope simulations.
      *
-     * @param length                   the length of the path
-     * @param gradePositions           the points at which the grade (slope) changes
-     * @param gradeValues              the values between consecutive pairs of grade positions
-     * @param catenaryProfiles         range map of catenary profiles
+     * @param length          the length of the path
+     * @param gradePositions  the points at which the grade (slope) changes
+     * @param gradeValues     the values between consecutive pairs of grade positions
+     * @param catenaryModeMap range map of catenary modes
      */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     public EnvelopePath(
             double length,
             double[] gradePositions,
             double[] gradeValues,
-            ImmutableRangeMap<Double, String> catenaryProfiles
+            RangeMap<Double, String> catenaryModeMap
     ) {
         assert gradePositions.length == gradeValues.length + 1;
         assert gradePositions[0] == 0.0;
@@ -41,7 +59,15 @@ public class EnvelopePath implements PhysicsPath {
         this.gradeValues = gradeValues;
         this.length = length;
         this.gradeCumSum = initCumSum(gradePositions, gradeValues);
-        this.catenaryProfiles = catenaryProfiles;
+        this.catenaryModeMap = initCatenaryModes(mergeRanges(catenaryModeMap));
+    }
+
+    private ImmutableRangeMap<Double, ModeAndProfile> initCatenaryModes(RangeMap<Double, String> catenaryModes) {
+        TreeRangeMap<Double, ModeAndProfile> modeAndProfileMap = TreeRangeMap.create();
+        for (var modeEntry : catenaryModes.asMapOfRanges().entrySet()) {
+            modeAndProfileMap.put(modeEntry.getKey(), new ModeAndProfile(modeEntry.getValue(), null));
+        }
+        return ImmutableRangeMap.copyOf(modeAndProfileMap);
     }
 
     private double[] initCumSum(double[] gradePositions, double[] gradeValues) {
@@ -97,8 +123,60 @@ public class EnvelopePath implements PhysicsPath {
         return endPos;
     }
 
+    /**
+     * Add electrical profile data to the path
+     */
+    public void setElectricalProfiles(Map<String, RangeMap<Double, String>> electricalProfilesByPowerClass) {
+        modeAndProfileMapsByPowerClass = new HashMap<>();
+
+        for (var powerClassEntry : electricalProfilesByPowerClass.entrySet()) {
+            var profileMap = mergeRanges(powerClassEntry.getValue());
+            TreeRangeMap<Double, ModeAndProfile> profilesAndModes = TreeRangeMap.create();
+            profilesAndModes.put(Range.closed(0.0, length), new ModeAndProfile(null, null));
+            profilesAndModes.putAll(catenaryModeMap);
+
+            for (var profileEntry : profileMap.asMapOfRanges().entrySet()) {
+                for (var entry : catenaryModeMap.subRangeMap(profileEntry.getKey()).asMapOfRanges().entrySet()) {
+                    var mode = entry.getValue().mode();
+                    var profileLevel = profileEntry.getValue();
+                    profilesAndModes.put(entry.getKey(), new ModeAndProfile(mode, profileLevel));
+                }
+            }
+            modeAndProfileMapsByPowerClass.put(powerClassEntry.getKey(), ImmutableRangeMap.copyOf(profilesAndModes));
+        }
+    }
+
     @Override
-    public RangeMap<Double, String> getCatenaryProfileMap() {
-        return catenaryProfiles;
+    public RangeMap<Double, ModeAndProfile> getModeAndProfileMap(String powerClass) {
+        if (modeAndProfileMapsByPowerClass == null)
+            return catenaryModeMap;
+        return modeAndProfileMapsByPowerClass.getOrDefault(powerClass, catenaryModeMap);
+    }
+
+    /**
+     * Returns a range map where the adjacent ranges of same values have been merged
+     */
+    static <T> RangeMap<Double, T> mergeRanges(RangeMap<Double, T> map) {
+        TreeRangeMap<Double, T> result = TreeRangeMap.create();
+        var entryIterator = map.asMapOfRanges().entrySet().iterator();
+        if (!entryIterator.hasNext())
+            return result;
+        var currentEntry = entryIterator.next();
+        var currentRange = currentEntry.getKey();
+        var currentValue = currentEntry.getValue();
+        while (entryIterator.hasNext()) {
+            var nextEntry = entryIterator.next();
+            var nextRange = nextEntry.getKey();
+            var nextValue = nextEntry.getValue();
+            if (currentValue.equals(nextValue) && currentRange.isConnected(nextRange)) {
+                currentRange = Range.closedOpen(currentRange.lowerEndpoint(), nextRange.upperEndpoint());
+            } else {
+                result.put(currentRange, currentValue);
+                currentRange = nextRange;
+                currentValue = nextValue;
+            }
+        }
+        result.put(currentRange, currentValue);
+        return result;
     }
 }

@@ -162,7 +162,7 @@ export default function RollingStockCardDetail(props) {
       />
       <div className="rollingstock-detail-container-img">
         <div className="rollingstock-detail-img">
-          <RollingStock2Img name={data.name} />
+          <RollingStock2Img rollingStock={data} />
         </div>
       </div>
     </div>

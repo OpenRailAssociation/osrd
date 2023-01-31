@@ -108,7 +108,7 @@ public class STDCMStandardAllowance {
             TreeSet<Double> rangeTransitions
     ) {
         var allowance = new MarecoAllowance(
-                new EnvelopeSimContext(rollingStock, physicsPath, timeStep, comfort),
+                EnvelopeSimContext.build(rollingStock, physicsPath, timeStep, comfort),
                 0,
                 envelope.getEndPos(),
                 1,

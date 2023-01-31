@@ -30,7 +30,7 @@ public class FlatPath implements PhysicsPath {
     }
 
     @Override
-    public RangeMap<Double, String> getCatenaryProfileMap() {
+    public RangeMap<Double, ModeAndProfile> getModeAndProfileMap(String powerClass) {
         return TreeRangeMap.create();
     }
 }

@@ -46,7 +46,7 @@ public class MaxEffortEnvelopeTest {
     public void testFlat() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 6000, testPath.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, DECREASING, INCREASING, DECREASING);
@@ -61,7 +61,7 @@ public class MaxEffortEnvelopeTest {
     public void testFlatNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 6000, testPath.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, DECREASING, INCREASING, CONSTANT, DECREASING);
@@ -76,7 +76,7 @@ public class MaxEffortEnvelopeTest {
     public void testSteep() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 20);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 6000, testPath.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, DECREASING, INCREASING, DECREASING);
@@ -91,7 +91,7 @@ public class MaxEffortEnvelopeTest {
     public void testSteepNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 20);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 6000, testPath.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, DECREASING, INCREASING, DECREASING);
@@ -106,7 +106,7 @@ public class MaxEffortEnvelopeTest {
     public void testWithComplexMRSP() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, INCREASING, CONSTANT, DECREASING, CONSTANT,
@@ -118,7 +118,7 @@ public class MaxEffortEnvelopeTest {
     public void testAccelerationInShortPart() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { testPath.getLength() - 1, testPath.getLength() };
         makeSimpleMaxEffortEnvelope(testContext, 10000, stops);
     }
@@ -127,7 +127,7 @@ public class MaxEffortEnvelopeTest {
     public void testOverlappingBrakingCurves() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] {};
         var mrspBuilder = new MRSPEnvelopeBuilder();
         mrspBuilder.addPart(EnvelopePart.generateTimes(

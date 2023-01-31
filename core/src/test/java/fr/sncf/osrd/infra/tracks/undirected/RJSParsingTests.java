@@ -135,6 +135,9 @@ public class RJSParsingTests {
     @Test
     public void testLoadingSmallInfra() throws Exception {
         Helpers.getExampleInfra("small_infra/infra.json");
-        Helpers.getExampleElectricalProfiles("small_infra/external_generated_inputs.json");
+        var profiles = Helpers.getExampleElectricalProfiles("small_infra/external_generated_inputs.json");
+        assert profiles != null;
+        assert profiles.levels.size() > 0;
+        assert profiles.levels.get(0).powerClass != null;
     }
 }

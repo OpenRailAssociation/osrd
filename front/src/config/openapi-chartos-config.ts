@@ -3,7 +3,7 @@ import type { ConfigFile } from '@rtk-query/codegen-openapi';
 const config: ConfigFile = {
   schemaFile: '../../../chartos/openapi.yaml',
   apiFile: '../common/api/emptyApi.ts',
-  apiImport: 'emptySplitApi',
+  apiImport: 'baseChartosApi',
   outputFile: '../common/api/osrdChartosApi.ts',
   exportName: 'osrdChartosApi',
   hooks: false,

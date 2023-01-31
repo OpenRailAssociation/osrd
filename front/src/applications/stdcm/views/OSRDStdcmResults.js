@@ -39,7 +39,7 @@ export default function OSRDStcdmResults(props) {
   ) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer" style={{ height: '115vh' }}>
-        <div className="osrd-simulation-container mb-2 mx-3">
+        <div className="osrd-simulation-container mb-2 mx-3 simulation-results">
           <h1 className="text-center text-info">
             <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
           </h1>
@@ -48,7 +48,7 @@ export default function OSRDStcdmResults(props) {
             <div className="speedspacechart-container" style={{ height: '450px' }}>
               <SpeedSpaceChart heightOfSpeedSpaceChart={450} showSettings={false} />
             </div>
-            <div className="speedspacechart-container" style={{ height: '450px' }}>
+            <div className="spacetimechart-container" style={{ height: '450px' }}>
               <SpaceTimeChart heightOfSpaceTimeChart={450} />
             </div>
           </div>

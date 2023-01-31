@@ -29,7 +29,7 @@ public class TrainPhysics {
     @Test
     public void testSlopeNoTraction() {
         var testPath = new FlatPath(100000, -40);
-        var context = new EnvelopeSimContext(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
         double position = 0.0;
         double speed = 0.0;
 
@@ -48,7 +48,7 @@ public class TrainPhysics {
     @Test
     public void testSteepSlopeTraction() {
         var testPath = new FlatPath(100000, -45);
-        var context = new EnvelopeSimContext(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
         double position = 0.0;
         double speed = 0.0;
 
@@ -65,7 +65,7 @@ public class TrainPhysics {
     @Test
     public void testSlopeChangeVMax() {
         var testPath = new FlatPath(100000, 0);
-        var context = new EnvelopeSimContext(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
         double position = 0.0;
         double speed = 0.0;
 
@@ -81,7 +81,7 @@ public class TrainPhysics {
 
         // continue the simulation, but with some slope
         var newTestPath = new FlatPath(100000, 35);
-        var newContext = new EnvelopeSimContext(
+        var newContext = EnvelopeSimContext.build(
                 TEST_ROLLING_STOCK, newTestPath, TIME_STEP, RollingStock.Comfort.STANDARD);
         for (int i = 0; i < 20 * 60; i++) {
             var step = TrainPhysicsIntegrator.step(newContext, position, speed, Action.ACCELERATE, +1);
@@ -96,7 +96,7 @@ public class TrainPhysics {
     @Test
     public void testAccelerateAndCoast() {
         var testPath = new FlatPath(100000, 0);
-        var context = new EnvelopeSimContext(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
         double position = 0.0;
         double speed = 0.0;
 
@@ -133,7 +133,7 @@ public class TrainPhysics {
     @Test
     public void testEmptyCoastFromBeginning() {
         var testPath = new FlatPath(100000, 0);
-        var context = new EnvelopeSimContext(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
         var builder = new EnvelopePartBuilder();
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 builder,

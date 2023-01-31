@@ -93,6 +93,10 @@ class Gamma(BaseModel, extra=Extra.forbid):
     value: PositiveFloat
 
 
+class RollingStockLivery(BaseModel):
+    name: constr(max_length=255)
+
+
 class RollingStock(BaseModel, extra=Extra.forbid):
     version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
