@@ -39,9 +39,7 @@ export default function TrainDetail(props) {
         {rollingStock ? (
           <LazyLoadComponent>
             <span className="opendata-traindetail-rollingstock">
-              <span className="opendata-traindetail-rollingstock-img">
-                <RollingStock2Img rollingStock={rollingStock} />
-              </span>
+              <RollingStock2Img rollingStock={rollingStock} />
             </span>
           </LazyLoadComponent>
         ) : null}

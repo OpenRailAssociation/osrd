@@ -18,7 +18,7 @@ function RollingStockCard(props) {
     voltages: [],
   });
   const [curvesComfortList, setCurvesComfortList] = useState();
-  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen } = props;
+  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected } = props;
   const ref2scrollWhenOpened = useRef();
 
   function displayCardDetail() {
@@ -48,7 +48,9 @@ function RollingStockCard(props) {
 
   return (
     <div
-      className={`rollingstock-container mb-3 ${isOpen ? 'active' : 'inactive'}`}
+      className={`rollingstock-container mb-3 ${isOpen ? 'active' : 'inactive'} ${
+        noCardSelected ? 'solid' : ''
+      }`}
       role="button"
       onClick={displayCardDetail}
       tabIndex={0}
@@ -79,9 +81,7 @@ function RollingStockCard(props) {
         <LazyLoadComponent>
           <div className="rollingstock-body-container-img">
             <div className="rollingstock-body-img">
-              <div className="rollingstock-img">
-                <RollingStock2Img rollingStock={data} />
-              </div>
+              <RollingStock2Img rollingStock={data} />
             </div>
           </div>
         </LazyLoadComponent>
@@ -156,6 +156,7 @@ RollingStockCard.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
   ref2scroll: PropTypes.object,
+  noCardSelected: PropTypes.bool.isRequired,
 };
 
 const MemoizedRollingStockCard = React.memo(RollingStockCard);

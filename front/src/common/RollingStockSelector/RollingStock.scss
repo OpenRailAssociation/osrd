@@ -134,6 +134,9 @@
   width: 100%;
   cursor: pointer;
   border-radius: 4px;
+  &.solid {
+    opacity: 1 !important;
+  }
   &.inactive:not(:hover) {
     transition: .5s;
     opacity: .5;
@@ -220,16 +223,12 @@
   border-right: 2px solid var(--coolgray3);
   .rollingstock-body-img {
     overflow: hidden;
-    .rollingstock-img {
+    img {
       height: 2rem;
-      white-space: nowrap;
-      transform: scale(.4); // Have to scale whole <img> because electric trains with pantograph have taller pictures
-      transform-origin: left;
-      img {
-        display: inline-block;
-        position: relative;
-        vertical-align: baseline;
-      }
+      display: inline-block;
+      padding-top: .75rem;
+      position: relative;
+      vertical-align: baseline;
     }
   }
 }

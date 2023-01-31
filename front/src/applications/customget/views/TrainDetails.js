@@ -1,10 +1,9 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 export default function TrainDetails() {
   const { positionValues, timePosition } = useSelector((state) => state.osrdsimulation);
-  const dispatch = useDispatch();
 
   const { t } = useTranslation(['simulation']);
 
