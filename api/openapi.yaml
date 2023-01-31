@@ -1163,7 +1163,59 @@ paths:
       responses:
         204:
           description: No content
-
+  /projects/{project_id}/study_types/:
+    get:
+      tags:
+        - studies
+      summary: Retrieve list of study types
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the operational study
+      responses:
+        200:
+          description: The list of study types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  [
+                    "Time tables",
+                    "Flow rate",
+                    "Park sizing",
+                    "Garage requirement bearings",
+                    "Operation or sizing of a maintenance centre or garage",
+                    "Operability",
+                    "Strategic planning",
+                    "Chart Stability",
+                    Disturbance tests",
+                  ]
+  /projects/{project_id}/study_states/:
+    get:
+      tags:
+        - studies
+      summary: Retrieve list of study states
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the operational study
+      responses:
+        200:
+          description: The list of study states
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["Started", "In progress", "Finish"]
   /projects/{project_id}/studies/{study_id}/scenarios/:
     post:
       tags:
@@ -2087,8 +2139,9 @@ components:
             type: string
         budget:
           type: integer
-        image:
-          type: object
+        image_url:
+          type: string
+          description: the image url
         creation_date:
           type: string
           format: date-time
@@ -2135,20 +2188,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["Started", "InProgress", "Finish"]
+          enum: ["Started", "In progress", "Finish"]
         type:
           type: string
           enum:
             [
-              "TimeTable",
-              "FlowRate",
-              "ParkSizing",
-              "GarageRequirement",
-              "OperationOrSizing",
+              "Time tables",
+              "Flow rate",
+              "Park sizing",
+              "Garage requirement bearings",
+              "Operation or sizing of a maintenance centre or garage",
               "Operability",
-              "StrategicPlanning",
-              "ChartStability",
-              "Disturbance",
+              "Strategic planning",
+              "Chart Stability",
+              "Disturbance tests",
             ]
       required:
         - "name"
@@ -2187,20 +2240,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["Started", "InProgress", "Finish"]
+          enum: ["Started", "In progress", "Finish"]
         type:
           type: string
           enum:
             [
-              "TimeTable",
-              "FlowRate",
-              "ParkSizing",
-              "GarageRequirement",
-              "OperationOrSizing",
+              "Time tables",
+              "Flow rate",
+              "Park sizing",
+              "Garage requirement bearings",
+              "Operation or sizing of a maintenance centre or garage",
               "Operability",
-              "StrategicPlanning",
-              "ChartStability",
-              "Disturbance",
+              "Strategic planning",
+              "Chart Stability",
+              "Disturbance tests",
             ]
     ScenarioRequest:
       properties:

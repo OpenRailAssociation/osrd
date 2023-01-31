@@ -54,9 +54,9 @@ class RollingStockLiverySerializer(NestedHyperlinkedModelSerializer):
 
     class Meta:
         model = RollingStockLivery
-        fields = ["name", "url"]
+        fields = ["name", "image_url"]
         extra_kwargs = {
-            "url": {
+            "image_url": {
                 "view_name": "rolling_stock_livery-detail",
             }
         }
@@ -69,7 +69,7 @@ class RollingStockSerializer(ModelSerializer):
         model = RollingStock
         exclude = ["image"]
         extra_kwargs = {
-            "url": {
+            "image_url": {
                 "view_name": "rolling_stock-detail",
             }
         }
@@ -308,10 +308,19 @@ class StudySerializer(NestedHyperlinkedModelSerializer):
 class ProjectSerializer(HyperlinkedModelSerializer):
 
     studies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    image_url = serializers.SerializerMethodField("get_image_url")
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.image:
+            image_url = request.build_absolute_uri(f"/projects/{obj.pk}/image/")
+            return image_url
+        return None
 
     class Meta:
         model = Project
         fields = (
+            "image_url",
             "id",
             "name",
             "objectives",
@@ -319,15 +328,13 @@ class ProjectSerializer(HyperlinkedModelSerializer):
             "funders",
             "image",
             "budget",
-            "image",
             "creation_date",
             "last_modification",
             "studies",
             "tags",
-            "url",
         )
         extra_kwargs = {
-            "url": {
+            "image_url": {
                 "view_name": "projects-detail",
             },
             "image": {"write_only": True},
