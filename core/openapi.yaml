@@ -424,6 +424,14 @@ components:
               mapping:
                 navigate: "#/components/schemas/NavigatePhase"
                 stop: "#/components/schemas/StopPhase"
+        options:
+          type: object
+          nullable: true
+          properties:
+            ignore_electrical_profiles:
+              type: boolean
+              default: false
+              nullable: true
     NavigatePhase:
       required:
         - type

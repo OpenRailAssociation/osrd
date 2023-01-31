@@ -222,7 +222,8 @@ public class STDCMEndpoint implements Take {
                         List.of(new TrainStop(path.length(), 0.1)),
                         List.of(),
                         null,
-                        comfort
+                        comfort,
+                        null
                 )),
                 timeStep
         );
@@ -241,7 +242,7 @@ public class STDCMEndpoint implements Take {
     ) {
         List<TrainStop> trainStops = new ArrayList<>();
         trainStops.add(new TrainStop(envelope.getEndPos(), 0.1));
-        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort);
+        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort, null);
     }
 }
 
