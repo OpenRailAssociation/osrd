@@ -99,7 +99,6 @@ function drawTrain(
   setResetChart,
   force = false
 ) {
-  console.log('datasimulation: ', dataSimulation.modesAndProfiles);
   if (chart && (mustRedraw || force)) {
     const chartLocal = chart;
     chartLocal.drawZone.select('g').remove();
@@ -226,7 +225,7 @@ function drawTrain(
 
         const electricalProfileColors = segment.usedProfile
           ? {
-              25000: { 25000: '#6E1E78', 22500: '#713c78', 20000: '#755a78' },
+              25000: { 25000: '#6E1E78', 22500: '#a453ad', 20000: '#dd87e5' },
               1500: {
                 O: '#FF0037',
                 A: '#ff335f',

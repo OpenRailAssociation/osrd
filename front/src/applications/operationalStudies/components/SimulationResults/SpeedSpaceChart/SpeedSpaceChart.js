@@ -15,9 +15,6 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
-import { get } from 'common/requests';
-import { useSelector } from 'react-redux';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -44,53 +41,6 @@ const CHART_MIN_HEIGHT = 250;
     onSetBaseHeightOfSpeedSpaceChart,
     dispatchUpdateMustRedraw,
   } = props;
-
-  //
-  //
-  //
-  //
-  //
-  //
-
-  const timetableID = useSelector(getTimetableID);
-
-  const [timeTableElectricalProfile, setTimeTableElectricalProfile] = useState(1);
-
-  const getTimeTableElectricalProfile = async (id) => {
-    try {
-      const response = await get(`/timetable/${id}/`);
-      setTimeTableElectricalProfile(response.electrical_profile_set);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const [electricalProfile, setElectricalProfile] = useState({});
-
-  const getElectricalProfile = async (id) => {
-    try {
-      const response = await get(`/editoast/electrical_profile_set/${id}/level_order/`);
-      setElectricalProfile(response);
-    } catch (err) {
-      console.log('ERROR', err);
-    }
-  };
-
-  useEffect(() => {
-    getTimeTableElectricalProfile(timetableID);
-    getElectricalProfile(timeTableElectricalProfile);
-  }, [timetableID, timeTableElectricalProfile]);
-
-  console.log('timeTbl-Elec-Prfl: ', timeTableElectricalProfile);
-  console.log('elec-Prfl: ', electricalProfile);
-  console.log('trains: ', simulation.trains);
-
-  //
-  //
-  //
-  //
-  //
-  //
 
   const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
@@ -120,6 +70,9 @@ const CHART_MIN_HEIGHT = 250;
     () => prepareData(simulation, selectedTrain, keyValues),
     [simulation, selectedTrain, keyValues]
   );
+  // console.log('datasimulation: ', dataSimulation);
+  console.log('simulation: ', simulation);
+
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
