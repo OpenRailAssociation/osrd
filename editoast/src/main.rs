@@ -1,12 +1,8 @@
 #[macro_use]
-extern crate rocket;
-#[macro_use]
 extern crate diesel;
 
-mod api_error;
 mod client;
-mod cors;
-mod db_connection;
+mod error;
 mod generated_data;
 mod infra;
 mod infra_cache;
@@ -16,6 +12,10 @@ mod tables;
 mod views;
 
 use crate::schema::RailJson;
+use actix_cors::Cors;
+use actix_web::middleware::{Logger, NormalizePath};
+use actix_web::web::{Data, JsonConfig};
+use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
@@ -23,21 +23,19 @@ use client::{
     RunserverArgs,
 };
 use colored::*;
-use db_connection::{DBConnection, RedisPool};
+use diesel::r2d2::{self, ConnectionManager, Pool};
 use diesel::{Connection, PgConnection};
 use infra::Infra;
 use infra_cache::InfraCache;
 use map::MapLayers;
-use rocket::{Build, Config, Rocket};
-use rocket_db_pools::deadpool_redis::{Config as RedisPoolConfig, Runtime};
-use rocket_db_pools::Database;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
-use std::sync::Arc;
 
-#[rocket::main]
+type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+
+#[actix_web::main]
 async fn main() {
     match run().await {
         Ok(_) => (),
@@ -60,48 +58,6 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::ImportRailjson(args) => import_railjson(args, pg_config),
     }
 }
-/// Create a rocket server given the config
-pub fn create_server(
-    runserver_config: &RunserverArgs,
-    pg_config: &PostgresConfig,
-    redis_config: &RedisConfig,
-) -> Rocket<Build> {
-    // Config server
-    let mut config = Config::figment()
-        .merge(("port", runserver_config.port))
-        .merge(("address", runserver_config.address.clone()))
-        .merge(("databases.postgres.url", pg_config.url()))
-        .merge(("databases.postgres.pool_size", pg_config.pool_size))
-        .merge(("databases.postgres.timeout", 10))
-        .merge(("databases.redis.url", redis_config.redis_url.clone()))
-        .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
-    ;
-
-    // Set secret key
-    if let Some(secret_key) = client::get_secret_key() {
-        config = config.merge(("secret_key", secret_key));
-    } else if config.profile() != "debug" {
-        eprintln!(
-            "{}",
-            "Error: No secret key set. This is a security risk!".red()
-        );
-        exit(1);
-    }
-
-    let mut rocket = rocket::custom(config)
-        .attach(DBConnection::fairing())
-        .attach(RedisPool::init())
-        .attach(cors::Cors)
-        .manage(Arc::<CHashMap<i64, InfraCache>>::default())
-        .manage(MapLayers::parse())
-        .manage(runserver_config.map_layers_config.clone());
-
-    // Mount routes
-    for (base, routes) in views::routes() {
-        rocket = rocket.mount(base, routes);
-    }
-    rocket
-}
 
 /// Create and run the server
 async fn runserver(
@@ -110,18 +66,56 @@ async fn runserver(
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("Building server...");
-    let rocket = create_server(&args, &pg_config, &redis_config);
+    // Config databases
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Pool::builder()
+        .max_size(pg_config.pool_size)
+        .build(manager)
+        .expect("Failed to create pool.");
+    let redis = redis::Client::open(redis_config.redis_url.clone()).unwrap();
+
+    // Custom Json extractor configuration
+    let json_cfg = JsonConfig::default()
+        .limit(250 * 1024 * 1024) // 250MB
+        .error_handler(|err, _| err.into());
+
+    // Set the default log level to 'info'
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
+    let server = HttpServer::new(move || {
+        // Build CORS
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header();
+
+        App::new()
+            .wrap(cors)
+            .wrap(NormalizePath::trim())
+            .wrap(Logger::default())
+            .app_data(json_cfg.clone())
+            .app_data(Data::new(pool.clone()))
+            .app_data(Data::new(redis.clone()))
+            .app_data(Data::new(CHashMap::<i64, InfraCache>::default()))
+            .app_data(Data::new(MapLayers::parse()))
+            .app_data(Data::new(args.map_layers_config.clone()))
+            .service(views::routes())
+    });
+
     // Run server
     println!("Running server...");
-    let _rocket = rocket.launch().await?;
+    server
+        .bind((args.address.clone(), args.port))?
+        .run()
+        .await?;
     Ok(())
 }
 
 async fn build_redis_pool_and_invalidate_all_cache(redis_url: &str, infra_id: i64) {
-    let cfg = RedisPoolConfig::from_url(redis_url);
-    let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
+    let redis = redis::Client::open(redis_url).unwrap();
+    let mut conn = redis.get_tokio_connection_manager().await.unwrap();
     map::invalidate_all(
-        &RedisPool(pool),
+        &mut conn,
         &MapLayers::parse().layers.keys().cloned().collect(),
         infra_id,
     )

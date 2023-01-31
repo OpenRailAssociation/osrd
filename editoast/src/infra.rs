@@ -1,14 +1,14 @@
-use crate::api_error::ApiError;
+use crate::error::{EditoastError, Result};
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl;
+use actix_web::http::StatusCode;
 use chrono::{NaiveDateTime, Utc};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::Text;
 use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
-use rocket::http::Status;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use thiserror::Error;
@@ -39,73 +39,58 @@ pub enum InfraApiError {
     /// Couldn't found the infra with the given id
     #[error("Infra '{0}', could not be found")]
     NotFound(i64),
-    #[error("An internal diesel error occurred: '{}'", .0.to_string())]
-    DieselError(DieselError),
 }
 
-impl ApiError for InfraApiError {
-    fn get_status(&self) -> Status {
-        match self {
-            InfraApiError::NotFound(_) => Status::NotFound,
-            InfraApiError::DieselError(_) => Status::InternalServerError,
-        }
+impl EditoastError for InfraApiError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::NOT_FOUND
     }
 
     fn get_type(&self) -> &'static str {
-        match self {
-            InfraApiError::NotFound(_) => "editoast:infra:NotFound",
-            InfraApiError::DieselError(_) => "editoast:infra:DieselError",
-        }
+        "editoast:infra:NotFound"
     }
 
-    fn extra(&self) -> Option<Map<String, Value>> {
+    fn context(&self) -> Map<String, Value> {
         match self {
             InfraApiError::NotFound(infra_id) => json!({
                 "infra_id": infra_id,
             })
             .as_object()
-            .cloned(),
-            _ => None,
+            .cloned()
+            .unwrap(),
         }
     }
 }
 
 impl Infra {
-    pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra, Box<dyn ApiError>> {
+    pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
         match dsl::osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
-            Err(e) => Err(Box::new(InfraApiError::DieselError(e))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(e) => Err(e.into()),
         }
     }
 
-    pub fn retrieve_for_update(
-        conn: &mut PgConnection,
-        infra_id: i64,
-    ) -> Result<Infra, Box<dyn ApiError>> {
+    pub fn retrieve_for_update(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
         match dsl::osrd_infra_infra
             .for_update()
             .find(infra_id)
             .first(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
-            Err(e) => Err(Box::new(InfraApiError::DieselError(e))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(e) => Err(e.into()),
         }
     }
 
-    pub fn rename(
-        conn: &mut PgConnection,
-        infra_id: i64,
-        new_name: String,
-    ) -> Result<Infra, Box<dyn ApiError>> {
+    pub fn rename(conn: &mut PgConnection, infra_id: i64, new_name: String) -> Result<Infra> {
         match update(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id)))
             .set(dsl::name.eq(new_name))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 
@@ -122,7 +107,7 @@ impl Infra {
             .expect("List infra query failed")
     }
 
-    pub fn bump_version(&self, conn: &mut PgConnection) -> Result<Self, Box<dyn ApiError>> {
+    pub fn bump_version(&self, conn: &mut PgConnection) -> Result<Self> {
         let new_version = self
             .version
             .parse::<u32>()
@@ -134,57 +119,45 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 
-    pub fn bump_generated_version(
-        &self,
-        conn: &mut PgConnection,
-    ) -> Result<Self, Box<dyn ApiError>> {
+    pub fn bump_generated_version(&self, conn: &mut PgConnection) -> Result<Self> {
         match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
             .set(dsl::generated_version.eq(&self.version))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 
-    pub fn downgrade_generated_version(
-        &self,
-        conn: &mut PgConnection,
-    ) -> Result<Self, Box<dyn ApiError>> {
+    pub fn downgrade_generated_version(&self, conn: &mut PgConnection) -> Result<Self> {
         match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
             .set(dsl::generated_version.eq::<Option<String>>(None))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 
-    pub fn update_modified_timestamp_to_now(
-        &self,
-        conn: &mut PgConnection,
-    ) -> Result<Self, Box<dyn ApiError>> {
+    pub fn update_modified_timestamp_to_now(&self, conn: &mut PgConnection) -> Result<Self> {
         match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
             .set(dsl::modified.eq(Utc::now().naive_utc()))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 
-    pub fn create<T: AsRef<str>>(
-        infra_name: T,
-        conn: &mut PgConnection,
-    ) -> Result<Infra, Box<dyn ApiError>> {
+    pub fn create<T: AsRef<str>>(infra_name: T, conn: &mut PgConnection) -> Result<Infra> {
         match sql_query(
             "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked, created, modified
             )
@@ -196,31 +169,27 @@ impl Infra {
         .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(err) => Err(err.into()),
         }
     }
 
-    pub fn delete(infra_id: i64, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
+    pub fn delete(infra_id: i64, conn: &mut PgConnection) -> Result<()> {
         match delete(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
-            Ok(_) => Err(Box::new(InfraApiError::NotFound(infra_id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Ok(_) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 
     /// Lock or unlock the infra whether `lock` is true or false
-    pub fn set_locked(
-        &self,
-        lock: bool,
-        conn: &mut PgConnection,
-    ) -> Result<Self, Box<dyn ApiError>> {
+    pub fn set_locked(&self, lock: bool, conn: &mut PgConnection) -> Result<Self> {
         match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
             .set(dsl::locked.eq(lock))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 
@@ -233,7 +202,7 @@ impl Infra {
         conn: &mut PgConnection,
         force: bool,
         infra_cache: &InfraCache,
-    ) -> Result<bool, Box<dyn ApiError>> {
+    ) -> Result<bool> {
         // Check if refresh is needed
         if !force
             && self.generated_version.is_some()
@@ -251,7 +220,7 @@ impl Infra {
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` acordingly.
-    pub fn clear(&self, conn: &mut PgConnection) -> Result<bool, Box<dyn ApiError>> {
+    pub fn clear(&self, conn: &mut PgConnection) -> Result<bool> {
         generated_data::clear_all(conn, self.id)?;
         self.downgrade_generated_version(conn)?;
         Ok(true)
@@ -262,9 +231,10 @@ impl Infra {
 pub mod tests {
     use super::Infra;
     use crate::client::PostgresConfig;
+    use actix_web::http::StatusCode;
+    use actix_web::ResponseError;
     use diesel::result::Error;
     use diesel::{Connection, PgConnection};
-    use rocket::http::Status;
 
     pub fn test_infra_transaction(fn_test: fn(&mut PgConnection, Infra)) {
         let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
@@ -288,7 +258,7 @@ pub mod tests {
         test_infra_transaction(|conn, infra| {
             assert!(Infra::delete(infra.id, conn).is_ok());
             let err = Infra::delete(infra.id, conn).unwrap_err();
-            assert_eq!(err.get_status(), Status::NotFound);
+            assert_eq!(err.status_code(), StatusCode::NOT_FOUND);
         });
     }
 

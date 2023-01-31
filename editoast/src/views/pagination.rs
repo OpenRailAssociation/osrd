@@ -1,29 +1,46 @@
+use actix_web::http::StatusCode;
 use diesel::query_builder::*;
 use diesel::sql_query;
-use rocket::http::Status;
-use std::error::Error;
-use std::fmt::Display;
+use serde::Deserialize;
+use serde::Serialize;
+use thiserror::Error;
 
-use crate::api_error::ApiError;
+use crate::error::EditoastError;
 
-/// Simple pagination error
-#[derive(Debug)]
-pub struct PaginationError;
-impl Error for PaginationError {}
-
-impl Display for PaginationError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Invalid page")
-    }
+/// A paginated response
+#[derive(Debug, Serialize)]
+pub struct PaginatedResponse<T: Serialize> {
+    pub count: u64,
+    pub previous: Option<i64>,
+    pub next: Option<i64>,
+    pub results: Vec<T>,
 }
 
-impl ApiError for PaginationError {
-    fn get_status(&self) -> Status {
-        Status::NotFound
+#[derive(Debug, Clone, Copy, Deserialize)]
+pub struct PaginationQueryParam {
+    #[serde(default = "default_page")]
+    pub page: i64,
+    pub page_size: Option<i64>,
+}
+
+fn default_page() -> i64 {
+    1
+}
+
+/// Simple pagination error
+#[derive(Debug, Error)]
+pub enum PaginationError {
+    #[error("Invalid page number")]
+    InvalidPage,
+}
+
+impl EditoastError for PaginationError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::NOT_FOUND
     }
 
     fn get_type(&self) -> &'static str {
-        "editoast:pagination:Invalid"
+        "editoast:pagination:InvalidPage"
     }
 }
 

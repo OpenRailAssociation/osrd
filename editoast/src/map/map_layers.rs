@@ -10,7 +10,7 @@ use serde_yaml::{self};
 type JoinExpr = String;
 
 /// Layer view description
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct View {
     pub on_field: String,
     pub data_expr: String,
@@ -24,7 +24,7 @@ pub struct View {
 }
 
 /// Layer description
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct Layer {
     pub table_name: String,
     pub views: HashMap<String, View>,

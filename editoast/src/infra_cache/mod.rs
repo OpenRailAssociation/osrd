@@ -1,6 +1,6 @@
 mod graph;
 
-use crate::api_error::ApiError;
+use crate::error::Result;
 use crate::infra::Infra;
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
@@ -333,7 +333,7 @@ impl InfraCache {
     }
 
     /// Given an infra id load infra cache from database
-    pub fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache, Box<dyn ApiError>> {
+    pub fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache> {
         let infra_id = infra.id;
         let mut infra_cache = Self::default();
 
@@ -419,7 +419,7 @@ impl InfraCache {
         conn: &mut PgConnection,
         infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<ReadGuard<'a, i64, InfraCache>, Box<dyn ApiError>> {
+    ) -> Result<ReadGuard<'a, i64, InfraCache>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get(&infra.id) {
             return Ok(infra_cache);
@@ -435,7 +435,7 @@ impl InfraCache {
         conn: &mut PgConnection,
         infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<WriteGuard<'a, i64, InfraCache>, Box<dyn ApiError>> {
+    ) -> Result<WriteGuard<'a, i64, InfraCache>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
             return Ok(infra_cache);
