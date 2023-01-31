@@ -1,9 +1,7 @@
 import * as d3 from 'd3';
 
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  traceVerticalLine,
-} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
+import { traceVerticalLine } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
 import {
   interpolateOnTime,
@@ -11,7 +9,7 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
-import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal/ChartModal';
+import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal';
 import { GiResize } from 'react-icons/gi';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import PropTypes from 'prop-types';
@@ -19,12 +17,10 @@ import createTrain from 'applications/operationalStudies/components/SimulationRe
 
 import { useTranslation } from 'react-i18next';
 
-import {
-  drawAllTrains,
-} from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/d3Helpers';
+import { drawAllTrains } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/d3Helpers';
 
 const CHART_ID = 'SpaceTimeChart';
-const CHART_MIN_HEIGHT = 250
+const CHART_MIN_HEIGHT = 250;
 
 /**
  * @summary A Important chart to study evolution of trains vs time and inside block occupancies
@@ -78,7 +74,9 @@ export default function SpaceTimeChart(props) {
     useState(heightOfSpaceTimeChart);
 
   const handleKey = ({ key }) => {
+    console.log(key)
     if (['+', '-'].includes(key)) {
+      console.log(showModal)
       setShowModal(key);
     }
   };
@@ -295,25 +293,11 @@ SpaceTimeChart.defaultProps = {
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
-  onOffsetTimeByDragging: ({ ...args }) => {
-    console.log('onOffsetTimeByDragging called');
-  },
-  onSetBaseHeightOfSpaceTimeChart: ({ ...args }) => {
-    console.log('onOffsetTimeByDragging called');
-  },
-  onDragEnding: () => {
-    console.log('onDragEnding called');
-  },
-  dispatchUpdateMustRedraw: () => {
-    console.log('dispatchUpdateMustRedraw called');
-  },
-  dispatchUpdateChart: () => {
-    console.log('dispatchUpdateChart called');
-  },
-  dispatchUpdatePositionValues: () => {
-    console.log('dispatchUpdatePositionValues called');
-  },
-  dispatchUpdateContextMenu: () => {
-    console.log('dispatchUpdateContextMenu called');
-  },
+  onOffsetTimeByDragging: ({ ...args }) => {},
+  onSetBaseHeightOfSpaceTimeChart: ({ ...args }) => {},
+  onDragEnding: () => {},
+  dispatchUpdateMustRedraw: () => {},
+  dispatchUpdateChart: () => {},
+  dispatchUpdatePositionValues: () => {},
+  dispatchUpdateContextMenu: () => {},
 };
