@@ -324,8 +324,9 @@ const enableInteractivity = (
         // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenitn pointer update
         LIST_VALUES_NAME_SPEED_SPACE.forEach((name) => {
           if (
-            !Number.isNaN(immediatePositionsValuesForPointer?.[name]?.time) &&
-            !Number.isNaN(immediatePositionsValuesForPointer?.[name]?.speed)
+            immediatePositionsValuesForPointer[name] &&
+            !Number.isNaN(immediatePositionsValuesForPointer[name]?.time) &&
+            !Number.isNaN(immediatePositionsValuesForPointer[name]?.speed)
           ) {
             immediatePositionsValuesForPointer[name].speed /= 3.6;
             immediatePositionsValuesForPointer[name].time = sec2datetime(

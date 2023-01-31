@@ -16,7 +16,7 @@ import {
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
 const CHART_ID = 'SpeedSpaceChart';
-const CHART_MIN_HEIGHT = 250
+const CHART_MIN_HEIGHT = 250;
 /**
  * A chart to see the evolution of speed of one train on its journey
  * Features:
@@ -26,7 +26,7 @@ const CHART_MIN_HEIGHT = 250
  *
  */ export default function SpeedSpaceChart(props) {
   const {
-     simulation,
+    simulation,
     chartXGEV,
     dispatch,
     mustRedraw,
@@ -55,7 +55,6 @@ const CHART_MIN_HEIGHT = 250
 
   const [baseHeightOfSpeedSpaceChart, setBaseHeightOfSpeedSpaceChart] =
     useState(heightOfSpeedSpaceChart);
-
 
   const ref = useRef();
   const keyValues = ['position', 'speed'];
@@ -346,10 +345,6 @@ SpeedSpaceChart.defaultProps = {
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
   toggleSetting: () => {},
   onSetSettings: () => {},
-  dispatchUpdateMustRedraw: () => {
-    console.log('dispatchUpdateMustRedraw called');
-  },
-  onSetBaseHeightOfSpeedSpaceChart: ({ ...args }) => {
-    console.log('onOffsetTimeByDragging called');
-  },
+  dispatchUpdateMustRedraw: () => {},
+  onSetBaseHeightOfSpeedSpaceChart: ({ ...args }) => {},
 };
