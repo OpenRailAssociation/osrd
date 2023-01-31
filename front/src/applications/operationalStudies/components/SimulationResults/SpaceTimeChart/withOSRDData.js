@@ -52,7 +52,6 @@ const withOSRDData = (Component) =>
 
     // Consequence of direct actions by component
     const onOffsetTimeByDragging = (trains) => {
-      console.log('update onOffsetTimeByDragging', trains)
       dispatch(persistentUpdateSimulation({ ...simulation, trains }));
     };
 
