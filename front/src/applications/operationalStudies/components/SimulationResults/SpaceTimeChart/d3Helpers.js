@@ -128,7 +128,6 @@ const drawAllTrains = (
       yPosition,
       zoomLevel
     );
-    // findConflicts(chartLocal, dataSimulation, rotate);
     setChart(chartLocal);
     dispatchUpdateChart({ ...chartLocal, rotate });
     dispatchUpdateMustRedraw(false);

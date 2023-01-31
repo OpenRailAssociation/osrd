@@ -71,7 +71,6 @@ export default function drawTrain(
     .on('end', () => {
       dragTimeOffset(dragFullOffset, true);
       setDragEnding(true);
-      //setDragEnding(true); // SHIT
       dispatch(updateMustRedraw(true));
     })
     .on('start', () => {
