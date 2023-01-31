@@ -211,14 +211,21 @@ function drawTrain(
       );
     }
     if (dataSimulation.modesAndProfiles) {
-      dataSimulation.modesAndProfiles.forEach((segment, index) => {
+      dataSimulation.modesAndProfiles.forEach((source, index) => {
+        const segment = {};
+        segment.position_start = source.start;
+        segment.position_end = source.stop;
+        segment.height_start = 0;
+        segment.height_end = 20;
+        segment.usedMode = source.used_mode;
+        segment.usedProfile = source.used_profile;
         drawRect(
           chartLocal,
           `ElectricalProfiles_${index}`,
           segment,
           'speedSpaceChart',
           'curveLinear',
-          ['start', 'stop'],
+          ['position', 'height'],
           'electrical_profiles',
           rotate
         );

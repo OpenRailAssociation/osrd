@@ -92,8 +92,8 @@ export interface Regime {
 }
 
 export interface ModesAndProfiles {
-  stop: number;
   start: number;
+  stop: number;
   used_mode: string;
   used_profile: string;
 }
