@@ -27,7 +27,10 @@ public class RJSStandaloneTrainSchedule implements Identified {
     public String tag;
 
     /** The type of comfort the train using */
-    public RJSComfortType comfort = RJSComfortType.STANDARD;
+    public RJSComfortType comfort;
+
+    /** Options for the standalone simulation */
+    public RJSTrainScheduleOptions options;
 
     /** Create a new train schedule */
     public RJSStandaloneTrainSchedule(
@@ -36,7 +39,9 @@ public class RJSStandaloneTrainSchedule implements Identified {
             double initialSpeed,
             RJSAllowance[] allowances,
             RJSTrainStop[] stops,
-            String tag
+            String tag,
+            RJSComfortType comfort,
+            RJSTrainScheduleOptions options
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -44,6 +49,19 @@ public class RJSStandaloneTrainSchedule implements Identified {
         this.allowances = allowances;
         this.stops = stops;
         this.tag = tag;
+        this.comfort = comfort;
+        this.options = options;
+    }
+
+    public RJSStandaloneTrainSchedule(
+            String id,
+            String rollingStock,
+            double initialSpeed,
+            RJSAllowance[] allowances,
+            RJSTrainStop[] stops,
+            String tag
+    ) {
+        this(id, rollingStock, initialSpeed, allowances, stops, tag, RJSComfortType.STANDARD, null);
     }
 
     @Override

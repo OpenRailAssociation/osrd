@@ -17,6 +17,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
+import fr.sncf.osrd.train.TrainScheduleOptions;
 import java.util.*;
 import java.util.function.Function;
 
@@ -42,19 +43,23 @@ public class RJSStandaloneTrainScheduleParser {
         // Parse comfort
         var comfort = parseComfort(rjsTrainSchedule.comfort);
 
+        // Parse options
+        var options = new TrainScheduleOptions(rjsTrainSchedule.options);
+
         // parse allowances
         var allowances = new ArrayList<Allowance>();
         if (rjsTrainSchedule.allowances != null)
             for (int i = 0; i < rjsTrainSchedule.allowances.length; i++) {
                 var rjsAllowance = rjsTrainSchedule.allowances[i];
                 allowances.add(
-                        parseAllowance(timeStep, rollingStock, envelopePath, rjsAllowance, comfort)
+                        parseAllowance(timeStep, rollingStock, envelopePath, rjsAllowance, comfort,
+                                options.ignoreElectricalProfiles)
                 );
             }
 
         var tag = rjsTrainSchedule.tag;
         var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
-        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tag, comfort);
+        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tag, comfort, options);
     }
 
     private static double getPositiveDoubleOrDefault(double rjsInput, double defaultValue) {
@@ -69,7 +74,8 @@ public class RJSStandaloneTrainScheduleParser {
             RollingStock rollingStock,
             EnvelopePath envelopePath,
             RJSAllowance rjsAllowance,
-            RollingStock.Comfort comfort
+            RollingStock.Comfort comfort,
+            boolean ignoreElectricalProfiles
     ) throws InvalidSchedule {
 
         var allowanceDistribution = rjsAllowance.distribution;
@@ -88,7 +94,7 @@ public class RJSStandaloneTrainScheduleParser {
         } else {
             throw new RuntimeException("unknown allowance type");
         }
-        var context = EnvelopeSimContext.build(rollingStock, envelopePath, timeStep, comfort);
+        var context = EnvelopeSimContext.build(rollingStock, envelopePath, timeStep, comfort, ignoreElectricalProfiles);
         // parse allowance distribution
         return switch (allowanceDistribution) {
             case MARECO -> new MarecoAllowance(
