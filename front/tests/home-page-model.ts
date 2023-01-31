@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { expect, Locator, Page } from '@playwright/test';
+import home from '../public/locales/fr/home.json';
 
 export class PlaywrightHomePage {
   // The current page object
@@ -22,6 +23,11 @@ export class PlaywrightHomePage {
   // Locator for the "back to home" logo
   readonly getBackHomeLogo: Locator;
 
+  // Locator for the body
+  readonly getBody: Locator;
+
+  readonly translation: typeof home;
+
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -32,6 +38,8 @@ export class PlaywrightHomePage {
     this.getImportLink = page.getByRole('link', { name: /Importation horaires/ });
     this.getLinks = page.locator('h5');
     this.getBackHomeLogo = page.locator('.mastheader-logo');
+    this.getBody = page.locator('body');
+    this.translation = home;
   }
 
   // Navigate to the Home page
@@ -47,11 +55,11 @@ export class PlaywrightHomePage {
   // Assert that the expected links are displayed on the page
   async getDisplayLinks() {
     expect(this.getLinks).toContainText([
-      "Études d'exploitation",
-      'Cartographie',
-      "Éditeur d'infrastructure",
-      'Sillons de dernière minute',
-      'Importation horaires',
+      this.getTranslations('operationalStudies'),
+      this.getTranslations('map'),
+      this.getTranslations('editor'),
+      this.getTranslations('stdcm'),
+      this.getTranslations('opendataimport'),
     ]);
   }
 
@@ -74,5 +82,9 @@ export class PlaywrightHomePage {
 
   async goToImportPage() {
     await this.getImportLink.click();
+  }
+
+  getTranslations(key: keyof typeof home) {
+    return this.translation[key];
   }
 }
