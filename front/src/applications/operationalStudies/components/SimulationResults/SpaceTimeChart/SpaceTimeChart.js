@@ -74,9 +74,7 @@ export default function SpaceTimeChart(props) {
     useState(heightOfSpaceTimeChart);
 
   const handleKey = ({ key }) => {
-    console.log(key)
     if (['+', '-'].includes(key)) {
-      console.log(showModal)
       setShowModal(key);
     }
   };
