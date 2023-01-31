@@ -4,11 +4,13 @@ from django.db.models import Q
 from django.http import HttpResponse
 from PIL import Image
 from rest_framework import filters, generics, mixins, status
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import Project, Scenario, Study, Timetable
+from osrd_infra.schemas.study import StudyState, StudyType
 from osrd_infra.serializers import (
     ProjectSerializer,
     ScenarioSerializer,
@@ -158,18 +160,27 @@ class ProjectView(
             filters = filters | Q(tags__icontains=tags)
         return queryset.filter(filters)
 
-    def retrieve(self, request, pk=None, project_pk=None):
+    @action(url_path="image", detail=True, methods=["get"])
+    def get_image(self, request, pk=None):
+
         queryset = Project.objects.all()
         project = get_object_or_404(queryset, pk=pk)
         image_db = project.image
+        if image_db:
+            stream = BytesIO(image_db)
+            image = Image.open(stream)
+            response = HttpResponse(content_type="image/png")
+            image.save(response, "PNG")
+            return response
+        return Response({"image": "null"})
 
-        stream = BytesIO(image_db)
-        image = Image.open(stream)
+    @action(url_path="study_types", detail=True, methods=["get"])
+    def get_types(self, request, pk=None):
+        return Response([x.value for x in StudyType])
 
-        response = HttpResponse(content_type="image/png")
-        image.save(response, "PNG")
-        print(response)
-        return response
+    @action(url_path="study_states", detail=True, methods=["get"])
+    def get_states(self, request, pk=None):
+        return Response([x.value for x in StudyState])
 
     def create(self, request, pk=None):
         input_serializer = ProjectSerializer(data=request.data, context={"request": request})
