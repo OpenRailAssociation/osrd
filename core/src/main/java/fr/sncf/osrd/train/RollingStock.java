@@ -2,6 +2,7 @@ package fr.sncf.osrd.train;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
@@ -203,18 +204,19 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Returns the tractive effort curves for the train along the given path.
+     * Returns the tractive effort curves corresponding to the given mode and profile map
      *
-     * @param path    The path to get the curves for
-     * @param comfort The comfort level to get the curves for
+     * @param modeAndProfileMap The map of mode and profile to use
+     * @param comfort           The comfort level to get the curves for
      */
-    public CurvesAndConditions mapTractiveEffortCurves(PhysicsPath path, Comfort comfort) {
+    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, PhysicsPath.ModeAndProfile> modeAndProfileMap,
+                                                       Comfort comfort, double pathLength) {
         TreeRangeMap<Double, PhysicsPath.ModeAndProfile> conditionsUsed = TreeRangeMap.create();
         TreeRangeMap<Double, TractiveEffortPoint[]> res = TreeRangeMap.create();
         var defaultCurve = findTractiveEffortCurve(defaultMode, null, comfort);
         res.put(Range.all(), defaultCurve.curve);
-        conditionsUsed.put(Range.closed(0., path.getLength()), defaultCurve.modeAndProfile);
-        for (var modeAndProfileEntry : path.getModeAndProfileMap(powerClass).asMapOfRanges().entrySet()) {
+        conditionsUsed.put(Range.closed(0., pathLength), defaultCurve.modeAndProfile);
+        for (var modeAndProfileEntry : modeAndProfileMap.asMapOfRanges().entrySet()) {
             var modeAndProfile = modeAndProfileEntry.getValue();
             var curve = findTractiveEffortCurve(modeAndProfile.mode(), modeAndProfile.profile(), comfort);
             res.put(modeAndProfileEntry.getKey(), curve.curve);

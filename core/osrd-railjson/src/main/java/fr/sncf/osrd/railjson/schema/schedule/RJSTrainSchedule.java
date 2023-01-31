@@ -37,11 +37,6 @@ public class RJSTrainSchedule implements Identified {
 
     public String tag;
 
-    /** The delay in seconds between the previous train and this train.
-     * Can only be specified if previous_train_id is also set. Defaults to 0. */
-    @Json(name = "train_transition_delay")
-    public double trainTransitionDelay;
-
     /** Create a new train schedule */
     public RJSTrainSchedule(
             String id,
@@ -52,7 +47,6 @@ public class RJSTrainSchedule implements Identified {
             RJSTrackLocation finalHeadLocation,
             RJSTrainStop[] stops,
             ID<RJSRoute>[] routes,
-            double trainTransitionDelay,
             String tag
     ) {
         this.id = id;
@@ -63,14 +57,7 @@ public class RJSTrainSchedule implements Identified {
         this.finalHeadLocation = finalHeadLocation;
         this.stops = stops;
         this.routes = routes;
-        this.trainTransitionDelay = trainTransitionDelay;
         this.tag = tag;
-    }
-
-    /** Copy constructor */
-    public RJSTrainSchedule(RJSTrainSchedule other) {
-        this(other.id, other.rollingStock, other.departureTime, other.initialHeadLocation, other.initialSpeed,
-                other.finalHeadLocation, other.stops, other.routes, other.trainTransitionDelay, other.tag);
     }
 
     @Override
