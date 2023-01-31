@@ -23,5 +23,10 @@ const Template: ComponentStory<typeof SpeedSpaceChart> = (args) => (
 export const Standard = Template.bind({});
 
 Standard.args = {
-  timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
+  heightOfSpeedSpaceChart: 250,
+  dispatch: () => {},
+  toggleSetting: () => {},
+  onSetSettings: () => {},
+  dispatchUpdateMustRedraw: () => {},
+  onSetBaseHeightOfSpeedSpaceChart: () => {},
 };
