@@ -29,12 +29,12 @@ const drawStripedRect = (
     .append('pattern')
     .attr('id', `${id}`)
     .attr('patternUnits', 'userSpaceOnUse')
-    .attr('width', 4)
-    .attr('height', 4)
+    .attr('width', 8)
+    .attr('height', 8)
     .append('path')
-    .attr('d', 'M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2')
+    .attr('d', 'M-2,2 l4,-4 M0,8 l8,-8 M6,10 l4,-4')
     .attr('stroke', dataSimulation.color)
-    .attr('stroke-width', 2);
+    .attr('stroke-width', 2.5);
 
   const drawZone = chart.drawZone.select(`#${groupID}`);
   drawZone
