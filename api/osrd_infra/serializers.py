@@ -174,6 +174,7 @@ class TrainScheduleSerializer(ModelSerializer):
             "mrsp",
             "base_simulation",
             "eco_simulation",
+            "modes_and_profiles",
         ]
 
 
@@ -187,6 +188,7 @@ class StandaloneSimulationSerializer(Serializer):
                 "mrsp",
                 "base_simulation",
                 "eco_simulation",
+                "modes_and_profiles",
             ]
 
     timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())
