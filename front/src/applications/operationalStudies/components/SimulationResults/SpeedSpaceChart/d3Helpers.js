@@ -4,6 +4,7 @@ import defineChart from 'applications/operationalStudies/components/SimulationRe
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
 import drawRect from '../ChartHelpers/drawRect';
+import drawStripedRect from '../ChartHelpers/drawStripedRect';
 
 function createChart(
   CHART_ID,
@@ -98,7 +99,7 @@ function drawTrain(
   setResetChart,
   force = false
 ) {
-  console.log('datasimulation: ', dataSimulation);
+  console.log('datasimulation: ', dataSimulation.modesAndProfiles);
   if (chart && (mustRedraw || force)) {
     const chartLocal = chart;
     chartLocal.drawZone.select('g').remove();
@@ -211,27 +212,69 @@ function drawTrain(
       );
     }
     if (dataSimulation.modesAndProfiles) {
+      const isSelected = true;
+
       dataSimulation.modesAndProfiles.forEach((source, index) => {
         const segment = {};
+
         segment.position_start = source.start;
         segment.position_end = source.stop;
-        segment.height_start = 0;
-        segment.height_end = 20;
+        segment.height_start = 7;
+        segment.height_end = 16;
         segment.usedMode = source.used_mode;
         segment.usedProfile = source.used_profile;
-        drawRect(
-          chartLocal,
-          `ElectricalProfiles_${index}`,
-          segment,
-          'speedSpaceChart',
-          'curveLinear',
-          ['position', 'height'],
-          'electrical_profiles',
-          rotate
-        );
+
+        const electricalProfileColors = segment.usedProfile
+          ? {
+              25000: { 25000: '#6E1E78', 22500: '#713c78', 20000: '#755a78' },
+              1500: {
+                O: '#FF0037',
+                A: '#ff335f',
+                A1: '#ff335f',
+                B: '#ff6687',
+                B1: '#ff6687',
+                C: '#ff99af',
+                D: '#ff99af',
+                E: '#ffccd7',
+                F: '#ffccd7',
+                G: '#FFF',
+              },
+              heat: '#333',
+              15000: '#009AA6',
+              3000: '#1FBE00',
+            }
+          : { 25000: '#6E1E78', 1500: '#FF0037', heat: '#333', 15000: '#009AA6', 3000: '#1FBE00' };
+
+        segment.color =
+          electricalProfileColors[segment.usedMode][segment.usedProfile] ||
+          electricalProfileColors[segment.usedMode];
+
+        // eslint-disable-next-line no-unused-expressions
+        segment.usedProfile
+          ? drawRect(
+              chartLocal,
+              `ElectricalProfiles_${index}`,
+              segment,
+              'speedSpaceChart',
+              `curveLinear`,
+              ['position', 'height'],
+              'electrical_profiles',
+              rotate
+            )
+          : drawStripedRect(
+              chartLocal,
+              `ElectricalProfiles_${index} stripe`,
+              segment,
+              'speedSpaceChart',
+              `curveLinear`,
+              ['position', 'height'],
+              'electrical_profiles',
+              rotate,
+              isSelected,
+              `ElectricalProfiles_${index}`
+            );
       });
     }
-
     // Operational points
     /*
     drawOPs(simulation, selectedTrain, rotate, chartLocal);
