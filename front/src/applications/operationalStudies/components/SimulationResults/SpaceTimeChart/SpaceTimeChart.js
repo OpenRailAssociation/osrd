@@ -130,7 +130,6 @@ export default function SpaceTimeChart(props) {
   };
 
   useEffect(() => {
-    // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
     offsetTimeByDragging(dragOffset);
   }, [dragOffset]);
 
