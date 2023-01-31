@@ -1,6 +1,6 @@
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import PropTypes from 'prop-types';
-import React, { useState }  from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function SpeedSpaceSettings(props) {
@@ -10,10 +10,10 @@ export default function SpeedSpaceSettings(props) {
 
   const toggleSetting = (settingName, settings) => {
     const newSettings = Object.assign({}, settings);
-    newSettings[settingName] = !settings[settingName]
-    setSettings(newSettings)
-    onSetSettings(newSettings)
-  }
+    newSettings[settingName] = !settings[settingName];
+    setSettings(newSettings);
+    onSetSettings(newSettings);
+  };
   const { t } = useTranslation(['simulation']);
 
   return (
@@ -27,8 +27,7 @@ export default function SpeedSpaceSettings(props) {
         name="speedSpaceSettings-altitude"
         label={t('speedSpaceSettings.altitude')}
         checked={settings.altitude}
-        onChange={() => toggleSetting('altitude',
-        settings)}
+        onChange={() => toggleSetting('altitude', settings)}
         type="checkbox"
       />
       <CheckboxRadioSNCF
@@ -62,7 +61,7 @@ export default function SpeedSpaceSettings(props) {
 SpeedSpaceSettings.propTypes = {
   showSettings: PropTypes.bool,
   speedSpaceSettings: PropTypes.object,
-  onSetSettings: PropTypes.func
+  onSetSettings: PropTypes.func,
 };
 
 SpeedSpaceSettings.defaultProps = {
@@ -71,7 +70,7 @@ SpeedSpaceSettings.defaultProps = {
     altitude: false,
     curves: false,
     settings: false,
-    slopes: false
+    slopes: false,
   },
-  onSetSettings: () => {}
+  onSetSettings: () => {},
 };
