@@ -3,13 +3,11 @@ mod delete;
 mod update;
 
 use super::ObjectRef;
-use crate::api_error::ApiError;
-use diesel::result::Error as DieselError;
+use crate::error::EditoastError;
+use crate::error::Result;
+use actix_web::http::StatusCode;
 use diesel::PgConnection;
-use json_patch::PatchError;
-use rocket::http::Status;
 use serde::{Deserialize, Serialize};
-use serde_json::Error as SerdeError;
 use thiserror::Error;
 
 pub use self::delete::DeleteOperation;
@@ -38,68 +36,8 @@ pub enum OperationResult {
     Delete(ObjectRef),
 }
 
-#[derive(Debug, Error)]
-pub enum OperationError {
-    // To modify
-    #[error("Object '{0}', could not be found")]
-    ObjectNotFound(String),
-    #[error("Empty string id is forbidden")]
-    EmptyId,
-    #[error("Update operation try to modify object id, which is forbidden")]
-    ModifyId,
-    #[error("An internal diesel error occurred: '{}'", .0.to_string())]
-    DieselError(DieselError),
-    #[error("A Json Patch error occurred: '{}'", .0.to_string())]
-    JsonPatchError(PatchError),
-    #[error("A Serde Json error occurred: '{}'", .0.to_string())]
-    SerdeJsonError(SerdeError),
-}
-
-impl ApiError for OperationError {
-    fn get_status(&self) -> Status {
-        match self {
-            OperationError::ObjectNotFound(_) => Status::NotFound,
-            OperationError::ModifyId | OperationError::EmptyId => Status::BadRequest,
-            _ => Status::InternalServerError,
-        }
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            OperationError::ObjectNotFound(_) => "editoast:operation:ObjectNotFound",
-            OperationError::EmptyId => "editoast:operation:EmptyId",
-            OperationError::ModifyId => "editoast:operation:ModifyId",
-            OperationError::DieselError(_) => "editoast:operation:DieselError",
-            OperationError::JsonPatchError(_) => "editoast:operation:JsonPatchError",
-            OperationError::SerdeJsonError(_) => "editoast:operation:SerdeJsonError",
-        }
-    }
-}
-
-impl From<DieselError> for Box<dyn ApiError> {
-    fn from(error: DieselError) -> Self {
-        Box::new(OperationError::DieselError(error))
-    }
-}
-
-impl From<PatchError> for Box<dyn ApiError> {
-    fn from(error: PatchError) -> Self {
-        Box::new(OperationError::JsonPatchError(error))
-    }
-}
-
-impl From<SerdeError> for Box<dyn ApiError> {
-    fn from(error: SerdeError) -> Self {
-        Box::new(OperationError::SerdeJsonError(error))
-    }
-}
-
 impl Operation {
-    pub fn apply(
-        &self,
-        infra_id: i64,
-        conn: &mut PgConnection,
-    ) -> Result<OperationResult, Box<dyn ApiError>> {
+    pub fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<OperationResult> {
         match self {
             Operation::Delete(deletion) => {
                 deletion.apply(infra_id, conn)?;
@@ -113,6 +51,37 @@ impl Operation {
                 let obj_railjson = update.apply(infra_id, conn)?;
                 Ok(OperationResult::Update(obj_railjson))
             }
+        }
+    }
+}
+
+#[derive(Debug, Error)]
+enum OperationError {
+    // To modify
+    #[error("Object '{0}', could not be found")]
+    ObjectNotFound(String),
+    #[error("Empty string id is forbidden")]
+    EmptyId,
+    #[error("Update operation try to modify object id, which is forbidden")]
+    ModifyId,
+    #[error("A Json Patch error occurred: '{}'", .0)]
+    InvalidPatch(String),
+}
+
+impl EditoastError for OperationError {
+    fn get_status(&self) -> StatusCode {
+        match self {
+            OperationError::ObjectNotFound(_) => StatusCode::NOT_FOUND,
+            _ => StatusCode::BAD_REQUEST,
+        }
+    }
+
+    fn get_type(&self) -> &'static str {
+        match self {
+            OperationError::ObjectNotFound(_) => "editoast:operation:ObjectNotFound",
+            OperationError::EmptyId => "editoast:operation:EmptyId",
+            OperationError::ModifyId => "editoast:operation:ModifyId",
+            OperationError::InvalidPatch(_) => "editoast:operation:InvalidPatch",
         }
     }
 }

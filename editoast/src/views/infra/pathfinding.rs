@@ -1,27 +1,25 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
+use actix_web::dev::HttpServiceFactory;
+use actix_web::http::StatusCode;
+use actix_web::post;
+use actix_web::web::{block, Data, Json, Path, Query};
 use chashmap::CHashMap;
 use derivative::Derivative;
 use pathfinding::prelude::yen;
-use rocket::{
-    http::Status,
-    response::status::Custom,
-    serde::json::{Error as JsonError, Json},
-    State,
-};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::api_error::{ApiError, ApiResult};
-use crate::db_connection::DBConnection;
+use crate::error::{EditoastError, Result};
 use crate::infra::Infra;
 use crate::infra_cache::{Graph, InfraCache};
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
+use crate::DbPool;
 
-/// Return the endpoints routes of this module
-pub fn routes() -> Vec<rocket::Route> {
-    routes![pathfinding_view]
+/// Return `/infra/<infra_id>/pathfinding` routes
+pub fn routes() -> impl HttpServiceFactory {
+    pathfinding_view
 }
 
 const DEFAULT_NUMBER_OF_PATHS: u8 = 5;
@@ -40,9 +38,9 @@ enum PathfindingViewErrors {
     InvalidNumberOfPaths(u8),
 }
 
-impl ApiError for PathfindingViewErrors {
-    fn get_status(&self) -> Status {
-        Status::BadRequest
+impl EditoastError for PathfindingViewErrors {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::BAD_REQUEST
     }
 
     fn get_type(&self) -> &'static str {
@@ -86,47 +84,50 @@ struct PathfindingOutput {
     switches_directions: HashMap<Identifier, Identifier>,
 }
 
-/// This endpoint search path between starting and ending track locations
-#[post("/<infra>/pathfinding?<number>", data = "<input>")]
-async fn pathfinding_view<'a>(
-    infra: i64,
+#[derive(Debug, Clone, Deserialize)]
+struct QueryParam {
     number: Option<u8>,
-    input: Result<Json<PathfindingInput>, JsonError<'a>>,
-    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
-    conn: DBConnection,
-) -> ApiResult<Custom<Json<Vec<PathfindingOutput>>>> {
+}
+
+/// This endpoint search path between starting and ending track locations
+#[post("/pathfinding")]
+async fn pathfinding_view(
+    infra: Path<i64>,
+    params: Query<QueryParam>,
+    input: Json<PathfindingInput>,
+    infra_caches: Data<CHashMap<i64, InfraCache>>,
+    db_pool: Data<DbPool>,
+) -> Result<Json<Vec<PathfindingOutput>>> {
     // Parse and check input
-    let input = input?;
-    let number = number.unwrap_or(DEFAULT_NUMBER_OF_PATHS);
+    let infra = infra.into_inner();
+    let number = params.number.unwrap_or(DEFAULT_NUMBER_OF_PATHS);
     if !(1..=MAX_NUMBER_OF_PATHS).contains(&number) {
         return Err(PathfindingViewErrors::InvalidNumberOfPaths(number).into());
     }
-    let infra_caches = infra_caches.inner().clone();
 
-    let res = conn
-        .run::<_, ApiResult<_>>(move |conn| {
-            let infra = Infra::retrieve_for_update(conn, infra)?;
-            let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).unwrap();
-            // Check that the starting and ending track locations are valid
-            if !infra_cache
-                .track_sections()
-                .contains_key(&input.starting.track.0)
-            {
-                return Err(PathfindingViewErrors::StartingTrackLocationNotFound.into());
-            } else if !infra_cache
-                .track_sections()
-                .contains_key(&input.ending.track.0)
-            {
-                return Err(PathfindingViewErrors::EndingTrackLocationNotFound.into());
-            }
-            // Generating the graph
-            let graph = Graph::load(&infra_cache);
-            Ok(compute_path(&input, &infra_cache, &graph, number))
-        })
-        .await?;
+    block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
+        let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
 
-    // Compute paths
-    Ok(Custom(Status::Ok, Json(res)))
+        // Check that the starting and ending track locations are valid
+        if !infra_cache
+            .track_sections()
+            .contains_key(&input.starting.track.0)
+        {
+            return Err(PathfindingViewErrors::StartingTrackLocationNotFound.into());
+        } else if !infra_cache
+            .track_sections()
+            .contains_key(&input.ending.track.0)
+        {
+            return Err(PathfindingViewErrors::EndingTrackLocationNotFound.into());
+        }
+        // Generating the graph
+        let graph = Graph::load(&infra_cache);
+        Ok(Json(compute_path(&input, &infra_cache, &graph, number)))
+    })
+    .await
+    .unwrap()
 }
 
 #[derive(Debug, Clone, Derivative)]

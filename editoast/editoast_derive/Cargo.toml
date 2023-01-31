@@ -12,4 +12,4 @@ proc-macro2 = "1.0"
 darling = "0.14.2"
 
 [lib]
-proc-macro=true
+proc-macro = true

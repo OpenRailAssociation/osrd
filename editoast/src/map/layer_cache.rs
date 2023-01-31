@@ -88,10 +88,15 @@ pub fn get_layer_cache_prefix(layer_name: &str, infra_id: i64) -> String {
     format!("editoast.layer.{layer_name}.infra_{infra_id}")
 }
 
-pub fn get_view_cache_prefix(layer_name: &str, infra_id: i64, view_name: &str) -> String {
+pub fn get_view_cache_prefix<T1, T2>(layer_name: T1, infra_id: i64, view_name: T2) -> String
+where
+    T1: AsRef<str>,
+    T2: AsRef<str>,
+{
     format!(
         "{layer_prefix}.{view_name}",
-        layer_prefix = get_layer_cache_prefix(layer_name, infra_id),
+        layer_prefix = get_layer_cache_prefix(layer_name.as_ref(), infra_id),
+        view_name = view_name.as_ref()
     )
 }
 
