@@ -91,8 +91,14 @@ export interface Regime {
   error: any;
 }
 
+export interface ModesAndProfiles {
+  stop: number;
+  start: number;
+  used_mode: string;
+  used_profile: string;
+}
 export interface Train {
-  modes_and_profiles: {}[];
+  modes_and_profiles: ModesAndProfiles[];
   id: number;
   labels: any[];
   path: number;

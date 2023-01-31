@@ -3,6 +3,7 @@ import drawCurve from 'applications/operationalStudies/components/SimulationResu
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
+import drawRect from '../ChartHelpers/drawRect';
 
 function createChart(
   CHART_ID,
@@ -97,6 +98,7 @@ function drawTrain(
   setResetChart,
   force = false
 ) {
+  console.log('datasimulation: ', dataSimulation);
   if (chart && (mustRedraw || force)) {
     const chartLocal = chart;
     chartLocal.drawZone.select('g').remove();
@@ -207,6 +209,20 @@ function drawTrain(
         'curvesHistogram',
         rotate
       );
+    }
+    if (dataSimulation.modesAndProfiles) {
+      dataSimulation.modesAndProfiles.forEach((segment, index) => {
+        drawRect(
+          chartLocal,
+          `ElectricalProfiles_${index}`,
+          segment,
+          'speedSpaceChart',
+          'curveLinear',
+          ['start', 'stop'],
+          'electrical_profiles',
+          rotate
+        );
+      });
     }
 
     // Operational points

@@ -1,7 +1,7 @@
 import { mergeDatasAreaConstant } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
-import { SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { ModesAndProfiles, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 
 interface gevPreparedata {
   speed: Record<string, unknown>[];
@@ -13,7 +13,7 @@ interface gevPreparedata {
   slopesHistogram: Record<string, unknown>[];
   areaSlopesHistogram: Record<string, unknown>[];
   curvesHistogram: Record<string, unknown>[];
-  modesAndProfiles: {}[];
+  modesAndProfiles: ModesAndProfiles[];
 }
 
 function prepareData(
@@ -37,7 +37,9 @@ function prepareData(
     ...step,
     speed: step.speed * 3.6,
   }));
-  dataSimulation.modesAndProfiles = simulation.trains[selectedTrain].modes_and_profiles;
+  if (simulation.trains[selectedTrain].modes_and_profiles) {
+    dataSimulation.modesAndProfiles = simulation.trains[selectedTrain].modes_and_profiles;
+  }
   if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
     dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
       (step: any) => ({
