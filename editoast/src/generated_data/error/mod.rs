@@ -10,12 +10,12 @@ pub mod track_section_links;
 
 use std::collections::HashMap;
 
-use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, BigInt, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde_json::to_value;
 
 use super::GeneratedData;
+use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::{InfraError, OSRDObject, ObjectType};
@@ -158,11 +158,7 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
 }
 
 /// Insert a heterogeneous list of infra errors in DB with a minimum number of queries
-fn insert_errors(
-    conn: &mut PgConnection,
-    infra_id: i64,
-    errors: Vec<InfraError>,
-) -> Result<(), DieselError> {
+fn insert_errors(conn: &mut PgConnection, infra_id: i64, errors: Vec<InfraError>) -> Result<()> {
     let mut errors_by_type: HashMap<_, Vec<_>> = Default::default();
     for error in errors {
         errors_by_type
@@ -187,11 +183,7 @@ impl GeneratedData for ErrorLayer {
         "osrd_infra_errorlayer"
     }
 
-    fn generate(
-        conn: &mut PgConnection,
-        infra_id: i64,
-        infra_cache: &InfraCache,
-    ) -> Result<(), DieselError> {
+    fn generate(conn: &mut PgConnection, infra_id: i64, infra_cache: &InfraCache) -> Result<()> {
         // Create a graph for topological errors
         let graph = Graph::load(infra_cache);
 
@@ -277,7 +269,7 @@ impl GeneratedData for ErrorLayer {
         infra: i64,
         _operations: &[crate::schema::operation::OperationResult],
         infra_cache: &InfraCache,
-    ) -> Result<(), DieselError> {
+    ) -> Result<()> {
         // Clear the whole layer and regenerate it
         Self::refresh(conn, infra, infra_cache)
     }

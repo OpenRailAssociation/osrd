@@ -1,45 +1,57 @@
-use crate::api_error::{ApiError, ApiResult};
-use crate::db_connection::DBConnection;
+use crate::error::{EditoastError, Result};
 use crate::schema::InfraErrorType;
-use crate::views::pagination::{paginate, PaginationError};
+use crate::views::pagination::{
+    paginate, PaginatedResponse, PaginationError, PaginationQueryParam,
+};
+use crate::DbPool;
+use actix_web::dev::HttpServiceFactory;
+use actix_web::get;
+use actix_web::http::StatusCode;
+use actix_web::web::{block, Data, Json as WebJson, Path, Query};
 use diesel::sql_types::{BigInt, Json, Nullable, Text};
 use diesel::{PgConnection, RunQueryDsl};
-use rocket::http::Status;
-use rocket::response::status::Custom;
-use rocket::serde::json::{json, Value as JsonValue};
-use serde::Serialize;
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use strum::VariantNames;
 use thiserror::Error;
 
-pub fn routes() -> Vec<rocket::Route> {
-    routes![list_errors]
+/// Return `/infra/<infra_id>/errors` routes
+pub fn routes() -> impl HttpServiceFactory {
+    list_errors
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct QueryParams {
+    #[serde(default)]
+    level: Level,
+    error_type: Option<String>,
+    object_id: Option<String>,
 }
 
 /// Return the list of errors of an infra
-#[get("/<infra>/errors?<page>&<page_size>&<error_type>&<object_id>&<level>")]
+#[get("/errors")]
 async fn list_errors(
-    infra: i64,
-    page: Option<i64>,
-    page_size: Option<i64>,
-    level: Option<Level>,
-    error_type: Option<String>,
-    object_id: Option<String>,
-    conn: DBConnection,
-) -> ApiResult<Custom<JsonValue>> {
-    if let Some(error_type) = &error_type {
+    db_pool: Data<DbPool>,
+    infra: Path<i64>,
+    pagination_params: Query<PaginationQueryParam>,
+    params: Query<QueryParams>,
+) -> Result<WebJson<PaginatedResponse<InfraErrorModel>>> {
+    let infra = infra.into_inner();
+    let page = pagination_params.page;
+    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
+
+    if let Some(error_type) = &params.error_type {
         if !check_error_type_query(error_type) {
             return Err(ListErrorsErrors::WrongErrorTypeProvided.into());
         }
     }
-    let page = page.unwrap_or_default().max(1);
-    let per_page = page_size.unwrap_or(25).max(10);
-    let level = level.unwrap_or_default();
-    let (infra_errors, count) = conn
-        .run(move |conn| {
-            get_paginated_infra_errors(conn, infra, page, per_page, level, error_type, object_id)
-        })
-        .await?;
+
+    let (infra_errors, count) = block(move || {
+        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        get_paginated_infra_errors(&mut conn, infra, page, per_page, &params)
+    })
+    .await
+    .unwrap()?;
     let previous = if page == 1 { None } else { Some(page - 1) };
     let max_page = (count as f64 / per_page as f64).ceil() as i64;
     let next = if page >= max_page {
@@ -47,10 +59,12 @@ async fn list_errors(
     } else {
         Some(page + 1)
     };
-    Ok(Custom(
-        Status::Ok,
-        json!({ "count": count, "previous": previous, "next": next, "results": infra_errors }),
-    ))
+    Ok(WebJson(PaginatedResponse {
+        count,
+        previous,
+        next,
+        results: infra_errors,
+    }))
 }
 
 /// Check if the query parameter error_type exist
@@ -66,9 +80,9 @@ enum ListErrorsErrors {
     WrongErrorTypeProvided,
 }
 
-impl ApiError for ListErrorsErrors {
-    fn get_status(&self) -> Status {
-        Status::BadRequest
+impl EditoastError for ListErrorsErrors {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::BAD_REQUEST
     }
 
     fn get_type(&self) -> &'static str {
@@ -83,14 +97,15 @@ struct InfraErrorQueryable {
     #[diesel(sql_type = BigInt)]
     pub count: i64,
     #[diesel(sql_type = Json)]
-    pub information: Value,
+    pub information: JsonValue,
     #[diesel(sql_type = Nullable<Json>)]
-    pub geographic: Option<Value>,
+    pub geographic: Option<JsonValue>,
     #[diesel(sql_type = Nullable<Json>)]
-    pub schematic: Option<Value>,
+    pub schematic: Option<JsonValue>,
 }
 
-#[derive(Default, Debug, PartialEq, Eq, FromFormField)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Level {
     Warnings,
     Errors,
@@ -101,9 +116,9 @@ pub enum Level {
 #[derive(Debug, Clone, Serialize)]
 #[serde(deny_unknown_fields)]
 struct InfraErrorModel {
-    pub information: Value,
-    pub geographic: Option<Value>,
-    pub schematic: Option<Value>,
+    pub information: JsonValue,
+    pub geographic: Option<JsonValue>,
+    pub schematic: Option<JsonValue>,
 }
 
 impl From<InfraErrorQueryable> for InfraErrorModel {
@@ -121,45 +136,45 @@ fn get_paginated_infra_errors(
     infra: i64,
     page: i64,
     per_page: i64,
-    level: Level,
-    error_type: Option<String>,
-    object_id: Option<String>,
-) -> Result<(Vec<InfraErrorModel>, i64), Box<dyn ApiError>> {
+    params: &QueryParams,
+) -> Result<(Vec<InfraErrorModel>, u64)> {
     let mut query =
         String::from("SELECT information::text, ST_AsGeoJSON(ST_Transform(geographic, 4326))::json as geographic,
         ST_AsGeoJSON(ST_Transform(schematic, 4326))::json as schematic FROM osrd_infra_errorlayer WHERE infra_id = $1");
-    if level == Level::Warnings {
+    if params.level == Level::Warnings {
         query += " AND information->>'is_warning' = 'true'"
-    } else if level == Level::Errors {
+    } else if params.level == Level::Errors {
         query += " AND information->>'is_warning' = 'false'"
     }
-    if error_type.is_some() {
+    if params.error_type.is_some() {
         query += " AND information->>'error_type' = $2"
     }
-    if object_id.is_some() {
+    if params.object_id.is_some() {
         query += " AND information->>'obj_id' = $3"
     }
 
     let infra_errors = paginate(query, page, per_page)
         .bind::<BigInt, _>(infra)
-        .bind::<Text, _>(&error_type.unwrap_or_default())
-        .bind::<Text, _>(&object_id.unwrap_or_default())
+        .bind::<Text, _>(params.error_type.clone().unwrap_or_default())
+        .bind::<Text, _>(params.object_id.clone().unwrap_or_default())
         .load::<InfraErrorQueryable>(conn)?;
     let count = infra_errors.first().map(|e| e.count).unwrap_or_default();
     let infra_errors: Vec<InfraErrorModel> = infra_errors.into_iter().map(|e| e.into()).collect();
     if infra_errors.is_empty() && page > 1 {
-        return Err(Box::new(PaginationError));
+        return Err(PaginationError::InvalidPage.into());
     }
-    Ok((infra_errors, count))
+    Ok((infra_errors, count as u64))
 }
 
 #[cfg(test)]
 mod tests {
-    use rocket::http::{ContentType, Status};
-
     use crate::infra::Infra;
     use crate::views::infra::errors::check_error_type_query;
-    use crate::views::tests::create_test_client;
+    use crate::views::tests::create_test_service;
+    use actix_web::http::StatusCode;
+    use actix_web::test as actix_test;
+    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
+    use serde_json::json;
 
     #[test]
     fn check_error_type() {
@@ -167,26 +182,34 @@ mod tests {
         assert!(check_error_type_query(&error_type));
     }
 
-    #[test]
-    fn list_errors_get() {
-        let client = create_test_client();
-        let create_infra = client
-            .post("/infra")
-            .header(ContentType::JSON)
-            .body(r#"{"name":"get_list_errors"}"#)
-            .dispatch();
-        assert_eq!(create_infra.status(), Status::Created);
-        let body_infra = create_infra.into_string();
-        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+    #[actix_test]
+    async fn list_errors_get() {
         let error_type = "overlapping_track_links";
         let level = "warnings";
 
-        let list_errors_query = client
-            .get(format!(
-                "/infra/{}/errors?&error_type={}&level={}",
-                infra.id, error_type, level
-            ))
-            .dispatch();
-        assert_eq!(list_errors_query.status(), Status::Ok);
+        let app = create_test_service().await;
+        let req = TestRequest::post()
+            .uri("/infra")
+            .set_json(json!({"name":"list_errors_test"}))
+            .to_request();
+        let infra: Infra = call_and_read_body_json(&app, req).await;
+
+        let req = TestRequest::get()
+            .uri(
+                format!(
+                    "/infra/{}/errors?error_type={}&level={}",
+                    infra.id, error_type, level
+                )
+                .as_str(),
+            )
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let req = TestRequest::delete()
+            .uri(format!("/infra/{}", infra.id).as_str())
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

@@ -1,13 +1,13 @@
-use super::OperationError;
-use crate::api_error::ApiError;
-
+use crate::error::Result;
 use crate::schema::operation::RailjsonObject;
 use crate::schema::{OSRDIdentified, ObjectType};
 use diesel::sql_types::{BigInt, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
 use serde::{Deserialize, Serialize};
-use serde_json::{from_value, Value};
+use serde_json::{from_value, json, Value};
+
+use super::OperationError;
 
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -18,11 +18,7 @@ pub struct UpdateOperation {
 }
 
 impl UpdateOperation {
-    pub fn apply(
-        &self,
-        infra_id: i64,
-        conn: &mut PgConnection,
-    ) -> Result<RailjsonObject, Box<dyn ApiError>> {
+    pub fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<RailjsonObject> {
         // Load object
 
         let mut obj: DataObject = sql_query(format!(
@@ -47,9 +43,7 @@ impl UpdateOperation {
         .execute(conn)
         {
             Ok(1) => Ok(railjson_obj),
-            Ok(_) => Err(Box::new(OperationError::ObjectNotFound(
-                self.obj_id.clone(),
-            ))),
+            Ok(_) => Err(OperationError::ObjectNotFound(self.obj_id.clone()).into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -64,50 +58,22 @@ struct DataObject {
 impl DataObject {
     /// This function will patch the data object given an update operation.
     /// It will also check that the id of the id of the object is untouched and that the resulted data is valid.
-    pub fn patch_and_check(
-        &mut self,
-        update: &UpdateOperation,
-    ) -> Result<RailjsonObject, Box<dyn ApiError>> {
-        json_patch::patch(&mut self.data, &update.railjson_patch)?;
+    pub fn patch_and_check(&mut self, update: &UpdateOperation) -> Result<RailjsonObject> {
+        json_patch::patch(&mut self.data, &update.railjson_patch)
+            .map_err(|err| OperationError::InvalidPatch(err.to_string()))?;
 
-        let obj_railjson = match update.obj_type {
-            ObjectType::TrackSection => RailjsonObject::TrackSection {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::Signal => RailjsonObject::Signal {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::SpeedSection => RailjsonObject::SpeedSection {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::Detector => RailjsonObject::Detector {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::TrackSectionLink => RailjsonObject::TrackSectionLink {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::Switch => RailjsonObject::Switch {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::SwitchType => RailjsonObject::SwitchType {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::BufferStop => RailjsonObject::BufferStop {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::Route => RailjsonObject::Route {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::OperationalPoint => RailjsonObject::OperationalPoint {
-                railjson: from_value(self.data.clone())?,
-            },
-            ObjectType::Catenary => RailjsonObject::Catenary {
-                railjson: from_value(self.data.clone())?,
-            },
+        let value = json!({
+            "railjson": self.data,
+            "obj_type": update.obj_type.to_string(),
+        });
+
+        let obj_railjson = match from_value::<RailjsonObject>(value) {
+            Ok(obj) => obj,
+            Err(err) => return Err(OperationError::InvalidPatch(err.to_string()).into()),
         };
 
         if obj_railjson.get_id() != &update.obj_id {
-            return Err(Box::new(OperationError::ModifyId));
+            return Err(OperationError::ModifyId.into());
         }
         Ok(obj_railjson)
     }
@@ -116,13 +82,14 @@ impl DataObject {
 #[cfg(test)]
 mod tests {
     use super::UpdateOperation;
-    use crate::api_error::ApiError;
+    use crate::error::EditoastError;
     use crate::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::schema::operation::OperationError;
     use crate::schema::{OSRDIdentified, ObjectType};
+    use actix_web::ResponseError;
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
     use diesel::RunQueryDsl;
@@ -189,8 +156,8 @@ mod tests {
 
             assert!(res.is_err());
             assert_eq!(
-                res.unwrap_err().get_type(),
-                OperationError::ModifyId.get_type()
+                res.unwrap_err().status_code(),
+                OperationError::ModifyId.get_status()
             );
         });
     }

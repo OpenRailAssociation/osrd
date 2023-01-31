@@ -1,6 +1,5 @@
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
-use diesel::result::Error;
 use diesel::sql_types::{Array, BigInt, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use std::iter::Iterator;
@@ -8,6 +7,7 @@ use std::iter::Iterator;
 use super::utils::InvolvedObjects;
 use super::GeneratedData;
 use crate::diesel::ExpressionMethods;
+use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
 use crate::tables::osrd_infra_operationalpointlayer::dsl;
@@ -19,11 +19,7 @@ impl GeneratedData for OperationalPointLayer {
         "osrd_infra_operationalpointlayer"
     }
 
-    fn generate(
-        conn: &mut PgConnection,
-        infra: i64,
-        _infra_cache: &InfraCache,
-    ) -> Result<(), Error> {
+    fn generate(conn: &mut PgConnection, infra: i64, _infra_cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_operational_point_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)?;
@@ -35,7 +31,7 @@ impl GeneratedData for OperationalPointLayer {
         infra: i64,
         operations: &[crate::schema::operation::OperationResult],
         infra_cache: &crate::infra_cache::InfraCache,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::OperationalPoint);
 
