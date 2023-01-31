@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/DGEXSolutions/osrd">
+  <a href="https://osrd.fr/en/">
     <img src="assets/branding/osrd_small.svg" width="200px" alt="OSRD logo"/>
   </a>
   <a href="https://publiccode.eu/">
@@ -15,43 +15,37 @@
 
 ## What is OSRD?
 
-OSRD is a work in progress tool meant to help design and operate railway infrastructure.
-It's built around a simulator, which evaluates a timetable on a given infrastructure.
+OSRD is an open source web application for railway infrastructure design,
+capacity analysis, timetabling and simulation.
 
 It's free and open-source forever!
 
 ## WARNING
 
-OSRD is still in the early stages of development.
-APIs can and will change (now is the time to make suggestions!).
+OSRD it not yet production ready.
+User and programming interfaces can and will change (now is the time to make suggestions!).
 Important features are missing. Documentation is sparse.
-Please don't build any serious projects with OSRD unless you are prepared to be broken by API changes.
+Please don't rely on OSRD unless you are prepared to deal with frequent changes.
 
 ## Getting Started
 
-You'll need:
- - Docker
- - Docker Compose
+To compile and run the application with an example infrastructure:
 
 ```sh
-docker-compose up
+# build and run the entire stack
+docker-compose up -d --build
+
+# generate and load an example infrastructure
+python3 -m venv .venv
+source .venv/bin/activate
+pip install geojson-pydantic
+scripts/generate-infra.sh small_infra
+
+# open the web app
+xdg-open http://localhost:3000/
 ```
 
-## Contributing
+## Get in touch
 
-If you think OSRD doesn't quite fit your needs yet, but still believe it could,
-please [tell us about your needs](https://github.com/DGEXSolutions/osrd/issues/new).
-
-Please consider committing resources to help development if you'd like to use OSRD in production.
-Code contributions are very welcome, and we'd love to work together to make this project better.
-
-## Thanks
-
-We would like to thank:
-
- - Bjørnar Steinnes Luteberget, who wrote a very interesting thesis on the matter,
-   as well as a [pretty impressive prototype](https://github.com/luteberget/junction)
-
-## Contact
-
-You are interested in the project, and you want to know more? Contact us at <contact@osrd.fr>.
+- Chat with us on IRC at [libera.chat#osrd](https://web.libera.chat/#osrd)
+- Email us at <contact@osrd.fr>
