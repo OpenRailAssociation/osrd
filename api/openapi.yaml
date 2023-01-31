@@ -1479,6 +1479,10 @@ components:
                 type: string
               comfort:
                 $ref: "#/components/schemas/Comfort"
+              options:
+                allOf:
+                  - $ref: "#/components/schemas/TrainScheduleOptions"
+                nullable: true
     WritableTrainSchedule:
       properties:
         train_name:
@@ -1503,6 +1507,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Allowance"
+        speed_limit_composition:
+          description: Train category for speed limits
+          type: string
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        options:
+          allOf:
+            - $ref: "#/components/schemas/TrainScheduleOptions"
+          nullable: true
+    TrainScheduleOptions:
+      description: Options for the standalone simulation
+      type: object
+      properties:
+        ignore_electrical_profiles:
+          type: boolean
+          nullable: true
     Allowance:
       oneOf:
         - $ref: "#/components/schemas/EngineeringAllowance"
