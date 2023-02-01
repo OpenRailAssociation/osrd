@@ -24,7 +24,6 @@ test.describe('STDCM page', () => {
     // Go to the home page of OSDR
     await playwrightHomePage.goToHomePage();
 
-    // Navigate to the "STDCM" page
     await playwrightHomePage.goToSTDCMPage();
   });
 
@@ -37,14 +36,11 @@ test.describe('STDCM page', () => {
       });
     });
 
-    // Check that the modal is not open before clicking the button
-    await playwrightSTDCMPage.getModalClose();
+    await playwrightSTDCMPage.getModalIsClose();
 
-    // Clicking the infrastructure selector button
     await playwrightSTDCMPage.openInfraSelector();
 
-    // Check that the modal is open now
-    await playwrightSTDCMPage.getModalOpen();
+    await playwrightSTDCMPage.getModalIsOpen();
 
     // Check that the number of infrastructure items is 4
     expect(playwrightSTDCMPage.getInfraListItems).toHaveCount(4);
@@ -54,10 +50,8 @@ test.describe('STDCM page', () => {
       const { name, locked, id, railjson_version, version } = infra;
       const infraButton = playwrightSTDCMPage.page.getByTestId(`infraslist-item-${id}`);
 
-      // Check if the infrastructure has the correct class for locked/unlocked
       expect(infraButton).toHaveClass(locked ? /locked/ : /unlocked/);
 
-      // Check that the infrastructure is not selected
       expect(infraButton).not.toHaveClass('active');
 
       // Check if the infrastructure name, ID, RAILJSON version, and version are correctly displayed
@@ -69,13 +63,12 @@ test.describe('STDCM page', () => {
       ]);
     });
 
-    // Check the number of infrastructures displayed
+    // Check the number of infrastructures is well displayed in the text
     await playwrightSTDCMPage.checkNumberOfInfra(4);
 
     // Click on the page body to close the modal
     await playwrightSTDCMPage.getBody.click();
 
-    // Check if the modal is closed
-    await playwrightSTDCMPage.getModalClose();
+    await playwrightSTDCMPage.getModalIsClose();
   });
 });

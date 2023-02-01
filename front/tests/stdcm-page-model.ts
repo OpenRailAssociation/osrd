@@ -3,13 +3,10 @@ import { expect, Locator, Page } from '@playwright/test';
 import infraManagement from '../public/locales/fr/infraManagement.json';
 
 export class PlaywrightSTDCMPage {
-  // The current page object
   readonly page: Page;
 
-  // Locator for infrastructure button
   readonly getInfraSelector: Locator;
 
-  // Locator for infrastructure list items
   readonly getInfraListItems: Locator;
 
   readonly getBody: Locator;
@@ -29,18 +26,15 @@ export class PlaywrightSTDCMPage {
     this.translation = infraManagement;
   }
 
-  // Open infrastructures selector
   async openInfraSelector() {
     await this.getInfraSelector.click();
   }
 
-  // Check the absence of the class 'modal-open' in the body
-  async getModalClose() {
+  async getModalIsClose() {
     await expect(this.getBody).not.toHaveClass('modal-open');
   }
 
-  // Check the presence of the class 'modal-open' in the body
-  async getModalOpen() {
+  async getModalIsOpen() {
     await expect(this.getBody).toHaveClass('modal-open');
   }
 
