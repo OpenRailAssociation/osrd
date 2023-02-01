@@ -6,9 +6,9 @@ use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
 
-use crate::chartos::BoundingBox;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
+use crate::map::BoundingBox;
 
 use derivative::Derivative;
 use editoast_derive::Model;
@@ -195,8 +195,8 @@ impl Cache for TrackSectionCache {
 mod test {
     use super::TrackSection;
     use super::{LineString::LineString, TrackSectionExtensions};
-    use crate::chartos::BoundingBox;
     use crate::infra::tests::test_infra_transaction;
+    use crate::map::BoundingBox;
     use serde_json::from_str;
 
     #[test]

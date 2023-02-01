@@ -226,8 +226,8 @@ impl Infra {
 
     /// Refreshes generated data if not up to date and returns whether they were refreshed.
     /// `force` argument allows us to refresh it in any cases.
-    /// This function will update `generated_version` acordingly.
-    /// If refreshed you need to call `invalidate_after_refresh` to invalidate chartos layer cache
+    /// This function will update `generated_version` accordingly.
+    /// If refreshed you need to call `invalidate_after_refresh` to invalidate layer cache
     pub fn refresh(
         &self,
         conn: &mut PgConnection,

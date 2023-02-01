@@ -1,5 +1,5 @@
 // React Component displaying different applications versions
-// List of applications : Chartos, Editoast, Core, Api
+// List of applications : Editoast, Core, Api
 
 import React, { useEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,18 +12,12 @@ import osrdLogo from '../../assets/pictures/osrd.png';
 
 function ReleaseInformations() {
   const { t } = useTranslation();
-  const [chartosVersion, setCurrentChartosVersion] = useState();
   const [editoastVersion, setCurrentEditoastVersion] = useState();
   const [coreVersion, setCurrentCoreVersion] = useState();
   const [apiVersion, setCurrentApiVersion] = useState();
   const { closeModal } = useContext(ModalContext);
 
   const osrdWebSite = 'https://osrd.fr/';
-
-  const getChartosVersion = async () => {
-    const response = await get('/chartos/version/');
-    setCurrentChartosVersion(response.git_describe);
-  };
 
   const getEditoastVersion = async () => {
     const response = await get('/editoast/version/');
@@ -41,7 +35,6 @@ function ReleaseInformations() {
   };
 
   useEffect(() => {
-    getChartosVersion();
     getEditoastVersion();
     getCoreVersion();
     getApiVersion();
@@ -75,14 +68,6 @@ function ReleaseInformations() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">
-                <div className="cell-inner">Chartos</div>
-              </th>
-              <td>
-                <div className="cell-inner">{chartosVersion}</div>
-              </td>
-            </tr>
             <tr>
               <th scope="row">
                 <div className="cell-inner">Editoast</div>

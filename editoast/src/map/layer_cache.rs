@@ -103,7 +103,7 @@ pub fn get_cache_tile_key(view_prefix: &str, tile: &Tile) -> String {
 mod tests {
     use std::collections::HashSet;
 
-    use crate::chartos::BoundingBox;
+    use crate::map::BoundingBox;
 
     use super::{
         count_tiles, get_cache_tile_key, get_layer_cache_prefix, get_tiles_to_invalidate,
