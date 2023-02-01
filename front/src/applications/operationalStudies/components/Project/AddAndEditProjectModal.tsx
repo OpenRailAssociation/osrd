@@ -22,7 +22,14 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setSuccess } from 'reducers/main';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
-import { getRandomImage } from '../Helpers/genFakeDataForProjects';
+import PictureUploader from './PictureUploader';
+import { configItemsTypes } from './types';
+
+export type Props = {
+  editionMode: false;
+  details?: configItemsTypes;
+  getProjectDetail?: any;
+};
 
 const configItemsDefaults = {
   name: '',
@@ -33,28 +40,11 @@ const configItemsDefaults = {
   budget: 0,
 };
 
-type configItemsTypes = {
-  id?: number;
-  name: string;
-  description: string;
-  objectives: string;
-  funders: string[];
-  tags: string[];
-  budget: number;
-};
-
-type Props = {
-  editionMode: false;
-  details?: configItemsTypes;
-  getProjectDetail?: any;
-};
-
 export default function AddAndEditProjectModal({ editionMode, details, getProjectDetail }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
-  const [picture] = useState(getRandomImage(details ? details.id : undefined));
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -131,13 +121,8 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
       <ModalBodySNCF>
         <div className="row mb-3">
           <div className="col-lg-4">
-            <div
-              className="project-edition-modal-picture"
-              role="button"
-              tabIndex={0}
-              onClick={() => {}}
-            >
-              <img src={picture} alt="Project pic" />
+            <div className="project-edition-modal-picture">
+              <PictureUploader configItems={configItems} setConfigItems={setConfigItems} />
             </div>
           </div>
           <div className="col-lg-8">
@@ -216,6 +201,7 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
         <div className="row mb-3">
           <div className="col-lg-8">
             <InputSNCF
+              noMargin
               id="projectInputFunders"
               type="text"
               name="projectInputFunders"
@@ -233,6 +219,7 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
           </div>
           <div className="col-lg-4">
             <InputSNCF
+              noMargin
               id="projectInputBudget"
               type="number"
               name="projectInputBudget"
