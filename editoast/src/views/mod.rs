@@ -1,5 +1,5 @@
 mod documents;
-mod electrical_profiles;
+pub mod electrical_profiles;
 mod infra;
 mod layers;
 pub mod pagination;
