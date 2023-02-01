@@ -830,6 +830,25 @@ paths:
                     name:
                       type: string
                       example: "France 2023"
+  
+  /electrical_profile_set:
+    post:
+      tags:
+        - electrical_profiles
+      summary: import a new electrical profile set
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The list of ids and names of electrical profile sets available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ElectricalProfile"
 
   /electrical_profile_set/{id}/:
     get:
