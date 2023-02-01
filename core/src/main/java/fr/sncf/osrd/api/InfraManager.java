@@ -61,9 +61,9 @@ public class InfraManager extends APIClient {
 
         static {
             INITIALIZING.transitions = new InfraStatus[]{DOWNLOADING};
-            DOWNLOADING.transitions = new InfraStatus[]{PARSING_JSON, ERROR};
-            PARSING_JSON.transitions = new InfraStatus[]{PARSING_INFRA, ERROR};
-            PARSING_INFRA.transitions = new InfraStatus[]{CACHED, ERROR};
+            DOWNLOADING.transitions = new InfraStatus[]{PARSING_JSON, ERROR, TRANSIENT_ERROR};
+            PARSING_JSON.transitions = new InfraStatus[]{PARSING_INFRA, ERROR, TRANSIENT_ERROR};
+            PARSING_INFRA.transitions = new InfraStatus[]{CACHED, ERROR, TRANSIENT_ERROR};
             // if a new version appears
             CACHED.transitions = new InfraStatus[]{DOWNLOADING};
             // at the next try
@@ -99,7 +99,7 @@ public class InfraManager extends APIClient {
         }
 
         void transitionTo(InfraStatus newStatus, Throwable error) {
-            assert status.canTransitionTo(newStatus);
+            assert status.canTransitionTo(newStatus) : String.format("cannot switch from %s to %s", status, newStatus);
             this.lastStatus = this.status;
             this.lastError = error;
             this.status = newStatus;
