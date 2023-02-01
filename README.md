@@ -49,3 +49,11 @@ xdg-open http://localhost:3000/
 
 - Chat with us on IRC at [libera.chat#osrd](https://web.libera.chat/#osrd)
 - Email us at <contact@osrd.fr>
+
+## Sponsors
+
+<p align="center">
+  <img src="assets/sponsors/france-dot.svg" width="150px" height="150px" alt="Ministère chargé des Transports"/>
+  <img src="assets/sponsors/european-union.svg" width="150px" height="150px" alt="European Union"/>
+  <img src="assets/sponsors/sncf-reseau.svg" width="150px" height="150px" alt="SNCF Réseau"/>
+</p>
