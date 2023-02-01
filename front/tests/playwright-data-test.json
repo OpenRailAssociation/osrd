@@ -1,0 +1,44 @@
+{
+  "dataInfraFourItems": [
+    {
+      "id": 1,
+      "name": "test_infra_1",
+      "railjson_version": "3.1.0",
+      "version": "1",
+      "generated_version": "1",
+      "locked": false,
+      "created": "2023-01-20T15:20:25.468977",
+      "modified": "2023-01-20T15:20:25.468992"
+    },
+    {
+      "id": 2,
+      "name": "test_infra_2_lock",
+      "railjson_version": "3.1.0",
+      "version": "1",
+      "generated_version": "1",
+      "locked": true,
+      "created": "2023-01-20T15:20:39.048094",
+      "modified": "2023-01-20T15:20:39.048108"
+    },
+    {
+      "id": 3,
+      "name": "test_infra_3_lock",
+      "railjson_version": "3.1.0",
+      "version": "1",
+      "generated_version": "1",
+      "locked": true,
+      "created": "2023-01-20T15:13:14.331523",
+      "modified": "2023-01-20T15:13:14.331523"
+    },
+    {
+      "id": 4,
+      "name": "test_infra_4",
+      "railjson_version": "3.1.0",
+      "version": "1",
+      "generated_version": "1",
+      "locked": false,
+      "created": "2023-01-20T15:16:05.925913",
+      "modified": "2023-01-20T15:16:05.925913"
+    }
+  ]
+}
