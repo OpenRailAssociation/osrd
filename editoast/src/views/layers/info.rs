@@ -1,5 +1,5 @@
 use crate::api_error::ApiResult;
-use crate::chartos::MapLayers;
+use crate::map::MapLayers;
 use rocket::serde::json::{json, Value as JsonValue};
 
 use rocket::State;

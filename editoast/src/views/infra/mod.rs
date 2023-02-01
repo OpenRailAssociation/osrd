@@ -9,10 +9,10 @@ use std::sync::Arc;
 
 use super::params::List;
 use crate::api_error::ApiResult;
-use crate::chartos::{self, MapLayers};
 use crate::db_connection::{DBConnection, RedisPool};
 use crate::infra::{Infra, InfraName};
 use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::map::{self, MapLayers};
 use crate::schema::SwitchType;
 use chashmap::CHashMap;
 use diesel::sql_types::{BigInt, Double, Text};
@@ -103,7 +103,7 @@ async fn refresh<'a>(
         .await?;
 
     for infra_id in refreshed_infra.iter() {
-        chartos::invalidate_all(
+        map::invalidate_all(
             redis_pool,
             &map_layers.layers.keys().cloned().collect(),
             *infra_id,

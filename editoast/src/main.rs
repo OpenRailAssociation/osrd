@@ -4,19 +4,18 @@ extern crate rocket;
 extern crate diesel;
 
 mod api_error;
-mod chartos;
 mod client;
 mod cors;
 mod db_connection;
 mod generated_data;
 mod infra;
 mod infra_cache;
+mod map;
 mod schema;
 mod tables;
 mod views;
 
 use crate::schema::RailJson;
-use chartos::MapLayers;
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
@@ -28,6 +27,7 @@ use db_connection::{DBConnection, RedisPool};
 use diesel::{Connection, PgConnection};
 use infra::Infra;
 use infra_cache::InfraCache;
+use map::MapLayers;
 use rocket::{Build, Config, Rocket};
 use rocket_db_pools::deadpool_redis::{Config as RedisPoolConfig, Runtime};
 use rocket_db_pools::Database;
@@ -120,7 +120,7 @@ async fn runserver(
 async fn build_redis_pool_and_invalidate_all_cache(redis_url: &str, infra_id: i64) {
     let cfg = RedisPoolConfig::from_url(redis_url);
     let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
-    chartos::invalidate_all(
+    map::invalidate_all(
         &RedisPool(pool),
         &MapLayers::parse().layers.keys().cloned().collect(),
         infra_id,

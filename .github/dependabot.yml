@@ -20,16 +20,6 @@ updates:
     labels:
       - "dependencies"
       - "area:api"
-  - package-ecosystem: "pip"
-    directory: "/chartos/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "chartos:"
-    open-pull-requests-limit: 100
-    labels:
-      - "dependencies"
-      - "area:chartos"
   - package-ecosystem: "npm"
     directory: "/front/"
     schedule:
