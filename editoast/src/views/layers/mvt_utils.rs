@@ -173,9 +173,11 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use crate::map::MapLayers;
 
-    use super::{create_and_fill_mvt_tile, get_geo_json_sql_query};
+    use super::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
 
     #[test]
     fn test_query_creation() {
@@ -218,6 +220,66 @@ mod tests {
             );
             assert_eq!(expected_queries[i], query);
         }
+    }
+
+    #[test]
+    fn test_create_and_fill_tile() {
+        let records = vec![GeoJsonAndData {
+          geo_json: "{\"type\":\"MultiLineString\",\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:3857\"}},\"coordinates\":[[[252941.293121198,6258992.543559584],[252858.794084681,6258960.207464033],[252853.844467147,6258958.257191242]]]}".to_string(),
+          data: json!({
+            "id": "a",
+            "extensions": {
+              "lpv_sncf": null
+            },
+            "speed_limit": null,
+            "track_ranges": [
+              {
+                "end": 77,
+                "begin": 0,
+              }
+            ],
+            "speed_limit_by_tag": {
+              "train": 19.2,
+            }
+          })
+        },GeoJsonAndData {
+            geo_json: "{\"type\":\"MultiLineString\",\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:3857\"}},\"coordinates\":[[[258640.840874342,6254230.029006824],[258640.02733391,6254232.868657458],[258621.907591885,6254296.420095009]]]}".to_string(),
+            data: json!({
+              "id": "b",
+              "extensions": {
+                "lpv_sncf": null
+              },
+              "speed_limit": null,
+              "track_ranges": [
+                {
+                  "end": 211,
+                  "begin": 0,
+                }
+              ],
+              "speed_limit_by_tag": {
+                "new train": 15.2
+              }
+            })
+          }];
+        let tile = create_and_fill_mvt_tile(7, 64, 44, "signal_layers", records);
+        assert_eq!(tile.num_layers(), 1);
+        assert_eq!(
+            tile.to_bytes().unwrap(),
+            vec![
+                26, 226, 1, 120, 2, 10, 13, 115, 105, 103, 110, 97, 108, 95, 108, 97, 121, 101,
+                114, 115, 18, 21, 18, 6, 0, 0, 1, 1, 2, 2, 24, 2, 34, 9, 9, 218, 51, 70, 18, 1, 2,
+                0, 0, 18, 22, 18, 6, 0, 3, 3, 4, 2, 5, 24, 2, 34, 10, 9, 238, 52, 196, 1, 18, 0, 1,
+                0, 0, 26, 2, 105, 100, 26, 24, 115, 112, 101, 101, 100, 95, 108, 105, 109, 105,
+                116, 95, 98, 121, 95, 116, 97, 103, 95, 116, 114, 97, 105, 110, 26, 12, 116, 114,
+                97, 99, 107, 95, 114, 97, 110, 103, 101, 115, 26, 28, 115, 112, 101, 101, 100, 95,
+                108, 105, 109, 105, 116, 95, 98, 121, 95, 116, 97, 103, 95, 110, 101, 119, 32, 116,
+                114, 97, 105, 110, 34, 3, 10, 1, 97, 34, 9, 25, 51, 51, 51, 51, 51, 51, 51, 64, 34,
+                24, 10, 22, 91, 123, 34, 98, 101, 103, 105, 110, 34, 58, 48, 44, 34, 101, 110, 100,
+                34, 58, 55, 55, 125, 93, 34, 3, 10, 1, 98, 34, 9, 25, 102, 102, 102, 102, 102, 102,
+                46, 64, 34, 25, 10, 23, 91, 123, 34, 98, 101, 103, 105, 110, 34, 58, 48, 44, 34,
+                101, 110, 100, 34, 58, 50, 49, 49, 125, 93, 40, 128, 32
+            ]
+        );
     }
 
     #[test]
