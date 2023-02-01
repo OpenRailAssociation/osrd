@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { expect, Locator, Page } from '@playwright/test';
-import home from '../public/locales/fr/home.json';
+import infraManagement from '../public/locales/fr/infraManagement.json';
 
 export class PlaywrightSTDCMPage {
   // The current page object
@@ -16,7 +16,7 @@ export class PlaywrightSTDCMPage {
 
   readonly getInfraCount: Locator;
 
-  readonly translation: typeof home;
+  readonly translation: typeof infraManagement;
 
   constructor(page: Page) {
     this.page = page;
@@ -26,7 +26,7 @@ export class PlaywrightSTDCMPage {
     this.getInfraListItems = page.locator('.infraslist-item-choice');
     this.getInfraCount = page.locator('.infras-count');
     this.getBody = page.locator('body');
-    this.translation = home;
+    this.translation = infraManagement;
   }
 
   // Open infrastructures selector
@@ -45,12 +45,11 @@ export class PlaywrightSTDCMPage {
   }
 
   async checkNumberOfInfra(numberOfInfra: number) {
-    await expect(this.getInfraCount).toContainText(
-      `${numberOfInfra} insfrastructure(s) trouvée(s)`
-    );
+    const infrasFoundTranslation = this.getTranslations('infrasFound');
+    await expect(this.getInfraCount).toContainText(`${numberOfInfra} ${infrasFoundTranslation}`);
   }
 
-  getTranslations(key: keyof typeof home) {
+  getTranslations(key: keyof typeof infraManagement) {
     return this.translation[key];
   }
 }
