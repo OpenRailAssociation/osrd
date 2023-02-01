@@ -363,8 +363,6 @@ components:
             - GC
             - FR3_3
             - FR3_3_GB_G2
-        modes:
-        ######### ask about it
         default_mode:
           type: string
           example: "Mode"
@@ -710,7 +708,18 @@ components:
           type: string
           example: "ID"
         trains_path:
-        ######## ask about it
+          properties:
+            track:
+              type: string
+              example: "track"
+            begin:
+              type: number
+              format: double
+              description: begin offset of the track range
+            end:
+              type: number
+              format: double
+              description: end offset of the track range
     AllowanceValue:
       oneOf:
         - $ref: "#/components/schemas/TimePerDistanceAllowanceValue"
