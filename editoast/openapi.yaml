@@ -7,6 +7,8 @@ info:
 tags:
   - name: infra
     description: Infra
+  - name: electrical_profiles
+    description: Electrical profiles
 
 paths:
   /health/:
@@ -15,7 +17,7 @@ paths:
         200:
           description: Check if Editoast is running correctly
 
-  /version:
+  /version/:
     get:
       responses:
         200:
@@ -30,6 +32,103 @@ paths:
                     nullable: true
                 required:
                   - git_describe
+
+  /layers/info/:
+    get:
+      tags:
+        - layers
+      summary: Get layers descriptions
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Layer"
+
+  /layers/layer/{layer_slug}/mvt/{view_slug}/:
+    get:
+      tags:
+        - layers
+      summary: Mvt View Metadata
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: View Slug
+            type: string
+          name: view_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra id
+            type: integer
+          name: infra
+          in: query
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewMetadata"
+
+  /layers/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
+    get:
+      tags:
+        - layers
+      summary: Mvt tile from the cache or the database, cache data in redis if needed
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: View Slug
+            type: string
+          name: view_slug
+          in: path
+        - required: true
+          schema:
+            title: Z
+            type: integer
+          name: z
+          in: path
+        - required: true
+          schema:
+            title: X
+            type: integer
+          name: x
+          in: path
+        - required: true
+          schema:
+            title: Y
+            type: integer
+          name: y
+          in: path
+        - required: true
+          schema:
+            title: Infra
+            type: integer
+          name: infra
+          in: query
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/x-octet-stream:
+              schema:
+                type: string
 
   /infra/:
     get:
@@ -445,6 +544,7 @@ paths:
     get:
       tags:
         - infra
+        - routes
       summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
       parameters:
         - in: path
@@ -458,13 +558,13 @@ paths:
           schema:
             type: string
             enum: [Detector, BufferStop]
-          description:  Type of the waypoint
+          description: Type of the waypoint
           required: true
         - in: path
           name: waypoint_id
           schema:
             type: string
-          description:  The waypoint id
+          description: The waypoint id
           required: true
       responses:
         200:
@@ -484,6 +584,105 @@ paths:
                     items:
                       type: string
                     example: ["route3", "route4"]
+
+  /infra/{id}/routes/track_ranges/:
+    get:
+      tags:
+        - infra
+        - routes
+      summary: Compute the track ranges through which routes passes.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+        - in: query
+          name: routes
+          schema:
+            type: string
+            description: A list of routes seperated by comma
+            example: "route1,route2,route3"
+          required: true
+      responses:
+        200:
+          description: Foreach route, the track ranges through which it passes or an error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  discriminator:
+                    propertyName: type
+                  oneOf:
+                    - $ref: "#/components/schemas/RouteTrackRangesNotFoundError"
+                    - $ref: "#/components/schemas/RouteTrackRangesCantComputePathError"
+                    - $ref: "#/components/schemas/RouteTrackRangesComputed"
+
+  /infra/{id}/pathfinding/:
+    post:
+      tags:
+        - infra
+        - pathfinding
+      summary: Compute paths given starting and ending track location. Return shortest paths.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+        - in: query
+          name: number
+          schema:
+            type: number
+            format: integer
+            minimum: 1
+            maximum: 5
+            default: 5
+          description: Maximum number of paths to return
+      requestBody:
+        description: Starting and ending track location
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                starting:
+                  allOf:
+                    - $ref: "#/components/schemas/TrackLocation"
+                    - type: object
+                      properties:
+                        direction:
+                          $ref: "#/components/schemas/Direction"
+                ending:
+                  $ref: "#/components/schemas/TrackLocation"
+      responses:
+        200:
+          description: Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    track_ranges:
+                      type: array
+                      minItems: 1
+                      items:
+                        $ref: "#/components/schemas/DirectionalTrackRange"
+                    detectors:
+                      type: array
+                      items:
+                        type: string
+                        example: "detector1"
+                    switches_directions:
+                      type: object
+                      example: { "switch1": "left", "switch2": "right" }
+                      additionalProperties:
+                        type: string
 
   /infra/{id}/objects/{object_type}/:
     post:
@@ -532,6 +731,75 @@ paths:
                       type: object
                       description: object's schematic in geojson format
 
+  /electrical_profile_set/:
+    get:
+      tags:
+        - electrical_profiles
+      summary: Retrieve the list of ids and names of electrical profile sets available
+      responses:
+        200:
+          description: The list of ids and names of electrical profile sets available
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                      example: "France 2023"
+
+  /electrical_profile_set/{id}/:
+    get:
+      tags:
+        - electrical_profiles
+      summary: Retrieve the set of electrical profiles with the given id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Electrical profile set ID
+          required: true
+      responses:
+        200:
+          description: The list of electrical profiles in the set
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ElectricalProfile"
+
+  /electrical_profile_set/level_order/{id}/:
+    get:
+      tags:
+        - electrical_profiles
+      summary: Retrieve the order of strength of the electrical profiles in the set with the given id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Electrical profile set ID
+          required: true
+      responses:
+        200:
+          description: A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: 
+                  type: array
+                  items:
+                    type: string
+                example:
+                  "1500": ["A", "B", "C"]
+                  "25000": ["25000", "22500", "20000"]
 components:
   schemas:
     Infra:
@@ -555,6 +823,46 @@ components:
           format: date
         locked:
           type: boolean
+
+    Layer:
+      properties:
+        name:
+          type: string
+        table_name:
+          type: string
+        views:
+          type: array
+          items:
+            $ref: "#/components/schemas/MapLayerView"
+        id_field:
+          type: string
+        attribution:
+          type: string
+
+    MapLayerView:
+      properties:
+        name:
+          type: string
+        on_field:
+          type: string
+        data_expr:
+          type: array
+          items:
+            type: string
+        exclude_fields:
+          type: array
+          items:
+            type: string
+        joins:
+          type: array
+          items:
+            type: string
+        cache_duration:
+          type: integer
+        where:
+          type: array
+          items:
+            type: string
 
     ObjectType:
       type: string
@@ -721,6 +1029,33 @@ components:
         navigability: BOTH
         track_number: 1
 
+    ViewMetadata:
+      properties:
+        type:
+          type: string
+          example: vector
+        name:
+          type: string
+          example: track_sections
+        promotedId:
+          type: object
+          example: { track_sections: "id" }
+        scheme:
+          type: string
+          example: "xyz"
+        tiles:
+          type: array
+          items:
+            type: string
+            example: http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
+        attribution:
+          type: string
+        minzoom:
+          type: integer
+        maxzoom:
+          type: integer
+          example: 18
+
     InfraError:
       type: object
       description: An infra error or warning
@@ -742,3 +1077,89 @@ components:
             is_warning: false
             obj_id: 61205924-6667-11e3-81ff-01f464e0362d
             obj_type: TrackSection
+
+    TrackLocation:
+      type: object
+      description: A track location (track section and offset)
+      properties:
+        track:
+          type: string
+          description: The track section ID
+          example: 61205924-6667-11e3-81ff-01f464e0362d
+        offset:
+          type: number
+          format: float
+          description: The offset on the track section
+          example: 42.
+
+    Direction:
+      type: string
+      enum: [START_TO_STOP, STOP_TO_START]
+
+    TrackRange:
+      type: object
+      description: Track range
+      properties:
+        track:
+          type: string
+          example: 01234567-89ab-cdef-0123-456789abcdef
+        begin:
+          type: number
+          format: float
+        end:
+          type: number
+          format: float
+          example: 100.
+
+    DirectionalTrackRange:
+      type: object
+      description: Track range associated with a direction
+      properties:
+        track:
+          type: string
+          example: 01234567-89ab-cdef-0123-456789abcdef
+        begin:
+          type: number
+          format: float
+        end:
+          type: number
+          format: float
+          example: 100.
+        direction:
+          $ref: "#/components/schemas/Direction"
+
+    RouteTrackRangesComputed:
+      type: object
+      description: Route track ranges successfully computed
+      properties:
+        type: { type: string, enum: ["Computed"] }
+        track_ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/DirectionalTrackRange"
+
+    RouteTrackRangesNotFoundError:
+      type: object
+      description: Error when the route id couldn't be found
+      properties:
+        type: { type: string, enum: ["NotFound"] }
+
+    RouteTrackRangesCantComputePathError:
+      type: object
+      description: Error when the route path couldn't be computed
+      properties:
+        type: { type: string, enum: ["CantComputePath"] }
+
+    ElectricalProfile:
+      type: object
+      properties:
+        value:
+          type: string
+          example: "A"
+        power_class:
+          type: string
+          example: "1"
+        track_ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackRange"

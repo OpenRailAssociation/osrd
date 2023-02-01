@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
-import nextId from 'react-id-generator';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
@@ -11,12 +10,11 @@ import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import './RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
-import { enhanceData } from './RollingStockHelpers';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
@@ -27,7 +25,7 @@ function RollingStockModal(props) {
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStock, setRollingStock] = useState();
-  const [filteredRollingStockList, setFilteredRollingStockList] = useState();
+  const [filteredRollingStockList, setFilteredRollingStockList] = useState([]);
   const [filters, setFilters] = useState({
     text: '',
     elec: false,
@@ -35,6 +33,7 @@ function RollingStockModal(props) {
   });
   const [isFiltering, setIsFiltering] = useState(false);
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState();
+  const { closeModal } = useContext(ModalContext);
 
   if (darkmode) {
     import('./RollingStockDarkMode.scss');
@@ -51,11 +50,11 @@ function RollingStockModal(props) {
     let filteredRollingStockListNew = rollingStock.filter(
       (el) =>
         el.name.toLowerCase().includes(filters.text) ||
-        (el.detail && el.detail.toLowerCase().includes(filters.text)) ||
-        (el.reference && el.reference.toLowerCase().includes(filters.text)) ||
-        (el.series && el.series.toLowerCase().includes(filters.text)) ||
-        (el.type && el.type.toLowerCase().includes(filters.text)) ||
-        (el.grouping && el.grouping.toLowerCase().includes(filters.text))
+        (el.metadata.detail && el.metadata.detail.toLowerCase().includes(filters.text)) ||
+        (el.metadata.reference && el.metadata.reference.toLowerCase().includes(filters.text)) ||
+        (el.metadata.series && el.metadata.series.toLowerCase().includes(filters.text)) ||
+        (el.metadata.type && el.metadata.type.toLowerCase().includes(filters.text)) ||
+        (el.metadata.grouping && el.metadata.grouping.toLowerCase().includes(filters.text))
     );
 
     // checkbox filters
@@ -97,8 +96,7 @@ function RollingStockModal(props) {
     if (rollingStock === undefined) {
       try {
         const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
-        const mergedData = enhanceData(data.results);
-        setRollingStock(mergedData);
+        setRollingStock(data.results);
       } catch (e) {
         dispatch(
           setFailure({
@@ -111,20 +109,23 @@ function RollingStockModal(props) {
     }
   };
 
-  const listOfRollingStock = () =>
-    filteredRollingStockList.length > 0 ? (
-      filteredRollingStockList.map((item) => (
-        <RollingStockCard
-          data={item}
-          key={nextId()}
-          openedRollingStockCardId={openedRollingStockCardId}
-          setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-          ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
-        />
-      ))
-    ) : (
-      <RollingStockEmpty />
-    );
+  const listOfRollingStock = useMemo(
+    () =>
+      filteredRollingStockList.length > 0 ? (
+        filteredRollingStockList.map((item) => (
+          <RollingStockCard
+            data={item}
+            key={item.id}
+            isOpen={item.id === openedRollingStockCardId}
+            setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+            ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
+          />
+        ))
+      ) : (
+        <RollingStockEmpty />
+      ),
+    [filteredRollingStockList, openedRollingStockCardId, ref2scroll, rollingStockID]
+  );
 
   useEffect(() => {
     getAllRollingStock();
@@ -139,80 +140,78 @@ function RollingStockModal(props) {
   }, [filters, rollingStock]);
 
   return (
-    <ModalSNCF htmlID="rollingStockModal" size="lg">
-      <ModalBodySNCF>
-        <div className="rollingstock-search p-2">
-          <div className="rollingstock-search-filters">
-            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-            <div className="row no-gutters">
-              <div className="col-md-4 mb-3">
-                <InputSNCF
-                  id="searchfilter"
-                  type="text"
-                  onChange={searchMateriel}
-                  placeholder={t('translation:common.search')}
-                  noMargin
-                  unit={<i className="icons-search" />}
-                  sm
+    <ModalBodySNCF>
+      <div className="rollingstock-search p-2">
+        <div className="rollingstock-search-filters">
+          <button type="button" className="close" aria-label="Close" onClick={closeModal}>
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div className="row no-gutters">
+            <div className="col-md-4 mb-3">
+              <InputSNCF
+                id="searchfilter"
+                type="text"
+                onChange={searchMateriel}
+                placeholder={t('translation:common.search')}
+                noMargin
+                unit={<i className="icons-search" />}
+                sm
+              />
+            </div>
+            <div className="col-md-5 ml-2 mb-3 d-flex align-items-center">
+              <div className="mr-4">
+                <CheckboxRadioSNCF
+                  onChange={toggleFilter}
+                  name="elec"
+                  id="elec"
+                  label={
+                    <span className="text-nowrap">
+                      <span className="text-primary mr-1">
+                        <BsLightningFill />
+                      </span>
+                      {t('rollingstock:electric')}
+                    </span>
+                  }
+                  type="checkbox"
+                  checked={filters.elec}
                 />
               </div>
-              <div className="col-md-5 ml-2 mb-3 d-flex align-items-center">
-                <div className="mr-4">
-                  <CheckboxRadioSNCF
-                    onChange={toggleFilter}
-                    name="elec"
-                    id="elec"
-                    label={
-                      <span className="text-nowrap">
-                        <span className="text-primary mr-1">
-                          <BsLightningFill />
-                        </span>
-                        {t('rollingstock:electric')}
+              <div>
+                <CheckboxRadioSNCF
+                  onChange={toggleFilter}
+                  name="thermal"
+                  id="thermal"
+                  label={
+                    <span className="text-nowrap">
+                      <span className="text-pink mr-1">
+                        <MdLocalGasStation />
                       </span>
-                    }
-                    type="checkbox"
-                    checked={filters.elec}
-                  />
-                </div>
-                <div>
-                  <CheckboxRadioSNCF
-                    onChange={toggleFilter}
-                    name="thermal"
-                    id="thermal"
-                    label={
-                      <span className="text-nowrap">
-                        <span className="text-pink mr-1">
-                          <MdLocalGasStation />
-                        </span>
-                        {t('rollingstock:thermal')}
-                      </span>
-                    }
-                    type="checkbox"
-                    checked={filters.thermal}
-                  />
-                </div>
-              </div>
-              <div className="col-md-2 mt-1 ml-auto">
-                <small className="">
-                  {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
-                    ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
-                    : t('rollingstock:noResultFound')}
-                </small>
+                      {t('rollingstock:thermal')}
+                    </span>
+                  }
+                  type="checkbox"
+                  checked={filters.thermal}
+                />
               </div>
             </div>
-          </div>
-          <div className="rollingstock-search-list">
-            {filteredRollingStockList !== undefined && !isFiltering ? (
-              listOfRollingStock()
-            ) : (
-              <Loader msg={t('rollingstock:waitingLoader')} />
-            )}
+            <div className="col-md-2 mt-1 ml-auto">
+              <small className="">
+                {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
+                  ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
+                  : t('rollingstock:noResultFound')}
+              </small>
+            </div>
           </div>
         </div>
-      </ModalBodySNCF>
-    </ModalSNCF>
+        <div className="rollingstock-search-list">
+          {filteredRollingStockList !== undefined && !isFiltering ? (
+            listOfRollingStock
+          ) : (
+            <Loader msg={t('rollingstock:waitingLoader')} />
+          )}
+        </div>
+      </div>
+    </ModalBodySNCF>
   );
 }
 

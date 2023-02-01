@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from railjson_generator.schema.infra.direction import ApplicableDirection
 
-import infra
+from schemas import infra
 
 
 @dataclass
@@ -40,10 +40,16 @@ class Curve(RangeElement):
     def to_rjs(self):
         return infra.Curve(radius=self.radius, begin=self.begin, end=self.end)
 
+@dataclass
+class TrackRange(RangeElement):
+    track: "TrackSection"
+
+    def to_rjs(self):
+        return infra.TrackRange(track=self.track.id, begin=self.begin, end=self.end)
+
 
 @dataclass
-class ApplicableDirectionsTrackRange(RangeElement):
-    track: "TrackSection"
+class ApplicableDirectionsTrackRange(TrackRange):
     applicable_directions: ApplicableDirection
 
     def to_rjs(self):

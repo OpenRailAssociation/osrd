@@ -1,23 +1,18 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { GiRailRoad } from 'react-icons/gi';
-import PropTypes from 'prop-types';
+import InfraSelector from 'common/InfraSelector/InfraSelector';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
-export default function ButtonMapInfras(props) {
-  const { modalID } = props;
-
+export default function ButtonMapInfras() {
+  const { openModal } = useContext(ModalContext);
   return (
     <button
       type="button"
       className="btn-rounded btn-rounded-white btn-map-infras"
-      data-toggle="modal"
-      data-target={`#${modalID}`}
+      onClick={() => openModal(<InfraSelector modalOnly />, 'lg')}
     >
       <span className="sr-only">Infrastructures</span>
       <GiRailRoad />
     </button>
   );
 }
-
-ButtonMapInfras.propTypes = {
-  modalID: PropTypes.string.isRequired,
-};

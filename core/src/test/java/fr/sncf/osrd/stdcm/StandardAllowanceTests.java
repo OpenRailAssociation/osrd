@@ -5,12 +5,12 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.api.stdcm.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -382,6 +382,32 @@ public class StandardAllowanceTests {
         assertEquals(1000, thirdRouteEntryTime, 2 * timeStep);
     }
 
+    /** Tests a simple path with no conflict, with a time per distance allowance and very low value */
+    @Test
+    public void testSimplePathTimePerDistanceAllowanceLowValue() {
+        /*
+        a --> b --> c --> d --> e
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        infraBuilder.addRoute("b", "c");
+        infraBuilder.addRoute("c", "d");
+        var forthRoute = infraBuilder.addRoute("d", "e");
+        var infra = infraBuilder.build();
+        var allowance = new AllowanceValue.TimePerDistance(1);
+        var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthRoute, 100)))
+                .setStandardAllowance(allowance)
+        );
+        assertNotNull(res.withoutAllowance);
+        assertNotNull(res.withAllowance);
+
+        // We need a high tolerance because there are several binary searches
+        checkAllowanceResult(res, allowance, 4 * timeStep);
+    }
+
     /** Tests a simple path with no conflict, with a time per distance allowance */
     @Test
     public void testSimplePathTimePerDistanceAllowance() {
@@ -450,6 +476,53 @@ public class StandardAllowanceTests {
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
         occupancyTest(res.withAllowance, occupancyGraph, timeStep);
+
+        // We need a high tolerance because there are several binary searches
+        checkAllowanceResult(res, allowance, 4 * timeStep);
+    }
+
+    /** The path we find must pass through an exact space-time point at the middle of the path,
+     * we check that we can still do this with mareco */
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testMarecoSingleSpaceTimePoint(boolean isTimePerDistance) {
+        /*
+        a --> b --> c --> d --> e
+
+        space
+        d ^
+          |           end
+        c |########## /
+          |##########/
+        b |         /#################
+          |        / #################
+        a |_______/__#################> time
+
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1_000, 30);
+        var secondRoute = infraBuilder.addRoute("b", "c", 1_000, 30);
+        var thirdRoute = infraBuilder.addRoute("c", "d");
+        var infra = infraBuilder.build();
+        AllowanceValue allowance = new AllowanceValue.Percentage(100);
+        if (isTimePerDistance)
+            allowance = new AllowanceValue.TimePerDistance(120);
+        var occupancyGraph = ImmutableMultimap.of(
+                firstRoute, new OccupancyBlock(2_000, POSITIVE_INFINITY, 0, 1_000),
+                secondRoute, new OccupancyBlock(0, 2_000, 0, 1_000)
+        );
+        var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 100)))
+                .setUnavailableTimes(occupancyGraph)
+                .setStandardAllowance(allowance)
+        );
+        assertNotNull(res.withoutAllowance);
+        assertNotNull(res.withAllowance);
+        assertEquals(0, res.withAllowance.envelope().getEndSpeed());
+        assertEquals(0, res.withoutAllowance.envelope().getEndSpeed());
+        occupancyTest(res.withAllowance, occupancyGraph, 2 * timeStep);
 
         // We need a high tolerance because there are several binary searches
         checkAllowanceResult(res, allowance, 4 * timeStep);

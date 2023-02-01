@@ -84,11 +84,11 @@ public class MaxSpeedEnvelopeTest {
     public void testFlat() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 8500 };
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
-        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
         var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
@@ -102,11 +102,11 @@ public class MaxSpeedEnvelopeTest {
     public void testSteep() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 20);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 8500 };
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
-        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
         var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
@@ -120,11 +120,11 @@ public class MaxSpeedEnvelopeTest {
     public void testInitialStop() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[]{0};
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
-        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT);
     }
@@ -133,11 +133,11 @@ public class MaxSpeedEnvelopeTest {
     public void testFlatNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 8500 };
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);
-        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
         var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
@@ -151,11 +151,11 @@ public class MaxSpeedEnvelopeTest {
     public void testWithComplexMRSP() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var stops = new double[] { 50000, testPath.getLength() };
 
         var mrsp = makeComplexMRSP(testContext);
-        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, CONSTANT, DECREASING, CONSTANT,
                 DECREASING, CONSTANT, CONSTANT, CONSTANT, DECREASING, CONSTANT, DECREASING);

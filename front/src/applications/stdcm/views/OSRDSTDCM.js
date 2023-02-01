@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
 import { useDispatch } from 'react-redux';
-import { MODES, STDCM_REQUEST_STATUS } from '../../osrd/consts';
-import OSRDConfig from '../../osrd/views/OSRDConfig/OSRDConfig';
+import { MODES, STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
+import OSRDStdcmConfig from './OSRDCStdcmConfig';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import StdcmRequestModal from './StdcmRequestModal';
 import { updateMode } from '../../../reducers/osrdconf';
@@ -35,13 +35,15 @@ export default function OSRDSTDCM() {
 
   return (
     <>
-      <OSRDConfig setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus} />
+      <OSRDStdcmConfig setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus} />
       <StdcmRequestModal
         setCurrentStdcmRequestResults={setCurrentStdcmRequestResults}
         setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
         currentStdcmRequestStatus={currentStdcmRequestStatus}
       />
-      <OSRDStdcmResults currentStdcmRequestStatus={currentStdcmRequestStatus} />
+      {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success && (
+        <OSRDStdcmResults currentStdcmRequestStatus={currentStdcmRequestStatus} />
+      )}
     </>
   );
 }

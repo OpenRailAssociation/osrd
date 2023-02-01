@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { TimeString } from 'common/types';
-import { SIGNAL_BASE_DEFAULT } from '../../applications/osrd/components/Simulation/consts';
+import { SIGNAL_BASE_DEFAULT } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 export type MergedDataPoint<T = number> = {
   [key: string]: number | T;
@@ -115,8 +115,6 @@ export type SimulationHistory = SimulationSnapshot[];
 export interface PositionValues {
   headPosition: PositionSpeed;
   tailPosition: PositionSpeed;
-  routeEndOccupancy: number;
-  routeBeginOccupancy: number;
   speed: {
     speed: number;
     time: number;
@@ -130,16 +128,12 @@ export interface SimulationTrain {
   trainNumber: number;
   headPosition: ConsolidatedPosition[][];
   tailPosition: ConsolidatedPosition[][];
-  routeEndOccupancy: ConsolidatedPosition[][];
-  routeBeginOccupancy: ConsolidatedPosition[][];
   routeAspects: ConsolidatedRouteAspect[];
   signalAspects: ConsolidatedSignalAspect[];
-  areaBlock: ConsolidatedMergeDataPoint[][];
+  areaBlock?: ConsolidatedMergeDataPoint[][];
   speed: ConsolidatePositionSpeed[];
   eco_headPosition?: ConsolidatedPosition[][];
   eco_tailPosition?: ConsolidatedPosition[][];
-  eco_routeEndOccupancy?: ConsolidatedPosition[][];
-  eco_routeBeginOccupancy?: ConsolidatedPosition[][];
   eco_routeAspects?: ConsolidatedRouteAspect[];
   eco_signalAspects?: ConsolidatedSignalAspect[];
   eco_areaBlock?: ConsolidatedMergeDataPoint[][];
@@ -153,6 +147,7 @@ export interface OsrdSimulationState {
   contextMenu: any;
   hoverPosition: any;
   isPlaying: boolean;
+  isUpdating: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionValues;
@@ -164,7 +159,6 @@ export interface OsrdSimulationState {
     maxSpeed: boolean;
     slopes: boolean;
   };
-  stickyBar: boolean;
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];

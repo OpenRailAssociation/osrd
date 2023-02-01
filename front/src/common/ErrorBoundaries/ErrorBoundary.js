@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useContext } from 'react';
 import PropTypes from 'prop-types';
 import * as Sentry from '@sentry/browser';
 import { connect } from 'react-redux';
@@ -8,6 +8,7 @@ import * as allLogsActions from 'reducers/logs';
 import * as allZonesActions from 'reducers/zones';
 import * as allProfileActions from 'reducers/profile';
 import { withTranslation } from 'react-i18next';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 class RawErrorBoundary extends Component {
   static propTypes = {
@@ -60,6 +61,7 @@ class RawErrorBoundary extends Component {
     const { children, t, map, user, logs, zones, profile } = this.props;
     const { hasError, eventId } = this.state;
     const id = eventId === '' ? Sentry.captureException(map.error) : eventId;
+    const { closeModal } = useContext(ModalContext);
 
     if (
       hasError ||
@@ -91,8 +93,10 @@ class RawErrorBoundary extends Component {
             <button
               type="button"
               className="btn btn-primary m-4"
-              data-dismiss="modal"
-              onClick={() => this.onReload()}
+              onClick={() => {
+                this.onReload();
+                closeModal();
+              }}
             >
               {t('errorBoundary.reloadButton')}
             </button>

@@ -58,6 +58,7 @@ class InputSNCF extends React.Component {
     focus: PropTypes.bool,
     selectAllOnFocus: PropTypes.bool,
     step: PropTypes.number,
+    isFlex: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -86,6 +87,7 @@ class InputSNCF extends React.Component {
     focus: false,
     selectAllOnFocus: false,
     step: 1,
+    isFlex: false,
   };
 
   // Appends a icon button right next to the input field
@@ -140,6 +142,7 @@ class InputSNCF extends React.Component {
       onChange,
       unit,
       sm,
+      isFlex,
       readonly,
       whiteBG,
       clearButton,
@@ -157,6 +160,7 @@ class InputSNCF extends React.Component {
     const readOnlyFlag = readonly ? 'readonly' : '';
     const backgroundColor = whiteBG ? 'bg-white' : '';
     const clearOption = clearButton ? 'clear-option' : '';
+    const flex = isFlex ? 'd-flex align-items-center' : '';
 
     // Test and adapt display if entry is invalid
     let invalidClass = '';
@@ -171,9 +175,12 @@ class InputSNCF extends React.Component {
     }
 
     return (
-      <>
+      <div className={flex}>
         {label && (
-          <label className="font-weight-medium mb-2" htmlFor={id}>
+          <label
+            className={flex ? 'font-weight-medium mb-0 mr-2' : 'font-weight-medium mb-2'}
+            htmlFor={id}
+          >
             {label}
           </label>
         )}
@@ -202,7 +209,7 @@ class InputSNCF extends React.Component {
           {this.renderAppendButton(sm)}
           {invalidMsg}
         </div>
-      </>
+      </div>
     );
   };
 

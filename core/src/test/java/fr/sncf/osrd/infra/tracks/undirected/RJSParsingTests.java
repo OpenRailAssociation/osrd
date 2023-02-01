@@ -13,7 +13,6 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder;
-import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
@@ -131,5 +130,14 @@ public class RJSParsingTests {
         )));
         var speedLimits = parsedInfra.getTrackSection(track.id).getSpeedSections().get(Direction.FORWARD);
         equalsIgnoringTransitions(expected, speedLimits);
+    }
+
+    @Test
+    public void testLoadingSmallInfra() throws Exception {
+        Helpers.getExampleInfra("small_infra/infra.json");
+        var profiles = Helpers.getExampleElectricalProfiles("small_infra/external_generated_inputs.json");
+        assert profiles != null;
+        assert profiles.levels.size() > 0;
+        assert profiles.levels.get(0).powerClass != null;
     }
 }

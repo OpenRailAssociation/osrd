@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-import infra
+from schemas import infra
 
 
 @dataclass
@@ -23,7 +23,7 @@ class OperationalPoint:
 
 @dataclass
 class OperationalPointPart:
-    operarational_point: OperationalPoint
+    operational_point: OperationalPoint
     position: float
 
     def to_rjs(self, track):

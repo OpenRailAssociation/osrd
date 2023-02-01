@@ -1,5 +1,6 @@
 import { Feature, Point, FeatureCollection, LineString } from 'geojson';
-import { point, Position, featureCollection } from '@turf/helpers';
+import { point, Position, featureCollection, lineString } from '@turf/helpers';
+import length from '@turf/length';
 import bearing from '@turf/bearing';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -29,4 +30,11 @@ export function getCurrentBearing(line: Feature<LineString>) {
   const { coordinates } = line.geometry;
   const l = line.geometry.coordinates.length;
   return bearing(coordinates[l - 2], coordinates[l - 1]);
+}
+
+export function lengthFromLineCoordinates(coordinates?: Position[]) {
+  if (coordinates) {
+    return length(lineString(coordinates));
+  }
+  return NaN;
 }

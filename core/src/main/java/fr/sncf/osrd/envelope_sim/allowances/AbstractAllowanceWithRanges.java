@@ -268,20 +268,38 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var initialHighBound = computeInitialHighBound(envelopeSection);
 
         Envelope res = null;
+        AllowanceConvergenceException lastError = null;
         var search =
                 new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, context.timeStep, true);
         logger.debug("  target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var input = search.getInput();
             logger.debug("    starting attempt {}", i);
-            res = computeIteration(envelopeSection, input, imposedBeginSpeed, imposedEndSpeed);
-            var regionTime = res.getTotalTime();
-            logger.debug("    envelope time {}", regionTime);
-            search.feedback(regionTime);
+            try {
+                res = computeIteration(envelopeSection, input, imposedBeginSpeed, imposedEndSpeed);
+                var regionTime = res.getTotalTime();
+                logger.debug("    envelope time {}", regionTime);
+                search.feedback(regionTime);
+            } catch (AllowanceConvergenceException allowanceError) {
+                logger.debug("    couldn't build an envelope ({})", allowanceError.errorType);
+                lastError = allowanceError;
+                if (allowanceError.errorType.equals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME))
+                    // Can't go slow enough to even build a valid envelope: we need to go faster
+                    search.feedback(Double.POSITIVE_INFINITY);
+                else if (allowanceError.errorType.equals(AllowanceConvergenceException.ErrorType.NOT_ENOUGH_TIME))
+                    // Can't go fast enough to even build a valid envelope: we need to go slower
+                    search.feedback(0);
+                else
+                    // Internal error, can't be handled here, rethrown
+                    throw allowanceError;
+            }
         }
 
-        if (!search.complete())
+        if (!search.complete()) {
+            if (lastError != null)
+                throw lastError; // If we couldn't converge and an error happened, it has more info than a generic error
             throw makeError(search);
+        }
         return res;
     }
 

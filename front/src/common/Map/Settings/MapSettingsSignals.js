@@ -16,13 +16,36 @@ export default function MapSettingsSignals() {
     lights: lightsIcon,
   };
 
+  const switchAllSettings = (settingSwitch, stateOfSettings) => {
+    const allSettings = {};
+
+    CONSTS_SETTINGS.forEach((settingKey) => {
+      allSettings[settingKey] = !stateOfSettings[settingSwitch];
+    });
+
+    return allSettings;
+  };
+
+  const checkedSettings = (settingSwitch, stateOfSettings) => {
+    const filteredSettingKeys = Object.keys(stateOfSettings).filter(
+      (key) => key !== settingSwitch && key !== 'all'
+    );
+    const settingValues = filteredSettingKeys.map((settingKey) => stateOfSettings[settingKey]);
+    return settingValues.every((settingValue) => settingValue === !stateOfSettings[settingSwitch]);
+  };
+
   const setSignalsList = (setting) => {
-    dispatch(
-      updateSignalsSettings({
+    let newSettings;
+
+    if (setting === 'all' || checkedSettings(setting, signalsSettings)) {
+      newSettings = switchAllSettings(setting, signalsSettings);
+    } else {
+      newSettings = {
         ...signalsSettings,
         [setting]: !signalsSettings[setting],
-      })
-    );
+      };
+    }
+    dispatch(updateSignalsSettings(newSettings));
   };
 
   return (

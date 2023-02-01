@@ -32,10 +32,13 @@ public class AllowanceTests {
     private static EnvelopeSimContext makeSimpleContext(double length, double slope) {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(length, slope);
-        return new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        return EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
     }
 
-    private static MarecoAllowance makeStandardMarecoAllowance(
+    /**
+     * test allowance data
+     */
+    public static MarecoAllowance makeStandardMarecoAllowance(
             EnvelopeSimContext context, 
             double beginPos, double endPos,
             double capacitySpeedLimit,
@@ -55,10 +58,15 @@ public class AllowanceTests {
         return new LinearAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
-    private static Envelope makeSimpleAllowanceEnvelope(EnvelopeSimContext context,
-                                                        Allowance allowance,
-                                                        double speed,
-                                                        boolean stop) {
+    /**
+     * build test allowance data
+     */
+    public static Envelope makeSimpleAllowanceEnvelope(
+            EnvelopeSimContext context,
+            Allowance allowance,
+            double speed,
+            boolean stop
+    ) {
         var path = context.path;
         double[] stops;
         if (stop)
@@ -330,14 +338,14 @@ public class AllowanceTests {
                 testContext, begin, end, 8.33, allowanceValue);
         var marecoThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> marecoAllowance.apply(maxEffortEnvelope));
-        assertEquals("too_much_allowance_time", marecoThrown.errorType);
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, marecoThrown.errorType);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(
                 testContext, begin, end, 8.33, allowanceValue);
         var linearThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> linearAllowance.apply(maxEffortEnvelope));
-        assertEquals("too_much_allowance_time", linearThrown.errorType);
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, linearThrown.errorType);
     }
 
     /** Test the engineering allowance with a very short segment, to trigger intersectLeftRightParts method */
@@ -356,14 +364,14 @@ public class AllowanceTests {
                 testContext, begin, end, 8.33, allowanceValue);
         var marecoThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> marecoAllowance.apply(maxEffortEnvelope));
-        assertEquals("too_much_allowance_time", marecoThrown.errorType);
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, marecoThrown.errorType);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(
                 testContext, begin, end, 8.33, allowanceValue);
         var linearThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> linearAllowance.apply(maxEffortEnvelope));
-        assertEquals("too_much_allowance_time", linearThrown.errorType);
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, linearThrown.errorType);
     }
 
     private void testEngineeringOnStandardAllowance(Envelope maxEffortEnvelope,
@@ -497,7 +505,8 @@ public class AllowanceTests {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 100_000;
         var testPath = new EnvelopePath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
+                RollingStock.Comfort.STANDARD);
         var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
@@ -539,12 +548,13 @@ public class AllowanceTests {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new EnvelopePath(
                 length, gradePositions.toArray(), gradeValues.toArray(), ImmutableRangeMap.of());
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
+                RollingStock.Comfort.STANDARD);
         var stops = new double[]{ 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.Percentage(10);
         var allowance = makeStandardMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD),
+                EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD),
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var targetTime = allowance.getTargetTime(maxEffortEnvelope);
@@ -657,7 +667,8 @@ public class AllowanceTests {
         var gradePositions = new double[] { 0, 7000, 8100, length };
         var gradeValues = new double[] { 0, 40, 0 };
         var testPath = new EnvelopePath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
+                RollingStock.Comfort.STANDARD);
         var stops = new double[] { length };
         var begin = 3000;
         var end = 8000;
@@ -684,7 +695,8 @@ public class AllowanceTests {
 
         var length = 10000;
         var testPath = new FlatPath(length, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
+                RollingStock.Comfort.STANDARD);
         var stops = new double[] { length };
         var begin = 2000;
 
@@ -717,8 +729,7 @@ public class AllowanceTests {
         var marecoException = assertThrows(AllowanceConvergenceException.class, () ->
                 makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, true)
         );
-        assert marecoException.errorType.equals("too_much_allowance_time");
-        assert marecoException.cause == OSRDError.ErrorCause.USER;
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, marecoException.errorType);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(
@@ -727,7 +738,7 @@ public class AllowanceTests {
         var linearException = assertThrows(AllowanceConvergenceException.class, () ->
                 makeSimpleAllowanceEnvelope(testContext, linearAllowance, 44.4, true)
         );
-        assert linearException.errorType.equals("too_much_allowance_time");
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, linearException.errorType);
         assert linearException.cause == OSRDError.ErrorCause.USER;
     }
 
@@ -737,7 +748,7 @@ public class AllowanceTests {
 
         var length = 1000;
         var testPath = new FlatPath(length, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 2.0, RollingStock.Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, 2.0, RollingStock.Comfort.STANDARD);
         var stops = new double[] { length };
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
@@ -760,7 +771,7 @@ public class AllowanceTests {
 
         var length = 2524;
         var testPath = new FlatPath(length, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 2.0, RollingStock.Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, 2.0, RollingStock.Comfort.STANDARD);
         var stops = new double[] { length };
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);

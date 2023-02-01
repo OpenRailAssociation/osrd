@@ -4,10 +4,12 @@ import {
   updateAllowancesSettings,
   updateSelectedProjection,
   updateSelectedTrain,
-  updateSimulation
+  updateSimulation,
 } from 'reducers/osrdsimulation/actions';
-import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
-import { timetableURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import {
+  timetableURI,
+  trainscheduleURI,
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 /**
  * Recover the time table for all the trains
  */

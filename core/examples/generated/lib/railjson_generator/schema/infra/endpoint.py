@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
-import infra
+from schemas import infra
 
 
 class Endpoint(IntEnum):

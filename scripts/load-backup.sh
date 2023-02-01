@@ -15,9 +15,9 @@ BACKUP_FILENAME=$(basename -s ".backup" "$BACKUP_PATH")
 echo "$BACKUP_FILENAME"
 EXPECTED_SHA1=$(echo "$BACKUP_FILENAME" | grep -o -E '[0-9a-f]{40}' || echo "renamed")
 CURRENT_SHA1=$(sha1sum "$BACKUP_PATH" | cut -d' ' -f1)
-if [ "$EXPECTED_SHA1" == "$CURRENT_SHA1" ]; then
+if [ "$EXPECTED_SHA1" = "$CURRENT_SHA1" ]; then
   echo "  ✔ The backup is valid"
-elif [ "$EXPECTED_SHA1" == "renamed" ]; then
+elif [ "$EXPECTED_SHA1" = "renamed" ]; then
   echo "  ✘ Invalid backup file name (you may have renamed the file)"
   echo "    Found:    '${BACKUP_FILENAME}'"
   echo "    Expected: 'osrd_full_01_01_2000_sha1_0000000000000000000000000000000000000000.backup' "
@@ -36,13 +36,13 @@ echo "Checking database exists..."
 DB_EXISTS="$(docker exec osrd-postgres psql -c "SELECT EXISTS (SELECT FROM pg_stat_database WHERE datname = 'osrd');")"
 DB_EXISTS="$(echo "$DB_EXISTS" | grep -o -E '[tf]$')"
 
-if [ $DB_EXISTS == 't' ]; then
+if [ $DB_EXISTS = 't' ]; then
   echo "  Database 'osrd' found"
 else
   echo "  Database 'osrd' not found"
 fi
 
-if [ $DB_EXISTS == 't' ]; then
+if [ $DB_EXISTS = 't' ]; then
   # Check that no service is connected to the database
   echo "Checking database availability..."
   DB_CONN="$(docker exec osrd-postgres psql -c "SELECT numbackends FROM pg_stat_database WHERE datname = 'osrd';")"

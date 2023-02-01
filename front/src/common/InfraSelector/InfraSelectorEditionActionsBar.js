@@ -129,7 +129,6 @@ export default function ActionsBar(props) {
         type="button"
         onClick={() => setIsFocused(infra.id)}
         title={t('infraManagement:actions.rename')}
-        data-toggle="tooltip"
       >
         <FaPencilAlt />
       </button>

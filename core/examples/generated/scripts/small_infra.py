@@ -1,8 +1,13 @@
+"""This script generates an infrastructure of reasonable size containing all objects defined by the RailJSON schema.
+
+For more information, and a diagram of this infrastructure, see: https://osrd.fr/en/docs/explanation/data-model/
+"""
 from railjson_generator import (
     InfraBuilder,
     SimulationBuilder,
     ApplicableDirection,
     Location,
+    ExternalGeneratedInputs,
 )
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
@@ -571,13 +576,9 @@ speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 # ================================
 #  Catenaries
 # ================================
-electrified_tracks = builder.infra.track_sections.copy()
-for track in electrified_tracks:
-    if track.label == "TD1":
-        electrified_tracks.remove(track)
-builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks))
-builder.infra.catenaries.append(Catenary("catenary_1500", "1500", electrified_tracks))
-
+electrified_tracks_25000 = set(builder.infra.track_sections) - {td1, ta0}
+builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks_25000))
+builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", {ta0}))
 # ================================
 # Produce the railjson
 # ================================
@@ -627,3 +628,39 @@ sim = builder.build()
 
 # Save railjson
 sim.save(OUTPUT_DIR / "simulation.json")
+
+
+# ================================
+# Electrical profiles
+# ================================
+
+external_inputs = ExternalGeneratedInputs()
+
+ep_boundaries = {
+    "1": [(0, 10)],
+    "2": [(0, 4), (4, 6), (6, 10)],
+    "3": [(0, 3), (3, 7), (7, 10)],
+    "4": [(0, 2), (2, 4), (4, 6), (6, 8), (8, 10)],
+    "5": [(0, 1), (1, 3), (3, 7), (7, 9), (9, 10)],
+}
+EP_VALUES = [25000, 22500, 20000]
+
+for power_class, boundaries in ep_boundaries.items():
+    for i, (start, end) in enumerate(boundaries):
+        ep = external_inputs.add_electrical_profile(
+            value=EP_VALUES[min(i, len(boundaries) - i - 1)], 
+            power_class=power_class
+        )
+        ep.add_track_range(ta6, start * 1000, end * 1000)
+
+ep_o = external_inputs.add_electrical_profile(value="O", power_class="5")
+ep_o.add_track_range(ta0, 0, ta0.length)
+# We voluntarily leave ta0 empty for other power classes
+
+other_eps = [external_inputs.add_electrical_profile(value="25000", power_class=str(i)) for i in range(1, 6)]
+for track_section in electrified_tracks_25000 - {ta6}:
+    for ep in other_eps:
+        ep.add_track_range(track_section, 0, track_section.length)
+
+
+external_inputs.save(OUTPUT_DIR / "external_generated_inputs.json")

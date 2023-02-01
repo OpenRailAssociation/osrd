@@ -1,23 +1,20 @@
-import 'applications/osrd/views/OSRDSimulation/OSRDSimulation.scss';
-import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
-
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/components/Simulation/consts';
+import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 import React, { useEffect } from 'react';
 import { updateConsolidatedSimulation, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
-import SpeedSpaceChart from 'applications/osrd/components/Simulation/SpeedSpaceChart/withOSRDData';
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart';
+import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
+import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 
-import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { useTranslation } from 'react-i18next';
 
 export default function OSRDStcdmResults(props) {
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const { currentStdcmRequestStatus } = props;
   const dispatch = useDispatch();
 
@@ -42,16 +39,16 @@ export default function OSRDStcdmResults(props) {
   ) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer" style={{ height: '115vh' }}>
-        <div className="osrd-simulation-container mb-2 mx-3">
+        <div className="osrd-simulation-container mb-2 mx-3 simulation-results">
           <h1 className="text-center text-info">
-            <b>{t('osrdconf:stdcmResults')}</b>
+            <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
           </h1>
           <div className="osrd-config-item mb-2">
-            <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
+            <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
             <div className="speedspacechart-container" style={{ height: '450px' }}>
               <SpeedSpaceChart heightOfSpeedSpaceChart={450} showSettings={false} />
             </div>
-            <div className="speedspacechart-container" style={{ height: '450px' }}>
+            <div className="spacetimechart-container" style={{ height: '450px' }}>
               <SpaceTimeChart heightOfSpaceTimeChart={450} />
             </div>
           </div>
@@ -62,8 +59,10 @@ export default function OSRDStcdmResults(props) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
         <div className="osrd-simulation-container">
-          <h1 className="text-center text-info">{t('osrdconf:stdcmResults')}</h1>
-          <p>{t('osrdconf:stdcmNoResults')}</p>
+          <h1 className="text-center text-info">
+            {t('operationalStudies/manageTrainSchedule:stdcmResults')}
+          </h1>
+          <p>{t('operationalStudies/manageTrainSchedule:stdcmNoResults')}</p>
         </div>
       </main>
     );
@@ -72,10 +71,10 @@ export default function OSRDStcdmResults(props) {
       <main className="osrd-config-mastcontainer mastcontainer">
         <div className="osrd-simulation-container mx-3">
           <h1 className="text-center text-info">
-            <b>{t('osrdconf:stdcmResults')}</b>
+            <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
           </h1>
           <div className="osrd-config-item mb-2">
-            <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
+            <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
             <div className="speedspacechart-container" style={{ height: '450px' }}>
               {simulation.trains.length > 0 && <SpaceTimeChart heightOfSpaceTimeChart={450} />}
             </div>

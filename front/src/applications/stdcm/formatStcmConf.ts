@@ -1,12 +1,26 @@
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 
-import { STDCM_MODES, OsrdConfState } from 'applications/osrd/consts';
+import { TYPES_UNITS } from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
+import { STDCM_MODES, OsrdConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 
 import { ActionFailure } from 'reducers/main';
 import { ThunkAction } from 'types';
+
+type standardStdcmAllowanceForApi = {
+  value_type: number;
+  minutes?: number;
+  seconds?: number;
+  percentage?: number;
+};
+
+type typeUnitTranslation = {
+  time: string;
+  percentage: string;
+  time_per_distance: string;
+};
 
 export default function formatStdcmConf(
   dispatch: Dispatch,
@@ -93,6 +107,15 @@ export default function formatStdcmConf(
       : null;
 
   if (!error) {
+    const standardAllowanceType: string =
+      (osrdconf.standardStdcmAllowance?.type as string) || 'time';
+    const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
+    const standardAllowance: { [index: string]: any } = {};
+    const typeUnitTanslationIndex: { [index: string]: any } = TYPES_UNITS;
+    const correspondantTypesForApi: string = typeUnitTanslationIndex[standardAllowanceType];
+    standardAllowance[correspondantTypesForApi] = standardAllowanceValue;
+    standardAllowance.value_type = standardAllowanceType;
+
     const osrdConfStdcm = {
       infra: osrdconf.infraID,
       rolling_stock: osrdconf.rollingStockID,
@@ -117,7 +140,10 @@ export default function formatStdcmConf(
       speed_limit_composition: osrdconf.speedLimitByTag,
       margin_before: osrdconf.gridMarginBefore,
       margin_after: osrdconf.gridMarginAfter,
+      standard_allowance: standardAllowance,
     };
+
+    if (standardAllowance.value > 0) osrdConfStdcm.standard_allowance = standardAllowance;
     return osrdConfStdcm;
   }
   return false;

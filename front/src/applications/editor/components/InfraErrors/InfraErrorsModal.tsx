@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-import { OsrdConfState } from '../../../osrd/consts';
+import { OsrdConfState } from 'applications/operationalStudies/consts';
 import Modal from '../Modal';
 import { ModalProps } from '../../tools/types';
 import InfraErrorsList from './InfraErrorsList';

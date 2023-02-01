@@ -10,19 +10,24 @@ license = "LGPL-3.0"
 
 [dependencies]
 chashmap = "2.2.2"
-clap = { version = "~4.0.26", features = ["derive", "env"] }
+clap = { version = "4.1.1", features = ["derive", "env"] }
 colored = "2.0.0"
 chrono = { version = "0.4.23", features = ["serde"] }
 derivative = "2.2.0"
-diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json", "chrono"] }
+diesel = { version = "2.0", features = ["postgres", "serde_json", "chrono"] }
 json-patch = "0.3.0"
+pathfinding = "4.2.1"
 rand = "0.8.5"
-reqwest = { version = "~0.11.13", features = ["json"] }
-rocket = { version = "0.5.0-rc", features = ["json"] }
-rocket_sync_db_pools = { version = "0.1.0-rc", features = [
+rocket = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
+    "json",
+] }
+redis = { version = "0.21.7", features = ["tokio-native-tls-comp"] }
+rocket_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", version = "0.1.0-rc.2", features = [
+    "deadpool_redis",
+] }
+rocket_sync_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
     "diesel_postgres_pool",
 ] }
-rocket_cors = { git = "https://github.com/lawliet89/rocket_cors.git", rev = "54fae070" }
 serde = "~1.0.147"
 serde_derive = "~1.0.147"
 serde_json = "~1.0.89"
@@ -32,3 +37,6 @@ thiserror = "~1.0.37"
 enum-map = "2.4.2"
 tempfile = "3.3.0"
 editoast_derive = { path = "./editoast_derive" }
+serde_yaml = "0.9.17"
+mvt = "0.7.0"
+pointy = "0.2.1"

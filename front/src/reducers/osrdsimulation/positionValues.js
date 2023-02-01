@@ -1,5 +1,5 @@
 import produce from 'immer';
-import { LIST_VALUES_NAME_SPACE_TIME } from '../../applications/osrd/components/Simulation/consts';
+import { LIST_VALUES_NAME_SPACE_TIME } from '../../applications/operationalStudies/components/Simulation/simulationResultsConsts';
 import { UPDATE_TIME_POSITION_VALUES } from '../osrdsimulation';
 
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
@@ -29,8 +29,6 @@ export default function reducer(inputState, action, rootState) {
           action.timePosition
         );
         draft.headPosition = positionsValues.headPosition;
-        draft.routeEndOccupancy = positionsValues.routeEndOccupancy;
-        draft.routeBeginOccupancy = positionsValues.routeBeginOccupancy;
         draft.speed = positionsValues.speed;
         break;
       }

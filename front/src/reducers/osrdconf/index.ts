@@ -1,12 +1,13 @@
 import produce from 'immer';
 import { AnyAction, Dispatch } from 'redux';
+import { omit } from 'lodash';
 
 import {
   DEFAULT_MODE,
   DEFAULT_STDCM_MODE,
   OsrdConfState,
   PointOnMap,
-} from 'applications/osrd/consts';
+} from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
@@ -47,6 +48,7 @@ export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
 export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
 export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
+export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
 
 // Reducer
 export const initialState: OsrdConfState = {
@@ -74,10 +76,11 @@ export const initialState: OsrdConfState = {
   vias: [],
   suggeredVias: [],
   trainCompo: undefined,
-  geojson: [],
+  geojson: undefined,
   featureInfoClick: { displayPopup: false },
   gridMarginBefore: 0,
   gridMarginAfter: 0,
+  standardStdcmAllowance: undefined,
 };
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
@@ -194,7 +197,7 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         draft.origin = undefined;
         draft.vias = [];
         draft.destination = undefined;
-        draft.geojson = [];
+        draft.geojson = undefined;
         draft.originTime = undefined;
         draft.pathfindingID = undefined;
         break;
@@ -221,6 +224,9 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         break;
       case UPDATE_GRID_MARGIN_AFTER:
         draft.gridMarginAfter = action.gridMarginAfter;
+        break;
+      case UPDATE_STANDARD_STDCM_ALLOWANCE:
+        draft.standardStdcmAllowance = action.standardStdcmAllowance;
         break;
     }
   });
@@ -471,7 +477,10 @@ export function updateFeatureInfoClickOSRD(featureInfoClick: OsrdConfState['feat
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
-      featureInfoClick,
+      featureInfoClick: {
+        ...featureInfoClick,
+        feature: omit(featureInfoClick.feature, ['_vectorTileFeature']),
+      },
     });
   };
 }
@@ -488,6 +497,16 @@ export function updateGridMarginAfter(gridMarginAfter: OsrdConfState['gridMargin
     dispatch({
       type: UPDATE_GRID_MARGIN_AFTER,
       gridMarginAfter,
+    });
+  };
+}
+export function updateStdcmStandardAllowance(
+  standardStdcmAllowance: OsrdConfState['standardStdcmAllowance']
+) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_STANDARD_STDCM_ALLOWANCE,
+      standardStdcmAllowance,
     });
   };
 }

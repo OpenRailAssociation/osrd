@@ -4,7 +4,7 @@ import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
-import { OsrdConfState } from 'applications/osrd/consts';
+import { OsrdConfState } from 'applications/operationalStudies/consts';
 
 import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
 import userReducer, { UserState, initialState as userInitialState } from './user';

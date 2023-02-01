@@ -14,6 +14,7 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
@@ -75,8 +76,9 @@ public class MaxEffortEnvelope {
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
             double speed = cursor.getStepBeginSpeed();
-            var profile = path.getCatenaryProfile(cursor.getPosition());
-            double maxTractionForce = rollingStock.getMaxEffort(speed, profile, context.comfort);
+            var tractiveEffortCurve = context.tractiveEffortCurveMap.get(cursor.getPosition());
+            assert tractiveEffortCurve != null;
+            double maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
             double rollingResistance = rollingStock.getRollingResistance(speed);
             double inertia = rollingStock.getInertia();
             double worstRamp = Math.asin((maxTractionForce - rollingResistance) / inertia / 9.81) * 1000;

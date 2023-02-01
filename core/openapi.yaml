@@ -36,7 +36,7 @@ paths:
           description: Return the service version
           content:
             application/json:
-              schema:
+              schema: 
                 type: object
                 properties:
                   git_describe:
@@ -145,8 +145,55 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: "#/components/schemas/SimulationResult"
+                properties:
+                  base_simulations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SimulationTrainResult"
+                  eco_simulations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SimulationTrainResult"
+                  speed_limits:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          position:
+                            type: number
+                            format: double
+                          speed:
+                            type: number
+                            format: double
+                  modes_and_profiles:
+                    type: array
+                    items:
+                      description: The catenary modes and electrical profiles used and seen along the path. <mode_seen> and <profile_seen> are filled only if they differ from those used.
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          start:
+                            type: number
+                            format: double
+                          stop:
+                            type: number
+                            format: double
+                          mode_used:
+                            type: string
+                          profile_used:
+                            type: string
+                          mode_seen:
+                            type: string
+                            nullable: true
+                          profile_seen:
+                            type: string
+                            nullable: true
+
+                  warnings:
+                    type: array
         400:
           description: The request body is invalid
 components:
@@ -236,18 +283,14 @@ components:
         - length
         - mass
         - inertia_coefficient
-        - a
-        - b
-        - c
+        - rolling_resistance
+        - capabilities
         - max_speed
         - startup_time
         - startup_acceleration
         - comfort_acceleration
-        - gamma
-        - gamma_type
-        - loading_gauge_type
-        - modes
-        - default_modes
+        - timetable_gamma
+        - tractive_effort_curve
       properties:
         id:
           type: string
@@ -266,15 +309,24 @@ components:
           format: double
           minimum: 0
           example: 1.05
-        a:
-          type: number
-          format: double
-        b:
-          type: number
-          format: double
-        c:
-          type: number
-          format: double
+        rolling_resistance:
+          oneOf:
+            - $ref: "#/components/schemas/RollingResistanceDavis"
+          discriminator:
+            propertyName: type
+            mapping:
+              davis: "#/components/schemas/RollingResistanceDavis"
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum:
+              - TVM300
+              - TVM430
+              - ETCS1
+              - ETCS2
+              - ETCS3
+              - KVB
         max_speed:
           type: number
           format: double
@@ -364,6 +416,107 @@ components:
         train_transition_delay:
           type: number
           format: double
+          minimum: 0
+          example: 600
+    SimulationTrainResult:
+      properties:
+        speeds:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: number
+                format: double
+              position:
+                type: number
+                format: double
+              speed:
+                type: number
+                format: double
+            example:
+              time: 0
+              position: 0
+              speed: 0
+        head_positions:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: number
+                format: double
+              path_offset:
+                type: number
+                format: double
+              track_section:
+                type: string
+              offset:
+                type: number
+                format: double
+            example:
+              time: 0
+              path_offset: 0
+              track_section: "track_section_id"
+              offset: 0
+        stops:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: number
+                format: double
+              position:
+                type: number
+                format: double
+              duration:
+                type: number
+                format: double
+            example:
+              time: 0
+              position: 0
+              duration: 0
+        route_occupancies:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              time_head_occupy:
+                type: number
+                format: double
+              time_head_free:
+                type: number
+                format: double
+              time_tail_occupy:
+                type: number
+                format: double
+              time_tail_free:
+                type: number
+                format: double
+        signal_updates:
+          type: array
+          items:
+            type: object
+            properties:
+              signal_id:
+                type: string
+              route_ids:
+                type: array
+                items:
+                  type: string
+              time_start:
+                type: number
+                format: double
+              time_end:
+                type: number
+                format: double
+              color:
+                type: integer
+              blinking:
+                type: boolean
+              aspect_label:
+                type: string
         tag:
           type: string
           example: "tag"
@@ -553,6 +706,9 @@ components:
           minItems: 1
           items:
             $ref: "#/components/schemas/TrainSchedule"
+        electrical_profile_set:
+          type: string
+          example: "ID"
         trains_path:
         ######## ask about it
     AllowanceValue:

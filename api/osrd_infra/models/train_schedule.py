@@ -13,8 +13,8 @@ class TrainScheduleModel(models.Model):
     departure_time = models.FloatField()
     path = models.ForeignKey(PathModel, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
-    labels = models.JSONField(default=[], validators=[PydanticValidator(TrainScheduleLabels)])
-    allowances = models.JSONField(default=[], validators=[PydanticValidator(Allowances)])
+    labels = models.JSONField(default=list, validators=[PydanticValidator(TrainScheduleLabels)])
+    allowances = models.JSONField(default=list, validators=[PydanticValidator(Allowances)])
     mrsp = models.JSONField(validators=[PydanticValidator(MRSP)])
     base_simulation = models.JSONField()
     eco_simulation = models.JSONField(null=True)
@@ -22,3 +22,4 @@ class TrainScheduleModel(models.Model):
     comfort = models.CharField(
         max_length=8, choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD
     )
+    modes_and_profiles = models.JSONField(default=list)

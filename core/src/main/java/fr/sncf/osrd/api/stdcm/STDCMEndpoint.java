@@ -7,9 +7,10 @@ import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
-import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
+import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -24,6 +25,7 @@ import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.stdcm.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -81,13 +83,13 @@ public class STDCMEndpoint implements Take {
                 );
             if (Double.isNaN(startTime))
                 throw new RuntimeException("STDCM requests with unspecified start time are not supported yet");
-            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
-            var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
-            var comfort = RJSRollingStockParser.parseComfort(request.comfort);
+            final var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
+            final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
+            final var startLocations = findRoutes(infra, request.startPoints);
+            final var endLocations = findRoutes(infra, request.endPoints);
+            final String tag = request.speedLimitComposition;
             var occupancies = request.routeOccupancies;
-            var startLocations = findRoutes(infra, request.startPoints);
-            var endLocations = findRoutes(infra, request.endPoints);
-            String tag = request.speedLimitComposition;
             AllowanceValue standardAllowance = null;
             if (request.standardAllowance != null)
                 standardAllowance = RJSStandaloneTrainScheduleParser.parseAllowanceValue(
@@ -97,6 +99,8 @@ public class STDCMEndpoint implements Take {
             assert Double.isFinite(startTime);
 
             // Build the unavailable space
+            // temporary workaround, to remove with new signaling
+            occupancies = addWarningOccupancies(infra, occupancies);
             var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
                     infra,
                     occupancies,
@@ -105,7 +109,14 @@ public class STDCMEndpoint implements Take {
                     request.gridMarginBeforeSTDCM
             );
             double minRunTime = getMinRunTime(
-                    infra, rollingStock, comfort, startLocations, endLocations, request.timeStep);
+                    infra,
+                    rollingStock,
+                    comfort,
+                    startLocations,
+                    endLocations,
+                    request.timeStep,
+                    standardAllowance
+            );
 
             // Run the STDCM pathfinding
             var res = STDCMPathfinding.findPath(
@@ -148,6 +159,29 @@ public class STDCMEndpoint implements Take {
         }
     }
 
+    /** The inputs only contains occupied blocks, we need to add the warning in the previous one (assuming BAL).
+     * To be removed with new signaling. */
+    private static Collection<STDCMRequest.RouteOccupancy> addWarningOccupancies(
+            SignalingInfra infra,
+            Collection<STDCMRequest.RouteOccupancy> occupancies
+    ) {
+        var result = new HashSet<>(occupancies);
+        var routeGraph = infra.getSignalingRouteGraph();
+        for (var occupancy : occupancies) {
+            var route = infra.findSignalingRoute(occupancy.id, "BAL3");
+            assert route != null;
+            var startRouteNode = routeGraph.incidentNodes(route).nodeU();
+            var predecessorRoutes = routeGraph.inEdges(startRouteNode);
+            for (var predecessor : predecessorRoutes)
+                result.add(new STDCMRequest.RouteOccupancy(
+                        predecessor.getInfraRoute().getID(),
+                        occupancy.startOccupancyTime,
+                        occupancy.endOccupancyTime
+                ));
+        }
+        return result;
+    }
+
     /** Find the minimum run time to go from start to end, assuming the timetable is empty.
      * Returns 0 if we can't find a valid path. */
     private double getMinRunTime(
@@ -156,7 +190,8 @@ public class STDCMEndpoint implements Take {
             RollingStock.Comfort comfort,
             Set<EdgeLocation<SignalingRoute>> startLocations,
             Set<EdgeLocation<SignalingRoute>> endLocations,
-            double timeStep
+            double timeStep,
+            AllowanceValue standardAllowance
     ) {
         var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations);
         var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
@@ -180,6 +215,7 @@ public class STDCMEndpoint implements Take {
         var standaloneResult = StandaloneSim.run(
                 infra,
                 path,
+                EnvelopeTrainPath.from(path),
                 List.of(new StandaloneTrainSchedule(
                         rollingStock,
                         0,
@@ -191,7 +227,10 @@ public class STDCMEndpoint implements Take {
                 timeStep
         );
         var headPositions = standaloneResult.baseSimulations.get(0).headPositions;
-        return headPositions.get(headPositions.size() - 1).time;
+        var time = headPositions.get(headPositions.size() - 1).time;
+        if (standardAllowance != null)
+            time += standardAllowance.getAllowanceTime(time, path.length()); // Add allowance time to the shortest time
+        return time;
     }
 
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */

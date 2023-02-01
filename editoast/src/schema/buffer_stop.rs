@@ -37,13 +37,13 @@ impl OSRDIdentified for BufferStop {
 #[derive(QueryableByName, Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
 pub struct BufferStopCache {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub obj_id: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub track: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Double"]
+    #[diesel(sql_type = Double)]
     pub position: f64,
 }
 

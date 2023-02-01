@@ -8,12 +8,18 @@ public class AllowanceConvergenceException extends OSRDError {
     @Serial
     private static final long serialVersionUID = 2130748645658059205L;
     public static final String osrdErrorType = "allowance_convergence";
-    public final String errorType;
+    public final ErrorType errorType;
+
+    public enum ErrorType {
+        DISCONTINUITY,
+        TOO_MUCH_TIME,
+        NOT_ENOUGH_TIME
+    }
 
     private AllowanceConvergenceException(
             String message,
             ErrorCause cause,
-            String marecoErrorType
+            ErrorType marecoErrorType
     ) {
         super(message, cause);
         this.errorType = marecoErrorType;
@@ -24,7 +30,7 @@ public class AllowanceConvergenceException extends OSRDError {
         return new AllowanceConvergenceException(
                 "Failed to converge when computing allowances because of a discontinuity in the search space",
                 ErrorCause.INTERNAL,
-                "discontinuity"
+                ErrorType.DISCONTINUITY
         );
     }
 
@@ -33,7 +39,7 @@ public class AllowanceConvergenceException extends OSRDError {
         return new AllowanceConvergenceException(
                 "We could not go slow enough in this setting to match the given allowance time",
                 ErrorCause.USER,
-                "too_much_allowance_time"
+                ErrorType.TOO_MUCH_TIME
         );
     }
 
@@ -42,7 +48,7 @@ public class AllowanceConvergenceException extends OSRDError {
         return new AllowanceConvergenceException(
                 "We could not go fast enough in this setting to match the given allowance time",
                 ErrorCause.INTERNAL,
-                "not_enough_allowance_time"
+                ErrorType.NOT_ENOUGH_TIME
         );
     }
 }

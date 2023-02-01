@@ -1,29 +1,48 @@
+mod electrical_profiles;
 mod infra;
+mod layers;
 use rocket::serde::json::Value as JsonValue;
+use rocket_db_pools::deadpool_redis;
 pub mod pagination;
 pub mod params;
 
+use crate::db_connection::{DBConnection, RedisPool};
+use deadpool_redis::redis::cmd;
 use diesel::{sql_query, RunQueryDsl};
 use rocket::{routes, Route};
 use std::collections::HashMap;
 use std::env;
 
-use crate::db_connection::DBConnection;
-
 pub fn routes() -> HashMap<&'static str, Vec<Route>> {
-    HashMap::from([("/", routes![health, version]), ("/infra", infra::routes())])
+    HashMap::from([
+        ("/", routes![health, version, opt::all_options]),
+        ("/infra", infra::routes()),
+        ("/layers", layers::routes()),
+        ("/electrical_profile_set", electrical_profiles::routes()),
+    ])
+}
+
+#[allow(clippy::let_unit_value)]
+mod opt {
+    /// Catches all OPTION requests in order to get the CORS related Fairing triggered.
+    #[options("/<_..>")]
+    pub fn all_options() {
+        /* Intentionally left empty */
+    }
 }
 
 #[get("/health")]
-pub async fn health(conn: DBConnection) -> &'static str {
-    // Check DB connection
+async fn health(conn: DBConnection, pool: &RedisPool) -> &'static str {
     conn.run(|conn| sql_query("SELECT 1").execute(conn).unwrap())
+        .await;
+    let _ = cmd("PING")
+        .query_async::<_, ()>(&mut pool.get().await.unwrap())
         .await;
     "ok"
 }
 
 #[get("/version")]
-pub fn version() -> JsonValue {
+fn version() -> JsonValue {
     let mut res = HashMap::new();
     let describe = env::var("OSRD_GIT_DESCRIBE").ok();
     res.insert("git_describe", describe);
@@ -45,7 +64,7 @@ mod tests {
             pool_size: 1,
             ..Default::default()
         };
-        let rocket = create_server(&Default::default(), &pg_config, Default::default());
+        let rocket = create_server(&Default::default(), &pg_config, &Default::default());
         Client::tracked(rocket).expect("valid rocket instance")
     }
 

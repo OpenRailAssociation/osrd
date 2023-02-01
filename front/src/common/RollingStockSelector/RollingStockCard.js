@@ -10,18 +10,18 @@ import RollingStock2Img from './RollingStock2Img';
 import { RollingStockInfos } from './RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
-export default function RollingStockCard(props) {
+function RollingStockCard(props) {
   const [tractionModes, setTractionModes] = useState({
     electric: false,
     thermal: false,
     voltages: [],
   });
   const [curvesComfortList, setCurvesComfortList] = useState();
-  const { data, openedRollingStockCardId, ref2scroll, setOpenedRollingStockCardId } = props;
+  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen } = props;
   const ref2scrollWhenOpened = useRef();
 
   function displayCardDetail() {
-    if (openedRollingStockCardId !== data.id) {
+    if (!isOpen) {
       setOpenedRollingStockCardId(data.id);
       setTimeout(() => ref2scrollWhenOpened.current?.scrollIntoView({ behavior: 'smooth' }), 500);
     }
@@ -47,13 +47,7 @@ export default function RollingStockCard(props) {
 
   return (
     <div
-      className={`rollingstock-container mb-3 ${
-        openedRollingStockCardId === data.id ? 'active' : ''
-      } ${
-        openedRollingStockCardId !== data.id && openedRollingStockCardId !== undefined
-          ? 'inactive'
-          : ''
-      }`}
+      className={`rollingstock-container mb-3 ${isOpen ? 'active' : 'inactive'}`}
       role="button"
       onClick={displayCardDetail}
       tabIndex={0}
@@ -61,12 +55,10 @@ export default function RollingStockCard(props) {
     >
       <div
         className="rollingstock-header"
-        onClick={() =>
-          openedRollingStockCardId === data.id ? setOpenedRollingStockCardId(undefined) : {}
-        }
+        onClick={() => (isOpen ? setOpenedRollingStockCardId(undefined) : {})}
         role="button"
         tabIndex={0}
-        ref={openedRollingStockCardId === data.id ? ref2scrollWhenOpened : undefined}
+        ref={isOpen ? ref2scrollWhenOpened : undefined}
       >
         <div className="rollingstock-title">
           <RollingStockInfos data={data} />
@@ -76,7 +68,7 @@ export default function RollingStockCard(props) {
           </div>
         </div>
       </div>
-      {openedRollingStockCardId === data.id ? (
+      {isOpen ? (
         <RollingStockCardDetail
           id={data.id}
           curvesComfortList={curvesComfortList}
@@ -86,7 +78,7 @@ export default function RollingStockCard(props) {
         <div className="rollingstock-body-container-img">
           <div className="rollingstock-body-img">
             <div className="rollingstock-img">
-              <RollingStock2Img name={data.name} />
+              <RollingStock2Img rollingStock={data} />
             </div>
           </div>
         </div>
@@ -140,7 +132,7 @@ export default function RollingStockCard(props) {
             </div>
           </div>
         </div>
-        {openedRollingStockCardId === data.id && curvesComfortList ? (
+        {isOpen && curvesComfortList ? (
           <RollingStockCardButtons
             id={data.id}
             curvesComfortList={curvesComfortList}
@@ -153,13 +145,15 @@ export default function RollingStockCard(props) {
 }
 
 RollingStockCard.defaultProps = {
-  openedRollingStockCardId: undefined,
   ref2scroll: undefined,
 };
 
 RollingStockCard.propTypes = {
   data: PropTypes.object.isRequired,
-  openedRollingStockCardId: PropTypes.number,
+  isOpen: PropTypes.bool.isRequired,
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
   ref2scroll: PropTypes.object,
 };
+
+const MemoizedRollingStockCard = React.memo(RollingStockCard);
+export default MemoizedRollingStockCard;

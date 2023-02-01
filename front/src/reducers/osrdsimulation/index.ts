@@ -1,16 +1,16 @@
 import { AnyAction } from 'redux';
 import produce from 'immer';
 
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
   SIGNAL_BASE_DEFAULT,
   KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-} from 'applications/osrd/components/Simulation/consts';
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import {
   interpolateOnTime,
   offsetSeconds,
-} from 'applications/osrd/components/Helpers/ChartHelpers';
+} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 
 import { SimulationSnapshot, Train, OsrdSimulationState } from './types';
@@ -21,6 +21,7 @@ import {
   UPDATE_CONTEXTMENU,
   UPDATE_HOVER_POSITION,
   UPDATE_IS_PLAYING,
+  UPDATE_IS_UPDATING,
   UPDATE_ALLOWANCES_SETTINGS,
   UPDATE_MUST_REDRAW,
   UPDATE_POSITION_VALUES,
@@ -28,7 +29,6 @@ import {
   UPDATE_SELECTED_TRAIN,
   UPDATE_SIMULATION,
   UPDATE_SPEEDSPACE_SETTINGS,
-  UPDATE_STICKYBAR,
   UPDATE_SIGNAL_BASE,
   UPDATE_TIME_POSITION,
   UPDATE_DEPARTURE_ARRIVAL_TIMES,
@@ -38,8 +38,10 @@ import {
 
 export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOffset: number) =>
   simulation.trains.map((train: Train) => ({
+    id: train.id,
     labels: train.labels,
     name: train.name,
+    path: train.path,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
     speed_limit_composition: train.speed_limit_composition,
@@ -52,6 +54,7 @@ export const initialState: OsrdSimulationState = {
   contextMenu: undefined,
   hoverPosition: undefined,
   isPlaying: false,
+  isUpdating: false,
   allowancesSettings: undefined,
   mustRedraw: true,
   positionValues: {
@@ -65,8 +68,6 @@ export const initialState: OsrdSimulationState = {
       position: 0,
       speed: 0,
     },
-    routeEndOccupancy: 0,
-    routeBeginOccupancy: 0,
     speed: {
       speed: 0,
       time: 0,
@@ -80,7 +81,6 @@ export const initialState: OsrdSimulationState = {
     maxSpeed: true,
     slopes: false,
   },
-  stickyBar: true,
   signalBase: SIGNAL_BASE_DEFAULT,
   timePosition: undefined,
   consolidatedSimulation: [],
@@ -113,6 +113,9 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         break;
       case UPDATE_IS_PLAYING:
         draft.isPlaying = action.isPlaying;
+        break;
+      case UPDATE_IS_UPDATING:
+        draft.isUpdating = action.isUpdating;
         break;
       case UPDATE_ALLOWANCES_SETTINGS:
         draft.allowancesSettings = action.allowancesSettings;
@@ -155,9 +158,6 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         break;
       case UPDATE_SIGNAL_BASE:
         draft.signalBase = action.signalBase;
-        break;
-      case UPDATE_STICKYBAR:
-        draft.stickyBar = action.stickyBar;
         break;
       case UPDATE_TIME_POSITION:
         draft.timePosition = action.timePosition;

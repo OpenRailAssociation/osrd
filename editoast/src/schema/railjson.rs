@@ -10,7 +10,7 @@ use derivative::Derivative;
 
 use diesel::{
     sql_query,
-    sql_types::{Integer, Text},
+    sql_types::{BigInt, Text},
     QueryableByName, RunQueryDsl,
 };
 use diesel::{Connection, PgConnection};
@@ -57,7 +57,7 @@ impl RailJson {
     pub fn persist<T: AsRef<str>>(
         &self,
         infra_name: T,
-        conn: &PgConnection,
+        conn: &mut PgConnection,
     ) -> Result<Infra, Box<dyn ApiError>> {
         if self.version != RAILJSON_VERSION {
             return Err(Box::new(RailjsonError::RailjsonVersion(
@@ -65,7 +65,7 @@ impl RailJson {
             )));
         }
 
-        conn.transaction(|| {
+        conn.transaction(|conn| {
             let infra = Infra::create(infra_name, conn).unwrap();
 
             BufferStop::persist_batch(&self.buffer_stops, infra.id, conn)?;
@@ -86,7 +86,7 @@ impl RailJson {
 
 #[derive(QueryableByName, Debug, Clone)]
 pub struct ObjectQueryable {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub data: String,
 }
 
@@ -99,14 +99,14 @@ impl<T: DeserializeOwned> From<ObjectQueryable> for MyParsedObject<T> {
 }
 
 pub fn find_objects<T: DeserializeOwned + OSRDTyped>(
-    conn: &PgConnection,
-    infrastructre_id: i32,
+    conn: &mut PgConnection,
+    infrastructre_id: i64,
 ) -> Vec<T> {
     sql_query(format!(
         "SELECT data::text FROM {} WHERE infra_id = $1",
         T::get_type().get_table()
     ))
-    .bind::<Integer, _>(infrastructre_id)
+    .bind::<BigInt, _>(infrastructre_id)
     .load::<ObjectQueryable>(conn)
     .expect("Error loading objects")
     .into_iter()
@@ -225,7 +225,10 @@ pub mod test {
         true
     }
 
-    fn find_railjson(conn: &PgConnection, infra: &Infra) -> Result<RailJson, Box<dyn ApiError>> {
+    fn find_railjson(
+        conn: &mut PgConnection,
+        infra: &Infra,
+    ) -> Result<RailJson, Box<dyn ApiError>> {
         let railjson = RailJson {
             version: infra.clone().railjson_version,
             operational_points: find_objects(conn, infra.id),

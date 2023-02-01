@@ -6,6 +6,7 @@ extern crate diesel;
 mod api_error;
 mod chartos;
 mod client;
+mod cors;
 mod db_connection;
 mod generated_data;
 mod infra;
@@ -14,26 +15,27 @@ mod schema;
 mod tables;
 mod views;
 
+use crate::schema::RailJson;
+use chartos::MapLayers;
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
-    ChartosConfig, ClearArgs, Client, Commands, GenerateArgs, ImportRailjsonArgs, PostgresConfig,
+    ClearArgs, Client, Commands, GenerateArgs, ImportRailjsonArgs, PostgresConfig, RedisConfig,
     RunserverArgs,
 };
 use colored::*;
-use db_connection::DBConnection;
+use db_connection::{DBConnection, RedisPool};
 use diesel::{Connection, PgConnection};
 use infra::Infra;
 use infra_cache::InfraCache;
 use rocket::{Build, Config, Rocket};
-use rocket_cors::CorsOptions;
+use rocket_db_pools::deadpool_redis::{Config as RedisPoolConfig, Runtime};
+use rocket_db_pools::Database;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
 use std::sync::Arc;
-
-use crate::schema::RailJson;
 
 #[rocket::main]
 async fn main() {
@@ -49,12 +51,12 @@ async fn main() {
 async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
     let pg_config = client.postgres_config;
-    let chartos_config = client.chartos_config;
+    let redis_config = client.redis_config;
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, pg_config, chartos_config).await,
-        Commands::Generate(args) => generate(args, pg_config, chartos_config).await,
-        Commands::Clear(args) => clear(args, pg_config),
+        Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
+        Commands::Generate(args) => generate(args, pg_config, redis_config).await,
+        Commands::Clear(args) => clear(args, pg_config, redis_config).await,
         Commands::ImportRailjson(args) => import_railjson(args, pg_config),
     }
 }
@@ -62,7 +64,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
 pub fn create_server(
     runserver_config: &RunserverArgs,
     pg_config: &PostgresConfig,
-    chartos_config: ChartosConfig,
+    redis_config: &RedisConfig,
 ) -> Rocket<Build> {
     // Config server
     let mut config = Config::figment()
@@ -70,7 +72,8 @@ pub fn create_server(
         .merge(("address", runserver_config.address.clone()))
         .merge(("databases.postgres.url", pg_config.url()))
         .merge(("databases.postgres.pool_size", pg_config.pool_size))
-        .merge(("databases.postgres.timeout",10))
+        .merge(("databases.postgres.timeout", 10))
+        .merge(("databases.redis.url", redis_config.redis_url.clone()))
         .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
     ;
 
@@ -85,14 +88,13 @@ pub fn create_server(
         exit(1);
     }
 
-    // Setup CORS
-    let cors = CorsOptions::default().to_cors().unwrap();
-
     let mut rocket = rocket::custom(config)
         .attach(DBConnection::fairing())
-        .attach(cors)
-        .manage(Arc::<CHashMap<i32, InfraCache>>::default())
-        .manage(chartos_config);
+        .attach(RedisPool::init())
+        .attach(cors::Cors)
+        .manage(Arc::<CHashMap<i64, InfraCache>>::default())
+        .manage(MapLayers::parse())
+        .manage(runserver_config.map_layers_config.clone());
 
     // Mount routes
     for (base, routes) in views::routes() {
@@ -105,14 +107,25 @@ pub fn create_server(
 async fn runserver(
     args: RunserverArgs,
     pg_config: PostgresConfig,
-    chartos_config: ChartosConfig,
+    redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("Building server...");
-    let rocket = create_server(&args, &pg_config, chartos_config);
+    let rocket = create_server(&args, &pg_config, &redis_config);
     // Run server
     println!("Running server...");
     let _rocket = rocket.launch().await?;
     Ok(())
+}
+
+async fn build_redis_pool_and_invalidate_all_cache(redis_url: &str, infra_id: i64) {
+    let cfg = RedisPoolConfig::from_url(redis_url);
+    let pool = cfg.create_pool(Some(Runtime::Tokio1)).unwrap();
+    chartos::invalidate_all(
+        &RedisPool(pool),
+        &MapLayers::parse().layers.keys().cloned().collect(),
+        infra_id,
+    )
+    .await;
 }
 
 /// Run the generate sub command
@@ -120,20 +133,20 @@ async fn runserver(
 async fn generate(
     args: GenerateArgs,
     pg_config: PostgresConfig,
-    chartos_config: ChartosConfig,
+    redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&conn) {
+        for infra in Infra::list(&mut conn) {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&conn, id as i32)?);
+            infras.push(Infra::retrieve(&mut conn, id as i64)?);
         }
     };
 
@@ -144,9 +157,9 @@ async fn generate(
             infra.name.bold(),
             infra.id
         );
-        let infra_cache = InfraCache::load(&conn, &infra)?;
-        if infra.refresh(&conn, args.force, &infra_cache)? {
-            chartos::invalidate_all(infra.id, &chartos_config).await;
+        let infra_cache = InfraCache::load(&mut conn, &infra)?;
+        if infra.refresh(&mut conn, args.force, &infra_cache)? {
+            build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id).await;
             println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
         } else {
             println!(
@@ -164,7 +177,7 @@ fn import_railjson(
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = File::open(args.railjson_path)?;
-    let conn = &PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let conn = &mut PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
@@ -188,24 +201,29 @@ fn import_railjson(
 
 /// Run the clear subcommand
 /// This command clear all generated data for the given infra
-fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+async fn clear(
+    args: ClearArgs,
+    pg_config: PostgresConfig,
+    redis_config: RedisConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&conn) {
+        for infra in Infra::list(&mut conn) {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&conn, id as i32)?);
+            infras.push(Infra::retrieve(&mut conn, id as i64)?);
         }
     };
 
     for infra in infras {
         println!("🍞 Infra {}[{}] is clearing:", infra.name.bold(), infra.id);
-        infra.clear(&conn)?;
+        build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id).await;
+        infra.clear(&mut conn)?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())
@@ -225,10 +243,10 @@ mod tests {
     use std::io::Write;
     use tempfile::NamedTempFile;
 
-    pub fn test_transaction(fn_test: fn(&PgConnection)) {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            fn_test(&conn);
+    pub fn test_transaction(fn_test: fn(&mut PgConnection)) {
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|conn| {
+            fn_test(conn);
             Ok(())
         });
     }
@@ -276,10 +294,11 @@ mod tests {
         assert!(result.is_ok());
 
         // CLEANUP
-        let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+        let mut conn =
+            PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
         sql_query("DELETE FROM osrd_infra_infra WHERE name = $1")
             .bind::<Text, _>(infra_name)
-            .execute(&conn)
+            .execute(&mut conn)
             .unwrap();
     }
 

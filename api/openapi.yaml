@@ -191,9 +191,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Path"
+                $ref: "#/components/schemas/Path"
   /pathfinding/op/:
     post:
       tags:
@@ -344,6 +342,62 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollingStock"
+  /rolling_stock/{id}/livery/:
+    get:
+      tags:
+        - rolling_stock
+        - livery
+      summary: Retrieve the compound image of a rolling stock livery
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+        - in: query
+          name: livery_id
+          schema:
+            type: integer
+          description: Rolling Stock Livery ID
+          required: true
+      responses:
+        200:
+          description: The livery compound image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+  /rolling_stock_livery/:
+    post:
+      tags:
+        - rolling_stock
+        - livery
+      summary: Create a rolling stock livery
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                rolling_stock_id:
+                  type: number
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        200:
+          description: The rolling stock livery
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
   /light_rolling_stock/:
     get:
       tags:
@@ -461,9 +515,15 @@ paths:
               properties:
                 infra:
                   type: number
+                electrical_profile_set:
+                  type: number
+                  nullable: true
+                  description: Electrical profile set id (if any)
                 name:
                   type: string
-        required: true
+              required:
+                - infra
+                - name
       responses:
         201:
           description: The timetable created
@@ -478,6 +538,9 @@ paths:
                     type: string
                   infra:
                     type: number
+                  electrical_profile_set:
+                    type: number
+                    nullable: true
   /timetable/{id}/:
     get:
       tags:
@@ -504,6 +567,9 @@ paths:
                     type: string
                   infra:
                     type: number
+                  electrical_profile_set:
+                    type: number
+                    nullable: true
                   train_schedule:
                     type: array
                     items:
@@ -553,7 +619,12 @@ paths:
                   type: number
                 name:
                   type: string
-        required: true
+                electrical_profile_set:
+                  type: number
+                  nullable: true
+              required:
+                - infra
+                - name
       responses:
         200:
           description: The timetable updated
@@ -572,7 +643,7 @@ paths:
     post:
       tags:
         - train_schedule
-      summary: Create a batch of train schedule
+      summary: Create a batch of train schedule and run simulations accordingly
       requestBody:
         description: Standalone simulation parameters
         content:
@@ -582,7 +653,7 @@ paths:
         required: true
       responses:
         201:
-          description: The id of the train_schedule created
+          description: The ids of the train_schedules created
           content:
             application/json:
               schema:
@@ -630,7 +701,7 @@ paths:
     patch:
       tags:
         - train_schedule
-      summary: Update a train_schedule
+      summary: Update a train_schedule and run a simulation accordingly
       parameters:
         - in: path
           name: id
@@ -656,7 +727,7 @@ paths:
     get:
       tags:
         - train_schedule
-      summary: Compute and format the simulation result
+      summary: Retrieve a simulation result
       parameters:
         - in: path
           name: id
@@ -680,7 +751,7 @@ paths:
     get:
       tags:
         - train_schedule
-      summary: Compute and format the simulation result of multiple train schedule
+      summary: Retrieve the simulation result of multiple train schedules
       parameters:
         - in: query
           name: path
@@ -949,6 +1020,9 @@ components:
                 items: { type: number, format: float }
                 minItems: 2
                 maxItems: 2
+        mechanical_energy_consumed:
+          type: number
+          format: float
     TrainScheduleResult:
       properties:
         id:
@@ -994,6 +1068,32 @@ components:
             - type: object
               properties:
                 error: { type: string }
+        modes_and_profiles:
+          type: array
+          items:
+            description: The catenary mode and electrical profiles seen along the path. <mode_seen> and <profile_seen> are filled only if they differ from those used.
+            type: array
+            items:
+              type: object
+              properties:
+                start:
+                  type: number
+                  format: double
+                stop:
+                  type: number
+                  format: double
+                mode_used:
+                  type: string
+                profile_used:
+                  type: string
+                  nullable: true
+                mode_seen:
+                  type: string
+                  nullable: true
+                profile_seen:
+                  type: string
+                  nullable: true
+
     PathQuery:
       properties:
         infra:
@@ -1019,7 +1119,7 @@ components:
         type: object
         properties:
           track_section:
-            type: integer
+            type: string
           geo_coordinate:
             type: array
             items: { type: number, format: float }
@@ -1114,9 +1214,29 @@ components:
         geographic:
           type: object
           description: GeoJson format
+          properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                  format: float
+            type:
+              type: string
         schematic:
           type: object
           description: GeoJson format
+          properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                  format: float
+            type:
+              type: string
         slopes:
           description: Slopes on the path
           type: array
@@ -1141,22 +1261,26 @@ components:
               name: { type: string }
               suggestion: { type: boolean }
               duration: { type: number, format: float }
-              track:
-                type: object
-                properties:
-                  id: { type: string }
-                  type: { enum: ["TrackSection"] }
+              track: { type: string }
               position: { type: number, format: float }
               sch:
-                type: array
-                items: { type: number, format: float }
-                minItems: 2
-                maxItems: 2
+                type: object
+                properties:
+                  coordinates:
+                    type: array
+                    items: { type: number, format: float }
+                    minItems: 2
+                    maxItems: 2
+                  type: { type: string }
               geo:
-                type: array
-                items: { type: number, format: float }
-                minItems: 2
-                maxItems: 2
+                type: object
+                properties:
+                  coordinates:
+                    type: array
+                    items: { type: number, format: float }
+                    minItems: 2
+                    maxItems: 2
+                  type: { type: string }
     RollingStock:
       allOf:
         - $ref: "#/components/schemas/LightRollingStock"
@@ -1304,6 +1428,15 @@ components:
             subseries: "GV"
             type: "Locomotives électriques"
             unit: "US"
+        liveries:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              name:
+                type: string
     TrainSchedule:
       allOf:
         - type: object

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::api_error::ApiError;
 use crate::{api_error::ApiResult, db_connection::DBConnection, schema::ObjectType};
-use diesel::sql_types::{Array, Integer, Jsonb, Nullable, Text};
+use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -49,21 +49,21 @@ fn has_unique_ids(obj_ids: &Vec<String>) -> bool {
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 struct ObjectQueryable {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     #[serde(skip_serializing)]
     obj_id: String,
-    #[sql_type = "Jsonb"]
+    #[diesel(sql_type = Jsonb)]
     railjson: JsonValue,
-    #[sql_type = "Nullable<Jsonb>"]
+    #[diesel(sql_type = Nullable<Jsonb>)]
     geographic: Option<JsonValue>,
-    #[sql_type = "Nullable<Jsonb>"]
+    #[diesel(sql_type = Nullable<Jsonb>)]
     schematic: Option<JsonValue>,
 }
 
 /// Return the railjson list of a specific OSRD object
 #[post("/<infra>/objects/<object_type>", data = "<obj_ids>")]
 async fn get_objects(
-    infra: i32,
+    infra: i64,
     object_type: ObjectType,
     obj_ids: Result<Json<Vec<String>>, JsonError<'_>>,
     conn: DBConnection,
@@ -76,7 +76,7 @@ async fn get_objects(
     }
 
     // Prepare query
-    let query = if object_type == ObjectType::SwitchType {
+    let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&object_type) {
         format!(
             "SELECT obj_id as obj_id, data as railjson, NULL as geographic, NULL as schematic
                 FROM {} WHERE infra_id = $1 AND obj_id = ANY($2) ",
@@ -103,7 +103,7 @@ async fn get_objects(
     let objects: Vec<ObjectQueryable> = conn
         .run(move |conn| {
             sql_query(query)
-                .bind::<Integer, _>(infra)
+                .bind::<BigInt, _>(infra)
                 .bind::<Array<Text>, _>(obj_ids_dup)
                 .load(conn)
         })

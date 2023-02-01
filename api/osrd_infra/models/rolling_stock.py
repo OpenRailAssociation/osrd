@@ -99,3 +99,41 @@ class RollingStock(models.Model):
         if force:
             return RollingStock.objects.update_or_create(**rs_obj.dict())
         return RollingStock.objects.create(**rs_obj.dict())
+
+
+class RollingStockImage(models.Model):
+    image = models.BinaryField(null=False, blank=False)
+
+    class Meta:
+        abstract = True
+        verbose_name_plural = "rolling stock images"
+
+
+class RollingStockCompoundImage(RollingStockImage):
+    class Meta:
+        db_table = "osrd_infra_rollingstockimage"
+        managed = False
+        verbose_name_plural = "rolling stock compound images"
+
+
+class RollingStockLivery(models.Model):
+    name = models.CharField(max_length=255, help_text=_("Name of the livery"), default="default")
+    rolling_stock = models.ForeignKey(RollingStock, related_name='liveries', on_delete=models.CASCADE)
+    compound_image = models.OneToOneField(RollingStockCompoundImage, null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = "rolling stocks liveries"
+        unique_together = (("rolling_stock", "name"),)
+
+    def __str__(self):
+        return self.name
+
+
+class RollingStockSeparatedImage(RollingStockImage):
+    livery = models.ForeignKey(RollingStockLivery, on_delete=models.CASCADE)
+    order = models.IntegerField(help_text=_("Position of this image in its livery"), default=0)
+
+    class Meta:
+        db_table = "osrd_infra_rollingstockimage"
+        unique_together = (("livery", "order"),)
+        verbose_name_plural = "rolling stock separated images"

@@ -5,7 +5,7 @@ use crate::infra::Infra;
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
-use diesel::sql_types::{Double, Integer, Text};
+use diesel::sql_types::{BigInt, Double, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use enum_map::EnumMap;
@@ -197,13 +197,13 @@ impl ObjectCache {
 
 #[derive(QueryableByName, Debug, Clone)]
 pub struct TrackQueryable {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub obj_id: String,
-    #[sql_type = "Double"]
+    #[diesel(sql_type = Double)]
     pub length: f64,
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub geo: String,
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub sch: String,
 }
 
@@ -222,11 +222,11 @@ impl From<TrackQueryable> for TrackSectionCache {
 
 #[derive(QueryableByName, Debug, Clone)]
 pub struct SwitchQueryable {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub obj_id: String,
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub switch_type: String,
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub ports: String,
 }
 
@@ -242,9 +242,9 @@ impl From<SwitchQueryable> for SwitchCache {
 
 #[derive(QueryableByName, Debug, Clone)]
 pub struct OperationalPointQueryable {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub obj_id: String,
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     pub parts: String,
 }
 
@@ -333,7 +333,7 @@ impl InfraCache {
     }
 
     /// Given an infra id load infra cache from database
-    pub fn load(conn: &PgConnection, infra: &Infra) -> Result<InfraCache, Box<dyn ApiError>> {
+    pub fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache, Box<dyn ApiError>> {
         let infra_id = infra.id;
         let mut infra_cache = Self::default();
 
@@ -341,14 +341,14 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, (data->>'length')::float as length, data->>'geo' as geo, data->>'sch' as sch FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
         )
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<TrackQueryable>(conn)?
         .into_iter().for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
 
         // Load signal tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<SignalCache>(conn)?.into_iter().for_each(|signal|
             infra_cache.add(signal)
         );
@@ -366,7 +366,7 @@ impl InfraCache {
         // Load operational points tracks references
         sql_query(
             "SELECT obj_id, data->>'parts' AS parts FROM osrd_infra_operationalpointmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<OperationalPointQueryable>(conn)?.into_iter().for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
         );
@@ -379,7 +379,7 @@ impl InfraCache {
         // Load switch tracks references
         sql_query(
             "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<SwitchQueryable>(conn)?.into_iter().for_each(|switch| {
             infra_cache.add::<SwitchCache>(switch.into());
         });
@@ -392,7 +392,7 @@ impl InfraCache {
         // Load detector tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<DetectorCache>(conn)?.into_iter().for_each(|detector|
             infra_cache.add(detector)
         );
@@ -400,7 +400,7 @@ impl InfraCache {
         // Load buffer stop tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<BufferStopCache>(conn)?.into_iter().for_each(|buffer_stop|
             infra_cache.add(buffer_stop)
         );
@@ -416,10 +416,10 @@ impl InfraCache {
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
     /// If the infra is not found in the database, it returns `None`
     pub fn get_or_load<'a>(
-        conn: &PgConnection,
-        infra_caches: &'a CHashMap<i32, InfraCache>,
+        conn: &mut PgConnection,
+        infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<ReadGuard<'a, i32, InfraCache>, Box<dyn ApiError>> {
+    ) -> Result<ReadGuard<'a, i64, InfraCache>, Box<dyn ApiError>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get(&infra.id) {
             return Ok(infra_cache);
@@ -432,10 +432,10 @@ impl InfraCache {
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
     /// If the infra is not found in the database, it returns `None`
     pub fn get_or_load_mut<'a>(
-        conn: &PgConnection,
-        infra_caches: &'a CHashMap<i32, InfraCache>,
+        conn: &mut PgConnection,
+        infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<WriteGuard<'a, i32, InfraCache>, Box<dyn ApiError>> {
+    ) -> Result<WriteGuard<'a, i64, InfraCache>, Box<dyn ApiError>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
             return Ok(infra_cache);

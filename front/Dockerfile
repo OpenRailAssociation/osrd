@@ -9,28 +9,14 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY package.json yarn.lock /app/
 RUN yarn
 
-# setup build options
-ARG REACT_APP_LOCAL_BACKEND
-ARG REACT_APP_API_URL
-ARG REACT_APP_CHARTIS_URL
-ARG REACT_APP_EDITOAST_URL
-ARG REACT_APP_KEYCLOAK_REALM
-ARG REACT_APP_SENTRY_DSN
-ARG REACT_APP_SENTRY_ENVIRONMENT
-
 # build the app
 COPY . /app
-RUN REACT_APP_LOCAL_BACKEND=$REACT_APP_LOCAL_BACKEND \
-    REACT_APP_API_URL=$REACT_APP_API_URL \
-    REACT_APP_CHARTIS_URL=$REACT_APP_CHARTIS_URL \
-    REACT_APP_EDITOAST_URL=$REACT_APP_EDITOAST_URL \
-    REACT_APP_KEYCLOAK_REALM=$REACT_APP_KEYCLOAK_REALM \
-    REACT_APP_SENTRY_DSN=$REACT_APP_SENTRY_DSN \
-    REACT_APP_SENTRY_ENVIRONMENT=$REACT_APP_SENTRY_ENVIRONMENT \
-    yarn build
+RUN yarn build
 
 # Copy & serve app
 FROM nginx:alpine
+
+RUN apk add npm
 
 ARG NGINX_CONFIG=nginx.conf
 COPY --from=build /app/build /usr/share/nginx/html
@@ -39,4 +25,12 @@ COPY nginx/$NGINX_CONFIG /etc/nginx/conf.d
 
 EXPOSE 80
 
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+ENV REACT_APP_LOCAL_BACKEND="True"
+ENV REACT_APP_API_URL="http://localhost:8000"
+ENV REACT_APP_EDITOAST_URL="http://localhost:8090"
+ENV REACT_APP_KEYCLOAK_REALM="shared"
+ENV REACT_APP_SENTRY_DSN=""
+ENV REACT_APP_SENTRY_ENVIRONMENT=""
+
+ENTRYPOINT npx react-inject-env set -d /usr/share/nginx/html/static/js/ && \
+  nginx -g "daemon off;"

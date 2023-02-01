@@ -5,6 +5,7 @@ import './InputGroupSNCF.scss';
 
 export default function InputGroupSNCF(props) {
   const { id, handleType, options, placeholder, sm, title, value, type } = props;
+  const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
     value
       ? {
@@ -12,17 +13,7 @@ export default function InputGroupSNCF(props) {
         }
       : { id: options[0].id, label: options[0].label, unit: options[0].unit }
   );
-  /*
-  useEffect(() => {
-    const selectedOption = value
-    ? {
-        label: title,
-      }
-    : { id: options[0].id, label: options[0].label, unit: options[0].unit }
 
-    setSelected(selectedOption);
-  }, [options]);
-*/
   useEffect(() => {
     const selectedOption = options?.find((option) => option.id === type);
 
@@ -36,19 +27,34 @@ export default function InputGroupSNCF(props) {
   return (
     <div className={`input-group ${sm && 'input-group-sm'}`}>
       <div className="input-group-prepend">
-        <div className="btn-group dropdown" data-component="select-radios">
+        <div className="btn-group dropdown">
           <button
             type="button"
             className="btn btn-secondary dropdown-toggle"
-            data-toggle="dropdown"
+            onClick={() => setIsDropdownShown(!isDropdownShown)}
             aria-haspopup="true"
             aria-expanded="false"
             aria-controls={id}
           >
-            <span data-role="placeholder">{selected.label}</span>
-            <i className="icons-arrow-down" aria-hidden="true" />
+            <span>{selected.label}</span>
+            <i
+              className={isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down'}
+              aria-hidden="true"
+            />
           </button>
-          <div className="dropdown-menu dropdown-menu-right" id={id}>
+          <div
+            className={`dropdown-menu dropdown-menu-right ${isDropdownShown ? 'show' : null}`}
+            id={id}
+            // eslint-disable-next-line react/no-unknown-property
+            x-placement="bottom-end"
+            style={{
+              position: 'absolute',
+              transform: 'translate3d(-47.0333px, 30px, 0px)',
+              top: '0px',
+              left: '0px',
+              willChange: 'transform',
+            }}
+          >
             {options.map((option) => (
               <React.Fragment key={nextId()}>
                 <label className="dropdown-item" htmlFor={option.id}>
@@ -56,6 +62,7 @@ export default function InputGroupSNCF(props) {
                     onClick={() => {
                       setSelected(option);
                       handleType({ type: option.id, value: 0 });
+                      setIsDropdownShown(false);
                     }}
                     role="button"
                     tabIndex="0"
@@ -64,7 +71,6 @@ export default function InputGroupSNCF(props) {
                   </div>
                 </label>
                 <input
-                  data-role="value"
                   type="radio"
                   name={id}
                   value={option.id}
@@ -88,6 +94,23 @@ export default function InputGroupSNCF(props) {
         <span className="form-control-state" />
         {selected.unit && <span className="form-control-icon small">{selected.unit}</span>}
       </div>
+      {isDropdownShown && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100vw',
+            height: '100vh',
+            zIndex: 999,
+          }}
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsDropdownShown(false)}
+        >
+          &nbsp;
+        </div>
+      )}
     </div>
   );
 }

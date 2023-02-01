@@ -7,7 +7,6 @@ import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.EnumMap;
-import java.util.Set;
 
 /** An undirected track edge, which can either be a branch of a switch, or a track section */
 public sealed interface TrackEdge permits SwitchBranch, TrackSection {

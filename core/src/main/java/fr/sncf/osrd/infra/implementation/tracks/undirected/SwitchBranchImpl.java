@@ -9,7 +9,6 @@ import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Set;
 
 public class SwitchBranchImpl implements SwitchBranch {
 

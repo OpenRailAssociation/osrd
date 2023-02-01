@@ -1,11 +1,16 @@
+from typing import Dict
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
+from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 from rest_framework_gis.fields import GeometryField
 
 from osrd_infra.models import (
     Infra,
     PathModel,
     RollingStock,
+    RollingStockCompoundImage,
+    RollingStockLivery,
+    RollingStockSeparatedImage,
     Timetable,
     TrainScheduleModel,
 )
@@ -34,13 +39,37 @@ class InfraSerializer(ModelSerializer):
         fields = "__all__"
 
 
+class RollingStockLiverySerializer(NestedHyperlinkedModelSerializer):
+    parent_lookup_kwargs = {
+        'rolling_stock_pk': 'rolling_stock__pk',
+    }
+
+    class Meta:
+        model = RollingStockLivery
+        fields = ["name", "url"]
+        extra_kwargs = {
+            'url': {
+                'view_name': 'rolling_stock_livery-detail',
+            }
+        }
+
+
 class RollingStockSerializer(ModelSerializer):
+    liveries = RollingStockLiverySerializer(many=True, required=False)
+
     class Meta:
         model = RollingStock
         exclude = ["image"]
+        extra_kwargs = {
+            'url': {
+                'view_name': 'rolling_stock-detail',
+            }
+        }
 
 
 class LightRollingStockSerializer(ModelSerializer):
+    liveries = RollingStockLiverySerializer(many=True)
+
     def to_representation(self, instance):
         """
         Light representation of a rolling stock, removing all effort curves
@@ -54,6 +83,39 @@ class LightRollingStockSerializer(ModelSerializer):
     class Meta:
         model = RollingStock
         exclude = ["image"]
+
+
+class CreateRollingStockLiverySerializer(Serializer):
+    rolling_stock_id = serializers.IntegerField()
+    livery_name = serializers.CharField(max_length=255)
+    images = serializers.ListField(min_length=1, child=serializers.FileField())
+    compound_image = serializers.FileField()
+
+    def create(self, validated_data):
+        rolling_stock = RollingStock.objects.get(pk=validated_data["rolling_stock_id"])
+        images = validated_data["images"]
+        compound_image = validated_data["compound_image"]
+
+        compound_image = RollingStockCompoundImage(
+            image=compound_image.open(mode='rb').read()
+        )
+        compound_image.save()
+
+        livery = RollingStockLivery(
+            rolling_stock=rolling_stock,
+            name=validated_data["livery_name"],
+            compound_image=compound_image
+        )
+        livery.save()
+
+        for i in range(len(images)):
+            image = images[i]
+            RollingStockSeparatedImage(
+                livery=livery,
+                order=i,
+                image=image.open(mode='rb').read()
+            ).save()
+        return
 
 
 # PATH FINDING
@@ -131,14 +193,14 @@ class StandaloneSimulationSerializer(Serializer):
     path = serializers.PrimaryKeyRelatedField(queryset=PathModel.objects.all())
     schedules = serializers.ListField(min_length=1, child=Schedule())
 
-    def validate(self, data):
+    def validate(self, data: Dict) -> Dict:
         path = data["path"]
         timetable = data["timetable"]
         if path.infra != timetable.infra:
             raise serializers.ValidationError("path and timteable doesn't have the same infra")
         return data
 
-    def create(self, validated_data):
+    def create(self, validated_data) -> list[TrainScheduleModel]:
         schedules = []
         timetable = validated_data["timetable"]
         path = validated_data["path"]

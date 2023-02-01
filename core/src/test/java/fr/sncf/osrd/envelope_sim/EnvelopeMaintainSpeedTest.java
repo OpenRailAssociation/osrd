@@ -26,7 +26,7 @@ public class EnvelopeMaintainSpeedTest {
                 new double[] { 0, 40, -40, 0, 50, -50, 0 },
                 ImmutableRangeMap.of());
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var context = new EnvelopeSimContext(testRollingStock, envelopePath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(testRollingStock, envelopePath, TIME_STEP, Comfort.STANDARD);
 
         var flatMRSP = Envelope.make(EnvelopePart.generateTimes(
                 List.of(EnvelopeProfile.CONSTANT_SPEED, SPEED_LIMIT),

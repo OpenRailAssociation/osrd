@@ -256,13 +256,17 @@ def make_graph(base_url: str, infra: int) -> InfraGraph:
     for link in infra["track_section_links"]:
         graph.link(TrackEndpoint.from_dict(link["src"]), TrackEndpoint.from_dict(link["dst"]))
 
+    switch_types = dict()
+    for switch_type in infra["switch_types"]:
+        switch_types[switch_type["id"]] = switch_type
+
     for switch in infra["switches"]:
-        assert switch["switch_type"] == "point"
-        base = TrackEndpoint.from_dict(switch["ports"]["base"])
-        left = TrackEndpoint.from_dict(switch["ports"]["left"])
-        right = TrackEndpoint.from_dict(switch["ports"]["right"])
-        graph.link(base, left)
-        graph.link(base, right)
+        switch_type = switch_types[switch["switch_type"]]
+        for group in switch_type["groups"].values():
+            for pair in group:
+                src = TrackEndpoint.from_dict(switch["ports"][pair["src"]])
+                dst = TrackEndpoint.from_dict(switch["ports"][pair["dst"]])
+                graph.link(src, dst)
     return graph
 
 

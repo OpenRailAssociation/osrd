@@ -6,9 +6,9 @@ use rocket::serde::json::{Error as JsonError, Json};
 use rocket::State;
 
 use crate::api_error::{ApiResult, InfraLockedError};
-use crate::chartos::{self, InvalidationZone};
-use crate::client::ChartosConfig;
-use crate::db_connection::DBConnection;
+use crate::chartos::{self, InvalidationZone, MapLayers};
+use crate::client::MapLayersConfig;
+use crate::db_connection::{DBConnection, RedisPool};
 use crate::generated_data;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
@@ -22,11 +22,13 @@ pub fn routes() -> Vec<rocket::Route> {
 /// CRUD for edit an infrastructure. Takes a batch of operations.
 #[post("/<infra>", data = "<operations>")]
 async fn edit<'a>(
-    infra: i32,
+    infra: i64,
     operations: Result<Json<Vec<Operation>>, JsonError<'a>>,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
-    chartos_config: &State<ChartosConfig>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
+    redis_pool: &RedisPool,
+    map_layers: &State<MapLayers>,
     conn: DBConnection,
+    map_layers_config: &State<MapLayersConfig>,
 ) -> ApiResult<Json<Vec<OperationResult>>> {
     let operations = operations?;
     let infra_caches = infra_caches.inner().clone();
@@ -39,13 +41,20 @@ async fn edit<'a>(
         })
         .await?;
 
-    chartos::invalidate_zone(infra, chartos_config, &invalid_zone).await;
+    chartos::invalidate_zone(
+        redis_pool,
+        &map_layers.layers.keys().cloned().collect(),
+        infra,
+        &invalid_zone,
+        map_layers_config.max_tiles,
+    )
+    .await;
 
     Ok(Json(operation_results))
 }
 
 fn apply_edit(
-    conn: &PgConnection,
+    conn: &mut PgConnection,
     infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,

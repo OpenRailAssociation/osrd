@@ -2,14 +2,10 @@ package fr.sncf.osrd.stdcm;
 
 import static fr.sncf.osrd.Helpers.getResourcePath;
 import static fr.sncf.osrd.Helpers.parseRollingStockDir;
-import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
-import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;

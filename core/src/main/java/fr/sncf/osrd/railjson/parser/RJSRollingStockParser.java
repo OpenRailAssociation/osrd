@@ -92,7 +92,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.gamma.type,
                 rjsRollingStock.loadingGauge,
                 modes,
-                rjsRollingStock.effortCurves.defaultMode
+                rjsRollingStock.effortCurves.defaultMode,
+                rjsRollingStock.powerClass
         );
     }
 
@@ -113,7 +114,7 @@ public class RJSRollingStockParser {
     ) {
         if (rjsCond == null)
             throw new MissingRollingStockField(fieldKey);
-        return new RollingStock.EffortCurveConditions(parseComfort(rjsCond.comfort));
+        return new RollingStock.EffortCurveConditions(parseComfort(rjsCond.comfort), rjsCond.electricalProfileLevel);
     }
 
     /** Parse rjsComfort into a RollingStock comfort */
@@ -164,7 +165,7 @@ public class RJSRollingStockParser {
             if (maxEffort < 0)
                 throw new InvalidRollingStockField(fieldKey, "negative max effort");
             tractiveEffortCurve[i] = new RollingStock.TractiveEffortPoint(speed, maxEffort);
-            assert i == 0 || tractiveEffortCurve[i - 1].speed < speed;
+            assert i == 0 || tractiveEffortCurve[i - 1].speed() < speed;
         }
         return tractiveEffortCurve;
     }

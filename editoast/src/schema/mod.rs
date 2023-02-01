@@ -1,7 +1,9 @@
 mod buffer_stop;
 mod catenary;
 mod detector;
+pub mod electrical_profiles;
 mod errors;
+mod geo_json;
 pub mod operation;
 mod operational_point;
 mod railjson;
@@ -19,6 +21,7 @@ use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
 use enum_map::Enum;
 pub use errors::{InfraError, InfraErrorType};
+pub use geo_json::GeoJson;
 pub use operational_point::{OperationalPoint, OperationalPointCache, OperationalPointPart};
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
@@ -94,19 +97,20 @@ impl ObjectType {
         }
     }
 
-    pub fn get_geometry_layer_table(&self) -> Result<&'static str, &'static str> {
+    /// Returns the layer table name.
+    /// Returns `None` for objects that doesn't have a layer such as routes or switch types.
+    pub fn get_geometry_layer_table(&self) -> Option<&'static str> {
         match *self {
-            ObjectType::TrackSection => Ok("osrd_infra_tracksectionlayer"),
-            ObjectType::Signal => Ok("osrd_infra_signallayer"),
-            ObjectType::SpeedSection => Ok("osrd_infra_speedsectionlayer"),
-            ObjectType::Detector => Ok("osrd_infra_detectorlayer"),
-            ObjectType::TrackSectionLink => Ok("osrd_infra_tracksectionlinklayer"),
-            ObjectType::Switch => Ok("osrd_infra_switchlayer"),
-            ObjectType::SwitchType => Err("SwitchType has no geometry"),
-            ObjectType::BufferStop => Ok("osrd_infra_bufferstoplayer"),
-            ObjectType::Route => Ok("osrd_infra_routelayer"),
-            ObjectType::OperationalPoint => Ok("osrd_infra_operationalpointlayer"),
-            ObjectType::Catenary => Ok("osrd_infra_catenarylayer"),
+            ObjectType::TrackSection => Some("osrd_infra_tracksectionlayer"),
+            ObjectType::Signal => Some("osrd_infra_signallayer"),
+            ObjectType::SpeedSection => Some("osrd_infra_speedsectionlayer"),
+            ObjectType::Detector => Some("osrd_infra_detectorlayer"),
+            ObjectType::TrackSectionLink => Some("osrd_infra_tracksectionlinklayer"),
+            ObjectType::Switch => Some("osrd_infra_switchlayer"),
+            ObjectType::BufferStop => Some("osrd_infra_bufferstoplayer"),
+            ObjectType::OperationalPoint => Some("osrd_infra_operationalpointlayer"),
+            ObjectType::Catenary => Some("osrd_infra_catenarylayer"),
+            _ => None,
         }
     }
 }
@@ -191,6 +195,30 @@ impl OSRDObject for Waypoint {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
+pub struct TrackRange {
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: Identifier,
+    pub begin: f64,
+    #[derivative(Default(value = "100."))]
+    pub end: f64,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
+pub struct DirectionalTrackRange {
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: Identifier,
+    pub begin: f64,
+    #[derivative(Default(value = "100."))]
+    pub end: f64,
+    #[derivative(Default(value = "Direction::StartToStop"))]
+    pub direction: Direction,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
@@ -200,7 +228,7 @@ pub struct ApplicableDirectionsTrackRange {
     pub applicable_directions: ApplicableDirections,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(deny_unknown_fields, rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
     StartToStop,
@@ -232,6 +260,20 @@ pub struct TrackEndpoint {
     pub endpoint: Endpoint,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
+}
+
+impl TrackEndpoint {
+    /// Create a `TrackEndpoint` from a track id and a direction.
+    pub fn from_track_and_direction<T: AsRef<str>>(track: T, dir: Direction) -> TrackEndpoint {
+        let endpoint = match dir {
+            Direction::StartToStop => Endpoint::End,
+            Direction::StopToStart => Endpoint::Begin,
+        };
+        TrackEndpoint {
+            track: track.as_ref().into(),
+            endpoint,
+        }
+    }
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]

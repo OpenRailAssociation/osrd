@@ -2,7 +2,7 @@ use crate::api_error::ApiError;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
 use crate::tables::osrd_infra_infra;
-use crate::tables::osrd_infra_infra::dsl::*;
+use crate::tables::osrd_infra_infra::dsl;
 use chrono::{NaiveDateTime, Utc};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::Text;
@@ -16,9 +16,9 @@ use thiserror::Error;
 pub const RAILJSON_VERSION: &str = "3.1.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
-#[table_name = "osrd_infra_infra"]
+#[diesel(table_name = osrd_infra_infra)]
 pub struct Infra {
-    pub id: i32,
+    pub id: i64,
     pub name: String,
     pub railjson_version: String,
     pub version: String,
@@ -38,7 +38,7 @@ pub struct InfraName {
 pub enum InfraApiError {
     /// Couldn't found the infra with the given id
     #[error("Infra '{0}', could not be found")]
-    NotFound(i32),
+    NotFound(i64),
     #[error("An internal diesel error occurred: '{}'", .0.to_string())]
     DieselError(DieselError),
 }
@@ -71,8 +71,8 @@ impl ApiError for InfraApiError {
 }
 
 impl Infra {
-    pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, Box<dyn ApiError>> {
-        match osrd_infra_infra.find(infra_id).first(conn) {
+    pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra, Box<dyn ApiError>> {
+        match dsl::osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
             Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
             Err(e) => Err(Box::new(InfraApiError::DieselError(e))),
@@ -80,10 +80,14 @@ impl Infra {
     }
 
     pub fn retrieve_for_update(
-        conn: &PgConnection,
-        infra_id: i32,
+        conn: &mut PgConnection,
+        infra_id: i64,
     ) -> Result<Infra, Box<dyn ApiError>> {
-        match osrd_infra_infra.for_update().find(infra_id).first(conn) {
+        match dsl::osrd_infra_infra
+            .for_update()
+            .find(infra_id)
+            .first(conn)
+        {
             Ok(infra) => Ok(infra),
             Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
             Err(e) => Err(Box::new(InfraApiError::DieselError(e))),
@@ -91,12 +95,12 @@ impl Infra {
     }
 
     pub fn rename(
-        conn: &PgConnection,
-        infra_id: i32,
+        conn: &mut PgConnection,
+        infra_id: i64,
         new_name: String,
     ) -> Result<Infra, Box<dyn ApiError>> {
-        match update(osrd_infra_infra.filter(id.eq(infra_id)))
-            .set(name.eq(new_name))
+        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id)))
+            .set(dsl::name.eq(new_name))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -105,28 +109,28 @@ impl Infra {
         }
     }
 
-    pub fn list(conn: &PgConnection) -> Vec<Infra> {
-        osrd_infra_infra
+    pub fn list(conn: &mut PgConnection) -> Vec<Infra> {
+        dsl::osrd_infra_infra
             .load::<Self>(conn)
             .expect("List infra query failed")
     }
 
-    pub fn list_for_update(conn: &PgConnection) -> Vec<Infra> {
-        osrd_infra_infra
+    pub fn list_for_update(conn: &mut PgConnection) -> Vec<Infra> {
+        dsl::osrd_infra_infra
             .for_update()
             .load::<Self>(conn)
             .expect("List infra query failed")
     }
 
-    pub fn bump_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
+    pub fn bump_version(&self, conn: &mut PgConnection) -> Result<Self, Box<dyn ApiError>> {
         let new_version = self
             .version
             .parse::<u32>()
             .expect("Cannot convert version into an Integer")
             + 1;
 
-        match update(osrd_infra_infra.filter(id.eq(self.id)))
-            .set(version.eq(new_version.to_string()))
+        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
+            .set(dsl::version.eq(new_version.to_string()))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -135,9 +139,12 @@ impl Infra {
         }
     }
 
-    pub fn bump_generated_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
-        match update(osrd_infra_infra.filter(id.eq(self.id)))
-            .set(generated_version.eq(&self.version))
+    pub fn bump_generated_version(
+        &self,
+        conn: &mut PgConnection,
+    ) -> Result<Self, Box<dyn ApiError>> {
+        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
+            .set(dsl::generated_version.eq(&self.version))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -148,10 +155,10 @@ impl Infra {
 
     pub fn downgrade_generated_version(
         &self,
-        conn: &PgConnection,
+        conn: &mut PgConnection,
     ) -> Result<Self, Box<dyn ApiError>> {
-        match update(osrd_infra_infra.filter(id.eq(self.id)))
-            .set(generated_version.eq::<Option<String>>(None))
+        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
+            .set(dsl::generated_version.eq::<Option<String>>(None))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -162,10 +169,10 @@ impl Infra {
 
     pub fn update_modified_timestamp_to_now(
         &self,
-        conn: &PgConnection,
+        conn: &mut PgConnection,
     ) -> Result<Self, Box<dyn ApiError>> {
-        match update(osrd_infra_infra.filter(id.eq(self.id)))
-            .set(modified.eq(Utc::now().naive_utc()))
+        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
+            .set(dsl::modified.eq(Utc::now().naive_utc()))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -176,7 +183,7 @@ impl Infra {
 
     pub fn create<T: AsRef<str>>(
         infra_name: T,
-        conn: &PgConnection,
+        conn: &mut PgConnection,
     ) -> Result<Infra, Box<dyn ApiError>> {
         match sql_query(
             "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked, created, modified
@@ -193,8 +200,8 @@ impl Infra {
         }
     }
 
-    pub fn delete(infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
-        match delete(osrd_infra_infra.filter(id.eq(infra_id))).execute(conn) {
+    pub fn delete(infra_id: i64, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
+        match delete(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
             Ok(_) => Err(Box::new(InfraApiError::NotFound(infra_id))),
             Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
@@ -202,9 +209,13 @@ impl Infra {
     }
 
     /// Lock or unlock the infra whether `lock` is true or false
-    pub fn set_locked(&self, lock: bool, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
-        match update(osrd_infra_infra.filter(id.eq(self.id)))
-            .set(locked.eq(lock))
+    pub fn set_locked(
+        &self,
+        lock: bool,
+        conn: &mut PgConnection,
+    ) -> Result<Self, Box<dyn ApiError>> {
+        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id)))
+            .set(dsl::locked.eq(lock))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -219,7 +230,7 @@ impl Infra {
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate chartos layer cache
     pub fn refresh(
         &self,
-        conn: &PgConnection,
+        conn: &mut PgConnection,
         force: bool,
         infra_cache: &InfraCache,
     ) -> Result<bool, Box<dyn ApiError>> {
@@ -240,7 +251,7 @@ impl Infra {
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` acordingly.
-    pub fn clear(&self, conn: &PgConnection) -> Result<bool, Box<dyn ApiError>> {
+    pub fn clear(&self, conn: &mut PgConnection) -> Result<bool, Box<dyn ApiError>> {
         generated_data::clear_all(conn, self.id)?;
         self.downgrade_generated_version(conn)?;
         Ok(true)
@@ -255,12 +266,12 @@ pub mod tests {
     use diesel::{Connection, PgConnection};
     use rocket::http::Status;
 
-    pub fn test_infra_transaction(fn_test: fn(&PgConnection, Infra)) {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let infra = Infra::create("test", &conn).unwrap();
+    pub fn test_infra_transaction(fn_test: fn(&mut PgConnection, Infra)) {
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|conn| {
+            let infra = Infra::create("test", conn).unwrap();
 
-            fn_test(&conn, infra);
+            fn_test(conn, infra);
             Ok(())
         });
     }
@@ -292,10 +303,10 @@ pub mod tests {
 
     #[test]
     fn downgrade_version() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        let infra = Infra::create("test", &conn).unwrap();
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let infra = Infra::create("test", &mut conn).unwrap();
         assert!(infra
-            .downgrade_generated_version(&conn)
+            .downgrade_generated_version(&mut conn)
             .unwrap()
             .generated_version
             .is_none())

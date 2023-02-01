@@ -3,7 +3,7 @@ use crate::schema::{
     BufferStop, Catenary, Detector, OSRDIdentified, OSRDObject, ObjectType, OperationalPoint,
     Route, Signal, SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
-use diesel::sql_types::{Integer, Json, Text};
+use diesel::sql_types::{BigInt, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -28,8 +28,8 @@ pub enum RailjsonObject {
 
 pub fn apply_create_operation(
     railjson_object: &RailjsonObject,
-    infra_id: i32,
-    conn: &PgConnection,
+    infra_id: i64,
+    conn: &mut PgConnection,
 ) -> Result<(), Box<dyn ApiError>> {
     if railjson_object.get_id().is_empty() {
         return Err(Box::new(OperationError::EmptyId));
@@ -38,7 +38,7 @@ pub fn apply_create_operation(
         "INSERT INTO {} (infra_id, obj_id, data) VALUES ($1, $2, $3)",
         railjson_object.get_type().get_table()
     ))
-    .bind::<Integer, _>(infra_id)
+    .bind::<BigInt, _>(infra_id)
     .bind::<Text, _>(railjson_object.get_id())
     .bind::<Json, _>(railjson_object.get_data())
     .execute(conn)
@@ -104,27 +104,35 @@ pub mod tests {
         SwitchType, TrackSection, TrackSectionLink,
     };
 
-    pub fn create_track(conn: &PgConnection, infra_id: i32, track: TrackSection) -> RailjsonObject {
+    pub fn create_track(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        track: TrackSection,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::TrackSection { railjson: track };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
     }
 
-    pub fn create_signal(conn: &PgConnection, infra_id: i32, signal: Signal) -> RailjsonObject {
+    pub fn create_signal(conn: &mut PgConnection, infra_id: i64, signal: Signal) -> RailjsonObject {
         let obj = RailjsonObject::Signal { railjson: signal };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
     }
 
-    pub fn create_speed(conn: &PgConnection, infra_id: i32, speed: SpeedSection) -> RailjsonObject {
+    pub fn create_speed(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        speed: SpeedSection,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::SpeedSection { railjson: speed };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
     }
 
     pub fn create_link(
-        conn: &PgConnection,
-        infra_id: i32,
+        conn: &mut PgConnection,
+        infra_id: i64,
         link: TrackSectionLink,
     ) -> RailjsonObject {
         let obj = RailjsonObject::TrackSectionLink { railjson: link };
@@ -132,15 +140,15 @@ pub mod tests {
         obj
     }
 
-    pub fn create_switch(conn: &PgConnection, infra_id: i32, switch: Switch) -> RailjsonObject {
+    pub fn create_switch(conn: &mut PgConnection, infra_id: i64, switch: Switch) -> RailjsonObject {
         let obj = RailjsonObject::Switch { railjson: switch };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
     }
 
     pub fn create_detector(
-        conn: &PgConnection,
-        infra_id: i32,
+        conn: &mut PgConnection,
+        infra_id: i64,
         detector: Detector,
     ) -> RailjsonObject {
         let obj = RailjsonObject::Detector { railjson: detector };
@@ -149,8 +157,8 @@ pub mod tests {
     }
 
     pub fn create_buffer_stop(
-        conn: &PgConnection,
-        infra_id: i32,
+        conn: &mut PgConnection,
+        infra_id: i64,
         buffer_stop: BufferStop,
     ) -> RailjsonObject {
         let obj = RailjsonObject::BufferStop {
@@ -160,21 +168,25 @@ pub mod tests {
         obj
     }
 
-    pub fn create_route(conn: &PgConnection, infra_id: i32, route: Route) -> RailjsonObject {
+    pub fn create_route(conn: &mut PgConnection, infra_id: i64, route: Route) -> RailjsonObject {
         let obj = RailjsonObject::Route { railjson: route };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
     }
 
-    pub fn create_op(conn: &PgConnection, infra_id: i32, op: OperationalPoint) -> RailjsonObject {
+    pub fn create_op(
+        conn: &mut PgConnection,
+        infra_id: i64,
+        op: OperationalPoint,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::OperationalPoint { railjson: op };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
     }
 
     pub fn create_switch_type(
-        conn: &PgConnection,
-        infra_id: i32,
+        conn: &mut PgConnection,
+        infra_id: i64,
         st: SwitchType,
     ) -> RailjsonObject {
         let obj = RailjsonObject::SwitchType { railjson: st };
@@ -183,8 +195,8 @@ pub mod tests {
     }
 
     pub fn create_catenary(
-        conn: &PgConnection,
-        infra_id: i32,
+        conn: &mut PgConnection,
+        infra_id: i64,
         catenary: Catenary,
     ) -> RailjsonObject {
         let obj = RailjsonObject::Catenary { railjson: catenary };

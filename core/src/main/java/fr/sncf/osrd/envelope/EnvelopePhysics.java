@@ -1,7 +1,12 @@
 package fr.sncf.osrd.envelope;
 
+import static java.lang.Math.max;
+
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.utils.DoubleUtils;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
+import fr.sncf.osrd.envelope_sim.PhysicsPath;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 
 public class EnvelopePhysics {
     /** Compute the constant acceleration between two space / speed points. */
@@ -173,5 +178,56 @@ public class EnvelopePhysics {
         if (interpolatedPosition < minPos)
             interpolatedPosition = minPos;
         return interpolatedPosition;
+    }
+
+    /** Returns the cumulative energy consumed of the given envelope at the wheels of the train, given a certain path
+     * and rolling stock */
+    public static double getMechanicalEnergyConsumed(
+            Envelope envelope,
+            PhysicsPath path,
+            PhysicsRollingStock rollingStock
+    ) {
+        var cumulativeEnergy = 0.0;
+        for (var i = 0; i < envelope.size(); i++) {
+            var part = envelope.get(i);
+            cumulativeEnergy += getPartMechanicalEnergyConsumed(part, path, rollingStock);
+        }
+        return cumulativeEnergy;
+    }
+
+    /** Returns the total mechanical energy consumed on a given envelopePart */
+    public static double getPartMechanicalEnergyConsumed(
+            EnvelopePart part,
+            PhysicsPath path,
+            PhysicsRollingStock rollingStock
+    ) {
+        // The energy consumed by the train corresponds to the kinetic energy delta, subtracting the work by
+        // gravity and drag / friction
+        var length = part.pointCount();
+        var mass = rollingStock.getMass();
+        var inertia = rollingStock.getInertia();
+
+        var meanGrade = 0.001 * path.getAverageGrade(part.getBeginPos(), part.getEndPos());
+        var altitudeDelta = meanGrade * part.getTotalDistance();
+
+        var workGravity = - mass * 9.81 * altitudeDelta;
+
+        var kineticEnergyDelta =
+                0.5 * inertia * (part.getEndSpeed() * part.getEndSpeed() - part.getBeginSpeed() * part.getBeginSpeed());
+
+        var workDrag = 0;
+        for (var i = 0; i < length - 1; i++) {
+            var speed = part.getPointSpeed(i);
+            var nextSpeed = part.getPointSpeed(i + 1);
+            var meanSpeed = (speed + nextSpeed) / 2;
+            var pos = part.getPointPos(i);
+            var nextPos = part.getPointPos(i + 1);
+            var positionDelta = nextPos - pos;
+            workDrag -= rollingStock.getRollingResistance(meanSpeed) * positionDelta;
+        }
+
+        var totalEnergyConsumed = kineticEnergyDelta - workGravity - workDrag;
+
+        return max(0., totalEnergyConsumed);
     }
 }
