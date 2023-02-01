@@ -209,18 +209,16 @@ function drawTrain(
         rotate
       );
     }
-    if (dataSimulation.modesAndProfiles) {
-      const isSelected = true;
-
+    if (dataSimulation.modesAndProfiles && speedSpaceSettings.electricalProfiles) {
       dataSimulation.modesAndProfiles.forEach((source, index) => {
         const segment = {};
 
         segment.position_start = source.start;
         segment.position_end = source.stop;
         segment.position_middle = (source.start + source.stop) / 2;
-        segment.height_start = 7;
+        segment.height_start = 4;
         segment.height_end = 16;
-        segment.height_middle = 2;
+        segment.height_middle = -2;
         segment.usedMode = source.used_mode;
         segment.usedProfile = source.used_profile;
 
@@ -238,7 +236,7 @@ function drawTrain(
             F: '#FFCCD7',
             G: '#FFF',
           },
-          heat: '#333',
+          thermal: '#333',
           15000: '#009AA6',
           3000: '#1FBE00',
         };
@@ -246,7 +244,7 @@ function drawTrain(
         const electricalProfileColorsWithoutProfile = {
           25000: '#6E1E78',
           1500: '#FF0037',
-          heat: '#333',
+          thermal: '#333',
           15000: '#009AA6',
           3000: '#1FBE00',
         };
@@ -257,12 +255,37 @@ function drawTrain(
 
         segment.textColor = electricalProfileColorsWithoutProfile[segment.usedMode];
 
-        if (!segment.usedProfile) {
+        if (segment.usedMode === 'thermal') {
+          segment.text = `${segment.usedMode}`;
+        } else if (!segment.usedProfile) {
           segment.text = `${segment.usedMode}V`;
         } else if (segment.usedMode === '25000') {
           segment.text = `${segment.usedProfile}V`;
         } else {
           segment.text = `${segment.usedMode}V ${segment.usedProfile}`;
+        }
+
+        let isStripe = false;
+        let isIncompatible = false;
+
+        if (!segment.usedProfile && (segment.text === '25000V' || segment.text === '1500V')) {
+          isStripe = true;
+        } else if (
+          segment.usedProfile &&
+          segment.usedMode === '1500' &&
+          !segment.usedProfile.match(/O|A|B|C|D|E|F|G/)
+        ) {
+          isIncompatible = true;
+          isStripe = true;
+          segment.text = `${segment.usedMode}V`;
+        } else if (
+          segment.usedProfile &&
+          segment.usedMode === '25000' &&
+          !segment.usedProfile.match(/25000|22500|20000/)
+        ) {
+          isIncompatible = true;
+          isStripe = true;
+          segment.text = `${segment.usedMode}V`;
         }
 
         drawElectricalProfileRect(
@@ -274,7 +297,8 @@ function drawTrain(
           ['position', 'height'],
           'electrical_profiles',
           rotate,
-          isSelected,
+          isStripe,
+          isIncompatible,
           `electricalProfiles_${index}`
         );
       });

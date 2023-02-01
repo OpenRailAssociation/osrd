@@ -23,7 +23,8 @@
     "altitude": "Altitude",
     "curves": "Courbes",
     "maxSpeed": "Vitesse ligne",
-    "slopes": "Déclivités"
+    "slopes": "Déclivités",
+    "electricalProfiles": "Profils électriques"
   },
   "start": "Départ",
   "stop": "Arrivée",

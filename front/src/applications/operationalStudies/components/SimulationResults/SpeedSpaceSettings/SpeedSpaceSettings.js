@@ -54,6 +54,14 @@ export default function SpeedSpaceSettings(props) {
         onChange={() => toggleSetting('slopes', settings)}
         type="checkbox"
       />
+      <CheckboxRadioSNCF
+        id="speedSpaceSettings-electricalProfiles"
+        name="speedSpaceSettings-electricalProfiles"
+        label={t('speedSpaceSettings.electricalProfiles')}
+        checked={settings.electricalProfiles}
+        onChange={() => toggleSetting('electricalProfiles', settings)}
+        type="checkbox"
+      />
     </div>
   );
 }

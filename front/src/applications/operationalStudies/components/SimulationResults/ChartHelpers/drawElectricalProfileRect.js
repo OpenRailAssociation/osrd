@@ -8,7 +8,8 @@ const drawElectricalProfileRect = (
   keyValues,
   name,
   rotate,
-  isSelected = false,
+  isStripe,
+  isIncompatible,
   id = null
 ) => {
   const width = rotate
@@ -43,9 +44,9 @@ const drawElectricalProfileRect = (
     .attr('id', id)
     .attr('class', `rect zoomable ${classes}`)
     .datum(dataSimulation)
-    .attr('fill', dataSimulation.usedProfile ? dataSimulation.color : `url(#${id})`)
+    .attr('fill', isStripe ? `url(#${id})` : dataSimulation.color)
     .attr('stroke-width', 1)
-    .attr('stroke', dataSimulation.usedProfile ? dataSimulation.color : `url(#${id})`)
+    .attr('stroke', isStripe ? `url(#${id})` : dataSimulation.color)
     .attr(
       'x',
       chart.x(
@@ -98,6 +99,7 @@ const drawElectricalProfileRect = (
         .text(dataSimulation.text)
         .attr('fill', dataSimulation.textColor)
         .attr('font-size', 10)
+        .attr('font-style', isIncompatible ? 'italic' : 'normal')
         .attr(
           'x',
           chart.x(

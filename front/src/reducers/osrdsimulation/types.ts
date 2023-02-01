@@ -165,6 +165,7 @@ export interface OsrdSimulationState {
     curves: boolean;
     maxSpeed: boolean;
     slopes: boolean;
+    electricalProfiles: boolean;
   };
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
