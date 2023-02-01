@@ -3,8 +3,7 @@ import drawCurve from 'applications/operationalStudies/components/SimulationResu
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
-import drawRect from '../ChartHelpers/drawRect';
-import drawStripedRect from '../ChartHelpers/drawStripedRect';
+import drawElectricalProfileRect from '../ChartHelpers/drawElectricalProfileRect';
 
 function createChart(
   CHART_ID,
@@ -218,60 +217,66 @@ function drawTrain(
 
         segment.position_start = source.start;
         segment.position_end = source.stop;
+        segment.position_middle = (source.start + source.stop) / 2;
         segment.height_start = 7;
         segment.height_end = 16;
+        segment.height_middle = 2;
         segment.usedMode = source.used_mode;
         segment.usedProfile = source.used_profile;
 
-        const electricalProfileColors = segment.usedProfile
-          ? {
-              25000: { 25000: '#6E1E78', 22500: '#a453ad', 20000: '#dd87e5' },
-              1500: {
-                O: '#FF0037',
-                A: '#ff335f',
-                A1: '#ff335f',
-                B: '#ff6687',
-                B1: '#ff6687',
-                C: '#ff99af',
-                D: '#ff99af',
-                E: '#ffccd7',
-                F: '#ffccd7',
-                G: '#FFF',
-              },
-              heat: '#333',
-              15000: '#009AA6',
-              3000: '#1FBE00',
-            }
-          : { 25000: '#6E1E78', 1500: '#FF0037', heat: '#333', 15000: '#009AA6', 3000: '#1FBE00' };
+        const electricalProfileColorsWithProfile = {
+          25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
+          1500: {
+            O: '#FF0037',
+            A: '#FF335F',
+            A1: '#FF335F',
+            B: '#FF6687',
+            B1: '#FF6687',
+            C: '#FF99AF',
+            D: '#FF99AF',
+            E: '#FFCCD7',
+            F: '#FFCCD7',
+            G: '#FFF',
+          },
+          heat: '#333',
+          15000: '#009AA6',
+          3000: '#1FBE00',
+        };
+
+        const electricalProfileColorsWithoutProfile = {
+          25000: '#6E1E78',
+          1500: '#FF0037',
+          heat: '#333',
+          15000: '#009AA6',
+          3000: '#1FBE00',
+        };
 
         segment.color =
-          electricalProfileColors[segment.usedMode][segment.usedProfile] ||
-          electricalProfileColors[segment.usedMode];
+          electricalProfileColorsWithProfile[segment.usedMode][segment.usedProfile] ||
+          electricalProfileColorsWithoutProfile[segment.usedMode];
 
-        // eslint-disable-next-line no-unused-expressions
-        segment.usedProfile
-          ? drawRect(
-              chartLocal,
-              `ElectricalProfiles_${index}`,
-              segment,
-              'speedSpaceChart',
-              `curveLinear`,
-              ['position', 'height'],
-              'electrical_profiles',
-              rotate
-            )
-          : drawStripedRect(
-              chartLocal,
-              `ElectricalProfiles_${index} stripe`,
-              segment,
-              'speedSpaceChart',
-              `curveLinear`,
-              ['position', 'height'],
-              'electrical_profiles',
-              rotate,
-              isSelected,
-              `ElectricalProfiles_${index}`
-            );
+        segment.textColor = electricalProfileColorsWithoutProfile[segment.usedMode];
+
+        if (!segment.usedProfile) {
+          segment.text = `${segment.usedMode}V`;
+        } else if (segment.usedMode === '25000') {
+          segment.text = `${segment.usedProfile}V`;
+        } else {
+          segment.text = `${segment.usedMode}V ${segment.usedProfile}`;
+        }
+
+        drawElectricalProfileRect(
+          chartLocal,
+          `electricalProfiles_${index}`,
+          segment,
+          'speedSpaceChart',
+          `curveLinear`,
+          ['position', 'height'],
+          'electrical_profiles',
+          rotate,
+          isSelected,
+          `electricalProfiles_${index}`
+        );
       });
     }
     // Operational points
