@@ -6,12 +6,12 @@ use rocket::serde::json::{Error as JsonError, Json};
 use rocket::State;
 
 use crate::api_error::{ApiResult, InfraLockedError};
-use crate::chartos::{self, InvalidationZone, MapLayers};
 use crate::client::MapLayersConfig;
 use crate::db_connection::{DBConnection, RedisPool};
 use crate::generated_data;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
+use crate::map::{self, InvalidationZone, MapLayers};
 use crate::schema::operation::{Operation, OperationResult};
 
 /// Return the endpoints routes of this module
@@ -41,7 +41,7 @@ async fn edit<'a>(
         })
         .await?;
 
-    chartos::invalidate_zone(
+    map::invalidate_zone(
         redis_pool,
         &map_layers.layers.keys().cloned().collect(),
         infra,

@@ -57,9 +57,9 @@ mod tests {
     use rocket_db_pools::deadpool_redis::{Config as RedisPoolConfig, Runtime};
 
     use crate::{
-        chartos::redis_utils::{delete, get, keys, set},
         client::RedisConfig,
         db_connection::RedisPool,
+        map::redis_utils::{delete, get, keys, set},
     };
 
     fn create_redis_pool() -> RedisPool {

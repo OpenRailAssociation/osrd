@@ -4,7 +4,7 @@ use pointy::Transform64;
 use rocket::serde::json::Value as JsonValue;
 use serde::{Deserialize, Serialize};
 
-use crate::{chartos::View, schema::GeoJson};
+use crate::{map::View, schema::GeoJson};
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 pub struct GeoJsonAndData {
@@ -173,7 +173,7 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::chartos::MapLayers;
+    use crate::map::MapLayers;
 
     use super::{create_and_fill_mvt_tile, get_geo_json_sql_query};
 

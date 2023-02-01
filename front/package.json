@@ -148,7 +148,7 @@
     "test": "react-scripts test",
     "test-coverage": "react-scripts test --watchAll=false --coverage --coverageDirectory=test",
     "lint-ts": "eslint --ext .ts,.tsx src",
-    "generate-types": "npx @rtk-query/codegen-openapi src/config/openapi-chartos-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-middleware-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-editoast-config.ts",
+    "generate-types": "npx @rtk-query/codegen-openapi src/config/openapi-middleware-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-editoast-config.ts",
     "storybook": "start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public"
   },

@@ -32,28 +32,6 @@ services:
       start_period: 4s
       interval: 5s
 
-  chartos:
-    image: osrd/chartos
-    container_name: osrd-chartos
-    build:
-      context: chartos
-      dockerfile: Dockerfile
-    depends_on:
-      postgres: {condition: service_healthy}
-      redis: {condition: service_healthy}
-    restart: unless-stopped
-    command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 80"
-    ports: ["7070:80"]
-    environment:
-      PSQL_DSN: "postgres://osrd:password@postgres/osrd"
-      ROOT_URL: "http://localhost:7070"
-      REDIS_URL: "redis://redis"
-      CONFIG_PATH: "/code/chartos.yml"
-    healthcheck:
-      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost/health').status == 200 else 1)"]
-      start_period: 4s
-      interval: 5s
-
   api:
     image: osrd/api
     container_name: osrd-api
@@ -141,7 +119,6 @@ services:
   wait-healthy:
     depends_on:
       api: {condition: service_healthy}
-      chartos: {condition: service_healthy}
       editoast: {condition: service_healthy}
     restart: "no"
     image: alpine:latest
