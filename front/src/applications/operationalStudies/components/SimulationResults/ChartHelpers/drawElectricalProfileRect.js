@@ -103,11 +103,12 @@ const drawElectricalProfileRect = (
         .attr('fill', dataSimulation.textColor)
         .attr('font-size', 10)
         .attr('font-style', isIncompatible ? 'italic' : 'normal')
+        .attr('font-weight', 'bold')
         .attr(
           'x',
           chart.x(
             rotate
-              ? dataSimulation[`${keyValues[1]}_start`] + 6
+              ? dataSimulation[`${keyValues[1]}_start`] + 7
               : dataSimulation[`${keyValues[0]}_middle`]
           )
         )
@@ -117,7 +118,7 @@ const drawElectricalProfileRect = (
             rotate
               ? dataSimulation[`${keyValues[0]}_start`] -
                   (dataSimulation[`${keyValues[0]}_end`] - dataSimulation[`${keyValues[0]}_middle`])
-              : dataSimulation[`${keyValues[1]}_start`] - 6
+              : dataSimulation[`${keyValues[1]}_start`] - 7
           ) -
             height * -1
         );
