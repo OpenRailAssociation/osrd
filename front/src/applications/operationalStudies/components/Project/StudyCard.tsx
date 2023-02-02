@@ -33,7 +33,7 @@ type Props = {
 };
 
 export default function StudyCard({ setFilterChips, details }: Props) {
-  const { t } = useTranslation('operationalStudies/project');
+  const { t } = useTranslation(['operationalStudies/project', 'operationalStudies/study']);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -50,31 +50,35 @@ export default function StudyCard({ setFilterChips, details }: Props) {
         </span>
         {details.name}
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
-          <span className="mr-2">{t('openStudy')}</span>
+          <span className="mr-2">{t('operationalStudies/project:openStudy')}</span>
           <AiFillFolderOpen />
         </button>
       </div>
-      <div className="studies-list-card-type">{details.type}</div>
+      <div className="studies-list-card-type">
+        {t(`operationalStudies/study:studyTypes.${details.type}`)}
+      </div>
       <div className="studies-list-card-description">{details.description}</div>
 
       <div className="studies-list-card-financials">
         <div className="studies-list-card-financials-infos">
           {details.service_code && (
             <div className="studies-list-card-financials-infos-item">
-              <h3>{t('geremiCode')}</h3>
+              <h3>{t('operationalStudies/study:geremiCode')}</h3>
               <div>{details.service_code}</div>
             </div>
           )}
           {details.business_code && (
             <div className="studies-list-card-financials-infos-item">
-              <h3>{t('affairCode')}</h3>
+              <h3>{t('operationalStudies/study:affairCode')}</h3>
               <div>{details.business_code}</div>
             </div>
           )}
         </div>
         {details.budget > 0 && (
           <div className="studies-list-card-financials-amount">
-            <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
+            <span className="studies-list-card-financials-amount-text">
+              {t('operationalStudies/project:budget')}
+            </span>
             {budgetFormat(details.budget)}
           </div>
         )}
@@ -104,7 +108,7 @@ export default function StudyCard({ setFilterChips, details }: Props) {
           <span className="mr-1">
             <FcCalendar />
           </span>
-          <span className="mr-1">{t('modifiedOn')}</span>
+          <span className="mr-1">{t('operationalStudies/project:modifiedOn')}</span>
           {dateTimeFrenchFormatting(details.last_modification)}
         </div>
       </div>

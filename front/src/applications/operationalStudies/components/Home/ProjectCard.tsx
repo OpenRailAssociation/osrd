@@ -8,7 +8,6 @@ import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateProjectID } from 'reducers/osrdconf';
-import { getRandomImage } from '../Helpers/genFakeDataForProjects';
 
 type Props = {
   setFilterChips: (arg0: string) => void;
@@ -16,7 +15,7 @@ type Props = {
     id: number;
     name: string;
     description: string;
-    image: string;
+    image_url: string;
     last_modification: Date;
     studies: Array<1>;
     tags: string[];
@@ -36,7 +35,7 @@ export default function ProjectCard({ setFilterChips, details }: Props) {
   return (
     <div className="projects-list-project-card">
       <div className="projects-list-project-card-img">
-        <LazyLoadImage src={getRandomImage(details.id)} alt="project logo" />
+        <LazyLoadImage src={details.image_url} alt="project logo" />
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
           <span className="mr-2">{t('openProject')}</span>
           <AiFillFolderOpen />

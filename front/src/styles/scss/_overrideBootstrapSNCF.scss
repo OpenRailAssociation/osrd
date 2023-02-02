@@ -4,9 +4,17 @@
 *   SELECT
 *
 */
-.select-menu {
-  z-index: 3 !important;
+.select-improved {
+  .select-menu {
+    z-index: 3 !important;
+  }
+  .form-control {
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
+
 
 /*
 *
