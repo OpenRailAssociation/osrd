@@ -8,6 +8,7 @@ import {
   DetectorEditionTool,
   SignalEditionTool,
 } from './pointEdition/tools';
+import RouteEditionTool from './routeEdition/tool';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TOOLS: Tool<any>[] = [
@@ -17,6 +18,7 @@ const TOOLS: Tool<any>[] = [
   SignalEditionTool,
   DetectorEditionTool,
   BufferStopEditionTool,
+  RouteEditionTool,
 ];
 
 export default TOOLS;
