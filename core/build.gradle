@@ -89,13 +89,14 @@ dependencies {
     testCompileOnly libs.jcip.annotations
     testCompileOnly libs.spotbugs.annotations
 }
-
 // endregion
 
 // region MAIN
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 application {
@@ -203,11 +204,6 @@ jacocoTestReport {
 
 // region KOTLIN
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-}
 
 // endregion
 
