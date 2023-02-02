@@ -18,11 +18,12 @@ function formatPath(path: string): string {
 /**
  * Get the axios configuration for the authentification.
  */
-export function getAuthConfig(): AxiosRequestConfig {
+export function getAuthConfig(otherHeaders?: { [key: string]: unknown }): AxiosRequestConfig {
   return {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     },
+    ...otherHeaders,
   };
 }
 
@@ -65,11 +66,11 @@ function handleAxiosError(e: unknown): Error {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function get<T = any>(path: string, params?: { [key: string]: unknown }): Promise<T> {
-  const config = getAuthConfig();
-  if (params) {
-    config.params = params;
-  }
+export async function get<T = any>(
+  path: string,
+  otherHeaders?: { [key: string]: string | number | boolean | unknown }
+): Promise<T> {
+  const config = getAuthConfig(otherHeaders);
 
   let newPath = '';
   // ULGY HACK https://gateway.dev.dgexsol.fr/osrd
