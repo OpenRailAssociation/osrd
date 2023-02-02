@@ -45,7 +45,7 @@ export default function SelectSNCF(props) {
 
 SelectSNCF.propTypes = {
   id: PropTypes.string.isRequired,
-  title: PropTypes.string,
+  title: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   name: PropTypes.string,
   options: PropTypes.array.isRequired,
   selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),

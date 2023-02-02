@@ -195,27 +195,26 @@ export default function Study() {
                       </span>
                     </div>
                     <div className="study-details-files-list">
-                      {studyDetails.files &&
-                        studyDetails.files.map((file) => {
-                          const isUrl = Math.random() > 0.5;
-                          return (
-                            <a
-                              href={file.url}
-                              key={nextId()}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={isUrl ? 'url' : 'file'}
-                            >
-                              <span className="study-details-files-list-name">
-                                <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
-                                {file.name}
-                              </span>
-                              <span className="study-details-files-list-link">
-                                {isUrl ? file.url : file.filename}
-                              </span>
-                            </a>
-                          );
-                        })}
+                      {studyDetails.files?.map((file) => {
+                        const isUrl = Math.random() > 0.5;
+                        return (
+                          <a
+                            href={file.url}
+                            key={nextId()}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={isUrl ? 'url' : 'file'}
+                          >
+                            <span className="study-details-files-list-name">
+                              <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
+                              {file.name}
+                            </span>
+                            <span className="study-details-files-list-link">
+                              {isUrl ? file.url : file.filename}
+                            </span>
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -240,7 +239,7 @@ export default function Study() {
 
               <div className="study-details-footer">
                 <div className="study-details-tags">
-                  {studyDetails.tags.map((tag) => (
+                  {studyDetails.tags?.map((tag) => (
                     <div className="study-details-tags-tag" key={nextId()}>
                       {tag}
                     </div>

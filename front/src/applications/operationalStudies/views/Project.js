@@ -119,12 +119,12 @@ export default function Project() {
             <div className="project-details">
               <div className="project-details-title">
                 <div className="row w-100">
-                  <div className="col-lg-4 col-md-4">
+                  <div className={projectDetails.image_url ? 'col-lg-4 col-md-4' : 'd-none'}>
                     <div className="project-details-title-img">
-                      <img src={getRandomImage(projectDetails.id)} alt="project logo" />
+                      <img src={projectDetails.image_url} alt="project logo" />
                     </div>
                   </div>
-                  <div className="col-lg-8 col-md-8">
+                  <div className={projectDetails.image_url ? 'col-lg-8 col-md-8' : 'col-12'}>
                     <div className="project-details-title-content">
                       <div className="project-details-title-name">
                         {projectDetails.name}
@@ -183,7 +183,7 @@ export default function Project() {
                 </div>
               </div>
               <div className="project-details-tags">
-                {projectDetails.tags.map((tag) => (
+                {projectDetails.tags?.map((tag) => (
                   <div className="project-details-tags-tag" key={nextId()}>
                     {tag}
                   </div>

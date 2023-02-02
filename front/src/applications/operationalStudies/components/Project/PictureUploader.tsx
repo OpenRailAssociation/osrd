@@ -69,7 +69,7 @@ function PicturePlaceholderButtons({ configItems, setConfigItems }: Props) {
       <button
         className="remove"
         type="button"
-        onClick={() => setConfigItems({ ...configItems, image: undefined })}
+        onClick={() => setConfigItems({ ...configItems, image: undefined, image_url: undefined })}
       >
         <TiDelete />
       </button>
