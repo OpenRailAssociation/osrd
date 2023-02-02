@@ -3,43 +3,37 @@
 
 import React, { useEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { env } from 'env';
+
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { Link } from 'react-router-dom';
-import { get } from '../requests';
-import osrdLogo from '../../assets/pictures/osrd.png';
+import osrdLogo from 'assets/pictures/osrd.png';
 
 function ReleaseInformations() {
   const { t } = useTranslation();
-  const [editoastVersion, setCurrentEditoastVersion] = useState();
-  const [coreVersion, setCurrentCoreVersion] = useState();
-  const [apiVersion, setCurrentApiVersion] = useState();
+  const { data: editoastVersion } = osrdEditoastApi.useGetVersionQuery();
+  const { data: coreVersion } = osrdMiddlewareApi.useGetVersionCoreQuery();
+  const { data: apiVersion } = osrdMiddlewareApi.useGetVersionApiQuery();
   const { closeModal } = useContext(ModalContext);
 
   const osrdWebSite = 'https://osrd.fr/';
 
-  const getEditoastVersion = async () => {
-    const response = await get('/editoast/version/');
-    setCurrentEditoastVersion(response.git_describe);
-  };
-
-  const getCoreVersion = async () => {
-    const response = await get('/version/core/');
-    setCurrentCoreVersion(response.git_describe);
-  };
-
-  const getApiVersion = async () => {
-    const response = await get('/version/api/');
-    setCurrentApiVersion(response.git_describe);
-  };
-
-  useEffect(() => {
-    getEditoastVersion();
-    getCoreVersion();
-    getApiVersion();
-  }, []);
-
+  function serviceRow(name: string, version: any) {
+    return (
+      <tr>
+        <th scope="row">
+          <div className="cell-inner">{name}</div>
+        </th>
+        <td>
+          <div className="cell-inner">{version}</div>
+        </td>
+      </tr>
+    );
+  }
   return (
     <>
       <ModalHeaderSNCF>
@@ -68,30 +62,10 @@ function ReleaseInformations() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">
-                <div className="cell-inner">Editoast</div>
-              </th>
-              <td>
-                <div className="cell-inner">{editoastVersion}</div>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">
-                <div className="cell-inner">Core</div>
-              </th>
-              <td>
-                <div className="cell-inner">{coreVersion}</div>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">
-                <div className="cell-inner">API</div>
-              </th>
-              <td>
-                <div className="cell-inner">{apiVersion}</div>
-              </td>
-            </tr>
+            {serviceRow('Editoast', editoastVersion?.git_describe)}
+            {serviceRow('Core', coreVersion?.git_describe)}
+            {serviceRow('API', apiVersion?.git_describe)}
+            {serviceRow('Front', env.REACT_APP_OSRD_GIT_DESCRIBE)}
           </tbody>
         </table>
       </ModalBodySNCF>
