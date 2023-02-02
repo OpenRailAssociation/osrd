@@ -6,6 +6,8 @@ import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
 import { OsrdConfState } from 'applications/operationalStudies/consts';
 
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
 import userReducer, { UserState, initialState as userInitialState } from './user';
 import mapReducer, { MapState, initialState as mapInitialState } from './map';
@@ -72,6 +74,8 @@ export interface RootState {
   main: MainState;
   osrdconf: OsrdConfState;
   osrdsimulation: OsrdSimulationState;
+  [osrdMiddlewareApi.reducerPath]: any;
+  [osrdEditoastApi.reducerPath]: any;
 }
 
 export const rootInitialState: RootState = {
@@ -81,6 +85,8 @@ export const rootInitialState: RootState = {
   main: mainInitialState,
   osrdconf: osrdconfInitialState,
   osrdsimulation: osrdSimulationInitialState,
+  [osrdMiddlewareApi.reducerPath]: {},
+  [osrdEditoastApi.reducerPath]: {},
 };
 
 export type AnyReducerState =
@@ -99,6 +105,8 @@ export const rootReducer: ReducersMapObject<RootState> = {
   // @ts-ignore
   osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer),
   osrdsimulation: osrdsimulationReducer,
+  [osrdMiddlewareApi.reducerPath]: osrdMiddlewareApi.reducer,
+  [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
