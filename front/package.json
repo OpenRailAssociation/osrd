@@ -101,7 +101,7 @@
     "@playwright/test": "^1.29.2",
     "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.15",
-    "@storybook/addon-interactions": "^6.5.15",
+    "@storybook/addon-interactions": "^6.5.16",
     "@storybook/addon-links": "^6.5.15",
     "@storybook/builder-webpack4": "^6.5.15",
     "@storybook/manager-webpack4": "^6.5.15",
