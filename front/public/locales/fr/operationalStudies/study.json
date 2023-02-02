@@ -1,8 +1,8 @@
 {
   "affairCode": "Code affaire",
   "budget": "Budget",
-  "createScenario": "Créer un scénario",
   "createdOn": "Créée le",
+  "createScenario": "Créer un scénario",
   "dates": {
     "creation": "Création",
     "estimatedend": "Fin estimée",
@@ -46,22 +46,22 @@
   "studyStartDate": "Début de l'étude",
   "studyState": "Status",
   "studyStates": {
-    "Finish": "Terminée",
-    "InProgress": "En cours",
-    "Started": "Démarrage"
+    "finish": "Terminée",
+    "inProgress": "En cours",
+    "started": "Démarrage"
   },
   "studyTags": "Étiquettes",
   "studyType": "Type",
   "studyTypes": {
-    "ChartStability": "Stabilité du graphique",
-    "Disturbance": "Tests de perturbations",
-    "FlowRate": "Débit",
-    "GarageRequirement": "Roulements de besoins de garage",
-    "Operability": "Exploitabilité",
-    "OperationOrSizing": "Fonctionnement ou dimensionnement d'un centre de maintenance ou garage",
-    "ParkSizing": "Dimensionnement de parc",
-    "StrategicPlanning": "Planification stratégique",
-    "TimeTable": "Grille horaire"
+    "chartStability": "Stabilité du graphique",
+    "disturbanceTests": "Tests de perturbations",
+    "flowRate": "Débit",
+    "garageRequirement": "Roulements de besoins de garage",
+    "operability": "Exploitabilité",
+    "operationOrSizing": "Fonctionnement ou dimensionnement d'un centre de maintenance ou garage",
+    "parkSizing": "Dimensionnement de parc",
+    "strategicPlanning": "Planification stratégique",
+    "timeTables": "Grille horaire"
   },
   "studyUpdated": "Mise à jour réussie !",
   "studyUpdatedDetails": "L'étude {{ name }} a bien été mise à jour."

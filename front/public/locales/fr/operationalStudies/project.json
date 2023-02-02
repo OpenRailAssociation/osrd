@@ -17,7 +17,7 @@
   "projectCreationTitle": "Créer un projet",
   "projectDeleteButton": "Supprimer",
   "projectDeleted": "Suppression réussie !",
-  "projectDeletedDetails": "Le project {{ name }} a bien été supprimé.",
+  "projectDeletedDetails": "Le projet {{ name }} a bien été supprimé.",
   "projectDescription": "Description du projet",
   "projectFunders": "Détails du financement",
   "projectModificationTitle": "Modifier le projet",
@@ -29,7 +29,10 @@
   "projectsList": "Projets",
   "projectTags": "Étiquettes",
   "projectUpdated": "Mise à jour réussie !",
-  "projectUpdatedDetails": "Le project {{ name }} a bien été mis à jour.",
+  "projectUpdatedDetails": "Le projet {{ name }} a bien été mis à jour.",
+  "scenariosCount_one": "1 scénario",
+  "scenariosCount_other": "{{count}} scénarios",
+  "scenariosCount_zero": "Aucun scénario",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
@@ -38,8 +41,5 @@
   "studiesCount_one": "1 étude",
   "studiesCount_other": "{{count}} études",
   "studiesCount_zero": "Aucune étude",
-  "scenariosCount_zero": "Aucun scénario",
-  "scenariosCount_one": "1 scénario",
-  "scenariosCount_other": "{{count}} scénarios",
   "totalBudget": "Budget total"
 }
