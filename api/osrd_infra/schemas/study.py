@@ -6,9 +6,9 @@ class StudyState(str, Enum):
     This class allows to know the state of the operational study.
     """
 
-    Started = "Started"
-    InProgress = "In progress"
-    Finish = "Finish"
+    started = "started"
+    inProgress = "inProgress"
+    finish = "finish"
 
 
 class StudyType(str, Enum):
@@ -16,12 +16,12 @@ class StudyType(str, Enum):
     This class allows to know the type of the operational study.
     """
 
-    TimeTable = "Time tables"
-    FlowRate = "Flow rate"
-    ParkSizing = "Park sizing"
-    GarageRequirement = "Garage requirement bearings"
-    OperationOrSizing = "Operation or sizing of a maintenance centre or garage"
-    Operability = "Operability"
-    StrategicPlanning = "Strategic planning"
-    ChartStability = "Chart Stability"
-    Disturbance = "Disturbance tests"
+    timeTables = "timeTables"
+    flowRate = "flowRate"
+    parkSizing = "parkSizing"
+    garageRequirement = "garageRequirement"
+    operationOrSizing = "operationOrSizing"
+    operability = "operability"
+    strategicPlanning = "strategicPlanning"
+    chartStability = "chartStability"
+    disturbanceTests = "disturbanceTests"
