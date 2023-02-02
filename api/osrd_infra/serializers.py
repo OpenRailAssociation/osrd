@@ -314,7 +314,8 @@ class ProjectSerializer(HyperlinkedModelSerializer):
 
     def get_image_url(self, obj):
         request = self.context.get("request")
-        if obj.image:
+        print(request)
+        if obj.image and request:
             image_url = request.build_absolute_uri(f"/projects/{obj.pk}/image/")
             return image_url
         return None

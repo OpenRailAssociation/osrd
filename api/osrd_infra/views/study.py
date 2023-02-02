@@ -190,3 +190,15 @@ class ProjectView(
             input_serializer.validated_data["image"] = image.read()
         input_serializer.save()
         return Response(data=input_serializer.data, status=201)
+
+    def partial_update(self, request, pk=None, project_pk=None):
+        project = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = ProjectSerializer(project, data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        if "image" in serializer.validated_data.keys():
+            image = serializer.validated_data["image"]
+            serializer.validated_data["image"] = image.read()
+            print(image)
+        serializer.save()
+        project.save()
+        return Response(data=serializer.data, status=202)
