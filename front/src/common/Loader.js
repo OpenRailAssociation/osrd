@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import cx from 'classnames';
 import './Loader.scss';
 
 export function Spinner({ className, style } = { className: '', style: '' }) {
@@ -45,9 +46,15 @@ export default class Loader extends React.Component {
   }
 }
 
-export function LoaderFill() {
-  return <Spinner className="loader-fill inset-0" />;
+export function LoaderFill({ className }) {
+  return <Spinner className={cx(`loader-fill inset-0`, className)} />;
 }
+LoaderFill.propTypes = {
+  className: PropTypes.string,
+};
+LoaderFill.defaultProps = {
+  className: null,
+};
 
 /**
  * Same loader but plugged on the state.
