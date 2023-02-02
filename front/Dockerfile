@@ -32,5 +32,8 @@ ENV REACT_APP_KEYCLOAK_REALM="shared"
 ENV REACT_APP_SENTRY_DSN=""
 ENV REACT_APP_SENTRY_ENVIRONMENT=""
 
+ARG OSRD_GIT_DESCRIBE
+ENV REACT_APP_OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+
 ENTRYPOINT npx react-inject-env set -d /usr/share/nginx/html/static/js/ && \
   nginx -g "daemon off;"

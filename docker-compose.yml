@@ -89,6 +89,7 @@ services:
       dockerfile: Dockerfile
       args:
         NGINX_CONFIG: "nginx-dev.conf"
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     restart: unless-stopped
     ports: ["3000:80"]
     healthcheck:
