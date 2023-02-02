@@ -56,7 +56,7 @@ class RollingStockLiverySerializer(NestedHyperlinkedModelSerializer):
         model = RollingStockLivery
         fields = ["name", "id"]
         extra_kwargs = {
-            "image_url": {
+            "url": {
                 "view_name": "rolling_stock_livery-detail",
             }
         }
@@ -69,7 +69,7 @@ class RollingStockSerializer(ModelSerializer):
         model = RollingStock
         exclude = ["image"]
         extra_kwargs = {
-            "image_url": {
+            "url": {
                 "view_name": "rolling_stock-detail",
             }
         }
