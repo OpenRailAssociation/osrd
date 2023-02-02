@@ -95,7 +95,7 @@ function RollingStockModal(props) {
   const getAllRollingStock = async () => {
     if (rollingStock === undefined) {
       try {
-        const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
+        const data = await get(ROLLING_STOCK_URL, { params: { page_size: 1000 } });
         setRollingStock(data.results);
       } catch (e) {
         dispatch(

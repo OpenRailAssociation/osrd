@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'applications/opendata/components/OpenDataHelpers';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
 export default function TrainDetail(props) {
   const { trainData, idx, rollingStock } = props;
@@ -36,11 +37,13 @@ export default function TrainDetail(props) {
         </span>
         <span className="opendata-traindetail-duration">{seconds2hhmmss(trainData.duree)}</span>
         {rollingStock ? (
-          <span className="opendata-traindetail-rollingstock">
-            <span className="opendata-traindetail-rollingstock-img">
-              <RollingStock2Img rollingStock={rollingStock} />
+          <LazyLoadComponent>
+            <span className="opendata-traindetail-rollingstock">
+              <span className="opendata-traindetail-rollingstock-img">
+                <RollingStock2Img rollingStock={rollingStock} />
+              </span>
             </span>
-          </span>
+          </LazyLoadComponent>
         ) : null}
         <span className="opendata-traindetail-transilien">{trainData.num_transilien}</span>
         <span

@@ -40,8 +40,10 @@ export default async function getStdcmTimetable(
     }
     try {
       const simulationLocal = await get(`${trainscheduleURI}results/`, {
-        train_ids: trainSchedulesIDs.join(','),
-        path: tempProjectedPathId || tempSelectedProjection.path,
+        params: {
+          train_ids: trainSchedulesIDs.join(','),
+          path: tempProjectedPathId || tempSelectedProjection.path,
+        },
       });
       simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
       dispatch(updateSimulation({ trains: simulationLocal }));

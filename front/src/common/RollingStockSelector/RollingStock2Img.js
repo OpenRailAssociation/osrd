@@ -1,15 +1,34 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import nextId from 'react-id-generator';
 import PropTypes from 'prop-types';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { get } from '../requests';
 
 function RollingStock2Img(props) {
   const { rollingStock } = props;
-  if (!rollingStock || !Array.isArray(rollingStock.liveries)) return null;
-  const defaultLivery = rollingStock.liveries.find((livery) => livery.name === 'default');
-  return defaultLivery?.url ? (
-    <LazyLoadImage src={defaultLivery.url} alt={rollingStock?.name} key={nextId()} />
-  ) : null;
+  // as the image is stored in the database and can be fetched only through api (authentication needed),
+  // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
+  // url is generated and stored in imageUrl (then used in <img />).
+  const [imageUrl, setImageUrl] = useState(null);
+
+  const getRollingStockImage = useCallback(async () => {
+    if (!rollingStock || !Array.isArray(rollingStock.liveries)) return;
+
+    const defaultLivery = rollingStock.liveries.find((livery) => livery.name === 'default');
+    if (!defaultLivery?.id) return;
+
+    const image = await get(`/rolling_stock/${rollingStock.id}/livery/${defaultLivery.id}/`, {
+      responseType: 'blob',
+    });
+    if (image) setImageUrl(URL.createObjectURL(image));
+  }, [rollingStock]);
+
+  useEffect(() => {
+    setImageUrl(null);
+    getRollingStockImage();
+  }, [getRollingStockImage]);
+
+  return imageUrl ? <LazyLoadImage src={imageUrl} alt={rollingStock?.name} key={nextId()} /> : null;
 }
 
 RollingStock2Img.defaultProps = {};

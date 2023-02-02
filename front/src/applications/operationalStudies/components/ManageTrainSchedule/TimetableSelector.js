@@ -24,7 +24,7 @@ export default function TimetableSelector(props) {
   const getTimetable = async (id) => {
     setIsWorking(true);
     try {
-      const timetableQuery = await get(`${timetableURL}${id}/`, {});
+      const timetableQuery = await get(`${timetableURL}${id}/`);
       timetableQuery.train_schedules.sort((a, b) => a.departure_time > b.departure_time);
       setSelectedTimetable(timetableQuery);
       setIsWorking(false);
