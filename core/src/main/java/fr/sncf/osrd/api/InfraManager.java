@@ -128,17 +128,16 @@ public class InfraManager extends APIClient {
             logger.info("starting to download {}", request.url());
             cacheEntry.transitionTo(InfraStatus.DOWNLOADING);
 
-            var response = httpClient.newCall(request).execute();
-            if (!response.isSuccessful())
-                throw new UnexpectedHttpResponse(response);
-
-            // Parse the response
-            logger.info("parsing the JSON of {}", request.url());
-            cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
-
             RJSInfra rjsInfra;
-            try (var body = response.body()) {
-                rjsInfra = RJSInfra.adapter.fromJson(body.source());
+            try (var response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful())
+                    throw new UnexpectedHttpResponse(response);
+
+                // Parse the response
+                logger.info("parsing the JSON of {}", request.url());
+                cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
+
+                rjsInfra = RJSInfra.adapter.fromJson(response.body().source());
             }
 
             if (rjsInfra == null)

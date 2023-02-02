@@ -21,23 +21,6 @@ public class ElectricalProfileSetManager extends APIClient {
         super(baseUrl, authorizationToken, client);
     }
 
-    private BufferedSource fetchProfileSet(String profileSetId) throws IOException, UnexpectedHttpResponse {
-        var endpointPath = String.format("/electrical_profile_set/%s/", profileSetId);
-        var request = buildRequest(endpointPath);
-        try {
-            var response = httpClient.newCall(request).execute();
-            if (!response.isSuccessful())
-                throw new UnexpectedHttpResponse(response);
-            var body = response.body();
-            if (body == null)
-                throw new JsonDataException("empty response body");
-            return body.source();
-        } catch (IOException e) {
-            logger.error("Failed to fetch profile set {}", profileSetId, e);
-            throw e;
-        }
-    }
-
     /**
      * Return the electrical profile set corresponding to the given id, in a ready-to-use format.
      */
@@ -53,9 +36,20 @@ public class ElectricalProfileSetManager extends APIClient {
             synchronized (cacheEntry) {
                 try {
                     logger.info("Electrical profile set {} is not cached, fetching it", profileSetId);
-                    var rjsProfileSet = RJSElectricalProfileSet.adapter.fromJson(fetchProfileSet(profileSetId));
+                    var endpointPath = String.format("/electrical_profile_set/%s/", profileSetId);
+                    var request = buildRequest(endpointPath);
+
+                    RJSElectricalProfileSet rjsProfileSet;
+                    try (var response = httpClient.newCall(request).execute()) {
+                        if (!response.isSuccessful())
+                            throw new UnexpectedHttpResponse(response);
+                        var body = response.body();
+                        if (body == null)
+                            throw new JsonDataException("empty response body");
+                        rjsProfileSet = RJSElectricalProfileSet.adapter.fromJson(body.source());
+                    }
                     if (rjsProfileSet == null)
-                        throw new JsonDataException("Could not parse electrical profile set JSON");
+                        throw new JsonDataException("Empty electrical profile set JSON");
                     logger.info("Electrical profile set {} fetched, parsing it", profileSetId);
                     var mapping = new ElectricalProfileMapping();
                     mapping.parseRJS(rjsProfileSet);
