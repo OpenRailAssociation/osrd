@@ -15,15 +15,10 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Spinner } from 'common/Loader';
 
 function LoaderPathfindingInProgress() {
-  return (
-    <div className="loaderPathfindingInProgress">
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
-      </div>
-    </div>
-  );
+  return <Spinner className="loaderPathfindingInProgress" />;
 }
 
 export default function ModalSugerredVias(props) {

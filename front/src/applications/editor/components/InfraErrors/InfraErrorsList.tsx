@@ -139,11 +139,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
       )}
 
       <InfiniteScroll
-        loader={
-          <div className="text-center p-3">
-            <Spinner />
-          </div>
-        }
+        loader={<Spinner className="text-center p-3" />}
         style={{ overflow: 'hidden' }}
         dataLength={errors.length}
         hasMore={next !== null}
