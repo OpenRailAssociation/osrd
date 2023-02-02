@@ -9,10 +9,12 @@ function prepareHeaders(headers: any) {
 
 // initialize an empty api service that we'll inject endpoints into later as needed
 export const baseApi = createApi({
+  reducerPath: 'api',
   baseQuery: fetchBaseQuery({ baseUrl: `${MAIN_API.proxy}/`, prepareHeaders }),
   endpoints: () => ({}),
 });
 export const baseEditoastApi = createApi({
+  reducerPath: 'editoastApi',
   baseQuery: fetchBaseQuery({ baseUrl: `${MAIN_API.proxy_editoast}/`, prepareHeaders }),
   endpoints: () => ({}),
 });
