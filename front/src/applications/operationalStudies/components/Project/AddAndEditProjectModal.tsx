@@ -213,7 +213,7 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
                   {t('projectFunders')}
                 </div>
               }
-              value={configItems.funders.join()}
+              value={configItems.funders?.join()}
               onChange={(e: any) => setConfigItems({ ...configItems, funders: [e.target.value] })}
             />
           </div>
@@ -239,7 +239,7 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
         </div>
         <ChipsSNCF
           addTag={addTag}
-          tags={configItems.tags}
+          tags={configItems.tags || []}
           removeTag={removeTag}
           title={t('projectTags')}
           color="purple"

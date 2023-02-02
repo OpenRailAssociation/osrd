@@ -59,7 +59,7 @@ export default function ProjectCard({ setFilterChips, details }: Props) {
       <div className="projects-list-project-card-name">{details.name}</div>
       <div className="projects-list-project-card-description">{details.description}</div>
       <div className="projects-list-project-card-tags">
-        {details.tags.map((tag) => (
+        {details.tags?.map((tag) => (
           <div
             className="projects-list-project-card-tags-tag"
             key={nextId()}

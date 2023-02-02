@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import PropTypes from 'prop-types';
 
-export default function SelectSNCF(props) {
+export default function SelectImprovedSNCF(props) {
   const { title, options, selectedValue, onChange, sm, withSearch } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(selectedValue);
@@ -62,14 +62,14 @@ export default function SelectSNCF(props) {
           >
             <p
               className="form-control is-placeholder d-flex align-items-center"
-              style={sm ? { minHeight: '1.813rem' } : ''}
+              style={sm ? { minHeight: '1.813rem' } : undefined}
             >
               {renderSelectedItem()}
             </p>
             <div className="input-group-append input-group-last">
               <button
                 className="btn btn-primary btn-only-icon"
-                style={sm ? { minHeight: '1.813rem' } : ''}
+                style={sm ? { minHeight: '1.813rem' } : undefined}
                 type="button"
                 aria-expanded="false"
                 aria-controls="selecttoggle"
@@ -113,12 +113,29 @@ export default function SelectSNCF(props) {
           </div>
         </div>
       </div>
+      {isOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100vw',
+            height: '100vh',
+            zIndex: 2,
+          }}
+          role="button"
+          tabIndex={0}
+          onClick={() => setIsOpen(false)}
+        >
+          &nbsp;
+        </div>
+      )}
     </>
   );
 }
 
-SelectSNCF.propTypes = {
-  title: PropTypes.string,
+SelectImprovedSNCF.propTypes = {
+  title: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   options: PropTypes.array.isRequired,
   selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   onChange: PropTypes.func.isRequired,
@@ -126,7 +143,7 @@ SelectSNCF.propTypes = {
   withSearch: PropTypes.bool,
 };
 
-SelectSNCF.defaultProps = {
+SelectImprovedSNCF.defaultProps = {
   title: null,
   selectedValue: undefined,
   sm: false,

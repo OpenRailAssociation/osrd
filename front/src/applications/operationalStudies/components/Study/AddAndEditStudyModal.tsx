@@ -9,16 +9,18 @@ import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
-import { MdBusinessCenter, MdDescription, MdList, MdTitle } from 'react-icons/md';
-import { RiCalendarLine, RiMoneyEuroCircleLine } from 'react-icons/ri';
+import { FaPencilAlt, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
+import { MdBusinessCenter, MdTitle } from 'react-icons/md';
+import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjectID } from 'reducers/osrdconf/selectors';
 import { deleteRequest, patch, post } from 'common/requests';
 import { useNavigate } from 'react-router-dom';
 import { updateStudyID } from 'reducers/osrdconf';
 import { setSuccess } from 'reducers/main';
-import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { GoNote } from 'react-icons/go';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { PROJECTS_URI, STUDIES_URI, STUDY_STATES, STUDY_TYPES } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
   name: '',
@@ -63,6 +65,16 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const createSelectOptions = (list: string[], translationList: string) => {
+    const options: { key: string | null; value: string }[] = [];
+    list.forEach((key: string) => {
+      options.push({ key, value: t(`${translationList}.${key}`) });
+    });
+    options.sort((a, b) => a.value.localeCompare(b.value));
+    options.unshift({ key: null, value: t('nothingSelected') });
+    return options;
+  };
 
   const formatDateForInput = (date: string | null) => {
     if (date === null) return '';
@@ -159,22 +171,47 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
         </div>
         <div className="row">
           <div className="col-lg-8">
-            <div className="study-edition-modal-type">
-              <InputSNCF
-                id="studyInputType"
-                type="text"
-                name="studyInputType"
-                label={
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2">
-                      <MdList />
-                    </span>
-                    {t('studyType')}
-                  </div>
-                }
-                value={configItems.type}
-                onChange={(e: any) => setConfigItems({ ...configItems, type: e.target.value })}
-              />
+            <div className="row">
+              <div className="col-xl-6">
+                <div className="study-edition-modal-type mb-2">
+                  <SelectImprovedSNCF
+                    title={
+                      <div className="d-flex align-items-center">
+                        <span className="mr-2">
+                          <RiQuestionLine />
+                        </span>
+                        {t('studyType')}
+                      </div>
+                    }
+                    selectedValue={{
+                      key: configItems.type,
+                      value: t(`studyTypes.${configItems.type}`),
+                    }}
+                    options={createSelectOptions(STUDY_TYPES, 'studyTypes')}
+                    onChange={(e: any) => setConfigItems({ ...configItems, type: e.key })}
+                  />
+                </div>
+              </div>
+              <div className="col-xl-6">
+                <div className="study-edition-modal-state mb-2">
+                  <SelectImprovedSNCF
+                    title={
+                      <div className="d-flex align-items-center">
+                        <span className="mr-2">
+                          <FaTasks />
+                        </span>
+                        {t('studyState')}
+                      </div>
+                    }
+                    selectedValue={{
+                      key: configItems.state,
+                      value: t(`studyStates.${configItems.state}`),
+                    }}
+                    options={createSelectOptions(STUDY_STATES, 'studyStates')}
+                    onChange={(e: any) => setConfigItems({ ...configItems, state: e.key })}
+                  />
+                </div>
+              </div>
             </div>
             <div className="study-edition-modal-description">
               <TextareaSNCF
@@ -182,7 +219,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                 label={
                   <div className="d-flex align-items-center">
                     <span className="mr-2">
-                      <MdDescription />
+                      <GoNote />
                     </span>
                     {t('studyDescription')}
                   </div>
