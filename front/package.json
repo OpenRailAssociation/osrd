@@ -12,7 +12,7 @@
     "@rjsf/core": "^4.2.3",
     "@rtk-query/codegen-openapi": "^1.0.0",
     "@sentry/browser": "^7.15.0",
-    "@sentry/react": "^7.15.0",
+    "@sentry/react": "^7.36.0",
     "@sentry/tracing": "^7.15.0",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta2",
     "@storybook/addon-postcss": "^2.0.0",
