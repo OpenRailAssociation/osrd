@@ -5,6 +5,7 @@ import { datetime2string } from 'utils/timeManipulation';
 import { useNavigate } from 'react-router';
 
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Spinner } from 'common/Loader';
 import { ModalProps } from '../tools/types';
 import Modal from './Modal';
 import { get } from '../../../common/requests';
@@ -72,11 +73,10 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
           </div>
         ))}
         {!infras && (
-          <div className="d-flex align-items-center justify-content-center" style={{ width: 100 }}>
-            <div className="spinner-border" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </div>
+          <Spinner
+            className="d-flex align-items-center justify-content-center"
+            style={{ width: 100 }}
+          />
         )}
       </div>
 

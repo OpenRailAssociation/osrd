@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
+import { Spinner } from 'common/Loader';
 import { NEW_ENTITY_ID } from '../data/utils';
 import {
   BufferStopEntity,
@@ -217,12 +218,7 @@ const EntitySumUp: FC<
     }
   }, [entity, id, objType, osrdConf.infraID, state.type]);
 
-  if (state.type === 'loading' || state.type === 'idle')
-    return (
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
-      </div>
-    );
+  if (state.type === 'loading' || state.type === 'idle') return <Spinner />;
 
   if (state.type === 'error')
     return (

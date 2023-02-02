@@ -38,6 +38,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 
 import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
+import { Spinner } from '../Loader';
 
 interface PathfindingState {
   running: boolean;
@@ -339,9 +340,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     <div className="pathfinding-in-progress">
       <div className="pathfinding-in-progress-card">
         <div className="pathfinding-in-progress-title-container">
-          <div className="spinner-border" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
+          <Spinner />
           <h2 className="pathfinding-in-progress-title">{t('pathfindingInProgress')}</h2>
         </div>
         <button
