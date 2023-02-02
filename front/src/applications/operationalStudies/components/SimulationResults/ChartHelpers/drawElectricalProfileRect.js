@@ -73,6 +73,8 @@ const drawElectricalProfileRect = (
         .attr('class', `rect zoomable electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
         .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, 2)')
+        .attr('rx', 4)
+        .attr('ry', 4)
         .attr(
           'x',
           chart.x(
@@ -136,6 +138,8 @@ const drawElectricalProfileRect = (
         .attr('fill', '#FFF')
         .attr('stroke-width', 1)
         .attr('stroke', '#333')
+        .attr('rx', 4)
+        .attr('ry', 4)
         .attr(
           'transform',
           rotate ? 'translate(80, 0)' : `translate(0, ${isIncompatible ? '-60' : '-40'} )`
