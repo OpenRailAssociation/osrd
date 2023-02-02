@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import studyLogo from 'assets/pictures/views/studies.svg';
@@ -14,13 +14,13 @@ import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjectID } from 'reducers/osrdconf/selectors';
-import { deleteRequest, patch, post } from 'common/requests';
+import { deleteRequest, get, patch, post } from 'common/requests';
 import { useNavigate } from 'react-router-dom';
 import { updateStudyID } from 'reducers/osrdconf';
 import { setSuccess } from 'reducers/main';
 import { GoNote } from 'react-icons/go';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { PROJECTS_URI, STUDIES_URI, STUDY_STATES, STUDY_TYPES } from '../operationalStudiesConsts';
+import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
   name: '',
@@ -57,23 +57,37 @@ type Props = {
   getStudyDetail?: any;
 };
 
+type SelectOptions = { key: string | null; value: string }[];
+
 export default function AddAndEditStudyModal({ editionMode, details, getStudyDetail }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
+  const emptyOptions = [{ key: null, value: t('nothingSelected') }];
+  const [studyTypes, setStudyTypes] = useState<SelectOptions>(emptyOptions);
+  const [studyStates, setStudyStates] = useState<SelectOptions>(emptyOptions);
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const createSelectOptions = (list: string[], translationList: string) => {
-    const options: { key: string | null; value: string }[] = [];
-    list.forEach((key: string) => {
-      options.push({ key, value: t(`${translationList}.${key}`) });
-    });
-    options.sort((a, b) => a.value.localeCompare(b.value));
-    options.unshift({ key: null, value: t('nothingSelected') });
-    return options;
+  const createSelectOptions = async (
+    translationList: string,
+    enumURI: string,
+    setFunction: (arg0: SelectOptions) => void
+  ) => {
+    try {
+      const list = await get(enumURI);
+      const options: SelectOptions = [];
+      list.forEach((key: string) => {
+        options.push({ key, value: t(`${translationList}.${key}`) });
+      });
+      options.sort((a, b) => a.value.localeCompare(b.value));
+      options.unshift({ key: null, value: t('nothingSelected') });
+      setFunction(options);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const formatDateForInput = (date: string | null) => {
@@ -141,6 +155,16 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
     }
   };
 
+  useEffect(() => {
+    createSelectOptions('studyTypes', `/projects/${configItems.id}/study_types/`, setStudyTypes);
+    createSelectOptions('studyStates', `/projects/${configItems.id}/study_states/`, setStudyStates);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    console.log(studyStates);
+  }, [studyStates]);
+
   return (
     <div className="study-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>
@@ -187,7 +211,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                       key: configItems.type,
                       value: t(`studyTypes.${configItems.type}`),
                     }}
-                    options={createSelectOptions(STUDY_TYPES, 'studyTypes')}
+                    options={studyTypes}
                     onChange={(e: any) => setConfigItems({ ...configItems, type: e.key })}
                   />
                 </div>
@@ -207,7 +231,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                       key: configItems.state,
                       value: t(`studyStates.${configItems.state}`),
                     }}
-                    options={createSelectOptions(STUDY_STATES, 'studyStates')}
+                    options={studyStates}
                     onChange={(e: any) => setConfigItems({ ...configItems, state: e.key })}
                   />
                 </div>
