@@ -14,4 +14,4 @@ COPY --from=build /home/gradle/src/build/libs/osrd-all.jar /app/osrd_core.jar
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 
-CMD ["java", "-ea", "-jar", "/app/osrd_core.jar", "api"]
+CMD ["sh", "-c", "exec java $JAVA_OPTS -ea -jar /app/osrd_core.jar api"]
