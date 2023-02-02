@@ -105,7 +105,7 @@
     "@storybook/addon-links": "^6.5.15",
     "@storybook/builder-webpack4": "^6.5.15",
     "@storybook/manager-webpack4": "^6.5.15",
-    "@storybook/node-logger": "^6.5.15",
+    "@storybook/node-logger": "^6.5.16",
     "@storybook/preset-create-react-app": "^3.2.0",
     "@storybook/react": "^6.5.15",
     "@storybook/testing-library": "^0.0.13",
