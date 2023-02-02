@@ -7,6 +7,7 @@ import { featureCollection } from '@turf/helpers';
 import { merge, isEqual } from 'lodash';
 import along from '@turf/along';
 import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
+import { BsBoxArrowInRight } from 'react-icons/bs';
 
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
@@ -27,6 +28,8 @@ import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntities, getEntity, getRoutesFromWaypoint } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
+import RouteEditionTool from '../routeEdition/tool';
+import { getEditRouteState } from '../routeEdition/utils';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -42,6 +45,7 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
     | { type: 'ready'; starting: RouteEntity[]; ending: RouteEntity[] }
     | { type: 'error'; message: string }
   >({ type: 'idle' });
+  const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
 
   useEffect(() => {
     if (routesState.type === 'idle') {
@@ -100,18 +104,21 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
           </h4>
           <ul className="list-unstyled">
             {routesState.starting.map((route) => (
-              <li id={route.properties.id}>
-                <EntitySumUp entity={route} />
-                <div>
+              <li key={route.properties.id} className="d-flex align-items-center">
+                <div className="flex-shrink-0 mr-3">
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-sm"
+                    title={t('common.open')}
                     onClick={() => {
-                      console.log('Edit route', route.properties.id);
+                      switchTool(RouteEditionTool, getEditRouteState(route));
                     }}
                   >
-                    {t('common.edit')}
+                    <BsBoxArrowInRight />
                   </button>
+                </div>
+                <div className="flex-grow-1 flex-shrink-1">
+                  <EntitySumUp entity={route} />
                 </div>
               </li>
             ))}
@@ -125,18 +132,21 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
           </h4>
           <ul className="list-unstyled">
             {routesState.ending.map((route) => (
-              <li id={route.properties.id}>
-                <EntitySumUp entity={route} />
-                <div>
+              <li key={route.properties.id} className="d-flex align-items-center">
+                <div className="flex-shrink-0 mr-3">
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-sm"
+                    title={t('common.open')}
                     onClick={() => {
-                      console.log('Edit route', route.properties.id);
+                      switchTool(RouteEditionTool, getEditRouteState(route));
                     }}
                   >
-                    {t('common.edit')}
+                    <BsBoxArrowInRight />
                   </button>
+                </div>
+                <div className="flex-grow-1 flex-shrink-1">
+                  <EntitySumUp entity={route} />
                 </div>
               </li>
             ))}
@@ -144,7 +154,7 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
         </div>
       )}
       {!(routesState.starting.length + routesState.ending.length) && (
-        <div className="text-center"></div>
+        <div className="text-center">{t('Editor.tools.point-edition.no-linked-route')}</div>
       )}
     </>
   );
@@ -165,6 +175,8 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
     PointEditionState<Entity>
   >;
   const isWayPoint = type === 'BufferStop' || type === 'Detector';
+  const isNew =
+    typeof state.entity.properties.id === 'string' && state.entity.properties.id === NEW_ENTITY_ID;
 
   const [trackState, setTrackState] = useState<
     | { type: 'idle'; id?: undefined; track?: undefined }
@@ -202,7 +214,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
 
   return (
     <>
-      {isWayPoint && (
+      {isWayPoint && !isNew && (
         <>
           <h3>{t('Editor.tools.point-edition.linked-routes')}</h3>
           <RoutesList type={type} id={state.entity.properties.id} />

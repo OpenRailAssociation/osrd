@@ -9,6 +9,7 @@ import {
   SIGNALS_TO_SYMBOLS,
   SignalType,
 } from '../../../common/Map/Consts/SignalsNames';
+import { EditoastType } from '../tools/types';
 
 // Quick helper to get a "promised" setTimeout:
 export function setTimeoutPromise(ms: number) {
@@ -117,7 +118,7 @@ export function flattenEntity(entity: EditorEntity): EditorEntity {
 /**
  * This function nests an object, splitting paths with a given separator.
  */
-export function nestEntity(entity: EditorEntity): EditorEntity {
+export function nestEntity(entity: EditorEntity, type: EditoastType): EditorEntity {
   const oldProperties = entity.properties;
   const newProperties = {} as EditorEntity['properties'];
   const separator = '_';
@@ -135,6 +136,7 @@ export function nestEntity(entity: EditorEntity): EditorEntity {
 
   return {
     ...entity,
+    objType: type,
     properties: newProperties,
   };
 }

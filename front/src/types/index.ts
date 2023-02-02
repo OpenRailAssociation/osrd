@@ -63,6 +63,7 @@ export interface TrackSectionEntity
   extends EditorEntity<
     LineString,
     {
+      length: number;
       extensions?: {
         sncf?: {
           line_code?: number;
@@ -94,27 +95,40 @@ export interface SignalEntity
   > {
   objType: 'Signal';
 }
-export interface BufferStopEntity
-  extends EditorEntity<Point | NullGeometry, { track?: string; position?: number }> {
+export interface BufferStopEntity<T extends Point | NullGeometry = Point | NullGeometry>
+  extends EditorEntity<T, { track?: string; position?: number }> {
   objType: 'BufferStop';
 }
-export interface DetectorEntity
-  extends EditorEntity<Point | NullGeometry, { track?: string; position?: number }> {
+export interface DetectorEntity<T extends Point | NullGeometry = Point | NullGeometry>
+  extends EditorEntity<T, { track?: string; position?: number }> {
   objType: 'Detector';
+}
+
+export const DIRECTIONS = ['START_TO_STOP', 'STOP_TO_START'] as const;
+export const DIRECTIONS_SET = new Set(DIRECTIONS);
+export const DEFAULT_DIRECTION = DIRECTIONS[0];
+export type Direction = (typeof DIRECTIONS)[number];
+export interface TrackRange {
+  track: string;
+  begin: number;
+  end: number;
+  direction: Direction;
 }
 
 export interface WayPoint {
   type: 'BufferStop' | 'Detector';
   id: string;
 }
+export type WayPointEntity = BufferStopEntity<Point> | DetectorEntity<Point>;
 export interface RouteEntity
   extends EditorEntity<
     NullGeometry,
     {
-      start: WayPoint;
-      direction: string;
-      end: WayPoint;
-      steps: { switchID: string; group: string };
+      entry_point: WayPoint;
+      entry_point_direction: Direction;
+      exit_point: WayPoint;
+      switches_directions: Record<string, string>;
+      release_detectors: string[];
     }
   > {
   objType: 'Route';
@@ -123,7 +137,7 @@ export interface RouteEntity
 export const ENDPOINTS = ['BEGIN', 'END'] as const;
 export const ENDPOINTS_SET = new Set(ENDPOINTS);
 export const DEFAULT_ENDPOINT = ENDPOINTS[0];
-export type EndPoint = typeof ENDPOINTS[number];
+export type EndPoint = (typeof ENDPOINTS)[number];
 export interface SwitchPortConnection {
   src: string;
   dst: string;

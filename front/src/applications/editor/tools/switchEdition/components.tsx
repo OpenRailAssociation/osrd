@@ -118,7 +118,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
     } else {
       setTrackSection(null);
     }
-  }, [formData.track, osrdConf.infraID]);
+  }, [formData?.track, osrdConf.infraID]);
 
   return (
     <div className="mb-4">
@@ -226,7 +226,7 @@ export const SwitchEditionLeftPanel: FC = () => {
 
   return (
     <div>
-      <legend>Switch Type</legend>
+      <legend>{t('Editor.tools.switch-edition.switch-type')}</legend>
       <Select
         options={switchTypeOptions}
         value={switchTypeOptionsDict[switchType.id]}
@@ -339,7 +339,7 @@ export const SwitchEditionLayers: FC = () => {
   const hoveredTrack = useMemo(
     () =>
       hovered?.type === 'TrackSection'
-        ? (nestEntity(hovered.renderedEntity as EditorEntity) as TrackSectionEntity)
+        ? (nestEntity(hovered.renderedEntity as EditorEntity, 'TrackSection') as TrackSectionEntity)
         : null,
     [hovered?.renderedEntity, hovered?.type]
   );
