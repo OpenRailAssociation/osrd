@@ -218,7 +218,7 @@ function drawTrain(
         segment.position_middle = (source.start + source.stop) / 2;
         segment.height_start = 4;
         segment.height_end = 16;
-        segment.height_middle = -2;
+        segment.height_middle = (segment.height_start + segment.height_end) / 2;
         segment.usedMode = source.used_mode;
         segment.usedProfile = source.used_profile;
 
