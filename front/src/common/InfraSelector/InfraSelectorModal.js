@@ -37,7 +37,7 @@ export default function InfraSelectorModal() {
   const getInfrasList = async () => {
     setIsFetching(true);
     try {
-      const infrasListQuery = await get(INFRA_URL, {});
+      const infrasListQuery = await get(INFRA_URL);
       setInfrasList(infrasListQuery);
       filterInfras(infrasListQuery);
       setIsFetching(false);

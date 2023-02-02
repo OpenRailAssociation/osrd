@@ -5,6 +5,7 @@ import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import RollingStockCardDetail from './RollingStockCardDetail';
 import RollingStock2Img from './RollingStock2Img';
 import { RollingStockInfos } from './RollingStockHelpers';
@@ -75,13 +76,15 @@ function RollingStockCard(props) {
           setCurvesComfortList={setCurvesComfortList}
         />
       ) : (
-        <div className="rollingstock-body-container-img">
-          <div className="rollingstock-body-img">
-            <div className="rollingstock-img">
-              <RollingStock2Img rollingStock={data} />
+        <LazyLoadComponent>
+          <div className="rollingstock-body-container-img">
+            <div className="rollingstock-body-img">
+              <div className="rollingstock-img">
+                <RollingStock2Img rollingStock={data} />
+              </div>
             </div>
           </div>
-        </div>
+        </LazyLoadComponent>
       )}
       <div className="rollingstock-footer">
         <div className="rollingstock-footer-specs">

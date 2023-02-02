@@ -46,7 +46,7 @@ class RollingStockLiverySerializer(NestedHyperlinkedModelSerializer):
 
     class Meta:
         model = RollingStockLivery
-        fields = ["name", "url"]
+        fields = ["name", "id"]
         extra_kwargs = {
             'url': {
                 'view_name': 'rolling_stock_livery-detail',

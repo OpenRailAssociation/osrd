@@ -81,8 +81,10 @@ export default function StdcmRequestModal(props) {
           get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {
             const trainIds = timetable.train_schedules.map((train_schedule) => train_schedule.id);
             get(`${trainscheduleURI}results/`, {
-              train_ids: trainIds.join(','),
-              path: result.path.id,
+              params: {
+                train_ids: trainIds.join(','),
+                path: result.path.id,
+              },
             }).then((simulationLocal) => {
               const newSimulation = {};
               newSimulation.trains = [...simulationLocal];
