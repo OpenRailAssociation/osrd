@@ -1185,15 +1185,15 @@ paths:
                   type: string
                 example:
                   [
-                    "Time tables",
-                    "Flow rate",
-                    "Park sizing",
-                    "Garage requirement bearings",
-                    "Operation or sizing of a maintenance centre or garage",
-                    "Operability",
-                    "Strategic planning",
-                    "Chart Stability",
-                    Disturbance tests",
+                    "timeTables",
+                    "flowRate",
+                    "parkSizing",
+                    "garageRequirement",
+                    "operationOrSizing",
+                    "operability",
+                    "strategicPlanning",
+                    "chartStability",
+                    "disturbanceTests",
                   ]
   /projects/{project_id}/study_states/:
     get:
@@ -1215,7 +1215,7 @@ paths:
                 type: array
                 items:
                   type: string
-                example: ["Started", "In progress", "Finish"]
+                example: ["started", "inProgress", "finish"]
   /projects/{project_id}/studies/{study_id}/scenarios/:
     post:
       tags:
@@ -2188,20 +2188,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["Started", "In progress", "Finish"]
+          enum: ["started", "inProgress", "finish"]
         type:
           type: string
           enum:
             [
-              "Time tables",
-              "Flow rate",
-              "Park sizing",
-              "Garage requirement bearings",
-              "Operation or sizing of a maintenance centre or garage",
-              "Operability",
-              "Strategic planning",
-              "Chart Stability",
-              "Disturbance tests",
+              "timeTables",
+              "flowRate",
+              "parkSizing",
+              "garageRequirement",
+              "operationOrSizing",
+              "operability",
+              "strategicPlanning",
+              "chartStability",
+              "disturbanceTests",
             ]
       required:
         - "name"
@@ -2240,20 +2240,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["Started", "In progress", "Finish"]
+          enum: ["started", "inProgress", "finish"]
         type:
           type: string
           enum:
             [
-              "Time tables",
-              "Flow rate",
-              "Park sizing",
-              "Garage requirement bearings",
-              "Operation or sizing of a maintenance centre or garage",
-              "Operability",
-              "Strategic planning",
-              "Chart Stability",
-              "Disturbance tests",
+              "timeTables",
+              "flowRate",
+              "parkSizing",
+              "garageRequirement",
+              "operationOrSizing",
+              "operability",
+              "strategicPlanning",
+              "chartStability",
+              "disturbanceTests",
             ]
     ScenarioRequest:
       properties:
