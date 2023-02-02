@@ -35,7 +35,7 @@ const configItemsDefaults = {
   name: '',
   description: '',
   objectives: '',
-  funders: [],
+  funders: [''],
   tags: [],
   budget: 0,
 };
@@ -55,7 +55,7 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = Array.from(configItems.tags);
+    const newTags: string[] = configItems.tags ? Array.from(configItems.tags) : [];
     newTags.push(tag);
     setConfigItems({ ...configItems, tags: newTags });
   };

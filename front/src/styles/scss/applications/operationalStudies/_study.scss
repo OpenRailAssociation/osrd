@@ -88,6 +88,7 @@
     .study-details-state-step {
       display: inline-block;
       position: relative;
+      cursor: pointer;
       &:not(:first-child) {
         margin-left: 3rem;
         &::before {
@@ -111,6 +112,7 @@
         border-radius: 1rem;
         width: 1.5rem;
         height: 1.5rem;
+        transition: 0.2s;
       }
       .study-details-state-step-label {
         position: absolute;
@@ -125,8 +127,9 @@
         padding-left: 1.5em;
         text-indent:-1.5em;
         color: var(--coolgray7);
+        transition: 0.2s;
       }
-      &.done {      
+      &.done {
         .study-details-state-step-number {
           background-color: var(--coolgray11);
           color: var(--coolgray1);
@@ -137,6 +140,15 @@
         .study-details-state-step-label {
           font-weight: 500;
           color: var(--secondary);
+        }
+      }
+      &:hover {
+        .study-details-state-step-number {
+          background-color: var(--primary);
+          color: var(--white);
+        }
+        .study-details-state-step-label {
+          color: var(--primary);
         }
       }
     }

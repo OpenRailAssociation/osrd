@@ -161,10 +161,6 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    console.log(studyStates);
-  }, [studyStates]);
-
   return (
     <div className="study-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>

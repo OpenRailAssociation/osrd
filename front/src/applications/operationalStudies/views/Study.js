@@ -47,9 +47,19 @@ export default function Study() {
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState('-last_modification');
+  const [studyStates, setStudyStates] = useState([]);
   const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
+
+  const createStudyStates = async (id) => {
+    try {
+      const list = await get(`/projects/${id}/study_states/`);
+      setStudyStates(list);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const sortOptions = [
     {
@@ -70,6 +80,7 @@ export default function Study() {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
       setProjectDetails(result);
+      createStudyStates(result.id);
     } catch (error) {
       console.error(error);
     }
@@ -172,16 +183,23 @@ export default function Study() {
                       <FaPencilAlt />
                     </button>
                   </div>
-                  <div className="study-details-type">{studyDetails.type}</div>
+                  <div className="study-details-type">{t(`studyTypes.${studyDetails.type}`)}</div>
                   <div className="study-details-description">{studyDetails.description}</div>
-                  <div className="study-details-state">
-                    <StateStep number={1} label="Réception et analyse des besoins" done />
-                    <StateStep number={2} label="Méthodologie pour l'étude" done />
-                    <StateStep number={3} label="Devis" done />
-                    <StateStep number={4} label="Cahier des hypothèses" done />
-                    <StateStep number={5} label="Lancement de l'étude" />
-                    <StateStep number={6} label="Contractualisation" />
-                  </div>
+                  {studyDetails.state && (
+                    <div className="study-details-state">
+                      {studyStates.map((state, idx) => (
+                        <StateStep
+                          key={nextId()}
+                          projectID={projectDetails.id}
+                          studyID={studyDetails.id}
+                          getStudyDetail={getStudyDetail}
+                          number={idx + 1}
+                          state={state}
+                          done={idx <= studyStates.indexOf(studyDetails.state)}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="col-xl-3 col-lg-4 col-md-5">
                   <div className="study-details-files">
