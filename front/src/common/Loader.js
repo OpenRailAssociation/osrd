@@ -3,11 +3,25 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import './Loader.scss';
 
-export const Spinner = () => (
-  <div className="spinner-border" role="status">
-    <span className="sr-only">Loading...</span>
-  </div>
-);
+export function Spinner({ className, style } = { className: '', style: '' }) {
+  return (
+    <div className={className} style={style}>
+      <div className="spinner-border" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
+    </div>
+  );
+}
+
+Spinner.propTypes = {
+  className: PropTypes.string,
+  style: PropTypes.object,
+};
+
+Spinner.defaultProps = {
+  className: '',
+  style: undefined,
+};
 
 export default class Loader extends React.Component {
   static propTypes = {
@@ -31,11 +45,9 @@ export default class Loader extends React.Component {
   }
 }
 
-export const LoaderFill = () => (
-  <div className={`loader-fill inset-0`}>
-    <Spinner />
-  </div>
-);
+export function LoaderFill() {
+  return <Spinner className="loader-fill inset-0" />;
+}
 
 /**
  * Same loader but plugged on the state.
