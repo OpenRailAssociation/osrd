@@ -70,8 +70,6 @@ const CHART_MIN_HEIGHT = 250;
     () => prepareData(simulation, selectedTrain, keyValues),
     [simulation, selectedTrain, keyValues]
   );
-  // console.log('datasimulation: ', dataSimulation);
-  console.log('simulation: ', simulation);
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {

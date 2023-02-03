@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-const drawElectricalProfileRect = (
+const drawElectricalProfile = (
   chart,
   classes,
   dataSimulation,
@@ -73,8 +73,8 @@ const drawElectricalProfileRect = (
         .attr('class', `rect zoomable electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
         .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, 2)')
-        .attr('rx', 4)
-        .attr('ry', 4)
+        .attr('rx', 2)
+        .attr('ry', 2)
         .attr(
           'x',
           chart.x(
@@ -110,7 +110,7 @@ const drawElectricalProfileRect = (
           'x',
           chart.x(
             rotate
-              ? dataSimulation[`${keyValues[1]}_start`] + 7
+              ? dataSimulation[`${keyValues[1]}_start`] + 6
               : dataSimulation[`${keyValues[0]}_middle`]
           )
         )
@@ -224,6 +224,7 @@ const drawElectricalProfileRect = (
           ) -
             height * -1
         );
+
       if (isIncompatible) {
         zone
           .append('text')
@@ -255,4 +256,4 @@ const drawElectricalProfileRect = (
     });
 };
 
-export default drawElectricalProfileRect;
+export default drawElectricalProfile;

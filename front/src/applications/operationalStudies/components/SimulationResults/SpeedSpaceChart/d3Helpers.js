@@ -3,7 +3,8 @@ import drawCurve from 'applications/operationalStudies/components/SimulationResu
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
-import drawElectricalProfileRect from '../ChartHelpers/drawElectricalProfileRect';
+import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
+import drawLegendToggle from '../ChartHelpers/drawLegendToggle';
 
 function createChart(
   CHART_ID,
@@ -288,12 +289,12 @@ function drawTrain(
           segment.text = `${segment.usedMode}V`;
         }
 
-        drawElectricalProfileRect(
+        drawElectricalProfile(
           chartLocal,
           `electricalProfiles_${index}`,
           segment,
           'speedSpaceChart',
-          `curveLinear`,
+          'curveLinear',
           ['position', 'height'],
           'electrical_profiles',
           rotate,
@@ -302,6 +303,17 @@ function drawTrain(
           `electricalProfiles_${index}`
         );
       });
+
+      const legend = [
+        { mode: '25000V', color: ['#6E1E78', '#A453AD'], isStriped: false },
+        { mode: '1500V', color: ['#FF0037', '#FF335F', '#FF6687'], isStriped: false },
+        { mode: 'thermal', color: ['#333'], isStriped: false },
+        { mode: '15000V 16/2/3', color: ['#009AA6'], isStriped: false },
+        { mode: '3000V', color: ['#1FBE00'], isStriped: false },
+        { mode: 'No use', color: ['#747678'], isStriped: true },
+      ];
+
+      drawLegendToggle(chartLocal, 'electricalProfilesToggle', 'speedSpaceChart', legend, '?');
     }
     // Operational points
     /*
