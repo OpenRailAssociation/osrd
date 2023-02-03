@@ -1,0 +1,18 @@
+{
+  "id": 0,
+  "name": "string",
+  "description": "string",
+  "budget": 0,
+  "service_code": "string",
+  "business_code": "string",
+  "creation_date": "2023-02-02T23:37:21.271Z",
+  "last_modification": "2023-02-02T23:37:21.271Z",
+  "scenarios": [
+    0
+  ],
+  "start_date_study": "2023-02-02T23:37:21.271Z",
+  "expected_end_date_study": "2023-02-02T23:37:21.271Z",
+  "actual_end_date_study": "2023-02-02T23:37:21.271Z",
+  "state": "started",
+  "type": "timeTables"
+}

@@ -30,7 +30,7 @@ test.describe('Home page OSDR', () => {
     await playwrightHomePage.goToStudiesPage();
 
     // Check that the URL of the page matches the expected pattern
-    await expect(playwrightHomePage.page).toHaveURL(/.*\/operational-studies\/scenario/);
+    await expect(playwrightHomePage.page).toHaveURL(/.*\/operational-studies/);
   });
 
   test('should be correctly redirected to the  "Map" page after clicking on the link', async () => {

@@ -35,7 +35,7 @@ const configItemsDefaults = {
   name: '',
   description: '',
   objectives: '',
-  funders: [''],
+  funders: [],
   tags: [],
   budget: 0,
 };
