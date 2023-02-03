@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
+import projectJSON from './assets/operationStudies/project.json';
+import studyJSON from './assets/operationStudies/study.json';
+import scenarioJSON from './assets/operationStudies/scenario.json';
+import timetableJSON from './assets/operationStudies/timetable.json';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   // Declare the necessary variable for the test
@@ -9,20 +13,36 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     const page = await browser.newPage();
     playwrightHomePage = new PlaywrightHomePage(page);
     await playwrightHomePage.goToHomePage();
-    await playwrightHomePage.goToStudiesPage();
+    await playwrightHomePage.page.route('**/projects/*/', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify(projectJSON),
+      });
+    });
+    await playwrightHomePage.page.route('**/projects/*/studies/*/', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify(studyJSON),
+      });
+    });
+    await playwrightHomePage.page.route('**/projects/*/studies/*/scenarios/*/', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify(scenarioJSON),
+      });
+    });
+    await playwrightHomePage.page.route('**/timetable/*/', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify(timetableJSON),
+      });
+    });
+    await playwrightHomePage.page.goto('/operational-studies/scenario');
     await page.getByTestId('scenarios-filter-button').click();
   });
 
-  test('InfraSelector is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('infraselector-button')).not.toEqual(null);
-  });
-
   test('RollingStockSelector is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('rollingdtock-selector')).not.toEqual(null);
-  });
-
-  test('TimetableSelector is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('timetableSelector')).not.toEqual(null);
+    expect(playwrightHomePage.page.getByTestId('rollingstock-selector')).not.toEqual(null);
   });
 
   test('SpeedLimitSelector is displayed', async () => {

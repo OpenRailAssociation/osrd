@@ -50,7 +50,7 @@ export default function StudyCard({ setFilterChips, details }: Props) {
         </span>
         {details.name}
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
-          <span className="mr-2">{t('operationalStudies/project:openStudy')}</span>
+          <span className="mr-2">{t('openStudy')}</span>
           <AiFillFolderOpen />
         </button>
       </div>
@@ -63,22 +63,20 @@ export default function StudyCard({ setFilterChips, details }: Props) {
         <div className="studies-list-card-financials-infos">
           {details.service_code && (
             <div className="studies-list-card-financials-infos-item">
-              <h3>{t('operationalStudies/study:geremiCode')}</h3>
+              <h3>{t('geremiCode')}</h3>
               <div>{details.service_code}</div>
             </div>
           )}
           {details.business_code && (
             <div className="studies-list-card-financials-infos-item">
-              <h3>{t('operationalStudies/study:affairCode')}</h3>
+              <h3>{t('affairCode')}</h3>
               <div>{details.business_code}</div>
             </div>
           )}
         </div>
         {details.budget > 0 && (
           <div className="studies-list-card-financials-amount">
-            <span className="studies-list-card-financials-amount-text">
-              {t('operationalStudies/project:budget')}
-            </span>
+            <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
             {budgetFormat(details.budget)}
           </div>
         )}
@@ -108,7 +106,7 @@ export default function StudyCard({ setFilterChips, details }: Props) {
           <span className="mr-1">
             <FcCalendar />
           </span>
-          <span className="mr-1">{t('operationalStudies/project:modifiedOn')}</span>
+          <span className="mr-1">{t('modifiedOn')}</span>
           {dateTimeFrenchFormatting(details.last_modification)}
         </div>
       </div>
