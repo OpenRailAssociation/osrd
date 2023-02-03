@@ -1,11 +1,11 @@
+import Keycloak from 'keycloak-js';
 import { KEYCLOAK_CONFIG as keycloakConfig } from 'config/config';
-import Keycloak from './keycloak';
 
-const kc = Keycloak(keycloakConfig);
+const kc = new Keycloak(keycloakConfig);
 
 const { login, logout, isTokenExpired } = kc;
 
-const getToken = () => kc.token;
+const getToken = () => kc.token || '';
 const getRefreshToken = () => kc.refreshToken;
 const getUsername = () => kc.tokenParsed.preferred_username;
 
