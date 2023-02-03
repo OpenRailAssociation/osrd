@@ -18,6 +18,8 @@
   "scenarioModificationTitle": "Modifier le scénario",
   "scenarioDeleted": "Suppression réussie !",
   "scenarioDeletedDetails": "Le scénario {{ name }} a bien été supprimé.",
+  "scenarioUpdated": "Mise à jour réussie !",
+  "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
   "scenarioModifyButton": "Modifier",
   "scenarioDeleteButton": "Supprimer",
   "scenarioNameMissing": "Vous devez renseigner un nom pour le scénario"

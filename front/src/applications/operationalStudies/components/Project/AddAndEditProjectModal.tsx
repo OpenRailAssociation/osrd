@@ -214,7 +214,12 @@ export default function AddAndEditProjectModal({ editionMode, details, getProjec
                 </div>
               }
               value={configItems.funders?.join()}
-              onChange={(e: any) => setConfigItems({ ...configItems, funders: [e.target.value] })}
+              onChange={(e: any) =>
+                setConfigItems({
+                  ...configItems,
+                  funders: e.target.value ? [e.target.value] : [],
+                })
+              }
             />
           </div>
           <div className="col-lg-4">

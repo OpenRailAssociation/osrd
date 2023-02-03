@@ -64,8 +64,8 @@ export default function Scenario() {
       if (withNotification) {
         dispatch(
           setSuccess({
-            title: t('studyUpdated'),
-            text: t('studyUpdatedDetails', { name: studyDetails.name }),
+            title: t('scenarioUpdated'),
+            text: t('scenarioUpdatedDetails', { name: scenarioDetails.name }),
           })
         );
       }
