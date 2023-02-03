@@ -83,7 +83,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
         options.push({ key, value: t(`${translationList}.${key}`) });
       });
       options.sort((a, b) => a.value.localeCompare(b.value));
-      options.unshift({ key: null, value: t('nothingSelected') });
+      options.unshift({ key: null, value: t(`${translationList}.nothingSelected`) });
       setFunction(options);
     } catch (error) {
       console.log(error);
@@ -205,7 +205,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                     }
                     selectedValue={{
                       key: configItems.type,
-                      value: t(`studyTypes.${configItems.type}`),
+                      value: t(`studyTypes.${configItems.type || 'nothingSelected'}`),
                     }}
                     options={studyTypes}
                     onChange={(e: any) => setConfigItems({ ...configItems, type: e.key })}
@@ -225,7 +225,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
                     }
                     selectedValue={{
                       key: configItems.state,
-                      value: t(`studyStates.${configItems.state}`),
+                      value: t(`studyStates.${configItems.state || 'nothingSelected'}`),
                     }}
                     options={studyStates}
                     onChange={(e: any) => setConfigItems({ ...configItems, state: e.key })}

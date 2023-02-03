@@ -16,7 +16,6 @@
   "geremiCode": "Code GEREMI",
   "modifiedOn": "Modifié le",
   "modifyStudy": "Modifier l'étude",
-  "nothingSelected": "— Aucun —",
   "openScenario": "Ouvrir",
   "scenario": "Scénario",
   "scenariosCount_one": "1 scénario",
@@ -46,6 +45,7 @@
   "studyStartDate": "Début de l'étude",
   "studyState": "Status",
   "studyStates": {
+    "nothingSelected": "— Aucun —",
     "finish": "Terminée",
     "inProgress": "En cours",
     "started": "Démarrage"
@@ -53,6 +53,7 @@
   "studyTags": "Étiquettes",
   "studyType": "Type",
   "studyTypes": {
+    "nothingSelected": "— Aucun —",
     "chartStability": "Stabilité du graphique",
     "disturbanceTests": "Tests de perturbations",
     "flowRate": "Débit",
