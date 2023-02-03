@@ -2,8 +2,9 @@
 /* eslint-disable default-case */
 import { AnyAction, Dispatch } from 'redux';
 import produce from 'immer';
-import keycloak from 'keycloak';
 import jwtDecode from 'jwt-decode';
+
+import keycloak from 'keycloak';
 
 // Action Types
 export const LOGIN_SUCCESS = 'user/LOGIN_SUCCESS';
