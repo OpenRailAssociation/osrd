@@ -24,6 +24,7 @@ const drawElectricalProfile = (
     : chart.y(dataSimulation[`${keyValues[1]}_end`]) -
       chart.y(dataSimulation[`${keyValues[1]}_start`]);
 
+  // prepare stripe pattern
   if (isStripe) {
     const stripe = chart.drawZone.select(`#${groupID}`);
     stripe
@@ -39,9 +40,10 @@ const drawElectricalProfile = (
       .attr('stroke-width', 2.5);
   }
 
-  const zone = chart.drawZone.select(`#${groupID}`);
-  zone
+  const drawZone = chart.drawZone.select(`#${groupID}`);
+  drawZone
 
+    // add main rect for profile displayed
     .append('rect')
     .attr('id', id)
     .attr('class', `rect zoomable ${classes}`)
@@ -65,9 +67,12 @@ const drawElectricalProfile = (
     .attr('width', width)
     .attr('height', height * -1);
 
+  // add text to main rect
   const addTextZone = () => {
     if ((rotate && height < -24) || (!rotate && width > 60)) {
       const textZone = chart.drawZone.select(`#${groupID}`);
+
+      // add rect for text zone
       textZone
         .append('rect')
         .attr('class', `rect zoomable electricalProfileTextBlock ${classes}`)
@@ -96,6 +101,7 @@ const drawElectricalProfile = (
         .attr('width', '3.2rem')
         .attr('height', rotate ? 20 : (height + 4) * -1);
 
+      // add text to text zone
       textZone
         .append('text')
         .attr('class', `electricalProfileText ${classes}`)
@@ -127,12 +133,13 @@ const drawElectricalProfile = (
     }
   };
 
-  zone.call(addTextZone);
+  drawZone.call(addTextZone);
 
-  zone
+  // add hover interraction
+  drawZone
     .selectAll(`.${classes}`)
     .on('mouseover', () => {
-      zone
+      drawZone
         .append('rect')
         .attr('class', `rect zoomable data`)
         .attr('fill', '#FFF')
@@ -164,7 +171,8 @@ const drawElectricalProfile = (
         .attr('width', 160)
         .attr('height', isIncompatible ? 55 : 35);
 
-      zone
+      // add profile pop-up rect
+      drawZone
         .append('rect')
         .attr('class', `rect zoomable data`)
         .attr('fill', isStripe ? `url(#${id})` : dataSimulation.textColor)
@@ -172,7 +180,9 @@ const drawElectricalProfile = (
         .attr('stroke', isStripe ? `url(#${id})` : dataSimulation.textColor)
         .attr(
           'transform',
-          rotate ? 'translate(80, 0)' : `translate(5, ${isIncompatible ? '-42' : '-32'} )`
+          rotate
+            ? `translate(85, ${isIncompatible ? '16' : '8'})`
+            : `translate(5, ${isIncompatible ? '-42' : '-32'} )`
         )
         .attr(
           'x',
@@ -194,7 +204,8 @@ const drawElectricalProfile = (
         .attr('width', 30)
         .attr('height', 20);
 
-      zone
+      // add profile pop-up text
+      drawZone
         .append('text')
         .attr('class', `zoomable data`)
         .attr('dominant-baseline', 'middle')
@@ -205,7 +216,9 @@ const drawElectricalProfile = (
         )
         .attr(
           'transform',
-          rotate ? 'translate(80, 0)' : `translate(45, ${isIncompatible ? '-40' : '-20'})`
+          rotate
+            ? `translate(120,${isIncompatible ? 18 : 20})`
+            : `translate(45, ${isIncompatible ? '-40' : '-20'})`
         )
         .attr(
           'x',
@@ -226,12 +239,12 @@ const drawElectricalProfile = (
         );
 
       if (isIncompatible) {
-        zone
+        drawZone
           .append('text')
           .attr('class', `zoomable data`)
           .attr('dominant-baseline', 'middle')
           .text(`${dataSimulation.usedProfile} incompatible`)
-          .attr('transform', rotate ? 'translate(80, 0)' : `translate(45, -20)`)
+          .attr('transform', rotate ? 'translate(120, 40)' : `translate(45, -20)`)
           .attr(
             'x',
             chart.x(
@@ -252,7 +265,8 @@ const drawElectricalProfile = (
       }
     })
     .on('mouseout', () => {
-      zone.selectAll('.data').remove();
+      // add mouse-out interraction to remove pop-up
+      drawZone.selectAll('.data').remove();
     });
 };
 

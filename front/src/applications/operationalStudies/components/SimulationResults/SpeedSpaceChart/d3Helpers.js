@@ -212,6 +212,7 @@ function drawTrain(
     }
     if (dataSimulation.modesAndProfiles && speedSpaceSettings.electricalProfiles) {
       dataSimulation.modesAndProfiles.forEach((source, index) => {
+        // prepare object to work with
         const segment = {};
 
         segment.position_start = source.start;
@@ -223,6 +224,7 @@ function drawTrain(
         segment.usedMode = source.used_mode;
         segment.usedProfile = source.used_profile;
 
+        // prepare colors
         const electricalProfileColorsWithProfile = {
           25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
           1500: {
@@ -250,12 +252,14 @@ function drawTrain(
           3000: '#1FBE00',
         };
 
+        // add colors to object depending of the presence of used_profile
         segment.color =
           electricalProfileColorsWithProfile[segment.usedMode][segment.usedProfile] ||
           electricalProfileColorsWithoutProfile[segment.usedMode];
 
         segment.textColor = electricalProfileColorsWithoutProfile[segment.usedMode];
 
+        // adapt text depending of the mode and profile
         if (segment.usedMode === 'thermal') {
           segment.text = `${segment.usedMode}`;
         } else if (!segment.usedProfile) {
@@ -266,6 +270,7 @@ function drawTrain(
           segment.text = `${segment.usedMode}V ${segment.usedProfile}`;
         }
 
+        // figure out if the profile is incompatible or missing
         let isStripe = false;
         let isIncompatible = false;
 
@@ -304,16 +309,24 @@ function drawTrain(
         );
       });
 
+      // prepare array to work with for legend
       const legend = [
         { mode: '25000V', color: ['#6E1E78', '#A453AD'], isStriped: false },
         { mode: '1500V', color: ['#FF0037', '#FF335F', '#FF6687'], isStriped: false },
-        { mode: 'thermal', color: ['#333'], isStriped: false },
+        { mode: 'Thermique', color: ['#333'], isStriped: false },
         { mode: '15000V 16/2/3', color: ['#009AA6'], isStriped: false },
         { mode: '3000V', color: ['#1FBE00'], isStriped: false },
-        { mode: 'No use', color: ['#747678'], isStriped: true },
+        { mode: 'Non utilisé', color: ['#747678'], isStriped: true },
       ];
 
-      drawLegendToggle(chartLocal, 'electricalProfilesToggle', 'speedSpaceChart', legend, '?');
+      drawLegendToggle(
+        chartLocal,
+        'electricalProfilesToggle',
+        'speedSpaceChart',
+        rotate,
+        legend,
+        '?'
+      );
     }
     // Operational points
     /*
