@@ -74,7 +74,7 @@ export default function AddAndEditStudyModal({ editionMode, details, getStudyDet
   const createSelectOptions = async (
     translationList: string,
     enumURI: string,
-    setFunction: (arg0: SelectOptions) => void
+    setFunction: (func: SelectOptions) => void
   ) => {
     try {
       const list = await get(enumURI);

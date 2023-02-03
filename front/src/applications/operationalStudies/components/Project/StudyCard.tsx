@@ -12,7 +12,7 @@ import { updateStudyID } from 'reducers/osrdconf';
 import { RiFolderChartLine } from 'react-icons/ri';
 
 type Props = {
-  setFilterChips: (arg0: string) => void;
+  setFilterChips: (filterChips: string) => void;
   details: {
     id: number;
     name: string;

@@ -3,11 +3,10 @@ import React, { useState, createContext, useContext, useEffect } from 'react';
 const ModalContext = createContext({
   isModalOpen: false,
   modalContent: null,
-  openModal: (content, size, optionalClasses = '', withCloseButton = false) => {},
+  openModal: (content, size, optionalClasses = '') => {},
   closeModal: () => {},
   size: undefined,
   optionalClasses: '',
-  withCloseButton: false,
 });
 
 function ModalProvider({ children }) {
@@ -16,19 +15,12 @@ function ModalProvider({ children }) {
   const [size, setSize] = useState(undefined);
   const [optionalClasses, setOptionalClasses] = useState('');
   const [isVisible, setIsVisible] = useState(false);
-  const [withCloseButton, setWithCloseButton] = useState(false);
 
-  const openModal = (
-    content,
-    sizeSetting,
-    optionalClassesSetting = '',
-    withCloseButtonSetting = false
-  ) => {
+  const openModal = (content, sizeSetting = undefined, optionalClassesSetting = '') => {
     setModalContent(content);
     setIsModalOpen(true);
     setSize(sizeSetting);
     setOptionalClasses(optionalClassesSetting);
-    setWithCloseButton(withCloseButtonSetting);
     document.body.classList.add('modal-open');
     setTimeout(() => setIsVisible(true), 0);
   };
@@ -53,7 +45,6 @@ function ModalProvider({ children }) {
         optionalClasses,
         size,
         isVisible,
-        withCloseButton,
       }}
     >
       {children}

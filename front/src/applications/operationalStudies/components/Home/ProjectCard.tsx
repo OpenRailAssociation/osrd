@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux';
 import { updateProjectID } from 'reducers/osrdconf';
 
 type Props = {
-  setFilterChips: (arg0: string) => void;
+  setFilterChips: (filterChips: string) => void;
   details: {
     id: number;
     name: string;
