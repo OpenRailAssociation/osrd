@@ -8,6 +8,6 @@ export type configItemsTypes = {
   funders: string[];
   tags: string[];
   budget: number;
-  image?: Blob;
+  image?: Blob | null;
   image_url?: string;
 };

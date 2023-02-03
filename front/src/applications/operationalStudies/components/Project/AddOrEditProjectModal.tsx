@@ -16,7 +16,7 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
-import { deleteRequest, post, put } from 'common/requests';
+import { deleteRequest, patch, patchMultipart, post } from 'common/requests';
 import { updateProjectID } from 'reducers/osrdconf';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -65,7 +65,14 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else {
       try {
-        const result = await post(PROJECTS_URI, configItems);
+        let result;
+        if (configItems.image) {
+          const { image, ...configItemsWithoutImage } = configItems;
+          result = await post(PROJECTS_URI, configItemsWithoutImage);
+          await patchMultipart(`${PROJECTS_URI}${result.id}/`, { image });
+        } else {
+          result = await post(PROJECTS_URI, configItems);
+        }
         dispatch(updateProjectID(result.id));
         navigate('/operational-studies/project');
         closeModal();
@@ -80,7 +87,13 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else if (project) {
       try {
-        await put(`${PROJECTS_URI}${project.id}/`, configItems);
+        if (configItems.image) {
+          const { image, ...configItemsWithoutImage } = configItems;
+          await patchMultipart(`${PROJECTS_URI}${project.id}/`, { image });
+          await patch(`${PROJECTS_URI}${project.id}/`, configItemsWithoutImage);
+        } else {
+          await patch(`${PROJECTS_URI}${project.id}/`, configItems);
+        }
         getProject(true);
         closeModal();
       } catch (error) {
