@@ -1,5 +1,3 @@
-from io import BytesIO
-
 from django.db.models import Q
 from django.http import HttpResponse
 from PIL import Image
@@ -162,7 +160,6 @@ class ProjectView(
 
     @action(url_path="image", detail=True, methods=["get"])
     def get_image(self, request, pk=None):
-
         queryset = Project.objects.all()
         project = get_object_or_404(queryset, pk=pk)
         image_db = project.image
@@ -182,10 +179,9 @@ class ProjectView(
         input_serializer = ProjectSerializer(data=request.data, context={"request": request})
         input_serializer.is_valid(raise_exception=True)
         if "image" in input_serializer.validated_data.keys():
-            image = input_serializer.validated_data["image"]
-            input_serializer.validated_data["image"] = image.read()
-            stream = BytesIO(input_serializer.validated_data["image"])
-            image = Image.open(stream)
+            image_db = input_serializer.validated_data["image"]
+            input_serializer.validated_data["image"] = image_db.read()
+            image = Image.open(image_db)
             response = HttpResponse(content_type="image/png")
             image.save(response, "PNG")
         input_serializer.save()
@@ -195,13 +191,16 @@ class ProjectView(
         project = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = ProjectSerializer(project, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
+        print(serializer.validated_data.keys())
         if "image" in serializer.validated_data.keys():
-            image = serializer.validated_data["image"]
-            serializer.validated_data["image"] = image.read()
-            stream = BytesIO(serializer.validated_data["image"])
-            image = Image.open(stream)
-            response = HttpResponse(content_type="image/png")
-            image.save(response, "PNG")
+            if serializer.validated_data["image"]:
+                image_db = serializer.validated_data["image"]
+                serializer.validated_data["image"] = image_db.read()
+                image = Image.open(image_db)
+                response = HttpResponse(content_type="image/png")
+                image.save(response, "PNG")
+            else:
+                serializer.validated_data["image"] = None
         serializer.save()
         project.save()
         return Response(data=serializer.data, status=202)

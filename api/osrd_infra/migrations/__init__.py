@@ -33,8 +33,9 @@ def run_sql_complexe_add_foreign_key(table_name: str, field_name: str, model_nam
     )
 
 
-def run_sql_add_foreign_key(model_name: str, field_name: str, link_model: str, nullable: bool = False,
-                            related_name: str = ""):
+def run_sql_add_foreign_key(
+    model_name: str, field_name: str, link_model: str, nullable: bool = False, related_name: str = ""
+):
     return run_sql_complexe_add_foreign_key(
         table_name=model_name,
         field_name=field_name,
@@ -42,7 +43,7 @@ def run_sql_add_foreign_key(model_name: str, field_name: str, link_model: str, n
         link_model=link_model,
         link_table=link_model,
         nullable=nullable,
-        related_name=related_name
+        related_name=related_name,
     )
 
 
