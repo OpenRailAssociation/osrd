@@ -119,6 +119,30 @@ export async function patch<P = any, T = any>(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function patchMultipart<T = any>(
+  path: string,
+  payload: any,
+  config: AxiosRequestConfig = {}
+): Promise<T> {
+  const formData = new FormData();
+  Object.keys(payload).forEach((key) => {
+    formData.append(key, payload[key]);
+  });
+  try {
+    const { data } = await axios.patch(formatPath(path), formData, {
+      headers: {
+        ...getAuthConfig().headers,
+        'Content-Type': 'multipart/form-data',
+      },
+      ...config,
+    });
+    return data;
+  } catch (err) {
+    throw handleAxiosError(err);
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function put<P = any, T = any>(
   path: string,
   payload: P,
