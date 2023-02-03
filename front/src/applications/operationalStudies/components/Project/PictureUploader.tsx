@@ -15,7 +15,7 @@ type PropsPlaceholder = {
 
 type Props = {
   configItems: configItemsTypes;
-  setConfigItems: (arg0: configItemsTypes) => void;
+  setConfigItems: (configItems: configItemsTypes) => void;
 };
 
 function PicturePlaceholder({ configItems, isValid }: PropsPlaceholder) {

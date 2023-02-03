@@ -6,7 +6,7 @@ import { useDebounce } from 'utils/helpers';
 
 type Props = {
   id: string;
-  setFilter: (arg0: string) => void;
+  setFilter: (filter: string) => void;
   sm?: boolean;
   filterChips?: string;
 };
