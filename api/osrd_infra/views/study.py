@@ -167,11 +167,7 @@ class ProjectView(
         project = get_object_or_404(queryset, pk=pk)
         image_db = project.image
         if image_db:
-            stream = BytesIO(image_db)
-            image = Image.open(stream)
-            response = HttpResponse(content_type="image/png")
-            image.save(response, "PNG")
-            return response
+            return HttpResponse(image_db, content_type="image/png")
         return Response({"image": "null"})
 
     @action(url_path="study_types", detail=True, methods=["get"])
@@ -188,6 +184,10 @@ class ProjectView(
         if "image" in input_serializer.validated_data.keys():
             image = input_serializer.validated_data["image"]
             input_serializer.validated_data["image"] = image.read()
+            stream = BytesIO(input_serializer.validated_data["image"])
+            image = Image.open(stream)
+            response = HttpResponse(content_type="image/png")
+            image.save(response, "PNG")
         input_serializer.save()
         return Response(data=input_serializer.data, status=201)
 
@@ -198,7 +198,10 @@ class ProjectView(
         if "image" in serializer.validated_data.keys():
             image = serializer.validated_data["image"]
             serializer.validated_data["image"] = image.read()
-            print(image)
+            stream = BytesIO(serializer.validated_data["image"])
+            image = Image.open(stream)
+            response = HttpResponse(content_type="image/png")
+            image.save(response, "PNG")
         serializer.save()
         project.save()
         return Response(data=serializer.data, status=202)
