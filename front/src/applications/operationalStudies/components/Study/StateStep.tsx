@@ -6,7 +6,7 @@ import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 type Props = {
   projectID: number;
   studyID: number;
-  getStudyDetail: (arg0: boolean) => void;
+  getStudyDetail: (withNotification: boolean) => void;
   number: number;
   state: string;
   done: boolean;

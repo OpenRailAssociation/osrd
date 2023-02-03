@@ -3,7 +3,6 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import { getRandomImage } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 import StudyCard from 'applications/operationalStudies/components/Project/StudyCard';
 import Loader from 'common/Loader';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';

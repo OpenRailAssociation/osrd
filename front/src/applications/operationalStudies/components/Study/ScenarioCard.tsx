@@ -13,7 +13,7 @@ import { MdTrain } from 'react-icons/md';
 import nextId from 'react-id-generator';
 
 type Props = {
-  setFilterChips: (arg0: string) => void;
+  setFilterChips: (filterChips: string) => void;
   details: {
     id: number;
     name: string;
