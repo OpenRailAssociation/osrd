@@ -59,7 +59,7 @@ export default function Home() {
         description: filter,
         tags: filter,
       };
-      const data = await get(PROJECTS_URI, params);
+      const data = await get(PROJECTS_URI, { params });
       setProjectsList(data.results);
     } catch (error) {
       console.error(error);

@@ -94,7 +94,7 @@ export default function Project() {
         description: filter,
         tags: filter,
       };
-      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, params);
+      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
       setStudiesList(data.results);
     } catch (error) {
       console.error(error);

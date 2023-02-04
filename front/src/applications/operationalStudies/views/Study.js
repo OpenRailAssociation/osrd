@@ -112,7 +112,7 @@ export default function Study() {
       };
       const data = await get(
         `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
-        params
+        { params }
       );
       setScenariosList(data.results);
     } catch (error) {
