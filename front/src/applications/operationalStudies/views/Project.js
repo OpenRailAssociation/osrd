@@ -46,6 +46,7 @@ export default function Project() {
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState('-last_modification');
+  const [imageUrl, setImageUrl] = useState();
   const dispatch = useDispatch();
   const projectID = useSelector(getProjectID);
 
@@ -60,10 +61,18 @@ export default function Project() {
     },
   ];
 
+  const getProjectImage = async (url) => {
+    const image = await get(url, { responseType: 'blob' });
+    setImageUrl(URL.createObjectURL(image));
+  };
+
   const getProject = async (withNotification = false) => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
       setProject(result);
+      if (result.image_url) {
+        getProjectImage(`${PROJECTS_URI}${projectID}/image/`);
+      }
       if (withNotification) {
         dispatch(
           setSuccess({
@@ -120,7 +129,7 @@ export default function Project() {
                 <div className="row w-100">
                   <div className={project.image_url ? 'col-lg-4 col-md-4' : 'd-none'}>
                     <div className="project-details-title-img">
-                      <img src={project.image_url} alt="project logo" />
+                      <img src={imageUrl} alt="project logo" />
                     </div>
                   </div>
                   <div className={project.image_url ? 'col-lg-8 col-md-8' : 'col-12'}>

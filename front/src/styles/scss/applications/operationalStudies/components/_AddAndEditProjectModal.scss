@@ -6,6 +6,8 @@
     max-height: 30vh;
     width: 100%;
     height: 100%;
+    margin-bottom: 1rem;
+    padding-right: 1rem;
     img {
       display: flex;
       align-items: center;
@@ -26,7 +28,7 @@
       background-color: var(--coolgray1);
       color: var(--coolgray7);
       border-radius: 4px;
-      width: calc(100% - 1rem);
+      width: 100%;
       height: 100%;
       transition: 0.2s;
       label {
@@ -61,10 +63,13 @@
           background-color: var(--white);
           border: none;
           color: var(--coolgray11);
-          font-size: 1.25rem;
+          font-size: 1.5rem;
           border-radius: 4px;
-          padding: 0.5rem;
+          padding: 0.25rem;
           transition: 0.2s;
+          img {
+            height: 1.5rem;
+          }
           &:hover {
             background-color: var(--coolgray11);
             color: var(--coolgray1);
@@ -78,6 +83,11 @@
           }
         }
       }
+    }
+    @media (max-width: 767px) {
+      position: relative;
+      min-height: 15vh;
+      padding-right: 0;
     }
   }
   .project-edition-modal-title {

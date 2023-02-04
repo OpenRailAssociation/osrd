@@ -121,6 +121,7 @@ export async function patch<P = any, T = any>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function patchMultipart<T = any>(
   path: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
   config: AxiosRequestConfig = {}
 ): Promise<T> {

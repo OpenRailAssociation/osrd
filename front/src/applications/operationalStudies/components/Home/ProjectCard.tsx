@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -8,6 +8,8 @@ import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateProjectID } from 'reducers/osrdconf';
+import { get } from 'common/requests';
+import { PROJECTS_URI } from '../operationalStudiesConsts';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -24,6 +26,7 @@ type Props = {
 
 export default function ProjectCard({ setFilterChips, project }: Props) {
   const { t } = useTranslation('operationalStudies/home');
+  const [imageUrl, setImageUrl] = useState<string>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -32,10 +35,22 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
     navigate('/operational-studies/project');
   };
 
+  const getProjectImage = async () => {
+    const image = await get(`${PROJECTS_URI}${project.id}/image/`, { responseType: 'blob' });
+    setImageUrl(URL.createObjectURL(image));
+  };
+
+  useEffect(() => {
+    if (project.image_url) {
+      getProjectImage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="projects-list-project-card">
       <div className="projects-list-project-card-img">
-        <LazyLoadImage src={project.image_url} alt="project logo" />
+        <LazyLoadImage src={imageUrl} alt="project logo" />
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
           <span className="mr-2">{t('openProject')}</span>
           <AiFillFolderOpen />
