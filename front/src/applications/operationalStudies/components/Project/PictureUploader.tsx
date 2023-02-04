@@ -6,6 +6,8 @@ import { GiTigerHead } from 'react-icons/gi';
 import { IoMdTrain } from 'react-icons/io';
 import { TiDelete } from 'react-icons/ti';
 import { TbCheese } from 'react-icons/tb';
+import { FaCat, FaDog } from 'react-icons/fa';
+import logoSNCF from 'assets/logo_sncf_bw.png';
 import { configItemsTypes } from './types';
 
 type PropsPlaceholder = {
@@ -43,9 +45,9 @@ function PicturePlaceholder({ configItems, isValid }: PropsPlaceholder) {
 }
 
 function PicturePlaceholderButtons({ configItems, setConfigItems }: Props) {
-  async function getRandomImage(theme: string) {
+  async function getRandomImage(url: string) {
     try {
-      const image = await fetch(`https://place${theme}.osrd.fr/`).then((res) => res.blob());
+      const image = await fetch(url).then((res) => res.blob());
       setConfigItems({ ...configItems, image });
     } catch (error) {
       console.error(error);
@@ -54,22 +56,59 @@ function PicturePlaceholderButtons({ configItems, setConfigItems }: Props) {
 
   return (
     <div className="project-edition-modal-picture-placeholder-buttons">
-      <button className="redpanda" type="button" onClick={() => getRandomImage('redpanda')}>
+      <button
+        className="cat"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/cat/')}
+      >
+        <FaCat />
+      </button>
+      <button
+        className="dog"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/dog/')}
+      >
+        <FaDog />
+      </button>
+      <button
+        className="redpanda"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/redpanda/')}
+      >
         <SiFoodpanda />
       </button>
-      <button className="tiger" type="button" onClick={() => getRandomImage('tiger')}>
+      <button
+        className="tiger"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/tiger/')}
+      >
         <GiTigerHead />
       </button>
-      <button className="train" type="button" onClick={() => getRandomImage('train')}>
+      <button
+        className="cheese"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/cheese/')}
+      >
+        <TbCheese />
+      </button>
+      <button
+        className="railways"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/railways/')}
+      >
         <IoMdTrain />
       </button>
-      <button className="cheese" type="button" onClick={() => getRandomImage('cheese')}>
-        <TbCheese />
+      <button
+        className="sncf"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/sncf/')}
+      >
+        <img src={logoSNCF} alt="SNCF BW LOGO" />
       </button>
       <button
         className="remove"
         type="button"
-        onClick={() => setConfigItems({ ...configItems, image: null })}
+        onClick={() => setConfigItems({ ...configItems, image: null, image_url: undefined })}
       >
         <TiDelete />
       </button>
