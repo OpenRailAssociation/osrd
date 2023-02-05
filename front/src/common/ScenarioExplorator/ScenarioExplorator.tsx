@@ -15,9 +15,11 @@ import projectIcon from 'assets/pictures/views/projects.svg';
 import studyIcon from 'assets/pictures/views/study.svg';
 import infraIcon from 'assets/pictures/components/tracks.svg';
 import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
+import { MdTrain } from 'react-icons/md';
+import ScenarioExploratorModal from './ScenarioExploratorModal';
 
 export default function ScenarioExplorator() {
-  const { t } = useTranslation('operationalStudies/scenarioExplorator');
+  const { t } = useTranslation('common/scenarioExplorator');
   const dispatch = useDispatch();
   const { openModal } = useContext(ModalContext);
   const projectID = useSelector(getProjectID);
@@ -74,51 +76,55 @@ export default function ScenarioExplorator() {
 
   return (
     <div
-      className="scenario-explorator"
+      className="scenario-explorator-card"
       data-testid="scenario-explorator"
       onClick={() => {
-        openModal('coucou', 'lg');
+        openModal(<ScenarioExploratorModal />, 'lg');
       }}
       role="button"
       tabIndex={0}
     >
-      <div className="scenario-explorator-card">
-        {projectDetails && studyDetails && scenarioDetails ? (
-          <div className="scenario-explorator-card-head">
-            {imageUrl && (
-              <div className="scenario-explorator-card-head-img">
-                <img src={imageUrl} alt="Project logo" />
+      {projectDetails && studyDetails && scenarioDetails ? (
+        <div className="scenario-explorator-card-head">
+          {imageUrl && (
+            <div className="scenario-explorator-card-head-img">
+              <img src={imageUrl} alt="Project logo" />
+            </div>
+          )}
+          <div className={`scenario-explorator-card-head-content ${imageUrl ? '' : 'no-image'}`}>
+            <div className="scenario-explorator-card-head-content-item">
+              <img src={projectIcon} alt="project icon" />
+              <span className="scenario-explorator-card-head-legend">{t('projectLegend')}</span>
+              <div className="scenario-explorator-card-head-project">{projectDetails.name}</div>
+            </div>
+            <div className="scenario-explorator-card-head-content-item">
+              <img src={studyIcon} alt="study icon" />
+              <span className="scenario-explorator-card-head-legend">{t('studyLegend')}</span>
+              <div className="scenario-explorator-card-head-study">{studyDetails.name}</div>
+            </div>
+            <div className="scenario-explorator-card-head-content-item">
+              <img src={scenarioIcon} alt="scenario icon" />
+              <span className="scenario-explorator-card-head-legend">{t('scenarioLegend')}</span>
+              <div className="scenario-explorator-card-head-scenario">
+                {scenarioDetails.name}
+                <span className="scenario-explorator-card-head-scenario-traincount">
+                  {scenarioDetails.trains_count}
+                  <MdTrain />
+                </span>
               </div>
-            )}
-            <div className={`scenario-explorator-card-head-content ${imageUrl ? '' : 'no-image'}`}>
-              <div className="scenario-explorator-card-head-content-item">
-                <img src={projectIcon} alt="project icon" />
-                <span className="scenario-explorator-card-head-legend">{t('projectLegend')}</span>
-                <div className="scenario-explorator-card-head-project">{projectDetails.name}</div>
-              </div>
-              <div className="scenario-explorator-card-head-content-item">
-                <img src={studyIcon} alt="study icon" />
-                <span className="scenario-explorator-card-head-legend">{t('studyLegend')}</span>
-                <div className="scenario-explorator-card-head-study">{studyDetails.name}</div>
-              </div>
-              <div className="scenario-explorator-card-head-content-item">
-                <img src={scenarioIcon} alt="scenario icon" />
-                <span className="scenario-explorator-card-head-legend">{t('scenarioLegend')}</span>
-                <div className="scenario-explorator-card-head-scenario">{scenarioDetails.name}</div>
-              </div>
-              <div className="scenario-explorator-card-head-content-item">
-                <img src={infraIcon} alt="infra icon" />
-                <span className="scenario-explorator-card-head-legend">{t('infraLegend')}</span>
-                <div className="scenario-explorator-card-head-infra">
-                  {scenarioDetails.infra_name}
-                </div>
+            </div>
+            <div className="scenario-explorator-card-head-content-item">
+              <img src={infraIcon} alt="infra icon" />
+              <span className="scenario-explorator-card-head-legend">{t('infraLegend')}</span>
+              <div className="scenario-explorator-card-head-infra">
+                {scenarioDetails.infra_name}
               </div>
             </div>
           </div>
-        ) : (
-          t('noScenarioSelected')
-        )}
-      </div>
+        </div>
+      ) : (
+        t('noScenarioSelected')
+      )}
     </div>
   );
 }

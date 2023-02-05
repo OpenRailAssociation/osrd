@@ -20,6 +20,7 @@ import { updateStudyID } from 'reducers/osrdconf';
 import { setSuccess } from 'reducers/main';
 import { GoNote } from 'react-icons/go';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { studyTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const configItemsDefaults = {
@@ -36,24 +37,9 @@ const configItemsDefaults = {
   budget: 0,
 };
 
-type configItemsTypes = {
-  id?: number;
-  name: string;
-  type: string;
-  description: string;
-  service_code: string;
-  business_code: string;
-  start_date: string;
-  expected_end_date: string;
-  actual_end_date: string;
-  state: string;
-  tags: string[];
-  budget: number;
-};
-
 type Props = {
   editionMode: false;
-  study?: configItemsTypes;
+  study?: studyTypes;
   getStudy?: any;
 };
 
@@ -62,7 +48,7 @@ type SelectOptions = { key: string | null; value: string }[];
 export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(study || configItemsDefaults);
+  const [configItems, setConfigItems] = useState<studyTypes>(study || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const emptyOptions = [{ key: null, value: t('nothingSelected') }];
   const [studyCategories, setStudyCategories] = useState<SelectOptions>(emptyOptions);

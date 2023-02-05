@@ -21,13 +21,13 @@ import { updateProjectID } from 'reducers/osrdconf';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setSuccess } from 'reducers/main';
+import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
-import { configItemsTypes } from './types';
 
 export type Props = {
   editionMode: false;
-  project?: configItemsTypes;
+  project?: projectTypes;
   getProject?: any;
 };
 
@@ -43,7 +43,7 @@ const configItemsDefaults = {
 export default function AddOrEditProjectModal({ editionMode, project, getProject }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(project || configItemsDefaults);
+  const [configItems, setConfigItems] = useState<projectTypes>(project || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
