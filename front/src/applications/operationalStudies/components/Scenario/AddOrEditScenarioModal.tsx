@@ -18,33 +18,26 @@ import { deleteRequest, patch, post } from 'common/requests';
 import { useNavigate } from 'react-router-dom';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { setSuccess } from 'reducers/main';
+import { scenarioTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
-const configItemsDefaults = {
+const scenarioTypesDefaults = {
   name: '',
   description: '',
   infra: undefined,
   tags: [],
 };
 
-type configItemsTypes = {
-  id?: number;
-  name: string;
-  description: string;
-  infra: number | undefined;
-  tags: string[];
-};
-
 type Props = {
   editionMode: false;
-  scenario?: configItemsTypes;
+  scenario?: scenarioTypes;
   getScenario?: any;
 };
 
 export default function AddOrEditScenarioModal({ editionMode, scenario, getScenario }: Props) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(scenario || configItemsDefaults);
+  const [configItems, setConfigItems] = useState<scenarioTypes>(scenario || scenarioTypesDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
