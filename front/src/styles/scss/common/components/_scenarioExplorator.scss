@@ -1,0 +1,89 @@
+.scenario-explorator {
+  .scenario-explorator-card {
+    border-radius: 4px;
+    background-color: var(--white);
+    height: 7.75rem;
+    padding: 0.5rem;
+    transition: 0.4s;
+    cursor: pointer;
+    .scenario-explorator-card-head {
+      .scenario-explorator-card-head-img {
+        position: absolute;
+        overflow: hidden;
+        border-radius: 4px;
+        height: 6.75rem;
+        width: 6rem;
+        img {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--coolgray7);
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+      .scenario-explorator-card-head-content {
+        margin-left: 6.5rem;
+        height: 4.5rem;
+        font-weight: 500;
+        .scenario-explorator-card-head-content-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 0.25rem;
+          height: 1.5rem;
+          img {
+            border-radius: 4px 0 0 4px;
+            background-color: var(--coolgray3);
+            padding: 0.25rem;
+            height: 1.5rem;
+          }
+          div {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding: 0 0.25rem 0 0.5rem;
+            width: 100%;
+            color: var(--white);
+            border-radius: 0 4px 4px 0;
+            font-size: 0.8rem;
+          }
+          .scenario-explorator-card-head-legend {
+            display: flex;
+            align-items: center;
+            border-radius: 0;
+            font-weight: 100;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            background-color: var(--coolgray3);
+            color: var(--secondary);
+            height: 100%;
+            width: 5rem;
+          }
+          .scenario-explorator-card-head-project {
+            border-radius: 0 4px 4px 0;
+            background-color: var(--purple);
+            width: 100%;
+          }
+          .scenario-explorator-card-head-study {
+            background-color: var(--primary);
+          }
+          .scenario-explorator-card-head-scenario {
+            font-size: 1rem;
+            background-color: var(--secondary);
+          }
+          .scenario-explorator-card-head-infra {
+            color: var(--secondary);
+            border: 1px solid var(--coolgray3);
+          }
+        }
+        &.no-image {
+          margin-left: 0;
+        }
+      }
+    }
+    &:hover {
+      opacity: 0.5;
+    }
+  }
+}
