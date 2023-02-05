@@ -70,6 +70,8 @@ export default function ScenarioExplorator() {
   useEffect(() => {
     if (projectDetails?.image_url) {
       getProjectImage(`${PROJECTS_URI}${projectID}/image/`);
+    } else {
+      setImageUrl(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectDetails]);

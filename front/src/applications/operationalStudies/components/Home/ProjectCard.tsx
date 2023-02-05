@@ -7,7 +7,7 @@ import { AiFillFolderOpen } from 'react-icons/ai';
 import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
-import { updateProjectID } from 'reducers/osrdconf';
+import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { get } from 'common/requests';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 
@@ -32,6 +32,8 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
 
   const handleClick = () => {
     dispatch(updateProjectID(project.id));
+    dispatch(updateStudyID(undefined));
+    dispatch(updateScenarioID(undefined));
     navigate('/operational-studies/project');
   };
 
