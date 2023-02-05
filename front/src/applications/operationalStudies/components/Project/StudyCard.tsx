@@ -8,7 +8,7 @@ import studyLogo from 'assets/pictures/views/study.svg';
 import { budgetFormat } from 'utils/numbers';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
-import { updateStudyID } from 'reducers/osrdconf';
+import { updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { RiFolderChartLine } from 'react-icons/ri';
 
 type Props = {
@@ -39,6 +39,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
 
   const handleClick = () => {
     dispatch(updateStudyID(study.id));
+    dispatch(updateScenarioID(undefined));
     navigate('/operational-studies/study');
   };
 

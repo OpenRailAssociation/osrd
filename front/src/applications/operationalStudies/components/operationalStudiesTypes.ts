@@ -10,6 +10,7 @@ export type projectTypes = {
   budget: number;
   image?: Blob | null;
   image_url?: string;
+  studies?: number[];
 };
 
 export type studyTypes = {
@@ -25,12 +26,14 @@ export type studyTypes = {
   state: string;
   tags: string[];
   budget: number;
+  scenarios?: number[];
 };
 
 export type scenarioTypes = {
   id?: number;
   name: string;
   description: string;
-  infra: number | undefined;
+  infra?: number;
+  timetable?: number;
   tags: string[];
 };
