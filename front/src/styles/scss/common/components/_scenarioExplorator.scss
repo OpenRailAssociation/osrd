@@ -1,89 +1,187 @@
-.scenario-explorator {
-  .scenario-explorator-card {
-    border-radius: 4px;
-    background-color: var(--white);
-    height: 7.75rem;
-    padding: 0.5rem;
-    transition: 0.4s;
-    cursor: pointer;
-    .scenario-explorator-card-head {
-      .scenario-explorator-card-head-img {
-        position: absolute;
-        overflow: hidden;
-        border-radius: 4px;
-        height: 6.75rem;
-        width: 6rem;
-        img {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--coolgray7);
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-      }
-      .scenario-explorator-card-head-content {
-        margin-left: 6.5rem;
-        height: 4.5rem;
-        font-weight: 500;
-        .scenario-explorator-card-head-content-item {
-          display: flex;
-          align-items: center;
-          margin-bottom: 0.25rem;
-          height: 1.5rem;
-          img {
-            border-radius: 4px 0 0 4px;
-            background-color: var(--coolgray3);
-            padding: 0.25rem;
-            height: 1.5rem;
-          }
-          div {
-            display: flex;
-            align-items: center;
-            height: 100%;
-            padding: 0 0.25rem 0 0.5rem;
-            width: 100%;
-            color: var(--white);
-            border-radius: 0 4px 4px 0;
-            font-size: 0.8rem;
-          }
-          .scenario-explorator-card-head-legend {
-            display: flex;
-            align-items: center;
-            border-radius: 0;
-            font-weight: 100;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            background-color: var(--coolgray3);
-            color: var(--secondary);
-            height: 100%;
-            width: 5rem;
-          }
-          .scenario-explorator-card-head-project {
-            border-radius: 0 4px 4px 0;
-            background-color: var(--purple);
-            width: 100%;
-          }
-          .scenario-explorator-card-head-study {
-            background-color: var(--primary);
-          }
-          .scenario-explorator-card-head-scenario {
-            font-size: 1rem;
-            background-color: var(--secondary);
-          }
-          .scenario-explorator-card-head-infra {
-            color: var(--secondary);
-            border: 1px solid var(--coolgray3);
-          }
-        }
-        &.no-image {
-          margin-left: 0;
-        }
+.scenario-explorator-card {
+  border-radius: 4px;
+  background-color: var(--white);
+  height: 7.75rem;
+  padding: 0.5rem;
+  transition: 0.4s;
+  cursor: pointer;
+  .scenario-explorator-card-head {
+    .scenario-explorator-card-head-img {
+      position: absolute;
+      overflow: hidden;
+      border-radius: 4px;
+      height: 6.75rem;
+      width: 6rem;
+      img {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--coolgray7);
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
     }
-    &:hover {
-      opacity: 0.5;
+    .scenario-explorator-card-head-content {
+      margin-left: 6.5rem;
+      height: 4.5rem;
+      font-weight: 500;
+      .scenario-explorator-card-head-content-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.25rem;
+        height: 1.5rem;
+        img {
+          border-radius: 4px 0 0 4px;
+          background-color: var(--coolgray3);
+          padding: 0.25rem;
+          height: 1.5rem;
+        }
+        div {
+          display: flex;
+          align-items: center;
+          height: 100%;
+          padding: 0 0.25rem 0 0.5rem;
+          width: 100%;
+          color: var(--white);
+          border-radius: 0 4px 4px 0;
+          font-size: 0.8rem;
+        }
+        .scenario-explorator-card-head-legend {
+          display: flex;
+          align-items: center;
+          border-radius: 0;
+          font-weight: 100;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          background-color: var(--coolgray3);
+          color: var(--secondary);
+          height: 100%;
+          width: 5rem;
+        }
+        .scenario-explorator-card-head-project {
+          border-radius: 0 4px 4px 0;
+          background-color: var(--purple);
+          width: 100%;
+        }
+        .scenario-explorator-card-head-study {
+          background-color: var(--primary);
+        }
+        .scenario-explorator-card-head-scenario {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 1rem;
+          background-color: var(--secondary);
+          .scenario-explorator-card-head-scenario-traincount {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0 0.25rem;
+          }
+        }
+        .scenario-explorator-card-head-infra {
+          color: var(--secondary);
+          border: 1px solid var(--coolgray3);
+        }
+      }
+      &.no-image {
+        margin-left: 0;
+      }
+    }
+  }
+  &:hover {
+    opacity: 0.5;
+  }
+}
+.scenario-explorator-modal {
+  .scenario-explorator-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    img {
+      height: 2rem;
+    }
+  }
+  .scenario-explorator-modal-part {
+    position: relative;
+    background-color: var(--coolgray1);
+    height: 30vh;
+    border-radius: 0 0 4px 4px;
+    .scenario-explorator-modal-part-title {
+      position: relative;
+      padding: 0.5rem;
+      background-color: var(--coolgray3);
+      border-radius: 4px 4px 0 0;
+      img {
+        left: 0.5rem;
+        position: absolute;
+        height: 1.25rem;
+      }
+      h2 {
+        font-size: 1rem;
+        font-weight: 400;
+        text-transform: uppercase;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+      }
+    }
+    &.projects {
+      .scenario-explorator-modal-part-title {
+        border-bottom: 4px solid var(--purple);
+      }
+    }
+    &.studies {
+      .scenario-explorator-modal-part-title {
+        border-bottom: 4px solid var(--primary);
+      }
+    }
+    &.scenarios {
+      .scenario-explorator-modal-part-title {
+        border-bottom: 4px solid var(--coolgray9);
+      }
+    }
+    .scenario-explorator-modal-part-arrow {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      right: -3.5rem;
+      top: 0;
+      height: 100%;
+      font-size: 6rem;
+      color: var(--coolgray1);
+    }
+    .scenario-explorator-modal-part-itemslist {
+      margin: 0.5rem 0;
+      overflow: auto;
+      .scenario-explorator-modal-part-itemslist-projectminicard {  
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+        padding: 0.25rem;
+        height: 2rem;
+        margin: 0 0 0.25rem 2.25rem;
+        width: calc(100% - 2.25rem);
+        .scenario-explorator-modal-part-itemslist-projectminicard-img {
+          position: absolute;
+          overflow: hidden;
+          border-radius: 4px;
+          height: 2rem;
+          width: 2rem;
+          left: 0.25rem;
+          img {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--coolgray7);
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+      }
     }
   }
 }

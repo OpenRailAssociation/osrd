@@ -8,16 +8,16 @@ import { TiDelete } from 'react-icons/ti';
 import { TbCheese } from 'react-icons/tb';
 import { FaCat, FaDog } from 'react-icons/fa';
 import logoSNCF from 'assets/logo_sncf_bw.png';
-import { configItemsTypes } from './types';
+import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 
 type PropsPlaceholder = {
-  configItems: configItemsTypes;
+  configItems: projectTypes;
   isValid: boolean;
 };
 
 type Props = {
-  configItems: configItemsTypes;
-  setConfigItems: (configItems: configItemsTypes) => void;
+  configItems: projectTypes;
+  setConfigItems: (configItems: projectTypes) => void;
 };
 
 function PicturePlaceholder({ configItems, isValid }: PropsPlaceholder) {
