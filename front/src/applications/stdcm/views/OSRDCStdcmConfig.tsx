@@ -5,20 +5,21 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
-import InfraSelector from 'common/InfraSelector/InfraSelector';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
+import ScenarioExplorator from 'common/ScenarioExplorator/ScenarioExplorator';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 
 import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
+import { getScenarioID } from 'reducers/osrdconf/selectors';
 
 type OSRDStdcmConfigProps = {
   setCurrentStdcmRequestStatus: (status: string) => void;
 };
 
 export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmConfigProps) {
-  const { darkmode } = useSelector((state: any) => state.main);
+  const scenarioID = useSelector(getScenarioID);
 
   const dispatch = useDispatch();
   const { t } = useTranslation([
@@ -27,11 +28,6 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
     'allowances',
   ]);
   const [extViewport, setExtViewport] = useState({});
-  const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
-
-  if (darkmode) {
-    import('../styles/OSRDConfigDarkMode.scss');
-  }
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -59,55 +55,60 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
       {/* use class from new workflow in future */}
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-md-7 col-lg-6">
-          <RollingStockSelector />
-          <SpeedLimitByTagSelector />
-          <Itinerary {...itineraryProps} />
-          <div className="row">
-            <div className="col-xl-6">
-              <div className="osrd-config-item mb-2 osrd-config-item-container">
-                <StdcmSingleAllowance
-                  title={t('allowances:gridMarginBefore')}
-                  typeKey="gridMarginBefore"
-                />
-              </div>
-            </div>
-            <div className="col-xl-6">
-              <div className="osrd-config-item mb-2 osrd-config-item-container">
-                <StdcmSingleAllowance
-                  title={t('allowances:gridMarginAfter')}
-                  typeKey="gridMarginAfter"
-                />
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-xl-12">
-                <div className="osrd-config-item mb-2 osrd-config-item-container">
-                  <StdcmSingleAllowance
-                    title={t('allowances:standardAllowance')}
-                    typeKey="standardStdcmAllowance"
-                  />
+          <ScenarioExplorator />
+          {false && (
+            <>
+              <RollingStockSelector />
+              <SpeedLimitByTagSelector />
+              <Itinerary {...itineraryProps} />
+              <div className="row">
+                <div className="col-xl-6">
+                  <div className="osrd-config-item mb-2 osrd-config-item-container">
+                    <StdcmSingleAllowance
+                      title={t('allowances:gridMarginBefore')}
+                      typeKey="gridMarginBefore"
+                    />
+                  </div>
+                </div>
+                <div className="col-xl-6">
+                  <div className="osrd-config-item mb-2 osrd-config-item-container">
+                    <StdcmSingleAllowance
+                      title={t('allowances:gridMarginAfter')}
+                      typeKey="gridMarginAfter"
+                    />
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="col-xl-12">
+                    <div className="osrd-config-item mb-2 osrd-config-item-container">
+                      <StdcmSingleAllowance
+                        title={t('allowances:standardAllowance')}
+                        typeKey="standardStdcmAllowance"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="osrd-config-stdcm-apply">
-            <button
-              className="btn btn-sm  btn-primary "
-              type="button"
-              onClick={() => setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending)}
-            >
-              {t('operationalStudies/manageTrainSchedule:apply')}
-              <span className="sr-only" aria-hidden="true">
-                {t('operationalStudies/manageTrainSchedule:apply')}
-              </span>
-            </button>
-          </div>
+              <div className="osrd-config-stdcm-apply">
+                <button
+                  className="btn btn-sm  btn-primary "
+                  type="button"
+                  onClick={() => setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending)}
+                >
+                  {t('operationalStudies/manageTrainSchedule:apply')}
+                  <span className="sr-only" aria-hidden="true">
+                    {t('operationalStudies/manageTrainSchedule:apply')}
+                  </span>
+                </button>
+              </div>
+            </>
+          )}
         </div>
         <div className="col-md-5 col-lg-6">
           <div className="osrd-config-item mb-2">
             <div className="osrd-config-item-container osrd-config-item-container-map">
-              <Map />
+              {/* <Map /> */}
             </div>
           </div>
         </div>
