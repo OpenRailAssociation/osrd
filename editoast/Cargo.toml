@@ -14,29 +14,33 @@ clap = { version = "4.1.1", features = ["derive", "env"] }
 colored = "2.0.0"
 chrono = { version = "0.4.23", features = ["serde"] }
 derivative = "2.2.0"
-diesel = { version = "2.0", features = ["postgres", "serde_json", "chrono"] }
+diesel = { version = "2.0", features = [
+    "r2d2",
+    "postgres",
+    "serde_json",
+    "chrono",
+] }
 json-patch = "0.3.0"
 pathfinding = "4.2.1"
 rand = "0.8.5"
-rocket = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
-    "json",
+actix-web = "4"
+actix-http = "3.3.0"
+actix-cors = "0.6.4"
+env_logger = "0.10.0"
+redis = { version = "0.22", features = [
+    "tokio-comp",
+    "connection-manager",
+    "tokio-native-tls-comp",
 ] }
-redis = { version = "0.21.7", features = ["tokio-native-tls-comp"] }
-rocket_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", version = "0.1.0-rc.2", features = [
-    "deadpool_redis",
-] }
-rocket_sync_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
-    "diesel_postgres_pool",
-] }
-serde = "~1.0.147"
-serde_derive = "~1.0.147"
-serde_json = "~1.0.89"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+serde_yaml = "0.9"
 strum = "~0.24.1"
 strum_macros = "~0.24.3"
 thiserror = "~1.0.37"
 enum-map = "2.4.2"
 tempfile = "3.3.0"
 editoast_derive = { path = "./editoast_derive" }
-serde_yaml = "0.9.17"
 mvt = "0.7.0"
 pointy = "0.2.1"

@@ -1,4 +1,4 @@
-use crate::api_error::ApiError;
+use crate::error::Result;
 use crate::schema::{
     BufferStop, Catenary, Detector, OSRDIdentified, OSRDObject, ObjectType, OperationalPoint,
     Route, Signal, SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
@@ -30,9 +30,9 @@ pub fn apply_create_operation(
     railjson_object: &RailjsonObject,
     infra_id: i64,
     conn: &mut PgConnection,
-) -> Result<(), Box<dyn ApiError>> {
+) -> Result<()> {
     if railjson_object.get_id().is_empty() {
-        return Err(Box::new(OperationError::EmptyId));
+        return Err(OperationError::EmptyId.into());
     }
     sql_query(format!(
         "INSERT INTO {} (infra_id, obj_id, data) VALUES ($1, $2, $3)",
@@ -90,6 +90,82 @@ impl RailjsonObject {
             RailjsonObject::Catenary { railjson: obj } => serde_json::to_value(obj),
         }
         .unwrap()
+    }
+}
+
+impl From<TrackSection> for RailjsonObject {
+    fn from(track: TrackSection) -> Self {
+        RailjsonObject::TrackSection { railjson: track }
+    }
+}
+
+impl From<Catenary> for RailjsonObject {
+    fn from(catenary: Catenary) -> Self {
+        RailjsonObject::Catenary { railjson: catenary }
+    }
+}
+
+impl From<Signal> for RailjsonObject {
+    fn from(signal: Signal) -> Self {
+        RailjsonObject::Signal { railjson: signal }
+    }
+}
+
+impl From<SpeedSection> for RailjsonObject {
+    fn from(speedsection: SpeedSection) -> Self {
+        RailjsonObject::SpeedSection {
+            railjson: speedsection,
+        }
+    }
+}
+
+impl From<TrackSectionLink> for RailjsonObject {
+    fn from(tracksectionlink: TrackSectionLink) -> Self {
+        RailjsonObject::TrackSectionLink {
+            railjson: tracksectionlink,
+        }
+    }
+}
+
+impl From<Switch> for RailjsonObject {
+    fn from(switch: Switch) -> Self {
+        RailjsonObject::Switch { railjson: switch }
+    }
+}
+
+impl From<SwitchType> for RailjsonObject {
+    fn from(switchtype: SwitchType) -> Self {
+        RailjsonObject::SwitchType {
+            railjson: switchtype,
+        }
+    }
+}
+
+impl From<Detector> for RailjsonObject {
+    fn from(detector: Detector) -> Self {
+        RailjsonObject::Detector { railjson: detector }
+    }
+}
+
+impl From<BufferStop> for RailjsonObject {
+    fn from(bufferstop: BufferStop) -> Self {
+        RailjsonObject::BufferStop {
+            railjson: bufferstop,
+        }
+    }
+}
+
+impl From<Route> for RailjsonObject {
+    fn from(route: Route) -> Self {
+        RailjsonObject::Route { railjson: route }
+    }
+}
+
+impl From<OperationalPoint> for RailjsonObject {
+    fn from(operationalpoint: OperationalPoint) -> Self {
+        RailjsonObject::OperationalPoint {
+            railjson: operationalpoint,
+        }
     }
 }
 

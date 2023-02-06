@@ -1,6 +1,5 @@
 use super::OperationError;
-use crate::api_error::ApiError;
-
+use crate::error::Result;
 use crate::schema::ObjectRef;
 use crate::schema::ObjectType;
 use diesel::sql_types::{BigInt, Text};
@@ -17,7 +16,7 @@ pub struct DeleteOperation {
 }
 
 impl DeleteOperation {
-    pub fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
+    pub fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<()> {
         match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
             self.obj_type.get_table()
@@ -27,9 +26,7 @@ impl DeleteOperation {
         .execute(conn)
         {
             Ok(1) => Ok(()),
-            Ok(_) => Err(Box::new(OperationError::ObjectNotFound(
-                self.obj_id.clone(),
-            ))),
+            Ok(_) => Err(OperationError::ObjectNotFound(self.obj_id.clone()).into()),
             Err(err) => Err(err.into()),
         }
     }

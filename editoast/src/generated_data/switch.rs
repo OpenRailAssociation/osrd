@@ -1,9 +1,9 @@
+use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::ObjectType;
 
 use super::utils::InvolvedObjects;
 use super::GeneratedData;
-use diesel::result::Error;
 use diesel::sql_types::{Array, BigInt, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
@@ -14,11 +14,7 @@ impl GeneratedData for SwitchLayer {
         "osrd_infra_switchlayer"
     }
 
-    fn generate(
-        conn: &mut PgConnection,
-        infra: i64,
-        _infra_cache: &InfraCache,
-    ) -> Result<(), Error> {
+    fn generate(conn: &mut PgConnection, infra: i64, _infra_cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_switch_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)?;
@@ -30,7 +26,7 @@ impl GeneratedData for SwitchLayer {
         infra: i64,
         operations: &[crate::schema::operation::OperationResult],
         infra_cache: &crate::infra_cache::InfraCache,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::Switch);
 

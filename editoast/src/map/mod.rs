@@ -5,10 +5,10 @@ mod redis_utils;
 
 use std::collections::HashMap;
 
-use crate::db_connection::RedisPool;
+use crate::error::Result;
 pub use bounding_box::{BoundingBox, InvalidationZone};
 pub use map_layers::{Layer, MapLayers, View};
-use redis::RedisError;
+use redis::aio::ConnectionManager;
 
 pub use self::layer_cache::{
     count_tiles, get_cache_tile_key, get_layer_cache_prefix, get_tiles_to_invalidate,
@@ -27,16 +27,16 @@ pub use self::redis_utils::{delete, get, keys, set};
 ///
 /// Returns the number of deleted keys
 async fn invalidate_full_layer_cache(
-    redis_pool: &RedisPool,
+    redis: &mut ConnectionManager,
     infra_id: i64,
     layer_name: &str,
     view_name: Option<&str>,
-) -> Result<u64, RedisError> {
+) -> Result<u64> {
     let prefix: String = view_name.map_or(get_layer_cache_prefix(layer_name, infra_id), |view| {
         get_view_cache_prefix(layer_name, infra_id, view)
     });
-    let matching_keys = keys(redis_pool, &format!("{prefix}.*")).await?;
-    let number_of_deleted_keys = delete(redis_pool, matching_keys).await?;
+    let matching_keys = keys(redis, &format!("{prefix}.*")).await?;
+    let number_of_deleted_keys = delete(redis, matching_keys).await?;
     Ok(number_of_deleted_keys)
 }
 
@@ -47,16 +47,16 @@ async fn invalidate_full_layer_cache(
 /// * `redis_pool` - Pool to use to connect to the redis
 /// * `tiles_to_invalidate` - View cache prefix to tiles
 async fn invalidate_cache_tiles(
-    redis_pool: &RedisPool,
+    redis: &mut ConnectionManager,
     tiles_to_invalidate: HashMap<String, Vec<Tile>>,
-) -> Result<u64, RedisError> {
+) -> Result<u64> {
     let mut keys_to_delete: Vec<String> = Vec::new();
     for (view_cache_prefix, tiles) in tiles_to_invalidate {
         for tile in tiles {
             keys_to_delete.push(get_cache_tile_key(&view_cache_prefix, &tile));
         }
     }
-    let number_of_deleted_keys = delete(redis_pool, keys_to_delete).await?;
+    let number_of_deleted_keys = delete(redis, keys_to_delete).await?;
     Ok(number_of_deleted_keys)
 }
 
@@ -69,16 +69,16 @@ async fn invalidate_cache_tiles(
 /// * `layer_name` - Layer on which invalidation must be done
 /// * `zone` - Zone to invalidate
 async fn invalidate_layer_zone(
-    redis_pool: &RedisPool,
+    redis: &mut ConnectionManager,
     infra_id: i64,
     layer_name: &str,
     zone: &InvalidationZone,
     max_tiles: u64,
-) -> Result<(), RedisError> {
+) -> Result<()> {
     let mut affected_tiles: HashMap<String, Vec<Tile>> = HashMap::new();
     for (view_name, bbox) in [("geo", &zone.geo), ("sch", &zone.sch)] {
         if count_tiles(18, bbox) > max_tiles {
-            invalidate_full_layer_cache(redis_pool, infra_id, layer_name, Some(view_name)).await?;
+            invalidate_full_layer_cache(redis, infra_id, layer_name, Some(view_name)).await?;
         } else {
             affected_tiles.insert(
                 get_view_cache_prefix(layer_name, infra_id, view_name),
@@ -87,7 +87,7 @@ async fn invalidate_layer_zone(
         }
     }
     if !affected_tiles.is_empty() {
-        invalidate_cache_tiles(redis_pool, affected_tiles).await?;
+        invalidate_cache_tiles(redis, affected_tiles).await?;
     }
     Ok(())
 }
@@ -104,21 +104,18 @@ async fn invalidate_layer_zone(
 ///
 /// Panics if fail
 pub async fn invalidate_zone(
-    redis_pool: &RedisPool,
+    redis: &mut ConnectionManager,
     layers: &Vec<String>,
     infra_id: i64,
     zone: &InvalidationZone,
     max_tiles: u64,
-) {
-    if !zone.is_valid() {
-        return;
-    }
-    for layer in layers {
-        let result = invalidate_layer_zone(redis_pool, infra_id, layer, zone, max_tiles).await;
-        if result.is_err() {
-            panic!("Failed to invalidate map layer: {}", result.unwrap_err());
+) -> Result<()> {
+    if zone.is_valid() {
+        for layer in layers {
+            invalidate_layer_zone(redis, infra_id, layer, zone, max_tiles).await?;
         }
     }
+    Ok(())
 }
 
 /// Invalidates all map layers of a specific infra
@@ -130,9 +127,9 @@ pub async fn invalidate_zone(
 /// * `infra_id` - Infra to on which layers must be invalidated
 ///
 /// Panics if fail
-pub async fn invalidate_all(redis_pool: &RedisPool, layers: &Vec<String>, infra_id: i64) {
+pub async fn invalidate_all(redis: &mut ConnectionManager, layers: &Vec<String>, infra_id: i64) {
     for layer_name in layers {
-        let result = invalidate_full_layer_cache(redis_pool, infra_id, layer_name, None).await;
+        let result = invalidate_full_layer_cache(redis, infra_id, layer_name, None).await;
         if result.is_err() {
             panic!("Failed to invalidate map layer: {}", result.unwrap_err());
         }
