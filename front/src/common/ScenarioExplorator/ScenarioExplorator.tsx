@@ -125,7 +125,7 @@ export default function ScenarioExplorator() {
           </div>
         </div>
       ) : (
-        t('noScenarioSelected')
+        <div className="scenario-explorator-card-noscenario">{t('noScenarioSelected')}</div>
       )}
     </div>
   );
