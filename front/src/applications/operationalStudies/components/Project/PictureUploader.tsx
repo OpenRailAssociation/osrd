@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { AiOutlinePicture } from 'react-icons/ai';
 import { useTranslation } from 'react-i18next';
 import { SiFoodpanda } from 'react-icons/si';
-import { GiTigerHead } from 'react-icons/gi';
+import { GiBarbecue, GiTigerHead } from 'react-icons/gi';
 import { IoMdTrain } from 'react-icons/io';
 import { TiDelete } from 'react-icons/ti';
 import { TbCheese } from 'react-icons/tb';
 import { FaCat, FaDog } from 'react-icons/fa';
 import logoSNCF from 'assets/logo_sncf_bw.png';
+import logoGhibli from 'assets/pictures/misc/ghibli.svg';
 import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 
 type PropsPlaceholder = {
@@ -56,6 +57,20 @@ function PicturePlaceholderButtons({ configItems, setConfigItems }: Props) {
 
   return (
     <div className="project-edition-modal-picture-placeholder-buttons">
+      <button
+        className="barbecue"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/barbecue/')}
+      >
+        <GiBarbecue />
+      </button>
+      <button
+        className="ghibli"
+        type="button"
+        onClick={() => getRandomImage('https://picplaceholder.osrd.fr/ghibli/')}
+      >
+        <img src={logoGhibli} alt="Ghibli logo" />
+      </button>
       <button
         className="cat"
         type="button"
