@@ -1,10 +1,11 @@
 {
-  "projectLegend": "projet",
-  "studyLegend": "étude",
-  "scenarioLegend": "scénario",
   "infraLegend": "infra",
-  "scenarioExplorator": "Navigateur de scénarios",
+  "noScenarioSelected": "Cliquez ici pour sélectionner un scénario afin de déterminer une infrastructure et une grille horaire.",
+  "projectLegend": "projet",
   "projects": "Projets",
+  "scenarioExplorator": "Navigateur de scénarios",
+  "scenarioLegend": "scénario",
+  "scenarios": "Scénarios",
   "studies": "Études",
-  "scenarios": "Scénarios"
+  "studyLegend": "étude"
 }
