@@ -27,6 +27,7 @@ const defineChart = (
   const svg = d3select(ref.current)
     .append('div')
     .attr('id', id)
+    .style('height', '100%')
     .append('svg')
     // .attr('width', width + margin.left + margin.right)
     // .attr('height', height + margin.top + margin.bottom)
@@ -34,7 +35,10 @@ const defineChart = (
       'viewBox',
       `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`
     )
-    // .attr('perserveAspectRatio', 'xMinYMid')
+    .attr('preserveAspectRatio', 'none')
+    .style('width', `100%`)
+    .style('height', `100%`)
+    .style('display', `inline-block`)
     .append('g')
     .attr('transform', `translate(${margin.left},${margin.top})`);
 
