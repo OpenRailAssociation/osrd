@@ -15,6 +15,7 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
+import { ElectricalProfilesLegend } from './ElectricalProfilesLegend';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -49,6 +50,7 @@ const CHART_MIN_HEIGHT = 250;
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
   const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
+  const [isActive, setIsActive] = useState(false);
 
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(
     initialHeightOfSpeedSpaceChart
@@ -264,6 +266,17 @@ const CHART_MIN_HEIGHT = 250;
           speedSpaceSettings={speedSpaceSettings}
         />
         <div ref={ref} className="w-100" />
+        {localSettings.electricalProfiles && (
+          <button
+            type="button"
+            className="btn-rounded btn-rounded-white box-shadow btn-rotate mt-5"
+            onClick={() => {
+              setIsActive(!isActive);
+            }}
+          >
+            <i className="icons-circle-information" />
+          </button>
+        )}
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
@@ -282,6 +295,7 @@ const CHART_MIN_HEIGHT = 250;
           <CgLoadbar />
         </div>
       </div>
+      {isActive ? <ElectricalProfilesLegend isActive={isActive} setIsActive={setIsActive} /> : null}
     </Rnd>
   );
 }

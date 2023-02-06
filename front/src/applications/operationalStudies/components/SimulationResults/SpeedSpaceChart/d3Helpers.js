@@ -4,7 +4,6 @@ import defineChart from 'applications/operationalStudies/components/SimulationRe
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
-import drawLegendToggle from '../ChartHelpers/drawLegendToggle';
 
 function createChart(
   CHART_ID,
@@ -218,12 +217,11 @@ function drawTrain(
         segment.position_start = source.start;
         segment.position_end = source.stop;
         segment.position_middle = (source.start + source.stop) / 2;
-        segment.height_start = 4;
-        segment.height_end = 16;
+        segment.height_start = (heightOfSpeedSpaceChart * 5) / 100;
+        segment.height_end = (heightOfSpeedSpaceChart * 20) / 100;
         segment.height_middle = (segment.height_start + segment.height_end) / 2;
         segment.usedMode = source.used_mode;
         segment.usedProfile = source.used_profile;
-
         // prepare colors
         const electricalProfileColorsWithProfile = {
           25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
@@ -308,25 +306,6 @@ function drawTrain(
           `electricalProfiles_${index}`
         );
       });
-
-      // prepare array to work with for legend
-      const legend = [
-        { mode: '25000V', color: ['#6E1E78', '#A453AD'], isStriped: false },
-        { mode: '1500V', color: ['#FF0037', '#FF335F', '#FF6687'], isStriped: false },
-        { mode: 'Thermique', color: ['#333'], isStriped: false },
-        { mode: '15000V 16/2/3', color: ['#009AA6'], isStriped: false },
-        { mode: '3000V', color: ['#1FBE00'], isStriped: false },
-        { mode: 'Non utilisé', color: ['#747678'], isStriped: true },
-      ];
-
-      drawLegendToggle(
-        chartLocal,
-        'electricalProfilesToggle',
-        'speedSpaceChart',
-        rotate,
-        legend,
-        '?'
-      );
     }
     // Operational points
     /*

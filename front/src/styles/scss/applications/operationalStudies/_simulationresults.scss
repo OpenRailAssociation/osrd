@@ -1,10 +1,11 @@
 svg text {
-  font-family: Avenir,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
 select.sm {
   min-height: auto;
-  padding: .2rem 1.25rem;
+  padding: 0.2rem 1.25rem;
 }
 
 .toast {
@@ -23,13 +24,13 @@ select.sm {
     z-index: 2;
     top: 0;
     left: 0;
-    padding: 0.5rem 0.5rem .3rem;
+    padding: 0.5rem 0.5rem 0.3rem;
     margin-bottom: 0.5rem;
     .train-detail {
       min-width: 4.5rem;
       max-height: 2rem;
-      padding: .1rem;
-      line-height: .8rem;
+      padding: 0.1rem;
+      line-height: 0.8rem;
     }
   }
 
@@ -40,19 +41,19 @@ select.sm {
     border-radius: 4px;
   }
 
-  .osrd-simulation-map {
+  .osrd-simulation-elecProfK {
     position: relative;
     width: 100%;
     height: 50vh;
-    .btn-map-container {
+    .btn-elecProfKcontainer {
       top: 1.5rem;
       right: 1.5rem;
     }
-    .map-modal {
-      top: .5rem;
+    .elecProfKmodal {
+      top: 0.5rem;
       max-height: 40vh;
     }
-    .map-resizer {
+    .elecProfKresizer {
       min-width: calc(100% - 2rem);
       .handle-tab-resize {
         width: 100%;
@@ -60,7 +61,7 @@ select.sm {
         position: absolute;
         bottom: -1.25rem;
         font-size: 2rem;
-        transition: .2s;
+        transition: 0.2s;
         color: var(--coolgray3);
         &:hover {
           color: var(--coolgray9);
@@ -73,7 +74,7 @@ select.sm {
     display: block;
     position: relative;
     width: 100%;
-    transition: .2s;
+    transition: 0.2s;
     .dropdown .dropdown-menu:not(.dropdown-menu-right)::before {
       border-right-color: #d7d7d7;
       left: -0.625rem;
@@ -98,7 +99,7 @@ select.sm {
       position: absolute;
       bottom: -1.25rem;
       font-size: 2rem;
-      transition: .2s;
+      transition: 0.2s;
       color: var(--coolgray3);
       &:hover {
         color: var(--coolgray9);
@@ -106,17 +107,18 @@ select.sm {
     }
   }
 
-  .table-drivertrainschedule th, thead {
+  .table-drivertrainschedule th,
+  thead {
     position: sticky;
     top: 0;
     z-index: 1;
   }
 
   .grid .tick {
-    opacity: .2;
+    opacity: 0.2;
     line {
       stroke: #333;
-      stroke-dasharray: 2,2;
+      stroke-dasharray: 2, 2;
     }
   }
 
@@ -133,7 +135,7 @@ select.sm {
 
   .curve-label {
     fill: #777;
-    font-size: .70rem;
+    font-size: 0.7rem;
     font-weight: bold;
     &.selected {
       fill: var(--primary);
@@ -148,7 +150,7 @@ select.sm {
     justify-content: center;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, .75);
+    background-color: rgba(255, 255, 255, 0.75);
     .chart-modal-box {
       display: flex;
       justify-content: center;
@@ -185,7 +187,7 @@ select.sm {
           }
         }
         .chart-modal-type-unit {
-          content: "s";
+          content: 's';
           color: #747678;
           font-weight: bold;
           font-size: 2rem;
@@ -194,7 +196,6 @@ select.sm {
       }
     }
   }
-  
 
   /* SPACETIME */
   .spacetime-chart {
@@ -289,9 +290,9 @@ select.sm {
     z-index: 2;
   }
   .allowance-line {
-    padding: .25rem;
+    padding: 0.25rem;
     border-radius: 4px;
-    transition: .2s;
+    transition: 0.2s;
     &:hover {
       background-color: var(--coolgray1);
     }
@@ -312,14 +313,14 @@ select.sm {
     display: block;
     position: relative;
     width: 100%;
-    transition: .2s;
+    transition: 0.2s;
     .showSettingsButton {
       position: absolute;
       border: none;
       background: none;
       cursor: pointer;
       height: 100%;
-      color: var(--coolgray7)
+      color: var(--coolgray7);
     }
     .speedspace-chart {
       display: flex;
@@ -328,12 +329,12 @@ select.sm {
       position: relative;
       .showSettings {
         overflow: hidden;
-        transition: .3s;
+        transition: 0.3s;
       }
       .btn-rotate {
         position: absolute;
         right: 2rem;
-        bottom: 2.5rem;
+        top: 1rem;
       }
       .area {
         &.speed {
@@ -381,11 +382,116 @@ select.sm {
       position: absolute;
       bottom: -1.25rem;
       font-size: 2rem;
-      transition: .2s;
+      transition: 0.2s;
       color: var(--coolgray3);
       &:hover {
         color: var(--coolgray9);
       }
+    }
+  }
+
+  /* Electrical profile legend */
+  .elecProf-modal {
+    position: absolute;
+    z-index: 0;
+    min-height: 5rem;
+    max-height: calc(100% - 5vh);
+    overflow: auto;
+    top: 0;
+    right: 8rem;
+    padding: 1rem;
+    background-color: #fff;
+    width: calc(25% - 5.5rem);
+    transition: 0.4s;
+    margin: 1rem;
+    border-radius: 4px;
+    border: 1px solid #d7d7d7;
+    @media screen and (min-width: 640px) {
+      max-width: 50%;
+    }
+
+    &-dark {
+      background-color: var(--coolgray13);
+      color: var(--coolgray1);
+      border-color: var(--coolgray13);
+    }
+  }
+  .elecProfKey {
+    display: block;
+    font-size: 0.9rem;
+    margin: 1rem 1rem 0;
+    font-weight: lighter;
+    .elecProfKey-title {
+      border-bottom: 1px solid #555;
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .elecProfKey-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .elecProfKey-item-visible {
+      display: flex;
+    }
+    .elecProfKey-icon {
+      height: 1.5em;
+      width: 2em;
+      text-align: center;
+      background-color: #fff;
+      border-radius: 4px;
+      margin-right: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .elecProfKey {
+      &-line {
+        display: block;
+        width: 80%;
+        margin-left: 20%;
+        height: 4px;
+        margin: 1px;
+      }
+      &-stripedBlock {
+        display: block;
+        width: 80%;
+        margin-left: 20%;
+        height: 15px;
+        margin: 1px;
+      }
+    }
+    .elecProfKey-25KA {
+      background-color: #6e1e78;
+    }
+    .elecProfKey-25KB {
+      background-color: #a453ad;
+    }
+    .elecProfKey-1500A {
+      background-color: #ff0037;
+    }
+    .elecProfKey-1500B {
+      background-color: #ff335f;
+    }
+    .elecProfKey-1500C {
+      background-color: #ff6687;
+    }
+    .elecProfKey-Thermal {
+      background-color: #333;
+    }
+    .elecProfKey-15000 {
+      background-color: #009aa6;
+    }
+    .elecProfKey-3000 {
+      background-color: #1fbe00;
+    }
+    .elecProfKey-noUsed {
+      background: repeating-linear-gradient(-45deg, #747678 0 3px, transparent 3px 6px);
+    }
+
+    @media screen and (max-width: 640px) {
+      font-size: 0.8em;
     }
   }
 
@@ -394,7 +500,7 @@ select.sm {
     display: block;
     position: relative;
     width: 100%;
-    transition: .2s;
+    transition: 0.2s;
     .spacecurvesslopes-chart {
       background-color: white;
       border-radius: 4px;
@@ -426,7 +532,7 @@ select.sm {
       position: absolute;
       bottom: -1.25rem;
       font-size: 2rem;
-      transition: .2s;
+      transition: 0.2s;
       color: var(--coolgray3);
       &:hover {
         color: var(--coolgray9);
@@ -442,7 +548,7 @@ select.sm {
   }
   .op-text {
     fill: var(--coolgray11);
-    font-size: .65rem;
+    font-size: 0.65rem;
   }
 
   /* TABLE OVERRIDE */
@@ -458,7 +564,7 @@ select.sm {
   .table td.td-button {
     padding: 0;
     .cell-inner-button {
-      padding: .5rem 1.25rem;
+      padding: 0.5rem 1.25rem;
       cursor: pointer;
     }
   }
@@ -473,7 +579,7 @@ select.sm {
       color: var(--coolgray3);
     }
     .domain {
-      opacity: .5;
+      opacity: 0.5;
       stroke: var(--coolgray3);
     }
     .grid .tick line {
@@ -488,7 +594,7 @@ select.sm {
     }
     #rectZoomTimeLine {
       cursor: move;
-      transition: .2s;
+      transition: 0.2s;
       stroke: var(--coolgray5);
       fill: rgba(255, 255, 255, 0.05);
       &:hover {
@@ -508,5 +614,4 @@ select.sm {
       }
     }
   }
-
 }

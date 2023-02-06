@@ -77,7 +77,7 @@ const drawElectricalProfile = (
         .append('rect')
         .attr('class', `rect zoomable electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
-        .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, 2)')
+        .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, -10)')
         .attr('rx', 2)
         .attr('ry', 2)
         .attr(
@@ -94,12 +94,13 @@ const drawElectricalProfile = (
             rotate
               ? dataSimulation[`${keyValues[0]}_start`] -
                   (dataSimulation[`${keyValues[0]}_end`] - dataSimulation[`${keyValues[0]}_middle`])
-              : dataSimulation[`${keyValues[1]}_start`]
+              : dataSimulation[`${keyValues[1]}_start`] -
+                  (dataSimulation[`${keyValues[1]}_end`] - dataSimulation[`${keyValues[1]}_middle`])
           ) -
             height * -1
         )
-        .attr('width', '3.2rem')
-        .attr('height', rotate ? 20 : (height + 4) * -1);
+        .attr('width', rotate ? '9%' : '3.2rem')
+        .attr('height', rotate ? 20 : '1.2rem');
 
       // add text to text zone
       textZone
@@ -110,13 +111,13 @@ const drawElectricalProfile = (
         .text(dataSimulation.text)
         .attr('fill', dataSimulation.textColor)
         .attr('font-size', 10)
-        .attr('font-style', isIncompatible ? 'italic' : 'normal')
         .attr('font-weight', 'bold')
         .attr(
           'x',
           chart.x(
             rotate
-              ? dataSimulation[`${keyValues[1]}_start`] + 6
+              ? dataSimulation[`${keyValues[1]}_start`] +
+                  (dataSimulation[`${keyValues[1]}_end`] - dataSimulation[`${keyValues[1]}_middle`])
               : dataSimulation[`${keyValues[0]}_middle`]
           )
         )
@@ -126,7 +127,8 @@ const drawElectricalProfile = (
             rotate
               ? dataSimulation[`${keyValues[0]}_start`] -
                   (dataSimulation[`${keyValues[0]}_end`] - dataSimulation[`${keyValues[0]}_middle`])
-              : dataSimulation[`${keyValues[1]}_start`] - 7
+              : dataSimulation[`${keyValues[1]}_start`] -
+                  (dataSimulation[`${keyValues[1]}_end`] - dataSimulation[`${keyValues[1]}_middle`])
           ) -
             height * -1
         );
@@ -143,13 +145,13 @@ const drawElectricalProfile = (
         .append('rect')
         .attr('class', `rect zoomable data`)
         .attr('fill', '#FFF')
-        .attr('stroke-width', 1)
-        .attr('stroke', '#333')
         .attr('rx', 4)
         .attr('ry', 4)
         .attr(
           'transform',
-          rotate ? 'translate(80, 0)' : `translate(0, ${isIncompatible ? '-60' : '-40'} )`
+          rotate
+            ? 'translate(80, 0)'
+            : `translate(0, ${isIncompatible || !dataSimulation.usedProfile ? '-60' : '-40'} )`
         )
         .attr(
           'x',
@@ -168,8 +170,16 @@ const drawElectricalProfile = (
           ) -
             height * -1
         )
-        .attr('width', 160)
-        .attr('height', isIncompatible ? 55 : 35);
+        .attr('width', () => {
+          if (!dataSimulation.usedProfile) {
+            return 175;
+          }
+          if (dataSimulation.usedMode === '1500') {
+            return 125;
+          }
+          return 165;
+        })
+        .attr('height', isIncompatible || !dataSimulation.usedProfile ? 55 : 35);
 
       // add profile pop-up rect
       drawZone
@@ -181,8 +191,8 @@ const drawElectricalProfile = (
         .attr(
           'transform',
           rotate
-            ? `translate(85, ${isIncompatible ? '16' : '8'})`
-            : `translate(5, ${isIncompatible ? '-42' : '-32'} )`
+            ? `translate(88, ${isIncompatible || !dataSimulation.usedProfile ? '16' : '8'})`
+            : `translate(8, ${isIncompatible || !dataSimulation.usedProfile ? '-42' : '-32'} )`
         )
         .attr(
           'x',
@@ -201,7 +211,7 @@ const drawElectricalProfile = (
           ) -
             height * -1
         )
-        .attr('width', 30)
+        .attr('width', dataSimulation.usedMode === 1500 ? 20 : 28)
         .attr('height', 20);
 
       // add profile pop-up text
@@ -210,15 +220,15 @@ const drawElectricalProfile = (
         .attr('class', `zoomable data`)
         .attr('dominant-baseline', 'middle')
         .text(
-          isIncompatible
+          isIncompatible || !dataSimulation.usedProfile
             ? `${dataSimulation.usedMode}V utilisé`
-            : `${dataSimulation.usedMode}V ${dataSimulation.usedProfile || '?'}`
+            : `${dataSimulation.usedMode}V ${dataSimulation.usedProfile}`
         )
         .attr(
           'transform',
           rotate
-            ? `translate(120,${isIncompatible ? 18 : 20})`
-            : `translate(45, ${isIncompatible ? '-40' : '-20'})`
+            ? `translate(123,${isIncompatible || !dataSimulation.usedProfile ? 18 : 20})`
+            : `translate(48, ${isIncompatible || !dataSimulation.usedProfile ? '-40' : '-20'})`
         )
         .attr(
           'x',
@@ -238,13 +248,17 @@ const drawElectricalProfile = (
             height * -1
         );
 
-      if (isIncompatible) {
+      if (isIncompatible || !dataSimulation.usedProfile) {
         drawZone
           .append('text')
           .attr('class', `zoomable data`)
           .attr('dominant-baseline', 'middle')
-          .text(`${dataSimulation.usedProfile} incompatible`)
-          .attr('transform', rotate ? 'translate(120, 40)' : `translate(45, -20)`)
+          .text(
+            dataSimulation.usedProfile
+              ? `${dataSimulation.usedProfile} incompatible`
+              : `profil manquant`
+          )
+          .attr('transform', rotate ? 'translate(123, 40)' : `translate(48, -20)`)
           .attr(
             'x',
             chart.x(
