@@ -537,3 +537,7 @@ def make_payload_schedule(base_url: str, scenario: Scenario, path: int, rolling_
 def get_infra_name(base_url: str, infra_id: int):
     r = requests.get(base_url + f"infra/{infra_id}/", timeout=TIMEOUT)
     return r.json()["name"]
+
+
+if __name__ == "__main__":
+    run(URL, INFRA_ID, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
