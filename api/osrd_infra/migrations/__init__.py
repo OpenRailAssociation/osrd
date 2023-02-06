@@ -3,12 +3,28 @@ import itertools
 import re
 from typing import Optional, NamedTuple
 from venv import create
+from typing import Optional
 import django
 from django.db import migrations, models
 
 
-def run_sql_complexe_add_foreign_key(table_name: str, field_name: str, model_name: str, link_model: str,
-                                     link_table: str, nullable: bool = False, related_name: str = None):
+def run_sql_complexe_add_foreign_key(
+    table_name: str,
+    field_name: str,
+    model_name: str,
+    link_model: str,
+    link_table: str,
+    nullable: bool = False,
+    related_name: Optional[str] = None,
+):
+
+    field = models.ForeignKey(
+        on_delete=django.db.models.deletion.CASCADE,
+        to=f"osrd_infra.{link_model}",
+        null=nullable,
+        blank=nullable,
+        related_name=related_name,
+    )
     return migrations.RunSQL(
         sql=[
             (
@@ -28,13 +44,13 @@ def run_sql_complexe_add_foreign_key(table_name: str, field_name: str, model_nam
             )
         ],
         state_operations=[
-            migrations.AddField(model_name=model_name, name=field_name, field=field, related_name=related_name),
+            migrations.AddField(model_name=model_name, name=field_name, field=field),
         ],
     )
 
 
 def run_sql_add_foreign_key(
-    model_name: str, field_name: str, link_model: str, nullable: bool = False, related_name: str = ""
+    model_name: str, field_name: str, link_model: str, nullable: bool = False, related_name: Optional[str] = None
 ):
     return run_sql_complexe_add_foreign_key(
         table_name=model_name,

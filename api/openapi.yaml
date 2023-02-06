@@ -897,7 +897,7 @@ paths:
       summary: Paginated list of projects
       parameters:
         - in: query
-          name: oredering
+          name: ordering
           schema:
             type: string
             enum:
@@ -1076,7 +1076,7 @@ paths:
           description: Number of elements by page
       responses:
         200:
-          description: the opertional studies list
+          description: the studies list
           content:
             application/json:
               schema:
@@ -1094,7 +1094,7 @@ paths:
                         schema:
                           $ref: "#/components/schemas/StudyResult"
 
-  /projects/{project_id}/studies/{study_id}:
+  /projects/{project_id}/studies/{study_id}/:
     get:
       tags:
         - studies
@@ -1304,7 +1304,7 @@ paths:
                         schema:
                           $ref: "#/components/schemas/ScenarioResult"
 
-  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}:
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     get:
       tags:
         - scenarios

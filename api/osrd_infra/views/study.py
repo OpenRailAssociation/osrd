@@ -1,3 +1,5 @@
+from io import BytesIO
+
 from django.db.models import Q
 from django.http import HttpResponse
 from PIL import Image
@@ -31,7 +33,7 @@ class ScenarioView(
     pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
-        """this function will disappear to be replaced by the generic search"""
+        """this function will disappear to be replaced by the generic search (#2901)"""
         project = get_object_or_404(Project.objects.all(), pk=self.kwargs["project_pk"])
         study = get_object_or_404(Study.objects.all(), pk=self.kwargs["study_pk"], project=project)
         queryset = Scenario.objects.filter(study__project=project, study=study)
@@ -61,6 +63,7 @@ class ScenarioView(
     def retrieve(self, request, pk, project_pk=None, study_pk=None):
         scenario = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = ScenarioSerializer(scenario, context={"request": request})
+        serializer.data["infra_name"] = scenario.infra.name
 
         train_schedules = [
             {
@@ -72,7 +75,7 @@ class ScenarioView(
             for train in scenario.timetable.train_schedules.all()
         ]
 
-        return Response({**serializer.data, "infra_name": scenario.infra.name, "train_schedules": train_schedules})
+        return Response({**serializer.data, "train_schedules": train_schedules})
 
     def partial_update(self, request, pk=None, project_pk=None, study_pk=None):
         scenario = get_object_or_404(self.get_queryset(), pk=pk)
@@ -99,7 +102,7 @@ class StudyView(
     pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
-        """this function will disappear to be replaced by the generic search"""
+        """this function will disappear to be replaced by the generic search #2901"""
         project = get_object_or_404(Project.objects.all(), pk=self.kwargs["project_pk"])
         queryset = Study.objects.filter(project=project)
         name = self.request.query_params.get("name", None)
@@ -163,9 +166,9 @@ class ProjectView(
         queryset = Project.objects.all()
         project = get_object_or_404(queryset, pk=pk)
         image_db = project.image
-        if image_db:
+        if image_db is not None:
             return HttpResponse(image_db, content_type="image/png")
-        return Response({"image": "null"})
+        return Response("No image for this project", status=404)
 
     @action(url_path="study_types", detail=True, methods=["get"])
     def get_types(self, request, pk=None):
@@ -180,10 +183,10 @@ class ProjectView(
         input_serializer.is_valid(raise_exception=True)
         if "image" in input_serializer.validated_data.keys():
             image_db = input_serializer.validated_data["image"]
-            input_serializer.validated_data["image"] = image_db.read()
             image = Image.open(image_db)
-            response = HttpResponse(content_type="image/png")
-            image.save(response, "PNG")
+            stream = BytesIO()
+            image.save(stream, "PNG")
+            input_serializer.validated_data["image"] = stream.getvalue()
         input_serializer.save()
         return Response(data=input_serializer.data, status=201)
 
@@ -197,8 +200,8 @@ class ProjectView(
                 image_db = serializer.validated_data["image"]
                 serializer.validated_data["image"] = image_db.read()
                 image = Image.open(image_db)
-                response = HttpResponse(content_type="image/png")
-                image.save(response, "PNG")
+                stream = BytesIO()
+                image.save(stream, "PNG")
             else:
                 serializer.validated_data["image"] = None
         serializer.save()
