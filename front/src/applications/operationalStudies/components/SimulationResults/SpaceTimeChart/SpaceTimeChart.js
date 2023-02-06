@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { traceVerticalLine } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
 import {
@@ -70,6 +70,8 @@ export default function SpaceTimeChart(props) {
     initialHeightOfSpaceTimeChart
   );
 
+  const rndContainerRef = useRef(null);
+
   const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] =
     useState(heightOfSpaceTimeChart);
 
@@ -79,17 +81,96 @@ export default function SpaceTimeChart(props) {
     }
   };
 
-  // ACTIONS
-
   // Everything should be done by Hoc, has no direct effect on Comp behavior
-  const offsetTimeByDragging = (offset) => {
-    if (dataSimulation) {
-      const trains = Array.from(dataSimulation.trains);
-      trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
-      setDataSimulation({ ...simulation, trains });
-      onOffsetTimeByDragging(trains);
-    }
+  const offsetTimeByDragging = useCallback(
+    (offset) => {
+      if (dataSimulation) {
+        const trains = Array.from(dataSimulation.trains);
+        trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
+        setDataSimulation({ ...simulation, trains });
+        onOffsetTimeByDragging(trains);
+      }
+    },
+    [dataSimulation, selectedTrain, simulation, onOffsetTimeByDragging]
+  );
+
+  const drawAllTrainFn = useCallback(
+    (newDataSimulation) =>
+      drawAllTrains(
+        resetChart,
+        newDataSimulation,
+        false,
+        chart,
+        heightOfSpaceTimeChart,
+        keyValues,
+        ref,
+        rotate,
+        dispatch,
+        CHART_ID,
+        simulation,
+        selectedTrain,
+        positionValues,
+        setChart,
+        setResetChart,
+        setYPosition,
+        setZoomLevel,
+        setDragEnding,
+        setDragOffset,
+        yPosition,
+        zoomLevel,
+        selectedProjection,
+        dispatchUpdateMustRedraw,
+        dispatchUpdateChart,
+        dispatchUpdateContextMenu,
+        allowancesSettings,
+        offsetTimeByDragging,
+        true
+      ),
+    [
+      resetChart,
+      chart,
+      heightOfSpaceTimeChart,
+      keyValues,
+      ref,
+      rotate,
+      dispatch,
+      simulation,
+      selectedTrain,
+      setChart,
+      setResetChart,
+      positionValues,
+      setYPosition,
+      setZoomLevel,
+      setDragEnding,
+      setDragOffset,
+      yPosition,
+      zoomLevel,
+      selectedProjection,
+      dispatchUpdateMustRedraw,
+      dispatchUpdateChart,
+      dispatchUpdateContextMenu,
+      allowancesSettings,
+      offsetTimeByDragging,
+    ]
+  );
+
+  const debounceResize = (interval) => {
+    let debounceTimeoutId;
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      const height = d3.select(`#container-${CHART_ID}`).node().clientHeight;
+      setHeightOfSpaceTimeChart(height);
+      const trains = dataSimulation?.trains || simulation.trains;
+      const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
+      if (newDataSimulation) {
+        drawAllTrainFn(newDataSimulation);
+      }
+    }, interval);
   };
+
+  // Memoize !!!
+
+  // ACTIONS
 
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
@@ -134,41 +215,8 @@ export default function SpaceTimeChart(props) {
   useEffect(() => {
     const trains = dataSimulation?.trains || simulation.trains;
     const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
-
     if (newDataSimulation) {
-      drawAllTrains(
-        resetChart,
-        newDataSimulation,
-        false,
-        chart,
-        heightOfSpaceTimeChart,
-        keyValues,
-        ref,
-        rotate,
-        dispatch,
-        CHART_ID,
-        simulation,
-        selectedTrain,
-        positionValues,
-        setChart,
-        setResetChart,
-        setYPosition,
-        setZoomLevel,
-        setDragEnding,
-        setDragOffset,
-        yPosition,
-        zoomLevel,
-        selectedProjection,
-        dispatchUpdateMustRedraw,
-        dispatchUpdateChart,
-        dispatchUpdateContextMenu,
-        allowancesSettings,
-        offsetTimeByDragging,
-        true
-      );
-
-      // Reprogram !
-      //handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
+      drawAllTrainFn(newDataSimulation);
     }
   }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
 
@@ -207,13 +255,16 @@ export default function SpaceTimeChart(props) {
 
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', debounceResize);
     return () => {
       window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('resize', debounceResize);
     };
   }, []);
 
   return (
     <Rnd
+      ref={rndContainerRef}
       default={{
         x: 0,
         y: 0,
@@ -240,7 +291,7 @@ export default function SpaceTimeChart(props) {
       <div
         id={`container-${CHART_ID}`}
         className="spacetime-chart w-100"
-        style={{ height: `${heightOfSpaceTimeChart}px` }}
+        style={{ height: `100%` }}
       >
         {showModal !== '' ? (
           <ChartModal
@@ -250,7 +301,7 @@ export default function SpaceTimeChart(props) {
             offsetTimeByDragging={offsetTimeByDragging}
           />
         ) : null}
-        <div ref={ref} />
+        <div style={{ height: `100%` }} ref={ref} />
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate"
@@ -277,7 +328,7 @@ export default function SpaceTimeChart(props) {
 }
 
 SpaceTimeChart.propTypes = {
-  heightOfSpaceTimeChart: PropTypes.number.isRequired,
+  heightOfSpaceTimeChart: PropTypes.number,
   onOffsetTimeByDragging: PropTypes.func,
   dispatchUpdateMustRedraw: PropTypes.func,
 };
