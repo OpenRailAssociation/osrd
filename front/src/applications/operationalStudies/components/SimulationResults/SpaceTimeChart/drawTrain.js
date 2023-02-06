@@ -1,7 +1,10 @@
 import * as d3 from 'd3';
 import { drag as d3drag } from 'd3-drag';
 
-import { getDirection } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import {
+  getDirection,
+  offsetSeconds,
+} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import drawCurve from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawCurve';
 import drawRect from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawRect';
 import drawText from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawText';
@@ -11,7 +14,6 @@ import {
   updateSelectedTrain,
   updateDepartureArrivalTimes,
 } from 'reducers/osrdsimulation/actions';
-import { makeDepartureArrivalTimes } from 'reducers/osrdsimulation';
 
 export default function drawTrain(
   chart,
@@ -26,9 +28,9 @@ export default function drawTrain(
   setDragEnding,
   setDragOffset,
   simulation,
-  isStdcm
+  isStdcm,
+  setSelectedTrain
 ) {
-
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
@@ -40,10 +42,7 @@ export default function drawTrain(
       ? Math.floor((chart.y.invert(offset) - initialDrag) / 1000)
       : Math.floor((chart.x.invert(offset) - initialDrag) / 1000);
 
-  /**
-   * Compute, in sceonds, the offset to drill down to the parent through setDragOffset passed hook
-   *
-   */
+  /** Compute, in seconds, the offset to drill down to the parent through setDragOffset passed hook */
   const dragTimeOffset = (offset) => {
     const value = getDragOffsetValue(offset);
     setDragOffset(value);
@@ -59,7 +58,9 @@ export default function drawTrain(
     const translation = rotate ? `0,${offset}` : `${offset},0`;
     d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
   };
+
   let debounceTimeoutId;
+
   function debounceUpdateDepartureArrivalTimes(computedDepartureArrivalTimes, interval) {
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
@@ -67,7 +68,25 @@ export default function drawTrain(
     }, interval);
   }
 
+  const makeDepartureArrivalTimes = (dragOffset, selectedTrainId) =>
+    simulation.trains.map((train) => ({
+      id: train.id,
+      labels: train.labels,
+      name: train.name,
+      path: train.path,
+      departure:
+        selectedTrainId !== undefined && selectedTrainId === train.id
+          ? offsetSeconds(train.base.stops[0].time + dragOffset)
+          : train.base.stops[0].time,
+      arrival:
+        selectedTrainId !== undefined && selectedTrainId === train.id
+          ? offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset)
+          : train.base.stops[train.base.stops.length - 1].time,
+      speed_limit_composition: train.speed_limit_composition,
+    }));
+
   const drag = d3drag()
+    .container((d) => d) // the component is dragged from its initial position
     .on('end', () => {
       dragTimeOffset(dragFullOffset, true);
       setDragEnding(true);
@@ -75,12 +94,13 @@ export default function drawTrain(
     })
     .on('start', () => {
       dragFullOffset = 0;
+      setSelectedTrain(dataSimulation.trainNumber);
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
     .on('drag', (event) => {
       dragFullOffset += rotate ? event.dy : event.dx;
       const value = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = makeDepartureArrivalTimes(simulation, value);
+      const newDepartureArrivalTimes = makeDepartureArrivalTimes(value, dataSimulation.id);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
@@ -100,6 +120,7 @@ export default function drawTrain(
           yPos: event.layerY,
         })
       );
+      setSelectedTrain(dataSimulation.trainNumber);
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
       dispatch(updateMustRedraw(true));
     });
@@ -109,9 +130,9 @@ export default function drawTrain(
   const currentAllowanceSettings = allowancesSettings
     ? allowancesSettings[dataSimulation.id]
     : undefined;
+
   if (direction && currentAllowanceSettings) {
     // Let's draw route_aspects
-
     dataSimulation.routeAspects.forEach((routeAspect) => {
       drawRect(
         chart,
@@ -128,7 +149,7 @@ export default function drawTrain(
     });
 
     if (dataSimulation.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {
-      // Let's draw route_aspects
+      // Let's draw eco_route_aspects
       dataSimulation.eco_routeAspects.forEach((ecoRouteAspect) => {
         drawRect(
           chart,

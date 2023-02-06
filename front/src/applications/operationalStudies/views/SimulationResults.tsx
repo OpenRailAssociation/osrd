@@ -141,7 +141,6 @@ export default function SimulationResults() {
           <TimeLine />
 
           {/* SIMULATION : SPACE TIME CHART */}
-
           <div className="osrd-simulation-container d-flex mb-2">
             <div
               className="spacetimechart-container"

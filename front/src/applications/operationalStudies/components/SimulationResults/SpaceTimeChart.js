@@ -68,6 +68,8 @@ export default function SpaceTimeChart(props) {
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
   const [dragEnding, setDragEnding] = useState(false);
+  // tmpSelectedTrain added for integration, this component should be deprecated soon
+  const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrain);
 
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
@@ -152,7 +154,8 @@ export default function SpaceTimeChart(props) {
           setDragEnding,
           setDragOffset,
           simulation,
-          train.isStdcm
+          train.isStdcm,
+          setTmpSelectedTrain
         );
       });
       enableInteractivity(
