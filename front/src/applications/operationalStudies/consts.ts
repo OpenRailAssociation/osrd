@@ -170,6 +170,32 @@ interface Segment {
   isIncompatible: boolean;
 }
 
+interface AC {
+  25000: string;
+  22500: string;
+  20000: string;
+}
+interface DC {
+  O: string;
+  A: string;
+  A1: string;
+  B: string;
+  B1: string;
+  C: string;
+  D: string;
+  E: string;
+  F: string;
+  G: string;
+}
+
+interface Mode {
+  25000: AC | string;
+  1500: DC | string;
+  thermal: string;
+  15000: string;
+  3000: string;
+}
+
 export const legend: Profile[] = [
   { mode: '25000', color: ['25KA', '25KB'], isStriped: false },
   { mode: '1500', color: ['1500A', '1500B', '1500C'], isStriped: false },
@@ -187,7 +213,10 @@ export const legend: Profile[] = [
   },
 ];
 
-export const createProfileSegment = (dataSimulation: any, modesAndProfiles: ModesAndProfiles) => {
+export const createProfileSegment = (
+  fullModesAndProfiles: ModesAndProfiles[],
+  modeAndProfile: ModesAndProfiles
+) => {
   let segment: Segment = {
     position_start: 0,
     position_end: 0,
@@ -205,18 +234,18 @@ export const createProfileSegment = (dataSimulation: any, modesAndProfiles: Mode
     isIncompatible: false,
   };
 
-  segment.position_start = modesAndProfiles.start;
-  segment.position_end = modesAndProfiles.stop;
-  segment.position_middle = (modesAndProfiles.start + modesAndProfiles.stop) / 2;
-  segment.lastPosition = dataSimulation.modesAndProfiles.slice(-1)[0].stop;
+  segment.position_start = modeAndProfile.start;
+  segment.position_end = modeAndProfile.stop;
+  segment.position_middle = (modeAndProfile.start + modeAndProfile.stop) / 2;
+  segment.lastPosition = fullModesAndProfiles.slice(-1)[0].stop;
   segment.height_start = 4;
   segment.height_end = 24;
   segment.height_middle = (segment.height_start + segment.height_end) / 2;
-  segment.usedMode = modesAndProfiles.used_mode;
-  segment.usedProfile = modesAndProfiles.used_profile;
+  segment.usedMode = modeAndProfile.used_mode;
+  segment.usedProfile = modeAndProfile.used_profile;
 
   // prepare colors
-  const electricalProfileColorsWithProfile: any = {
+  const electricalProfileColorsWithProfile: Mode = {
     25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
     1500: {
       O: '#FF0037',
@@ -235,7 +264,7 @@ export const createProfileSegment = (dataSimulation: any, modesAndProfiles: Mode
     3000: '#1FBE00',
   };
 
-  const electricalProfileColorsWithoutProfile: any = {
+  const electricalProfileColorsWithoutProfile: Mode = {
     25000: '#6E1E78',
     1500: '#FF0037',
     thermal: '#333',
@@ -245,10 +274,11 @@ export const createProfileSegment = (dataSimulation: any, modesAndProfiles: Mode
 
   // add colors to object depending of the presence of used_profile
   segment.color =
-    electricalProfileColorsWithProfile[segment.usedMode as string][segment.usedProfile] ||
-    electricalProfileColorsWithoutProfile[segment.usedMode];
+    electricalProfileColorsWithProfile[segment.usedMode as keyof unknown][
+      segment.usedProfile as string
+    ] || electricalProfileColorsWithoutProfile[segment.usedMode as keyof unknown];
 
-  segment.textColor = electricalProfileColorsWithoutProfile[segment.usedMode as string];
+  segment.textColor = electricalProfileColorsWithoutProfile[segment.usedMode as keyof unknown];
 
   // adapt text depending of the mode and profile
   if (segment.usedMode === 'thermal') {

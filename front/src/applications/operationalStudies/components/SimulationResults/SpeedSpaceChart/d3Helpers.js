@@ -212,7 +212,7 @@ function drawTrain(
     }
     if (dataSimulation.modesAndProfiles && speedSpaceSettings.electricalProfiles) {
       dataSimulation.modesAndProfiles.forEach((source, index) => {
-        const segment = createProfileSegment(dataSimulation, source);
+        const segment = createProfileSegment(dataSimulation.modesAndProfiles, source);
 
         drawElectricalProfile(
           chartLocal,
