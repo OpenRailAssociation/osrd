@@ -23,8 +23,15 @@
     "altitude": "Altitude",
     "curves": "Courbes",
     "maxSpeed": "Vitesse ligne",
-    "slopes": "Déclivités",
-    "electricalProfiles": "Profils électriques"
+    "slopes": "Déclivités"
+  },
+  "electricalProfiles": {
+    "title": "Profils électriques",
+    "thermal": "Thermique",
+    "used": "utitisé",
+    "unused": "non utilisé",
+    "incompatible": "incompatible",
+    "missingProfile": "Profil manquant"
   },
   "start": "Départ",
   "stop": "Arrivée",

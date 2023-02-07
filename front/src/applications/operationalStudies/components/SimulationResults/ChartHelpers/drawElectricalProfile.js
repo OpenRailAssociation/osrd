@@ -1,4 +1,5 @@
 import { pointer } from 'd3-selection';
+import i18n from 'i18n';
 
 /* eslint-disable no-unused-vars */
 const drawElectricalProfile = (
@@ -226,7 +227,9 @@ const drawElectricalProfile = (
         .attr('dominant-baseline', 'middle')
         .text(
           isIncompatible || !dataSimulation.usedProfile
-            ? `${dataSimulation.usedMode}V utilisé`
+            ? `${dataSimulation.usedMode}V ${i18n.t('electricalProfiles.used', {
+                ns: 'simulation',
+              })}`
             : `${dataSimulation.usedMode}V ${dataSimulation.usedProfile}`
         )
         .attr(
@@ -255,8 +258,12 @@ const drawElectricalProfile = (
           .attr('dominant-baseline', 'middle')
           .text(
             dataSimulation.usedProfile
-              ? `${dataSimulation.usedProfile} incompatible`
-              : `profil manquant`
+              ? `${dataSimulation.usedProfile} ${i18n.t('electricalProfiles.incompatible', {
+                  ns: 'simulation',
+                })}`
+              : `${i18n.t('electricalProfiles.missingProfile', {
+                  ns: 'simulation',
+                })}`
           )
           .attr(
             'transform',
