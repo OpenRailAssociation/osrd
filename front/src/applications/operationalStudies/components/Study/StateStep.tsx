@@ -6,25 +6,18 @@ import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 type Props = {
   projectID: number;
   studyID: number;
-  getStudyDetail: (withNotification: boolean) => void;
+  getStudy: (withNotification: boolean) => void;
   number: number;
   state: string;
   done: boolean;
 };
 
-export default function StateStep({
-  projectID,
-  studyID,
-  getStudyDetail,
-  number,
-  state,
-  done,
-}: Props) {
+export default function StateStep({ projectID, studyID, getStudy, number, state, done }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const changeStudyState = async () => {
     try {
       await patch(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, { state });
-      getStudyDetail(true);
+      getStudy(true);
     } catch (error) {
       console.error(error);
     }

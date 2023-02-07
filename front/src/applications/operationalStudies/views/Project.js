@@ -41,7 +41,7 @@ function displayStudiesList(studiesList, setFilterChips) {
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
   const { openModal } = useContext(ModalContext);
-  const [projectDetails, setProjectDetails] = useState();
+  const [project, setProject] = useState();
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -60,15 +60,15 @@ export default function Project() {
     },
   ];
 
-  const getProjectDetail = async (withNotification = false) => {
+  const getProject = async (withNotification = false) => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
-      setProjectDetails(result);
+      setProject(result);
       if (withNotification) {
         dispatch(
           setSuccess({
             title: t('projectUpdated'),
-            text: t('projectUpdatedDetails', { name: projectDetails.name }),
+            text: t('projectUpdatedDetails', { name: project.name }),
           })
         );
       }
@@ -97,7 +97,7 @@ export default function Project() {
   };
 
   useEffect(() => {
-    getProjectDetail();
+    getProject();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -109,24 +109,24 @@ export default function Project() {
   return (
     <>
       <NavBarSNCF
-        appName={<BreadCrumbs projectName={projectDetails ? projectDetails.name : null} />}
+        appName={<BreadCrumbs projectName={project ? project.name : null} />}
         logo={logo}
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
-          {projectDetails ? (
+          {project ? (
             <div className="project-details">
               <div className="project-details-title">
                 <div className="row w-100">
-                  <div className={projectDetails.image_url ? 'col-lg-4 col-md-4' : 'd-none'}>
+                  <div className={project.image_url ? 'col-lg-4 col-md-4' : 'd-none'}>
                     <div className="project-details-title-img">
-                      <img src={projectDetails.image_url} alt="project logo" />
+                      <img src={project.image_url} alt="project logo" />
                     </div>
                   </div>
-                  <div className={projectDetails.image_url ? 'col-lg-8 col-md-8' : 'col-12'}>
+                  <div className={project.image_url ? 'col-lg-8 col-md-8' : 'col-12'}>
                     <div className="project-details-title-content">
                       <div className="project-details-title-name">
-                        {projectDetails.name}
+                        {project.name}
                         <button
                           className="project-details-title-modify-button"
                           type="button"
@@ -134,8 +134,8 @@ export default function Project() {
                             openModal(
                               <AddOrEditProjectModal
                                 editionMode
-                                details={projectDetails}
-                                getProjectDetail={getProjectDetail}
+                                details={project}
+                                getProject={getProject}
                               />,
                               'xl'
                             )
@@ -150,7 +150,7 @@ export default function Project() {
                       <div className="row">
                         <div className="col-xl-6">
                           <div className="project-details-title-description">
-                            {projectDetails.description}
+                            {project.description}
                           </div>
                         </div>
                         <div className="col-xl-6">
@@ -162,7 +162,7 @@ export default function Project() {
                           </h3>
                           <div className="project-details-title-objectives">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {projectDetails.objectives}
+                              {project.objectives}
                             </ReactMarkdown>
                           </div>
                         </div>
@@ -174,15 +174,15 @@ export default function Project() {
               <div className="project-details-financials">
                 <div className="project-details-financials-infos">
                   <h3>{t('fundedBy')}</h3>
-                  <div>{projectDetails.funders}</div>
+                  <div>{project.funders}</div>
                 </div>
                 <div className="project-details-financials-amount">
                   <span className="project-details-financials-amount-text">{t('totalBudget')}</span>
-                  {budgetFormat(projectDetails.budget)}
+                  {budgetFormat(project.budget)}
                 </div>
               </div>
               <div className="project-details-tags">
-                {projectDetails.tags?.map((tag) => (
+                {project.tags?.map((tag) => (
                   <div className="project-details-tags-tag" key={nextId()}>
                     {tag}
                   </div>
