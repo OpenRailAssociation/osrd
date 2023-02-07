@@ -17,9 +17,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
+import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import AddAndEditProjectModal from '../components/Project/AddAndEditProjectModal';
+import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
 function displayStudiesList(studiesList, setFilterChips) {
@@ -132,7 +132,7 @@ export default function Project() {
                           type="button"
                           onClick={() =>
                             openModal(
-                              <AddAndEditProjectModal
+                              <AddOrEditProjectModal
                                 editionMode
                                 details={projectDetails}
                                 getProjectDetail={getProjectDetail}
@@ -215,7 +215,7 @@ export default function Project() {
             <button
               className="btn btn-primary"
               type="button"
-              onClick={() => openModal(<AddAndEditStudyModal />, 'xl')}
+              onClick={() => openModal(<AddOrEditStudyModal />, 'xl')}
             >
               <FaPlus />
               <span className="ml-2">{t('createStudy')}</span>
