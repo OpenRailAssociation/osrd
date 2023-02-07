@@ -40,7 +40,7 @@ const configItemsDefaults = {
   budget: 0,
 };
 
-export default function AddAndEditProjectModal({ editionMode, details, getProjectDetail }: Props) {
+export default function AddOrEditProjectModal({ editionMode, details, getProjectDetail }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);

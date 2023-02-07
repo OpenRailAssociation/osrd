@@ -82,7 +82,6 @@ export default function PictureUploader({ configItems, setConfigItems }: Props) 
 
   const handleUpload = async (file?: File) => {
     if (file && file.type.startsWith('image/')) {
-      console.log(typeof file);
       setConfigItems({ ...configItems, image: file });
       setIsValid(true);
     } else {

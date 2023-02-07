@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/projects.svg';
-import AddAndEditProjectModal from 'applications/operationalStudies/components/Project/AddAndEditProjectModal';
+import AddOrEditProjectModal from 'applications/operationalStudies/components/Project/AddOrEditProjectModal';
 import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
@@ -104,7 +104,7 @@ export default function Home() {
             <button
               className="btn btn-primary"
               type="button"
-              onClick={() => openModal(<AddAndEditProjectModal />, 'xl')}
+              onClick={() => openModal(<AddOrEditProjectModal />, 'xl')}
             >
               <FaPlus />
               <span className="ml-2">{t('createProject')}</span>
