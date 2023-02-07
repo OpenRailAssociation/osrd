@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import PropTypes from 'prop-types';
+import nextId from 'react-id-generator';
 
 export default function SelectImprovedSNCF(props) {
   const { title, options, selectedValue, onChange, sm, withSearch } = props;
@@ -17,10 +18,9 @@ export default function SelectImprovedSNCF(props) {
 
   const renderOptions = () =>
     filteredOptions.map((option) => {
-      const key = typeof option === 'string' ? option : option.key;
       const value = typeof option === 'string' ? option : option.value;
       return (
-        <span className="select-menu-item" role="listitem" key={key}>
+        <span className="select-menu-item" role="listitem" key={nextId()}>
           <button type="button" onClick={() => selectItem(option)}>
             {value}
           </button>
