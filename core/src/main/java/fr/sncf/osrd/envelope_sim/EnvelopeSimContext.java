@@ -31,9 +31,9 @@ public class EnvelopeSimContext {
             Comfort comfort,
             boolean ignoreElectricalProfiles
     ) {
-        var curvesAndConditions = rollingStock.mapTractiveEffortCurves(
-                path.getModeAndProfileMap(ignoreElectricalProfiles ? null : rollingStock.powerClass), comfort,
-                path.getLength());
+        var powerClass = ignoreElectricalProfiles ? null : rollingStock.powerClass;
+        var modeAndProfileMap = path.getModeAndProfileMap(powerClass);
+        var curvesAndConditions = rollingStock.mapTractiveEffortCurves(modeAndProfileMap, comfort, path.getLength());
         return new EnvelopeSimContext(rollingStock, path, timeStep, curvesAndConditions.curves());
     }
 
