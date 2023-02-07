@@ -23,7 +23,7 @@ const legend: Profile[] = [
 export const ElectricalProfilesLegend = ({ isActive, setIsActive }: Props) => (
   <div className={`elecProf-modal elecProf-modal-dark`}>
     <div className="d-flex justify-content-between align-items-start">
-      <div className="h2 text-light">Légende</div>
+      <span className="h2 text-light">Légende</span>
       <button type="button" className="close" onClick={() => setIsActive(!isActive)}>
         ×
       </button>
@@ -44,7 +44,7 @@ export const ElectricalProfilesLegend = ({ isActive, setIsActive }: Props) => (
                   />
                 ))}
               </div>
-              <div className="elecProfKey-text">{profile.mode}</div>
+              <span className="elecProfKey-text">{profile.mode}</span>
             </div>
           ))}
         </div>

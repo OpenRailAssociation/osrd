@@ -46,7 +46,7 @@ const drawElectricalProfile = (
     // add main rect for profile displayed
     .append('rect')
     .attr('id', id)
-    .attr('class', `rect zoomable ${classes}`)
+    .attr('class', `rect ${classes}`)
     .datum(dataSimulation)
     .attr('fill', isStripe ? `url(#${id})` : dataSimulation.color)
     .attr('stroke-width', 1)
@@ -75,7 +75,7 @@ const drawElectricalProfile = (
       // add rect for text zone
       textZone
         .append('rect')
-        .attr('class', `rect zoomable electricalProfileTextBlock ${classes}`)
+        .attr('class', `rect electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
         .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, -10)')
         .attr('rx', 2)
@@ -143,7 +143,7 @@ const drawElectricalProfile = (
     .on('mouseover', () => {
       drawZone
         .append('rect')
-        .attr('class', `rect zoomable data`)
+        .attr('class', `rect data`)
         .attr('fill', '#FFF')
         .attr('rx', 4)
         .attr('ry', 4)
@@ -184,7 +184,7 @@ const drawElectricalProfile = (
       // add profile pop-up rect
       drawZone
         .append('rect')
-        .attr('class', `rect zoomable data`)
+        .attr('class', `rect data`)
         .attr('fill', isStripe ? `url(#${id})` : dataSimulation.textColor)
         .attr('stroke-width', 1)
         .attr('stroke', isStripe ? `url(#${id})` : dataSimulation.textColor)
@@ -217,7 +217,7 @@ const drawElectricalProfile = (
       // add profile pop-up text
       drawZone
         .append('text')
-        .attr('class', `zoomable data`)
+        .attr('class', `data`)
         .attr('dominant-baseline', 'middle')
         .text(
           isIncompatible || !dataSimulation.usedProfile
@@ -251,7 +251,7 @@ const drawElectricalProfile = (
       if (isIncompatible || !dataSimulation.usedProfile) {
         drawZone
           .append('text')
-          .attr('class', `zoomable data`)
+          .attr('class', `data`)
           .attr('dominant-baseline', 'middle')
           .text(
             dataSimulation.usedProfile
