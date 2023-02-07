@@ -21,13 +21,13 @@ export const ElectricalProfilesLegend = ({ isActive, setIsActive }: Props) => {
     { mode: t('electricalProfiles.thermal'), color: ['Thermal'], isStriped: false },
     { mode: '15000V 16/2/3', color: ['15000'], isStriped: false },
     { mode: '3000V', color: ['3000'], isStriped: false },
-    { mode: 'Non utilisé', color: ['noUsed'], isStriped: true },
+    { mode: t('electricalProfiles.unused'), color: ['noUsed'], isStriped: true },
   ];
 
   return (
     <div className={`elecProf-modal elecProf-modal-dark`}>
       <div className="d-flex justify-content-between align-items-start">
-        <span className="h2 text-light">Légende</span>
+        <span className="h2 text-light">{t('electricalProfiles.legend')}</span>
         <button type="button" className="close" onClick={() => setIsActive(!isActive)}>
           ×
         </button>
