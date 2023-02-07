@@ -38,10 +38,10 @@ type configItemsTypes = {
 type Props = {
   editionMode: false;
   details?: configItemsTypes;
-  getScenarioDetail?: any;
+  getScenario?: any;
 };
 
-export default function AddOrEditScenarioModal({ editionMode, details, getScenarioDetail }: Props) {
+export default function AddOrEditScenarioModal({ editionMode, details, getScenario }: Props) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
@@ -91,7 +91,7 @@ export default function AddOrEditScenarioModal({ editionMode, details, getScenar
           `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${details.id}/`,
           configItems
         );
-        getScenarioDetail(true);
+        getScenario(true);
         closeModal();
       } catch (error) {
         console.error(error);

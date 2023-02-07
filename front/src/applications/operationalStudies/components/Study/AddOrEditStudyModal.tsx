@@ -54,12 +54,12 @@ type configItemsTypes = {
 type Props = {
   editionMode: false;
   details?: configItemsTypes;
-  getStudyDetail?: any;
+  getStudy?: any;
 };
 
 type SelectOptions = { key: string | null; value: string }[];
 
-export default function AddOrEditStudyModal({ editionMode, details, getStudyDetail }: Props) {
+export default function AddOrEditStudyModal({ editionMode, details, getStudy }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
@@ -128,7 +128,7 @@ export default function AddOrEditStudyModal({ editionMode, details, getStudyDeta
     } else if (details) {
       try {
         await patch(`${PROJECTS_URI}${projectID}${STUDIES_URI}${details.id}/`, configItems);
-        getStudyDetail(true);
+        getStudy(true);
         closeModal();
       } catch (error) {
         console.error(error);

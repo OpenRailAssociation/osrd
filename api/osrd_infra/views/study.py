@@ -102,7 +102,7 @@ class StudyView(
     pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
-        """this function will disappear to be replaced by the generic search #2901"""
+        # this function will disappear to be replaced by the generic search #2901
         project = get_object_or_404(Project.objects.all(), pk=self.kwargs["project_pk"])
         queryset = Study.objects.filter(project=project)
         name = self.request.query_params.get("name", None)
@@ -147,7 +147,7 @@ class ProjectView(
     pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
-        """this function will disappear to be replaced by the generic search"""
+        # this function will disappear to be replaced by the generic search
         queryset = Project.objects.order_by("-pk")
         name = self.request.query_params.get("name", None)
         description = self.request.query_params.get("description", None)

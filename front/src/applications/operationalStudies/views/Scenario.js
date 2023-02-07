@@ -25,9 +25,9 @@ export default function Scenario() {
   const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
   const isUpdating = useSelector((state) => state.osrdsimulation.isUpdating);
-  const [projectDetails, setProjectDetails] = useState();
-  const [studyDetails, setStudyDetails] = useState();
-  const [scenarioDetails, setScenarioDetails] = useState();
+  const [project, setProject] = useState();
+  const [study, setStudy] = useState();
+  const [scenario, setScenario] = useState();
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
@@ -36,28 +36,28 @@ export default function Scenario() {
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
 
-  const getProjectDetail = async () => {
+  const getProject = async () => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
-      setProjectDetails(result);
+      setProject(result);
     } catch (error) {
       console.error(error);
     }
   };
-  const getStudyDetail = async () => {
+  const getStudy = async () => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
-      setStudyDetails(result);
+      setStudy(result);
     } catch (error) {
       console.error(error);
     }
   };
-  const getScenarioDetail = async (withNotification = false) => {
+  const getScenario = async (withNotification = false) => {
     try {
       const result = await get(
         `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
       );
-      setScenarioDetails(result);
+      setScenario(result);
       dispatch(updateTimetableID(result.timetable));
       dispatch(updateInfraID(result.infra));
       getTimetable(result.timetable);
@@ -65,7 +65,7 @@ export default function Scenario() {
         dispatch(
           setSuccess({
             title: t('scenarioUpdated'),
-            text: t('scenarioUpdatedDetails', { name: scenarioDetails.name }),
+            text: t('scenarioUpdatedDetails', { name: scenario.name }),
           })
         );
       }
@@ -75,9 +75,9 @@ export default function Scenario() {
   };
 
   useEffect(() => {
-    getProjectDetail();
-    getStudyDetail();
-    getScenarioDetail();
+    getProject();
+    getStudy();
+    getScenario();
     dispatch(updateMode(MODES.simulation));
     return () => {
       dispatch(updateTimetableID(undefined));
@@ -85,14 +85,14 @@ export default function Scenario() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return scenarioDetails ? (
+  return scenario ? (
     <>
       <NavBarSNCF
         appName={
           <BreadCrumbs
-            projectName={projectDetails ? projectDetails.name : null}
-            studyName={studyDetails ? studyDetails.name : null}
-            scenarioName={scenarioDetails ? scenarioDetails.name : null}
+            projectName={project ? project.name : null}
+            studyName={study ? study.name : null}
+            scenarioName={scenario ? scenario.name : null}
           />
         }
         logo={logo}
@@ -103,10 +103,10 @@ export default function Scenario() {
           <div className="row">
             <div className="col-lg-4">
               <div className="scenario-sidemenu">
-                {scenarioDetails && (
+                {scenario && (
                   <div className="scenario-details">
                     <div className="scenario-details-name">
-                      {scenarioDetails.name}
+                      {scenario.name}
                       <button
                         className="scenario-details-modify-button"
                         type="button"
@@ -114,8 +114,8 @@ export default function Scenario() {
                           openModal(
                             <AddAndEditScenarioModal
                               editionMode
-                              details={scenarioDetails}
-                              getScenarioDetail={getScenarioDetail}
+                              details={scenario}
+                              getScenario={getScenario}
                             />
                           )
                         }
@@ -128,11 +128,9 @@ export default function Scenario() {
                     </div>
                     <div className="scenario-details-infra-name">
                       <img src={infraLogo} alt="Infra logo" className="mr-2" />
-                      {scenarioDetails.infra_name}
+                      {scenario.infra_name}
                     </div>
-                    <div className="scenario-details-description">
-                      {scenarioDetails.description}
-                    </div>
+                    <div className="scenario-details-description">{scenario.description}</div>
                   </div>
                 )}
                 {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
