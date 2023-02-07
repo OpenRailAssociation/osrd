@@ -8,7 +8,7 @@ public class TrainScheduleOptions {
 
     /** Construct options from a RailJSON object */
     public TrainScheduleOptions(RJSTrainScheduleOptions options) {
-        if (options == null)
+        if (options == null || options.ignoreElectricalProfiles == null)
             ignoreElectricalProfiles = false;
         else
             ignoreElectricalProfiles = options.ignoreElectricalProfiles;
