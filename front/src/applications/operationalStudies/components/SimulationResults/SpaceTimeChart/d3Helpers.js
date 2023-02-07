@@ -2,9 +2,7 @@ import drawTrain from 'applications/operationalStudies/components/SimulationResu
 
 import createChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createChart';
 
-import enableInteractivity, {
-  traceVerticalLine,
-} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
+import enableInteractivity from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
@@ -75,9 +73,10 @@ const drawAllTrains = (
   dispatchUpdateContextMenu,
   allowancesSettings,
   offsetTimeByDragging,
-  forceRedraw = false,
+  setSelectedTrain,
+  forceRedraw = false
 ) => {
-  const currentDataSimulation = newDataSimulation || dataSimulation;
+  const currentDataSimulation = newDataSimulation;
   if (mustRedraw || forceRedraw) {
     const chartLocal = createChart(
       chart,
@@ -111,7 +110,8 @@ const drawAllTrains = (
         setDragEnding,
         setDragOffset,
         simulation,
-        train.isStdcm
+        train.isStdcm,
+        setSelectedTrain
       );
     });
     enableInteractivity(

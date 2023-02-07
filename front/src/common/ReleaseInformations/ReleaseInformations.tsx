@@ -1,7 +1,7 @@
 // React Component displaying different applications versions
 // List of applications : Editoast, Core, Api
 
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { env } from 'env';
 

@@ -4,9 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   updateMustRedraw,
   updateContextMenu,
-  updateSpeedSpaceSettings,
   updateChart,
-  updatePositionValues
+  updatePositionValues,
 } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
@@ -18,7 +17,6 @@ import {
   getConsolidatedSimulation,
   getPresentSimulation,
 } from 'reducers/osrdsimulation/selectors';
-import { changeTrain } from 'applications/operationalStudies/components/SimulationResults/simulationResultsHelpers';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import SpaceTimeChart from './SpaceTimeChart';
 
@@ -40,32 +38,9 @@ const withOSRDData = (Component) =>
 
     const dispatch = useDispatch();
 
-    const toggleSetting = (settingName) => {
-      dispatch(
-        updateSpeedSpaceSettings({
-          ...speedSpaceSettings,
-          [settingName]: !speedSpaceSettings[settingName],
-        })
-      );
-      dispatch(updateMustRedraw(true));
-    };
-
     // Consequence of direct actions by component
     const onOffsetTimeByDragging = (trains) => {
       dispatch(persistentUpdateSimulation({ ...simulation, trains }));
-    };
-
-    const onDragEnding = (dragEnding, setDragEnding) => {
-      if (dragEnding) {
-        // NO TRIGGER, use event status
-        changeTrain(
-          {
-            departure_time: simulation.trains[selectedTrain].base.stops[0].time,
-          },
-          simulation.trains[selectedTrain].id
-        );
-        setDragEnding(false);
-      }
     };
 
     const dispatchUpdatePositionValues = (newPositionValues) => {
@@ -97,7 +72,6 @@ const withOSRDData = (Component) =>
         timePosition={timePosition}
         consolidatedSimulation={consolidatedSimulation}
         onOffsetTimeByDragging={onOffsetTimeByDragging}
-        onDragEnding={onDragEnding}
         dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
         dispatchUpdateContextMenu={dispatchUpdateContextMenu}
         dispatchUpdateChart={dispatchUpdateChart}
