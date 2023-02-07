@@ -59,7 +59,7 @@ type Props = {
 
 type SelectOptions = { key: string | null; value: string }[];
 
-export default function AddAndEditStudyModal({ editionMode, details, getStudyDetail }: Props) {
+export default function AddOrEditStudyModal({ editionMode, details, getStudyDetail }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);

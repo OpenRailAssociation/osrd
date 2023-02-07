@@ -18,8 +18,8 @@ import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
-import AddAndEditStudyModal from '../components/Study/AddAndEditStudyModal';
+import AddOrEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
+import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
 function displayScenariosList(scenariosList, setFilterChips) {
@@ -170,7 +170,7 @@ export default function Study() {
                       type="button"
                       onClick={() =>
                         openModal(
-                          <AddAndEditStudyModal
+                          <AddOrEditStudyModal
                             editionMode
                             details={studyDetails}
                             getStudyDetail={getStudyDetail}
@@ -293,7 +293,7 @@ export default function Study() {
             <button
               className="btn btn-primary btn-sm"
               type="button"
-              onClick={() => openModal(<AddAndEditScenarioModal />, 'xl')}
+              onClick={() => openModal(<AddOrEditScenarioModal />, 'xl')}
             >
               <FaPlus />
               <span className="ml-2">{t('createScenario')}</span>

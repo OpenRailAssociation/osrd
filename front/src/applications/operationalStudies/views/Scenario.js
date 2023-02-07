@@ -19,7 +19,7 @@ import SimulationResults from './SimulationResults';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import getTimetable from '../components/Scenario/getTimetable';
-import AddAndEditScenarioModal from '../components/Scenario/AddAndEditScenarioModal';
+import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
 
 export default function Scenario() {
   const dispatch = useDispatch();
