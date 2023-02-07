@@ -41,8 +41,8 @@ function displayScenariosList(scenariosList, setFilterChips) {
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
   const { openModal } = useContext(ModalContext);
-  const [projectDetails, setProjectDetails] = useState();
-  const [studyDetails, setStudyDetails] = useState();
+  const [project, setProject] = useState();
+  const [study, setStudy] = useState();
   const [scenariosList, setScenariosList] = useState();
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -76,24 +76,24 @@ export default function Study() {
     setSortOption(e.target.value);
   };
 
-  const getProjectDetail = async () => {
+  const getProject = async () => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
-      setProjectDetails(result);
+      setProject(result);
       createStudyStates(result.id);
     } catch (error) {
       console.error(error);
     }
   };
-  const getStudyDetail = async (withNotification = false) => {
+  const getStudy = async (withNotification = false) => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
-      setStudyDetails(result);
+      setStudy(result);
       if (withNotification) {
         dispatch(
           setSuccess({
             title: t('studyUpdated'),
-            text: t('studyUpdatedDetails', { name: studyDetails.name }),
+            text: t('studyUpdatedDetails', { name: study.name }),
           })
         );
       }
@@ -121,8 +121,8 @@ export default function Study() {
   };
 
   useEffect(() => {
-    getProjectDetail();
-    getStudyDetail();
+    getProject();
+    getStudy();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -136,45 +136,37 @@ export default function Study() {
       <NavBarSNCF
         appName={
           <BreadCrumbs
-            projectName={projectDetails ? projectDetails.name : null}
-            studyName={studyDetails ? studyDetails.name : null}
+            projectName={project ? project.name : null}
+            studyName={study ? study.name : null}
           />
         }
         logo={logo}
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
-          {projectDetails && studyDetails ? (
+          {project && study ? (
             <div className="study-details">
               <div className="study-details-dates">
-                <DateBox date={studyDetails.creation_date} css="creation" translation="creation" />
-                <DateBox date={studyDetails.start_date} css="start" translation="start" />
+                <DateBox date={study.creation_date} css="creation" translation="creation" />
+                <DateBox date={study.start_date} css="start" translation="start" />
                 <DateBox
-                  date={studyDetails.expected_end_date}
+                  date={study.expected_end_date}
                   css="estimatedend"
                   translation="estimatedend"
                 />
-                <DateBox date={studyDetails.actual_end_date} css="realend" translation="realend" />
-                <DateBox
-                  date={studyDetails.last_modification}
-                  css="modified"
-                  translation="modified"
-                />
+                <DateBox date={study.actual_end_date} css="realend" translation="realend" />
+                <DateBox date={study.last_modification} css="modified" translation="modified" />
               </div>
               <div className="row">
                 <div className="col-xl-9 col-lg-8 col-md-7">
                   <div className="study-details-name">
-                    {studyDetails.name}
+                    {study.name}
                     <button
                       className="study-details-modify-button"
                       type="button"
                       onClick={() =>
                         openModal(
-                          <AddOrEditStudyModal
-                            editionMode
-                            details={studyDetails}
-                            getStudyDetail={getStudyDetail}
-                          />,
+                          <AddOrEditStudyModal editionMode details={study} getStudy={getStudy} />,
                           'xl'
                         )
                       }
@@ -183,19 +175,19 @@ export default function Study() {
                       <FaPencilAlt />
                     </button>
                   </div>
-                  <div className="study-details-type">{t(`studyTypes.${studyDetails.type}`)}</div>
-                  <div className="study-details-description">{studyDetails.description}</div>
-                  {studyDetails.state && (
+                  <div className="study-details-type">{t(`studyTypes.${study.type}`)}</div>
+                  <div className="study-details-description">{study.description}</div>
+                  {study.state && (
                     <div className="study-details-state">
                       {studyStates.map((state, idx) => (
                         <StateStep
                           key={nextId()}
-                          projectID={projectDetails.id}
-                          studyID={studyDetails.id}
-                          getStudyDetail={getStudyDetail}
+                          projectID={project.id}
+                          studyID={study.id}
+                          getStudy={getStudy}
                           number={idx + 1}
                           state={state}
-                          done={idx <= studyStates.indexOf(studyDetails.state)}
+                          done={idx <= studyStates.indexOf(study.state)}
                         />
                       ))}
                     </div>
@@ -208,12 +200,10 @@ export default function Study() {
                         <VscFiles />
                       </span>
                       {t('filesAndLinks')}
-                      <span className="ml-auto">
-                        {studyDetails.files ? studyDetails.files.length : 0}
-                      </span>
+                      <span className="ml-auto">{study.files ? study.files.length : 0}</span>
                     </div>
                     <div className="study-details-files-list">
-                      {studyDetails.files?.map((file) => {
+                      {study.files?.map((file) => {
                         const isUrl = Math.random() > 0.5;
                         return (
                           <a
@@ -242,22 +232,22 @@ export default function Study() {
                 <div className="study-details-financials-infos">
                   <div className="study-details-financials-infos-item">
                     <h3>{t('geremiCode')}</h3>
-                    <div>{studyDetails.service_code}</div>
+                    <div>{study.service_code}</div>
                   </div>
                   <div className="study-details-financials-infos-item">
                     <h3>{t('affairCode')}</h3>
-                    <div>{studyDetails.business_code}</div>
+                    <div>{study.business_code}</div>
                   </div>
                 </div>
                 <div className="study-details-financials-amount">
                   <span className="study-details-financials-amount-text">{t('budget')}</span>
-                  {budgetFormat(studyDetails.budget)}
+                  {budgetFormat(study.budget)}
                 </div>
               </div>
 
               <div className="study-details-footer">
                 <div className="study-details-tags">
-                  {studyDetails.tags?.map((tag) => (
+                  {study.tags?.map((tag) => (
                     <div className="study-details-tags-tag" key={nextId()}>
                       {tag}
                     </div>

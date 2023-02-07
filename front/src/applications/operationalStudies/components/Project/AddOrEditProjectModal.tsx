@@ -28,7 +28,7 @@ import { configItemsTypes } from './types';
 export type Props = {
   editionMode: false;
   details?: configItemsTypes;
-  getProjectDetail?: any;
+  getProject?: any;
 };
 
 const configItemsDefaults = {
@@ -40,7 +40,7 @@ const configItemsDefaults = {
   budget: 0,
 };
 
-export default function AddOrEditProjectModal({ editionMode, details, getProjectDetail }: Props) {
+export default function AddOrEditProjectModal({ editionMode, details, getProject }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
@@ -81,7 +81,7 @@ export default function AddOrEditProjectModal({ editionMode, details, getProject
     } else if (details) {
       try {
         await put(`${PROJECTS_URI}${details.id}/`, configItems);
-        getProjectDetail(true);
+        getProject(true);
         closeModal();
       } catch (error) {
         console.error(error);
