@@ -2335,6 +2335,10 @@ components:
             maxLength: 255
         infra:
           type: integer
+        electrical_profile_set:
+          type: number
+          nullable: true
+          description: Electrical profile set id (if any)
       required:
         - "name"
     ScenarioResult:
@@ -2353,6 +2357,14 @@ components:
             type: string
         infra:
           type: integer
+        infra_name:
+          type: string
+        electrical_profile_set:
+          type: integer
+          nullable: true
+        electrical_profile_set_name:
+          type: string
+          nullable: true
         creation_date:
           type: string
           format: date-time

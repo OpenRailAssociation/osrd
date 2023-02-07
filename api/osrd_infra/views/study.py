@@ -53,10 +53,17 @@ class ScenarioView(
         project = get_object_or_404(Project.objects.all(), pk=self.kwargs["project_pk"])
         study = get_object_or_404(Study.objects.all(), pk=self.kwargs["study_pk"], project=project)
         scenario_name = request.data["name"]
-        infra_id = request.data.pop("infra")
         timetable_name = f"timetable for {scenario_name}"
         timetable = Timetable.objects.create(name=timetable_name)
-        scenario = Scenario.objects.create(timetable=timetable, study_id=study.id, infra_id=infra_id, **request.data)
+        infra_id = request.data.pop("infra")
+        electrical_profile_set_id = request.data.pop("electrical_profile_set", None)
+        scenario = Scenario.objects.create(
+            timetable=timetable,
+            study_id=study.id,
+            infra_id=infra_id,
+            electrical_profile_set_id=electrical_profile_set_id,
+            **request.data,
+        )
         serializer = ScenarioSerializer(scenario, context={"request": request})
         return Response(serializer.data)
 
@@ -75,7 +82,12 @@ class ScenarioView(
             for train in scenario.timetable.train_schedules.all()
         ]
 
-        return Response({**serializer.data, "train_schedules": train_schedules})
+        return Response(
+            {
+                **serializer.data,
+                "train_schedules": train_schedules,
+            }
+        )
 
     def partial_update(self, request, pk=None, project_pk=None, study_pk=None):
         scenario = get_object_or_404(self.get_queryset(), pk=pk)
