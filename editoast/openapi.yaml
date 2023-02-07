@@ -812,7 +812,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/ElectricalProfile"
 
-  /electrical_profile_set/level_order/{id}/:
+  /electrical_profile_set/{id}/level_order/:
     get:
       tags:
         - electrical_profiles

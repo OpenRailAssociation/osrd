@@ -22,6 +22,7 @@ from osrd_infra.models import (
     Timetable,
     TrainScheduleModel,
 )
+from osrd_infra.models.electrical_profiles import ElectricalProfileSet
 from osrd_infra.schemas.rolling_stock import ComfortType
 
 
@@ -253,15 +254,23 @@ class ScenarioSerializer(NestedHyperlinkedModelSerializer):
 
     timetable = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
+    electrical_profile_set = serializers.PrimaryKeyRelatedField(queryset=ElectricalProfileSet.objects.all())
 
     trains_count = serializers.SerializerMethodField("count_trains")
     infra_name = serializers.SerializerMethodField("get_infra_name")
+    electrical_profile_set_name = serializers.SerializerMethodField("get_electrical_profile_set_name")
 
-    def count_trains(self, scenario):
+    def count_trains(self, scenario: Scenario):
         return len(scenario.timetable.train_schedules.all())
 
-    def get_infra_name(self, scenario):
+    def get_infra_name(self, scenario: Scenario):
         return scenario.infra.name
+
+    def get_electrical_profile_set_name(self, scenario: Scenario):
+        if scenario.electrical_profile_set is None:
+            return None
+        else:
+            return scenario.electrical_profile_set.name
 
     class Meta:
         model = Scenario
@@ -271,11 +280,13 @@ class ScenarioSerializer(NestedHyperlinkedModelSerializer):
             "description",
             "timetable",
             "infra",
+            "electrical_profile_set",
             "trains_count",
             "creation_date",
             "last_modification",
             "tags",
             "infra_name",
+            "electrical_profile_set_name",
         )
 
 
@@ -314,7 +325,6 @@ class ProjectSerializer(HyperlinkedModelSerializer):
 
     def get_image_url(self, obj):
         request = self.context.get("request")
-        print(obj.image)
         if obj.image and request:
             return request.build_absolute_uri(f"/projects/{obj.pk}/image/")
         return None
