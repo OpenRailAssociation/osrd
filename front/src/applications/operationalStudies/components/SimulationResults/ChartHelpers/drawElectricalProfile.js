@@ -146,13 +146,14 @@ const drawElectricalProfile = (
     .on('mouseover', (event) => {
       const lastPosition = chart.x(dataSimulation.lastPosition);
       const pointerPosition = pointer(event, event.currentTarget)[0];
-      let popUpWidth = 165;
+      let popUpWidth;
 
       if (!dataSimulation.usedProfile) {
         popUpWidth = 175;
-      }
-      if (dataSimulation.usedMode === '1500') {
+      } else if (dataSimulation.usedMode === '1500') {
         popUpWidth = 125;
+      } else {
+        popUpWidth = 165;
       }
 
       let popUpPosition = 0;

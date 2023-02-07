@@ -4,6 +4,7 @@ import defineChart from 'applications/operationalStudies/components/SimulationRe
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
+import { createProfileSegment } from 'applications/operationalStudies/consts';
 
 function createChart(
   CHART_ID,
@@ -211,88 +212,7 @@ function drawTrain(
     }
     if (dataSimulation.modesAndProfiles && speedSpaceSettings.electricalProfiles) {
       dataSimulation.modesAndProfiles.forEach((source, index) => {
-        // prepare object to work with
-        const segment = {};
-
-        segment.position_start = source.start;
-        segment.position_end = source.stop;
-        segment.position_middle = (source.start + source.stop) / 2;
-        segment.lastPosition = dataSimulation.modesAndProfiles.slice(-1)[0].stop;
-        segment.height_start = 4;
-        segment.height_end = 24;
-        segment.height_middle = (segment.height_start + segment.height_end) / 2;
-        segment.usedMode = source.used_mode;
-        segment.usedProfile = source.used_profile;
-
-        // prepare colors
-        const electricalProfileColorsWithProfile = {
-          25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
-          1500: {
-            O: '#FF0037',
-            A: '#FF335F',
-            A1: '#FF335F',
-            B: '#FF6687',
-            B1: '#FF6687',
-            C: '#FF99AF',
-            D: '#FF99AF',
-            E: '#FFCCD7',
-            F: '#FFCCD7',
-            G: '#FFF',
-          },
-          thermal: '#333',
-          15000: '#009AA6',
-          3000: '#1FBE00',
-        };
-
-        const electricalProfileColorsWithoutProfile = {
-          25000: '#6E1E78',
-          1500: '#FF0037',
-          thermal: '#333',
-          15000: '#009AA6',
-          3000: '#1FBE00',
-        };
-
-        // add colors to object depending of the presence of used_profile
-        segment.color =
-          electricalProfileColorsWithProfile[segment.usedMode][segment.usedProfile] ||
-          electricalProfileColorsWithoutProfile[segment.usedMode];
-
-        segment.textColor = electricalProfileColorsWithoutProfile[segment.usedMode];
-
-        // adapt text depending of the mode and profile
-        if (segment.usedMode === 'thermal') {
-          segment.text = `${segment.usedMode}`;
-        } else if (!segment.usedProfile) {
-          segment.text = `${segment.usedMode}V`;
-        } else if (segment.usedMode === '25000') {
-          segment.text = `${segment.usedProfile}V`;
-        } else {
-          segment.text = `${segment.usedMode}V ${segment.usedProfile}`;
-        }
-
-        // figure out if the profile is incompatible or missing
-        let isStripe = false;
-        let isIncompatible = false;
-
-        if (!segment.usedProfile && (segment.text === '25000V' || segment.text === '1500V')) {
-          isStripe = true;
-        } else if (
-          segment.usedProfile &&
-          segment.usedMode === '1500' &&
-          !segment.usedProfile.match(/O|A|B|C|D|E|F|G/)
-        ) {
-          isIncompatible = true;
-          isStripe = true;
-          segment.text = `${segment.usedMode}V`;
-        } else if (
-          segment.usedProfile &&
-          segment.usedMode === '25000' &&
-          !segment.usedProfile.match(/25000|22500|20000/)
-        ) {
-          isIncompatible = true;
-          isStripe = true;
-          segment.text = `${segment.usedMode}V`;
-        }
+        const segment = createProfileSegment(dataSimulation, source);
 
         drawElectricalProfile(
           chartLocal,
@@ -303,8 +223,8 @@ function drawTrain(
           ['position', 'height'],
           'electrical_profiles',
           rotate,
-          isStripe,
-          isIncompatible,
+          segment.isStriped,
+          segment.isIncompatible,
           `electricalProfiles_${index}`
         );
       });

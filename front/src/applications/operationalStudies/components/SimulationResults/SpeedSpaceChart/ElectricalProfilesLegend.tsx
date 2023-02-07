@@ -1,28 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { ElecProfileProps, legend } from 'applications/operationalStudies/consts';
 
-interface Props {
-  isActive: boolean;
-  setIsActive: Function;
-}
-
-interface Profile {
-  mode: string;
-  color: string[];
-  isStriped: boolean;
-}
-
-export const ElectricalProfilesLegend = ({ isActive, setIsActive }: Props) => {
+export const ElectricalProfilesLegend = ({ isActive, setIsActive }: ElecProfileProps) => {
   const { t } = useTranslation('simulation');
-
-  const legend: Profile[] = [
-    { mode: '25000V', color: ['25KA', '25KB'], isStriped: false },
-    { mode: '1500V', color: ['1500A', '1500B', '1500C'], isStriped: false },
-    { mode: t('electricalProfiles.thermal'), color: ['Thermal'], isStriped: false },
-    { mode: '15000V 16/2/3', color: ['15000'], isStriped: false },
-    { mode: '3000V', color: ['3000'], isStriped: false },
-    { mode: t('electricalProfiles.unused'), color: ['noUsed'], isStriped: true },
-  ];
 
   return (
     <div className={`elecProf-modal elecProf-modal-dark`}>
@@ -48,7 +29,7 @@ export const ElectricalProfilesLegend = ({ isActive, setIsActive }: Props) => {
                   />
                 ))}
               </div>
-              <span className="elecProfKey-text">{profile.mode}</span>
+              <span className="elecProfKey-text">{t(`electricalProfiles.${profile.mode}`)}</span>
             </div>
           ))}
         </div>

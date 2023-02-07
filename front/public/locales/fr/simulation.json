@@ -27,6 +27,10 @@
     "electricalProfiles": "Profils électriques"
   },
   "electricalProfiles": {
+    "25000": "25000V",
+    "1500": "1500V",
+    "15000": "15000V 16/2/3",
+    "3000": "3000V",
     "thermal": "Thermique",
     "used": "utitisé",
     "unused": "non utilisé",
