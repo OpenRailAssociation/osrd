@@ -14,12 +14,19 @@ import { MdDescription, MdTitle } from 'react-icons/md';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteRequest, patch, post } from 'common/requests';
+import { deleteRequest, get, patch, post } from 'common/requests';
 import { useNavigate } from 'react-router-dom';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { setSuccess } from 'reducers/main';
 import { scenarioTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { GiElectric } from 'react-icons/gi';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import {
+  PROJECTS_URI,
+  SCENARIOS_URI,
+  STUDIES_URI,
+  ELECTRICAL_PROFILE_SET_URI,
+} from '../operationalStudiesConsts';
 
 const scenarioTypesDefaults = {
   name: '',
@@ -39,11 +46,43 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
   const { closeModal } = useContext(ModalContext);
   const [configItems, setConfigItems] = useState<scenarioTypes>(scenario || scenarioTypesDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
+  const [electricalProfileSetOptions, setElectricalProfileSetOptions] = useState([
+    {
+      key: undefined,
+      value: t('dontUseElectricalProfileSet'),
+    },
+  ]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const infraID = useSelector(getInfraID);
+  const [selectedValue, setSelectedValue] = useState();
+
+  type ElectricalProfileSetType = { id: number | undefined; name: string };
+  type SelectOptionsType = { key: number | undefined; value: string };
+  const createElectricalProfileSetOptions = async () => {
+    try {
+      const results = await get(ELECTRICAL_PROFILE_SET_URI);
+      results.sort((a: ElectricalProfileSetType, b: ElectricalProfileSetType) =>
+        a.name.localeCompare(b.name)
+      );
+      const options = [
+        {
+          key: undefined,
+          value: t('noElectricalProfileSet'),
+        },
+        ...results.map((option: ElectricalProfileSetType) => ({
+          key: option.id,
+          value: option.name,
+        })),
+      ];
+      setSelectedValue(options.find((option) => option.key === configItems.electrical_profile_set));
+      setElectricalProfileSetOptions(options);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
 
@@ -112,7 +151,12 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
-  return (
+  useEffect(() => {
+    createElectricalProfileSetOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return selectedValue && electricalProfileSetOptions ? (
     <div className="scenario-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
@@ -154,9 +198,25 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
                   </div>
                 }
                 value={configItems.description}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onChange={(e: any) =>
                   setConfigItems({ ...configItems, description: e.target.value })
+                }
+              />
+            </div>
+            <div className="scenario-edition-modal-description">
+              <SelectImprovedSNCF
+                title={
+                  <div className="d-flex align-items-center">
+                    <span className="mr-2">
+                      <GiElectric />
+                    </span>
+                    {t('electricalProfileSet')}
+                  </div>
+                }
+                selectedValue={selectedValue}
+                options={electricalProfileSetOptions}
+                onChange={(e: SelectOptionsType) =>
+                  setConfigItems({ ...configItems, electrical_profile_set: e.key })
                 }
               />
             </div>
@@ -218,5 +278,5 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
         </div>
       </ModalFooterSNCF>
     </div>
-  );
+  ) : null;
 }

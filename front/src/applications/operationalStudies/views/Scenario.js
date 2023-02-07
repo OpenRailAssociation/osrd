@@ -15,6 +15,7 @@ import { get } from 'common/requests';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { FaPencilAlt } from 'react-icons/fa';
 import { setSuccess } from 'reducers/main';
+import { GiElectric } from 'react-icons/gi';
 import SimulationResults from './SimulationResults';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
@@ -126,11 +127,27 @@ export default function Scenario() {
                         <FaPencilAlt />
                       </button>
                     </div>
-                    <div className="scenario-details-infra-name">
-                      <img src={infraLogo} alt="Infra logo" className="mr-2" />
-                      {scenario.infra_name}
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="scenario-details-infra-name">
+                          <img src={infraLogo} alt="Infra logo" className="mr-2" />
+                          {scenario.infra_name}
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="scenario-details-electrical-profile-set">
+                          <span className="mr-2">
+                            <GiElectric />
+                          </span>
+                          {scenario.electrical_profile_set_name
+                            ? scenario.electrical_profile_set_name
+                            : t('noElectricalProfileSet')}
+                        </div>
+                      </div>
                     </div>
-                    <div className="scenario-details-description">{scenario.description}</div>
+                    <div className="scenario-details-description">
+                      {scenario.description}
+                    </div>
                   </div>
                 )}
                 {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
