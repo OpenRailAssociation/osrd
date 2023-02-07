@@ -6,9 +6,9 @@ public class RJSTrainScheduleOptions {
     /** Optional arguments for the standalone simulation */
 
     @Json(name = "ignore_electrical_profiles")
-    public boolean ignoreElectricalProfiles;
+    public Boolean ignoreElectricalProfiles;
 
-    public RJSTrainScheduleOptions(boolean ignoreElectricalProfiles) {
+    public RJSTrainScheduleOptions(Boolean ignoreElectricalProfiles) {
         this.ignoreElectricalProfiles = ignoreElectricalProfiles;
     }
 }
