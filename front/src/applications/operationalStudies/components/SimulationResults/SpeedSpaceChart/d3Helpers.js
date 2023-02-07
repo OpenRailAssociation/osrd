@@ -217,11 +217,13 @@ function drawTrain(
         segment.position_start = source.start;
         segment.position_end = source.stop;
         segment.position_middle = (source.start + source.stop) / 2;
-        segment.height_start = (heightOfSpeedSpaceChart * 5) / 100;
-        segment.height_end = (heightOfSpeedSpaceChart * 20) / 100;
+        segment.lastPosition = dataSimulation.modesAndProfiles.slice(-1)[0].stop;
+        segment.height_start = 4;
+        segment.height_end = 24;
         segment.height_middle = (segment.height_start + segment.height_end) / 2;
         segment.usedMode = source.used_mode;
         segment.usedProfile = source.used_profile;
+
         // prepare colors
         const electricalProfileColorsWithProfile = {
           25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },

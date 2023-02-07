@@ -29,25 +29,23 @@ export const ElectricalProfilesLegend = ({ isActive, setIsActive }: Props) => (
       </button>
     </div>
     <div className="row">
-      <div className="col-lg-12">
-        <div className="elecProfKey">
-          {legend.map((profile) => (
-            <div className="elecProfKey-item">
-              <div className="elecProfKey-icon">
-                {profile.color.map((color) => (
-                  <i
-                    className={
-                      profile.isStriped
-                        ? `elecProfKey-stripedBlock elecProfKey-${color}`
-                        : `elecProfKey-line elecProfKey-${color}`
-                    }
-                  />
-                ))}
-              </div>
-              <span className="elecProfKey-text">{profile.mode}</span>
+      <div className="elecProfKey">
+        {legend.map((profile) => (
+          <div className="elecProfKey-item">
+            <div className="elecProfKey-icon">
+              {profile.color.map((color) => (
+                <i
+                  className={
+                    profile.isStriped
+                      ? `elecProfKey-stripedBlock elecProfKey-${color}`
+                      : `elecProfKey-line elecProfKey-${color}`
+                  }
+                />
+              ))}
             </div>
-          ))}
-        </div>
+            <span className="elecProfKey-text">{profile.mode}</span>
+          </div>
+        ))}
       </div>
     </div>
   </div>

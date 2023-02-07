@@ -1,3 +1,5 @@
+import { pointer } from 'd3-selection';
+
 /* eslint-disable no-unused-vars */
 const drawElectricalProfile = (
   chart,
@@ -46,7 +48,7 @@ const drawElectricalProfile = (
     // add main rect for profile displayed
     .append('rect')
     .attr('id', id)
-    .attr('class', `rect ${classes}`)
+    .attr('class', `rect main ${classes}`)
     .datum(dataSimulation)
     .attr('fill', isStripe ? `url(#${id})` : dataSimulation.color)
     .attr('stroke-width', 1)
@@ -77,7 +79,7 @@ const drawElectricalProfile = (
         .append('rect')
         .attr('class', `rect electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
-        .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, -10)')
+        .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, -5.5)')
         .attr('rx', 2)
         .attr('ry', 2)
         .attr(
@@ -99,8 +101,8 @@ const drawElectricalProfile = (
           ) -
             height * -1
         )
-        .attr('width', rotate ? '9%' : '3.2rem')
-        .attr('height', rotate ? 20 : '1.2rem');
+        .attr('width', rotate ? '9%' : '3.2em')
+        .attr('height', rotate ? 20 : '0.6em');
 
       // add text to text zone
       textZone
@@ -110,7 +112,7 @@ const drawElectricalProfile = (
         .attr('text-anchor', 'middle')
         .text(dataSimulation.text)
         .attr('fill', dataSimulation.textColor)
-        .attr('font-size', 10)
+        .attr('font-size', 8)
         .attr('font-weight', 'bold')
         .attr(
           'x',
@@ -137,10 +139,31 @@ const drawElectricalProfile = (
 
   drawZone.call(addTextZone);
 
-  // add hover interraction
+  // create pop-up when hovering rect-profile
   drawZone
     .selectAll(`.${classes}`)
-    .on('mouseover', () => {
+    .on('mouseover', (event) => {
+      const lastPosition = chart.x(dataSimulation.lastPosition);
+      const pointerPosition = pointer(event, event.currentTarget)[0];
+      let popUpWidth = 165;
+
+      if (!dataSimulation.usedProfile) {
+        popUpWidth = 175;
+      }
+      if (dataSimulation.usedMode === '1500') {
+        popUpWidth = 125;
+      }
+
+      let popUpPosition = 0;
+      if (pointerPosition + popUpWidth > lastPosition) {
+        popUpPosition = pointerPosition + popUpWidth - lastPosition;
+      }
+
+      drawZone
+        .select(`.${classes} `)
+        .attr('transform', 'translate(0, -4)')
+        .attr('height', (height - 8) * -1);
+
       drawZone
         .append('rect')
         .attr('class', `rect data`)
@@ -151,16 +174,11 @@ const drawElectricalProfile = (
           'transform',
           rotate
             ? 'translate(80, 0)'
-            : `translate(0, ${isIncompatible || !dataSimulation.usedProfile ? '-60' : '-40'} )`
+            : `translate(${0 - popUpPosition}, ${
+                isIncompatible || !dataSimulation.usedProfile ? '-65' : '-45'
+              } )`
         )
-        .attr(
-          'x',
-          chart.x(
-            rotate
-              ? dataSimulation[`${keyValues[1]}_start`]
-              : dataSimulation[`${keyValues[0]}_start`]
-          )
-        )
+        .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
         .attr(
           'y',
           chart.y(
@@ -170,15 +188,7 @@ const drawElectricalProfile = (
           ) -
             height * -1
         )
-        .attr('width', () => {
-          if (!dataSimulation.usedProfile) {
-            return 175;
-          }
-          if (dataSimulation.usedMode === '1500') {
-            return 125;
-          }
-          return 165;
-        })
+        .attr('width', popUpWidth)
         .attr('height', isIncompatible || !dataSimulation.usedProfile ? 55 : 35);
 
       // add profile pop-up rect
@@ -192,16 +202,11 @@ const drawElectricalProfile = (
           'transform',
           rotate
             ? `translate(88, ${isIncompatible || !dataSimulation.usedProfile ? '16' : '8'})`
-            : `translate(8, ${isIncompatible || !dataSimulation.usedProfile ? '-42' : '-32'} )`
+            : `translate(${8 - popUpPosition}, ${
+                isIncompatible || !dataSimulation.usedProfile ? '-47' : '-37'
+              } )`
         )
-        .attr(
-          'x',
-          chart.x(
-            rotate
-              ? dataSimulation[`${keyValues[1]}_start`]
-              : dataSimulation[`${keyValues[0]}_start`]
-          )
-        )
+        .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
         .attr(
           'y',
           chart.y(
@@ -228,16 +233,11 @@ const drawElectricalProfile = (
           'transform',
           rotate
             ? `translate(123,${isIncompatible || !dataSimulation.usedProfile ? 18 : 20})`
-            : `translate(48, ${isIncompatible || !dataSimulation.usedProfile ? '-40' : '-20'})`
+            : `translate(${48 - popUpPosition}, ${
+                isIncompatible || !dataSimulation.usedProfile ? '-45' : '-25'
+              })`
         )
-        .attr(
-          'x',
-          chart.x(
-            rotate
-              ? dataSimulation[`${keyValues[1]}_start`]
-              : dataSimulation[`${keyValues[0]}_start`]
-          )
-        )
+        .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
         .attr(
           'y',
           chart.y(
@@ -258,15 +258,11 @@ const drawElectricalProfile = (
               ? `${dataSimulation.usedProfile} incompatible`
               : `profil manquant`
           )
-          .attr('transform', rotate ? 'translate(123, 40)' : `translate(48, -20)`)
           .attr(
-            'x',
-            chart.x(
-              rotate
-                ? dataSimulation[`${keyValues[1]}_start`]
-                : dataSimulation[`${keyValues[0]}_start`]
-            )
+            'transform',
+            rotate ? 'translate(123, 40)' : `translate(${48 - popUpPosition}, -25)`
           )
+          .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
           .attr(
             'y',
             chart.y(
@@ -280,6 +276,10 @@ const drawElectricalProfile = (
     })
     .on('mouseout', () => {
       // add mouse-out interraction to remove pop-up
+      drawZone
+        .select(`.${classes} `)
+        .attr('transform', 'translate(0, 0)')
+        .attr('height', height * -1);
       drawZone.selectAll('.data').remove();
     });
 };
