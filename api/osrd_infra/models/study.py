@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 
+from osrd_infra.models.electrical_profiles import ElectricalProfileSet
 from osrd_infra.models.infra import Infra
 from osrd_infra.models.timetable import Timetable
 from osrd_infra.schemas.study import StudyState, StudyType
@@ -40,6 +41,7 @@ class Scenario(models.Model):
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=1024, blank=True, default="")
     infra = models.ForeignKey(Infra, on_delete=models.SET_NULL, null=True)
+    electrical_profile_set = models.ForeignKey(ElectricalProfileSet, on_delete=models.CASCADE, null=True, blank=True)
     creation_date = models.DateTimeField(
         editable=False,
         auto_now_add=True,
