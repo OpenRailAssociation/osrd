@@ -235,6 +235,7 @@
         },
         "start_direction": "Direction au départ :",
         "endpoint": "Extrémité :",
+        "swap-endpoints": "Échanger les extrémités",
         "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
         "search-routes": "Rechercher des itinéraires compatibles",
         "untitled-track": "Ligne sans nom",
