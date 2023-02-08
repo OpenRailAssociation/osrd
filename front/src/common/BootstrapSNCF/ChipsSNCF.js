@@ -2,31 +2,17 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 
-const color2classes = (color) => {
-  switch (color) {
-    case 'secondary':
-      return 'bg-secondary';
-    case 'purple':
-      return 'bg-purple';
-    case 'pink':
-      return 'bg-pink';
-    case 'red':
-      return 'bg-red';
-    case 'orange':
-      return 'bg-orange';
-    case 'yellow':
-      return 'bg-yellow text-dark';
-    case 'green':
-      return 'bg-green text-dark';
-    case 'teal':
-      return 'bg-teal text-dark';
-    case 'cyan':
-      return 'bg-cyan';
-    case 'white':
-      return 'bg-white text-dark';
-    default:
-      return '';
-  }
+const color2classes = {
+  secondary: 'bg-secondary',
+  purple: 'bg-purple',
+  pink: 'bg-pink',
+  red: 'bg-red',
+  orange: 'bg-orange',
+  yellow: 'bg-yellow text-dark',
+  green: 'bg-green text-dark',
+  teal: 'bg-teal text-dark',
+  cyan: 'bg-cyan',
+  white: 'bg-white text-dark',
 };
 
 export default function ChipsSNCF(props) {
@@ -36,10 +22,10 @@ export default function ChipsSNCF(props) {
   const chip = (label, idx) => (
     <div role="list" key={nextId()}>
       <div className="chips-group" role="listitem">
-        <span className={`chips chips-label pr-1 ${color2classes(color)}`}>{label}</span>
+        <span className={`chips chips-label pr-1 ${color2classes[color]}`}>{label}</span>
         <button
           type="button"
-          className={`chips chips-btn chips-only-icon ${color2classes(color)}`}
+          className={`chips chips-btn chips-only-icon ${color2classes[color]}`}
           onClick={() => removeTag(idx)}
         >
           <i className="icons-close" aria-hidden="true" />

@@ -81,7 +81,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
     }
   };
 
-  const modifyScenario = async () => {
+  const updateScenario = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
     } else if (scenario) {
@@ -208,7 +208,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
             {t('scenarioCancel')}
           </button>
           {editionMode ? (
-            <button className="btn btn-sm btn-warning" type="button" onClick={modifyScenario}>
+            <button className="btn btn-sm btn-warning" type="button" onClick={updateScenario}>
               <span className="mr-2">
                 <FaPencilAlt />
               </span>

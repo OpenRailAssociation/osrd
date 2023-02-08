@@ -114,7 +114,7 @@ export default function Scenario() {
                           openModal(
                             <AddAndEditScenarioModal
                               editionMode
-                              details={scenario}
+                              scenario={scenario}
                               getScenario={getScenario}
                             />
                           )

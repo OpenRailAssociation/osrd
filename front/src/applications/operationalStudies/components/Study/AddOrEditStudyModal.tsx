@@ -65,7 +65,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   const [configItems, setConfigItems] = useState<configItemsTypes>(study || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const emptyOptions = [{ key: null, value: t('nothingSelected') }];
-  const [studyTypes, setStudyTypes] = useState<SelectOptions>(emptyOptions);
+  const [studyCategories, setStudyCategories] = useState<SelectOptions>(emptyOptions);
   const [studyStates, setStudyStates] = useState<SelectOptions>(emptyOptions);
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
@@ -121,7 +121,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
     }
   };
 
-  const modifyStudy = async () => {
+  const updateStudy = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
     } else if (study) {
@@ -155,7 +155,11 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   };
 
   useEffect(() => {
-    createSelectOptions('studyTypes', `/projects/${configItems.id}/study_types/`, setStudyTypes);
+    createSelectOptions(
+      'studyCategories',
+      `/projects/${configItems.id}/study_types/`,
+      setStudyCategories
+    );
     createSelectOptions('studyStates', `/projects/${configItems.id}/study_states/`, setStudyStates);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -204,9 +208,9 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                     }
                     selectedValue={{
                       key: configItems.type,
-                      value: t(`studyTypes.${configItems.type || 'nothingSelected'}`),
+                      value: t(`studyCategories.${configItems.type || 'nothingSelected'}`),
                     }}
-                    options={studyTypes}
+                    options={studyCategories}
                     onChange={(e: any) => setConfigItems({ ...configItems, type: e.key })}
                   />
                 </div>
@@ -382,7 +386,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
             {t('studyCancel')}
           </button>
           {editionMode ? (
-            <button className="btn btn-warning" type="button" onClick={modifyStudy}>
+            <button className="btn btn-warning" type="button" onClick={updateStudy}>
               <span className="mr-2">
                 <FaPencilAlt />
               </span>
