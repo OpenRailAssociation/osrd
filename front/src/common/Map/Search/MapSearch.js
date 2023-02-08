@@ -18,72 +18,68 @@ export default function MapSearch(props) {
 
   const { t } = useTranslation(['translation', 'map-search']);
 
-  return (
-    <div className={`map-modal${active ? ' active' : ''}`}>
-      <div className="d-flex justify-content-between align-items-start">
-        <div className="h2">{t('translation:common.search')}</div>
-        <button type="button" className="close" onClick={toggleMapSearch}>
-          ×
-        </button>
-      </div>
+  const tabItems = [
+    {
+      className: 'active',
+      title: t('map-search:station'),
+    },
+    {
+      className: '',
+      title: t('map-search:signalbox'),
+    },
+    {
+      className: '',
+      title: t('map-search:signal'),
+    },
+  ];
 
-      <div className="actionbar">
-        <nav role="navigation" className="position-relative mt-2">
-          <ul className="nav nav navtabs mb-0 dragscroll" role="tablist" id="listeTitreOnglets">
-            <li className="navtabs-item pr-4">
-              <a
-                href="#tab1"
-                className="active"
-                id="titletab1"
-                data-toggle="tab"
-                role="tab"
-                aria-controls="tab1"
-                aria-selected="true"
-              >
-                {t('map-search:station')}
-              </a>
-            </li>
-            <li className="navtabs-item pr-4">
-              <a
-                href="#tab2"
-                id="titletab2"
-                data-toggle="tab"
-                role="tab"
-                aria-controls="tab2"
-                aria-selected="false"
-              >
-                {t('map-search:signalbox')}
-              </a>
-            </li>
-            <li className="navtabs-item pr-4">
-              <a
-                href="#tab3"
-                id="titletab3"
-                data-toggle="tab"
-                role="tab"
-                aria-controls="tab3"
-                aria-selected="false"
-              >
-                {t('map-search:signal')}
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-      <div className="tab-content" id="myTabContent">
-        <div
-          className="tab-pane fade show active"
-          id="tab1"
-          role="tabpanel"
-          aria-labelledby="titletab1"
-        >
-          <MapSearchStation updateExtViewport={updateViewportChange} />
+  return (
+    <div className="div-modal">
+      <div className={`map-modal${active ? ' active' : ''}`}>
+        <div className="d-flex justify-content-between align-items-start">
+          <div className="h2">{t('translation:common.search')}</div>
+          <button type="button" className="close" onClick={toggleMapSearch}>
+            ×
+          </button>
         </div>
-        <div className="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="titletab2">
-          <MapSearchSignalBox updateExtViewport={updateViewportChange} />
+
+        <div className="actionbar">
+          <nav role="navigation" className="position-relative mt-2">
+            <ul className="nav nav navtabs mb-0 dragscroll" role="tablist" id="listeTitreOnglets">
+              {tabItems.map((tab, index) => (
+                <li className="navtabs-item pr-4" key={`tab-${tab.title}`}>
+                  <a
+                    href={`#tab${index + 1}`}
+                    className={tab.className}
+                    id={`titletab${index + 1}`}
+                    data-toggle="tab"
+                    role="tab"
+                    aria-controls={`tab${index + 1}`}
+                    aria-selected="true"
+                  >
+                    {tab.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
-        <div className="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="titletab3">
-          <MapSearchSignal updateExtViewport={updateViewportChange} />
+
+        <div className="tab-content" id="myTabContent">
+          <div
+            className="tab-pane fade show active"
+            id="tab1"
+            role="tabpanel"
+            aria-labelledby="titletab1"
+          >
+            <MapSearchStation updateExtViewport={updateViewportChange} />
+          </div>
+          <div className="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="titletab2">
+            <MapSearchSignalBox updateExtViewport={updateViewportChange} />
+          </div>
+          <div className="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="titletab3">
+            <MapSearchSignal updateExtViewport={updateViewportChange} />
+          </div>
         </div>
       </div>
     </div>
