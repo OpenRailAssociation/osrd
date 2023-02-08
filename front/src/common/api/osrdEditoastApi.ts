@@ -29,13 +29,13 @@ const injectedRtkApi = api.injectEndpoints({
       }),
     }),
     getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
-      query: () => ({ url: `/infra/` }),
+      query: () => ({ url: `/editoast/infra/` }),
     }),
     postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
       query: (queryArg) => ({ url: `/infra/`, method: 'POST', body: queryArg.body }),
     }),
     getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
+      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/` }),
     }),
     deleteInfraById: build.mutation<DeleteInfraByIdApiResponse, DeleteInfraByIdApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
@@ -48,13 +48,13 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/railjson/`,
+        url: `/editoast/infra/${queryArg.id}/railjson/`,
         params: { exclude_extensions: queryArg.excludeExtensions },
       }),
     }),
     postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/infra/railjson/`,
+        url: `/editoast/infra/railjson/`,
         method: 'POST',
         body: queryArg.railjsonFile,
         params: { name: queryArg.name, generate_data: queryArg.generateData },
@@ -95,10 +95,10 @@ const injectedRtkApi = api.injectEndpoints({
       GetInfraByIdSpeedLimitTagsApiResponse,
       GetInfraByIdSpeedLimitTagsApiArg
     >({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
+      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/speed_limit_tags/` }),
     }),
     getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/voltages/` }),
+      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/voltages/` }),
     }),
     getInfraByIdRoutesAndWaypointTypeWaypointId: build.query<
       GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,

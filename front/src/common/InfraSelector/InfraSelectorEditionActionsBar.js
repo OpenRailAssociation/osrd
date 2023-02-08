@@ -30,7 +30,7 @@ export default function ActionsBar(props) {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        const railjson = await get(`${INFRA_URL_OLD}${infra.id}/railjson/`);
+        const railjson = await get(`${INFRA_URL}${infra.id}/railjson/`);
         fileDownload(JSON.stringify(railjson), `${infra.name}.id${infra.id}.railjson.json`);
         setIsWaiting(false);
       } catch (e) {
