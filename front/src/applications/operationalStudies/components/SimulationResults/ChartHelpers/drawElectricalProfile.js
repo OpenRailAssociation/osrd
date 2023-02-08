@@ -162,11 +162,17 @@ const drawElectricalProfile = (
         popUpPosition = pointerPositionX + popUpWidth - lastPosition;
       }
 
-      drawZone
-        .select(`.${classes} `)
-        .attr('transform', rotate ? 'translate(-4, 0)' : 'translate(0, -4)')
-        .attr('width', rotate ? width + 8 : width)
-        .attr('height', rotate ? (height - 8) * -1 : height);
+      if (rotate) {
+        drawZone
+          .select(`.${classes} `)
+          .attr('transform', 'translate(-4, 0)')
+          .attr('width', width + 8);
+      } else {
+        drawZone
+          .select(`.${classes} `)
+          .attr('transform', 'translate(0, -4)')
+          .attr('height', (height - 8) * -1);
+      }
 
       drawZone
         .append('rect')
