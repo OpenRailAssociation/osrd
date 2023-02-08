@@ -1,7 +1,10 @@
 import * as d3 from 'd3';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { traceVerticalLine } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
+import {
+  isolatedEnableInteractivity,
+  traceVerticalLine,
+} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
 import {
   interpolateOnTime,
@@ -46,6 +49,7 @@ export default function SpaceTimeChart(props) {
     initialSelectedTrain,
     timePosition,
     simulation,
+    simulationIsPlaying,
     dispatch,
     onOffsetTimeByDragging,
     onSetBaseHeightOfSpaceTimeChart,
@@ -53,6 +57,7 @@ export default function SpaceTimeChart(props) {
     dispatchUpdatePositionValues,
     dispatchUpdateChart,
     dispatchUpdateContextMenu,
+    dispatchUpdateTimePositionValues,
     initialHeightOfSpaceTimeChart,
   } = props;
 
@@ -144,6 +149,7 @@ export default function SpaceTimeChart(props) {
         dispatchUpdateContextMenu,
         allowancesSettings,
         setSelectedTrain,
+        simulationIsPlaying,
         true
       );
     }
@@ -153,9 +159,31 @@ export default function SpaceTimeChart(props) {
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
     setDataSimulation(simulation);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation.trains]);
 
   useEffect(() => {
+    if (dataSimulation) {
+      // add behaviour on zoom and mousemove/mouseover/wheel on the new chart
+      isolatedEnableInteractivity(
+        chart,
+        createTrain(dispatch, keyValues, dataSimulation.trains, t)[selectedTrain],
+        keyValues,
+        LIST_VALUES_NAME_SPACE_TIME,
+        positionValues,
+        rotate,
+        setChart,
+        setYPosition,
+        setZoomLevel,
+        yPosition,
+        zoomLevel,
+        simulationIsPlaying,
+        dispatchUpdateContextMenu,
+        dispatchUpdateMustRedraw,
+        dispatchUpdateTimePositionValues
+      );
+    }
+    // what is it used for ?
     if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {
       // ADN: too heavy, dispatch on release (dragEnd), careful with dispatch !
       const newPositionValues = interpolateOnTime(
@@ -166,8 +194,10 @@ export default function SpaceTimeChart(props) {
       );
       dispatchUpdatePositionValues(newPositionValues);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart]);
 
+  // coordinates the vertical cursors with other graphs (GEV for instance)
   useEffect(() => {
     if (dataSimulation) {
       traceVerticalLine(
@@ -181,6 +211,7 @@ export default function SpaceTimeChart(props) {
         timePosition
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positionValues]);
 
   useEffect(() => {
@@ -260,6 +291,7 @@ SpaceTimeChart.propTypes = {
   initialSelectedTrain: PropTypes.any,
   timePosition: PropTypes.any,
   simulation: PropTypes.any,
+  simulationIsPlaying: PropTypes.bool,
   dispatch: PropTypes.any,
   onOffsetTimeByDragging: PropTypes.func,
   onSetBaseHeightOfSpaceTimeChart: PropTypes.any,
@@ -267,11 +299,13 @@ SpaceTimeChart.propTypes = {
   dispatchUpdatePositionValues: PropTypes.any,
   dispatchUpdateChart: PropTypes.any,
   dispatchUpdateContextMenu: PropTypes.any,
+  dispatchUpdateTimePositionValues: PropTypes.any,
   initialHeightOfSpaceTimeChart: PropTypes.any.isRequired,
 };
 
 SpaceTimeChart.defaultProps = {
   simulation: ORSD_GET_SAMPLE_DATA.simulation.present,
+  simulationIsPlaying: false,
   allowancesSettings: ORSD_GET_SAMPLE_DATA.allowancesSettings,
   dispatch: () => {},
   positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
@@ -283,4 +317,5 @@ SpaceTimeChart.defaultProps = {
   dispatchUpdateChart: () => {},
   dispatchUpdatePositionValues: () => {},
   dispatchUpdateContextMenu: () => {},
+  dispatchUpdateTimePositionValues: () => {},
 };

@@ -295,36 +295,38 @@ export const interpolateOnTime = (
   const positionInterpolated: Record<string, PositionSpeed> = {};
   listValues.forEach((listValue) => {
     let bisection;
-    // If not array of array
-    if (listValue === 'speed' || listValue === 'speeds') {
-      const comparator = dataSimulation?.[listValue] || dataSimulation?.[listValue][0]
-      if (comparator) {
-        const timeBisect = d3.bisector<any, any>((d) => d['time']).left;
-        const index = timeBisect(dataSimulation[listValue], timePositionLocal, 1);
-        bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
-      }
-    } else if (dataSimulation?.[listValue]) {
-      // Array of array
-      dataSimulation[listValue].forEach((section: Position[]) => {
-        const index = bisect(section, timePositionLocal, 1);
-        if (
-          index !== section.length &&
-          section[0] &&
-          timePositionLocal >= (section[0] as any)[keyValues[0]]
-        ) {
-          bisection = [section[index - 1], section[index]];
+    if (dataSimulation?.[listValue]) {
+      // If not array of array
+      if (listValue === 'speed' || listValue === 'speeds') {
+        const comparator = dataSimulation?.[listValue] || dataSimulation?.[listValue][0];
+        if (comparator) {
+          const timeBisect = d3.bisector<any, any>((d) => d['time']).left;
+          const index = timeBisect(dataSimulation[listValue], timePositionLocal, 1);
+          bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
         }
-      });
-    }
-    if (bisection && bisection[1]) {
-      const duration = bisection[1].time - bisection[0].time;
-      const timePositionFromTime = timePositionLocal - bisection[0].time;
-      const proportion = timePositionFromTime / duration;
-      positionInterpolated[listValue] = {
-        position: d3.interpolateNumber(bisection[0].position, bisection[1].position)(proportion),
-        speed: d3.interpolateNumber(bisection[0].speed, bisection[1].speed)(proportion) * 3.6,
-        time: timePositionLocal,
-      };
+      } else {
+        // Array of array
+        dataSimulation[listValue].forEach((section: Position[]) => {
+          const index = bisect(section, timePositionLocal, 1);
+          if (
+            index !== section.length &&
+            section[0] &&
+            timePositionLocal >= (section[0] as any)[keyValues[0]]
+          ) {
+            bisection = [section[index - 1], section[index]];
+          }
+        });
+      }
+      if (bisection && bisection[1]) {
+        const duration = bisection[1].time - bisection[0].time;
+        const timePositionFromTime = timePositionLocal - bisection[0].time;
+        const proportion = timePositionFromTime / duration;
+        positionInterpolated[listValue] = {
+          position: d3.interpolateNumber(bisection[0].position, bisection[1].position)(proportion),
+          speed: d3.interpolateNumber(bisection[0].speed, bisection[1].speed)(proportion) * 3.6,
+          time: timePositionLocal,
+        };
+      }
     }
   });
 
