@@ -147,15 +147,19 @@ export default function Study() {
           {project && study ? (
             <div className="study-details">
               <div className="study-details-dates">
-                <DateBox date={study.creation_date} css="creation" translation="creation" />
-                <DateBox date={study.start_date} css="start" translation="start" />
+                <DateBox date={study.creation_date} className="creation" translation="creation" />
+                <DateBox date={study.start_date} className="start" translation="start" />
                 <DateBox
                   date={study.expected_end_date}
-                  css="estimatedend"
+                  className="estimatedend"
                   translation="estimatedend"
                 />
-                <DateBox date={study.actual_end_date} css="realend" translation="realend" />
-                <DateBox date={study.last_modification} css="modified" translation="modified" />
+                <DateBox date={study.actual_end_date} className="realend" translation="realend" />
+                <DateBox
+                  date={study.last_modification}
+                  className="modified"
+                  translation="modified"
+                />
               </div>
               <div className="row">
                 <div className="col-xl-9 col-lg-8 col-md-7">
