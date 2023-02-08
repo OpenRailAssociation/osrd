@@ -17,10 +17,14 @@ function RollingStock2Img(props) {
     const defaultLivery = rollingStock.liveries.find((livery) => livery.name === 'default');
     if (!defaultLivery?.id) return;
 
-    const image = await get(`/rolling_stock/${rollingStock.id}/livery/${defaultLivery.id}/`, {
-      responseType: 'blob',
-    });
-    if (image) setImageUrl(URL.createObjectURL(image));
+    try {
+      const image = await get(`/rolling_stock/${rollingStock.id}/livery/${defaultLivery.id}/`, {
+        responseType: 'blob',
+      });
+      if (image) setImageUrl(URL.createObjectURL(image));
+    } catch (e) {
+      console.log(e);
+    }
   }, [rollingStock]);
 
   useEffect(() => {
