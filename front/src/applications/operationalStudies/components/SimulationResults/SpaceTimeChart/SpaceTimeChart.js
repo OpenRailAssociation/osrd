@@ -173,7 +173,7 @@ export default function SpaceTimeChart(props) {
       // Reprogram !
       // handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
-  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
+  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart, dispatchUpdateMustRedraw]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
