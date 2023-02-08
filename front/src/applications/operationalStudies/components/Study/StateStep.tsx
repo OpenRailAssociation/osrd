@@ -1,6 +1,7 @@
 import { patch } from 'common/requests';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import cx from 'classnames';
 import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 type Props = {
@@ -24,7 +25,7 @@ export default function StateStep({ projectID, studyID, getStudy, number, state,
   };
   return (
     <div
-      className={`study-details-state-step ${done ? 'done' : null}`}
+      className={cx('study-details-state-step', { done })}
       role="button"
       tabIndex={0}
       onClick={() => changeStudyState()}

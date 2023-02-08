@@ -4,14 +4,14 @@ import { dateTimeFrenchFormatting } from 'utils/date';
 
 type Props = {
   date: Date;
-  css: string;
+  className: string;
   translation: string;
 };
 
-export default function DateBox({ date, css, translation }: Props) {
+export default function DateBox({ date, className, translation }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   return (
-    <div className={`study-details-dates-date ${css}`}>
+    <div className={`study-details-dates-date ${className}`}>
       <span className="study-details-dates-date-label">{t(`dates.${translation}`)}</span>
       <span className="study-details-dates-date-value">{dateTimeFrenchFormatting(date)}</span>
     </div>

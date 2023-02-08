@@ -53,16 +53,16 @@ type configItemsTypes = {
 
 type Props = {
   editionMode: false;
-  details?: configItemsTypes;
+  study?: configItemsTypes;
   getStudy?: any;
 };
 
 type SelectOptions = { key: string | null; value: string }[];
 
-export default function AddOrEditStudyModal({ editionMode, details, getStudy }: Props) {
+export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
+  const [configItems, setConfigItems] = useState<configItemsTypes>(study || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const emptyOptions = [{ key: null, value: t('nothingSelected') }];
   const [studyTypes, setStudyTypes] = useState<SelectOptions>(emptyOptions);
@@ -70,6 +70,8 @@ export default function AddOrEditStudyModal({ editionMode, details, getStudy }: 
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}`;
 
   const createSelectOptions = async (
     translationList: string,
@@ -109,7 +111,7 @@ export default function AddOrEditStudyModal({ editionMode, details, getStudy }: 
       setDisplayErrors(true);
     } else {
       try {
-        const result = await post(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, configItems);
+        const result = await post(`${rootURI}`, configItems);
         dispatch(updateStudyID(result.id));
         navigate('/operational-studies/study');
         closeModal();
@@ -122,9 +124,9 @@ export default function AddOrEditStudyModal({ editionMode, details, getStudy }: 
   const modifyStudy = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
-    } else if (details) {
+    } else if (study) {
       try {
-        await patch(`${PROJECTS_URI}${projectID}${STUDIES_URI}${details.id}/`, configItems);
+        await patch(`${rootURI}${study.id}/`, configItems);
         getStudy(true);
         closeModal();
       } catch (error) {
@@ -134,16 +136,16 @@ export default function AddOrEditStudyModal({ editionMode, details, getStudy }: 
   };
 
   const deleteStudy = async () => {
-    if (details) {
+    if (study) {
       try {
-        await deleteRequest(`${PROJECTS_URI}${projectID}${STUDIES_URI}${details.id}/`);
+        await deleteRequest(`${rootURI}${study.id}/`);
         dispatch(updateStudyID(undefined));
         navigate('/operational-studies/project');
         closeModal();
         dispatch(
           setSuccess({
             title: t('studyDeleted'),
-            text: t('studyDeletedDetails', { name: details.name }),
+            text: t('studyDeletedDetails', { name: study.name }),
           })
         );
       } catch (error) {
