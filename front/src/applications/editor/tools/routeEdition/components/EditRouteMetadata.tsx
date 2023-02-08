@@ -6,11 +6,11 @@ import { featureCollection, lineString } from '@turf/helpers';
 import { useTranslation } from 'react-i18next';
 import { cloneDeep, first, isEqual, last } from 'lodash';
 import { FaFlagCheckered } from 'react-icons/fa';
-import { BsArrowBarRight, BsBoxArrowInRight } from 'react-icons/bs';
+import { BsArrowBarRight } from 'react-icons/bs';
 import { MdDelete, MdSave } from 'react-icons/md';
 import { FiSearch } from 'react-icons/fi';
 
-import { CreateRouteState, EditRouteState, RouteEditionState } from '../types';
+import { EditRoutePathState, EditRouteMetadataState, RouteEditionState } from '../types';
 import { ExtendedEditorContextType, OSRDConf } from '../../types';
 import {
   getRoutesLineLayerProps,
@@ -20,60 +20,15 @@ import {
 import colors from '../../../../../common/Map/Consts/colors';
 import { getEditRouteState, getEmptyCreateRouteState, getRouteGeometryByRouteId } from '../utils';
 import EditorContext from '../../../context';
-import EntitySumUp from '../../../components/EntitySumUp';
-import { getEntity, getMixedEntities } from '../../../data/api';
-import {
-  BufferStopEntity,
-  DetectorEntity,
-  EditorEntity,
-  WayPoint,
-  WayPointEntity,
-} from '../../../../../types';
-import { BufferStopEditionTool, DetectorEditionTool } from '../../pointEdition/tools';
+import { getMixedEntities } from '../../../data/api';
+import { EditorEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
 import { addNotification } from '../../../../../reducers/main';
 import ConfirmModal from '../../../components/ConfirmModal';
 import { save } from '../../../../../reducers/editor';
+import { DisplayEndpoints } from './Endpoints';
 
-const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
-  const { t } = useTranslation();
-  const { switchTool } = useContext(EditorContext);
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
-
-  return (
-    <div className="d-flex align-items-center">
-      <div className="flex-shrink-0 mr-3">
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          title={t('common.open')}
-          onClick={() => {
-            getEntity<WayPointEntity>(osrdConf.infraID as string, id, type).then((entity) => {
-              if (type === 'Detector') {
-                switchTool(DetectorEditionTool, {
-                  initialEntity: entity as DetectorEntity,
-                  entity: entity as DetectorEntity,
-                });
-              } else {
-                switchTool(BufferStopEditionTool, {
-                  initialEntity: entity as BufferStopEntity,
-                  entity: entity as BufferStopEntity,
-                });
-              }
-            });
-          }}
-        >
-          <BsBoxArrowInRight />
-        </button>
-      </div>
-      <div className="flex-grow-1 flex-shrink-1">
-        <EntitySumUp objType={type} id={id} />
-      </div>
-    </div>
-  );
-};
-
-export const EditRouteLeftPanel: FC<{ state: EditRouteState }> = ({ state }) => {
+export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { initialRouteEntity, routeEntity } = state;
@@ -90,16 +45,15 @@ export const EditRouteLeftPanel: FC<{ state: EditRouteState }> = ({ state }) => 
   return (
     <div className="position-relative">
       <legend>{t('Editor.tools.routes-edition.edit-route')}</legend>
-      <h5 className="mt-4">
-        <BsArrowBarRight /> {t('Editor.tools.routes-edition.start')}
-      </h5>
-      <ExtremityDisplay id={entry_point.id} type={entry_point.type} />
-      <h5 className="mt-4">{t('Editor.tools.routes-edition.start_direction')}</h5>
-      <div>{t(`Editor.tools.routes-edition.directions.${entry_point_direction}`)}</div>
-      <h5 className="mt-4">
-        <FaFlagCheckered /> {t('Editor.tools.routes-edition.end')}
-      </h5>
-      <ExtremityDisplay id={exit_point.id} type={exit_point.type} />
+      <DisplayEndpoints
+        state={{
+          entryPointDirection: entry_point_direction,
+          // Hack: positions are useless to DisplayEndpoints, but required
+          // typewise:
+          entryPoint: { ...entry_point, position: [0, 0] },
+          exitPoint: { ...exit_point, position: [0, 0] },
+        }}
+      />
 
       <hr />
 
@@ -161,7 +115,7 @@ export const EditRouteLeftPanel: FC<{ state: EditRouteState }> = ({ state }) => 
           className="btn btn-primary btn-sm mt-1"
           type="button"
           onClick={() => {
-            const baseState = getEmptyCreateRouteState() as CreateRouteState;
+            const baseState = getEmptyCreateRouteState() as EditRoutePathState;
 
             setIsLoading(true);
             getMixedEntities<WayPointEntity>(osrdConf.infraID as string, [
@@ -226,7 +180,7 @@ export const EditRouteLeftPanel: FC<{ state: EditRouteState }> = ({ state }) => 
   );
 };
 
-export const EditRouteEditionLayers: FC<{ state: EditRouteState }> = ({ state }) => {
+export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
   const { t } = useTranslation();
   const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
