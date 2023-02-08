@@ -77,7 +77,7 @@ export default function Project() {
     }
   };
 
-  const getStudyList = async () => {
+  const getStudiesList = async () => {
     try {
       const params = {
         ordering: sortOption,
@@ -102,7 +102,7 @@ export default function Project() {
   }, []);
 
   useEffect(() => {
-    getStudyList();
+    getStudiesList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 
@@ -134,7 +134,7 @@ export default function Project() {
                             openModal(
                               <AddOrEditProjectModal
                                 editionMode
-                                details={project}
+                                project={project}
                                 getProject={getProject}
                               />,
                               'xl'

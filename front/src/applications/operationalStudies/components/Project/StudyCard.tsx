@@ -55,7 +55,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
         </button>
       </div>
       <div className="studies-list-card-type">
-        {t(`operationalStudies/study:studyTypes.${study.type}`)}
+        {t(`operationalStudies/study:studyCategories.${study.type}`)}
       </div>
       <div className="studies-list-card-description">{study.description}</div>
 
