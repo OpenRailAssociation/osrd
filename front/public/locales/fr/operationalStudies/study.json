@@ -52,7 +52,7 @@
   },
   "studyTags": "Étiquettes",
   "studyType": "Type",
-  "studyTypes": {
+  "studyCategories": {
     "nothingSelected": "— Aucun —",
     "chartStability": "Stabilité du graphique",
     "disturbanceTests": "Tests de perturbations",

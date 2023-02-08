@@ -166,7 +166,7 @@ export default function Study() {
                       type="button"
                       onClick={() =>
                         openModal(
-                          <AddOrEditStudyModal editionMode details={study} getStudy={getStudy} />,
+                          <AddOrEditStudyModal editionMode study={study} getStudy={getStudy} />,
                           'xl'
                         )
                       }
@@ -175,7 +175,7 @@ export default function Study() {
                       <FaPencilAlt />
                     </button>
                   </div>
-                  <div className="study-details-type">{t(`studyTypes.${study.type}`)}</div>
+                  <div className="study-details-type">{t(`studyCategories.${study.type}`)}</div>
                   <div className="study-details-description">{study.description}</div>
                   {study.state && (
                     <div className="study-details-state">

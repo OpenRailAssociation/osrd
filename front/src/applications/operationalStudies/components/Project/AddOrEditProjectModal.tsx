@@ -75,7 +75,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     }
   };
 
-  const modifyProject = async () => {
+  const updateProject = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
     } else if (project) {
@@ -268,7 +268,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
             {t('projectCancel')}
           </button>
           {editionMode ? (
-            <button className="btn btn-warning" type="button" onClick={modifyProject}>
+            <button className="btn btn-warning" type="button" onClick={updateProject}>
               <span className="mr-2">
                 <FaPencilAlt />
               </span>
