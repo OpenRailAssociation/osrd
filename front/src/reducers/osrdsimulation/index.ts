@@ -80,6 +80,7 @@ export const initialState: OsrdSimulationState = {
     curves: false,
     maxSpeed: true,
     slopes: false,
+    electricalProfiles: false,
   },
   signalBase: SIGNAL_BASE_DEFAULT,
   timePosition: undefined,

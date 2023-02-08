@@ -817,6 +817,19 @@ const ORSD_GEV_SAMPLE_DATA = {
             labels: [],
             path: 29,
             name: 'total',
+            modes_and_profiles: [
+              { start: 0, stop: 900, used_mode: '1500', used_profile: 'O' },
+              { start: 900, stop: 1200, used_mode: '1500', used_profile: 'A' },
+              { start: 1200, stop: 1350, used_mode: '1500', used_profile: 'O' },
+              { start: 1350, stop: 3400, used_mode: '1500', used_profile: 'B1' },
+              { start: 3400, stop: 3900, used_mode: '1500', used_profile: 'E' },
+              { start: 3900, stop: 4800, used_mode: '25000', used_profile: 'B' },
+              { start: 4800, stop: 4950, used_mode: '1500', used_profile: 'O' },
+              { start: 4950, stop: 7600, used_mode: '1500' },
+              { start: 7600, stop: 7850, used_mode: '25000', used_profile: '25000' },
+              { start: 7850, stop: 8500, used_mode: '25000', used_profile: '20000' },
+              { start: 8500, stop: 9350, used_mode: '25000', used_profile: '22500' },
+            ],
             vmax: [
               {
                 speed: 33.333333333333336,
@@ -1513,6 +1526,19 @@ const ORSD_GEV_SAMPLE_DATA = {
             labels: [],
             path: 29,
             name: 'total',
+            modes_and_profiles: [
+              { start: 0, stop: 900, used_mode: '1500', used_profile: 'O' },
+              { start: 900, stop: 1200, used_mode: '1500', used_profile: 'A' },
+              { start: 1200, stop: 1350, used_mode: '1500', used_profile: 'O' },
+              { start: 1350, stop: 3400, used_mode: '1500', used_profile: 'B1' },
+              { start: 3400, stop: 3900, used_mode: '1500', used_profile: 'E' },
+              { start: 3900, stop: 4800, used_mode: '25000', used_profile: 'B' },
+              { start: 4800, stop: 4950, used_mode: '1500', used_profile: 'O' },
+              { start: 4950, stop: 7600, used_mode: '1500' },
+              { start: 7600, stop: 7850, used_mode: '25000', used_profile: '25000' },
+              { start: 7850, stop: 8500, used_mode: '25000', used_profile: '20000' },
+              { start: 8500, stop: 9350, used_mode: '25000', used_profile: '22500' },
+            ],
             vmax: [
               {
                 speed: 33.333333333333336,
@@ -2090,6 +2116,19 @@ const ORSD_GEV_SAMPLE_DATA = {
           labels: [],
           path: 29,
           name: 'total',
+          modes_and_profiles: [
+            { start: 0, stop: 900, used_mode: '1500', used_profile: 'O' },
+            { start: 900, stop: 1200, used_mode: '1500', used_profile: 'A' },
+            { start: 1200, stop: 1350, used_mode: '1500', used_profile: 'O' },
+            { start: 1350, stop: 3400, used_mode: '1500', used_profile: 'B1' },
+            { start: 3400, stop: 3900, used_mode: '1500', used_profile: 'E' },
+            { start: 3900, stop: 4800, used_mode: '25000', used_profile: 'B' },
+            { start: 4800, stop: 4950, used_mode: '1500', used_profile: 'O' },
+            { start: 4950, stop: 7600, used_mode: '1500' },
+            { start: 7600, stop: 7850, used_mode: '25000', used_profile: '25000' },
+            { start: 7850, stop: 8500, used_mode: '25000', used_profile: '20000' },
+            { start: 8500, stop: 9350, used_mode: '25000', used_profile: '22500' },
+          ],
           vmax: [
             {
               speed: 33.333333333333336,
