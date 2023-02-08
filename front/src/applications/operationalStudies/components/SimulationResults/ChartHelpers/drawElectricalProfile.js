@@ -164,8 +164,9 @@ const drawElectricalProfile = (
 
       drawZone
         .select(`.${classes} `)
-        .attr('transform', 'translate(0, -4)')
-        .attr('height', (height - 8) * -1);
+        .attr('transform', rotate ? 'translate(-4, 0)' : 'translate(0, -4)')
+        .attr('width', rotate ? width + 8 : width)
+        .attr('height', rotate ? (height - 8) * -1 : height);
 
       drawZone
         .append('rect')
@@ -270,6 +271,7 @@ const drawElectricalProfile = (
       drawZone
         .select(`.${classes} `)
         .attr('transform', 'translate(0, 0)')
+        .attr('width', width)
         .attr('height', height * -1);
       drawZone.selectAll('.data').remove();
     });
