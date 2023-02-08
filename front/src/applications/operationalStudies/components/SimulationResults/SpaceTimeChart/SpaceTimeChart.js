@@ -143,7 +143,6 @@ export default function SpaceTimeChart(props) {
         dispatchUpdateChart,
         dispatchUpdateContextMenu,
         allowancesSettings,
-        offsetTimeByDragging,
         setSelectedTrain,
         true
       );
