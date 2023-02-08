@@ -20,7 +20,7 @@ export default function SpeedLimitByTagSelector() {
 
   const getTagsList = async () => {
     try {
-      const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`);
+      const tagsList = await get(`/editoast/infra/${infraID}/speed_limit_tags/`);
       setSpeedLimitsTags(tagsList);
     } catch (e) {
       dispatch(

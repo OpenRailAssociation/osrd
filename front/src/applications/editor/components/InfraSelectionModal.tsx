@@ -11,7 +11,7 @@ import Modal from './Modal';
 import { get } from '../../../common/requests';
 import { addNotification, setFailure } from '../../../reducers/main';
 
-const infraURL = '/infra/';
+const infraURL = '/editoast/infra/';
 type InfrasList = {
   id: string;
   name: string;

@@ -1,11 +1,12 @@
 import { baseApi as api } from './emptyApi';
+
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
       query: () => ({ url: `/health/` }),
     }),
     getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
-      query: () => ({ url: `/infra/` }),
+      query: () => ({ url: `/editoast/infra/` }),
     }),
     getVersionApi: build.query<GetVersionApiApiResponse, GetVersionApiApiArg>({
       query: () => ({ url: `/version/api/` }),
@@ -14,14 +15,18 @@ const injectedRtkApi = api.injectEndpoints({
       query: () => ({ url: `/version/core/` }),
     }),
     getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
+      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/` }),
     }),
     postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
-      query: (queryArg) => ({ url: `/infra/railjson/`, method: 'POST', body: queryArg.body }),
+      query: (queryArg) => ({
+        url: `/editoast/infra/railjson/`,
+        method: 'POST',
+        body: queryArg.body,
+      }),
     }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/railjson/`,
+        url: `/editoast/infra/${queryArg.id}/railjson/`,
         params: { exclude_extensions: queryArg.excludeExtensions },
       }),
     }),
@@ -148,10 +153,10 @@ const injectedRtkApi = api.injectEndpoints({
       GetInfraByIdSpeedLimitTagsApiResponse,
       GetInfraByIdSpeedLimitTagsApiArg
     >({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
+      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/speed_limit_tags/` }),
     }),
     getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/voltages/` }),
+      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/voltages/` }),
     }),
     getInfraSchema: build.query<GetInfraSchemaApiResponse, GetInfraSchemaApiArg>({
       query: () => ({ url: `/infra/schema/` }),
@@ -383,7 +388,8 @@ export type GetInfraByIdVoltagesApiArg = {
 };
 export type GetInfraSchemaApiResponse = /** status 200 Json schema */ object;
 export type GetInfraSchemaApiArg = void;
-export type PostStdcmApiResponse = /** status 200 Simulation result */
+export type PostStdcmApiResponse =
+  /** status 200 Simulation result */
   | {
       simulation?: TrainScheduleResult;
       path?: Path;
