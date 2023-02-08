@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
-import { isNil } from 'lodash';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -8,7 +7,7 @@ import turfCenter from '@turf/center';
 import { LoaderFill, Spinner } from '../../../../common/Loader';
 import { updateViewport } from '../../../../reducers/map';
 import EditorContext from '../../context';
-import { getMixedEntities } from '../../data/api';
+import { getEntity, getMixedEntities } from '../../data/api';
 import SelectionTool from '../../tools/selection/tool';
 import useInfraErrors from './useInfraErrors';
 import InfraErrorComponent from './InfraError';
@@ -19,6 +18,9 @@ import {
   InfraErrorLevelList,
   InfraErrorTypeList,
 } from './types';
+import RouteEditionTool from '../../tools/routeEdition/tool';
+import { getEditRouteState } from '../../tools/routeEdition/utils';
+import { RouteEntity } from '../../../../types';
 
 interface InfraErrorsListProps {
   infraID: number;
@@ -49,26 +51,25 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
     async (item: InfraError) => {
       try {
         setLoadingEntity(true);
-        const entitiesMap = await getMixedEntities(infraID, [
-          {
-            id: item.information.obj_id,
-            type: item.information.obj_type,
-          },
-        ]);
-        if (entitiesMap[item.information.obj_id]) {
+        const entity = await getEntity(infraID, item.information.obj_id, item.information.obj_type);
+        if (entity) {
           // select the item in the editor scope
-          switchTool(SelectionTool, { selection: [entitiesMap[item.information.obj_id]] });
+          if (entity.objType === 'Route') {
+            switchTool(RouteEditionTool, getEditRouteState(entity as RouteEntity));
+          } else {
+            switchTool(SelectionTool, { selection: [entity] });
 
-          // center the map on the object
-          if (item.geographic) {
-            const geoCenter = turfCenter(item.geographic);
-            dispatch(
-              updateViewport({
-                longitude: geoCenter.geometry.coordinates[0],
-                latitude: geoCenter.geometry.coordinates[1],
-                zoom: 20,
-              })
-            );
+            // center the map on the object
+            if (item.geographic) {
+              const geoCenter = turfCenter(item.geographic);
+              dispatch(
+                updateViewport({
+                  longitude: geoCenter.geometry.coordinates[0],
+                  latitude: geoCenter.geometry.coordinates[1],
+                  zoom: 20,
+                })
+              );
+            }
           }
 
           // closing the modal
@@ -96,7 +97,9 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
               onChange={(e) => setFilterErrorLevel(e.target.value)}
             >
               {InfraErrorLevelList.map((item) => (
-                <option value={item}>{t(`Editor.infra-errors.error-level.${item}`)}</option>
+                <option key={item} value={item}>
+                  {t(`Editor.infra-errors.error-level.${item}`)}
+                </option>
               ))}
             </select>
           </div>
@@ -127,11 +130,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
 
       {!loading && (
         <p className="text-center text-info my-3">
-          {!isNil(total) && total > 0 ? (
-            <>{t('Editor.infra-errors.list.total-error', { total })}</>
-          ) : (
-            <>{t('Editor.infra-errors.list.no-error')}</>
-          )}
+          {t('Editor.infra-errors.list.total-error', { count: total || 0 })}
         </p>
       )}
       {error && (
@@ -158,7 +157,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
             {errors.map((item, index) => (
               <li key={index} className="list-group-item management-item">
                 <InfraErrorComponent error={item} index={index + 1}>
-                  <ul>
+                  <ul className="list-unstyled">
                     <li>
                       <button className="dropdown-item" type="button" onClick={() => gotoMap(item)}>
                         Sélectionner sur la carte
