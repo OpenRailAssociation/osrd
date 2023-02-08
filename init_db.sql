@@ -1,7 +1,8 @@
 create user osrd with password 'password' createdb;
-create database osrd;
 
-\c osrd
+-- Create template_osrd databse
+create database template_osrd WITH IS_TEMPLATE true;
+\c template_osrd
 create extension postgis;
 create extension pg_trgm;
 create extension unaccent;
@@ -13,7 +14,7 @@ grant all privileges on schema public to osrd;
 
 CREATE OR REPLACE FUNCTION public.immutable_unaccent(regdictionary, text)
     RETURNS text
-    LANGUAGE c IMMUTABLE PARALLEL SAFE STRICT AS 
+    LANGUAGE c IMMUTABLE PARALLEL SAFE STRICT AS
         '$libdir/unaccent', 'unaccent_dict';
 
 CREATE OR REPLACE FUNCTION public.f_unaccent(text)
@@ -22,3 +23,5 @@ CREATE OR REPLACE FUNCTION public.f_unaccent(text)
 BEGIN ATOMIC
     SELECT immutable_unaccent(regdictionary 'unaccent', $1);
 END;
+
+create database osrd TEMPLATE template_osrd;

@@ -130,9 +130,7 @@ DATABASES = {
         "USER": POSTGRES_USER,
         "PASSWORD": POSTGRES_PASSWORD,
         "HOST": POSTGRES_HOST,
-        "TEST": {
-            "TEMPLATE": "template_postgis"
-        }
+        "TEST": {"TEMPLATE": "template_osrd"},
     },
 }
 
