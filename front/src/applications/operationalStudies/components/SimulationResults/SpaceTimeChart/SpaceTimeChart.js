@@ -119,6 +119,7 @@ export default function SpaceTimeChart(props) {
         dispatchUpdateContextMenu,
         allowancesSettings,
         offsetTimeByDragging,
+        setSelectedTrain,
         true
       ),
     [
@@ -196,7 +197,7 @@ export default function SpaceTimeChart(props) {
     if (newDataSimulation) {
       drawAllTrainFn(newDataSimulation);
     }
-  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart, dispatchUpdateMustRedraw]);
+  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
