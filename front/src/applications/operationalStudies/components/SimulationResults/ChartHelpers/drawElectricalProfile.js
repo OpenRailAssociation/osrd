@@ -80,14 +80,14 @@ const drawElectricalProfile = (
         .append('rect')
         .attr('class', `rect electricalProfileTextBlock ${classes}`)
         .attr('fill', '#FFF')
-        .attr('transform', rotate ? 'translate(0, -10)' : 'translate(-25, -5.5)')
+        .attr('transform', rotate ? 'translate(-20, -10)' : 'translate(-25, -5.5)')
         .attr('rx', 2)
         .attr('ry', 2)
         .attr(
           'x',
           chart.x(
             rotate
-              ? dataSimulation[`${keyValues[1]}_start`] + 2
+              ? dataSimulation[`${keyValues[1]}_middle`]
               : dataSimulation[`${keyValues[0]}_middle`]
           )
         )
@@ -102,7 +102,7 @@ const drawElectricalProfile = (
           ) -
             height * -1
         )
-        .attr('width', rotate ? '9%' : '3.2em')
+        .attr('width', rotate ? 40 : '3.2em')
         .attr('height', rotate ? 20 : '0.6em');
 
       // add text to text zone
@@ -145,7 +145,8 @@ const drawElectricalProfile = (
     .selectAll(`.${classes}`)
     .on('mouseover', (event) => {
       const lastPosition = chart.x(dataSimulation.lastPosition);
-      const pointerPosition = pointer(event, event.currentTarget)[0];
+      const pointerPositionX = pointer(event, event.currentTarget)[0];
+      const pointerPositionY = pointer(event, event.currentTarget)[1];
       let popUpWidth;
 
       if (!dataSimulation.usedProfile) {
@@ -157,8 +158,8 @@ const drawElectricalProfile = (
       }
 
       let popUpPosition = 0;
-      if (pointerPosition + popUpWidth > lastPosition) {
-        popUpPosition = pointerPosition + popUpWidth - lastPosition;
+      if (pointerPositionX + popUpWidth > lastPosition) {
+        popUpPosition = pointerPositionX + popUpWidth - lastPosition;
       }
 
       drawZone
@@ -180,15 +181,10 @@ const drawElectricalProfile = (
                 isIncompatible || !dataSimulation.usedProfile ? '-65' : '-45'
               } )`
         )
-        .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
+        .attr('x', pointerPositionX)
         .attr(
           'y',
-          chart.y(
-            rotate
-              ? dataSimulation[`${keyValues[0]}_start`]
-              : dataSimulation[`${keyValues[1]}_start`]
-          ) -
-            height * -1
+          rotate ? pointerPositionY : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
         )
         .attr('width', popUpWidth)
         .attr('height', isIncompatible || !dataSimulation.usedProfile ? 55 : 35);
@@ -208,15 +204,10 @@ const drawElectricalProfile = (
                 isIncompatible || !dataSimulation.usedProfile ? '-47' : '-37'
               } )`
         )
-        .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
+        .attr('x', pointerPositionX)
         .attr(
           'y',
-          chart.y(
-            rotate
-              ? dataSimulation[`${keyValues[0]}_start`]
-              : dataSimulation[`${keyValues[1]}_start`]
-          ) -
-            height * -1
+          rotate ? pointerPositionY : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
         )
         .attr('width', dataSimulation.usedMode === 1500 ? 20 : 28)
         .attr('height', 20);
@@ -241,15 +232,10 @@ const drawElectricalProfile = (
                 isIncompatible || !dataSimulation.usedProfile ? '-45' : '-25'
               })`
         )
-        .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
+        .attr('x', pointerPositionX)
         .attr(
           'y',
-          chart.y(
-            rotate
-              ? dataSimulation[`${keyValues[0]}_start`]
-              : dataSimulation[`${keyValues[1]}_start`]
-          ) -
-            height * -1
+          rotate ? pointerPositionY : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
         );
 
       if (isIncompatible || !dataSimulation.usedProfile) {
@@ -270,15 +256,12 @@ const drawElectricalProfile = (
             'transform',
             rotate ? 'translate(123, 40)' : `translate(${48 - popUpPosition}, -25)`
           )
-          .attr('x', rotate ? chart.x(dataSimulation[`${keyValues[1]}_start`]) : pointerPosition)
+          .attr('x', pointerPositionX)
           .attr(
             'y',
-            chart.y(
-              rotate
-                ? dataSimulation[`${keyValues[0]}_start`]
-                : dataSimulation[`${keyValues[1]}_start`]
-            ) -
-              height * -1
+            rotate
+              ? pointerPositionY
+              : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
           );
       }
     })
