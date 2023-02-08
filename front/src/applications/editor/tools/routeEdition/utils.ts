@@ -18,7 +18,7 @@ import { getEntities, getEntity, getMixedEntities, getRouteTrackRanges } from '.
 export function getEmptyCreateRouteState(): RouteEditionState {
   return {
     ...DEFAULT_COMMON_TOOL_STATE,
-    type: 'createRoute',
+    type: 'editRoutePath',
     routeState: {
       entryPoint: null,
       entryPointDirection: 'START_TO_STOP',
@@ -32,7 +32,7 @@ export function getEmptyCreateRouteState(): RouteEditionState {
 export function getEditRouteState(route: RouteEntity): RouteEditionState {
   return {
     ...DEFAULT_COMMON_TOOL_STATE,
-    type: 'editRoute',
+    type: 'editRouteMetadata',
     routeEntity: clone(route),
     initialRouteEntity: clone(route),
   };

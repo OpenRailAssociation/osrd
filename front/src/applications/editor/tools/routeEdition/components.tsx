@@ -7,18 +7,18 @@ import { ExtendedEditorContextType } from '../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import { RouteEditionState } from './types';
-import { CreateRouteEditionLayers, CreateRouteLeftPanel } from './components/CreateRoute';
-import { EditRouteEditionLayers, EditRouteLeftPanel } from './components/EditRoute';
+import { EditRoutePathEditionLayers, EditRoutePathLeftPanel } from './components/EditRoutePath';
+import { EditRouteMetadataLayers, EditRouteMetadataPanel } from './components/EditRouteMetadata';
 
 export const RouteEditionLeftPanel: FC = () => {
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
   return (
     <div>
-      {state.type === 'createRoute' ? (
-        <CreateRouteLeftPanel key="createRoute" state={state} />
+      {state.type === 'editRoutePath' ? (
+        <EditRoutePathLeftPanel key="editRoutePath" state={state} />
       ) : (
-        <EditRouteLeftPanel key="createRoute" state={state} />
+        <EditRouteMetadataPanel key="editRouteMetadata" state={state} />
       )}
     </div>
   );
@@ -36,11 +36,15 @@ export const RouteEditionLayers: FC = () => {
   return (
     <>
       {/* Editor data layer */}
-      <GeoJSONs selection={["grise z'y donc"]} colors={colors[mapStyle]} layers={editorLayers} />
-      {state.type === 'createRoute' ? (
-        <CreateRouteEditionLayers key="createRoute" state={state} />
+      {/*
+       (a fake selection must be given to grey everything, else the component
+       will consider nothing is selected and nothing must be greyed)
+       */}
+      <GeoJSONs selection={['placeholder']} colors={colors[mapStyle]} layers={editorLayers} />
+      {state.type === 'editRoutePath' ? (
+        <EditRoutePathEditionLayers key="editRoutePath" state={state} />
       ) : (
-        <EditRouteEditionLayers key="createRoute" state={state} />
+        <EditRouteMetadataLayers key="editRouteMetadata" state={state} />
       )}
     </>
   );
@@ -50,7 +54,7 @@ export const RouteMessages: FC = () => {
   const { t } = useTranslation();
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
-  if (state.type === 'createRoute') {
+  if (state.type === 'editRoutePath') {
     if (state.extremityEditionState.type === 'selection')
       return t('Editor.tools.routes-edition.help.select-waypoint');
     if (!state.routeState.entryPoint || !state.routeState.exitPoint)

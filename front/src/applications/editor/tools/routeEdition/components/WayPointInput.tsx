@@ -7,7 +7,7 @@ import { Position } from 'geojson';
 import { EndPoint, WayPoint, WayPointEntity } from '../../../../../types';
 import EditorContext from '../../../context';
 import { ExtendedEditorContextType, OSRDConf } from '../../types';
-import { CreateRouteState } from '../types';
+import { EditRoutePathState } from '../types';
 import { getEntity } from '../../../data/api';
 import EntitySumUp from '../../../components/EntitySumUp';
 import Tipped from '../../../components/Tipped';
@@ -19,7 +19,7 @@ const WayPointInput: FC<{
 }> = ({ endPoint, wayPoint, onChange }) => {
   const { state, setState } = useContext(
     EditorContext
-  ) as ExtendedEditorContextType<CreateRouteState>;
+  ) as ExtendedEditorContextType<EditRoutePathState>;
   const { t } = useTranslation();
   const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const [entityState, setEntityState] = useState<
