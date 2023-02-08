@@ -148,7 +148,6 @@ export default function SpaceTimeChart(props) {
           idx === selectedTrain,
           keyValues,
           allowancesSettings,
-          offsetTimeByDragging,
           rotate,
           setDragEnding,
           setDragOffset,

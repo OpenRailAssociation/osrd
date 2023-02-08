@@ -72,7 +72,6 @@ const drawAllTrains = (
   dispatchUpdateChart,
   dispatchUpdateContextMenu,
   allowancesSettings,
-  offsetTimeByDragging,
   setSelectedTrain,
   forceRedraw = false
 ) => {
@@ -105,7 +104,6 @@ const drawAllTrains = (
         idx === selectedTrain,
         keyValues,
         allowancesSettings,
-        offsetTimeByDragging,
         rotate,
         setDragEnding,
         setDragOffset,

@@ -23,7 +23,6 @@ export default function drawTrain(
   isSelected,
   keyValues,
   allowancesSettings,
-  offsetTimeByDragging,
   rotate,
   setDragEnding,
   setDragOffset,
