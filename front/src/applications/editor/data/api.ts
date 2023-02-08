@@ -237,9 +237,7 @@ export async function getRouteTrackRanges(
 ): Promise<Record<string, TrackRange[] | null>> {
   const res = await get<
     ({ type: 'CantComputePath' } | { type: 'Computed'; track_ranges: TrackRange[] })[]
-  >(`/editoast/infra/${infra}/routes/track_ranges/`, {
-    routes: ids.join(','),
-  });
+  >(`/editoast/infra/${infra}/routes/track_ranges/?routes=${encodeURIComponent(ids.join(','))}`);
 
   return res.reduce(
     (iter, o, i) => ({
