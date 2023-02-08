@@ -61,7 +61,7 @@ fi
 
 echo Initialize new database...
 # Here I remove the first line of the script cause the user already exists
-docker exec osrd-postgres sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail -n +2 > /tmp/init.sql'
+docker exec osrd-postgres sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail -n 1 > /tmp/init.sql'
 docker exec osrd-postgres psql -f /tmp/init.sql > /dev/null
 
 # Copy needed files to the container
@@ -69,6 +69,6 @@ docker cp "$BACKUP_PATH" osrd-postgres:/tmp/backup-osrd
 
 # restoring the backend can partialy fail, and that's sometimes ok
 echo Restore backup...
-docker exec osrd-postgres pg_restore -d osrd -x /tmp/backup-osrd > /dev/null
+docker exec osrd-postgres pg_restore --if-exists -c -d osrd -x /tmp/backup-osrd > /dev/null
 
 echo Done !
