@@ -85,8 +85,7 @@ const drawAllTrains = (
       heightOfSpaceTimeChart,
       keyValues,
       ref,
-      reset, // We dont nor pass a reset trigger anymore, reset is an action or a effect
-      rotate
+      reset,
     );
 
     chartLocal.svg.on('click', () => {
@@ -131,7 +130,6 @@ const drawAllTrains = (
     setChart(chartLocal);
     dispatchUpdateChart({ ...chartLocal, rotate });
     dispatchUpdateMustRedraw(false);
-    setResetChart(false);
   }
 };
 
