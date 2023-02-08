@@ -90,10 +90,7 @@ export default function AddOrEditStudyModal({ editionMode, details, getStudy }: 
     }
   };
 
-  const formatDateForInput = (date: string | null) => {
-    if (date === null) return '';
-    return date.substr(0, 10);
-  };
+  const formatDateForInput = (date: string | null) => (date === null ? '' : date.substr(0, 10));
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(configItems.tags);

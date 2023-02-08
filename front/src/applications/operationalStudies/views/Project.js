@@ -25,9 +25,9 @@ import BreadCrumbs from '../components/BreadCrumbs';
 function displayStudiesList(studiesList, setFilterChips) {
   return studiesList ? (
     <div className="row no-gutters">
-      {studiesList.map((details) => (
+      {studiesList.map((study) => (
         <div className="col-xl-6" key={nextId()}>
-          <StudyCard details={details} setFilterChips={setFilterChips} />
+          <StudyCard study={study} setFilterChips={setFilterChips} />
         </div>
       ))}
     </div>

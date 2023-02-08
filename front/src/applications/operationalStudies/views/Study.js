@@ -25,9 +25,9 @@ import BreadCrumbs from '../components/BreadCrumbs';
 function displayScenariosList(scenariosList, setFilterChips) {
   return scenariosList ? (
     <div className="row no-gutters">
-      {scenariosList.map((details) => (
+      {scenariosList.map((scenario) => (
         <div className="col-xl-4 col-lg-6" key={nextId()}>
-          <ScenarioCard details={details} setFilterChips={setFilterChips} />
+          <ScenarioCard scenario={scenario} setFilterChips={setFilterChips} />
         </div>
       ))}
     </div>

@@ -14,7 +14,7 @@ import nextId from 'react-id-generator';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  details: {
+  scenario: {
     id: number;
     name: string;
     description: string;
@@ -26,13 +26,13 @@ type Props = {
   };
 };
 
-export default function StudyCard({ setFilterChips, details }: Props) {
+export default function StudyCard({ setFilterChips, scenario }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleClick = () => {
-    dispatch(updateScenarioID(details.id));
+    dispatch(updateScenarioID(scenario.id));
     dispatch(updateSelectedProjection(undefined));
     navigate('/operational-studies/scenario');
   };
@@ -43,16 +43,16 @@ export default function StudyCard({ setFilterChips, details }: Props) {
         <span className="mr-2">
           <RiFolderChartLine />
         </span>
-        {details.name}
+        {scenario.name}
         <button className="btn btn-sm" type="button" onClick={handleClick}>
           <span className="mr-2">{t('openScenario')}</span>
           <AiFillFolderOpen />
         </button>
       </div>
-      <div className="scenarios-list-card-description">{details.description}</div>
+      <div className="scenarios-list-card-description">{scenario.description}</div>
 
       <div className="scenarios-list-card-tags">
-        {details.tags.map((tag) => (
+        {scenario.tags.map((tag) => (
           <div
             className="scenarios-list-card-tags-tag"
             key={nextId()}
@@ -67,20 +67,20 @@ export default function StudyCard({ setFilterChips, details }: Props) {
       <div className="scenarios-list-card-footer">
         <div className="scenarios-list-card-infra">
           <img src={infraLogo} alt="infra logo" />
-          {details.infra_name}
+          {scenario.infra_name}
         </div>
         <div className="scenarios-list-card-trains-count ml-auto">
           <span className="mr-1">
             <MdTrain />
           </span>
-          {details.trains_count}
+          {scenario.trains_count}
         </div>
         <div className="scenarios-list-card-date">
           <span className="mr-1">
             <FcCalendar />
           </span>
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dateTimeFrenchFormatting(details.last_modification)}
+          {dateTimeFrenchFormatting(scenario.last_modification)}
         </div>
       </div>
     </div>
