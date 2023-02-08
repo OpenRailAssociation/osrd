@@ -8,7 +8,10 @@ export const getAllowancesSettings = makeSubSelector<OsrdSimulationState, 'allow
   getOsrdSimulation,
   'allowancesSettings'
 );
-
+export const getIsPlaying = makeSubSelector<OsrdSimulationState, 'isPlaying'>(
+  getOsrdSimulation,
+  'isPlaying'
+);
 export const getMustRedraw = makeSubSelector<OsrdSimulationState, 'mustRedraw'>(
   getOsrdSimulation,
   'mustRedraw'

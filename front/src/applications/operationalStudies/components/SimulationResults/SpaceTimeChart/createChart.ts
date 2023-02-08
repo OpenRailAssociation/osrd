@@ -2,7 +2,10 @@ import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
 import { Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
-import { defineLinear, defineTime } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import {
+  defineLinear,
+  defineTime,
+} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 
 // This is only used by SpaceTimeChart for now.
@@ -56,7 +59,7 @@ export default function createChart(
   const defineY =
     chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
 
-    const width = parseInt(d3select(`#container-${chartID}`)?.style('width'), 10);
+  const width = parseInt(d3select(`#container-${chartID}`)?.style('width'), 10);
 
   const chartLocal = defineChart(
     width,

@@ -6,16 +6,16 @@ import {
   updateContextMenu,
   updateChart,
   updatePositionValues,
+  updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
-  getMustRedraw,
   getPositionValues,
   getSelectedProjection,
   getSelectedTrain,
   getTimePosition,
-  getConsolidatedSimulation,
   getPresentSimulation,
+  getIsPlaying,
 } from 'reducers/osrdsimulation/selectors';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import SpaceTimeChart from './SpaceTimeChart';
@@ -28,13 +28,12 @@ import SpaceTimeChart from './SpaceTimeChart';
 const withOSRDData = (Component) =>
   function WrapperComponent(props) {
     const allowancesSettings = useSelector(getAllowancesSettings);
-    const mustRedraw = useSelector(getMustRedraw);
     const positionValues = useSelector(getPositionValues);
     const selectedTrain = useSelector(getSelectedTrain);
     const selectedProjection = useSelector(getSelectedProjection);
     const timePosition = useSelector(getTimePosition);
     const simulation = useSelector(getPresentSimulation);
-    const consolidatedSimulation = useSelector(getConsolidatedSimulation);
+    const isPlaying = useSelector(getIsPlaying);
 
     const dispatch = useDispatch();
 
@@ -45,6 +44,11 @@ const withOSRDData = (Component) =>
 
     const dispatchUpdatePositionValues = (newPositionValues) => {
       dispatch(updatePositionValues(newPositionValues));
+    };
+
+    // difference entre TimePositionValues et PositionValues (besoin cruel de typage)
+    const dispatchUpdateTimePositionValues = (newTimePositionValues) => {
+      dispatch(updateTimePositionValues(newTimePositionValues));
     };
 
     const dispatchUpdateMustRedraw = (newMustRedraw) => {
@@ -63,19 +67,19 @@ const withOSRDData = (Component) =>
       <Component
         {...props}
         allowancesSettings={allowancesSettings}
+        simulationIsPlaying={isPlaying}
         positionValues={positionValues}
-        mustRedraw={mustRedraw}
         dispatch={dispatch}
         simulation={simulation}
-        selectedTrain={selectedTrain}
+        initialSelectedTrain={selectedTrain}
         selectedProjection={selectedProjection}
         timePosition={timePosition}
-        consolidatedSimulation={consolidatedSimulation}
         onOffsetTimeByDragging={onOffsetTimeByDragging}
         dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
         dispatchUpdateContextMenu={dispatchUpdateContextMenu}
         dispatchUpdateChart={dispatchUpdateChart}
         dispatchUpdatePositionValues={dispatchUpdatePositionValues}
+        dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
       />
     );
   };

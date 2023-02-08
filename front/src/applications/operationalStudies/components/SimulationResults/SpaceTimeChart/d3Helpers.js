@@ -1,10 +1,5 @@
 import drawTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/drawTrain';
-
 import createChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createChart';
-
-import enableInteractivity from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
-
-import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 function drawOPs(chartLocal, selectedTrainSimulation, rotate) {
   const operationalPointsZone = chartLocal.drawZone
@@ -73,6 +68,8 @@ const drawAllTrains = (
   dispatchUpdateContextMenu,
   allowancesSettings,
   setSelectedTrain,
+  simulationIsPlaying,
+  // TODO: romve forceRedraw (same as mustRedraw)
   forceRedraw = false
 ) => {
   const currentDataSimulation = newDataSimulation;
@@ -112,20 +109,6 @@ const drawAllTrains = (
         setSelectedTrain
       );
     });
-    enableInteractivity(
-      chartLocal,
-      currentDataSimulation[selectedTrain],
-      dispatch,
-      keyValues,
-      LIST_VALUES_NAME_SPACE_TIME,
-      positionValues,
-      rotate,
-      setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      zoomLevel
-    );
     setChart(chartLocal);
     dispatchUpdateChart({ ...chartLocal, rotate });
     dispatchUpdateMustRedraw(false);

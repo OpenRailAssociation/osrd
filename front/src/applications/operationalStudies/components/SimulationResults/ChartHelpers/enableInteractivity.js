@@ -222,6 +222,23 @@ export const traceVerticalLine = (
   }
 };
 
+// enableInteractivity
+
+// Override the default wheelDelta computation to get smoother zoom
+function wheelDelta(event) {
+  let factor = 1;
+  if (event.deltaMode === 1) {
+    factor = 0.005;
+  } else if (event.deltaMode) {
+    factor = 0.01;
+  } else {
+    factor = 0.002;
+  }
+
+  return -event.deltaY * factor;
+}
+
+// /!\ NOT ISOLATED FUNCTION
 const enableInteractivity = (
   chart,
   dataSimulation,
@@ -239,20 +256,6 @@ const enableInteractivity = (
   if (!chart) return;
 
   let newHoverPosition;
-
-  // Ovverride the default wheelDelta computation to get smoother zoom
-  function wheelDelta(event) {
-    let factor = 1;
-    if (event.deltaMode === 1) {
-      factor = 0.005;
-    } else if (event.deltaMode) {
-      factor = 0.01;
-    } else {
-      factor = 0.002;
-    }
-
-    return -event.deltaY * factor;
-  }
 
   const zoom = d3zoom(newHoverPosition)
     .scaleExtent([0.3, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
@@ -337,7 +340,6 @@ const enableInteractivity = (
 
         updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
 
-        dataSimulation, keyValues, positionLocal;
         if (timePositionLocal) {
           debounceUpdateTimePositionValues(timePositionLocal, null, 15);
         }
@@ -356,6 +358,133 @@ const enableInteractivity = (
   };
 
   chart.svg // .selectAll('.zoomable')
+    .on('mouseover', () => displayGuide(chart, 1))
+    .on('mousemove', mousemove)
+    .on('wheel', (event) => {
+      if (event.ctrlKey || event.shiftKey) {
+        event.preventDefault();
+      }
+    })
+    .call(zoom);
+
+  drawGuideLines(chart);
+};
+
+export const isolatedEnableInteractivity = (
+  chart,
+  dataSimulation,
+  keyValues,
+  listValues,
+  positionValues,
+  rotate,
+  setChart,
+  _setYPosition,
+  _setZoomLevel,
+  _yPosition,
+  _zoomLevel,
+  simulationIsPlaying,
+  dispatchUpdateContextMenu,
+  dispatchUpdateMustRedraw,
+  dispatchUpdateTimePositionValues
+) => {
+  if (!chart) return;
+
+  let newHoverPosition;
+
+  const zoom = d3zoom(newHoverPosition)
+    .scaleExtent([0.3, 20]) // This controls how much you can unzoom (x0.5) and zoom (x20)
+    .extent([
+      [0, 0],
+      [chart.width, chart.height],
+    ])
+    .wheelDelta(wheelDelta)
+    .on('zoom', (event) => {
+      event.sourceEvent.preventDefault();
+      const zoomFunctions = updateChart(chart, keyValues, rotate, event);
+      const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
+      setChart(newChart);
+    })
+    .filter(
+      (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
+    )
+    .on('start', () => {
+      dispatchUpdateContextMenu(undefined);
+    })
+    .on('end', () => {
+      dispatchUpdateMustRedraw(true);
+    });
+
+  let debounceTimeoutId;
+
+  function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      dispatchUpdateTimePositionValues(timePositionLocal);
+    }, interval);
+  }
+
+  const mousemove = (event, _value) => {
+    // If not playing
+    if (!simulationIsPlaying) {
+      if (keyValues[0] === 'time') {
+        // GET
+        const timePositionLocal = rotate
+          ? chart.y.invert(pointer(event, event.currentTarget)[1])
+          : chart.x.invert(pointer(event, event.currentTarget)[0]);
+
+        debounceUpdateTimePositionValues(timePositionLocal, null, 15);
+        const immediatePositionsValuesForPointer = interpolateOnTime(
+          dataSimulation,
+          keyValues,
+          LIST_VALUES_NAME_SPACE_TIME,
+          timePositionLocal
+        );
+        updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
+      } else {
+        // GEV
+        const positionLocal = rotate
+          ? chart.y.invert(pointer(event, event.currentTarget)[1])
+          : chart.x.invert(pointer(event, event.currentTarget)[0]);
+        const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
+        const immediatePositionsValuesForPointer = interpolateOnTime(
+          dataSimulation,
+          keyValues,
+          LIST_VALUES_NAME_SPEED_SPACE,
+          datetime2sec(timePositionLocal)
+        );
+
+        // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenitn pointer update
+        LIST_VALUES_NAME_SPEED_SPACE.forEach((name) => {
+          if (
+            immediatePositionsValuesForPointer[name] &&
+            !Number.isNaN(immediatePositionsValuesForPointer[name]?.time) &&
+            !Number.isNaN(immediatePositionsValuesForPointer[name]?.speed)
+          ) {
+            immediatePositionsValuesForPointer[name].speed /= 3.6;
+            immediatePositionsValuesForPointer[name].time = sec2datetime(
+              immediatePositionsValuesForPointer[name].time
+            );
+          }
+        });
+
+        if (timePositionLocal) {
+          debounceUpdateTimePositionValues(timePositionLocal, null, 15);
+        }
+      }
+
+      // Update guideLines
+      chart.svg
+        .selectAll('#vertical-line')
+        .attr('x1', pointer(event, event.currentTarget)[0])
+        .attr('x2', pointer(event, event.currentTarget)[0]);
+      chart.svg
+        .selectAll('#horizontal-line')
+        .attr('y1', pointer(event, event.currentTarget)[1])
+        .attr('y2', pointer(event, event.currentTarget)[1]);
+    }
+  };
+
+  chart.svg
     .on('mouseover', () => displayGuide(chart, 1))
     .on('mousemove', mousemove)
     .on('wheel', (event) => {
