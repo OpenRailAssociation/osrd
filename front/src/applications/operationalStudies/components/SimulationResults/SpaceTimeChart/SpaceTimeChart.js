@@ -75,12 +75,6 @@ export default function SpaceTimeChart(props) {
   const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] =
     useState(heightOfSpaceTimeChart);
 
-  const handleKey = ({ key }) => {
-    if (['+', '-'].includes(key)) {
-      setShowModal(key);
-    }
-  };
-
   // Everything should be done by Hoc, has no direct effect on Comp behavior
   const offsetTimeByDragging = useCallback(
     (offset) => {
@@ -95,9 +89,9 @@ export default function SpaceTimeChart(props) {
   );
 
   const drawAllTrainFn = useCallback(
-    (newDataSimulation) =>
+    (newDataSimulation, resetScale = false) =>
       drawAllTrains(
-        resetChart,
+        resetScale,
         newDataSimulation,
         false,
         chart,
@@ -154,6 +148,23 @@ export default function SpaceTimeChart(props) {
     ]
   );
 
+  // ACTIONS HANDLE
+  const handleKey = ({ key }) => {
+    if (['+', '-'].includes(key)) {
+      setShowModal(key);
+    }
+  };
+
+  const handleResetChart = () => {
+    d3.select(`#${CHART_ID}`).remove();
+    setRotate(false);
+    const trains = dataSimulation?.trains || simulation.trains;
+    const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
+    if (newDataSimulation) {
+      drawAllTrainFn(newDataSimulation, true);
+    }
+  };
+
   const debounceResize = (interval) => {
     let debounceTimeoutId;
     clearTimeout(debounceTimeoutId);
@@ -168,44 +179,10 @@ export default function SpaceTimeChart(props) {
     }, interval);
   };
 
-  // Memoize !!!
-
-  // ACTIONS
-
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
     setChart({ ...chart, x: chart.y, y: chart.x });
     setRotate(!rotate);
-    drawAllTrains(
-      false,
-      dataSimulation,
-      false,
-      chart,
-      heightOfSpaceTimeChart,
-      keyValues,
-      ref,
-      rotate,
-      dispatch,
-      CHART_ID,
-      simulation,
-      selectedTrain,
-      positionValues,
-      setChart,
-      setResetChart,
-      setYPosition,
-      setZoomLevel,
-      setDragEnding,
-      setDragOffset,
-      yPosition,
-      zoomLevel,
-      selectedProjection,
-      dispatchUpdateMustRedraw,
-      dispatchUpdateChart,
-      dispatchUpdateContextMenu,
-      allowancesSettings,
-      offsetTimeByDragging,
-      false
-    );
   };
 
   useEffect(() => {
@@ -313,8 +290,7 @@ export default function SpaceTimeChart(props) {
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
           onClick={() => {
-            setResetChart(true);
-            dispatchUpdateMustRedraw(true);
+            handleResetChart();
           }}
         >
           <GiResize />
