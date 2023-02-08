@@ -19,9 +19,8 @@ jobs:
       postgres:
         image: postgis/postgis
         env:
-          POSTGRES_USER: osrd
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: osrd
         ports:
           - 5432:5432
         # needed because the postgres container does not provide a healthcheck
@@ -37,6 +36,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+      - name: Init database
+        run: psql postgresql://postgres:password@localhost -f init_db.sql
       - name: Install GDAL
         run: sudo apt-get install -y gdal-bin
       - name: Install Poetry
