@@ -19,7 +19,7 @@ export default function HomeReferenceMap() {
 
   async function getInfra() {
     try {
-      const result = await get(`${INFRA_URL}${infraID}/`, {});
+      const result = await get(`${INFRA_URL}${infraID}/`);
       setInfra(result);
     } catch (error) {
       console.error(error);
