@@ -52,7 +52,7 @@ export default function Study() {
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
 
-  const createStudyStates = async (id) => {
+  const getStudyStates = async (id) => {
     try {
       const list = await get(`/projects/${id}/study_states/`);
       setStudyStates(list);
@@ -80,7 +80,7 @@ export default function Study() {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
       setProject(result);
-      createStudyStates(result.id);
+      await getStudyStates(result.id);
     } catch (error) {
       console.error(error);
     }
