@@ -10,6 +10,7 @@ import { omit } from 'lodash';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FiSearch } from 'react-icons/fi';
+import { HiSwitchVertical } from 'react-icons/hi';
 
 import { CreateRouteState, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
@@ -30,9 +31,9 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
   const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const [isSaving, setIsSaving] = useState(false);
   const [includeReleaseDetectors, setIncludeReleaseDetectors] = useState(true);
+  const { entryPoint, exitPoint, entryPointDirection } = state.routeState;
 
   const searchCandidates = useCallback(async () => {
-    const { entryPoint, entryPointDirection, exitPoint } = state.routeState;
     if (!entryPoint || !exitPoint || !entryPointDirection || state.optionsState.type === 'loading')
       return;
 
@@ -72,7 +73,14 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
         })),
       },
     });
-  }, [osrdConf.infraID, setState, state.optionsState.type, state.routeState]);
+  }, [
+    entryPoint,
+    entryPointDirection,
+    exitPoint,
+    osrdConf.infraID,
+    setState,
+    state.optionsState.type,
+  ]);
 
   const options = useMemo(
     () =>
@@ -104,12 +112,36 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
         </h5>
         <WayPointInput
           endPoint="BEGIN"
-          wayPoint={state.routeState.entryPoint}
+          wayPoint={entryPoint}
           onChange={(wayPoint) =>
             setState({ ...state, routeState: { ...state.routeState, entryPoint: wayPoint } })
           }
         />
-        {state.routeState.entryPoint && (
+        <div className="text-center">
+          <button
+            className="btn btn-secondary btn-sm"
+            disabled={!entryPoint && !exitPoint}
+            onClick={() => {
+              setState({
+                ...state,
+                routeState: { ...state.routeState, exitPoint: entryPoint, entryPoint: exitPoint },
+              });
+            }}
+          >
+            <HiSwitchVertical /> {t('Editor.tools.routes-edition.swap-endpoints')}
+          </button>
+        </div>
+        <h5 className="mt-4">
+          <FaFlagCheckered /> {t('Editor.tools.routes-edition.end')}
+        </h5>
+        <WayPointInput
+          endPoint="END"
+          wayPoint={exitPoint}
+          onChange={(wayPoint) =>
+            setState({ ...state, routeState: { ...state.routeState, exitPoint: wayPoint } })
+          }
+        />
+        {entryPoint && (
           <div className="d-flex flex-row align-items-baseline mb-2">
             <span className="mr-2">{t('Editor.tools.routes-edition.start_direction')}</span>
             <Select
@@ -125,23 +157,13 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
             />
           </div>
         )}
-        <h5 className="mt-4">
-          <FaFlagCheckered /> {t('Editor.tools.routes-edition.end')}
-        </h5>
-        <WayPointInput
-          endPoint="END"
-          wayPoint={state.routeState.exitPoint}
-          onChange={(wayPoint) =>
-            setState({ ...state, routeState: { ...state.routeState, exitPoint: wayPoint } })
-          }
-        />
         <button
           className="btn btn-primary btn-sm mr-2 d-block w-100 text-center"
           type="submit"
           disabled={
-            !state.routeState.entryPoint ||
-            !state.routeState.entryPointDirection ||
-            !state.routeState.exitPoint ||
+            !entryPoint ||
+            !entryPointDirection ||
+            !exitPoint ||
             state.optionsState.type === 'loading'
           }
         >
@@ -241,7 +263,6 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
                     state.optionsState.options[state.optionsState.focusedOptionIndex as number];
                   if (!candidate) throw new Error('No valid candidate to save.');
 
-                  const { entryPoint, entryPointDirection, exitPoint } = state.routeState;
                   setIsSaving(true);
                   editorSave(osrdConf.infraID as number, {
                     create: [
