@@ -16,13 +16,14 @@ export interface RouteState {
   exitPoint: (WayPoint & { position: Position }) | null;
 }
 
-export type EditRouteState = CommonToolState & {
-  type: 'editRoute';
+export type EditRouteMetadataState = CommonToolState & {
+  type: 'editRouteMetadata';
   initialRouteEntity: RouteEntity;
   routeEntity: RouteEntity;
 };
-export type CreateRouteState = CommonToolState & {
-  type: 'createRoute';
+export type EditRoutePathState = CommonToolState & {
+  type: 'editRoutePath';
+  initialRouteEntity?: RouteEntity;
   routeState: RouteState;
   optionsState:
     | { type: 'idle'; options?: undefined }
@@ -46,4 +47,4 @@ export type CreateRouteState = CommonToolState & {
       };
 };
 
-export type RouteEditionState = EditRouteState | CreateRouteState;
+export type RouteEditionState = EditRouteMetadataState | EditRoutePathState;

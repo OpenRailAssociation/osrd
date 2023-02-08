@@ -22,7 +22,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
 
   getCursor({ state }) {
     if (
-      state.type === 'createRoute' &&
+      state.type === 'editRoutePath' &&
       state.extremityEditionState.type === 'selection' &&
       state.hovered
     )
@@ -31,7 +31,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
   },
   onKeyDown(e, { state, setState }) {
     if (
-      state.type === 'createRoute' &&
+      state.type === 'editRoutePath' &&
       state.extremityEditionState.type === 'selection' &&
       e.key === 'Escape'
     ) {
@@ -43,7 +43,7 @@ const RouteEditionTool: Tool<RouteEditionState> = {
   },
   onClickEntity(feature, _e, { state }) {
     if (
-      state.type === 'createRoute' &&
+      state.type === 'editRoutePath' &&
       state.extremityEditionState.type === 'selection' &&
       (feature.objType === 'Detector' || feature.objType === 'BufferStop')
     ) {

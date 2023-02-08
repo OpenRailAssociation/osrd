@@ -2,7 +2,6 @@ import React, { FC, useCallback, useContext, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import chroma from 'chroma-js';
-import Select from 'react-select';
 import { Layer, LineLayer, Popup, Source } from 'react-map-gl';
 import { featureCollection } from '@turf/helpers';
 import cx from 'classnames';
@@ -10,22 +9,21 @@ import { omit } from 'lodash';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FiSearch } from 'react-icons/fi';
-import { HiSwitchVertical } from 'react-icons/hi';
 
-import { CreateRouteState, RouteEditionState } from '../types';
+import { EditRoutePathState, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
 import { ExtendedEditorContextType, OSRDConf } from '../../types';
 import { editorSave, getCompatibleRoutes, getEntity } from '../../../data/api';
-import { DIRECTIONS, EditorEntity, RouteEntity, WayPointEntity } from '../../../../../types';
+import { EditorEntity, RouteEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
 import { getRoutesLineLayerProps } from '../../../../../common/Map/Layers/Routes';
 import colors from '../../../../../common/Map/Consts/colors';
 import { nestEntity } from '../../../data/utils';
 import { getEditRouteState, getRouteGeometries } from '../utils';
 import EntitySumUp from '../../../components/EntitySumUp';
-import WayPointInput from './WayPointInput';
+import { EditEndpoints } from './Endpoints';
 
-export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state }) => {
+export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
   const { t } = useTranslation();
   const { setState } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
@@ -82,19 +80,6 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
     state.optionsState.type,
   ]);
 
-  const options = useMemo(
-    () =>
-      DIRECTIONS.map((s) => ({
-        value: s,
-        label: t(`Editor.tools.routes-edition.directions.${s}`),
-      })),
-    [t]
-  );
-  const option = useMemo(
-    () => options.find((o) => o.value === state.routeState.entryPointDirection) || options[0],
-    [options, state.routeState.entryPointDirection]
-  );
-
   const focusedOptionIndex =
     state.optionsState.type === 'options' ? state.optionsState.focusedOptionIndex : null;
 
@@ -107,56 +92,10 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
         }}
       >
         <legend>{t('Editor.tools.routes-edition.create-route')}</legend>
-        <h5 className="mt-4">
-          <BsArrowBarRight /> {t('Editor.tools.routes-edition.start')}
-        </h5>
-        <WayPointInput
-          endPoint="BEGIN"
-          wayPoint={entryPoint}
-          onChange={(wayPoint) =>
-            setState({ ...state, routeState: { ...state.routeState, entryPoint: wayPoint } })
-          }
+        <EditEndpoints
+          state={state.routeState}
+          onChange={(routeState) => setState({ ...state, routeState })}
         />
-        <div className="text-center">
-          <button
-            className="btn btn-secondary btn-sm"
-            disabled={!entryPoint && !exitPoint}
-            onClick={() => {
-              setState({
-                ...state,
-                routeState: { ...state.routeState, exitPoint: entryPoint, entryPoint: exitPoint },
-              });
-            }}
-          >
-            <HiSwitchVertical /> {t('Editor.tools.routes-edition.swap-endpoints')}
-          </button>
-        </div>
-        <h5 className="mt-4">
-          <FaFlagCheckered /> {t('Editor.tools.routes-edition.end')}
-        </h5>
-        <WayPointInput
-          endPoint="END"
-          wayPoint={exitPoint}
-          onChange={(wayPoint) =>
-            setState({ ...state, routeState: { ...state.routeState, exitPoint: wayPoint } })
-          }
-        />
-        {entryPoint && (
-          <div className="d-flex flex-row align-items-baseline mb-2">
-            <span className="mr-2">{t('Editor.tools.routes-edition.start_direction')}</span>
-            <Select
-              value={option}
-              options={options}
-              onChange={(o) => {
-                if (o)
-                  setState({
-                    ...state,
-                    routeState: { ...state.routeState, entryPointDirection: o.value },
-                  });
-              }}
-            />
-          </div>
-        )}
         <button
           className="btn btn-primary btn-sm mr-2 d-block w-100 text-center"
           type="submit"
@@ -303,7 +242,7 @@ export const CreateRouteLeftPanel: FC<{ state: CreateRouteState }> = ({ state })
   );
 };
 
-export const CreateRouteEditionLayers: FC<{ state: CreateRouteState }> = ({
+export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
   state: {
     hovered,
     extremityEditionState,
