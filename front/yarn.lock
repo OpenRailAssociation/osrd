@@ -4283,6 +4283,11 @@
   dependencies:
     "@types/jest" "*"
 
+"@types/tether@^1.4.6":
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/@types/tether/-/tether-1.4.6.tgz#ca5cbf37d6d0c8e1c22021a1c5c0f9abe0228319"
+  integrity sha512-9nHygDpiN1VPAkTXZyKOmdVK12EPp4KLgc7kj9ji0X6qsHzzQV8e7KYEh1afrF6TTVs5d9oRJXwkmjeSWc+5Cw==
+
 "@types/uglify-js@*":
   version "3.17.1"
   resolved "https://registry.yarnpkg.com/@types/uglify-js/-/uglify-js-3.17.1.tgz#e0ffcef756476410e5bce2cb01384ed878a195b5"
@@ -15646,6 +15651,14 @@ react-select@^5.4.0:
     react-transition-group "^4.3.0"
     use-isomorphic-layout-effect "^1.1.2"
 
+react-tether@^2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/react-tether/-/react-tether-2.0.8.tgz#770bb2c4b794c96fe163404273e8b5b7ddb3c153"
+  integrity sha512-k5imIcN7shOy0z59WKLljvBwmGqzAcqsjHtBk8h03F3aFn+Wdz4p56ecOLCqvBb/gpQp9WEFv+Saclro6GZQCQ==
+  dependencies:
+    prop-types "^15.6.2"
+    tether "^1.4.5"
+
 react-transition-group@^4.3.0, react-transition-group@^4.4.5:
   version "4.4.5"
   resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.4.5.tgz#e53d4e3f3344da8521489fbef8f2581d42becdd1"
@@ -17549,6 +17562,11 @@ test-exclude@^6.0.0:
     "@istanbuljs/schema" "^0.1.2"
     glob "^7.1.4"
     minimatch "^3.0.4"
+
+tether@^1.4.5:
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/tether/-/tether-1.4.7.tgz#d56a818590d8fe72e387f77a67f93ab96d8e1fb2"
+  integrity sha512-Z0J1aExjoFU8pybVkQAo/vD2wfSO63r+XOPfWQMC5qtf1bI7IWqNk4MiyBcgvvnY8kqnY06dVdvwTK2S3PU/Fw==
 
 text-table@0.2.0, text-table@^0.2.0:
   version "0.2.0"

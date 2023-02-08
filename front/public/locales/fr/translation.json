@@ -80,8 +80,9 @@
       },
       "list": {
         "error": "Une erreur est survenue lors du chargement des données",
-        "no-error": "Aucune erreur trouvée",
-        "total-error": "{{total}} erreurs trouvées",
+        "total-error_zero": "Aucune erreur trouvée",
+        "total-error_one": "Une erreur trouvée",
+        "total-error": "{{count}} erreurs trouvées",
         "filter-level": "Niveau d'erreur",
         "filter-type": "Type d'erreur"
       },
