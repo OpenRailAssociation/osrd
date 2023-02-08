@@ -13,7 +13,7 @@ import { RiFolderChartLine } from 'react-icons/ri';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  details: {
+  study: {
     id: number;
     name: string;
     description: string;
@@ -32,13 +32,13 @@ type Props = {
   };
 };
 
-export default function StudyCard({ setFilterChips, details }: Props) {
+export default function StudyCard({ setFilterChips, study }: Props) {
   const { t } = useTranslation(['operationalStudies/project', 'operationalStudies/study']);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleClick = () => {
-    dispatch(updateStudyID(details.id));
+    dispatch(updateStudyID(study.id));
     navigate('/operational-studies/study');
   };
 
@@ -48,43 +48,43 @@ export default function StudyCard({ setFilterChips, details }: Props) {
         <span className="mr-2">
           <img src={studyLogo} alt="study logo" height="24" />
         </span>
-        {details.name}
+        {study.name}
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
           <span className="mr-2">{t('openStudy')}</span>
           <AiFillFolderOpen />
         </button>
       </div>
       <div className="studies-list-card-type">
-        {t(`operationalStudies/study:studyTypes.${details.type}`)}
+        {t(`operationalStudies/study:studyTypes.${study.type}`)}
       </div>
-      <div className="studies-list-card-description">{details.description}</div>
+      <div className="studies-list-card-description">{study.description}</div>
 
       <div className="studies-list-card-financials">
         <div className="studies-list-card-financials-infos">
-          {details.service_code && (
+          {study.service_code && (
             <div className="studies-list-card-financials-infos-item">
               <h3>{t('geremiCode')}</h3>
-              <div>{details.service_code}</div>
+              <div>{study.service_code}</div>
             </div>
           )}
-          {details.business_code && (
+          {study.business_code && (
             <div className="studies-list-card-financials-infos-item">
               <h3>{t('affairCode')}</h3>
-              <div>{details.business_code}</div>
+              <div>{study.business_code}</div>
             </div>
           )}
         </div>
-        {details.budget > 0 && (
+        {study.budget > 0 && (
           <div className="studies-list-card-financials-amount">
             <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
-            {budgetFormat(details.budget)}
+            {budgetFormat(study.budget)}
           </div>
         )}
       </div>
 
       <div className="studies-list-card-footer">
         <div className="studies-list-card-tags">
-          {details.tags.map((tag) => (
+          {study.tags.map((tag) => (
             <div
               className="studies-list-card-tags-tag"
               key={nextId()}
@@ -100,14 +100,14 @@ export default function StudyCard({ setFilterChips, details }: Props) {
           <span className="mr-1">
             <RiFolderChartLine />
           </span>
-          {t('scenariosCount', { count: details.scenarios.length })}
+          {t('scenariosCount', { count: study.scenarios.length })}
         </div>
         <div className="studies-list-card-date">
           <span className="mr-1">
             <FcCalendar />
           </span>
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dateTimeFrenchFormatting(details.last_modification)}
+          {dateTimeFrenchFormatting(study.last_modification)}
         </div>
       </div>
     </div>

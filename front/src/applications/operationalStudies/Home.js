@@ -18,9 +18,9 @@ function displayCards(projectsList, setFilterChips) {
   return projectsList ? (
     <div className="projects-list">
       <div className="row">
-        {projectsList.map((details) => (
+        {projectsList.map((project) => (
           <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
-            <ProjectCard details={details} setFilterChips={setFilterChips} />
+            <ProjectCard project={project} setFilterChips={setFilterChips} />
           </div>
         ))}
       </div>

@@ -11,7 +11,7 @@ import { updateProjectID } from 'reducers/osrdconf';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  details: {
+  project: {
     id: number;
     name: string;
     description: string;
@@ -22,20 +22,20 @@ type Props = {
   };
 };
 
-export default function ProjectCard({ setFilterChips, details }: Props) {
+export default function ProjectCard({ setFilterChips, project }: Props) {
   const { t } = useTranslation('operationalStudies/home');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleClick = () => {
-    dispatch(updateProjectID(details.id));
+    dispatch(updateProjectID(project.id));
     navigate('/operational-studies/project');
   };
 
   return (
     <div className="projects-list-project-card">
       <div className="projects-list-project-card-img">
-        <LazyLoadImage src={details.image_url} alt="project logo" />
+        <LazyLoadImage src={project.image_url} alt="project logo" />
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
           <span className="mr-2">{t('openProject')}</span>
           <AiFillFolderOpen />
@@ -46,19 +46,19 @@ export default function ProjectCard({ setFilterChips, details }: Props) {
           <span className="mr-1">
             <RiCalendarLine />
           </span>
-          {dateTimeFrenchFormatting(details.last_modification)}
+          {dateTimeFrenchFormatting(project.last_modification)}
         </div>
         <div>
           <span className="mr-1">
             <RiFoldersLine />
           </span>
-          {t('studiesCount', { count: details.studies.length })}
+          {t('studiesCount', { count: project.studies.length })}
         </div>
       </div>
-      <div className="projects-list-project-card-name">{details.name}</div>
-      <div className="projects-list-project-card-description">{details.description}</div>
+      <div className="projects-list-project-card-name">{project.name}</div>
+      <div className="projects-list-project-card-description">{project.description}</div>
       <div className="projects-list-project-card-tags">
-        {details.tags?.map((tag) => (
+        {project.tags?.map((tag) => (
           <div
             className="projects-list-project-card-tags-tag"
             key={nextId()}
