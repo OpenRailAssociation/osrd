@@ -27,8 +27,8 @@ import { configItemsTypes } from './types';
 
 export type Props = {
   editionMode: false;
-  details?: configItemsTypes;
-  getProject?: any;
+  project?: configItemsTypes;
+  getProjectDetail?: any;
 };
 
 const configItemsDefaults = {
@@ -40,10 +40,10 @@ const configItemsDefaults = {
   budget: 0,
 };
 
-export default function AddOrEditProjectModal({ editionMode, details, getProject }: Props) {
+export default function AddOrEditProjectModal({ editionMode, project, getProjectDetail }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
+  const [configItems, setConfigItems] = useState<configItemsTypes>(project || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -78,10 +78,10 @@ export default function AddOrEditProjectModal({ editionMode, details, getProject
   const modifyProject = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
-    } else if (details) {
+    } else if (project) {
       try {
-        await put(`${PROJECTS_URI}${details.id}/`, configItems);
-        getProject(true);
+        await put(`${PROJECTS_URI}${project.id}/`, configItems);
+        getProjectDetail(true);
         closeModal();
       } catch (error) {
         console.error(error);
@@ -90,16 +90,16 @@ export default function AddOrEditProjectModal({ editionMode, details, getProject
   };
 
   const deleteProject = async () => {
-    if (details) {
+    if (project) {
       try {
-        await deleteRequest(`${PROJECTS_URI}${details.id}/`);
+        await deleteRequest(`${PROJECTS_URI}${project.id}/`);
         dispatch(updateProjectID(undefined));
         navigate('/operational-studies');
         closeModal();
         dispatch(
           setSuccess({
             title: t('projectDeleted'),
-            text: t('projectDeletedDetails', { name: details.name }),
+            text: t('projectDeletedDetails', { name: project.name }),
           })
         );
       } catch (error) {

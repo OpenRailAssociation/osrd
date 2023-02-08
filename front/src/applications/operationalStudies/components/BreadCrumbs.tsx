@@ -21,7 +21,7 @@ export default function BreadCrumbs({ projectName, studyName, scenarioName }: Pr
         </>
       )}
 
-      {projectName && !studyName && !scenarioName && <>{projectName}</>}
+      {projectName && !studyName && !scenarioName && projectName}
 
       {projectName && studyName && (
         <>
@@ -29,7 +29,7 @@ export default function BreadCrumbs({ projectName, studyName, scenarioName }: Pr
           <i className="icons-arrow-next icons-size-x75 text-muted" />
         </>
       )}
-      {projectName && studyName && !scenarioName && <>{studyName}</>}
+      {projectName && studyName && !scenarioName && studyName}
 
       {projectName && studyName && scenarioName && (
         <>

@@ -37,20 +37,22 @@ type configItemsTypes = {
 
 type Props = {
   editionMode: false;
-  details?: configItemsTypes;
+  scenario?: configItemsTypes;
   getScenario?: any;
 };
 
-export default function AddOrEditScenarioModal({ editionMode, details, getScenario }: Props) {
+export default function AddOrEditScenarioModal({ editionMode, scenario, getScenario }: Props) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<configItemsTypes>(details || configItemsDefaults);
+  const [configItems, setConfigItems] = useState<configItemsTypes>(scenario || configItemsDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const infraID = useSelector(getInfraID);
+
+  const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(configItems.tags);
@@ -69,10 +71,7 @@ export default function AddOrEditScenarioModal({ editionMode, details, getScenar
       setDisplayErrors(true);
     } else {
       try {
-        const result = await post(
-          `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
-          { ...configItems, infra: infraID }
-        );
+        const result = await post(`${rootURI}`, { ...configItems, infra: infraID });
         dispatch(updateScenarioID(result.id));
         navigate('/operational-studies/scenario');
         closeModal();
@@ -85,12 +84,9 @@ export default function AddOrEditScenarioModal({ editionMode, details, getScenar
   const modifyScenario = async () => {
     if (!configItems.name) {
       setDisplayErrors(true);
-    } else if (details) {
+    } else if (scenario) {
       try {
-        await patch(
-          `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${details.id}/`,
-          configItems
-        );
+        await patch(`${rootURI}${scenario.id}/`, configItems);
         getScenario(true);
         closeModal();
       } catch (error) {
@@ -100,18 +96,16 @@ export default function AddOrEditScenarioModal({ editionMode, details, getScenar
   };
 
   const deleteScenario = async () => {
-    if (details) {
+    if (scenario) {
       try {
-        await deleteRequest(
-          `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${details.id}/`
-        );
+        await deleteRequest(`${rootURI}${scenario.id}/`);
         dispatch(updateScenarioID(undefined));
         navigate('/operational-studies/study');
         closeModal();
         dispatch(
           setSuccess({
             title: t('scenarioDeleted'),
-            text: t('scenarioDeletedDetails', { name: details.name }),
+            text: t('scenarioDeletedDetails', { name: scenario.name }),
           })
         );
       } catch (error) {
