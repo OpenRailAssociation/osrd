@@ -291,6 +291,7 @@ components:
         - gamma
         - loading_gauge
         - effort_curves
+        - power_class
       properties:
         name:
           type: string
@@ -340,6 +341,14 @@ components:
             - GC
             - FR3_3
             - FR3_3_GB_G2
+        features:
+          type: array
+          items:
+            type: string
+            example: "protecting systems"
+        power_class:
+          type: string
+          example: "powerClass"
         effort_curves:
           $ref: "#/components/schemas/EffortCurves"
     EffortCurves:
