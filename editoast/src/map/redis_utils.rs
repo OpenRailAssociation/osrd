@@ -1,5 +1,5 @@
 pub use super::bounding_box::{BoundingBox, InvalidationZone};
-pub use super::map_layers::{Layer, MapLayers};
+pub use super::layers::{Layer, MapLayers};
 use crate::error::Result;
 use redis::aio::ConnectionManager;
 use redis::{cmd, FromRedisValue, ToRedisArgs};

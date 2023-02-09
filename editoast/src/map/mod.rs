@@ -1,13 +1,13 @@
 mod bounding_box;
 mod layer_cache;
-mod map_layers;
+mod layers;
 mod redis_utils;
 
 use std::collections::HashMap;
 
 use crate::error::Result;
 pub use bounding_box::{BoundingBox, InvalidationZone};
-pub use map_layers::{Layer, MapLayers, View};
+pub use layers::{Layer, MapLayers, View};
 use redis::aio::ConnectionManager;
 
 pub use self::layer_cache::{
