@@ -1,14 +1,14 @@
 import enum
 import itertools
 import re
-from typing import Optional, NamedTuple
+from typing import NamedTuple, Optional
 from venv import create
-from typing import Optional
+
 import django
 from django.db import migrations, models
 
 
-def run_sql_complexe_add_foreign_key(
+def run_sql_complex_add_foreign_key(
     table_name: str,
     field_name: str,
     model_name: str,
@@ -52,7 +52,7 @@ def run_sql_complexe_add_foreign_key(
 def run_sql_add_foreign_key(
     model_name: str, field_name: str, link_model: str, nullable: bool = False, related_name: Optional[str] = None
 ):
-    return run_sql_complexe_add_foreign_key(
+    return run_sql_complex_add_foreign_key(
         table_name=model_name,
         field_name=field_name,
         model_name=model_name,
