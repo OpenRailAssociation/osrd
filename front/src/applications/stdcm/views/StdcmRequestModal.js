@@ -30,6 +30,7 @@ import { setFailure } from 'reducers/main';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
+import { Spinner } from 'common/Loader';
 
 const timetableURI = '/timetable/';
 
@@ -81,8 +82,10 @@ export default function StdcmRequestModal(props) {
           get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {
             const trainIds = timetable.train_schedules.map((train_schedule) => train_schedule.id);
             get(`${trainscheduleURI}results/`, {
-              train_ids: trainIds.join(','),
-              path: result.path.id,
+              params: {
+                train_ids: trainIds.join(','),
+                path: result.path.id,
+              },
             }).then((simulationLocal) => {
               const newSimulation = {};
               newSimulation.trains = [...simulationLocal];
@@ -195,11 +198,7 @@ export default function StdcmRequestModal(props) {
                   <div className="p-1 text-info">
                     {t('operationalStudies/manageTrainSchedule:pleaseWait')}
                   </div>
-                  <div className="p-1">
-                    <div className="spinner-border" role="status">
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                  </div>
+                  <Spinner className="p-1" />
                 </>
               )}
 

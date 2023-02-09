@@ -46,6 +46,7 @@ export default function InfraSelectorModalBodyStandard(props) {
       <div className="infraslist" data-testid="infraslist">
         {infrasList.map((infra) => (
           <button
+            data-testid={`infraslist-item-${infra.id}`}
             type="button"
             onClick={() => {
               setInfraID(infra.id);

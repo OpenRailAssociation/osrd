@@ -7,7 +7,7 @@ import {
   interpolateOnTime,
   timeShiftTrain,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
-import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
+import ORSD_GET_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
 import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal';
 import { GiResize } from 'react-icons/gi';
@@ -43,7 +43,7 @@ export default function SpaceTimeChart(props) {
     allowancesSettings,
     positionValues,
     selectedProjection,
-    selectedTrain,
+    initialSelectedTrain,
     timePosition,
     simulation,
     dispatch,
@@ -66,6 +66,7 @@ export default function SpaceTimeChart(props) {
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
   const [dragEnding, setDragEnding] = useState(false);
+  const [selectedTrain, setSelectedTrain] = useState(initialSelectedTrain);
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(
     initialHeightOfSpaceTimeChart
   );
@@ -123,6 +124,7 @@ export default function SpaceTimeChart(props) {
       dispatchUpdateContextMenu,
       allowancesSettings,
       offsetTimeByDragging,
+      setSelectedTrain,
       false
     );
   };
@@ -164,13 +166,14 @@ export default function SpaceTimeChart(props) {
         dispatchUpdateContextMenu,
         allowancesSettings,
         offsetTimeByDragging,
+        setSelectedTrain,
         true
       );
 
       // Reprogram !
-      //handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
+      // handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
-  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
+  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart, dispatchUpdateMustRedraw]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
@@ -277,22 +280,31 @@ export default function SpaceTimeChart(props) {
 }
 
 SpaceTimeChart.propTypes = {
-  heightOfSpaceTimeChart: PropTypes.number.isRequired,
+  allowancesSettings: PropTypes.any,
+  positionValues: PropTypes.any,
+  selectedProjection: PropTypes.any.isRequired,
+  initialSelectedTrain: PropTypes.any,
+  timePosition: PropTypes.any,
+  simulation: PropTypes.any,
+  dispatch: PropTypes.any,
   onOffsetTimeByDragging: PropTypes.func,
+  onSetBaseHeightOfSpaceTimeChart: PropTypes.any,
   dispatchUpdateMustRedraw: PropTypes.func,
+  dispatchUpdatePositionValues: PropTypes.any,
+  dispatchUpdateChart: PropTypes.any,
+  dispatchUpdateContextMenu: PropTypes.any,
+  initialHeightOfSpaceTimeChart: PropTypes.any.isRequired,
 };
 
 SpaceTimeChart.defaultProps = {
-  heightOfSpeedSpaceChart: 250,
-  simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
-  allowancesSettings: ORSD_GEV_SAMPLE_DATA.allowancesSettings,
+  simulation: ORSD_GET_SAMPLE_DATA.simulation.present,
+  allowancesSettings: ORSD_GET_SAMPLE_DATA.allowancesSettings,
   dispatch: () => {},
-  positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
-  selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
-  timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
-  onOffsetTimeByDragging: ({ ...args }) => {},
-  onSetBaseHeightOfSpaceTimeChart: ({ ...args }) => {},
-  onDragEnding: () => {},
+  positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
+  initialSelectedTrain: ORSD_GET_SAMPLE_DATA.selectedTrain,
+  timePosition: ORSD_GET_SAMPLE_DATA.timePosition,
+  onOffsetTimeByDragging: () => {},
+  onSetBaseHeightOfSpaceTimeChart: () => {},
   dispatchUpdateMustRedraw: () => {},
   dispatchUpdateChart: () => {},
   dispatchUpdatePositionValues: () => {},

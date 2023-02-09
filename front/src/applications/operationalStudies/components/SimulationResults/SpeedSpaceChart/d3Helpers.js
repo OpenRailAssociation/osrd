@@ -3,6 +3,8 @@ import drawCurve from 'applications/operationalStudies/components/SimulationResu
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
+import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
+import { createProfileSegment } from 'applications/operationalStudies/consts';
 
 function createChart(
   CHART_ID,
@@ -208,7 +210,25 @@ function drawTrain(
         rotate
       );
     }
+    if (dataSimulation.modesAndProfiles && speedSpaceSettings.electricalProfiles) {
+      dataSimulation.modesAndProfiles.forEach((source, index) => {
+        const segment = createProfileSegment(dataSimulation.modesAndProfiles, source);
 
+        drawElectricalProfile(
+          chartLocal,
+          `electricalProfiles_${index}`,
+          segment,
+          'speedSpaceChart',
+          'curveLinear',
+          ['position', 'height'],
+          'electrical_profiles',
+          rotate,
+          segment.isStriped,
+          segment.isIncompatible,
+          `electricalProfiles_${index}`
+        );
+      });
+    }
     // Operational points
     /*
     drawOPs(simulation, selectedTrain, rotate, chartLocal);

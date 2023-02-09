@@ -46,7 +46,7 @@ class RollingStockLiverySerializer(NestedHyperlinkedModelSerializer):
 
     class Meta:
         model = RollingStockLivery
-        fields = ["name", "url"]
+        fields = ["name", "id"]
         extra_kwargs = {
             'url': {
                 'view_name': 'rolling_stock_livery-detail',
@@ -174,6 +174,7 @@ class TrainScheduleSerializer(ModelSerializer):
             "mrsp",
             "base_simulation",
             "eco_simulation",
+            "modes_and_profiles",
         ]
 
 
@@ -187,6 +188,7 @@ class StandaloneSimulationSerializer(Serializer):
                 "mrsp",
                 "base_simulation",
                 "eco_simulation",
+                "modes_and_profiles",
             ]
 
     timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())

@@ -2,21 +2,19 @@ use super::{
     BufferStop, Catenary, Detector, OSRDTyped, OperationalPoint, Route, Signal, SpeedSection,
     Switch, SwitchType, TrackSection, TrackSectionLink,
 };
+use crate::error::Result;
 use crate::{
-    api_error::ApiError,
+    error::EditoastError,
     infra::{Infra, RAILJSON_VERSION},
 };
+use actix_web::http::StatusCode;
 use derivative::Derivative;
-
 use diesel::{
     sql_query,
     sql_types::{BigInt, Text},
-    QueryableByName, RunQueryDsl,
+    Connection, PgConnection, QueryableByName, RunQueryDsl,
 };
-use diesel::{Connection, PgConnection};
-
-use rocket::{http::Status, serde::DeserializeOwned};
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug)]
@@ -43,9 +41,10 @@ pub enum RailjsonError {
     #[error("Wrong railjson version '{0}'. Should be {}", RAILJSON_VERSION)]
     RailjsonVersion(String),
 }
-impl ApiError for RailjsonError {
-    fn get_status(&self) -> Status {
-        Status::BadRequest
+
+impl EditoastError for RailjsonError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::BAD_REQUEST
     }
 
     fn get_type(&self) -> &'static str {
@@ -54,15 +53,9 @@ impl ApiError for RailjsonError {
 }
 
 impl RailJson {
-    pub fn persist<T: AsRef<str>>(
-        &self,
-        infra_name: T,
-        conn: &mut PgConnection,
-    ) -> Result<Infra, Box<dyn ApiError>> {
+    pub fn persist<T: AsRef<str>>(&self, infra_name: T, conn: &mut PgConnection) -> Result<Infra> {
         if self.version != RAILJSON_VERSION {
-            return Err(Box::new(RailjsonError::RailjsonVersion(
-                self.version.clone(),
-            )));
+            return Err(RailjsonError::RailjsonVersion(self.version.clone()).into());
         }
 
         conn.transaction(|conn| {
@@ -117,7 +110,8 @@ pub fn find_objects<T: DeserializeOwned + OSRDTyped>(
 #[cfg(test)]
 pub mod test {
     use super::find_objects;
-    use crate::api_error::ApiError;
+    use crate::error::EditoastError;
+    use crate::error::Result;
     use crate::infra::Infra;
     use crate::infra::RAILJSON_VERSION;
     use crate::schema::OSRDIdentified;
@@ -225,10 +219,7 @@ pub mod test {
         true
     }
 
-    fn find_railjson(
-        conn: &mut PgConnection,
-        infra: &Infra,
-    ) -> Result<RailJson, Box<dyn ApiError>> {
+    fn find_railjson(conn: &mut PgConnection, infra: &Infra) -> Result<RailJson> {
         let railjson = RailJson {
             version: infra.clone().railjson_version,
             operational_points: find_objects(conn, infra.id),

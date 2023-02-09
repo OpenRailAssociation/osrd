@@ -59,6 +59,8 @@ public final class ApiServerCommand implements CliCommand {
         var electricalProfileSetManager =
                 new ElectricalProfileSetManager(middleWareBaseUrl, authorizationToken, httpClient);
 
+        var maxMemory = String.format("%.2f", Runtime.getRuntime().maxMemory() / (double) (1 << 30));
+        logger.info("starting the API server with max {}Gi of java heap", maxMemory);
         try {
             // the list of endpoints
             var routes = new TkFork(

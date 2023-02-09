@@ -8,16 +8,21 @@ import {
   ApiInfrastructure,
   CreateEntityOperation,
   DeleteEntityOperation,
+  Direction,
   EditorEntity,
   EditorSchema,
   EntityOperation,
   SwitchType,
+  TrackRange,
   UpdateEntityOperation,
+  WayPoint,
+  WayPointEntity,
   Zone,
 } from '../../../types';
 import { zoneToBBox } from '../../../utils/mapboxHelper';
 import { getObjectTypeForLayer } from './utils';
 import { EditoastType } from '../tools/types';
+import { RouteCandidate } from '../tools/routeEdition/types';
 
 /**
  * Call the API to get an infra
@@ -137,7 +142,7 @@ export async function getEntity<T extends EditorEntity = EditorEntity>(
 export async function getEntities<T extends EditorEntity = EditorEntity>(
   infra: number | string,
   ids: string[],
-  type: EditoastType
+  type: T['objType']
 ): Promise<Record<string, T>> {
   const uniqIDs = uniq(ids);
   const res = await post<string[], EditoastEntity[]>(
@@ -153,20 +158,20 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
     {}
   );
 }
-export async function getMixedEntities(
+export async function getMixedEntities<T extends EditorEntity = EditorEntity>(
   infra: number | string,
   defs: { id: string; type: EditoastType }[]
-): Promise<Record<string, EditorEntity>> {
+): Promise<Record<string, T>> {
   const groupedDefs = groupBy(defs, 'type');
 
   const entities = await Promise.all(
     toPairs(groupedDefs).map(([type, values]) => {
       const ids = values.map(({ id }) => id);
-      return getEntities(infra, ids, type as EditoastType);
+      return getEntities<T>(infra, ids, type as EditoastType);
     })
   );
 
-  return entities.reduce((acc, curr) => ({ ...acc, ...curr }), {} as Record<string, EditorEntity>);
+  return entities.reduce((acc, curr) => ({ ...acc, ...curr }), {} as Record<string, T>);
 }
 
 /**
@@ -209,4 +214,63 @@ export async function editorSave(
   ];
 
   return post<EntityOperation[], EditorEntity[]>(`/editoast/infra/${infra}`, payload, {});
+}
+
+/**
+ * Returns all routes starting from or ending to a waypoint:
+ */
+export async function getRoutesFromWaypoint(
+  infra: number | string,
+  type: EditoastType,
+  id: string
+): Promise<{ starting?: string[]; ending?: string[] }> {
+  if (type !== 'BufferStop' && type !== 'Detector')
+    throw new Error(`${type} elements are not valid waypoints.`);
+  return get<{ starting: string[]; ending: string[] }>(
+    `/editoast/infra/${infra}/routes/${type}/${id}`
+  );
+}
+
+export async function getRouteTrackRanges(
+  infra: number | string,
+  ids: string[]
+): Promise<Record<string, TrackRange[] | null>> {
+  const res = await get<
+    ({ type: 'CantComputePath' } | { type: 'Computed'; track_ranges: TrackRange[] })[]
+  >(`/editoast/infra/${infra}/routes/track_ranges/?routes=${encodeURIComponent(ids.join(','))}`);
+
+  return res.reduce(
+    (iter, o, i) => ({
+      ...iter,
+      [ids[i]]: o.type === 'Computed' ? o.track_ranges : null,
+    }),
+    {}
+  );
+}
+
+export async function getCompatibleRoutes(
+  infra: number | string,
+  entryPoint: WayPoint,
+  entryPointDirection: Direction,
+  exitPoint: WayPoint
+): Promise<Omit<RouteCandidate, 'color'>[]> {
+  const extremities = await getMixedEntities<WayPointEntity>(infra, [entryPoint, exitPoint]);
+  const entryPointEntity = extremities[entryPoint.id];
+  const exitPointEntity = extremities[exitPoint.id];
+
+  if (!entryPointEntity)
+    throw new Error(`Entry point ${entryPoint.id} (${entryPoint.type}) not found`);
+  if (!exitPointEntity) throw new Error(`Exit point ${exitPoint.id} (${exitPoint.type}) not found`);
+
+  return post(`/editoast/infra/${infra}/pathfinding/`, {
+    starting: {
+      track: entryPointEntity.properties.track as string,
+      position: entryPointEntity.properties.position as number,
+      direction: entryPointDirection,
+    },
+    ending: {
+      track: exitPointEntity.properties.track as string,
+      position: exitPointEntity.properties.position as number,
+    },
+  });
 }

@@ -5,10 +5,12 @@ import { useSelector } from 'react-redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
 
+import { Spinner } from 'common/Loader';
 import { NEW_ENTITY_ID } from '../data/utils';
 import {
   BufferStopEntity,
   EditorEntity,
+  RouteEntity,
   SignalEntity,
   SwitchEntity,
   TrackSectionEntity,
@@ -59,6 +61,20 @@ async function getAdditionalEntities(
     case 'Switch': {
       const trackIDs = map((entity as SwitchEntity).properties.ports, (port) => port.track);
       return getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
+    }
+    case 'Route': {
+      const route = entity as RouteEntity;
+      const entryPoint = await getEntity(
+        infra,
+        route.properties.entry_point.id,
+        route.properties.entry_point.type
+      );
+      const exitPoint = await getEntity(
+        infra,
+        route.properties.exit_point.id,
+        route.properties.entry_point.type
+      );
+      return { entryPoint, exitPoint };
     }
     default:
       return {};
@@ -148,6 +164,45 @@ function getSumUpContent(
       }
       break;
     }
+    case 'Route': {
+      const route = entity as RouteEntity;
+      text = route.properties.id;
+      if (additionalEntities.entryPoint || additionalEntities.exitPoint)
+        subtexts.push(
+          <div className="d-flex flex-row">
+            {additionalEntities.entryPoint && (
+              <>
+                <span className={cx(classes.muted, 'mr-2')}>
+                  {t('Editor.tools.routes-edition.from')}
+                </span>{' '}
+                <div>
+                  <span className={cx(classes.muted, classes.small)}>
+                    {t(`Editor.obj-types.${additionalEntities.entryPoint.objType}`)}
+                  </span>
+                  <div>{additionalEntities.entryPoint.properties.id}</div>
+                </div>
+              </>
+            )}
+            {additionalEntities.entryPoint && additionalEntities.exitPoint && (
+              <span className="mr-2" />
+            )}
+            {additionalEntities.exitPoint && (
+              <>
+                <span className={cx(classes.muted, 'mr-2')}>
+                  {t('Editor.tools.routes-edition.to')}
+                </span>{' '}
+                <div>
+                  <span className={cx(classes.muted, classes.small)}>
+                    {t(`Editor.obj-types.${additionalEntities.exitPoint.objType}`)}
+                  </span>
+                  <div>{additionalEntities.exitPoint.properties.id}</div>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      break;
+    }
     default: {
       text = entity.properties.id;
     }
@@ -217,12 +272,7 @@ const EntitySumUp: FC<
     }
   }, [entity, id, objType, osrdConf.infraID, state.type]);
 
-  if (state.type === 'loading' || state.type === 'idle')
-    return (
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
-      </div>
-    );
+  if (state.type === 'loading' || state.type === 'idle') return <Spinner />;
 
   if (state.type === 'error')
     return (

@@ -18,7 +18,7 @@ export default function ModalPathJSONDetail() {
 
   const getPathJSON = async (zoom, params) => {
     try {
-      const pathJSON = await get(`/pathfinding/${pathfindingID}/`, params, {}, true);
+      const pathJSON = await get(`/pathfinding/${pathfindingID}/`, { params });
       setPathJSONDetail(pathJSON);
     } catch (e) {
       dispatch(

@@ -133,5 +133,14 @@ class Allowances(BaseModel):
     __root__: List[Allowance] = Field(description="List of all well-defined allowances of the path")
 
 
+class TrainScheduleOptions(BaseModel):
+    """Optional arguments for the standalone simulation."""
+
+    ignore_electrical_profiles: bool = Field(
+        default=False,
+        description="If true, the electrical profiles are ignored in the standalone simulation",
+    )
+
+
 if __name__ == "__main__":
     print(MRSP.schema_json(indent=2))

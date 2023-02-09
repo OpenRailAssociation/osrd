@@ -51,15 +51,17 @@ def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
                 "allowances": schedule.allowances,
                 "tag": schedule.speed_limit_composition,
                 "comfort": schedule.comfort,
+                "options": schedule.options,
             }
         )
 
-    electrical_profile_set = train_schedules[0].timetable.electrical_profile_set
+    timetable = train_schedules[0].timetable
+    electrical_profile_set = timetable.electrical_profile_set
 
     return {
-        "infra": train_schedules[0].timetable.infra.pk,
+        "infra": timetable.infra.pk,
         "electrical_profile_set": electrical_profile_set.pk if electrical_profile_set else None,
-        "expected_version": train_schedules[0].timetable.infra.version,
+        "expected_version": timetable.infra.version,
         "rolling_stocks": [rs.to_schema().dict() for rs in rolling_stocks],
         "trains_path": {"route_paths": path_payload["route_paths"]},
         "train_schedules": schedules_payload,

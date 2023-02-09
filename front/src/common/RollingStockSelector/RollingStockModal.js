@@ -13,6 +13,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { isEmpty } from 'lodash';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 
@@ -24,7 +25,7 @@ function RollingStockModal(props) {
   const { darkmode } = useSelector((state) => state.main);
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [rollingStock, setRollingStock] = useState();
+  const [rollingStocks, setRollingStocks] = useState();
   const [filteredRollingStockList, setFilteredRollingStockList] = useState([]);
   const [filters, setFilters] = useState({
     text: '',
@@ -47,7 +48,7 @@ function RollingStockModal(props) {
   const updateSearch = () => {
     setOpenedRollingStockCardId(undefined);
     // Text filter
-    let filteredRollingStockListNew = rollingStock.filter(
+    let filteredRollingStockListNew = rollingStocks.filter(
       (el) =>
         el.name.toLowerCase().includes(filters.text) ||
         (el.metadata.detail && el.metadata.detail.toLowerCase().includes(filters.text)) ||
@@ -93,10 +94,10 @@ function RollingStockModal(props) {
   };
 
   const getAllRollingStock = async () => {
-    if (rollingStock === undefined) {
+    if (rollingStocks === undefined) {
       try {
-        const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
-        setRollingStock(data.results);
+        const data = await get(ROLLING_STOCK_URL, { params: { page_size: 1000 } });
+        setRollingStocks(data.results);
       } catch (e) {
         dispatch(
           setFailure({
@@ -109,13 +110,14 @@ function RollingStockModal(props) {
     }
   };
 
-  const listOfRollingStock = useMemo(
+  const listOfRollingStocks = useMemo(
     () =>
       filteredRollingStockList.length > 0 ? (
         filteredRollingStockList.map((item) => (
           <RollingStockCard
             data={item}
             key={item.id}
+            noCardSelected={openedRollingStockCardId === undefined}
             isOpen={item.id === openedRollingStockCardId}
             setOpenedRollingStockCardId={setOpenedRollingStockCardId}
             ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
@@ -133,11 +135,11 @@ function RollingStockModal(props) {
   }, []);
 
   useEffect(() => {
-    if (rollingStock !== undefined) {
+    if (rollingStocks !== undefined) {
       updateSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, rollingStock]);
+  }, [filters, rollingStocks]);
 
   return (
     <ModalBodySNCF>
@@ -196,7 +198,7 @@ function RollingStockModal(props) {
             </div>
             <div className="col-md-2 mt-1 ml-auto">
               <small className="">
-                {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
+                {filteredRollingStockList.length > 0
                   ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
                   : t('rollingstock:noResultFound')}
               </small>
@@ -204,8 +206,8 @@ function RollingStockModal(props) {
           </div>
         </div>
         <div className="rollingstock-search-list">
-          {filteredRollingStockList !== undefined && !isFiltering ? (
-            listOfRollingStock
+          {!isEmpty(filteredRollingStockList) && !isFiltering ? (
+            listOfRollingStocks
           ) : (
             <Loader msg={t('rollingstock:waitingLoader')} />
           )}

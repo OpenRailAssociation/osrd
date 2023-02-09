@@ -29,7 +29,8 @@ public class TestRollingStock {
         RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> res = null;
         for (var path : List.of(path1, path2, path3)) {
             var tractiveEffortCurveMap =
-                    rollingStock.mapTractiveEffortCurves(path, RollingStock.Comfort.STANDARD).curves();
+                    rollingStock.mapTractiveEffortCurves(path.getModeAndProfileMap(rollingStock.powerClass),
+                            RollingStock.Comfort.STANDARD, path.getLength()).curves();
             if (res == null)
                 res = tractiveEffortCurveMap;
             testRangeCoverage(tractiveEffortCurveMap, path.getLength());
@@ -64,10 +65,11 @@ public class TestRollingStock {
         path.setElectricalProfiles(Map.of(rollingStock.powerClass, electricalProfiles));
 
         var comfort = RollingStock.Comfort.STANDARD;
-        var res = rollingStock.mapTractiveEffortCurves(path, comfort).curves();
+        var res = rollingStock.mapTractiveEffortCurves(path.getModeAndProfileMap(rollingStock.powerClass), comfort,
+                path.getLength()).curves();
 
         testRangeCoverage(res, path.getLength());
-        assertEquals(10,  res.asMapOfRanges().size(), "wrong number of ranges");
+        assertEquals(10, res.asMapOfRanges().size(), "wrong number of ranges");
 
         assertEquals(res.get(5.), rollingStock.findTractiveEffortCurve("1500", null, comfort).curve());
         assertEquals(res.get(11.), rollingStock.findTractiveEffortCurve("25000", "25000", comfort).curve());
@@ -79,7 +81,7 @@ public class TestRollingStock {
         assertEquals(res.get(40.), rollingStock.findTractiveEffortCurve("thermal", null, comfort).curve());
     }
 
-    static void testRangeCoverage(RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> map, double length) {
+    static <T> void testRangeCoverage(RangeMap<Double, T> map, double length) {
         var subMap = map.subRangeMap(Range.closed(0., length));
 
         var span = subMap.span();

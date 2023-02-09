@@ -61,9 +61,9 @@ public class InfraManager extends APIClient {
 
         static {
             INITIALIZING.transitions = new InfraStatus[]{DOWNLOADING};
-            DOWNLOADING.transitions = new InfraStatus[]{PARSING_JSON, ERROR};
-            PARSING_JSON.transitions = new InfraStatus[]{PARSING_INFRA, ERROR};
-            PARSING_INFRA.transitions = new InfraStatus[]{CACHED, ERROR};
+            DOWNLOADING.transitions = new InfraStatus[]{PARSING_JSON, ERROR, TRANSIENT_ERROR};
+            PARSING_JSON.transitions = new InfraStatus[]{PARSING_INFRA, ERROR, TRANSIENT_ERROR};
+            PARSING_INFRA.transitions = new InfraStatus[]{CACHED, ERROR, TRANSIENT_ERROR};
             // if a new version appears
             CACHED.transitions = new InfraStatus[]{DOWNLOADING};
             // at the next try
@@ -99,7 +99,7 @@ public class InfraManager extends APIClient {
         }
 
         void transitionTo(InfraStatus newStatus, Throwable error) {
-            assert status.canTransitionTo(newStatus);
+            assert status.canTransitionTo(newStatus) : String.format("cannot switch from %s to %s", status, newStatus);
             this.lastStatus = this.status;
             this.lastError = error;
             this.status = newStatus;
@@ -128,17 +128,16 @@ public class InfraManager extends APIClient {
             logger.info("starting to download {}", request.url());
             cacheEntry.transitionTo(InfraStatus.DOWNLOADING);
 
-            var response = httpClient.newCall(request).execute();
-            if (!response.isSuccessful())
-                throw new UnexpectedHttpResponse(response);
-
-            // Parse the response
-            logger.info("parsing the JSON of {}", request.url());
-            cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
-
             RJSInfra rjsInfra;
-            try (var body = response.body()) {
-                rjsInfra = RJSInfra.adapter.fromJson(body.source());
+            try (var response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful())
+                    throw new UnexpectedHttpResponse(response);
+
+                // Parse the response
+                logger.info("parsing the JSON of {}", request.url());
+                cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
+
+                rjsInfra = RJSInfra.adapter.fromJson(response.body().source());
             }
 
             if (rjsInfra == null)

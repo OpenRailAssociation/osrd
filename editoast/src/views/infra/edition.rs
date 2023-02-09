@@ -1,54 +1,51 @@
-use std::sync::Arc;
-
+use crate::error::Result;
+use actix_web::http::StatusCode;
+use actix_web::post;
+use actix_web::web::{block, Data, Json, Path};
 use chashmap::CHashMap;
 use diesel::PgConnection;
-use rocket::serde::json::{Error as JsonError, Json};
-use rocket::State;
+use redis::Client;
+use thiserror::Error;
 
-use crate::api_error::{ApiResult, InfraLockedError};
-use crate::chartos::{self, InvalidationZone, MapLayers};
 use crate::client::MapLayersConfig;
-use crate::db_connection::{DBConnection, RedisPool};
-use crate::generated_data;
+use crate::error::EditoastError;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
+use crate::map::{self, InvalidationZone, MapLayers};
 use crate::schema::operation::{Operation, OperationResult};
-
-/// Return the endpoints routes of this module
-pub fn routes() -> Vec<rocket::Route> {
-    routes![edit]
-}
+use crate::{generated_data, DbPool};
 
 /// CRUD for edit an infrastructure. Takes a batch of operations.
-#[post("/<infra>", data = "<operations>")]
-async fn edit<'a>(
-    infra: i64,
-    operations: Result<Json<Vec<Operation>>, JsonError<'a>>,
-    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
-    redis_pool: &RedisPool,
-    map_layers: &State<MapLayers>,
-    conn: DBConnection,
-    map_layers_config: &State<MapLayersConfig>,
-) -> ApiResult<Json<Vec<OperationResult>>> {
-    let operations = operations?;
-    let infra_caches = infra_caches.inner().clone();
+#[post("")]
+pub async fn edit<'a>(
+    infra: Path<i64>,
+    operations: Json<Vec<Operation>>,
+    db_pool: Data<DbPool>,
+    infra_caches: Data<CHashMap<i64, InfraCache>>,
+    redis_client: Data<Client>,
+    map_layers: Data<MapLayers>,
+    map_layers_config: Data<MapLayersConfig>,
+) -> Result<Json<Vec<OperationResult>>> {
+    let infra = infra.into_inner();
+    let (operation_results, invalid_zone) = block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
+        let mut infra_cache =
+            InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).unwrap();
+        apply_edit(&mut conn, &infra, &operations, &mut infra_cache)
+    })
+    .await
+    .unwrap()?;
 
-    let (operation_results, invalid_zone) = conn
-        .run::<_, ApiResult<_>>(move |conn| {
-            let infra = Infra::retrieve_for_update(conn, infra)?;
-            let mut infra_cache = InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
-            apply_edit(conn, &infra, &operations, &mut infra_cache)
-        })
-        .await?;
-
-    chartos::invalidate_zone(
-        redis_pool,
+    let mut conn = redis_client.get_tokio_connection_manager().await.unwrap();
+    map::invalidate_zone(
+        &mut conn,
         &map_layers.layers.keys().cloned().collect(),
         infra,
         &invalid_zone,
         map_layers_config.max_tiles,
     )
-    .await;
+    .await?;
 
     Ok(Json(operation_results))
 }
@@ -58,10 +55,10 @@ fn apply_edit(
     infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
-) -> ApiResult<(Vec<OperationResult>, InvalidationZone)> {
+) -> Result<(Vec<OperationResult>, InvalidationZone)> {
     // Check if the infra is locked
     if infra.locked {
-        return Err(InfraLockedError { infra_id: infra.id }.into());
+        return Err(InfraLockedError(infra.id).into());
     }
 
     // Apply modifications
@@ -89,4 +86,23 @@ fn apply_edit(
     infra.update_modified_timestamp_to_now(conn)?;
 
     Ok((operation_results, invalid_zone))
+}
+
+#[derive(Debug, Clone, Error)]
+struct InfraLockedError(pub i64);
+
+impl std::fmt::Display for InfraLockedError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Infra {} is locked", self.0)
+    }
+}
+
+impl EditoastError for InfraLockedError {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::BAD_REQUEST
+    }
+
+    fn get_type(&self) -> &'static str {
+        "editoast:infra:edition:locked"
+    }
 }

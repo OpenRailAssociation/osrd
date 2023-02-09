@@ -1,6 +1,6 @@
+use crate::error::Result;
 use diesel::delete;
 use diesel::query_dsl::methods::FilterDsl;
-use diesel::result::Error;
 use diesel::sql_types::{Array, BigInt, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use std::iter::Iterator;
@@ -19,11 +19,7 @@ impl GeneratedData for TrackSectionLinkLayer {
         "osrd_infra_tracksectionlinklayer"
     }
 
-    fn generate(
-        conn: &mut PgConnection,
-        infra: i64,
-        _infra_cache: &InfraCache,
-    ) -> Result<(), Error> {
+    fn generate(conn: &mut PgConnection, infra: i64, _infra_cache: &InfraCache) -> Result<()> {
         sql_query(include_str!("sql/generate_track_section_link_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)?;
@@ -35,7 +31,7 @@ impl GeneratedData for TrackSectionLinkLayer {
         infra: i64,
         operations: &[crate::schema::operation::OperationResult],
         infra_cache: &crate::infra_cache::InfraCache,
-    ) -> Result<(), Error> {
+    ) -> Result<()> {
         let involved_objects =
             InvolvedObjects::from_operations(operations, infra_cache, ObjectType::TrackSectionLink);
 

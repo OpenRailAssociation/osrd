@@ -1,14 +1,11 @@
-import {
-  applyMiddleware,
-  compose,
-  legacy_createStore as createStore,
-  combineReducers,
-} from 'redux';
+import { legacy_createStore as createStore, combineReducers } from 'redux';
+import { configureStore, Middleware } from '@reduxjs/toolkit';
 import thunk from 'redux-thunk';
 import { persistStore } from 'redux-persist';
-import { composeWithDevTools, Config } from '@redux-devtools/extension';
+import { Config } from '@redux-devtools/extension';
 
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import persistedReducer, { rootReducer, rootInitialState, RootState } from 'reducers';
 
 const reduxDevToolsOptions: Config = {
@@ -19,11 +16,14 @@ const reduxDevToolsOptions: Config = {
   },
 };
 
-// const composeEnhancers = composeWithDevToolsLogOnlyInProduction(reduxDevToolsOptions);
-const composeEnhancers = composeWithDevTools(reduxDevToolsOptions) || compose;
+const middlewares: Middleware[] = [thunk, osrdMiddlewareApi.middleware, osrdEditoastApi.middleware];
 
-const enhancers = composeEnhancers(applyMiddleware(thunk, osrdMiddlewareApi.middleware));
-const store = createStore(persistedReducer, enhancers);
+const store = configureStore({
+  reducer: persistedReducer,
+  devTools: reduxDevToolsOptions,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({ serializableCheck: false }).concat(...middlewares),
+});
 
 const persistor = persistStore(store);
 

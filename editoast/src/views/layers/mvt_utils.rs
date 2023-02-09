@@ -1,10 +1,10 @@
 use diesel::sql_types::{Jsonb, Text};
 use mvt::{Feature, GeomData, GeomEncoder, MapGrid, Tile as MvtTile, TileId};
 use pointy::Transform64;
-use rocket::serde::json::Value as JsonValue;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
-use crate::{chartos::View, schema::GeoJson};
+use crate::{map::View, schema::GeoJson};
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 pub struct GeoJsonAndData {
@@ -98,11 +98,11 @@ fn add_tags_to_feature(feature: &mut Feature, tags: JsonValue, tag_name: String)
 /// * `y` - Y coordinate
 /// * `layer_name` - Name of the layer
 /// * `records` - Records to add as features to the MVT tile
-pub fn create_and_fill_mvt_tile(
+pub fn create_and_fill_mvt_tile<T: AsRef<str>>(
     z: u64,
     x: u64,
     y: u64,
-    layer_name: &str,
+    layer_name: T,
     records: Vec<GeoJsonAndData>,
 ) -> MvtTile {
     let mut tile = MvtTile::new(4096);
@@ -110,7 +110,7 @@ pub fn create_and_fill_mvt_tile(
     if records.is_empty() {
         return tile;
     }
-    let mut mvt_layer = tile.create_layer(layer_name);
+    let mut mvt_layer = tile.create_layer(layer_name.as_ref());
     let ts = tile.extent() as f64;
     let transform = MapGrid::default()
         .tile_transform(
@@ -173,7 +173,7 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::chartos::MapLayers;
+    use crate::map::MapLayers;
 
     use super::{create_and_fill_mvt_tile, get_geo_json_sql_query};
 

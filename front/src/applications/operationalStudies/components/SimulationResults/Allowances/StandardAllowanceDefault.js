@@ -82,8 +82,10 @@ export default function StandardAllowanceDefault(props) {
     newSimulationTrains[selectedTrain] = await get(
       `${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
       {
-        id: simulation.trains[selectedTrain].id,
-        path: selectedProjection.path,
+        params: {
+          id: simulation.trains[selectedTrain].id,
+          path: selectedProjection.path,
+        },
       }
     );
     getAllowances();

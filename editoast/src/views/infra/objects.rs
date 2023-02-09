@@ -1,38 +1,39 @@
 use std::collections::HashMap;
 
-use crate::api_error::ApiError;
-use crate::{api_error::ApiResult, db_connection::DBConnection, schema::ObjectType};
+use actix_web::dev::HttpServiceFactory;
+use actix_web::http::StatusCode;
+use actix_web::post;
+use actix_web::web::{block, Data, Json, Path};
 use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
-use rocket::http::Status;
-use rocket::response::status::Custom;
-use rocket::serde::json::{Error as JsonError, Json, Value as JsonValue};
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use thiserror::Error;
 
-/// Return the endpoints routes of this module
-pub fn routes() -> Vec<rocket::Route> {
-    routes![get_objects]
+use crate::error::{EditoastError, Result};
+use crate::schema::ObjectType;
+use crate::DbPool;
+
+/// Return `/infra/<infra_id>/objects` routes
+pub fn routes() -> impl HttpServiceFactory {
+    get_objects
 }
 
 #[derive(Debug, Error)]
 enum GetObjectsErrors {
-    #[error("No object ids provided")]
-    NoObjectIdsProvided,
     #[error("Duplicate object ids provided")]
     DuplicateIdsProvided,
     #[error("Object id '{0}' not found")]
     ObjectIdNotFound(String),
 }
 
-impl ApiError for GetObjectsErrors {
-    fn get_status(&self) -> Status {
-        Status::BadRequest
+impl EditoastError for GetObjectsErrors {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::BAD_REQUEST
     }
 
     fn get_type(&self) -> &'static str {
         match self {
-            GetObjectsErrors::NoObjectIdsProvided => "editoast:infra:objects:NoObjectIdsProvided",
             GetObjectsErrors::DuplicateIdsProvided => "editoast:infra:objects:DuplicateIdsProvided",
             GetObjectsErrors::ObjectIdNotFound { .. } => "editoast:infra:objects:ObjectIdNotFound",
         }
@@ -61,26 +62,23 @@ struct ObjectQueryable {
 }
 
 /// Return the railjson list of a specific OSRD object
-#[post("/<infra>/objects/<object_type>", data = "<obj_ids>")]
+#[post("/objects/{object_type}")]
 async fn get_objects(
-    infra: i64,
-    object_type: ObjectType,
-    obj_ids: Result<Json<Vec<String>>, JsonError<'_>>,
-    conn: DBConnection,
-) -> ApiResult<Custom<JsonValue>> {
-    let obj_ids = obj_ids?.0;
-    if obj_ids.is_empty() {
-        return Err(GetObjectsErrors::NoObjectIdsProvided.into());
-    } else if !has_unique_ids(&obj_ids) {
+    path_params: Path<(i64, ObjectType)>,
+    obj_ids: Json<Vec<String>>,
+    db_pool: Data<DbPool>,
+) -> Result<Json<Vec<ObjectQueryable>>> {
+    let (infra, obj_type) = path_params.into_inner();
+    if !has_unique_ids(&obj_ids) {
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
 
     // Prepare query
-    let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&object_type) {
+    let query = if [ObjectType::SwitchType, ObjectType::Route].contains(&obj_type) {
         format!(
             "SELECT obj_id as obj_id, data as railjson, NULL as geographic, NULL as schematic
                 FROM {} WHERE infra_id = $1 AND obj_id = ANY($2) ",
-            ObjectType::get_table(&object_type)
+            ObjectType::get_table(&obj_type)
         )
     } else {
         format!("
@@ -93,21 +91,22 @@ async fn get_objects(
             LEFT JOIN {} AS geometry_table ON object_table.obj_id = geometry_table.obj_id AND object_table.infra_id = geometry_table.infra_id
             WHERE object_table.infra_id = $1 AND object_table.obj_id = ANY($2)
             ",
-            ObjectType::get_table(&object_type),
-            ObjectType::get_geometry_layer_table(&object_type).unwrap()
+            ObjectType::get_table(&obj_type),
+            ObjectType::get_geometry_layer_table(&obj_type).unwrap()
         )
     };
 
     // Execute query
     let obj_ids_dup = obj_ids.clone();
-    let objects: Vec<ObjectQueryable> = conn
-        .run(move |conn| {
-            sql_query(query)
-                .bind::<BigInt, _>(infra)
-                .bind::<Array<Text>, _>(obj_ids_dup)
-                .load(conn)
-        })
-        .await?;
+    let objects: Vec<ObjectQueryable> = block(move || {
+        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        sql_query(query)
+            .bind::<BigInt, _>(infra)
+            .bind::<Array<Text>, _>(obj_ids_dup)
+            .load(&mut conn)
+    })
+    .await
+    .unwrap()?;
 
     // Build a cache to reorder the result
     let mut objects: HashMap<_, _> = objects
@@ -118,10 +117,10 @@ async fn get_objects(
     // Check all objects exist
     if objects.len() != obj_ids.len() {
         let not_found_id = obj_ids
-            .into_iter()
-            .find(|obj_id| !objects.contains_key(obj_id))
+            .iter()
+            .find(|obj_id| !objects.contains_key(*obj_id))
             .unwrap();
-        return Err(GetObjectsErrors::ObjectIdNotFound(not_found_id).into());
+        return Err(GetObjectsErrors::ObjectIdNotFound(not_found_id.clone()).into());
     }
 
     // Reorder the result to match the order of the input
@@ -129,109 +128,92 @@ async fn get_objects(
     obj_ids.iter().for_each(|obj_id| {
         result.push(objects.remove(obj_id).unwrap());
     });
-    Ok(Custom(Status::Ok, serde_json::to_value(result).unwrap()))
+
+    Ok(Json(result))
 }
 
 #[cfg(test)]
 mod tests {
-    use rocket::http::{ContentType, Status};
+    use actix_web::http::StatusCode;
+    use actix_web::test as actix_test;
+    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
 
     use crate::infra::Infra;
-    use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::SwitchType;
-    use crate::views::tests::create_test_client;
+    use crate::views::infra::tests::{
+        create_infra_request, create_object_request, delete_infra_request,
+    };
+    use crate::views::tests::create_test_service;
 
-    #[test]
-    fn check_invalid_ids() {
-        let client = create_test_client();
-        let create_infra = client
-            .post("/infra")
-            .header(ContentType::JSON)
-            .body(r#"{"name":"Get Objects"}"#)
-            .dispatch();
-        assert_eq!(create_infra.status(), Status::Created);
+    #[actix_test]
+    async fn check_invalid_ids() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_objects_test")).await;
 
-        let body_infra = create_infra.into_string();
-        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/objects/TrackSection", infra.id).as_str())
+            .set_json(["invalid_id"])
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 
-        let get_objects = client
-            .post(format!("/infra/{}/objects/TrackSection", infra.id))
-            .header(ContentType::JSON)
-            .body(r#"["invalid_id"]"#)
-            .dispatch();
-        assert_eq!(get_objects.status(), Status::BadRequest);
-    }
-    #[test]
-    fn get_objects_no_ids() {
-        let client = create_test_client();
-        let create_infra = client
-            .post("/infra")
-            .header(ContentType::JSON)
-            .body(r#"{"name":"Get Objects"}"#)
-            .dispatch();
-        assert_eq!(create_infra.status(), Status::Created);
-
-        let body_infra = create_infra.into_string();
-        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
-
-        let get_objects = client
-            .post(format!("/infra/{}/objects/TrackSection", infra.id))
-            .header(ContentType::JSON)
-            .body(r#"[]"#)
-            .dispatch();
-        assert_eq!(get_objects.status(), Status::BadRequest);
+        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[test]
-    fn get_objects_duplicate_ids() {
-        let client = create_test_client();
-        let create_infra = client
-            .post("/infra")
-            .header(ContentType::JSON)
-            .body(r#"{"name":"Get Objects"}"#)
-            .dispatch();
-        assert_eq!(create_infra.status(), Status::Created);
+    #[actix_test]
+    async fn get_objects_no_ids() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_objects_no_id_test")).await;
 
-        let body_infra = create_infra.into_string();
-        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/objects/TrackSection", infra.id).as_str())
+            .set_json(vec![""; 0])
+            .to_request();
+        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
-        let get_objects = client
-            .post(format!("/infra/{}/objects/TrackSection", infra.id))
-            .header(ContentType::JSON)
-            .body(r#"["id","id"]"#)
-            .dispatch();
-        assert_eq!(get_objects.status(), Status::BadRequest);
+        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[test]
-    fn get_switch_types() {
-        let client = create_test_client();
-        let create_infra = client
-            .post("/infra")
-            .header(ContentType::JSON)
-            .body(r#"{"name":"Get Objects"}"#)
-            .dispatch();
-        assert_eq!(create_infra.status(), Status::Created);
+    #[actix_test]
+    async fn get_objects_duplicate_ids() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_objects_dup_ids_test")).await;
 
-        let body_infra = create_infra.into_string();
-        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/objects/TrackSection", infra.id).as_str())
+            .set_json(vec!["id"; 2])
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 
+        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn get_switch_types() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_switch_types_test")).await;
+
+        // Add a switch type
         let switch_type = SwitchType::default();
-        let operation = Operation::Create(Box::new(RailjsonObject::SwitchType {
-            railjson: switch_type.clone(),
-        }));
-        let create_switch_type = client
-            .post(format!("/infra/{}/", infra.id))
-            .header(ContentType::JSON)
-            .body(serde_json::to_string(&vec![operation]).unwrap())
-            .dispatch();
-        assert_eq!(create_switch_type.status(), Status::Ok);
+        let switch_id = switch_type.id.clone();
+        let req = create_object_request(infra.id, switch_type.into());
+        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
-        let get_objects = client
-            .post(format!("/infra/{}/objects/SwitchType", infra.id))
-            .header(ContentType::JSON)
-            .body(format!(r#"["{}"]"#, switch_type.id))
-            .dispatch();
-        assert_eq!(get_objects.status(), Status::Ok);
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/objects/SwitchType", infra.id).as_str())
+            .set_json(vec![switch_id])
+            .to_request();
+        assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
+
+        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

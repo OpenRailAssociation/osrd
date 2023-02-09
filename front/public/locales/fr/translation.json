@@ -10,12 +10,14 @@
     "download": "Télécharger",
     "dsc": "Descendant",
     "erase": "Effacer",
+    "edit": "Éditer",
     "error": "Une erreur est survenue",
     "filter": "Filtrer",
     "itinerary": "Itinéraire",
     "help": "Aide",
     "help-display": "Afficher l'aide",
     "loading": "Chargement…",
+    "open": "Ouvrir",
     "save": "Sauvegarder",
     "search": "Rechercher",
     "settings": "Paramètres",
@@ -37,7 +39,8 @@
       "buffer_stops": "Heurtoirs",
       "detectors": "Détecteurs",
       "switches": "Aiguillages",
-      "errors": "Erreurs"
+      "errors": "Erreurs",
+      "routes": "Itinéraires"
     },
     "item-statuses": {
       "selected": "sélectionné",
@@ -48,7 +51,8 @@
       "Signal": "Signal",
       "BufferStop": "Heurtoir",
       "Detector": "Détecteur",
-      "Switch": "Aiguillage"
+      "Switch": "Aiguillage",
+      "Route": "Itinéraire"
     },
     "nav": {
       "recenter": "Recentrer la carte",
@@ -76,8 +80,9 @@
       },
       "list": {
         "error": "Une erreur est survenue lors du chargement des données",
-        "no-error": "Aucune erreur trouvée",
-        "total-error": "{{total}} erreurs trouvées",
+        "total-error_zero": "Aucune erreur trouvée",
+        "total-error_one": "Une erreur trouvée",
+        "total-error": "{{count}} erreurs trouvées",
         "filter-level": "Niveau d'erreur",
         "filter-type": "Type d'erreur"
       },
@@ -130,7 +135,12 @@
           "stop-dragging-on-line": "Cliquez pour valider le déplacement de l'élément.",
           "stop-dragging-no-line": "L'élément doit être placé sur une section de ligne.",
           "start-dragging": "Cliquez sur l'élément pour commencer à le déplacer."
-        }
+        },
+        "linked-routes": "Itinéraires liés",
+        "no-linked-route": "Aucun itinéraire lié",
+        "routes-starting-from": "Partant de...",
+        "routes-ending-at": "Arrivant à...",
+        "default-routes-error": "Une erreur est survenue lors du chargement des itinéraires liés."
       },
       "switch-edition": {
         "label": "Outil \"Aiguillage\",",
@@ -144,6 +154,7 @@
           "no-move": "Les aiguillages ne peuvent pas être déplacer, et sont automatiquement placés sur leur premier port.",
           "select-track": "Sélectionnez une ligne sur la carte"
         },
+        "switch-type": "Type d'aiguillage",
         "endpoint": "Extrémité :",
         "no-track-picked-yet": "Aucune ligne n'a encore été sélectionnée",
         "untitled-track": "Ligne sans nom"
@@ -179,24 +190,6 @@
         "linked-to-line_one": "lié à la ligne",
         "linked-to-line_other": "lié aux lignes"
       },
-      "select-zone": {
-        "label": "Sélection de la zone d'édition",
-        "actions": {
-          "cancel-last-point": "Annuler le dernier point saisi",
-          "cancel-polygon": "Annuler le polygône",
-          "polygon": "Sélection Polygône",
-          "rectangle": "Sélection Rectangle",
-          "unselect": "Désélectionner la zone d'édition",
-          "validate-polygon": "Valider le polygône d'édition"
-        },
-        "help": {
-          "open-selection-tool": "Sélectionnez l'outil \"Sélection\" pour continuer, ou changez la zone d'édition.",
-          "start-polygon": "Cliquez pour commencer à saisir le polygône d'édition.",
-          "continue-polygon": "Cliquez pour ajouter des points au polygône de sélection. Double-cliquez pour fermer le polygône et valider la zone de sélection.",
-          "start-rectangle": "Cliquez une première fois pour sélectionner un premier coin du rectangle.",
-          "continue-rectangle": "Cliquez une seconde fois pour fermer le rectangle et valider la zone de sélection."
-        }
-      },
       "signal-edition": {
         "label": "Outil \"Signal\",",
         "actions": {
@@ -217,6 +210,60 @@
           "reset-entity": "Réinitialiser les données",
           "new-entity": "Créer un nouveau détecteur"
         }
+      },
+      "routes-edition": {
+        "label": "Outil \"Itinéraires\",",
+        "create-route": "Création d'un nouvel itinéraire",
+        "edit-route": "Édition d'un itinéraire existant",
+        "actions": {
+          "delete-route": "Supprimer l'itinéraire",
+          "new-route": "Créer un nouvel itinéraire",
+          "pick-entrypoint": "Outil de sélection du point de départ",
+          "pick-entrypoint-cancel": "Annuler la sélection du point de départ",
+          "pick-exitpoint": "Outil de sélection du point d'arrivée",
+          "pick-exitpoint-cancel": "Annuler la sélection du point d'arrivée"
+        },
+        "help": {
+          "select-waypoint": "Sélectionnez un détecteur ou un heurtoir.",
+          "select-endpoints": "L'itinéraire doit avoir un point de départ et un point d'arrivée.",
+          "select-route": "Sélectionnez un itinéraire.",
+          "validate-route": "Vous pouvez valider cet itinéraire, ou en sélectionner un autre.",
+          "actions-on-edit-route": "Vous pouvez supprimer l'itinéraire, le modifier, ou en créer un nouveau."
+        },
+        "directions": {
+          "START_TO_STOP": "Sens \"normal\"",
+          "STOP_TO_START": "Sens inverse"
+        },
+        "start_direction": "Direction au départ :",
+        "endpoint": "Extrémité :",
+        "swap-endpoints": "Échanger les extrémités",
+        "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
+        "search-routes": "Rechercher des itinéraires compatibles",
+        "untitled-track": "Ligne sans nom",
+        "routes_zero": "Aucun itinéraire compatible trouvé",
+        "routes_one": "Un itinéraire compatible trouvé",
+        "routes": "{{count}} itinéraires compatibles trouvés",
+        "preview-candidate": "Sélectionner",
+        "save-route": "Sauvegarder les modifications",
+        "save-new-route": "Sauvegarder le nouvel itinéraire",
+        "crossed-detectors_zero": "Aucun détecteur rencontré",
+        "crossed-detectors_one": "Un détecteur",
+        "crossed-detectors": "{{count}} détecteurs",
+        "crossed-track-ranges_zero": "Aucun tronçon",
+        "crossed-track-ranges_one": "Un tronçon",
+        "crossed-track-ranges": "{{count}} tronçons",
+        "include-release-detectors": "Transit rigide",
+        "locked-release-detectors": "Cette propriété ne peut pas être réactivée a posteriori, et peut uniquement être désactivée.",
+        "delete-route": "Supprimer l'itinéraire",
+        "alternative-routes": "Rechercher des itinéraires alternatifs",
+        "geometry-error": "Une erreur est survenue lors du calcul du chemin exact de cet itinéraire.",
+        "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",
+        "delete-route-success": "L'itinéraire a été supprimé avec succès.",
+        "save-route-success": "L'itinéraire a été sauvegardé avec succès.",
+        "from": "de",
+        "to": "à",
+        "start": "Départ",
+        "end": "Arrivée"
       }
     },
     "linear-metadata": {

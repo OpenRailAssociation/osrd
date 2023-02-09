@@ -44,6 +44,7 @@ class TrainScheduleView(
             "allowances",
             "speed_limit_composition",
             "comfort",
+            "options",
         ]
         for field in fields_requiring_simulation:
             if field in data and data[field] != getattr(train_schedule, field):

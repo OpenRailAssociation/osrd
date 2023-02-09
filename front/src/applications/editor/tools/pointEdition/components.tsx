@@ -1,37 +1,182 @@
 import mapboxgl from 'mapbox-gl';
-import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { ComponentType, FC, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Popup } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import { merge, isEqual } from 'lodash';
 import along from '@turf/along';
+import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
+import { BsBoxArrowInRight } from 'react-icons/bs';
 
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import { save } from 'reducers/editor';
-import { NULL_GEOMETRY, CreateEntityOperation, EditorEntity, TrackSectionEntity } from 'types';
+import {
+  NULL_GEOMETRY,
+  CreateEntityOperation,
+  EditorEntity,
+  TrackSectionEntity,
+  RouteEntity,
+} from 'types';
 import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
-import { EditorContextType, ExtendedEditorContextType, OSRDConf } from '../types';
+import { EditoastType, EditorContextType, ExtendedEditorContextType, OSRDConf } from '../types';
 import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
-import { getEntity } from '../../data/api';
+import { getEntities, getEntity, getRoutesFromWaypoint } from '../../data/api';
+import { Spinner } from '../../../../common/Loader';
+import RouteEditionTool from '../routeEdition/tool';
+import { getEditRouteState } from '../routeEdition/utils';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
 /**
+ * Generic component to show routes starting or ending from the edited waypoint:
+ */
+export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id }) => {
+  const { t } = useTranslation();
+  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const [routesState, setRoutesState] = useState<
+    | { type: 'idle' }
+    | { type: 'loading' }
+    | { type: 'ready'; starting: RouteEntity[]; ending: RouteEntity[] }
+    | { type: 'error'; message: string }
+  >({ type: 'idle' });
+  const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
+
+  useEffect(() => {
+    if (routesState.type === 'idle') {
+      setRoutesState({ type: 'loading' });
+      getRoutesFromWaypoint(osrdConf.infraID + '', type, id)
+        .then((res) => {
+          const starting = res.starting || [];
+          const ending = res.ending || [];
+
+          if (starting.length || ending.length) {
+            getEntities<RouteEntity>(osrdConf.infraID + '', [...starting, ...ending], 'Route')
+              .then((entities) => {
+                setRoutesState({
+                  type: 'ready',
+                  starting: starting.map((routeId) => entities[routeId]),
+                  ending: ending.map((routeId) => entities[routeId]),
+                });
+              })
+              .catch((err) => {
+                setRoutesState({ type: 'error', message: err.message });
+              });
+          } else {
+            setRoutesState({ type: 'ready', starting: [], ending: [] });
+          }
+        })
+        .catch((err) => {
+          setRoutesState({ type: 'error', message: err.message });
+        });
+    }
+  }, [routesState]);
+
+  useEffect(() => {
+    setRoutesState({ type: 'idle' });
+  }, [type, id]);
+
+  if (routesState.type === 'loading' || routesState.type === 'idle')
+    return (
+      <div className="loader mt-1">
+        <Spinner />
+      </div>
+    );
+  if (routesState.type === 'error')
+    return (
+      <div className="form-error mt-3 mb-3">
+        <p>{routesState.message || t('Editor.tools.point-edition.default-routes-error')}</p>
+      </div>
+    );
+
+  return (
+    <>
+      {!!routesState.starting.length && (
+        <div>
+          <h4>
+            <BiArrowFromLeft className="me-1" />{' '}
+            {t('Editor.tools.point-edition.routes-starting-from')}
+          </h4>
+          <ul className="list-unstyled">
+            {routesState.starting.map((route) => (
+              <li key={route.properties.id} className="d-flex align-items-center">
+                <div className="flex-shrink-0 mr-3">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    title={t('common.open')}
+                    onClick={() => {
+                      switchTool(RouteEditionTool, getEditRouteState(route));
+                    }}
+                  >
+                    <BsBoxArrowInRight />
+                  </button>
+                </div>
+                <div className="flex-grow-1 flex-shrink-1">
+                  <EntitySumUp entity={route} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {!!routesState.ending.length && (
+        <div>
+          <h4>
+            <BiArrowToRight className="me-1" /> {t('Editor.tools.point-edition.routes-ending-at')}
+          </h4>
+          <ul className="list-unstyled">
+            {routesState.ending.map((route) => (
+              <li key={route.properties.id} className="d-flex align-items-center">
+                <div className="flex-shrink-0 mr-3">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    title={t('common.open')}
+                    onClick={() => {
+                      switchTool(RouteEditionTool, getEditRouteState(route));
+                    }}
+                  >
+                    <BsBoxArrowInRight />
+                  </button>
+                </div>
+                <div className="flex-grow-1 flex-shrink-1">
+                  <EntitySumUp entity={route} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {!(routesState.starting.length + routesState.ending.length) && (
+        <div className="text-center">{t('Editor.tools.point-edition.no-linked-route')}</div>
+      )}
+    </>
+  );
+};
+
+/**
  * Generic component for point edition left panel:
  */
-export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
+export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends EditorEntity>({
+  type,
+}: {
+  type: EditoastType;
+}) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
   >;
+  const isWayPoint = type === 'BufferStop' || type === 'Detector';
+  const isNew =
+    typeof state.entity.properties.id === 'string' && state.entity.properties.id === NEW_ENTITY_ID;
 
   const [trackState, setTrackState] = useState<
     | { type: 'idle'; id?: undefined; track?: undefined }
@@ -68,72 +213,85 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
   ]);
 
   return (
-    <EditorForm
-      data={state.entity as Entity}
-      onSubmit={async (savedEntity) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res: any = await dispatch(
-          save(
-            state.entity.properties.id !== NEW_ENTITY_ID
-              ? {
-                  update: [
-                    {
-                      source: state.initialEntity,
-                      target: savedEntity,
-                    },
-                  ],
-                }
-              : { create: [savedEntity] }
-          )
-        );
-        const operation = res[0] as CreateEntityOperation;
-        const { id } = operation.railjson;
-        if (id && id !== savedEntity.properties.id) {
-          setState({
-            ...state,
-            entity: {
-              ...state.entity,
-              id,
-              properties: {
-                ...state.entity.properties,
-                ...operation.railjson,
+    <>
+      {isWayPoint && !isNew && (
+        <>
+          <h3>{t('Editor.tools.point-edition.linked-routes')}</h3>
+          <RoutesList type={type} id={state.entity.properties.id} />
+          <div className="border-bottom" />
+        </>
+      )}
+      <EditorForm
+        data={state.entity as Entity}
+        onSubmit={async (savedEntity) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const res: any = await dispatch(
+            save(
+              state.entity.properties.id !== NEW_ENTITY_ID
+                ? {
+                    update: [
+                      {
+                        source: state.initialEntity,
+                        target: savedEntity,
+                      },
+                    ],
+                  }
+                : { create: [savedEntity] }
+            )
+          );
+          const operation = res[0] as CreateEntityOperation;
+          const { id } = operation.railjson;
+          if (id && id !== savedEntity.properties.id) {
+            setState({
+              ...state,
+              entity: {
+                ...state.entity,
+                id,
+                properties: {
+                  ...state.entity.properties,
+                  ...operation.railjson,
+                },
               },
-            },
-          });
-        }
-      }}
-      onChange={(entity) => {
-        const additionalUpdate: Partial<Entity> = {};
+            });
+          }
+        }}
+        onChange={(entity) => {
+          const additionalUpdate: Partial<Entity> = {};
 
-        const newPosition = entity.properties?.position;
-        const oldPosition = state.entity.properties?.position;
-        const trackId = entity.properties?.track;
-        if (
-          typeof trackId === 'string' &&
-          trackId === trackState.id &&
-          trackState.type === 'ready' &&
-          typeof newPosition === 'number' &&
-          typeof oldPosition === 'number' &&
-          newPosition !== oldPosition
-        ) {
-          const point = along(trackState.track, newPosition, { units: 'meters' });
-          additionalUpdate.geometry = point.geometry;
-        }
+          const newPosition = entity.properties?.position;
+          const oldPosition = state.entity.properties?.position;
+          const trackId = entity.properties?.track;
+          if (
+            typeof trackId === 'string' &&
+            trackId === trackState.id &&
+            trackState.type === 'ready' &&
+            typeof newPosition === 'number' &&
+            typeof oldPosition === 'number' &&
+            newPosition !== oldPosition
+          ) {
+            const point = along(trackState.track, newPosition, { units: 'meters' });
+            additionalUpdate.geometry = point.geometry;
+          }
 
-        setState({ ...state, entity: { ...(entity as Entity), ...additionalUpdate } });
-      }}
-    >
-      <div className="text-right">
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={!state.entity.properties?.track || !state.entity.geometry}
-        >
-          {t('common.save')}
-        </button>
-      </div>
-    </EditorForm>
+          setState({ ...state, entity: { ...(entity as Entity), ...additionalUpdate } });
+        }}
+      >
+        <div className="text-right">
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={!state.entity.properties?.track || !state.entity.geometry}
+          >
+            {t('common.save')}
+          </button>
+        </div>
+      </EditorForm>
+    </>
   );
+};
+
+export const getPointEditionLeftPanel = (type: EditoastType): ComponentType => {
+  return () => <PointEditionLeftPanel type={type} />;
 };
 
 export const BasePointEditionLayers: FC<{

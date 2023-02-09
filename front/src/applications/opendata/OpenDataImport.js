@@ -14,7 +14,7 @@ export default function OpenDataImport() {
 
   async function getRollingStockDB() {
     try {
-      const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
+      const data = await get(ROLLING_STOCK_URL, { params: { page_size: 1000 } });
       setRollingStockDB(data.results);
     } catch (error) {
       console.log(error);

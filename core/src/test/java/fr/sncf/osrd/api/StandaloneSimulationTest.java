@@ -426,9 +426,8 @@ public class StandaloneSimulationTest extends ApiTest {
                     0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null);
             trainSchedules.add(trainSchedule);
         }
-        var trainSchedule = new RJSStandaloneTrainSchedule("Test.1+AC", "fast_rolling_stock1",
-                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null);
-        trainSchedule.comfort = RJSComfortType.AC;
+        var trainSchedule = new RJSStandaloneTrainSchedule("Test", "fast_rolling_stock1",
+                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null, RJSComfortType.AC, null);
         trainSchedules.add(trainSchedule);
 
         // build the simulation request
@@ -468,8 +467,7 @@ public class StandaloneSimulationTest extends ApiTest {
         rollingStock.powerClass = "5";
 
         var trainSchedule = new RJSStandaloneTrainSchedule("Test", rollingStock.name,
-                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null);
-        trainSchedule.comfort = RJSComfortType.AC;
+                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null, RJSComfortType.AC, null);
 
         // build the simulation request
         var query = new StandaloneSimulationRequest(
@@ -485,7 +483,6 @@ public class StandaloneSimulationTest extends ApiTest {
         // parse back the simulation result
         var simResult = runStandaloneSimulation(query);
         var modesAndProfiles = simResult.modesAndProfiles.get(0);
-        System.out.println(modesAndProfiles);
 
         assertNotNull(modesAndProfiles);
         var modeAndProfile0 = modesAndProfiles.get(0);
@@ -514,5 +511,44 @@ public class StandaloneSimulationTest extends ApiTest {
         }
 
         assertEquals(4, profileIndex);
+    }
+
+    @Test
+    public void testModesAndProfilesInResultWithIgnored() throws IOException {
+        final var rjsTrainPath = smallInfraTrainPath();
+
+        // Duplicate fast rolling stock but with many power classes
+        var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
+        rollingStock.powerClass = "5";
+
+        var trainSchedule1 = new RJSStandaloneTrainSchedule("Test", rollingStock.name,
+                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null, RJSComfortType.AC, null);
+
+        var trainSchedule2 = new RJSStandaloneTrainSchedule("Test", rollingStock.name,
+                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null, RJSComfortType.STANDARD,
+                new RJSTrainScheduleOptions(true));
+
+        // build the simulation request
+        var query = new StandaloneSimulationRequest(
+                "small_infra/infra.json",
+                "small_infra/external_generated_inputs.json",
+                "1",
+                2,
+                List.of(rollingStock),
+                List.of(trainSchedule1, trainSchedule2),
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+        var modesAndProfiles1 = simResult.modesAndProfiles.get(0);
+
+        assertNotNull(modesAndProfiles1);
+        assertEquals(6, modesAndProfiles1.size());
+
+        var modesAndProfiles2 = simResult.modesAndProfiles.get(1);
+
+        assertNotNull(modesAndProfiles2);
+        assertEquals(2, modesAndProfiles2.size());
     }
 }

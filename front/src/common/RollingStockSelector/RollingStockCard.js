@@ -5,6 +5,7 @@ import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import RollingStockCardDetail from './RollingStockCardDetail';
 import RollingStock2Img from './RollingStock2Img';
 import { RollingStockInfos } from './RollingStockHelpers';
@@ -17,7 +18,7 @@ function RollingStockCard(props) {
     voltages: [],
   });
   const [curvesComfortList, setCurvesComfortList] = useState();
-  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen } = props;
+  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected } = props;
   const ref2scrollWhenOpened = useRef();
 
   function displayCardDetail() {
@@ -47,7 +48,9 @@ function RollingStockCard(props) {
 
   return (
     <div
-      className={`rollingstock-container mb-3 ${isOpen ? 'active' : 'inactive'}`}
+      className={`rollingstock-container mb-3 ${isOpen ? 'active' : 'inactive'} ${
+        noCardSelected ? 'solid' : ''
+      }`}
       role="button"
       onClick={displayCardDetail}
       tabIndex={0}
@@ -75,13 +78,13 @@ function RollingStockCard(props) {
           setCurvesComfortList={setCurvesComfortList}
         />
       ) : (
-        <div className="rollingstock-body-container-img">
-          <div className="rollingstock-body-img">
-            <div className="rollingstock-img">
+        <LazyLoadComponent>
+          <div className="rollingstock-body-container-img">
+            <div className="rollingstock-body-img">
               <RollingStock2Img rollingStock={data} />
             </div>
           </div>
-        </div>
+        </LazyLoadComponent>
       )}
       <div className="rollingstock-footer">
         <div className="rollingstock-footer-specs">
@@ -153,6 +156,7 @@ RollingStockCard.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
   ref2scroll: PropTypes.object,
+  noCardSelected: PropTypes.bool.isRequired,
 };
 
 const MemoizedRollingStockCard = React.memo(RollingStockCard);

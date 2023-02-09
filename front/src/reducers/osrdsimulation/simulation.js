@@ -63,8 +63,10 @@ export async function progressiveDuplicateTrain(
   const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
   try {
     const simulationLocal = await get(`${trainscheduleURI}results/`, {
-      train_ids: trainSchedulesIDs.join(','),
-      path: selectedProjection.path,
+      params: {
+        train_ids: trainSchedulesIDs.join(','),
+        path: selectedProjection.path,
+      },
     });
     simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
     dispatch(updateSimulation({ trains: simulationLocal }));

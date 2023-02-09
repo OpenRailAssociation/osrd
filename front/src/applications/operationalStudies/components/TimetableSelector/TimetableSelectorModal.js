@@ -23,7 +23,7 @@ export default function TimetableSelectorModal() {
 
   const getTimetablesList = async () => {
     try {
-      const timetablesListQuery = await get(timetableURL, { infra: infraID });
+      const timetablesListQuery = await get(timetableURL, { params: { infra: infraID } });
       settimetablesList(timetablesListQuery);
     } catch (e) {
       dispatch(

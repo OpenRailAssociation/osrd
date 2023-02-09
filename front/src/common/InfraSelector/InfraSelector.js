@@ -23,7 +23,7 @@ export default function InfraSelector(props) {
 
   const getInfra = async (id) => {
     try {
-      const infraQuery = await get(`${INFRA_URL}${id}/`, {});
+      const infraQuery = await get(`${INFRA_URL}${id}/`);
       setSelectedInfra(infraQuery);
     } catch (e) {
       dispatch(

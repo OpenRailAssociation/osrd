@@ -91,7 +91,14 @@ export interface Regime {
   error: any;
 }
 
+export interface ModesAndProfiles {
+  start: number;
+  stop: number;
+  used_mode: string;
+  used_profile: string;
+}
 export interface Train {
+  modes_and_profiles: ModesAndProfiles[];
   id: number;
   labels: any[];
   path: number;
@@ -158,6 +165,7 @@ export interface OsrdSimulationState {
     curves: boolean;
     maxSpeed: boolean;
     slopes: boolean;
+    electricalProfiles: boolean;
   };
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;

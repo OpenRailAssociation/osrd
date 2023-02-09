@@ -24,21 +24,19 @@ use switch::SwitchLayer;
 use track_section::TrackSectionLayer;
 use track_section_link::TrackSectionLinkLayer;
 
-use crate::api_error::ApiError;
+use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::schema::operation::OperationResult;
 use diesel::prelude::*;
-use diesel::result::Error;
 use diesel::sql_query;
 use diesel::sql_types::BigInt;
 
 /// This trait define how a generated data table should be handled
 pub trait GeneratedData {
     fn table_name() -> &'static str;
-    fn generate(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache)
-        -> Result<(), Error>;
+    fn generate(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<()>;
 
-    fn clear(conn: &mut PgConnection, infra: i64) -> Result<(), Error> {
+    fn clear(conn: &mut PgConnection, infra: i64) -> Result<()> {
         sql_query(format!(
             "DELETE FROM {} WHERE infra_id = $1",
             Self::table_name()
@@ -48,7 +46,7 @@ pub trait GeneratedData {
         Ok(())
     }
 
-    fn refresh(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<(), Error> {
+    fn refresh(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
         Self::clear(conn, infra)?;
         Self::generate(conn, infra, infra_cache)
     }
@@ -59,15 +57,11 @@ pub trait GeneratedData {
         infra: i64,
         operations: &[OperationResult],
         infra_cache: &InfraCache,
-    ) -> Result<(), Error>;
+    ) -> Result<()>;
 }
 
 /// Refresh all the generated data of a given infra
-pub fn refresh_all(
-    conn: &mut PgConnection,
-    infra: i64,
-    infra_cache: &InfraCache,
-) -> Result<(), Box<dyn ApiError>> {
+pub fn refresh_all(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache) -> Result<()> {
     TrackSectionLayer::refresh(conn, infra, infra_cache)?;
     SpeedSectionLayer::refresh(conn, infra, infra_cache)?;
     SignalLayer::refresh(conn, infra, infra_cache)?;
@@ -83,7 +77,7 @@ pub fn refresh_all(
 }
 
 /// Clear all the generated data of a given infra
-pub fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<(), Box<dyn ApiError>> {
+pub fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
     TrackSectionLayer::clear(conn, infra)?;
     SpeedSectionLayer::clear(conn, infra)?;
     SignalLayer::clear(conn, infra)?;
@@ -104,7 +98,7 @@ pub fn update_all(
     infra: i64,
     operations: &[OperationResult],
     infra_cache: &InfraCache,
-) -> Result<(), Box<dyn ApiError>> {
+) -> Result<()> {
     TrackSectionLayer::update(conn, infra, operations, infra_cache)?;
     SpeedSectionLayer::update(conn, infra, operations, infra_cache)?;
     SignalLayer::update(conn, infra, operations, infra_cache)?;

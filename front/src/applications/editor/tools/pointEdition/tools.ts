@@ -1,4 +1,6 @@
-import { BsSkipEnd, FaMapSigns, MdSensors } from 'react-icons/all';
+import { BsSkipEnd } from 'react-icons/bs';
+import { MdSensors } from 'react-icons/md';
+import { FaMapSigns } from 'react-icons/fa';
 
 import getPointEditionTool from './tool-factory';
 import { getNewBufferStop, getNewDetector, getNewSignal } from './utils';

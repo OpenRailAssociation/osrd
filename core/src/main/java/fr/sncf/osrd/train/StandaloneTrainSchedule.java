@@ -2,7 +2,7 @@ package fr.sncf.osrd.train;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
-import java.util.Collection;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,6 +20,8 @@ public class StandaloneTrainSchedule {
 
     public final RollingStock.Comfort comfort;
 
+    public final TrainScheduleOptions options;
+
     /** Standalone Train Schedule constructor */
     public StandaloneTrainSchedule(
             RollingStock rollingStock,
@@ -27,7 +29,8 @@ public class StandaloneTrainSchedule {
             List<TrainStop> stops,
             List<? extends Allowance> allowances,
             String tag,
-            RollingStock.Comfort comfort
+            RollingStock.Comfort comfort,
+            TrainScheduleOptions options
     ) {
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
@@ -35,9 +38,11 @@ public class StandaloneTrainSchedule {
         this.allowances = allowances;
         this.tag = tag;
         this.comfort = comfort;
+        this.options = Objects.requireNonNullElseGet(options, () -> new TrainScheduleOptions(null));
     }
 
     @Override
+    @ExcludeFromGeneratedCodeCoverage
     public boolean equals(Object o) {
         if (this == o)
             return true;
@@ -47,12 +52,14 @@ public class StandaloneTrainSchedule {
         return Double.compare(other.initialSpeed, initialSpeed) == 0
                 && rollingStock.equals(other.rollingStock)
                 && stops.equals(other.stops)
-                && allowances.equals(other.allowances);
+                && allowances.equals(other.allowances)
+                && comfort == other.comfort
+                && options.equals(other.options);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(rollingStock, initialSpeed, stops, allowances, comfort);
+        return Objects.hash(rollingStock, initialSpeed, stops, allowances, comfort, options);
     }
 
     /**

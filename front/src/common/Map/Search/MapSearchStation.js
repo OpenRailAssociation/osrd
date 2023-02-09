@@ -23,7 +23,7 @@ export default function MapSearchStation(props) {
 
   const updateSearch = async (params) => {
     try {
-      const data = await get(searchURI, params);
+      const data = await get(searchURI, { params });
       setSearchResults(data);
     } catch (e) {
       console.log(e);
