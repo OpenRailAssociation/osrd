@@ -140,6 +140,8 @@ struct PathfindingStep {
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     switch_direction: Option<(Identifier, Identifier)>,
     found: bool,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    previous: Option<Box<PathfindingStep>>,
 }
 
 impl PathfindingStep {
@@ -150,6 +152,7 @@ impl PathfindingStep {
             direction,
             switch_direction: None,
             found: false,
+            previous: None,
         }
     }
 
@@ -159,6 +162,7 @@ impl PathfindingStep {
         direction: Direction,
         switch_direction: Option<(Identifier, Identifier)>,
         found: bool,
+        previous: PathfindingStep,
     ) -> Self {
         Self {
             track,
@@ -166,7 +170,21 @@ impl PathfindingStep {
             direction,
             switch_direction,
             found,
+            previous: Some(Box::new(previous)),
         }
+    }
+
+    /// Check if the step or a previous step is using the given switch
+    fn is_using_switch(&self, switch_id: &String) -> bool {
+        if let Some((switch, _)) = &self.switch_direction {
+            if switch.0 == *switch_id {
+                return true;
+            }
+        }
+
+        self.previous
+            .as_ref()
+            .map_or(false, |p| p.is_using_switch(switch_id))
     }
 }
 
@@ -195,6 +213,7 @@ fn compute_path(
                     step.direction,
                     None,
                     true,
+                    step.clone(),
                 ),
                 into_cost((step.position - input.ending.position).abs()),
             )];
@@ -212,6 +231,15 @@ fn compute_path(
         let mut successors = vec![];
         let endpoint = TrackEndpoint::from_track_and_direction(&step.track, step.direction);
         let switch = graph.get_switch(&endpoint);
+
+        // Check switch not already used
+        if let Some(switch) = switch {
+            let switch_id = &switch.obj_id;
+            if step.is_using_switch(switch_id) {
+                return vec![];
+            }
+        }
+
         for neighbour_group in graph.get_neighbour_groups(&endpoint) {
             let neighbour = graph.get_neighbour(&endpoint, neighbour_group).unwrap();
             if let Some(neighbour_track) = infra_cache.track_sections().get(&neighbour.track.0) {
@@ -228,6 +256,7 @@ fn compute_path(
                         dir,
                         switch.map(|s| (s.obj_id.clone().into(), neighbour_group.unwrap().clone())),
                         false,
+                        step.clone(),
                     ),
                     cost,
                 ));
