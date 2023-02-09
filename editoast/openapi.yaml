@@ -33,7 +33,7 @@ paths:
                 required:
                   - git_describe
 
-  /search:
+  /search/:
     post:
       summary: Generic search endpoint
       requestBody:
@@ -1173,8 +1173,13 @@ components:
           - type: integer
           - type: string
           - $ref: "#/components/schemas/SearchQuery"
-      example: ["and",
-                ["or", 
-                    ["search", ["name"], "mich st"], 
-                    ["search", ["trigram"], null]],
-                ["=", ["infra_id"], 2]]
+      example:
+        [
+          "and",
+          [
+            "or",
+            ["search", ["name"], "mich st"],
+            ["search", ["trigram"], null],
+          ],
+          ["=", ["infra_id"], 2],
+        ]
