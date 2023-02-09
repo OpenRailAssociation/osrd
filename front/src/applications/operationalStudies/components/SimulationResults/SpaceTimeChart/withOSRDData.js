@@ -71,7 +71,7 @@ const withOSRDData = (Component) =>
         positionValues={positionValues}
         dispatch={dispatch}
         simulation={simulation}
-        initialSelectedTrain={selectedTrain}
+        inputSelectedTrain={selectedTrain}
         selectedProjection={selectedProjection}
         timePosition={timePosition}
         onOffsetTimeByDragging={onOffsetTimeByDragging}

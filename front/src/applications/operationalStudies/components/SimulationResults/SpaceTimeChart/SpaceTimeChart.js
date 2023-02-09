@@ -46,7 +46,7 @@ export default function SpaceTimeChart(props) {
     allowancesSettings,
     positionValues,
     selectedProjection,
-    initialSelectedTrain,
+    inputSelectedTrain,
     timePosition,
     simulation,
     simulationIsPlaying,
@@ -72,7 +72,7 @@ export default function SpaceTimeChart(props) {
   const [dragOffset, setDragOffset] = useState(0);
   // TODO: remove setDragEnding without creating a new error in the console
   const [, setDragEnding] = useState(false);
-  const [selectedTrain, setSelectedTrain] = useState(initialSelectedTrain);
+  const [selectedTrain, setSelectedTrain] = useState(inputSelectedTrain);
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(
     initialHeightOfSpaceTimeChart
   );
@@ -155,6 +155,14 @@ export default function SpaceTimeChart(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetChart, rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
+
+  useEffect(() => {
+    // avoid useless re-render if selectedTrain is already correct
+    if (selectedTrain !== inputSelectedTrain) {
+      setSelectedTrain(inputSelectedTrain);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputSelectedTrain]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
@@ -288,7 +296,7 @@ SpaceTimeChart.propTypes = {
   allowancesSettings: PropTypes.any,
   positionValues: PropTypes.any,
   selectedProjection: PropTypes.any.isRequired,
-  initialSelectedTrain: PropTypes.any,
+  inputSelectedTrain: PropTypes.any,
   timePosition: PropTypes.any,
   simulation: PropTypes.any,
   simulationIsPlaying: PropTypes.bool,
@@ -309,7 +317,7 @@ SpaceTimeChart.defaultProps = {
   allowancesSettings: ORSD_GET_SAMPLE_DATA.allowancesSettings,
   dispatch: () => {},
   positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
-  initialSelectedTrain: ORSD_GET_SAMPLE_DATA.selectedTrain,
+  inputSelectedTrain: ORSD_GET_SAMPLE_DATA.selectedTrain,
   timePosition: ORSD_GET_SAMPLE_DATA.timePosition,
   onOffsetTimeByDragging: () => {},
   onSetBaseHeightOfSpaceTimeChart: () => {},
