@@ -5,7 +5,6 @@ import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import {
-  handleWindowResize,
   interpolateOnTime,
   timeShiftTrain,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
@@ -212,8 +211,8 @@ export default function SpaceTimeChart(props) {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
       drawAllTrains(resetChart);
-      handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mustRedraw, rotate, selectedTrain, consolidatedSimulation]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
@@ -222,10 +221,9 @@ export default function SpaceTimeChart(props) {
     const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t);
     if (dataSimulation) {
       // ADN drawAllTrain already traceVerticalLines
-
       drawAllTrains(resetChart, true, newDataSimulation);
-      handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation.trains]);
 
   useEffect(() => {
@@ -257,10 +255,18 @@ export default function SpaceTimeChart(props) {
   }, [positionValues]);
 
   useEffect(() => {
+    let timeOutFunctionId;
+    const timeOutResize = () => {
+      clearTimeout(timeOutFunctionId);
+      timeOutFunctionId = setTimeout(() => dispatch(updateMustRedraw(true)), 500);
+    };
     window.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', timeOutResize);
     return () => {
       window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('resize', timeOutResize);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

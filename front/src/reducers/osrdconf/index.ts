@@ -19,6 +19,9 @@ export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
 export const UPDATE_STDCM_MODE = 'osrdconf/UPDATE_STDCM_MODE';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
+export const UPDATE_PROJECT_ID = 'osrdconf/UPDATE_PROJECT_ID';
+export const UPDATE_STUDY_ID = 'osrdconf/UPDATE_STUDY_ID';
+export const UPDATE_SCENARIO_ID = 'osrdconf/UPDATE_SCENARIO_ID';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
@@ -56,6 +59,9 @@ export const initialState: OsrdConfState = {
   mode: DEFAULT_MODE,
   stdcmMode: DEFAULT_STDCM_MODE,
   labels: [],
+  projectID: undefined,
+  studyID: undefined,
+  scenarioID: undefined,
   infraID: undefined,
   switchTypes: undefined,
   pathfindingID: undefined,
@@ -100,6 +106,15 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         break;
       case UPDATE_LABELS:
         draft.labels = action.labels;
+        break;
+      case UPDATE_PROJECT_ID:
+        draft.projectID = action.projectID;
+        break;
+      case UPDATE_STUDY_ID:
+        draft.studyID = action.studyID;
+        break;
+      case UPDATE_SCENARIO_ID:
+        draft.scenarioID = action.scenarioID;
         break;
       case UPDATE_INFRA_ID:
         draft.infraID = action.infraID;
@@ -270,6 +285,30 @@ export function updateSwitchTypes(switchTypes: any) {
     dispatch({
       type: UPDATE_SWITCH_TYPES,
       switchTypes,
+    });
+  };
+}
+export function updateProjectID(projectID: any) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_PROJECT_ID,
+      projectID,
+    });
+  };
+}
+export function updateStudyID(studyID: any) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_STUDY_ID,
+      studyID,
+    });
+  };
+}
+export function updateScenarioID(scenarioID: any) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_SCENARIO_ID,
+      scenarioID,
     });
   };
 }

@@ -18,8 +18,9 @@ import i18n from 'i18next';
  * Recover the time table for all the trains
  */
 
-export default async function getTimetable() {
-  const { timetableID } = store.getState().osrdconf;
+export default async function getTimetable(givenTimetableID) {
+  const timetableID = givenTimetableID || store.getState().osrdconf.timetableID;
+
   const { selectedProjection, allowancesSettings, displaySimulation } =
     store.getState().osrdsimulation;
   try {
@@ -29,15 +30,21 @@ export default async function getTimetable() {
     }
     const timetable = await get(`${timetableURI}${timetableID}/`);
     const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
-    const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
-    if (!selectedProjection) {
-      store.dispatch(updateSelectedProjection(tempSelectedProjection));
-    }
-    try {
+
+    if (trainSchedulesIDs && trainSchedulesIDs.length > 0) {
+      let selectedProjectionPath;
+      if (!selectedProjection) {
+        const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
+        store.dispatch(updateSelectedProjection(tempSelectedProjection));
+        selectedProjectionPath = tempSelectedProjection.path;
+      } else if (selectedProjection) {
+        selectedProjectionPath = selectedProjection.path;
+      }
+
       const simulationLocal = await get(`${trainscheduleURI}results/`, {
         params: {
           train_ids: trainSchedulesIDs.join(','),
-          path: tempSelectedProjection.path,
+          path: selectedProjectionPath.path,
         },
       });
       simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
@@ -57,17 +64,17 @@ export default async function getTimetable() {
       });
       store.dispatch(updateAllowancesSettings(newAllowancesSettings));
       store.dispatch(updateIsUpdating(false));
-    } catch (e) {
-      store.dispatch(
-        setFailure({
-          name: i18n.t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-          message: `${e.message} `,
-        })
-      );
+    } else {
+      store.dispatch(updateSimulation({ trains: [] }));
       store.dispatch(updateIsUpdating(false));
-      console.error(e);
     }
   } catch (e) {
+    store.dispatch(
+      setFailure({
+        name: i18n.t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
+        message: `${e.message} `,
+      })
+    );
     store.dispatch(updateIsUpdating(false));
     console.error(e);
   }

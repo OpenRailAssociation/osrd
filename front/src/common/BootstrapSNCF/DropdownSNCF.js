@@ -23,8 +23,6 @@ function DropdownSNCF({ titleContent, items = [], type }) {
     </li>
   ));
 
-  // style="position: absolute; transform: translate3d(-47.0333px, 30px, 0px); top: 0px; left: 0px; will-change: transform;"
-
   return (
     <div className="btn-group dropdown">
       <button
@@ -39,15 +37,13 @@ function DropdownSNCF({ titleContent, items = [], type }) {
         />
       </button>
       <div
-        className={`dropdown-menu dropdown-menu-right ${isDropdownShown ? 'show' : null}`}
-        style={{
+        className={`dropdown-menu dropdown-menu-right osrd-dropdown-sncf ${isDropdownShown ? 'show' : null}`}
+        /* style={{
           position: 'absolute',
-          'will-change': 'transform',
-          top: '0px',
+          top: '400px !important',
           left: '0px',
-          transform: 'translate3d(-67px, 45px, 0px)',
           zIndex: 1000,
-        }}
+        }} */
         // eslint-disable-next-line react/no-unknown-property
         x-placement="bottom-end"
       >

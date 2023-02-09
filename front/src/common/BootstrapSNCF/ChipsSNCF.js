@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
-import './ChipsSNCF.scss';
+
+const color2classes = {
+  secondary: 'bg-secondary',
+  purple: 'bg-purple',
+  pink: 'bg-pink',
+  red: 'bg-red',
+  orange: 'bg-orange',
+  yellow: 'bg-yellow text-dark',
+  green: 'bg-green text-dark',
+  teal: 'bg-teal text-dark',
+  cyan: 'bg-cyan',
+  white: 'bg-white text-dark',
+};
 
 export default function ChipsSNCF(props) {
-  const { addLabel, labels, title, removeLabel } = props;
+  const { addTag, tags, title, removeTag, color } = props;
   const [chipInputValue, setChipInputValue] = useState('');
 
   const chip = (label, idx) => (
     <div role="list" key={nextId()}>
       <div className="chips-group" role="listitem">
-        <span className="chips chips-label pr-1">{label}</span>
+        <span className={`chips chips-label pr-1 ${color2classes[color]}`}>{label}</span>
         <button
           type="button"
-          className="chips chips-btn chips-only-icon"
-          onClick={() => removeLabel(idx)}
+          className={`chips chips-btn chips-only-icon ${color2classes[color]}`}
+          onClick={() => removeTag(idx)}
         >
           <i className="icons-close" aria-hidden="true" />
         </button>
@@ -24,7 +36,7 @@ export default function ChipsSNCF(props) {
 
   const validateInput = (e) => {
     if (e.key === 'Enter') {
-      addLabel(e.target.value);
+      addTag(e.target.value);
       setChipInputValue('');
     }
   };
@@ -33,12 +45,12 @@ export default function ChipsSNCF(props) {
   return (
     <>
       {title ? (
-        <label className="font-weight-medium mb-1 small" htmlFor={chipsID}>
+        <label className="font-weight-medium mb-2" htmlFor={chipsID}>
           {title}
         </label>
       ) : null}
       <div className="form-control-container form-chips-container">
-        {labels.map((label, idx) => chip(label, idx))}
+        {tags.map((label, idx) => chip(label, idx))}
         <input
           data-role="typewriter"
           type="text"
@@ -55,10 +67,12 @@ export default function ChipsSNCF(props) {
 
 ChipsSNCF.propTypes = {
   title: PropTypes.string,
-  labels: PropTypes.array.isRequired,
-  removeLabel: PropTypes.func.isRequired,
-  addLabel: PropTypes.func.isRequired,
+  tags: PropTypes.array.isRequired,
+  removeTag: PropTypes.func.isRequired,
+  addTag: PropTypes.func.isRequired,
+  color: PropTypes.string,
 };
 ChipsSNCF.defaultProps = {
   title: null,
+  color: 'primary',
 };

@@ -138,7 +138,7 @@ export default function Timetable(props) {
       setTrainsList(
         departureArrivalTimes.map((train) => ({
           ...train,
-          isFiltered: !train.name.includes(debouncedTerm),
+          isFiltered: !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()),
         }))
       );
     } else {
@@ -150,7 +150,11 @@ export default function Timetable(props) {
   return (
     <div className="scenario-timetable">
       <div className="scenario-timetable-toolbar">
-        <div className="">{t('trainCount', { count: trainsList ? trainsList.length : 0 })}</div>
+        <div className="">
+          {t('trainCount', {
+            count: trainsList ? trainsList.filter((train) => !train.isFiltered).length : 0,
+          })}
+        </div>
         <div className="flex-grow-1">
           <InputSNCF
             type="text"
@@ -176,21 +180,23 @@ export default function Timetable(props) {
         </button>
       </div>
       <div className="scenario-timetable-trains">
-        {trainsList
-          ? trainsList.map((train, idx) => (
+        {trainsList &&
+          selectedProjection &&
+          trainsList.map((train, idx) =>
+            !train.isFiltered ? (
               <TimetableTrainCard
                 train={train}
                 key={nextId()}
-                selectedTrain={selectedTrain === idx}
-                selectedProjection={selectedProjection}
+                isSelected={selectedTrain === idx}
+                projectionPathIsUsed={selectedProjection.id === train.id}
                 idx={idx}
                 changeSelectedTrain={changeSelectedTrain}
                 deleteTrain={deleteTrain}
                 duplicateTrain={duplicateTrain}
                 selectPathProjection={selectPathProjection}
               />
-            ))
-          : null}
+            ) : null
+          )}
       </div>
     </div>
   );

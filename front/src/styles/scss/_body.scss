@@ -193,6 +193,17 @@ z-index: 1051 !important;
   }
 }
 
+.btn-map-infras-blinking {
+  @keyframes blinking {
+    from {background-color: var(--orange); color: var(--white);}
+    to {background-color: var(--white); color: var(--orange);}
+  }
+  animation-name: blinking;
+  animation-duration: 0.5s;
+  animation-direction: alternate;
+  animation-iteration-count: infinite;
+}
+
 .maplibregl-map {
   font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';

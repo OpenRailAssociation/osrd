@@ -4,11 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/customget/components/enableInteractivity';
-import {
-  handleWindowResize,
-  interpolateOnTime,
-  timeShiftTrain,
-} from 'applications/customget/components/ChartHelpers';
+import { interpolateOnTime, timeShiftTrain } from 'applications/customget/components/ChartHelpers';
 import {
   updateChart,
   updateContextMenu,
@@ -58,7 +54,6 @@ export default function SpaceTimeChart(props) {
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
-  const [isResizeActive, setResizeActive] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [resetChart, setResetChart] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -196,7 +191,6 @@ export default function SpaceTimeChart(props) {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
       drawAllTrains(resetChart);
-      handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mustRedraw, rotate, selectedTrain, consolidatedSimulation]);
@@ -209,7 +203,6 @@ export default function SpaceTimeChart(props) {
       // ADN drawAllTrain already traceVerticalLines
 
       drawAllTrains(resetChart, true, newDataSimulation);
-      handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation.trains]);
@@ -245,10 +238,18 @@ export default function SpaceTimeChart(props) {
   }, [positionValues]);
 
   useEffect(() => {
+    let timeOutFunctionId;
+    const timeOutResize = () => {
+      clearTimeout(timeOutFunctionId);
+      timeOutFunctionId = setTimeout(() => dispatch(updateMustRedraw(true)), 500);
+    };
     window.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', timeOutResize);
     return () => {
       window.removeEventListener('keydown', handleKey);
+      window.removeEventListener('resize', timeOutResize);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

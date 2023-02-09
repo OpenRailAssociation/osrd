@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Set, Tuple
 
 import requests
+from run_integration_tests import Scenario
 
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 15
@@ -60,7 +61,14 @@ class InfraGraph:
         self.links[b].append(a)
 
 
-def make_error(error_type: ErrorType, code: int, error: str, infra_name: str, path_payload: Dict, **kwargs):
+def make_error(
+    error_type: ErrorType,
+    code: int,
+    error: str,
+    infra_name: str,
+    path_payload: Dict,
+    **kwargs,
+):
     raise FailedTest(
         {
             "error_type": error_type.value,
@@ -73,7 +81,7 @@ def make_error(error_type: ErrorType, code: int, error: str, infra_name: str, pa
     )
 
 
-def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
+def run_test(infra: InfraGraph, base_url: str, scenario: Scenario, infra_name: str):
     """
     Runs a single random test
     :param infra_name: name of the infra, for better reporting
@@ -84,26 +92,41 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
     rolling_stock = get_random_rolling_stock(base_url)
     path, path_length = make_valid_path(infra)
     if random.randint(0, 1) == 0:
-        test_new_train(base_url, infra_id, rolling_stock, path_length, infra_name, path)
+        test_new_train(base_url, scenario, rolling_stock, path_length, infra_name, path)
     else:
-        test_stdcm(base_url, infra_id, rolling_stock, infra_name, path)
+        test_stdcm(base_url, scenario, rolling_stock, infra_name, path)
 
 
 def test_new_train(
-    base_url: str, infra_id: int, rolling_stock: int, path_length: float, infra_name: str, path: List[Tuple[str, float]]
+    base_url: str,
+    scenario: Scenario,
+    rolling_stock: int,
+    path_length: float,
+    infra_name: str,
+    path: List[Tuple[str, float]],
 ):
     """
     Try to run a pathfinding, then create a train using the given path.
     Ignores impossible simulation (40x errors) on the second step.
     """
     print("testing new train")
-    path_payload = make_payload_path(infra_id, path)
+    path_payload = make_payload_path(scenario.infra, path)
     r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        make_error(ErrorType.PATHFINDING, r.status_code, r.content.decode("utf-8"), infra_name, path_payload)
+        make_error(
+            ErrorType.PATHFINDING,
+            r.status_code,
+            r.content.decode("utf-8"),
+            infra_name,
+            path_payload,
+        )
     path_id = r.json()["id"]
-    schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock, path_length)
-    r = requests.post(base_url + "train_schedule/standalone_simulation/", json=schedule_payload, timeout=TIMEOUT)
+    schedule_payload = make_payload_schedule(base_url, scenario, path_id, rolling_stock, path_length)
+    r = requests.post(
+        base_url + "train_schedule/standalone_simulation/",
+        json=schedule_payload,
+        timeout=TIMEOUT,
+    )
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4:
             print("ignore: invalid user input")
@@ -136,13 +159,19 @@ def test_new_train(
     print("test PASSED")
 
 
-def test_stdcm(base_url: str, infra_id: int, rolling_stock: int, infra_name: str, path: List[Tuple[str, float]]):
+def test_stdcm(
+    base_url: str,
+    scenario: Scenario,
+    rolling_stock: int,
+    infra_name: str,
+    path: List[Tuple[str, float]],
+):
     """
     Try to run an STDCM search on the given path.
     Not finding a path isn't considered as an error, we only look for 500 codes here.
     """
     print("testing stdcm")
-    stdcm_payload = make_stdcm_payload(base_url, infra_id, path, rolling_stock)
+    stdcm_payload = make_stdcm_payload(base_url, scenario, path, rolling_stock)
     r = requests.post(base_url + "stdcm/", json=stdcm_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4:
@@ -159,16 +188,16 @@ def test_stdcm(base_url: str, infra_id: int, rolling_stock: int, infra_name: str
     print("test PASSED")
 
 
-def make_stdcm_payload(base_url: str, infra_id: int, path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
+def make_stdcm_payload(base_url: str, scenario: Scenario, path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
     """
     Creates a payload for an STDCM request
     """
     start_edge, start_offset = path[0]
     last_edge, last_offset = path[1]
     return {
-        "infra": infra_id,
+        "infra": scenario.infra,
         "rolling_stock": rolling_stock,
-        "timetable": get_schedule(base_url, infra_id),
+        "timetable": scenario.timetable,
         "start_time": 0,
         "start_points": [
             {
@@ -186,7 +215,12 @@ def make_stdcm_payload(base_url: str, infra_id: int, path: List[Tuple[str, float
 
 
 def run(
-    base_url: str, infra_id: int, n_test: int = 1000, log_folder: Path = None, infra_name: str = None, seed: int = 0
+    base_url: str,
+    scenario: Scenario,
+    n_test: int = 1000,
+    log_folder: Path = None,
+    infra_name: str = None,
+    seed: int = 0,
 ):
     """
     Runs every test
@@ -197,7 +231,7 @@ def run(
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
     """
-    infra_graph = make_graph(base_url, infra_id)
+    infra_graph = make_graph(base_url, scenario.infra)
     for i in range(n_test):
         seed += 1
         print("seed:", seed)
@@ -205,7 +239,7 @@ def run(
         time.sleep(0.1)
 
         try:
-            run_test(infra_graph, base_url, infra_id, infra_name)
+            run_test(infra_graph, base_url, scenario, infra_name)
         except Exception as e:
             if log_folder is None:
                 raise e
@@ -378,7 +412,10 @@ def convert_stop(stop: Tuple[str, float]) -> Dict:
     """
     track_section, offset = stop
     duration = 0 if random.randint(0, 1) == 0 else random.random() * 1000
-    return {"duration": duration, "waypoints": [{"track_section": track_section, "offset": offset}]}
+    return {
+        "duration": duration,
+        "waypoints": [{"track_section": track_section, "offset": offset}],
+    }
 
 
 def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
@@ -388,41 +425,21 @@ def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
     :param path: List of steps
     :return: Dict
     """
-    path_payload = {"infra": infra, "name": "foo", "steps": [convert_stop(stop) for stop in path]}
+    path_payload = {
+        "infra": infra,
+        "name": "foo",
+        "steps": [convert_stop(stop) for stop in path],
+    }
     path_payload["steps"][-1]["duration"] = 1
     return path_payload
 
 
-def create_schedule(base_url: str, infra_id: int):
-    """
-    Creates a schedule linked to the given infra
-    :param base_url: api url
-    :param infra_id: infra id
-    """
-    timetable_payload = {"name": "foo", "infra": infra_id}
-    r = requests.post(base_url + "timetable/", json=timetable_payload, timeout=TIMEOUT)
+def create_scenario(base_url, infra_id):
+    scenario_payload = {"name": "foo", "infra": infra_id}
+    r = requests.post(base_url + "projects/1/studies/1/scenarios/", json=scenario_payload)
     if r.status_code // 100 != 2:
-        err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
+        err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(scenario_payload)}"
         raise RuntimeError(err)
-
-
-def get_schedule(base_url: str, infra: int) -> str:
-    """
-    Get a schedule linked to the given infra
-    :param base_url: Api URL
-    :param infra: infra id
-    :return: schedule id
-    """
-    r = requests.get(base_url + "timetable/", timeout=TIMEOUT)
-    if r.status_code // 100 != 2:
-        raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
-    schedules = r.json()["results"]
-    for schedule in schedules:
-        if schedule["infra"] == infra:
-            return schedule["id"]
-    # the schedule doesn't exist yet
-    create_schedule(base_url, infra)
-    return get_schedule(base_url, infra)
 
 
 def make_random_allowance_value(allowance_length) -> Dict:
@@ -490,7 +507,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
     return res
 
 
-def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: int, path_length: float) -> Dict:
+def make_payload_schedule(base_url: str, scenario: Scenario, path: int, rolling_stock: int, path_length: float) -> Dict:
     """
     Makes the payload for the simulation
     :param base_url: Api URL
@@ -501,7 +518,7 @@ def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: i
     :return: payload
     """
     return {
-        "timetable": get_schedule(base_url, infra),
+        "timetable": scenario.timetable,
         "path": path,
         "schedules": [
             {

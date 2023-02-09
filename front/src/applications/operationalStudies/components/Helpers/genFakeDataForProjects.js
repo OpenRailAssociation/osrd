@@ -4,6 +4,7 @@ faker.setLocale('fr');
 
 function chooseRandomIMG() {
   // return `https://placebacon.com/400/300?image=${Math.floor(Math.random() * 9)}`;
+  // return `http://localhost/place-osrd-team-picture/?${Math.random()}`;
   return `https://placeredpanda.osrd.fr/?${Math.random()}`;
   /*
   const x = Math.floor(Math.random() * 400) + 640;
@@ -153,4 +154,11 @@ export function scenarioJSON() {
     lastModifiedDate: faker.date.recent(10),
   };
   return json;
+}
+
+export function getRandomImage(seed) {
+  const urlSeed = seed ? `/?seed=${seed}` : `/?${Math.random()}`;
+  // const list = [`http://localhost/place-train${urlSeed}`]; // `https://placetiger.osrd.fr${urlSeed}`, `https://placeredpanda.osrd.fr${urlSeed}`];
+  const list = [`https://placeredpanda.osrd.fr${urlSeed}`];
+  return list[Math.floor(Math.random() * list.length)];
 }

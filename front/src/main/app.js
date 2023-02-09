@@ -18,6 +18,10 @@ import { ModalProvider, ModalSNCF } from 'common/BootstrapSNCF/ModalSNCF/ModalPr
 import Loader from 'common/Loader';
 import history from 'main/history';
 import Home from 'main/home';
+import { NotificationsState } from 'common/Notifications';
+import Project from 'applications/operationalStudies/views/Project';
+import Study from 'applications/operationalStudies/views/Study';
+import Scenario from 'applications/operationalStudies/views/Scenario';
 
 export default function App() {
   const user = useSelector((state) => state.user);
@@ -58,8 +62,14 @@ export default function App() {
         <HistoryRouter history={history}>
           <ModalProvider>
             <ModalSNCF />
+            <NotificationsState />
             <Routes>
-              <Route path="/operational-studies/*" element={<HomeOperationalStudies />} />
+              <Route path="/operational-studies">
+                <Route path="/operational-studies" element={<HomeOperationalStudies />} />
+                <Route path="/operational-studies/project" element={<Project />} />
+                <Route path="/operational-studies/study" element={<Study />} />
+                <Route path="/operational-studies/scenario" element={<Scenario />} />
+              </Route>
               <Route path="/map/*" element={<HomeMap />} />
               <Route path="/editor/*" element={<HomeEditor />} />
               <Route path="/stdcm/*" element={<HomeStdcm />} />

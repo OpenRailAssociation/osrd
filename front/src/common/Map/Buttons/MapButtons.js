@@ -15,7 +15,7 @@ import MapKey from 'common/Map/MapKey';
 import ButtonMapInfras from './ButtonMapInfras';
 
 export default function MapButtons(props) {
-  const { resetPitchBearing } = props;
+  const { resetPitchBearing, withInfraButton } = props;
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showMapKey, setShowMapKey] = useState(false);
@@ -28,7 +28,7 @@ export default function MapButtons(props) {
         <ButtonMapKey toggleMapKey={() => setShowMapKey(!showMapKey)} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
         <ButtonFullscreen />
-        <ButtonMapInfras />
+        {withInfraButton && <ButtonMapInfras />}
       </div>
       <MapSearch active={showSearch} toggleMapSearch={() => setShowSearch(!showSearch)} />
       <MapSettings active={showSettings} toggleMapSettings={() => setShowSettings(!showSettings)} />
@@ -37,6 +37,11 @@ export default function MapButtons(props) {
   );
 }
 
+MapButtons.defaultProps = {
+  withInfraButton: false,
+};
+
 MapButtons.propTypes = {
   resetPitchBearing: PropTypes.func.isRequired,
+  withInfraButton: PropTypes.bool,
 };

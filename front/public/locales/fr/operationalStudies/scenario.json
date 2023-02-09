@@ -1,11 +1,26 @@
 {
   "copy": "copie",
   "filterPlaceholder": "Filtre, étiquettes",
+  "modifyScenario": "Modifier le scénario",
   "isUpdating": "Mise à jour...",
   "timetable": {
     "trainDeleted": "Le train {{name}} a bien été supprimé."
   },
   "trainCount_zero": "Aucun train",
   "trainCount_one": "1 train",
-  "trainCount_other": "{{count}} trains"
+  "trainCount_other": "{{count}} trains",
+  "scenarioCreationTitle": "Créer un scénario",
+  "scenarioName": "Nom du scénario",
+  "scenarioDescription": "Description",
+  "scenarioTags": "Étiquettes",
+  "scenarioCancel": "Annuler",
+  "scenarioCreateButton": "Créer le scénario",
+  "scenarioModificationTitle": "Modifier le scénario",
+  "scenarioDeleted": "Suppression réussie !",
+  "scenarioDeletedDetails": "Le scénario {{ name }} a bien été supprimé.",
+  "scenarioUpdated": "Mise à jour réussie !",
+  "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
+  "scenarioModifyButton": "Modifier",
+  "scenarioDeleteButton": "Supprimer",
+  "scenarioNameMissing": "Vous devez renseigner un nom pour le scénario"
 }

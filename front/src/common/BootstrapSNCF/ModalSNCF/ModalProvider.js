@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 
 const ModalContext = createContext({
   isModalOpen: false,
@@ -16,11 +16,11 @@ function ModalProvider({ children }) {
   const [optionalClasses, setOptionalClasses] = useState('');
   const [isVisible, setIsVisible] = useState(false);
 
-  const openModal = (content, size, optionalClasses = '') => {
+  const openModal = (content, sizeSetting = undefined, optionalClassesSetting = '') => {
     setModalContent(content);
     setIsModalOpen(true);
-    setSize(size);
-    setOptionalClasses(optionalClasses);
+    setSize(sizeSetting);
+    setOptionalClasses(optionalClassesSetting);
     document.body.classList.add('modal-open');
     setTimeout(() => setIsVisible(true), 0);
   };
@@ -36,7 +36,16 @@ function ModalProvider({ children }) {
 
   return (
     <ModalContext.Provider
-      value={{ isModalOpen, modalContent, openModal, closeModal, optionalClasses, size, isVisible }}
+      // eslint-disable-next-line react/jsx-no-constructed-context-values
+      value={{
+        isModalOpen,
+        modalContent,
+        openModal,
+        closeModal,
+        optionalClasses,
+        size,
+        isVisible,
+      }}
     >
       {children}
       {isModalOpen && modalContent && (
@@ -60,7 +69,7 @@ function ModalSNCF() {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
+    return function cleanup() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isModalOpen, closeModal]);

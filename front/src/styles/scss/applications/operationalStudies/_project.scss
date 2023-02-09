@@ -4,6 +4,7 @@
     position: relative;
     gap: 1rem;
     margin-bottom: .5rem;
+    min-height: 15rem;
     .project-details-title-img {
       position: absolute;
       overflow: hidden;
@@ -26,9 +27,34 @@
     }
     .project-details-title-content {
       .project-details-title-name {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         color: var(--purple);
         font-size: 2rem;
         font-weight: 500;
+        .project-details-title-modify-button {
+          background-color: transparent;
+          border: none;
+          color: var(--purple);
+          transition: 0.2s;
+          padding: 0.25rem 1rem;
+          font-size: 1.5rem;
+          border-radius: 4px;
+          .project-details-title-modify-button-text {
+            transition: opacity 0.2s;
+            opacity: 0;
+            font-size: 1.25rem;
+            margin-right: 1rem;
+          }
+          &:hover {
+            background-color: var(--purple);
+            color: var(--white);
+            .project-details-title-modify-button-text {
+              opacity: 1;
+            }
+          }
+        }
       }
       h3 {
         color: var(--coolgray9);
@@ -118,10 +144,12 @@
 .studies-list {
   overflow: auto;
   max-height: 50vh;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
   .studies-list-card {
     position: relative;
     border-radius: 4px;
-    margin-bottom: 1rem;
+    margin: 0 0.5rem 1rem;
     transition: .4s;
     background-color: var(--white);
     border: 2px solid var(--coolgray3);
@@ -166,6 +194,7 @@
       padding: .5rem;
       margin: .5rem .5rem 0;
       border-radius: 4px;
+      min-height: 3.5rem;
       .studies-list-card-financials-infos {
         display: flex;
         gap: 1rem;
@@ -203,7 +232,7 @@
     }
     .studies-list-card-footer {  
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
       .studies-list-card-tags {    
         display: flex;
@@ -211,7 +240,7 @@
         flex-wrap: wrap;
         gap: .25rem;
         padding: .5rem;
-        height: 2.25rem;
+        min-height: 2.25rem;
         overflow: auto;
         .studies-list-card-tags-tag {   
           font-size: .9rem;   
@@ -226,15 +255,20 @@
           }
         }
       }
-      .studies-list-card-date {
+      .studies-list-card-scenarios-count, .studies-list-card-date {
         display: flex;
-        align-items: center;
+        align-items: baseline;
+        height: 1rem;
+        white-space: nowrap;
         padding: 0 .5rem;
         font-size: .7rem;
         text-transform: uppercase;
         text-align: right;
         font-weight: 500;
         color: var(--coolgray9);
+        svg {
+          margin-bottom: 0.15rem;
+        }
       }
     }
   }

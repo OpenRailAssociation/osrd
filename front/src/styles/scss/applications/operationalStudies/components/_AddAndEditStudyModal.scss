@@ -1,0 +1,17 @@
+.study-edition-modal {
+  .study-edition-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    img {
+      height: 2rem;
+    }
+  }
+  .study-edition-modal-description {
+    margin-bottom: 1rem;
+    textarea {
+      min-height: auto;
+    }
+  }
+}

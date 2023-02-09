@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { NotificationsState } from 'common/Notifications';
 import { useTranslation } from 'react-i18next';
 import { MdMoreTime } from 'react-icons/md';
 import logo from 'assets/pictures/home/opendata.svg';
@@ -28,7 +27,6 @@ export default function HomeOpenData() {
         <Route path="/import" element={<OpenDataImport />} />
         <Route path="" element={<Navigate to="/opendata/import" replace />} />
       </Routes>
-      <NotificationsState />
     </>
   );
 }

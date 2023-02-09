@@ -15,14 +15,10 @@ type trainType = {
   speed_limit_composition: string;
   isFiltered: boolean;
 };
-type selectedProjectionType = {
-  id: number;
-  path: number;
-};
 type Props = {
   train: trainType;
-  selectedTrain: boolean;
-  selectedProjection: selectedProjectionType;
+  isSelected: boolean;
+  projectionPathIsUsed: boolean;
   idx: number;
   changeSelectedTrain: (idx: number) => void;
   deleteTrain: (train: trainType) => void;
@@ -32,8 +28,8 @@ type Props = {
 
 export default function TimetableTrainCard({
   train,
-  selectedTrain,
-  selectedProjection,
+  isSelected,
+  projectionPathIsUsed,
   idx,
   changeSelectedTrain,
   deleteTrain,
@@ -42,8 +38,8 @@ export default function TimetableTrainCard({
 }: Props) {
   const { t } = useTranslation(['simulation']);
 
-  return !train.isFiltered ? (
-    <div className={`scenario-timetable-train ${selectedTrain ? 'selected' : ''}`}>
+  return (
+    <div className={`scenario-timetable-train ${isSelected ? 'selected' : ''}`}>
       <div
         className="scenario-timetable-train-container"
         role="button"
@@ -53,8 +49,7 @@ export default function TimetableTrainCard({
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
             <div className="scenario-timetable-train-idx">{idx + 1}</div>
-
-            {selectedProjection?.id === train?.id && (
+            {projectionPathIsUsed && (
               <span className="mr-1">
                 <GiPathDistance />
               </span>
@@ -109,5 +104,5 @@ export default function TimetableTrainCard({
         </button>
       </div>
     </div>
-  ) : null;
+  );
 }

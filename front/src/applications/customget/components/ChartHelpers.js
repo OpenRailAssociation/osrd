@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 
 import { sec2time } from 'utils/timeManipulation';
-import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
@@ -77,28 +76,6 @@ export const makeStairCase = (data) => {
     }
   });
   return newData;
-};
-export const handleWindowResize = (
-  chartID,
-  dispatch,
-  drawTrain,
-  isResizeActive,
-  setResizeActive
-) => {
-  if (!isResizeActive) {
-    let timeOutFunctionId;
-    const resizeDrawTrain = () => {
-      d3.select(`#${chartID}`).remove();
-      dispatch(updateMustRedraw(true));
-      drawTrain();
-    };
-    const timeOutResize = () => {
-      clearTimeout(timeOutFunctionId);
-      timeOutFunctionId = setTimeout(resizeDrawTrain, 500);
-    };
-    window.addEventListener('resize', timeOutResize);
-    setResizeActive(true);
-  }
 };
 
 // Time shift a train

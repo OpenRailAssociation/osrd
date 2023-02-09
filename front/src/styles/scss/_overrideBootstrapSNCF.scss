@@ -1,0 +1,81 @@
+
+/*
+*
+*   SELECT
+*
+*/
+.select-improved {
+  .select-menu {
+    z-index: 3 !important;
+  }
+  .form-control {
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+
+/*
+*
+*   DROPDOWN
+*
+*/
+.dropdown-menu.dropdown-menu-right.osrd-dropdown-sncf.show {
+  top: 3rem !important;
+  right: 0;
+}
+
+/*
+*
+*   MODALS
+*
+*/
+.modal-header.modal-header-border-bottom {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  div {
+    width: 100%;
+    border-top: 1px solid var(--coolgray3);
+  }
+}
+
+
+/*
+*
+*   CHIPS
+*
+*/
+.form-control-container .chips-input {
+  width: auto !important;
+  flex-grow: 1;
+  min-height: 2rem;
+  line-height: 1;
+}
+.chips.chips-label {
+  font-size: .9rem;
+  line-height: 1.2;
+  height: 2rem;
+}
+button.chips.chips-btn {
+  min-height: 2rem;
+  &:hover {
+    background-color: var(--secondary);
+    color: var(--white) !important;
+  }
+}
+.chips {
+  border: none !important;
+}
+
+/*
+*
+*   BLOCKQUOTE
+*
+*/
+blockquote {
+  font-size: 0.9rem;
+  border-left: 3px solid var(--secondary);
+  background-color: var(--coolgray1);
+  padding-left: 0.5rem;
+}

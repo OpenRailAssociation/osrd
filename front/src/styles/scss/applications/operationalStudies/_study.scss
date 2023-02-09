@@ -45,9 +45,33 @@
   }
   .study-details-name {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: 2rem;
     font-weight: 500;
     color: var(--primary);
+    .study-details-modify-button {
+      background-color: transparent;
+      border: none;
+      color: var(--primary);
+      transition: 0.2s;
+      padding: 0.25rem 1rem;
+      font-size: 1.5rem;
+      border-radius: 4px;
+      .study-details-modify-button-text {
+        transition: opacity 0.2s;
+        opacity: 0;
+        font-size: 1.25rem;
+        margin-right: 1rem;
+      }
+      &:hover {
+        background-color: var(--primary);
+        color: var(--white);
+        .study-details-modify-button-text {
+          opacity: 1;
+        }
+      }
+    }
   }
   .study-details-type {
     color: var(--secondary);
@@ -64,6 +88,7 @@
     .study-details-state-step {
       display: inline-block;
       position: relative;
+      cursor: pointer;
       &:not(:first-child) {
         margin-left: 3rem;
         &::before {
@@ -87,6 +112,7 @@
         border-radius: 1rem;
         width: 1.5rem;
         height: 1.5rem;
+        transition: 0.2s;
       }
       .study-details-state-step-label {
         position: absolute;
@@ -101,8 +127,9 @@
         padding-left: 1.5em;
         text-indent:-1.5em;
         color: var(--coolgray7);
+        transition: 0.2s;
       }
-      &.done {      
+      &.done {
         .study-details-state-step-number {
           background-color: var(--coolgray11);
           color: var(--coolgray1);
@@ -113,6 +140,15 @@
         .study-details-state-step-label {
           font-weight: 500;
           color: var(--secondary);
+        }
+      }
+      &:hover {
+        .study-details-state-step-number {
+          background-color: var(--primary);
+          color: var(--white);
+        }
+        .study-details-state-step-label {
+          color: var(--primary);
         }
       }
     }
@@ -234,59 +270,95 @@
   margin-top: 2rem;
 }
 
-.scenarios-list-card {
-  border-radius: 4px;
-  background-color: var(--white);
-  margin-bottom: 1rem;
-  border: 2px solid var(--coolgray3);
-  &:hover, &:focus, &:active {
-    border-color: var(--coolgray11);
-    .scenarios-list-card-name {
-      color: var(--coolgray3);
-      background-color: var(--coolgray11);
-    }
-    button {
-      opacity: 1 !important;
-    }
-  }
-  button {
-    transition: opacity .4s;
-    opacity: 0;
-    margin-left: auto;
-  }
-  .scenarios-list-card-name {
-    display: flex;
-    align-items: center;
-    color: var(--coolgray11);
-    background-color: var(--coolgray3);
-    padding: .25rem .25rem .25rem .5rem;
-    font-size: 1.1rem;
-    transition: .4s;
-  }
-  .scenarios-list-card-description {
-    padding: .5rem;
-    font-size: .9rem;
-    height: 6rem;
-    overflow: auto;
-  }
-  .scenarios-list-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    .scenarios-list-card-infra {
-      padding: .25rem .5rem;
-      font-size: .8rem;
-      img {
-        height: 1rem;
-        margin-right: .5rem;
+.scenarios-list {
+  overflow: auto;
+  max-height: 50vh;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+  .scenarios-list-card {
+    border-radius: 4px;
+    background-color: var(--white);
+    margin: 0 0.5rem 1rem;
+    border: 2px solid var(--coolgray3);
+    transition: border-color 0.4s;
+    &:hover, &:focus, &:active {
+      border-color: var(--coolgray11);
+      .scenarios-list-card-name {
+        color: var(--coolgray3);
+        background-color: var(--coolgray11);
+      }
+      button {
+        opacity: 1 !important;
       }
     }
-    .scenarios-list-card-date {
-      color: var(--coolgray9);
-      font-size: .6rem;
-      text-transform: uppercase;
-      text-align: right;
-      padding: .25rem .5rem;
+    button {
+      transition: opacity .4s;
+      opacity: 0;
+      margin-left: auto;
+    }
+    .scenarios-list-card-name {
+      display: flex;
+      align-items: center;
+      color: var(--coolgray11);
+      background-color: var(--coolgray3);
+      padding: .25rem .25rem .25rem .5rem;
+      font-size: 1.1rem;
+      transition: .4s;
+    }
+    .scenarios-list-card-description {
+      padding: .5rem;
+      font-size: .9rem;
+      height: 6rem;
+      overflow: auto;
+    }
+    .scenarios-list-card-tags {    
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .25rem;
+      padding: 0 0.5rem;
+      height: 1.5rem;
+      overflow: auto;
+      .scenarios-list-card-tags-tag {   
+        font-size: .8rem;
+        font-weight: 500;
+        color: var(--secondary);
+        background-color: var(--teal);
+        border-radius: 4px;
+        padding: 0 0.25rem;
+        transition: 0.2s;
+        cursor: pointer;
+        &:hover {
+          opacity: 0.65;
+        }
+      }
+    }
+    .scenarios-list-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .scenarios-list-card-infra {
+        padding: .25rem .5rem;
+        font-size: .8rem;
+        img {
+          height: 1rem;
+          margin-right: .5rem;
+        }
+      }
+      .scenarios-list-card-trains-count, .scenarios-list-card-date {
+        display: flex;
+        align-items: baseline;
+        height: 1rem;
+        white-space: nowrap;
+        color: var(--coolgray9);
+        font-size: .6rem;
+        text-transform: uppercase;
+        text-align: right;
+        padding: .25rem .5rem;
+        svg {
+          margin-bottom: 0.15rem;
+        }
+      }
     }
   }
 }
