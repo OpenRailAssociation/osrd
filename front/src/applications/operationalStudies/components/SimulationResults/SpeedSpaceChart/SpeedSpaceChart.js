@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
@@ -72,6 +72,62 @@ const CHART_MIN_HEIGHT = 250;
     () => prepareData(simulation, selectedTrain, keyValues),
     [simulation, selectedTrain, keyValues]
   );
+
+  // draw the train
+  const createChartAndTrain = useCallback(() => {
+    const localChart = createChart(
+      CHART_ID,
+      chart,
+      resetChart,
+      dataSimulation,
+      rotate,
+      keyValues,
+      heightOfSpeedSpaceChart,
+      ref,
+      dispatch,
+      setResetChart
+    );
+    setChart(localChart);
+    drawTrain(
+      LIST_VALUES_NAME_SPEED_SPACE,
+      simulation,
+      selectedTrain,
+      dataSimulation,
+      keyValues,
+      positionValues,
+      rotate,
+      localSettings,
+      mustRedraw,
+      setChart,
+      setYPosition,
+      setZoomLevel,
+      yPosition,
+      dispatch,
+      zoomLevel,
+      CHART_ID,
+      localChart,
+      resetChart,
+      heightOfSpeedSpaceChart,
+      ref,
+      setResetChart,
+      true
+    );
+  }, [
+    chart,
+    dataSimulation,
+    dispatch,
+    heightOfSpeedSpaceChart,
+    keyValues,
+    localSettings,
+    mustRedraw,
+    positionValues,
+    resetChart,
+    rotate,
+    selectedTrain,
+    simulation,
+    yPosition,
+    zoomLevel,
+  ]);
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
@@ -151,33 +207,11 @@ const CHART_MIN_HEIGHT = 250;
     );
   }, [chart]);
 
-  // redraw the trains is necessary
+  // redraw the train if necessary
   useEffect(() => {
-    drawTrain(
-      LIST_VALUES_NAME_SPEED_SPACE,
-      simulation,
-      selectedTrain,
-      dataSimulation,
-      keyValues,
-      positionValues,
-      rotate,
-      localSettings,
-      mustRedraw,
-      setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      dispatch,
-      zoomLevel,
-      CHART_ID,
-      chart,
-      resetChart,
-      heightOfSpeedSpaceChart,
-      ref,
-      setResetChart,
-      true
-    );
-  }, [chart, mustRedraw, rotate, consolidatedSimulation, localSettings]);
+    createChartAndTrain();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mustRedraw, rotate, consolidatedSimulation, localSettings]);
 
   // draw or redraw the position line indictator when usefull
   useEffect(() => {
@@ -209,6 +243,12 @@ const CHART_MIN_HEIGHT = 250;
 
   // reset chart
   useEffect(() => resetChartToggle(), [resetChart]);
+
+  // draw the first chart
+  useEffect(() => {
+    createChartAndTrain();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Rnd
