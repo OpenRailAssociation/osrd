@@ -169,7 +169,7 @@ public class STDCMEdgeBuilder {
                 prevNode,
                 route.getInfraRoute().getLength() - envelope.getEndPos(),
                 (int) (actualStartTime / 60),
-                graph.getStandardAllowanceSpeedRatio(envelope, route)
+                graph.getStandardAllowanceSpeedRatio(envelope)
         );
         if (res.maximumAddedDelayAfter() < 0)
             res = graph.allowanceManager.tryEngineeringAllowance(res);
