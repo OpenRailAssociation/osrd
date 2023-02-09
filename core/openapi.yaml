@@ -279,20 +279,20 @@ components:
           minimum: 0
     RollingStock:
       required:
-        - id
+        - name
         - length
         - mass
         - inertia_coefficient
         - rolling_resistance
-        - capabilities
         - max_speed
         - startup_time
         - startup_acceleration
         - comfort_acceleration
-        - timetable_gamma
-        - tractive_effort_curve
+        - gamma
+        - loading_gauge
+        - effort_curves
       properties:
-        id:
+        name:
           type: string
         length:
           type: number
@@ -309,24 +309,6 @@ components:
           format: double
           minimum: 0
           example: 1.05
-        rolling_resistance:
-          oneOf:
-            - $ref: "#/components/schemas/RollingResistanceDavis"
-          discriminator:
-            propertyName: type
-            mapping:
-              davis: "#/components/schemas/RollingResistanceDavis"
-        capabilities:
-          type: array
-          items:
-            type: string
-            enum:
-              - TVM300
-              - TVM430
-              - ETCS1
-              - ETCS2
-              - ETCS3
-              - KVB
         max_speed:
           type: number
           format: double
@@ -347,12 +329,7 @@ components:
           type: number
           format: double
           example: 0.5
-        gamma_type:
-          type: string
-          enum:
-            - CONST
-            - MAX
-        loading_gauge_type:
+        loading_gauge:
           type: string
           enum:
             - G1
@@ -363,9 +340,23 @@ components:
             - GC
             - FR3_3
             - FR3_3_GB_G2
-        default_mode:
-          type: string
-          example: "Mode"
+        effort_curves:
+          $ref: "#/components/schemas/EffortCurves"
+    EffortCurves:
+      required:
+        - speeds
+        - max_efforts
+      properties:
+        speeds:
+          type: array
+          items:
+            type: number
+            format: double
+        max_efforts:
+          type: array
+          items:
+            type: number
+            format: double
     TrainSchedule:
       required:
         - id
@@ -410,12 +401,27 @@ components:
                 type: number
                 format: double
         routes:
-          $ref: "#/components/schemas/Pathfinding/routes"
+          $ref: "#/components/schemas/Routes"
         train_transition_delay:
           type: number
           format: double
           minimum: 0
           example: 600
+    Routes:
+      properties:
+        entry_point:
+          $ref: "#/components/schemas/Waypoint"
+        exit_point:
+          $ref: "#/components/schemas/Waypoint"
+        entry_point_direction:
+          type: string
+          enum:
+            - 0
+            - 1
+        release_detectors:
+          type: array
+          items:
+            type: string
     SimulationTrainResult:
       properties:
         speeds:
