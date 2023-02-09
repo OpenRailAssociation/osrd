@@ -106,6 +106,15 @@ const CHART_MIN_HEIGHT = 250;
     );
   };
 
+  const debounceResize = (interval) => {
+    let debounceTimeoutId;
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      const height = d3.select(`#container-${CHART_ID}`).node().clientHeight;
+      setHeightOfSpeedSpaceChart(height);
+    }, interval);
+  };
+
   // in case of initial ref creation of rotate, recreate the chart
   useEffect(() => {
     setChart(
@@ -192,31 +201,9 @@ const CHART_MIN_HEIGHT = 250;
 
   // set the window resize event manager
   useEffect(() => {
-    let timeOutFunctionId;
-    const resizeDrawTrain = () => {
-      d3.select(`#${CHART_ID}`).remove();
-      setChart(
-        createChart(
-          CHART_ID,
-          chart,
-          resetChart,
-          dataSimulation,
-          rotate,
-          keyValues,
-          heightOfSpeedSpaceChart,
-          ref,
-          dispatch,
-          setResetChart
-        )
-      );
-    };
-    const timeOutResize = () => {
-      clearTimeout(timeOutFunctionId);
-      timeOutFunctionId = setTimeout(resizeDrawTrain, 500);
-    };
-    window.addEventListener('resize', timeOutResize);
+    window.addEventListener('resize', debounceResize);
     return () => {
-      window.removeEventListener('resize', timeOutResize);
+      window.removeEventListener('resize', debounceResize);
     };
   }, []);
 
