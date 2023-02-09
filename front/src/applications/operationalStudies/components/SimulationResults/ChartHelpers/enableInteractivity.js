@@ -7,6 +7,7 @@ import {
   gridY,
   interpolateOnPosition,
   interpolateOnTime,
+  isGET,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import {
   updateContextMenu,
@@ -64,11 +65,11 @@ const updateChart = (chart, keyValues, rotate, event) => {
 
   // update axes with these new boundaries
   const axisBottomX =
-    !rotate && keyValues[0] === 'time'
+    !rotate && isGET(keyValues)
       ? d3.axisBottom(newX).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisBottom(newX);
   const axisLeftY =
-    rotate && keyValues[0] === 'time'
+    rotate && isGET(keyValues)
       ? d3.axisLeft(newY).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisLeft(newY);
   chart.xAxis.call(axisBottomX);
@@ -122,13 +123,13 @@ const updateChart = (chart, keyValues, rotate, event) => {
           .y((d) => newY(d[keyValues[0]]))
           .x0((d) => newX(d.value0))
           .x1((d) => newX(d.value1))
-          .curve(keyValues[0] === 'time' ? d3.curveStepAfter : d3.curveLinear)
+          .curve(isGET(keyValues) ? d3.curveStepAfter : d3.curveLinear)
       : d3
           .area()
           .x((d) => newX(d[keyValues[0]]))
           .y0((d) => newY(d.value0))
           .y1((d) => newY(d.value1))
-          .curve(keyValues[0] === 'time' ? d3.curveStepAfter : d3.curveLinear)
+          .curve(isGET(keyValues) ? d3.curveStepAfter : d3.curveLinear)
   );
 
   // OPERATIONNAL POINTS
@@ -168,11 +169,11 @@ const updateChart = (chart, keyValues, rotate, event) => {
 // Factorizes func to update VerticalLine on 3 charts: SpaceTime, SpeedSpaceChart, SpaceCurvesSlopes
 export const traceVerticalLine = (
   chart,
-  dataSimulation,
+  dataSimulation, // not used
   keyValues,
   listValues,
   positionValues,
-  refValueName,
+  refValueName, // not used
   rotate,
   timePosition
 ) => {
@@ -184,17 +185,13 @@ export const traceVerticalLine = (
         .attr(
           'y1',
           chart.y(
-            keyValues[0] !== 'time' && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
+            !isGET(keyValues) && positionValues.speed ? positionValues.speed.position : timePosition
           )
         )
         .attr(
           'y2',
           chart.y(
-            keyValues[0] !== 'time' && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
+            !isGET(keyValues) && positionValues.speed ? positionValues.speed.position : timePosition
           )
         );
     } else {
@@ -203,17 +200,13 @@ export const traceVerticalLine = (
         .attr(
           'x1',
           chart.x(
-            keyValues[0] !== 'time' && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
+            !isGET(keyValues) && positionValues.speed ? positionValues.speed.position : timePosition
           )
         )
         .attr(
           'x2',
           chart.x(
-            keyValues[0] !== 'time' && positionValues.speed
-              ? positionValues.speed.position
-              : timePosition
+            !isGET(keyValues) && positionValues.speed ? positionValues.speed.position : timePosition
           )
         );
     }
@@ -294,7 +287,7 @@ const enableInteractivity = (
     // If GET && not playing
     const { osrdsimulation } = store.getState();
     if (!osrdsimulation.isPlaying) {
-      if (keyValues[0] === 'time') {
+      if (isGET(keyValues)) {
         // recover coordinate we need
 
         const timePositionLocal = rotate
@@ -375,15 +368,9 @@ export const isolatedEnableInteractivity = (
   dataSimulation,
   keyValues,
   listValues,
-  positionValues,
   rotate,
   setChart,
-  _setYPosition,
-  _setZoomLevel,
-  _yPosition,
-  _zoomLevel,
   simulationIsPlaying,
-  dispatchUpdateContextMenu,
   dispatchUpdateMustRedraw,
   dispatchUpdateTimePositionValues
 ) => {
@@ -407,16 +394,13 @@ export const isolatedEnableInteractivity = (
     .filter(
       (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
     )
-    .on('start', () => {
-      dispatchUpdateContextMenu(undefined);
-    })
     .on('end', () => {
       dispatchUpdateMustRedraw(true);
     });
 
   let debounceTimeoutId;
 
-  function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
+  function debounceUpdateTimePositionValues(timePositionLocal, interval) {
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
       dispatchUpdateTimePositionValues(timePositionLocal);
@@ -426,13 +410,13 @@ export const isolatedEnableInteractivity = (
   const mousemove = (event, _value) => {
     // If not playing
     if (!simulationIsPlaying) {
-      if (keyValues[0] === 'time') {
+      if (isGET(keyValues)) {
         // GET
         const timePositionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
 
-        debounceUpdateTimePositionValues(timePositionLocal, null, 15);
+        debounceUpdateTimePositionValues(timePositionLocal, 15);
         const immediatePositionsValuesForPointer = interpolateOnTime(
           dataSimulation,
           keyValues,

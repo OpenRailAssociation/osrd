@@ -5,6 +5,7 @@ import { Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
 import {
   defineLinear,
   defineTime,
+  isGET,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 
@@ -24,7 +25,7 @@ export default function createChart(
   const xValues: (number | Date)[] = dataSimulation
     .map((train) =>
       train.headPosition.map((section) =>
-        section.map((position) => (keyValues[0] === 'time' ? position.time : position.position))
+        section.map((position) => (isGET(keyValues) ? position.time : position.position))
       )
     )
     .flat(Infinity) as (number | Date)[];

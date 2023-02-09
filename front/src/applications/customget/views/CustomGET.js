@@ -10,13 +10,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Rnd } from 'react-rnd';
-import SpaceTimeChart from 'applications/customget/views/SpaceTimeChart';
 import TimeTable from 'applications/customget/views/TimeTable';
 import TrainList from 'applications/customget/views/TrainList';
 import TimeButtons from 'applications/customget/views/TimeButtons';
 import TrainDetails from 'applications/customget/views/TrainDetails';
 import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
 import { useTranslation } from 'react-i18next';
+import DeprecatedSpaceTimeChart from 'applications/customget/views/DeprecatedSpaceTimeChart';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 
@@ -113,7 +113,7 @@ function CustomGET() {
                         dispatch(updateMustRedraw(true));
                       }}
                     >
-                      <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
+                      <DeprecatedSpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
                     </Rnd>
                   )}
                 </div>
