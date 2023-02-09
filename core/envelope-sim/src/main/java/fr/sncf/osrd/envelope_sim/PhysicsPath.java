@@ -1,7 +1,5 @@
 package fr.sncf.osrd.envelope_sim;
 
-import com.google.common.collect.RangeMap;
-
 public interface PhysicsPath {
     /** The length of the path, in meters */
     double getLength();
@@ -17,10 +15,4 @@ public interface PhysicsPath {
      * @return the position of the end of the next high grade area, or endPos
      */
     double findHighGradePosition(double position, double endPos, double length, double gradeThreshold);
-
-    /** The catenary modes and electrical profiles encountered along the path */
-    RangeMap<Double, ModeAndProfile> getModeAndProfileMap(String powerClass);
-
-    /** The catenary electrification mode and the electrical profile level (if any) present at some position */
-    record ModeAndProfile(String mode, String profile) {}
 }

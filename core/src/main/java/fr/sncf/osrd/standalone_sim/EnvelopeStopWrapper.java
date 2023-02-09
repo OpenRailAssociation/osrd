@@ -1,5 +1,7 @@
-package fr.sncf.osrd.envelope;
+package fr.sncf.osrd.standalone_sim;
 
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.train.TrainStop;
 import java.util.ArrayList;
 import java.util.List;

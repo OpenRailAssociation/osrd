@@ -3,7 +3,6 @@ package fr.sncf.osrd.train;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,7 +102,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RJSRollingStock.GammaType.CONST,
+                PhysicsRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
                 "thermal",
@@ -120,7 +119,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RJSRollingStock.GammaType.CONST,
+                PhysicsRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
                 "thermal",
@@ -137,7 +136,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RJSRollingStock.GammaType.CONST,
+                PhysicsRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 createModeEffortCurves(maxSpeed, CurveShape.LINEAR,
                         Map.of("thermal", new RollingStock.EffortCurveConditions[]{
@@ -168,7 +167,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.95,
-                RJSRollingStock.GammaType.MAX,
+                PhysicsRollingStock.GammaType.MAX,
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
                 "thermal",
@@ -185,7 +184,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RJSRollingStock.GammaType.CONST,
+                PhysicsRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.GC,
                 linearModeEffortCurves,
                 "thermal",
@@ -202,7 +201,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RJSRollingStock.GammaType.CONST,
+                PhysicsRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 createModeEffortCurves(maxSpeed, CurveShape.LINEAR,
                         Map.of("25000", new RollingStock.EffortCurveConditions[0])),
@@ -220,7 +219,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RJSRollingStock.GammaType.CONST,
+                PhysicsRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 createModeEffortCurves(maxSpeed, CurveShape.HYPERBOLIC,
                         Map.of("thermal", new RollingStock.EffortCurveConditions[0])),

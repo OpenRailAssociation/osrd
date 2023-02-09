@@ -28,9 +28,4 @@ public class FlatPath implements PhysicsPath {
             return position;
         return endPos;
     }
-
-    @Override
-    public RangeMap<Double, ModeAndProfile> getModeAndProfileMap(String powerClass) {
-        return TreeRangeMap.create();
-    }
 }

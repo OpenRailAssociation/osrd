@@ -4,12 +4,12 @@ import static fr.sncf.osrd.railjson.parser.RJSRollingStockParser.parseComfort;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -94,7 +94,8 @@ public class RJSStandaloneTrainScheduleParser {
         } else {
             throw new RuntimeException("unknown allowance type");
         }
-        var context = EnvelopeSimContext.build(rollingStock, envelopePath, timeStep, comfort, ignoreElectricalProfiles);
+        var context = EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort,
+                ignoreElectricalProfiles);
         // parse allowance distribution
         return switch (allowanceDistribution) {
             case MARECO -> new MarecoAllowance(

@@ -146,7 +146,6 @@ public class EnvelopePath implements PhysicsPath {
         }
     }
 
-    @Override
     public RangeMap<Double, ModeAndProfile> getModeAndProfileMap(String powerClass) {
         if (modeAndProfileMapsByPowerClass == null)
             return catenaryModeMap;
@@ -179,4 +178,7 @@ public class EnvelopePath implements PhysicsPath {
         result.put(currentRange, currentValue);
         return result;
     }
+
+    /** The catenary electrification mode and the electrical profile level (if any) present at some position */
+    public static final record ModeAndProfile(String mode, String profile) {}
 }

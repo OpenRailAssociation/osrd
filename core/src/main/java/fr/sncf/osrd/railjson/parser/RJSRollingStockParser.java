@@ -76,6 +76,11 @@ public class RJSRollingStockParser {
 
         var rollingResistance = parseRollingResistance(rjsRollingStock.rollingResistance);
 
+        var gammaType = switch (rjsRollingStock.gamma.type) {
+            case MAX -> RollingStock.GammaType.MAX;
+            case CONST -> RollingStock.GammaType.CONST;
+        };
+
         return new RollingStock(
                 rjsRollingStock.getID(),
                 rjsRollingStock.length,
@@ -89,7 +94,7 @@ public class RJSRollingStockParser {
                 rjsRollingStock.startUpAcceleration,
                 rjsRollingStock.comfortAcceleration,
                 rjsRollingStock.gamma.value,
-                rjsRollingStock.gamma.type,
+                gammaType,
                 rjsRollingStock.loadingGauge,
                 modes,
                 rjsRollingStock.effortCurves.defaultMode,

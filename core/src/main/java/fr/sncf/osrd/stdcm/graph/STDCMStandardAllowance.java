@@ -1,10 +1,10 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import com.google.common.collect.Multimap;
+import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
 import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
@@ -27,7 +27,7 @@ public class STDCMStandardAllowance {
             Envelope envelope,
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
             AllowanceValue standardAllowance,
-            PhysicsPath physicsPath,
+            EnvelopePath envelopePath,
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
@@ -41,7 +41,7 @@ public class STDCMStandardAllowance {
             var newEnvelope = applyAllowanceWithTransitions(
                     envelope,
                     standardAllowance,
-                    physicsPath,
+                    envelopePath,
                     rollingStock,
                     timeStep,
                     comfort,
@@ -101,14 +101,15 @@ public class STDCMStandardAllowance {
     private static Envelope applyAllowanceWithTransitions(
             Envelope envelope,
             AllowanceValue standardAllowance,
-            PhysicsPath physicsPath,
+            EnvelopePath envelopePath,
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
             TreeSet<Double> rangeTransitions
     ) {
+
         var allowance = new MarecoAllowance(
-                EnvelopeSimContext.build(rollingStock, physicsPath, timeStep, comfort),
+                EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort),
                 0,
                 envelope.getEndPos(),
                 1,

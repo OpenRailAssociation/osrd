@@ -3,6 +3,7 @@ package fr.sncf.osrd.stdcm.graph;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
@@ -46,7 +47,7 @@ public class STDCMSimulations {
             offsetFirstRoute = 0;
         }
         var envelopePath = EnvelopeTrainPath.from(tracks);
-        return EnvelopeSimContext.build(rollingStock, envelopePath, timeStep, comfort);
+        return EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort);
     }
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.

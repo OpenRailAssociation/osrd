@@ -1,8 +1,5 @@
 package fr.sncf.osrd.envelope_sim;
 
-import com.google.common.collect.RangeMap;
-import fr.sncf.osrd.train.RollingStock.Comfort;
-
 
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
@@ -25,10 +22,6 @@ public interface PhysicsRollingStock {
 
     /** The first derivative of the resistance to movement at a given speed, in kg/s */
     double getRollingResistanceDeriv(double speed);
-
-    /** The effort curves to use depending on the position on the path and the comfort level */
-    CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, PhysicsPath.ModeAndProfile> modeAndProfileMap,
-                                                Comfort comfort, double pathLength);
 
     /** Get the effort the train can apply at a given speed, in newtons */
     static double getMaxEffort(double speed, TractiveEffortPoint[] tractiveEffortCurve) {
@@ -71,11 +64,7 @@ public interface PhysicsRollingStock {
     record TractiveEffortPoint(double speed, double maxEffort) {
     }
 
-    record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
-                               RangeMap<Double, PhysicsPath.ModeAndProfile> conditions) {
-    }
-
-    public enum GammaType {
+    enum GammaType {
         CONST,
         MAX
     }

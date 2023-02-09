@@ -15,7 +15,6 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.FlatPath;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
-import fr.sncf.osrd.train.RollingStock.Comfort;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
@@ -65,7 +64,7 @@ public class TrainPhysics {
     @Test
     public void testSlopeChangeVMax() {
         var testPath = new FlatPath(100000, 0);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
         double position = 0.0;
         double speed = 0.0;
 
@@ -96,7 +95,7 @@ public class TrainPhysics {
     @Test
     public void testAccelerateAndCoast() {
         var testPath = new FlatPath(100000, 0);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
         double position = 0.0;
         double speed = 0.0;
 
@@ -133,7 +132,7 @@ public class TrainPhysics {
     @Test
     public void testEmptyCoastFromBeginning() {
         var testPath = new FlatPath(100000, 0);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, Comfort.STANDARD);
+        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
         var builder = new EnvelopePartBuilder();
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 builder,
