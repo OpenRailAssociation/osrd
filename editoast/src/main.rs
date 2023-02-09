@@ -83,6 +83,9 @@ async fn runserver(
     // Set the default log level to 'info'
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
+    // Setup shared states
+    let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
+
     let server = HttpServer::new(move || {
         // Build CORS
         let cors = Cors::default()
@@ -97,7 +100,7 @@ async fn runserver(
             .app_data(json_cfg.clone())
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(redis.clone()))
-            .app_data(Data::new(CHashMap::<i64, InfraCache>::default()))
+            .app_data(infra_caches.clone())
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
             .app_data(Data::new(SearchConfig::parse()))
