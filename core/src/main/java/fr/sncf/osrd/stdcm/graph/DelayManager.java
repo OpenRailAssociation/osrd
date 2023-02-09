@@ -40,7 +40,7 @@ public class DelayManager {
                     route,
                     block.distanceStart(),
                     startTime,
-                    graph.getStandardAllowanceSpeedRatio(envelope, route)
+                    graph.getStandardAllowanceSpeedRatio(envelope)
             );
             var diff = block.timeEnd() - enterTime;
             if (diff < 0)
@@ -85,7 +85,7 @@ public class DelayManager {
                     route,
                     occupancy.distanceEnd(),
                     startTime,
-                    graph.getStandardAllowanceSpeedRatio(envelope, route)
+                    graph.getStandardAllowanceSpeedRatio(envelope)
             );
             var margin = occupancy.timeStart() - exitTime;
             if (margin < 0) {
@@ -106,7 +106,7 @@ public class DelayManager {
         if (Double.isInfinite(startTime))
             return 0;
         for (var occupancy : unavailableTimes.get(route)) {
-            var speedRatio = graph.getStandardAllowanceSpeedRatio(envelope, route);
+            var speedRatio = graph.getStandardAllowanceSpeedRatio(envelope);
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
             var enterTime = STDCMSimulations.interpolateTime(envelope, route, occupancy.distanceStart(),
                     startTime, speedRatio);
