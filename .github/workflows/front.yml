@@ -31,6 +31,9 @@ jobs:
       - name: Run typescript compilation
         run: yarn --cwd front compile
 
+      - name: Run storybook compilation
+        run: yarn --cwd front build-storybook
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
