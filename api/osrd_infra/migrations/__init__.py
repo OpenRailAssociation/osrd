@@ -1,8 +1,7 @@
 import enum
 import itertools
 import re
-from typing import NamedTuple, Optional
-from venv import create
+from typing import Optional
 
 import django
 from django.db import migrations, models
