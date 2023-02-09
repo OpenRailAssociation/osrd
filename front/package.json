@@ -78,7 +78,7 @@
     "react-redux": "^8.0.4",
     "react-rnd": "^10.3.7",
     "react-router-dom": "^6.4.2",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.1",
     "react-select": "^5.4.0",
     "react-tether": "^2.0.8",
     "react-transition-group": "^4.4.5",
