@@ -23,7 +23,7 @@
   position: absolute;
   z-index: 0;
   min-height: 5rem;
-  max-height: calc(100% - 25vh);
+  max-height: 80%;
   overflow: auto;
   top: 4rem;
   right: 3.5rem;
@@ -89,18 +89,18 @@
   }
   .search-results {
     background-color: #f2f2f2;
-    padding: 1rem;
-    border-radius: 4px;
-    margin: 0.5rem 0.5rem 0 0;
     max-height: 50vh;
-    overflow: auto;
+    border-radius: 4px;
     cursor: pointer;
     .search-result-item {
       display: block;
       background-color: inherit;
-      border: none;
+      border: solid 1px;
       width: 100%;
       text-align: left;
+      padding: 0.315rem 1rem;
+      border-radius: 4px;
+      overflow: auto;
       &:hover {
         color: #0088ce;
       }
