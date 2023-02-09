@@ -62,17 +62,15 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
                 : "Standard allowance cannot be a flat time for STDCM trains";
     }
 
-    /** Returns the speed ratio we need to apply to the envelope to follow the given standard allowance.
-     * We need to know the envelope and route in case of a "time per distance" allowance. */
+    /** Returns the speed ratio we need to apply to the envelope to follow the given standard allowance. */
     public double getStandardAllowanceSpeedRatio(
-            Envelope envelope,
-            SignalingRoute route
+            Envelope envelope
     ) {
         if (standardAllowance == null)
             return 1;
 
         var runTime = envelope.getTotalTime();
-        var distance = route.getInfraRoute().getLength();
+        var distance = envelope.getTotalDistance();
         var allowanceRatio = standardAllowance.getAllowanceRatio(runTime, distance);
         return 1 / (1 + allowanceRatio);
     }
