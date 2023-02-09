@@ -747,7 +747,7 @@ paths:
                     schematic:
                       type: object
                       description: object's schematic in geojson format
-  /infra/{id}/clone:
+  /infra/{id}/clone/:
     post:
       tags:
         - infra
