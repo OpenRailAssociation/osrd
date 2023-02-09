@@ -1,4 +1,3 @@
-mod info;
 mod mvt_utils;
 
 use crate::client::MapLayersConfig;
@@ -11,7 +10,6 @@ use actix_web::web::{block, scope, Data, Json, Path, Query};
 use actix_web::{get, HttpResponse};
 use diesel::sql_types::Integer;
 use diesel::{sql_query, RunQueryDsl};
-use info::info_route;
 use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
 use redis::Client;
 use serde::Deserialize;
@@ -20,7 +18,7 @@ use thiserror::Error;
 
 /// Returns `/layers` routes
 pub fn routes() -> impl HttpServiceFactory {
-    scope("/layers").service((info_route, layer_view, cache_and_get_mvt_tile))
+    scope("/layers").service((layer_view, cache_and_get_mvt_tile))
 }
 
 #[derive(Debug, Error)]
