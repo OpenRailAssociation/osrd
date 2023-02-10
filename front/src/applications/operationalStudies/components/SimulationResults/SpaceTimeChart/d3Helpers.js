@@ -86,6 +86,7 @@ const drawAllTrains = (
       keyValues,
       ref,
       reset,
+      rotate
     );
 
     chartLocal.svg.on('click', () => {
@@ -130,6 +131,7 @@ const drawAllTrains = (
     setChart(chartLocal);
     dispatchUpdateChart({ ...chartLocal, rotate });
     dispatchUpdateMustRedraw(false);
+    setResetChart(false);
   }
 };
 
