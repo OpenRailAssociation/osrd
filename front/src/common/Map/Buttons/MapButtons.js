@@ -32,7 +32,7 @@ export default function MapButtons(props) {
       </div>
       <MapSearch active={showSearch} toggleMapSearch={() => setShowSearch(!showSearch)} />
       <MapSettings active={showSettings} toggleMapSettings={() => setShowSettings(!showSettings)} />
-      <MapKey active={showMapKey} toggleMapKey={() => setShowMapKey(!showMapKey)} />
+      {showMapKey && <MapKey toggleMapKey={() => setShowMapKey(!showMapKey)} />}
     </>
   );
 }
