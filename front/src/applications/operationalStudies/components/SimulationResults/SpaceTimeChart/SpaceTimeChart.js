@@ -65,7 +65,8 @@ export default function SpaceTimeChart(props) {
   const [dataSimulation, setDataSimulation] = useState(undefined);
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
-  const [dragEnding, setDragEnding] = useState(false);
+  // TODO: remove setDragEnding without creating a new error in the console
+  const [, setDragEnding] = useState(false);
   const [selectedTrain, setSelectedTrain] = useState(initialSelectedTrain);
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(
     initialHeightOfSpaceTimeChart
@@ -89,10 +90,34 @@ export default function SpaceTimeChart(props) {
     [dataSimulation, selectedTrain, simulation, onOffsetTimeByDragging]
   );
 
-  const drawAllTrainFn = useCallback(
-    (newDataSimulation, resetScale = false) =>
+  // ACTIONS HANDLE
+  const handleKey = ({ key }) => {
+    if (['+', '-'].includes(key)) {
+      setShowModal(key);
+    }
+  };
+
+  const debounceResize = () => {
+    const height = d3.select(`#container-${CHART_ID}`).node().clientHeight;
+    setHeightOfSpaceTimeChart(height);
+  };
+
+  const toggleRotation = () => {
+    setChart({ ...chart, x: chart.y, y: chart.x });
+    setRotate(!rotate);
+  };
+
+  useEffect(() => {
+    offsetTimeByDragging(dragOffset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragOffset]);
+
+  useEffect(() => {
+    const trains = dataSimulation?.trains || simulation.trains;
+    const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
+    if (newDataSimulation) {
       drawAllTrains(
-        resetScale,
+        resetChart,
         newDataSimulation,
         false,
         chart,
@@ -121,83 +146,10 @@ export default function SpaceTimeChart(props) {
         offsetTimeByDragging,
         setSelectedTrain,
         true
-      ),
-    [
-      resetChart,
-      chart,
-      heightOfSpaceTimeChart,
-      keyValues,
-      ref,
-      rotate,
-      dispatch,
-      simulation,
-      selectedTrain,
-      setChart,
-      setResetChart,
-      positionValues,
-      setYPosition,
-      setZoomLevel,
-      setDragEnding,
-      setDragOffset,
-      yPosition,
-      zoomLevel,
-      selectedProjection,
-      dispatchUpdateMustRedraw,
-      dispatchUpdateChart,
-      dispatchUpdateContextMenu,
-      allowancesSettings,
-      offsetTimeByDragging,
-    ]
-  );
-
-  // ACTIONS HANDLE
-  const handleKey = ({ key }) => {
-    if (['+', '-'].includes(key)) {
-      setShowModal(key);
+      );
     }
-  };
-
-  const handleResetChart = () => {
-    d3.select(`#${CHART_ID}`).remove();
-    setRotate(false);
-    const trains = dataSimulation?.trains || simulation.trains;
-    const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
-    if (newDataSimulation) {
-      drawAllTrainFn(newDataSimulation, true);
-    }
-  };
-
-  const debounceResize = (interval) => {
-    let debounceTimeoutId;
-    clearTimeout(debounceTimeoutId);
-    debounceTimeoutId = setTimeout(() => {
-      const height = d3.select(`#container-${CHART_ID}`).node().clientHeight;
-      setHeightOfSpaceTimeChart(height);
-      const trains = dataSimulation?.trains || simulation.trains;
-      const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
-      if (newDataSimulation) {
-        drawAllTrainFn(newDataSimulation);
-      }
-    }, interval);
-  };
-
-  const toggleRotation = () => {
-    d3.select(`#${CHART_ID}`).remove();
-    setChart({ ...chart, x: chart.y, y: chart.x });
-    setRotate(!rotate);
-  };
-
-  useEffect(() => {
-    offsetTimeByDragging(dragOffset);
-  }, [dragOffset]);
-
-  useEffect(() => {
-    const trains = dataSimulation?.trains || simulation.trains;
-    const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
-    if (newDataSimulation) {
-      drawAllTrainFn(newDataSimulation);
-    }
-  }, [rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetChart, rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
@@ -263,9 +215,6 @@ export default function SpaceTimeChart(props) {
         setHeightOfSpaceTimeChart(baseHeightOfSpaceTimeChart + delta.height);
         onSetBaseHeightOfSpaceTimeChart(baseHeightOfSpaceTimeChart + delta.height);
       }}
-      onResizeStop={() => {
-        dispatchUpdateMustRedraw(true);
-      }}
     >
       <div
         id={`container-${CHART_ID}`}
@@ -292,7 +241,7 @@ export default function SpaceTimeChart(props) {
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
           onClick={() => {
-            handleResetChart();
+            setResetChart(true);
           }}
         >
           <GiResize />
