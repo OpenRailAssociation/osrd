@@ -2,14 +2,14 @@
 
 use std::{collections::HashMap, rc::Rc};
 
-use crate::error::{EditoastError, InternalError, Result};
+use crate::error::{InternalError, Result};
+use editoast_derive::EditoastError;
 
 use super::{
     sqlquery::SqlQuery,
     typing::{AstType, TypeSpec},
 };
 
-use actix_http::StatusCode;
 use thiserror::Error;
 
 /// Represents a [super::searchast::SearchAst] that also carries valid type information
@@ -83,7 +83,8 @@ where
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "search")]
 pub enum ProcessingError {
     #[error("undefined function '{0}'")]
     UndefinedFunction(String),
@@ -101,16 +102,6 @@ pub enum ProcessingError {
     UnexpectedErsatz { value: String, expected: TypeSpec },
     #[error("in function '{0}': {1}")]
     InFunction(String, InternalError),
-}
-
-impl EditoastError for ProcessingError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        "editoast:search:ProcessingError"
-    }
 }
 
 pub type QueryFunctionFn = Rc<dyn Fn(Vec<TypedAst>) -> Result<TypedAst>>;

@@ -1,14 +1,14 @@
-use crate::error::{EditoastError, Result};
+use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl;
-use actix_web::http::StatusCode;
 use chrono::{NaiveDateTime, Utc};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Bool, Nullable, Text};
 use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
+use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use thiserror::Error;
@@ -34,22 +34,16 @@ pub struct InfraName {
     pub name: String,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra", context = "Self::context")]
 pub enum InfraApiError {
     /// Couldn't found the infra with the given id
     #[error("Infra '{0}', could not be found")]
+    #[editoast_error(status = 404)]
     NotFound(i64),
 }
 
-impl EditoastError for InfraApiError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::NOT_FOUND
-    }
-
-    fn get_type(&self) -> &'static str {
-        "editoast:infra:NotFound"
-    }
-
+impl InfraApiError {
     fn context(&self) -> Map<String, Value> {
         match self {
             InfraApiError::NotFound(infra_id) => json!({

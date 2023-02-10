@@ -1,16 +1,16 @@
-use crate::error::{EditoastError, Result};
+use crate::error::Result;
 use crate::infra::RAILJSON_VERSION;
 use crate::infra_cache::InfraCache;
 use crate::schema::RailJson;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::http::StatusCode;
 use actix_web::web::{block, Data, Json, Path, Query};
 use actix_web::{get, post, services};
 use chashmap::CHashMap;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel::{sql_query, RunQueryDsl};
+use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -25,24 +25,11 @@ struct RailJsonData {
     railjson: String,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra:railjson")]
 enum ListErrorsRailjson {
     #[error("Wrong Railjson version provided")]
     WrongRailjsonVersionProvided,
-}
-
-impl EditoastError for ListErrorsRailjson {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            ListErrorsRailjson::WrongRailjsonVersionProvided => {
-                "editoast:infra:railjson:WrongRailjsonVersionProvided"
-            }
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, Deserialize)]

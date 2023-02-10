@@ -1,11 +1,10 @@
-use actix_web::http::StatusCode;
 use diesel::query_builder::*;
 use diesel::sql_query;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 
-use crate::error::EditoastError;
+use editoast_derive::EditoastError;
 
 /// A paginated response
 #[derive(Debug, Serialize)]
@@ -28,20 +27,12 @@ fn default_page() -> i64 {
 }
 
 /// Simple pagination error
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "pagination")]
 pub enum PaginationError {
     #[error("Invalid page number")]
+    #[editoast_error(status = 404)]
     InvalidPage,
-}
-
-impl EditoastError for PaginationError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::NOT_FOUND
-    }
-
-    fn get_type(&self) -> &'static str {
-        "editoast:pagination:InvalidPage"
-    }
 }
 
 /// Transform a query into a paginated sql query.

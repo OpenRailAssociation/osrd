@@ -1,5 +1,4 @@
 use crate::error::Result;
-use actix_web::http::StatusCode;
 use actix_web::post;
 use actix_web::web::{block, Data, Json, Path};
 use chashmap::CHashMap;
@@ -8,12 +7,12 @@ use redis::Client;
 use thiserror::Error;
 
 use crate::client::MapLayersConfig;
-use crate::error::EditoastError;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
 use crate::map::{self, InvalidationZone, MapLayers};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::{generated_data, DbPool};
+use editoast_derive::EditoastError;
 
 /// CRUD for edit an infrastructure. Takes a batch of operations.
 #[post("")]
@@ -58,7 +57,7 @@ fn apply_edit(
 ) -> Result<(Vec<OperationResult>, InvalidationZone)> {
     // Check if the infra is locked
     if infra.locked {
-        return Err(InfraLockedError(infra.id).into());
+        return Err(EditionError::InfraIsLocked(infra.id).into());
     }
 
     // Apply modifications
@@ -88,21 +87,9 @@ fn apply_edit(
     Ok((operation_results, invalid_zone))
 }
 
-#[derive(Debug, Clone, Error)]
-struct InfraLockedError(pub i64);
-
-impl std::fmt::Display for InfraLockedError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Infra {} is locked", self.0)
-    }
-}
-
-impl EditoastError for InfraLockedError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        "editoast:infra:edition:locked"
-    }
+#[derive(Debug, Clone, Error, EditoastError)]
+#[editoast_error(base_id = "infra:edition")]
+enum EditionError {
+    #[error("Infra {0} is locked")]
+    InfraIsLocked(i64),
 }
