@@ -44,7 +44,9 @@ type Props = {
 export default function AddOrEditScenarioModal({ editionMode, scenario, getScenario }: Props) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<scenarioTypes>(scenario || scenarioTypesDefaults);
+  const [currentScenario, setCurrentScenario] = useState<scenarioTypes>(
+    scenario || scenarioTypesDefaults
+  );
   const [displayErrors, setDisplayErrors] = useState(false);
   const [electricalProfileSetOptions, setElectricalProfileSetOptions] = useState([
     {
@@ -77,7 +79,9 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
           value: option.name,
         })),
       ];
-      setSelectedValue(options.find((option) => option.key === configItems.electrical_profile_set));
+      setSelectedValue(
+        options.find((option) => option.key === currentScenario.electrical_profile_set)
+      );
       setElectricalProfileSetOptions(options);
     } catch (error) {
       console.log(error);
@@ -87,23 +91,23 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
   const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
 
   const removeTag = (idx: number) => {
-    const newTags: string[] = Array.from(configItems.tags);
+    const newTags: string[] = Array.from(currentScenario.tags);
     newTags.splice(idx, 1);
-    setConfigItems({ ...configItems, tags: newTags });
+    setCurrentScenario({ ...currentScenario, tags: newTags });
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = Array.from(configItems.tags);
+    const newTags: string[] = Array.from(currentScenario.tags);
     newTags.push(tag);
-    setConfigItems({ ...configItems, tags: newTags });
+    setCurrentScenario({ ...currentScenario, tags: newTags });
   };
 
   const createScenario = async () => {
-    if (!configItems.name || !configItems.infra) {
+    if (!currentScenario.name || !currentScenario.infra) {
       setDisplayErrors(true);
     } else {
       try {
-        const result = await post(`${rootURI}`, { ...configItems, infra: infraID });
+        const result = await post(`${rootURI}`, { ...currentScenario, infra: infraID });
         dispatch(updateScenarioID(result.id));
         navigate('/operational-studies/scenario');
         closeModal();
@@ -114,11 +118,11 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
   };
 
   const updateScenario = async () => {
-    if (!configItems.name) {
+    if (!currentScenario.name) {
       setDisplayErrors(true);
     } else if (scenario) {
       try {
-        await patch(`${rootURI}${scenario.id}/`, configItems);
+        await patch(`${rootURI}${scenario.id}/`, currentScenario);
         getScenario(true);
         closeModal();
       } catch (error) {
@@ -147,7 +151,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
   };
 
   useEffect(() => {
-    setConfigItems({ ...configItems, infra: infraID });
+    setCurrentScenario({ ...currentScenario, infra: infraID });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
@@ -180,10 +184,14 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
                     <span className="font-weight-bold">{t('scenarioName')}</span>
                   </div>
                 }
-                value={configItems.name}
-                onChange={(e: any) => setConfigItems({ ...configItems, name: e.target.value })}
-                isInvalid={displayErrors && !configItems.name}
-                errorMsg={displayErrors && !configItems.name ? t('scenarioNameMissing') : undefined}
+                value={currentScenario.name}
+                onChange={(e: any) =>
+                  setCurrentScenario({ ...currentScenario, name: e.target.value })
+                }
+                isInvalid={displayErrors && !currentScenario.name}
+                errorMsg={
+                  displayErrors && !currentScenario.name ? t('scenarioNameMissing') : undefined
+                }
               />
             </div>
             <div className="scenario-edition-modal-description">
@@ -197,9 +205,9 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
                     {t('scenarioDescription')}
                   </div>
                 }
-                value={configItems.description}
+                value={currentScenario.description}
                 onChange={(e: any) =>
-                  setConfigItems({ ...configItems, description: e.target.value })
+                  setCurrentScenario({ ...currentScenario, description: e.target.value })
                 }
               />
             </div>
@@ -216,13 +224,13 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
                 selectedValue={selectedValue}
                 options={electricalProfileSetOptions}
                 onChange={(e: SelectOptionsType) =>
-                  setConfigItems({ ...configItems, electrical_profile_set: e.key })
+                  setCurrentScenario({ ...currentScenario, electrical_profile_set: e.key })
                 }
               />
             </div>
             <ChipsSNCF
               addTag={addTag}
-              tags={configItems.tags}
+              tags={currentScenario.tags}
               removeTag={removeTag}
               title={t('scenarioTags')}
               color="secondary"
@@ -232,7 +240,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
             <div className="col-lg-6">
               <div
                 className={`scenario-edition-modal-infraselector ${
-                  displayErrors && !configItems.infra
+                  displayErrors && !currentScenario.infra
                     ? 'scenario-edition-modal-infraselector-missing'
                     : null
                 }`}

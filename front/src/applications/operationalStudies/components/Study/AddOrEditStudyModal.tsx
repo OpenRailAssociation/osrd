@@ -23,7 +23,7 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { studyTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
-const configItemsDefaults = {
+const currentStudyDefaults = {
   name: '',
   type: '',
   description: '',
@@ -48,7 +48,7 @@ type SelectOptions = { key: string | null; value: string }[];
 export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<studyTypes>(study || configItemsDefaults);
+  const [currentStudy, setCurrentStudy] = useState<studyTypes>(study || currentStudyDefaults);
   const [displayErrors, setDisplayErrors] = useState(false);
   const emptyOptions = [{ key: null, value: t('nothingSelected') }];
   const [studyCategories, setStudyCategories] = useState<SelectOptions>(emptyOptions);
@@ -81,23 +81,23 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   const formatDateForInput = (date: string | null) => (date === null ? '' : date.substr(0, 10));
 
   const removeTag = (idx: number) => {
-    const newTags: string[] = Array.from(configItems.tags);
+    const newTags: string[] = Array.from(currentStudy.tags);
     newTags.splice(idx, 1);
-    setConfigItems({ ...configItems, tags: newTags });
+    setCurrentStudy({ ...currentStudy, tags: newTags });
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = Array.from(configItems.tags);
+    const newTags: string[] = Array.from(currentStudy.tags);
     newTags.push(tag);
-    setConfigItems({ ...configItems, tags: newTags });
+    setCurrentStudy({ ...currentStudy, tags: newTags });
   };
 
   const createStudy = async () => {
-    if (!configItems.name) {
+    if (!currentStudy.name) {
       setDisplayErrors(true);
     } else {
       try {
-        const result = await post(`${rootURI}`, configItems);
+        const result = await post(`${rootURI}`, currentStudy);
         dispatch(updateStudyID(result.id));
         navigate('/operational-studies/study');
         closeModal();
@@ -108,11 +108,11 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   };
 
   const updateStudy = async () => {
-    if (!configItems.name) {
+    if (!currentStudy.name) {
       setDisplayErrors(true);
     } else if (study) {
       try {
-        await patch(`${rootURI}${study.id}/`, configItems);
+        await patch(`${rootURI}${study.id}/`, currentStudy);
         getStudy(true);
         closeModal();
       } catch (error) {
@@ -143,10 +143,14 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   useEffect(() => {
     createSelectOptions(
       'studyCategories',
-      `/projects/${configItems.id}/study_types/`,
+      `/projects/${currentStudy.id}/study_types/`,
       setStudyCategories
     );
-    createSelectOptions('studyStates', `/projects/${configItems.id}/study_states/`, setStudyStates);
+    createSelectOptions(
+      'studyStates',
+      `/projects/${currentStudy.id}/study_states/`,
+      setStudyStates
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -172,10 +176,10 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 <span className="font-weight-bold">{t('studyName')}</span>
               </div>
             }
-            value={configItems.name}
-            onChange={(e: any) => setConfigItems({ ...configItems, name: e.target.value })}
-            isInvalid={displayErrors && !configItems.name}
-            errorMsg={displayErrors && !configItems.name ? t('studyNameMissing') : undefined}
+            value={currentStudy.name}
+            onChange={(e: any) => setCurrentStudy({ ...currentStudy, name: e.target.value })}
+            isInvalid={displayErrors && !currentStudy.name}
+            errorMsg={displayErrors && !currentStudy.name ? t('studyNameMissing') : undefined}
           />
         </div>
         <div className="row">
@@ -193,11 +197,11 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       </div>
                     }
                     selectedValue={{
-                      key: configItems.type,
-                      value: t(`studyCategories.${configItems.type || 'nothingSelected'}`),
+                      key: currentStudy.type,
+                      value: t(`studyCategories.${currentStudy.type || 'nothingSelected'}`),
                     }}
                     options={studyCategories}
-                    onChange={(e: any) => setConfigItems({ ...configItems, type: e.key })}
+                    onChange={(e: any) => setCurrentStudy({ ...currentStudy, type: e.key })}
                   />
                 </div>
               </div>
@@ -213,11 +217,11 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       </div>
                     }
                     selectedValue={{
-                      key: configItems.state,
-                      value: t(`studyStates.${configItems.state || 'nothingSelected'}`),
+                      key: currentStudy.state,
+                      value: t(`studyStates.${currentStudy.state || 'nothingSelected'}`),
                     }}
                     options={studyStates}
-                    onChange={(e: any) => setConfigItems({ ...configItems, state: e.key })}
+                    onChange={(e: any) => setCurrentStudy({ ...currentStudy, state: e.key })}
                   />
                 </div>
               </div>
@@ -233,9 +237,9 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                     {t('studyDescription')}
                   </div>
                 }
-                value={configItems.description}
+                value={currentStudy.description}
                 onChange={(e: any) =>
-                  setConfigItems({ ...configItems, description: e.target.value })
+                  setCurrentStudy({ ...currentStudy, description: e.target.value })
                 }
               />
             </div>
@@ -253,8 +257,10 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyStartDate')}
                 </div>
               }
-              value={formatDateForInput(configItems.start_date)}
-              onChange={(e: any) => setConfigItems({ ...configItems, start_date: e.target.value })}
+              value={formatDateForInput(currentStudy.start_date)}
+              onChange={(e: any) =>
+                setCurrentStudy({ ...currentStudy, start_date: e.target.value })
+              }
             />
             <InputSNCF
               id="studyInputEstimatedEndingDate"
@@ -268,9 +274,9 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyEstimatedEndingDate')}
                 </div>
               }
-              value={formatDateForInput(configItems.expected_end_date)}
+              value={formatDateForInput(currentStudy.expected_end_date)}
               onChange={(e: any) =>
-                setConfigItems({ ...configItems, expected_end_date: e.target.value })
+                setCurrentStudy({ ...currentStudy, expected_end_date: e.target.value })
               }
             />
             <InputSNCF
@@ -285,9 +291,9 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyRealEndingDate')}
                 </div>
               }
-              value={formatDateForInput(configItems.actual_end_date)}
+              value={formatDateForInput(currentStudy.actual_end_date)}
               onChange={(e: any) =>
-                setConfigItems({ ...configItems, actual_end_date: e.target.value })
+                setCurrentStudy({ ...currentStudy, actual_end_date: e.target.value })
               }
             />
           </div>
@@ -306,9 +312,9 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyServiceCode')}
                 </div>
               }
-              value={configItems.service_code}
+              value={currentStudy.service_code}
               onChange={(e: any) =>
-                setConfigItems({ ...configItems, service_code: e.target.value })
+                setCurrentStudy({ ...currentStudy, service_code: e.target.value })
               }
             />
           </div>
@@ -325,9 +331,9 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyBusinessCode')}
                 </div>
               }
-              value={configItems.business_code}
+              value={currentStudy.business_code}
               onChange={(e: any) =>
-                setConfigItems({ ...configItems, business_code: e.target.value })
+                setCurrentStudy({ ...currentStudy, business_code: e.target.value })
               }
             />
           </div>
@@ -345,14 +351,14 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyBudget')}
                 </div>
               }
-              value={configItems.budget}
-              onChange={(e: any) => setConfigItems({ ...configItems, budget: e.target.value })}
+              value={currentStudy.budget}
+              onChange={(e: any) => setCurrentStudy({ ...currentStudy, budget: e.target.value })}
             />
           </div>
         </div>
         <ChipsSNCF
           addTag={addTag}
-          tags={configItems.tags}
+          tags={currentStudy.tags}
           removeTag={removeTag}
           title={t('studyTags')}
           color="primary"
