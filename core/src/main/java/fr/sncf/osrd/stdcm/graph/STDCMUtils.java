@@ -23,7 +23,8 @@ public class STDCMUtils {
                 continue;
             var slicedEnvelope = Envelope.make(envelope.slice(0, sliceUntil));
             for (var part : slicedEnvelope)
-                parts.add(part.copyAndShift(offset));
+                if (part.getBeginPos() < part.getEndPos())
+                    parts.add(part.copyAndShift(offset));
             offset = parts.get(parts.size() - 1).getEndPos();
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
