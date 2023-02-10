@@ -36,7 +36,7 @@ paths:
           description: Return the service version
           content:
             application/json:
-              schema: 
+              schema:
                 type: object
                 properties:
                   git_describe:
@@ -279,20 +279,21 @@ components:
           minimum: 0
     RollingStock:
       required:
-        - id
+        - name
         - length
         - mass
         - inertia_coefficient
         - rolling_resistance
-        - capabilities
         - max_speed
         - startup_time
         - startup_acceleration
         - comfort_acceleration
-        - timetable_gamma
-        - tractive_effort_curve
+        - gamma
+        - loading_gauge
+        - effort_curves
+        - power_class
       properties:
-        id:
+        name:
           type: string
         length:
           type: number
@@ -309,24 +310,6 @@ components:
           format: double
           minimum: 0
           example: 1.05
-        rolling_resistance:
-          oneOf:
-            - $ref: "#/components/schemas/RollingResistanceDavis"
-          discriminator:
-            propertyName: type
-            mapping:
-              davis: "#/components/schemas/RollingResistanceDavis"
-        capabilities:
-          type: array
-          items:
-            type: string
-            enum:
-              - TVM300
-              - TVM430
-              - ETCS1
-              - ETCS2
-              - ETCS3
-              - KVB
         max_speed:
           type: number
           format: double
@@ -343,58 +326,58 @@ components:
           type: number
           format: double
           example: 0.25
-        timetable_gamma:
+        gamma:
           type: number
           format: double
           example: 0.5
-        tractive_effort_curve:
+        loading_gauge:
+          type: string
+          enum:
+            - G1
+            - G2
+            - GA
+            - GB
+            - GB1
+            - GC
+            - FR3_3
+            - FR3_3_GB_G2
+        features:
           type: array
           items:
-            type: object
-            properties:
-              speed:
-                type: number
-                format: double
-                minimum: 0
-              max_effort:
-                type: number
-                format: double
-                minimum: 0
-            example:
-              speed: 20
-              max_effort: 400000
-    RollingResistanceDavis:
-      required:
-        - type
-        - A
-        - B
-        - C
-      properties:
-        type:
+            type: string
+            example: "protecting systems"
+        power_class:
           type: string
-        A:
-          type: number
-          format: double
-        B:
-          type: number
-          format: double
-        C:
-          type: number
-          format: double
-      example:
-        type: "davis"
-        A: 5400
-        B: 200
-        C: 12
+          example: "5"
+        effort_curves:
+          $ref: "#/components/schemas/EffortCurves"
+    EffortCurves:
+      required:
+        - speeds
+        - max_efforts
+      properties:
+        speeds:
+          type: array
+          items:
+            type: number
+            format: double
+        max_efforts:
+          type: array
+          items:
+            type: number
+            format: double
     TrainSchedule:
       required:
         - id
         - rolling_stock
         - departure_time
         - initial_head_location
-        - initial_route
         - initial_speed
-        - phases
+        - final_head_location
+        - stops
+        - routes
+        - train_transition_delay
+        - tag
       properties:
         id:
           type: string
@@ -408,65 +391,46 @@ components:
           minimum: 0
         initial_head_location:
           $ref: "#/components/schemas/TrackLocation"
-        initial_route:
-          type: string
         initial_speed:
           type: number
           format: double
-        phases:
-          type: array
-          items:
-            oneOf:
-              - $ref: "#/components/schemas/NavigatePhase"
-              - $ref: "#/components/schemas/StopPhase"
-            discriminator:
-              propertyName: type
-              mapping:
-                navigate: "#/components/schemas/NavigatePhase"
-                stop: "#/components/schemas/StopPhase"
-        options:
-          type: object
-          nullable: true
-          properties:
-            ignore_electrical_profiles:
-              type: boolean
-              default: false
-              nullable: true
-    NavigatePhase:
-      required:
-        - type
-        - routes
-        - end_location
-        - driver_sight_distance
-      properties:
-        type:
-          type: string
-          example: "navigate"
-        routes:
-          type: array
-          items:
-            type: string
-          example: ["route1", "route2", "route3"]
-        end_location:
+        final_head_location:
           $ref: "#/components/schemas/TrackLocation"
-        driver_sight_distance:
-          type: number
-          format: double
-          minimum: 0
-          example: 400
-    StopPhase:
-      required:
-        - type
-        - duration
-      properties:
-        type:
-          type: string
-          example: "stop"
-        duration:
+        stops:
+          type: array
+          items:
+            type: object
+            properties:
+              position:
+                type: number
+                format: double
+              location:
+                $ref: "#/components/schemas/TrackLocation"
+              duration:
+                type: number
+                format: double
+        routes:
+          $ref: "#/components/schemas/Routes"
+        train_transition_delay:
           type: number
           format: double
           minimum: 0
           example: 600
+    Routes:
+      properties:
+        entry_point:
+          $ref: "#/components/schemas/Waypoint"
+        exit_point:
+          $ref: "#/components/schemas/Waypoint"
+        entry_point_direction:
+          type: string
+          enum:
+            - 0
+            - 1
+        release_detectors:
+          type: array
+          items:
+            type: string
     SimulationTrainResult:
       properties:
         speeds:
@@ -566,6 +530,9 @@ components:
                 type: boolean
               aspect_label:
                 type: string
+        tag:
+          type: string
+          example: "tag"
     SimulationResult:
       oneOf:
         - $ref: "#/components/schemas/SimulationResultRouteStatus"
@@ -651,6 +618,7 @@ components:
       required:
         - infra
         - waypoints
+        - rolling_stocks
       properties:
         infra:
           type: string
@@ -673,6 +641,8 @@ components:
             - - track_section: "track_destination"
                 direction: "STOP_TO_START"
                 offset: 138.32
+        rolling_stocks:
+          $ref: "#/components/schemas/RollingStock"
     STDCMRequest:
       properties:
         infra:
@@ -710,19 +680,6 @@ components:
           items:
             $ref: "#/components/schemas/Waypoint"
           minimum: 1
-        time_step:
-          type: number
-          format: double
-        maximum_departure_delay:
-          type: number
-          format: double
-          description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
-        maximum_relative_run_time:
-          type: number
-          format: double
-          description: |
-            How much longer the total run time can be compared to the shortest path on an empty timetable.
-            Defaults to 2 if unspecified, meaning that the result can't take more than twice the minimum time.
         speed_limit_composition:
           type: string
           description: Train composition used for speed limit
@@ -738,17 +695,20 @@ components:
           description: |
             Margin of y seconds after the train passage, which means that the path used by the train should
             be free and available at least y seconds after its passage.
-        standard_allowance:
-          $ref: "#/components/schemas/AllowanceValue"
     SimulationRequest:
       required:
         - infra
+        - time_step
         - rolling_stocks
         - train_schedules
+        - trains_path
       properties:
         infra:
           type: string
           example: "infraID"
+        time_step:
+          type: number
+          format: double
         rolling_stocks:
           type: array
           minItems: 1
@@ -762,6 +722,19 @@ components:
         electrical_profile_set:
           type: string
           example: "ID"
+        trains_path:
+          properties:
+            track:
+              type: string
+              example: "track"
+            begin:
+              type: number
+              format: double
+              description: begin offset of the track range
+            end:
+              type: number
+              format: double
+              description: end offset of the track range
     AllowanceValue:
       oneOf:
         - $ref: "#/components/schemas/TimePerDistanceAllowanceValue"
