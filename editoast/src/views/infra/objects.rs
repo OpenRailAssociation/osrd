@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use actix_web::dev::HttpServiceFactory;
-use actix_web::http::StatusCode;
 use actix_web::post;
 use actix_web::web::{block, Data, Json, Path};
 use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
@@ -10,34 +9,23 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
 
-use crate::error::{EditoastError, Result};
+use crate::error::Result;
 use crate::schema::ObjectType;
 use crate::DbPool;
+use editoast_derive::EditoastError;
 
 /// Return `/infra/<infra_id>/objects` routes
 pub fn routes() -> impl HttpServiceFactory {
     get_objects
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra:objects")]
 enum GetObjectsErrors {
     #[error("Duplicate object ids provided")]
     DuplicateIdsProvided,
     #[error("Object id '{0}' not found")]
     ObjectIdNotFound(String),
-}
-
-impl EditoastError for GetObjectsErrors {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            GetObjectsErrors::DuplicateIdsProvided => "editoast:infra:objects:DuplicateIdsProvided",
-            GetObjectsErrors::ObjectIdNotFound { .. } => "editoast:infra:objects:ObjectIdNotFound",
-        }
-    }
 }
 
 /// Return whether the list of ids contains unique values or has duplicate

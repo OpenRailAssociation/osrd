@@ -1,12 +1,13 @@
 //! Defines [SearchAst]
 
-use crate::error::{EditoastError, Result};
-use actix_http::StatusCode;
+use crate::error::Result;
+use editoast_derive::EditoastError;
 use serde_json::Value;
 use std::fmt::Debug;
 use thiserror::Error;
 
-#[derive(Debug, PartialEq, Error)]
+#[derive(Debug, PartialEq, Error, EditoastError)]
+#[editoast_error(base_id = "search")]
 pub enum SearchAstError {
     #[error("could not convert {0} to i64")]
     IntegerConversion(u64),
@@ -18,16 +19,6 @@ pub enum SearchAstError {
     InvalidFunctionIdentifier(Value),
     #[error("invalid syntax: {0}")]
     InvalidSyntax(Value),
-}
-
-impl EditoastError for SearchAstError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        "editoast:search:SearchAstError"
-    }
 }
 
 /// Represents the AST of the query language used in /search route.

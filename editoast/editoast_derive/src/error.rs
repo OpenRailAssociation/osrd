@@ -103,7 +103,7 @@ fn expand_get_types(variants: &HashMap<Ident, ErrorVariantParams>, base_id: Stri
 
     let ids = variants
         .keys()
-        .map(|variant_name| format!("{}:{}", base_id, variant_name));
+        .map(|variant_name| format!("editoast:{}:{}", base_id, variant_name));
 
     quote! {
         match self {

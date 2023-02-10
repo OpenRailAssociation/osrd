@@ -202,10 +202,9 @@ pub mod searchast;
 pub mod sqlquery;
 pub mod typing;
 
-use crate::error::{EditoastError, Result};
+use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
 use crate::DbPool;
-use actix_http::StatusCode;
 use actix_web::post;
 use actix_web::web::{block, Data, Json, Query};
 use config::{Config as SearchConfig, SearchEntry};
@@ -213,6 +212,7 @@ use diesel::pg::Pg;
 use diesel::query_builder::BoxedSqlQuery;
 use diesel::sql_types::{Jsonb, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::value::Value as JsonValue;
 use thiserror::Error;
@@ -222,25 +222,13 @@ use self::process::create_processing_context;
 use self::searchast::SearchAst;
 use self::typing::{AstType, TypeSpec};
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "search")]
 enum SearchError {
     #[error("object type '{0}' is invalid")]
     ObjectType(String),
     #[error("query has type {0} but Boolean is expected")]
     QueryAst(TypeSpec),
-}
-
-impl EditoastError for SearchError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            SearchError::ObjectType(_) => "editoast:search:InvalidObjectType",
-            SearchError::QueryAst(_) => "editoast:search:invalidQueryAst",
-        }
-    }
 }
 
 impl config::Config {

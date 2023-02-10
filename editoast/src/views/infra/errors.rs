@@ -1,4 +1,4 @@
-use crate::error::{EditoastError, Result};
+use crate::error::Result;
 use crate::schema::InfraErrorType;
 use crate::views::pagination::{
     paginate, PaginatedResponse, PaginationError, PaginationQueryParam,
@@ -6,10 +6,10 @@ use crate::views::pagination::{
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::http::StatusCode;
 use actix_web::web::{block, Data, Json as WebJson, Path, Query};
 use diesel::sql_types::{BigInt, Json, Nullable, Text};
 use diesel::{PgConnection, RunQueryDsl};
+use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use strum::VariantNames;
@@ -74,22 +74,11 @@ fn check_error_type_query(param: &String) -> bool {
         .any(|x| &x.to_string() == param)
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra:errors")]
 enum ListErrorsErrors {
     #[error("Wrong Error type provided")]
     WrongErrorTypeProvided,
-}
-
-impl EditoastError for ListErrorsErrors {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            ListErrorsErrors::WrongErrorTypeProvided => "editoast:infra:WrongErrorTypeProvided",
-        }
-    }
 }
 
 #[derive(QueryableByName, Debug, Clone)]

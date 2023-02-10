@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use actix_web::dev::HttpServiceFactory;
-use actix_web::http::StatusCode;
 use actix_web::post;
 use actix_web::web::{block, Data, Json, Path, Query};
 use chashmap::CHashMap;
@@ -10,12 +9,13 @@ use pathfinding::prelude::yen;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::error::{EditoastError, Result};
+use crate::error::Result;
 use crate::infra::Infra;
 use crate::infra_cache::{Graph, InfraCache};
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
 use crate::DbPool;
+use editoast_derive::EditoastError;
 
 /// Return `/infra/<infra_id>/pathfinding` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -25,7 +25,8 @@ pub fn routes() -> impl HttpServiceFactory {
 const DEFAULT_NUMBER_OF_PATHS: u8 = 5;
 const MAX_NUMBER_OF_PATHS: u8 = 5;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra:pathfinding")]
 enum PathfindingViewErrors {
     #[error("Starting track location was not found")]
     StartingTrackLocationNotFound,
@@ -36,24 +37,6 @@ enum PathfindingViewErrors {
         MAX_NUMBER_OF_PATHS
     )]
     InvalidNumberOfPaths(u8),
-}
-
-impl EditoastError for PathfindingViewErrors {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            Self::StartingTrackLocationNotFound => {
-                "editoast:infra:pathfinding:StartingTrackLocationNotFound"
-            }
-            Self::EndingTrackLocationNotFound => {
-                "editoast:infra:pathfinding:EndingTrackLocationNotFound"
-            }
-            Self::InvalidNumberOfPaths(_) => "editoast:infra:pathfinding:InvalidNumberOfPaths",
-        }
-    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
