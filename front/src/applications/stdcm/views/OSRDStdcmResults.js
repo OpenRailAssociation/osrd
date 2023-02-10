@@ -30,6 +30,7 @@ export default function OSRDStcdmResults(props) {
     // Store it to allow time->position logic to be hosted by redux
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateMustRedraw(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation]);
 
   let stdcmResultsSection;
@@ -38,15 +39,22 @@ export default function OSRDStcdmResults(props) {
     simulation.trains[selectedTrain] !== undefined
   ) {
     stdcmResultsSection = (
-      <main className="osrd-config-mastcontainer mastcontainer" style={{ height: '115vh' }}>
+      <main className="osrd-config-mastcontainer" style={{ height: '115vh' }}>
         <div className="osrd-simulation-container mb-2 mx-3 simulation-results">
           <h1 className="text-center text-info">
             <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
           </h1>
           <div className="osrd-config-item mb-2">
             <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
-            <div className="speedspacechart-container" style={{ height: '450px' }}>
-              <SpeedSpaceChart heightOfSpeedSpaceChart={450} showSettings={false} />
+            <div
+              className="speedspacechart-container"
+              style={{ height: '450px', marginBottom: '50px' }}
+            >
+              <SpeedSpaceChart
+                heightOfSpeedSpaceChart={450}
+                showSettings={false}
+                initialHeightOfSpeedSpaceChart={450}
+              />
             </div>
             <div className="spacetimechart-container" style={{ height: '450px' }}>
               <SpaceTimeChart heightOfSpaceTimeChart={450} />
