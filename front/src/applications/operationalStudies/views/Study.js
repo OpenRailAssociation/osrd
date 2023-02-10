@@ -180,7 +180,7 @@ export default function Study() {
                     </button>
                   </div>
                   {study.type && (
-                    <div className="study-details-type">{t(`studyTypes.${study.type}`)}</div>
+                    <div className="study-details-type">{t(`studyCategories.${study.type}`)}</div>
                   )}
                   <div className="study-details-description">{study.description}</div>
                   {study.state && (

@@ -62,8 +62,12 @@ export default function Project() {
   ];
 
   const getProjectImage = async (url) => {
-    const image = await get(url, { responseType: 'blob' });
-    setImageUrl(URL.createObjectURL(image));
+    try {
+      const image = await get(url, { responseType: 'blob' });
+      setImageUrl(URL.createObjectURL(image));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const getProject = async (withNotification = false) => {
