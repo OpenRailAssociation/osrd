@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'java-test-fixtures'
+    alias(libs.plugins.spotbugs)
 }
 
 repositories {
