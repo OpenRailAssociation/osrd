@@ -1,5 +1,4 @@
 use crate::diesel::{QueryDsl, RunQueryDsl};
-use crate::error::EditoastError;
 use crate::error::Result;
 use crate::schema::electrical_profiles::ElectricalProfileSet as ElectricalProfileSetSchema;
 use crate::tables::osrd_infra_electricalprofileset;
@@ -7,10 +6,10 @@ use crate::tables::osrd_infra_electricalprofileset::dsl;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::http::StatusCode;
 use actix_web::web::{self, block, Data, Json, Path};
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
+use editoast_derive::EditoastError;
 use serde::Serialize;
 use serde_json::{json, Map, Value as JsonValue};
 use thiserror::Error;
@@ -118,30 +117,19 @@ impl ElectricalProfileSet {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "electrical_profiles", context = "Self::context")]
 pub enum ElectricalProfilesError {
     /// Couldn't found the infra with the given id
     #[error("Electrical Profile Set '{0}', could not be found")]
+    #[editoast_error(status = 404)]
     NotFound(i64),
     #[error("An internal error occurred: '{}'", .0.to_string())]
+    #[editoast_error(status = 500)]
     InternalError(String),
 }
 
-impl EditoastError for ElectricalProfilesError {
-    fn get_status(&self) -> StatusCode {
-        match self {
-            Self::NotFound(_) => StatusCode::NOT_FOUND,
-            Self::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        }
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            Self::NotFound(_) => "editoast:electrical_profiles:NotFound",
-            Self::InternalError(_) => "editoast:electrical_profiles:InternalError",
-        }
-    }
-
+impl ElectricalProfilesError {
     fn context(&self) -> Map<String, JsonValue> {
         match self {
             ElectricalProfilesError::NotFound(electrical_profile_set_id) => json!({
@@ -157,7 +145,9 @@ impl EditoastError for ElectricalProfilesError {
 
 #[cfg(test)]
 mod tests {
+    use super::ElectricalProfileSet;
     use crate::client::PostgresConfig;
+    use crate::tables::osrd_infra_electricalprofileset::dsl;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::http::header::ContentType;
@@ -166,11 +156,7 @@ mod tests {
     use actix_web::test::TestRequest;
     use diesel::prelude::*;
     use diesel::result::Error;
-
-    use crate::tables::osrd_infra_electricalprofileset::dsl;
     use serde_json::json;
-
-    use super::ElectricalProfileSet;
 
     fn test_ep_set_transaction(fn_test: fn(&mut PgConnection, ElectricalProfileSet)) {
         let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();

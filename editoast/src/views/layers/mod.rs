@@ -1,15 +1,15 @@
 mod mvt_utils;
 
 use crate::client::MapLayersConfig;
-use crate::error::{EditoastError, Result};
+use crate::error::Result;
 use crate::map::{get, get_cache_tile_key, get_view_cache_prefix, set, Layer, MapLayers, Tile};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::http::StatusCode;
 use actix_web::web::{block, scope, Data, Json, Path, Query};
 use actix_web::{get, HttpResponse};
 use diesel::sql_types::Integer;
 use diesel::{sql_query, RunQueryDsl};
+use editoast_derive::EditoastError;
 use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
 use redis::Client;
 use serde::Deserialize;
@@ -21,7 +21,8 @@ pub fn routes() -> impl HttpServiceFactory {
     scope("/layers").service((layer_view, cache_and_get_mvt_tile))
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "layers", default_status = 404)]
 enum LayersError {
     #[error("Layer '{}' not found. Expected one of {:?}", .layer_name, .expected_names)]
     LayerNotFound {
@@ -33,19 +34,6 @@ enum LayersError {
         view_name: String,
         expected_names: Vec<String>,
     },
-}
-
-impl EditoastError for LayersError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::NOT_FOUND
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            LayersError::LayerNotFound { .. } => "editoast:layers:LayerNotFound",
-            LayersError::ViewNotFound { .. } => "editoast:layers:ViewNotFound",
-        }
-    }
 }
 
 impl LayersError {

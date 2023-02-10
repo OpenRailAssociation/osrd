@@ -3,10 +3,9 @@ mod delete;
 mod update;
 
 use super::ObjectRef;
-use crate::error::EditoastError;
 use crate::error::Result;
-use actix_web::http::StatusCode;
 use diesel::PgConnection;
+use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -55,10 +54,12 @@ impl Operation {
     }
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "operation")]
 enum OperationError {
     // To modify
     #[error("Object '{0}', could not be found")]
+    #[editoast_error(status = 404)]
     ObjectNotFound(String),
     #[error("Empty string id is forbidden")]
     EmptyId,
@@ -66,22 +67,4 @@ enum OperationError {
     ModifyId,
     #[error("A Json Patch error occurred: '{}'", .0)]
     InvalidPatch(String),
-}
-
-impl EditoastError for OperationError {
-    fn get_status(&self) -> StatusCode {
-        match self {
-            OperationError::ObjectNotFound(_) => StatusCode::NOT_FOUND,
-            _ => StatusCode::BAD_REQUEST,
-        }
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            OperationError::ObjectNotFound(_) => "editoast:operation:ObjectNotFound",
-            OperationError::EmptyId => "editoast:operation:EmptyId",
-            OperationError::ModifyId => "editoast:operation:ModifyId",
-            OperationError::InvalidPatch(_) => "editoast:operation:InvalidPatch",
-        }
-    }
 }

@@ -3,17 +3,14 @@ use super::{
     Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use crate::error::Result;
-use crate::{
-    error::EditoastError,
-    infra::{Infra, RAILJSON_VERSION},
-};
-use actix_web::http::StatusCode;
+use crate::infra::{Infra, RAILJSON_VERSION};
 use derivative::Derivative;
 use diesel::{
     sql_query,
     sql_types::{BigInt, Text},
     Connection, PgConnection, QueryableByName, RunQueryDsl,
 };
+use editoast_derive::EditoastError;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use thiserror::Error;
 
@@ -36,26 +33,17 @@ pub struct RailJson {
     pub detectors: Vec<Detector>,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "railjson")]
 pub enum RailjsonError {
     #[error("Wrong railjson version '{0}'. Should be {}", RAILJSON_VERSION)]
-    RailjsonVersion(String),
-}
-
-impl EditoastError for RailjsonError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        "editoast:railjson:WrongVersion"
-    }
+    WrongVersion(String),
 }
 
 impl RailJson {
     pub fn persist<T: AsRef<str>>(&self, infra_name: T, conn: &mut PgConnection) -> Result<Infra> {
         if self.version != RAILJSON_VERSION {
-            return Err(RailjsonError::RailjsonVersion(self.version.clone()).into());
+            return Err(RailjsonError::WrongVersion(self.version.clone()).into());
         }
 
         conn.transaction(|conn| {
@@ -130,7 +118,7 @@ pub mod test {
 
             let res = railjson_with_invalid_version.persist("test", conn);
             assert!(res.is_err());
-            let expected_error = RailjsonError::RailjsonVersion("0".to_string());
+            let expected_error = RailjsonError::WrongVersion("0".to_string());
             assert_eq!(res.unwrap_err().get_type(), expected_error.get_type(),);
         });
     }

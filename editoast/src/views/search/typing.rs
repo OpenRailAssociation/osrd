@@ -1,13 +1,13 @@
 //! Defines the low-level structures used by typecheking operations
 use std::{fmt::Display, ops::Shr};
 
-use actix_http::StatusCode;
+use crate::error::Result;
+use editoast_derive::EditoastError;
 use serde::Deserialize;
 use thiserror::Error;
 
-use crate::error::{EditoastError, Result};
-
-#[derive(Debug, PartialEq, Error)]
+#[derive(Debug, PartialEq, Error, EditoastError)]
+#[editoast_error(base_id = "search")]
 enum TypeCheckError {
     #[error("expected variadic argument of type {expected}, but got {actual}")]
     VariadicArgTypeMismatch {
@@ -24,16 +24,6 @@ enum TypeCheckError {
     ArgMissing { expected: TypeSpec, arg_pos: usize },
     #[error("unexpected argument of type {0} found")]
     UnexpectedArg(TypeSpec),
-}
-
-impl EditoastError for TypeCheckError {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &'static str {
-        "editoast:search:TypeCheckError"
-    }
 }
 
 /// Defines all the atomic types that are expressible by the search query language
