@@ -30,7 +30,7 @@ export default function ScenarioExplorator() {
   const [scenarioDetails, setScenarioDetails] = useState<any>();
   const [imageUrl, setImageUrl] = useState<string>();
 
-  async function getProjectStudyScenarioDetail(url: string, setDetails: (arg0: any) => void) {
+  async function getDetails(url: string, setDetails: (arg0: any) => void) {
     try {
       const result = await get(url);
       setDetails(result);
@@ -40,18 +40,19 @@ export default function ScenarioExplorator() {
   }
 
   const getProjectImage = async (url: string) => {
-    const image = await get(url, { responseType: 'blob' });
-    setImageUrl(URL.createObjectURL(image));
+    try {
+      const image = await get(url, { responseType: 'blob' });
+      setImageUrl(URL.createObjectURL(image));
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
     if (projectID && studyID && scenarioID) {
-      getProjectStudyScenarioDetail(`${PROJECTS_URI}${projectID}/`, setProjectDetails);
-      getProjectStudyScenarioDetail(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`,
-        setStudyDetails
-      );
-      getProjectStudyScenarioDetail(
+      getDetails(`${PROJECTS_URI}${projectID}/`, setProjectDetails);
+      getDetails(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
+      getDetails(
         `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
         setScenarioDetails
       );

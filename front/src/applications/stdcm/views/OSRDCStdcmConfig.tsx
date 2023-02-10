@@ -12,13 +12,22 @@ import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelect
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 
 import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
-import { getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
+import {
+  getInfraID,
+  getProjectID,
+  getScenarioID,
+  getStudyID,
+  getTimetableID,
+} from 'reducers/osrdconf/selectors';
 
 type OSRDStdcmConfigProps = {
   setCurrentStdcmRequestStatus: (status: string) => void;
 };
 
 export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmConfigProps) {
+  const projectID = useSelector(getProjectID);
+  const studyID = useSelector(getStudyID);
+  const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
   const infraID = useSelector(getInfraID);
 
@@ -57,7 +66,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-md-7 col-lg-6">
           <ScenarioExplorator />
-          {timetableID && infraID && (
+          {projectID && studyID && scenarioID && timetableID && infraID && (
             <>
               <RollingStockSelector />
               <SpeedLimitByTagSelector />
@@ -106,7 +115,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
             </>
           )}
         </div>
-        {timetableID && infraID && (
+        {projectID && studyID && scenarioID && timetableID && infraID && (
           <div className="col-md-5 col-lg-6">
             <div className="osrd-config-item mb-2">
               <div className="osrd-config-item-container osrd-config-item-container-map">
