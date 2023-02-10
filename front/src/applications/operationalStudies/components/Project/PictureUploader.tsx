@@ -12,22 +12,22 @@ import logoGhibli from 'assets/pictures/misc/ghibli.svg';
 import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 
 type PropsPlaceholder = {
-  configItems: projectTypes;
+  currentProject: projectTypes;
   isValid: boolean;
 };
 
 type Props = {
-  configItems: projectTypes;
-  setConfigItems: (configItems: projectTypes) => void;
+  currentProject: projectTypes;
+  setCurrentProject: (currentProject: projectTypes) => void;
 };
 
-function PicturePlaceholder({ configItems, isValid }: PropsPlaceholder) {
+function PicturePlaceholder({ currentProject, isValid }: PropsPlaceholder) {
   const { t } = useTranslation('operationalStudies/project');
-  if (configItems.image) {
-    return <img src={URL.createObjectURL(configItems.image)} alt="Project illustration" />;
+  if (currentProject.image) {
+    return <img src={URL.createObjectURL(currentProject.image)} alt="Project illustration" />;
   }
-  if (configItems.image_url) {
-    return <img src={configItems.image_url} alt="Project illustration" />;
+  if (currentProject.image_url) {
+    return <img src={currentProject.image_url} alt="Project illustration" />;
   }
   return (
     <>
@@ -45,11 +45,11 @@ function PicturePlaceholder({ configItems, isValid }: PropsPlaceholder) {
   );
 }
 
-function PicturePlaceholderButtons({ configItems, setConfigItems }: Props) {
+function PicturePlaceholderButtons({ currentProject, setCurrentProject }: Props) {
   async function getRandomImage(url: string) {
     try {
       const image = await fetch(url).then((res) => res.blob());
-      setConfigItems({ ...configItems, image });
+      setCurrentProject({ ...currentProject, image });
     } catch (error) {
       console.error(error);
     }
@@ -123,7 +123,7 @@ function PicturePlaceholderButtons({ configItems, setConfigItems }: Props) {
       <button
         className="remove"
         type="button"
-        onClick={() => setConfigItems({ ...configItems, image: null, image_url: undefined })}
+        onClick={() => setCurrentProject({ ...currentProject, image: null, image_url: undefined })}
       >
         <TiDelete />
       </button>
@@ -131,22 +131,22 @@ function PicturePlaceholderButtons({ configItems, setConfigItems }: Props) {
   );
 }
 
-export default function PictureUploader({ configItems, setConfigItems }: Props) {
+export default function PictureUploader({ currentProject, setCurrentProject }: Props) {
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const handleUpload = async (file?: File) => {
     if (file && file.type.startsWith('image/')) {
-      setConfigItems({ ...configItems, image: file });
+      setCurrentProject({ ...currentProject, image: file });
       setIsValid(true);
     } else {
-      setConfigItems({ ...configItems, image: undefined });
+      setCurrentProject({ ...currentProject, image: undefined });
       setIsValid(false);
     }
   };
   return (
     <div className="project-edition-modal-picture-placeholder">
       <label htmlFor="picture-upload">
-        <PicturePlaceholder configItems={configItems} isValid={isValid} />
+        <PicturePlaceholder currentProject={currentProject} isValid={isValid} />
         <input
           id="picture-upload"
           type="file"
@@ -156,7 +156,10 @@ export default function PictureUploader({ configItems, setConfigItems }: Props) 
           className="d-none"
         />
       </label>
-      <PicturePlaceholderButtons configItems={configItems} setConfigItems={setConfigItems} />
+      <PicturePlaceholderButtons
+        currentProject={currentProject}
+        setCurrentProject={setCurrentProject}
+      />
     </div>
   );
 }

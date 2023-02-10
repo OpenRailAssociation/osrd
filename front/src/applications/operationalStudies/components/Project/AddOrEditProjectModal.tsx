@@ -31,7 +31,7 @@ export type Props = {
   getProject?: any;
 };
 
-const configItemsDefaults = {
+const currentProjectDefaults = {
   name: '',
   description: '',
   objectives: '',
@@ -43,35 +43,37 @@ const configItemsDefaults = {
 export default function AddOrEditProjectModal({ editionMode, project, getProject }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
-  const [configItems, setConfigItems] = useState<projectTypes>(project || configItemsDefaults);
+  const [currentProject, setCurrentProject] = useState<projectTypes>(
+    project || currentProjectDefaults
+  );
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const removeTag = (idx: number) => {
-    const newTags: string[] = Array.from(configItems.tags);
+    const newTags: string[] = Array.from(currentProject.tags);
     newTags.splice(idx, 1);
-    setConfigItems({ ...configItems, tags: newTags });
+    setCurrentProject({ ...currentProject, tags: newTags });
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = configItems.tags ? Array.from(configItems.tags) : [];
+    const newTags: string[] = currentProject.tags ? Array.from(currentProject.tags) : [];
     newTags.push(tag);
-    setConfigItems({ ...configItems, tags: newTags });
+    setCurrentProject({ ...currentProject, tags: newTags });
   };
 
   const createProject = async () => {
-    if (!configItems.name) {
+    if (!currentProject.name) {
       setDisplayErrors(true);
     } else {
       try {
         let result;
-        if (configItems.image) {
-          const { image, ...configItemsWithoutImage } = configItems;
-          result = await post(PROJECTS_URI, configItemsWithoutImage);
+        if (currentProject.image) {
+          const { image, ...currentProjectWithoutImage } = currentProject;
+          result = await post(PROJECTS_URI, currentProjectWithoutImage);
           await patchMultipart(`${PROJECTS_URI}${result.id}/`, { image });
         } else {
-          result = await post(PROJECTS_URI, configItems);
+          result = await post(PROJECTS_URI, currentProject);
         }
         dispatch(updateProjectID(result.id));
         navigate('/operational-studies/project');
@@ -83,16 +85,16 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   };
 
   const updateProject = async () => {
-    if (!configItems.name) {
+    if (!currentProject.name) {
       setDisplayErrors(true);
     } else if (project) {
       try {
-        if (configItems.image) {
-          const { image, ...configItemsWithoutImage } = configItems;
+        if (currentProject.image) {
+          const { image, ...currentProjectWithoutImage } = currentProject;
           await patchMultipart(`${PROJECTS_URI}${project.id}/`, { image });
-          await patch(`${PROJECTS_URI}${project.id}/`, configItemsWithoutImage);
+          await patch(`${PROJECTS_URI}${project.id}/`, currentProjectWithoutImage);
         } else {
-          await patch(`${PROJECTS_URI}${project.id}/`, configItems);
+          await patch(`${PROJECTS_URI}${project.id}/`, currentProject);
         }
         getProject(true);
         closeModal();
@@ -121,7 +123,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     }
   };
 
-  const debouncedObjectives = useDebounce(configItems.objectives, 500);
+  const debouncedObjectives = useDebounce(currentProject.objectives, 500);
 
   return (
     <div className="project-edition-modal">
@@ -135,7 +137,10 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
         <div className="row mb-3">
           <div className="col-xl-4 col-lg-5 col-md-6">
             <div className="project-edition-modal-picture">
-              <PictureUploader configItems={configItems} setConfigItems={setConfigItems} />
+              <PictureUploader
+                currentProject={currentProject}
+                setCurrentProject={setCurrentProject}
+              />
             </div>
           </div>
           <div className="col-xl-8 col-lg-7 col-md-6">
@@ -152,10 +157,14 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     <span className="font-weight-bold">{t('projectName')}</span>
                   </div>
                 }
-                value={configItems.name}
-                onChange={(e: any) => setConfigItems({ ...configItems, name: e.target.value })}
-                isInvalid={displayErrors && !configItems.name}
-                errorMsg={displayErrors && !configItems.name ? t('projectNameMissing') : undefined}
+                value={currentProject.name}
+                onChange={(e: any) =>
+                  setCurrentProject({ ...currentProject, name: e.target.value })
+                }
+                isInvalid={displayErrors && !currentProject.name}
+                errorMsg={
+                  displayErrors && !currentProject.name ? t('projectNameMissing') : undefined
+                }
               />
             </div>
             <div className="project-edition-modal-description">
@@ -169,9 +178,9 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     {t('projectDescription')}
                   </div>
                 }
-                value={configItems.description}
+                value={currentProject.description}
                 onChange={(e: any) =>
-                  setConfigItems({ ...configItems, description: e.target.value })
+                  setCurrentProject({ ...currentProject, description: e.target.value })
                 }
                 rows={3}
               />
@@ -191,9 +200,9 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     {t('projectObjectives')}
                   </div>
                 }
-                value={configItems.objectives}
+                value={currentProject.objectives}
                 onChange={(e: any) =>
-                  setConfigItems({ ...configItems, objectives: e.target.value })
+                  setCurrentProject({ ...currentProject, objectives: e.target.value })
                 }
               />
             </div>
@@ -226,10 +235,10 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectFunders')}
                 </div>
               }
-              value={configItems.funders?.join()}
+              value={currentProject.funders?.join()}
               onChange={(e: any) =>
-                setConfigItems({
-                  ...configItems,
+                setCurrentProject({
+                  ...currentProject,
                   funders: e.target.value ? [e.target.value] : [],
                 })
               }
@@ -250,14 +259,16 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectBudget')}
                 </div>
               }
-              value={configItems.budget}
-              onChange={(e: any) => setConfigItems({ ...configItems, budget: e.target.value })}
+              value={currentProject.budget}
+              onChange={(e: any) =>
+                setCurrentProject({ ...currentProject, budget: e.target.value })
+              }
             />
           </div>
         </div>
         <ChipsSNCF
           addTag={addTag}
-          tags={configItems.tags || []}
+          tags={currentProject.tags || []}
           removeTag={removeTag}
           title={t('projectTags')}
           color="purple"
