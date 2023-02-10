@@ -964,11 +964,12 @@ paths:
         - projects
       summary: Retrieve a project
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id you want to retrieve
+          required: true
       responses:
         200:
           description: The project info
@@ -981,11 +982,12 @@ paths:
         - projects
       summary: Update a project
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id you want to update
+          required: true
       requestBody:
         description: The fields you want to update
         content:
@@ -1004,15 +1006,36 @@ paths:
         - projects
       summary: delete a project
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id you want to delete
-
+          required: true
       responses:
         204:
           description: No content
+
+  /projects/{project_id}/image/:
+    get:
+      tags:
+        - projects
+      summary: Retrieve a project image
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id you want to retrieve the image
+          required: true
+      responses:
+        200:
+          description: The project image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
 
   /projects/{project_id}/studies/:
     post:
@@ -1020,10 +1043,11 @@ paths:
         - studies
       summary: Create a new operational study
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
+          required: true
       requestBody:
         content:
           application/json:
@@ -1041,10 +1065,11 @@ paths:
         - studies
       summary: Paginated list of operational studies
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
+          required: true
         - in: query
           name: name
           schema:
@@ -1100,12 +1125,14 @@ paths:
         - studies
       summary: Retrieve an operational study
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the operational study
-        - in: query
+          required: true
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
@@ -1127,7 +1154,8 @@ paths:
           schema:
             type: integer
           description: project id refered to the study
-        - in: query
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
@@ -1150,12 +1178,14 @@ paths:
         - studies
       summary: delete an operational study
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the operational study
-        - in: query
+          required: true
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
@@ -1169,11 +1199,12 @@ paths:
         - studies
       summary: Retrieve list of study types
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the operational study
+          required: true
       responses:
         200:
           description: The list of study types
@@ -1201,11 +1232,12 @@ paths:
         - studies
       summary: Retrieve list of study states
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the operational study
+          required: true
       responses:
         200:
           description: The list of study states
@@ -1222,11 +1254,13 @@ paths:
         - scenarios
       summary: Create a new scenario
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
-        - in: query
+          required: true
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
@@ -1247,11 +1281,13 @@ paths:
         - scenarios
       summary: Paginated list of scenarios
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
-        - in: query
+          required: true
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
@@ -1310,16 +1346,19 @@ paths:
         - scenarios
       summary: Retrieve a scenario
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the scenario
-        - in: query
+          required: true
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
-        - in: query
+        - in: path
+          required: true
           name: scenario_id
           schema:
             type: integer
@@ -1336,17 +1375,20 @@ paths:
         - scenarios
       summary: update a scenario
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the scenario
-        - in: query
+          required: true
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
           description: study refered to the scenario
-        - in: query
+        - in: path
+          required: true
           name: scenario_id
           schema:
             type: integer
@@ -1369,17 +1411,20 @@ paths:
         - scenarios
       summary: delete a scenario
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the scenario
-        - in: query
+          required: true
+        - in: path
+          required: true
           name: study_id
           schema:
             type: integer
           description: study id refered to the scenario
-        - in: query
+        - in: path
+          required: true
           name: scenario_id
           schema:
             type: integer
