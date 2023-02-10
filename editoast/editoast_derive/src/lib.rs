@@ -1,65 +1,48 @@
 extern crate proc_macro;
-use darling::FromDeriveInput;
-use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
 
-#[derive(FromDeriveInput)]
-#[darling(attributes(model))]
-struct ModelOptions {
-    table: syn::Path,
-}
+mod error;
+mod model;
+
+use proc_macro::TokenStream;
+use syn::{parse_macro_input, DeriveInput};
 
 /// A Model custom derive.
 ///
 /// Usage: you should provide a diesel table path, like so
-/// #[model(table = "crate::tables::osrd_infra_bufferstopmodel")]
+/// `#[model(table = "crate::tables::osrd_infra_bufferstopmodel")]`
 ///
 /// The type must be OSRDIdentified, and must be serializable
 ///
 /// Provides a type impl with an insertion method, persist_batch
 #[proc_macro_derive(Model, attributes(model))]
-pub fn model_fn(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let options = ModelOptions::from_derive_input(&input).expect("Model: bad options");
-    let name = input.ident;
-    let table = options.table;
+pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    model::model(input)
+}
 
-    let expanded = quote! {
-        impl #name {
-            pub fn persist_batch(
-                values: &[Self],
-                infrastructure_id: i64,
-                conn: &mut diesel::PgConnection,
-            ) -> crate::error::Result<()> {
-                use #table::dsl::*;
-                use crate::diesel::RunQueryDsl;
-                use diesel::ExpressionMethods;
-
-                let datas = values
-                    .iter()
-                    .map(|value| {
-                        (
-                            obj_id.eq(value.get_id().clone()),
-                            data.eq(serde_json::to_value(value).unwrap()),
-                            infra_id.eq(infrastructure_id),
-                        )
-                    })
-                    .collect::<Vec<_>>();
-
-                // Work around a diesel limitation
-                // See https://github.com/diesel-rs/diesel/issues/2414
-                // Divided by 3 here because we are inserting three values
-                const DIESEL_MAX_VALUES : usize = (2_usize.pow(16) - 1)/3;
-                for data_chunk in datas.chunks(DIESEL_MAX_VALUES) {
-                    diesel::insert_into(#table::table)
-                        .values(data_chunk)
-                        .execute(conn)?;
-                }
-
-                Ok(())
-            }
-        }
-    };
-
-    proc_macro::TokenStream::from(expanded)
+/// An EditoastError custom derive.
+///
+/// ### Usage
+/// You must provide a `base_id` which will prefix each variant.
+/// For a variant named `MyError`, this will generate error ids like `"editoast:myview:MyError"`.
+/// You can provide a `default_status` that will apply to all variants (400 by default).
+/// You can provide a `context` function that will be called fill the error context.
+///
+/// You can also provide a `status` for each variant, which will be the HTTP status code.
+///
+/// ### Example
+///
+/// ```
+/// #[derive(Debug, EditoastError)]
+/// #[editoast_error(base_id = "myview", default_status = 404, context = "Self::context")]
+/// enum MyError {
+///   #[editoast_error(status = 400)]
+///   MyFirstError,
+/// }
+/// ```
+#[proc_macro_derive(EditoastError, attributes(editoast_error))]
+pub fn error(input: TokenStream) -> TokenStream {
+    let mut input = parse_macro_input!(input as DeriveInput);
+    error::expand_editoast_error(&mut input)
+        .unwrap_or_else(darling::Error::write_errors)
+        .into()
 }
