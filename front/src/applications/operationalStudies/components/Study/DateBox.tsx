@@ -13,7 +13,13 @@ export default function DateBox({ date, className, translation }: Props) {
   return (
     <div className={`study-details-dates-date ${className}`}>
       <span className="study-details-dates-date-label">{t(`dates.${translation}`)}</span>
-      <span className="study-details-dates-date-value">{dateTimeFrenchFormatting(date)}</span>
+      <span className="study-details-dates-date-value">
+        {date ? (
+          dateTimeFrenchFormatting(date)
+        ) : (
+          <small className="text-muted">{t('noDateFound')}</small>
+        )}
+      </span>
     </div>
   );
 }
