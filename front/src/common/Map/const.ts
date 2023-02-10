@@ -3,7 +3,7 @@ import config from 'config/config';
 export * from 'common/Map/Consts/SignalsNames';
 
 // Map constants
-export const MAP_URL = config.proxy_editoast + "/layers";
+export const MAP_URL = `${config.proxy_editoast}/layers`;
 export const OSM_URL = 'https://osm.osrd.fr/data/v3.json';
 
 export const MAP_MODES = {
@@ -60,3 +60,40 @@ export const FIELDS_LABEL = {
   itineraires: 'Itinéraires',
   itineraires_incompatibles: 'Itinéraire Incompatibles',
 };
+
+// mapKey
+export interface MapKeyProps {
+  active: boolean;
+  toggleMapKey: Function;
+}
+
+interface SpeedLimitKey {
+  speed: string;
+  text: string;
+}
+
+export const speedLimitMapKey: SpeedLimitKey[] = [
+  { speed: 'v300', text: '> 220km/h' },
+  { speed: 'v200', text: '161km/h - 220km/h' },
+  { speed: 'v160', text: '140km/h - 160km/h' },
+  { speed: 'v100', text: '100km/h - 139km/h' },
+  { speed: 'v60', text: '61km/h - 99km/h' },
+  { speed: 'v30', text: '31km/h - 60km/h' },
+  { speed: 'v0', text: '1km/h - 30km/h' },
+];
+
+interface CatenaryKey {
+  color: string;
+  text: string;
+  current: string;
+}
+
+export const catenaryMapKey: CatenaryKey[] = [
+  { color: 'color25000V', text: '25000V', current: 'alternatingCurrent' },
+  { color: 'color15000V1623', text: '15000V 16 2/3', current: '' },
+  { color: 'color3000V', text: '3000V', current: 'directCurrent' },
+  { color: 'color1500V', text: '1500V', current: 'directCurrent' },
+  { color: 'color850V', text: '850V', current: 'directCurrent' },
+  { color: 'color800V', text: '800V', current: 'directCurrent' },
+  { color: 'color750V', text: '750V', current: 'directCurrent' },
+];
