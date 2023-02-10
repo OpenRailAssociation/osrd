@@ -35,6 +35,8 @@ export default function MapButtons(props) {
       ...mapModalKeywords,
       [keyModal]: !showMapModal[keyModal],
     });
+
+    // Close the pop up of the map
     if (featureInfoClick.displayPopup) {
       dispatch(
         updateFeatureInfoClickOSRD({
