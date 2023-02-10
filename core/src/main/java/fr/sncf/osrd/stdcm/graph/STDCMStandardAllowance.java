@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
 import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.envelope.Envelope;
@@ -27,7 +27,7 @@ public class STDCMStandardAllowance {
             Envelope envelope,
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
             AllowanceValue standardAllowance,
-            EnvelopePath envelopePath,
+            EnvelopeSimPath envelopeSimPath,
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
@@ -41,7 +41,7 @@ public class STDCMStandardAllowance {
             var newEnvelope = applyAllowanceWithTransitions(
                     envelope,
                     standardAllowance,
-                    envelopePath,
+                    envelopeSimPath,
                     rollingStock,
                     timeStep,
                     comfort,
@@ -101,7 +101,7 @@ public class STDCMStandardAllowance {
     private static Envelope applyAllowanceWithTransitions(
             Envelope envelope,
             AllowanceValue standardAllowance,
-            EnvelopePath envelopePath,
+            EnvelopeSimPath envelopeSimPath,
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
@@ -109,7 +109,7 @@ public class STDCMStandardAllowance {
     ) {
 
         var allowance = new MarecoAllowance(
-                EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort),
+                EnvelopeSimContextBuilder.build(rollingStock, envelopeSimPath, timeStep, comfort),
                 0,
                 envelope.getEndPos(),
                 1,

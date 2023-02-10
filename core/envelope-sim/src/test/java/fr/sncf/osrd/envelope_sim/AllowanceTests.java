@@ -496,7 +496,7 @@ public class AllowanceTests {
 
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var length = 100_000;
-        var testPath = new EnvelopePath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
+        var testPath = new EnvelopeSimPath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] { 50_000, testContext.path.getLength() };
@@ -538,7 +538,7 @@ public class AllowanceTests {
         gradePositions.add(length);
 
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
-        var testPath = new EnvelopePath(
+        var testPath = new EnvelopeSimPath(
                 length, gradePositions.toArray(), gradeValues.toArray(), ImmutableRangeMap.of());
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
@@ -659,7 +659,7 @@ public class AllowanceTests {
         var length = 15000;
         var gradePositions = new double[] { 0, 7000, 8100, length };
         var gradeValues = new double[] { 0, 40, 0 };
-        var testPath = new EnvelopePath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
+        var testPath = new EnvelopeSimPath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] { length };

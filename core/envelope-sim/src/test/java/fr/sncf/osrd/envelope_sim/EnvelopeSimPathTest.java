@@ -9,10 +9,10 @@ import com.google.common.collect.TreeRangeMap;
 import org.junit.jupiter.api.Test;
 import java.util.Map;
 
-public class EnvelopePathTest {
+public class EnvelopeSimPathTest {
     @Test
     void testAverageGrade() {
-        var path = new EnvelopePath(10, new double[]{0, 3, 6, 9, 10}, new double[]{0, 2, -2, 0},
+        var path = new EnvelopeSimPath(10, new double[]{0, 3, 6, 9, 10}, new double[]{0, 2, -2, 0},
                 ImmutableRangeMap.of());
         assertEquals(10, path.getLength());
         assertEquals(0, path.getAverageGrade(0, 3));
@@ -24,7 +24,7 @@ public class EnvelopePathTest {
 
     @Test
     void findHighGradePosition() {
-        var path = new EnvelopePath(10, new double[]{0, 3, 6, 9, 10}, new double[]{0, 2, -2, 0},
+        var path = new EnvelopeSimPath(10, new double[]{0, 3, 6, 9, 10}, new double[]{0, 2, -2, 0},
                 ImmutableRangeMap.of());
         assertEquals(0, path.getAverageGrade(0, 3));
         assertEquals(0, path.getAverageGrade(0, 10));
@@ -38,7 +38,7 @@ public class EnvelopePathTest {
         TreeRangeMap<Double, String> modes = TreeRangeMap.create();
         modes.put(Range.closed(3.0, 7.0), "1500");
         modes.put(Range.closed(7.1, 10.0), "25000");
-        var path = new EnvelopePath(10, new double[] { 0, 10 }, new double[] { 0 }, modes);
+        var path = new EnvelopeSimPath(10, new double[] { 0, 10 }, new double[] { 0 }, modes);
         var modeAndProfileMap = path.getModeAndProfileMap(null);
 
         var modeAndProfile = modeAndProfileMap.get(0.);
@@ -74,7 +74,7 @@ public class EnvelopePathTest {
         profiles2.put(Range.closed(6.0, 7.0), "A");
         profiles2.put(Range.closed(7.1, 10.5), "25000");
 
-        var path = new EnvelopePath(10, new double[] { 0, 10 }, new double[] { 0 }, modes);
+        var path = new EnvelopeSimPath(10, new double[] { 0, 10 }, new double[] { 0 }, modes);
         path.setElectricalProfiles(Map.of("1", profiles1, "2", profiles2));
 
         var modeAndProfileMap = path.getModeAndProfileMap("2");

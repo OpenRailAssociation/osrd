@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EnvelopePath implements PhysicsPath {
+public class EnvelopeSimPath implements PhysicsPath {
     public final double length;
 
     /**
@@ -44,7 +44,7 @@ public class EnvelopePath implements PhysicsPath {
      * @param catenaryModeMap range map of catenary modes
      */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
-    public EnvelopePath(
+    public EnvelopeSimPath(
             double length,
             double[] gradePositions,
             double[] gradeValues,

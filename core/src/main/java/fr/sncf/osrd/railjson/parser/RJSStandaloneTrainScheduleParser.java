@@ -3,7 +3,7 @@ package fr.sncf.osrd.railjson.parser;
 import static fr.sncf.osrd.railjson.parser.RJSRollingStockParser.parseComfort;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
@@ -29,7 +29,7 @@ public class RJSStandaloneTrainScheduleParser {
             Function<String, RollingStock> rollingStockGetter,
             RJSStandaloneTrainSchedule rjsTrainSchedule,
             TrainPath trainPath,
-            EnvelopePath envelopePath
+            EnvelopeSimPath envelopeSimPath
     ) throws InvalidSchedule {
         var rollingStockID = rjsTrainSchedule.rollingStock;
         var rollingStock = rollingStockGetter.apply(rollingStockID);
@@ -52,7 +52,7 @@ public class RJSStandaloneTrainScheduleParser {
             for (int i = 0; i < rjsTrainSchedule.allowances.length; i++) {
                 var rjsAllowance = rjsTrainSchedule.allowances[i];
                 allowances.add(
-                        parseAllowance(timeStep, rollingStock, envelopePath, rjsAllowance, comfort,
+                        parseAllowance(timeStep, rollingStock, envelopeSimPath, rjsAllowance, comfort,
                                 options.ignoreElectricalProfiles)
                 );
             }
@@ -72,7 +72,7 @@ public class RJSStandaloneTrainScheduleParser {
     private static Allowance parseAllowance(
             double timeStep,
             RollingStock rollingStock,
-            EnvelopePath envelopePath,
+            EnvelopeSimPath envelopeSimPath,
             RJSAllowance rjsAllowance,
             RollingStock.Comfort comfort,
             boolean ignoreElectricalProfiles
@@ -85,16 +85,16 @@ public class RJSStandaloneTrainScheduleParser {
         // parse allowance type
         if (rjsAllowance instanceof RJSAllowance.EngineeringAllowance engineeringAllowance) {
             beginPos = engineeringAllowance.beginPosition;
-            endPos = Math.min(envelopePath.length, engineeringAllowance.endPosition);
+            endPos = Math.min(envelopeSimPath.length, engineeringAllowance.endPosition);
             ranges = List.of(new AllowanceRange(beginPos, endPos, parseAllowanceValue(engineeringAllowance.value)));
         } else if (rjsAllowance instanceof RJSAllowance.StandardAllowance standardAllowance) {
             beginPos = 0;
-            endPos = envelopePath.getLength();
-            ranges = parseAllowanceRanges(envelopePath, standardAllowance.defaultValue, standardAllowance.ranges);
+            endPos = envelopeSimPath.getLength();
+            ranges = parseAllowanceRanges(envelopeSimPath, standardAllowance.defaultValue, standardAllowance.ranges);
         } else {
             throw new RuntimeException("unknown allowance type");
         }
-        var context = EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort,
+        var context = EnvelopeSimContextBuilder.build(rollingStock, envelopeSimPath, timeStep, comfort,
                 ignoreElectricalProfiles);
         // parse allowance distribution
         return switch (allowanceDistribution) {
@@ -116,14 +116,14 @@ public class RJSStandaloneTrainScheduleParser {
     }
 
     private static List<AllowanceRange> parseAllowanceRanges(
-            EnvelopePath envelopePath,
+            EnvelopeSimPath envelopeSimPath,
             RJSAllowanceValue defaultValue,
             RJSAllowanceRange[] ranges
     ) throws InvalidSchedule {
         var value = parseAllowanceValue(defaultValue);
         // if no ranges have been defined, just return the default value
         if (ranges == null || ranges.length == 0) {
-            return List.of(new AllowanceRange(0, envelopePath.getLength(), value));
+            return List.of(new AllowanceRange(0, envelopeSimPath.getLength(), value));
         }
 
         // sort the range list by begin position
@@ -143,8 +143,8 @@ public class RJSStandaloneTrainScheduleParser {
             lastEndPos = range.endPos;
             res.add(parseAllowanceRange(range));
         }
-        if (lastEndPos < envelopePath.getLength())
-            res.add(new AllowanceRange(lastEndPos, envelopePath.getLength(), value));
+        if (lastEndPos < envelopeSimPath.getLength())
+            res.add(new AllowanceRange(lastEndPos, envelopeSimPath.getLength(), value));
         return res;
     }
 

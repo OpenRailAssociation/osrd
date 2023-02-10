@@ -1,11 +1,12 @@
 package fr.sncf.osrd.train;
 
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ModeAndProfile;
+
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.Set;
  * The immutable characteristics of a specific train.
  * There must be a RollingStock instance per train on the network.
  */
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+@SuppressFBWarnings({ "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" })
 public class RollingStock implements PhysicsRollingStock {
     public final String id;
 
@@ -163,11 +164,11 @@ public class RollingStock implements PhysicsRollingStock {
         AC,
     }
 
-    protected record CurveAndCondition(TractiveEffortPoint[] curve, EnvelopePath.ModeAndProfile modeAndProfile) {
+    protected record CurveAndCondition(TractiveEffortPoint[] curve, ModeAndProfile modeAndProfile) {
     }
-    
+
     public record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
-                                                   RangeMap<Double, EnvelopePath.ModeAndProfile> conditions) {
+                                      RangeMap<Double, ModeAndProfile> conditions) {
     }
 
     /**
@@ -198,12 +199,11 @@ public class RollingStock implements PhysicsRollingStock {
         // Get best curve given a comfort
         for (var condCurve : mode.curves) {
             if (condCurve.cond.match(comfort, electricalProfile)) {
-                return new CurveAndCondition(
-                        condCurve.curve, new EnvelopePath.ModeAndProfile(catenaryMode, condCurve.cond.electricalProfile)
-                );
+                return new CurveAndCondition(condCurve.curve,
+                        new ModeAndProfile(catenaryMode, condCurve.cond.electricalProfile));
             }
         }
-        return new CurveAndCondition(mode.defaultCurve, new EnvelopePath.ModeAndProfile(usedMode, null));
+        return new CurveAndCondition(mode.defaultCurve, new ModeAndProfile(usedMode, null));
     }
 
     /**
@@ -212,9 +212,9 @@ public class RollingStock implements PhysicsRollingStock {
      * @param modeAndProfileMap The map of mode and profile to use
      * @param comfort           The comfort level to get the curves for
      */
-    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, EnvelopePath.ModeAndProfile> modeAndProfileMap,
+    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, ModeAndProfile> modeAndProfileMap,
                                                        Comfort comfort, double pathLength) {
-        TreeRangeMap<Double, EnvelopePath.ModeAndProfile> conditionsUsed = TreeRangeMap.create();
+        TreeRangeMap<Double, ModeAndProfile> conditionsUsed = TreeRangeMap.create();
         TreeRangeMap<Double, TractiveEffortPoint[]> res = TreeRangeMap.create();
         var defaultCurve = findTractiveEffortCurve(defaultMode, null, comfort);
         res.put(Range.all(), defaultCurve.curve);
