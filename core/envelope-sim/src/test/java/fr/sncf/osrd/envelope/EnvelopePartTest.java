@@ -1,17 +1,12 @@
 package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.getPartMechanicalEnergyConsumed;
-import static fr.sncf.osrd.envelope_sim.AllowanceTests.makeSimpleAllowanceEnvelope;
-import static fr.sncf.osrd.envelope_sim.AllowanceTests.makeStandardMarecoAllowance;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.FlatPath;
+import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -99,9 +94,10 @@ class EnvelopePartTest {
     @Test
     void testGetMechanicalEnergyConsumed() {
         var length = 50_000;
-        var testRollingStock = TestTrains.CONSTANT_POWER_TRAIN;
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
+        var testEffortCurveMap = SimpleRollingStock.HYPERBOLIC_EFFORT_CURVE_MAP;
         var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, 4, RollingStock.Comfort.STANDARD);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 4, testEffortCurveMap);
         var allowanceValue = new AllowanceValue.Percentage(10);
 
         var marecoAllowance = AllowanceTests.makeStandardMarecoAllowance(
@@ -124,7 +120,7 @@ class EnvelopePartTest {
             switch (i) {
                 case 0:
                     expectedEnvelopePartEnergy =
-                            testRollingStock.getMaxEffort(null, null, RollingStock.Comfort.STANDARD, 1)
+                            PhysicsRollingStock.getMaxEffort(1, testEffortCurveMap.get(0.))
                             * envelopePart.getTotalTimeMS() / 1000;
                     break;
                 case 1:

@@ -1,8 +1,5 @@
 package fr.sncf.osrd.envelope_sim;
 
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
-
 public class FlatPath implements PhysicsPath {
     private final double length;
     private final double slope;

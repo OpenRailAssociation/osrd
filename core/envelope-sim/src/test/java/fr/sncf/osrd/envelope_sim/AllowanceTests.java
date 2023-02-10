@@ -1,9 +1,10 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
-import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;
-import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
-import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
+import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxEffortEnvelope;
+import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
+import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
+import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.carrotsearch.hppc.DoubleArrayList;
@@ -15,31 +16,22 @@ import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.allowances.AbstractAllowanceWithRanges;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.util.List;
 
 public class AllowanceTests {
-
-    private static EnvelopeSimContext makeSimpleContext(double length, double slope) {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(length, slope);
-        return EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
-    }
-
     /**
      * test allowance data
      */
     public static MarecoAllowance makeStandardMarecoAllowance(
-            EnvelopeSimContext context, 
+            EnvelopeSimContext context,
             double beginPos, double endPos,
             double capacitySpeedLimit,
             AllowanceValue value
@@ -502,11 +494,11 @@ public class AllowanceTests {
             default -> throw new RuntimeException("Unable to handle this parameter in testDifferentSlopes");
         }
 
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var length = 100_000;
         var testPath = new EnvelopePath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
-                RollingStock.Comfort.STANDARD);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
@@ -545,16 +537,17 @@ public class AllowanceTests {
         }
         gradePositions.add(length);
 
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var testPath = new EnvelopePath(
                 length, gradePositions.toArray(), gradeValues.toArray(), ImmutableRangeMap.of());
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
-                RollingStock.Comfort.STANDARD);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[]{ 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.Percentage(10);
         var allowance = makeStandardMarecoAllowance(
-                EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD),
+                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
+                        SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP),
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var targetTime = allowance.getTargetTime(maxEffortEnvelope);
@@ -661,14 +654,14 @@ public class AllowanceTests {
 
     @Test
     public void testMarecoHighSlopeAtEnd() {
-        var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
+        var testRollingStock = SimpleRollingStock.SHORT_TRAIN;
 
         var length = 15000;
         var gradePositions = new double[] { 0, 7000, 8100, length };
         var gradeValues = new double[] { 0, 40, 0 };
         var testPath = new EnvelopePath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
-                RollingStock.Comfort.STANDARD);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] { length };
         var begin = 3000;
         var end = 8000;
@@ -691,12 +684,8 @@ public class AllowanceTests {
 
     @Test
     public void testAllowancesDiscontinuity() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-
         var length = 10000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP,
-                RollingStock.Comfort.STANDARD);
+        var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { length };
         var begin = 2000;
 
@@ -744,11 +733,8 @@ public class AllowanceTests {
 
     @Test
     public void testShortLinear() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-
         var length = 1000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, 2.0, RollingStock.Comfort.STANDARD);
+        var testContext = makeSimpleContext(length, 0, 2.0);
         var stops = new double[] { length };
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
@@ -767,11 +753,8 @@ public class AllowanceTests {
 
     @Test
     public void testMarecoAfterLinear() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-
         var length = 2524;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, 2.0, RollingStock.Comfort.STANDARD);
+        var testContext = makeSimpleContext(length, 0, 2.0);
         var stops = new double[] { length };
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);

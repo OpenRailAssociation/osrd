@@ -1,23 +1,21 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
-import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;
-import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
-import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
+import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxEffortEnvelope;
+import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
+import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
+import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import fr.sncf.osrd.train.RollingStock.Comfort;
-import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 
@@ -51,9 +49,7 @@ public class AllowanceRangesTests {
 
     @Test
     public void testRangesFlat() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100000, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = makeSimpleContext(100000, 0);
         var marecoEnvelope = makeSimpleMarecoEnvelopeWithRanges(
                 testContext,
                 44.4,
@@ -68,31 +64,30 @@ public class AllowanceRangesTests {
     /** Test ranges with time ratio then distance ratio allowance */
     @Test
     public void testRangesOfDifferentTypes() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100_000, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
-        var stops = new double[] { 50000, testPath.getLength() };
+        var length = 100000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var value1 = new AllowanceValue.Percentage(10);
         var value2 = new AllowanceValue.TimePerDistance(4.5);
         var rangesTransition = 70_000;
         var ranges = List.of(
                 new AllowanceRange(0, rangesTransition, value1),
-                new AllowanceRange(rangesTransition, testPath.getLength(), value2)
+                new AllowanceRange(rangesTransition, length, value2)
         );
         var allowance = new MarecoAllowance(
-                testContext, 0, testPath.getLength(), 30 / 3.6, ranges
+                testContext, 0, length, 30 / 3.6, ranges
         );
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(0, rangesTransition);
-        var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransition, testPath.getLength());
+        var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransition, length);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
         assertEquals(totalBaseTime, baseTime1 + baseTime2, 2 * TIME_STEP);
         var distance = getDistance(allowance);
         var targetTime1 = baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransition);
         var targetTime2 = baseTime2 + value2.getAllowanceTime(baseTime2, distance - rangesTransition);
         var marginTime1 = marecoEnvelope.getTimeBetween(0, rangesTransition);
-        var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransition, testPath.getLength());
+        var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransition, length);
         assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
         assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
     }
@@ -100,11 +95,9 @@ public class AllowanceRangesTests {
     /** Test ranges with decreasing values */
     @Test
     public void testRangesWithDecreasingValues() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 100_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
-        var stops = new double[] { 50000, testPath.getLength() };
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var value1 = new AllowanceValue.Percentage(15);
         var value2 = new AllowanceValue.Percentage(10);
@@ -116,7 +109,7 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
         var allowance = new MarecoAllowance(
-                testContext, 0, testPath.getLength(), 30 / 3.6, ranges
+                testContext, 0, length, 30 / 3.6, ranges
         );
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
@@ -138,11 +131,9 @@ public class AllowanceRangesTests {
     /** Test ranges with increasing values */
     @Test
     public void testRangesWithIncreasingValues() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 100_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
-        var stops = new double[] { 50000, testPath.getLength() };
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var value1 = new AllowanceValue.Percentage(5);
         var value2 = new AllowanceValue.Percentage(10);
@@ -154,7 +145,7 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
         var allowance = new MarecoAllowance(
-                testContext, 0, testPath.getLength(), 30 / 3.6, ranges
+                testContext, 0, length, 30 / 3.6, ranges
         );
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
@@ -176,11 +167,9 @@ public class AllowanceRangesTests {
     /** Test that we can add precisely the needed time in adjacent ranges */
     @Test
     public void testRangesPassageTime() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 90_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
-        var stops = new double[] { testPath.getLength() };
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { length };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
         var value1 = new AllowanceValue.FixedTime(50);
         var value2 = new AllowanceValue.FixedTime(60);
@@ -192,7 +181,7 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
         var allowance = new MarecoAllowance(
-                testContext, 0, testPath.getLength(), 1, ranges
+                testContext, 0, length, 1, ranges
         );
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
 
@@ -223,11 +212,9 @@ public class AllowanceRangesTests {
     /** Test ranges with intersections being precisely on a stop point */
     @Test
     public void testRangesOnStopPoint() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 100_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
-        var stops = new double[] { 50000, testPath.getLength() };
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var value1 = new AllowanceValue.TimePerDistance(5.5);
         var value2 = new AllowanceValue.Percentage(10);
@@ -237,7 +224,7 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2)
         );
         var allowance = new MarecoAllowance(
-                testContext, 0, testPath.getLength(), 30 / 3.6, ranges
+                testContext, 0, length, 30 / 3.6, ranges
         );
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
@@ -255,11 +242,9 @@ public class AllowanceRangesTests {
     /** Test with a very short range */
     @Test
     public void testVeryShortRange() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 100_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
-        var stops = new double[] { testPath.getLength() };
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] {length};
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var value1 = new AllowanceValue.Percentage(5);
         var value2 = new AllowanceValue.Percentage(20);
@@ -271,7 +256,7 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
         var allowance = new MarecoAllowance(
-                testContext, 0, testPath.getLength(), 30 / 3.6, ranges
+                testContext, 0, length, 30 / 3.6, ranges
         );
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
@@ -295,11 +280,9 @@ public class AllowanceRangesTests {
      * to asking for an impossible allowance, but we check that it doesn't crash early */
     @Test
     public void testAllowanceRangeEdgeCase() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 100_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
-        var stops = new double[] { testPath.getLength() };
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { length };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 10, stops);
         var value1 = new AllowanceValue.Percentage(10);
         var rangesTransitions = new double[] { 0.1, maxEffortEnvelope.get(0).getEndPos() };
@@ -318,11 +301,9 @@ public class AllowanceRangesTests {
      * to asking for an impossible allowance, but we check that it doesn't crash early */
     @Test
     public void testAllowanceRangeEdgeCaseLargeTimeStep() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var length = 100_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP * 2, Comfort.STANDARD);
-        var stops = new double[] { testPath.getLength() };
+        var testContext = makeSimpleContext(length, 0, TIME_STEP * 2);
+        var stops = new double[] { length };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 10, stops);
         var value1 = new AllowanceValue.Percentage(10);
         var rangesTransitions = new double[] { 0.1, maxEffortEnvelope.get(0).getEndPos() };

@@ -43,6 +43,9 @@ dependencies {
 
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
+
+    // linter annotations
+    testCompileOnly libs.spotbugs.annotations
 }
 
 test {

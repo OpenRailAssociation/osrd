@@ -1,5 +1,6 @@
-package fr.sncf.osrd.envelope_physics;
+package fr.sncf.osrd.envelope_sim;
 
+import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.getWeightForce;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.newtonStep;
 import static fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingGenerator.coastFromBeginning;
@@ -10,25 +11,16 @@ import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
-import fr.sncf.osrd.envelope_sim.Action;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.FlatPath;
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 
 
-public class TrainPhysics {
-
-    private static final RollingStock TEST_ROLLING_STOCK = TestTrains.REALISTIC_FAST_TRAIN;
+public class TrainPhysicsIntegratorTest {
     private static final double TIME_STEP = 1.0;
 
     @Test
     public void testSlopeNoTraction() {
-        var testPath = new FlatPath(100000, -40);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var context = makeSimpleContext(100000, -40, TIME_STEP);
         double position = 0.0;
         double speed = 0.0;
 
@@ -46,8 +38,7 @@ public class TrainPhysics {
 
     @Test
     public void testSteepSlopeTraction() {
-        var testPath = new FlatPath(100000, -45);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var context = makeSimpleContext(100000, -45, TIME_STEP);
         double position = 0.0;
         double speed = 0.0;
 
@@ -63,8 +54,7 @@ public class TrainPhysics {
 
     @Test
     public void testSlopeChangeVMax() {
-        var testPath = new FlatPath(100000, 0);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var context = makeSimpleContext(100000, 0, TIME_STEP);
         double position = 0.0;
         double speed = 0.0;
 
@@ -79,9 +69,7 @@ public class TrainPhysics {
         assertTrue(speed > 100, String.valueOf(speed));
 
         // continue the simulation, but with some slope
-        var newTestPath = new FlatPath(100000, 35);
-        var newContext = EnvelopeSimContext.build(
-                TEST_ROLLING_STOCK, newTestPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var newContext = makeSimpleContext(100000, 35, TIME_STEP);
         for (int i = 0; i < 20 * 60; i++) {
             var step = TrainPhysicsIntegrator.step(newContext, position, speed, Action.ACCELERATE, +1);
             position += step.positionDelta;
@@ -95,14 +83,16 @@ public class TrainPhysics {
     @Test
     public void testAccelerateAndCoast() {
         var testPath = new FlatPath(100000, 0);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
+        var effortCurveMap = SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP;
+        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, effortCurveMap);
         double position = 0.0;
         double speed = 0.0;
 
         // make a huge traction effort
-        double rollingResistance = TEST_ROLLING_STOCK.getRollingResistance(speed);
-        double weightForce = getWeightForce(TEST_ROLLING_STOCK, testPath, position);
-        var acceleration = TrainPhysicsIntegrator.computeAcceleration(TEST_ROLLING_STOCK,
+        double rollingResistance = testRollingStock.getRollingResistance(speed);
+        double weightForce = getWeightForce(testRollingStock, testPath, position);
+        var acceleration = TrainPhysicsIntegrator.computeAcceleration(testRollingStock,
                 rollingResistance, weightForce, speed, 500000.0, 0, +1);
         var step = newtonStep(TIME_STEP, speed, acceleration, +1);
         position += step.positionDelta;
@@ -131,8 +121,7 @@ public class TrainPhysics {
 
     @Test
     public void testEmptyCoastFromBeginning() {
-        var testPath = new FlatPath(100000, 0);
-        var context = EnvelopeSimContext.build(TEST_ROLLING_STOCK, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
+        var context = makeSimpleContext(100000, 0, TIME_STEP);
         var builder = new EnvelopePartBuilder();
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 builder,

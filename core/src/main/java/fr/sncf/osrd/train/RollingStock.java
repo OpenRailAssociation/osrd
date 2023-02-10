@@ -166,7 +166,7 @@ public class RollingStock implements PhysicsRollingStock {
     protected record CurveAndCondition(TractiveEffortPoint[] curve, EnvelopePath.ModeAndProfile modeAndProfile) {
     }
     
-    public static final record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
+    public record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
                                                    RangeMap<Double, EnvelopePath.ModeAndProfile> conditions) {
     }
 

@@ -1,8 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;

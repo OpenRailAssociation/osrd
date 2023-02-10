@@ -1,8 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
-import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
-import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
+import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableRangeMap;
@@ -11,8 +10,6 @@ import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
-import fr.sncf.osrd.train.RollingStock.Comfort;
-import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 
@@ -25,11 +22,12 @@ public class EnvelopeMaintainSpeedTest {
                 new double[] { 0, 5000, 6000, 7000, 8000, 8500, 9000, 10000 },
                 new double[] { 0, 40, -40, 0, 50, -50, 0 },
                 ImmutableRangeMap.of());
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var context = EnvelopeSimContext.build(testRollingStock, envelopePath, TIME_STEP, Comfort.STANDARD);
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
+        var context = new EnvelopeSimContext(testRollingStock, envelopePath, TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
 
         var flatMRSP = Envelope.make(EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
+                List.of(EnvelopeProfile.CONSTANT_SPEED),
                 new double[] { 0, 10000 }, new double[] { 44.4, 44.4}
         ));
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
