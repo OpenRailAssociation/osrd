@@ -35,9 +35,10 @@ public class ElectricalProfileSetManager extends APIClient {
         if (cacheEntry.status == CacheEntryStatus.INITIALIZING) {
             synchronized (cacheEntry) {
                 try {
-                    logger.info("Electrical profile set {} is not cached, fetching it", profileSetId);
-                    var endpointPath = String.format("/electrical_profile_set/%s/", profileSetId);
+                    logger.info("Electrical profile set {} is not cached", profileSetId);
+                    var endpointPath = String.format("electrical_profile_set/%s/", profileSetId);
                     var request = buildRequest(endpointPath);
+                    logger.info("Fetching it from {}", request.url());
 
                     RJSElectricalProfileSet rjsProfileSet;
                     try (var response = httpClient.newCall(request).execute()) {
