@@ -434,6 +434,19 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
+     * Creates a new OSRDError for an electrical profile set loading error.
+     *
+     * @param errorType       the error type
+     * @param e               the underlying cause of the error
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newEPSetLoadingError(ErrorType errorType, Throwable e, String epSetId) {
+        var error = new OSRDError(errorType, e);
+        error.context.put("electrical_profile_set_id", epSetId);
+        return error;
+    }
+
+    /**
      * Returns the error message.
      *
      * @return the error message

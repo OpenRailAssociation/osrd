@@ -353,7 +353,27 @@ public enum ErrorType {
             "blocked_simulation_exception",
             "the discrete simulation blocked without completing",
             ErrorCause.USER
-    )
+    ),
+    EPSetSoftLoadingError(
+            "electrical_profile_set_loading:soft_error",
+            "soft error while loading new electrical profile set",
+            ErrorCause.INTERNAL
+    ),
+    EPSetHardLoadingError(
+            "electrical_profile_set_loading:hard_error",
+            "hard error while loading new electrical profile set",
+            ErrorCause.INTERNAL
+    ),
+    EPSetLoadingCacheException(
+            "electrical_profile_set_loading:cache_exception",
+            "Electrical profile set already had a hard loading error",
+            ErrorCause.INTERNAL
+    ),
+    EPSetInvalidStatusAfterLoading(
+            "electrical_profile_set_loading:invalid_cache_status",
+            "Electrical profile set had invalid status after loading",
+            ErrorCause.INTERNAL
+    ),
     ;
 
     public final String type;
