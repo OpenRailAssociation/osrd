@@ -42,7 +42,7 @@ public class ApiTest {
         if (matcher.matches()) {
             try {
                 var path = matcher.group(1);
-                return Files.readString(Paths.get(Helpers.getResourcePath(path).toUri()));
+                return Files.readString(Helpers.getResourcePath(path));
             } catch (IOException e) {
                 throw new IOException("Failed to read mock file", e);
             } catch (AssertionError e) {
