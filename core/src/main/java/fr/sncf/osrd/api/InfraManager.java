@@ -120,8 +120,8 @@ public class InfraManager extends APIClient {
             DiagnosticRecorder diagnosticRecorder
     ) throws InfraLoadException {
         // create a request
-        var endpointPath = String.format("infra/%s/railjson/?exclude_extensions=true", infraId);
-        var request = buildRequest(endpointPath);
+        var endpointPath = String.format("infra/%s/railjson", infraId);
+        var request = buildRequest(endpointPath, "exclude_extensions=true");
 
         try {
             // use the client to send the request
