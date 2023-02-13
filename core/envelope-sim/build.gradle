@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'java-test-fixtures'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+
+    implementation project(':osrd-reporting')
+
+    // guava
+    implementation("com.google.guava:guava:24.0-jre")
+
+    // slf4j
+    implementation("org.slf4j:slf4j-api:1.7.30")
+
+    // for debug UI
+    implementation libs.jmathplot
+
+    // fast primitive collections
+    implementation libs.hppc
+
+    // for linter annotations
+    compileOnly libs.jcip.annotations
+    compileOnly libs.spotbugs.annotations
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation libs.junit.jupiter.api
+    testImplementation libs.junit.jupiter.params
+
+    testFixturesImplementation libs.junit.jupiter.api
+    testFixturesImplementation "com.google.guava:guava:24.0-jre"
+
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly libs.junit.jupiter.engine
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'jqwik', 'junit-jupiter'
+    }
+}

@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+
+    //moshi
+    implementation libs.moshi
+    implementation libs.moshi.adapters
+
+    //class-graph
+    implementation libs.classgraph
+
+    // for linter annotations
+    compileOnly libs.jcip.annotations
+    compileOnly libs.spotbugs.annotations
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation libs.junit.jupiter.api
+    testImplementation libs.junit.jupiter.params
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly libs.junit.jupiter.engine
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'jqwik', 'junit-jupiter'
+    }
+}

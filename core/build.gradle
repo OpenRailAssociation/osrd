@@ -22,6 +22,9 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
     implementation project(':osrd-railjson')
+    implementation project(':osrd-reporting')
+    implementation project(':envelope-sim')
+    testImplementation(testFixtures(project(":envelope-sim")))
 
     // kotlin
     implementation libs.kotlin.stdlib
@@ -52,12 +55,6 @@ dependencies {
 
     // HTTP client
     implementation libs.okhttp
-
-    // ClassGraph (FastClasspathScanner)
-    implementation libs.classgraph
-
-    // for debug UI
-    implementation libs.jmathplot
 
     // the logging API stub
     implementation libs.slf4j
