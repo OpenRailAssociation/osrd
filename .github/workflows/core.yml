@@ -46,8 +46,8 @@ jobs:
           override_commit: "${{ github.event.pull_request.head.sha }}"
           name: codecov
           flags: core
-          directory: ./core/build/reports/jacoco/test
-          files: jacocoTestReport.xml
+          directory: ./core/build/reports/jacoco/testCodeCoverageReport
+          files: testCodeCoverageReport.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true

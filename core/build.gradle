@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.spotbugs)
     alias(libs.plugins.shadow)
     id 'jacoco'
+    id 'jacoco-report-aggregation'
     alias(libs.plugins.versions)
 }
 
@@ -187,14 +188,8 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
     }
 }
 
-test {
-    finalizedBy jacocoTestReport
-}
-
-jacocoTestReport {
-    reports {
-        xml.required = true
-    }
+tasks.named('check') {
+    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
 }
 
 // endregion
