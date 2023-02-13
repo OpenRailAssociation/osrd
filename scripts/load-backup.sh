@@ -14,7 +14,7 @@ BACKUP_PATH="$1"
 BACKUP_FILENAME=$(basename -s ".backup" "$BACKUP_PATH")
 echo "$BACKUP_FILENAME"
 EXPECTED_SHA1=$(echo "$BACKUP_FILENAME" | grep -o -E '[0-9a-f]{40}' || echo "renamed")
-CURRENT_SHA1=$(shasum "$BACKUP_PATH" | cut -d' ' -f1)
+CURRENT_SHA1=$(sha1sum "$BACKUP_PATH" | cut -d' ' -f1)
 if [ "$EXPECTED_SHA1" = "$CURRENT_SHA1" ]; then
   echo "  ✔ The backup is valid"
 elif [ "$EXPECTED_SHA1" = "renamed" ]; then
