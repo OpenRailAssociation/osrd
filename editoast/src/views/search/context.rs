@@ -155,7 +155,10 @@ impl QueryContext {
         function_name: &String,
         arglist_types: &[TypeSpec],
     ) -> Result<&QueryFunction> {
-        let functions = self.functions.get(function_name).unwrap();
+        let functions = self
+            .functions
+            .get(function_name)
+            .ok_or_else(|| ProcessingError::UndefinedFunction(function_name.to_owned()))?;
         let function = match functions.len() {
             0 => Err(ProcessingError::UndefinedFunction(function_name.to_owned())),
             1 => {
