@@ -90,6 +90,7 @@ impl QueryContext {
 /// - like : string -> (string | null) -> (bool | null)
 /// - ilike : string -> (string | null) -> (bool | null)
 /// - search : string -> (string | null) -> bool
+/// - =i : string -> string -> bool
 pub fn create_processing_context() -> QueryContext {
     let mut context = QueryContext::default();
     context.def_function_1::<dsl::Nullable<dsl::Ersatz<dsl::Boolean>>, dsl::Sql<dsl::Boolean>>(
@@ -163,13 +164,12 @@ pub fn create_processing_context() -> QueryContext {
             })
         }),
     );
-    context
-        .def_function_2::<dsl::Nullable<dsl::Integer>, dsl::Nullable<dsl::Integer>, dsl::Integer>(
-            "*",
-            Rc::new(|left: Option<i64>, right: Option<i64>| {
-                Ok(left.unwrap_or(1) * right.unwrap_or(1))
-            }),
-        );
+    context.def_function_2::<dsl::Ersatz<dsl::String>, dsl::Nullable<dsl::String>, dsl::Sql<dsl::Boolean>>(
+        "=i",
+        Rc::new(|left, right| {
+            Ok(SqlQuery::infix("ILIKE", left, right.into()))
+        })
+    );
     context
 }
 
