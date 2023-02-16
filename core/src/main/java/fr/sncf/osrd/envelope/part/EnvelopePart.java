@@ -71,22 +71,12 @@ public final class EnvelopePart implements SearchableEnvelope {
             double[] speeds,
             double[] timeDeltas
     ) {
-        assert attrs != null : "missing attributes";
-        assert positions.length >= 2 : "attempted to create a single point EnvelopePart";
-        assert positions.length == speeds.length : "there must be the same number of point and speeds";
-        assert timeDeltas.length == positions.length - 1 : "there must be as many timeDeltas as gaps between points";
-        assert checkNaNFree(positions) : "NaNs in positions";
-        assert checkNaNFree(speeds) : "NaNs in speeds";
-        assert checkNaNFree(timeDeltas) : "NaNs in timeDeltas";
-        assert checkStrictlyMonotonicIncreasing(positions) : "non monotonously increasing positions";
-        assert checkPositive(speeds) : "negative speeds";
-        assert checkPositive(timeDeltas) : "negative timeDeltas";
-        assert checkNonZero(timeDeltas) : "zero timeDeltas";
         this.attrs = attrs;
         this.positions = positions;
         this.speeds = speeds;
         this.timeDeltas = timeDeltas;
         this.strictlyMonotonicSpeeds = checkStrictlyMonotonic(speeds);
+        runSanityChecks();
     }
 
     /** Creates an EnvelopePart */
@@ -167,6 +157,23 @@ public final class EnvelopePart implements SearchableEnvelope {
     // endregion
 
     // region SANITY_CHECKS
+
+    /** Runs every assertion on the envelope part values.
+     * <br/>
+     * To be called in the constructor and after the values have been edited
+     * (which should be avoided when possible) */
+    private void runSanityChecks() {
+        assert attrs != null : "missing attributes";
+        assert positions.length >= 2 : "attempted to create a single point EnvelopePart";
+        assert positions.length == speeds.length : "there must be the same number of point and speeds";
+        assert timeDeltas.length == positions.length - 1 : "there must be as many timeDeltas as gaps between points";
+        assert checkNaNFree(positions) : "NaNs in positions";
+        assert checkNaNFree(speeds) : "NaNs in speeds";
+        assert checkNaNFree(timeDeltas) : "NaNs in timeDeltas";
+        assert checkPositive(speeds) : "negative speeds";
+        assert checkPositive(timeDeltas) : "negative timeDeltas";
+        assert checkNonZero(timeDeltas) : "zero timeDeltas";
+    }
 
     private static boolean checkNaNFree(double[] values) {
         for (var val : values)
@@ -632,6 +639,7 @@ public final class EnvelopePart implements SearchableEnvelope {
             sliced.speeds[0] = beginSpeed;
         if (!Double.isNaN(endSpeed))
             sliced.speeds[sliced.pointCount() - 1] = endSpeed;
+        sliced.runSanityChecks();
         return sliced;
     }
 
