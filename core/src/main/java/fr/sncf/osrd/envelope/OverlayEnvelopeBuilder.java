@@ -77,6 +77,8 @@ public final class OverlayEnvelopeBuilder {
             if (Math.abs(baseSpeed - currentOverlay.getBeginSpeed()) < 1e-6)
                 sliceEndSpeed = currentOverlay.getBeginSpeed();
         }
+        if (sliceBeginPos == sliceEndPos)
+            return new EnvelopePart[0]; // Prevents 0-length parts
         return base.slice(sliceBeginPos, sliceBeginSpeed, sliceEndPos, sliceEndSpeed);
     }
 
