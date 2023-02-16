@@ -206,7 +206,6 @@ class ProjectView(
         project = get_object_or_404(self.get_queryset(), pk=pk)
         serializer = ProjectSerializer(project, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        print(serializer.validated_data.keys())
         if "image" in serializer.validated_data.keys():
             if serializer.validated_data["image"]:
                 image_db = serializer.validated_data["image"]
