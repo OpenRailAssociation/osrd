@@ -53,6 +53,10 @@ pub struct RunserverArgs {
     pub address: String,
     #[clap(flatten)]
     pub map_layers_config: MapLayersConfig,
+    #[clap(long, env = "SENTRY_DSN")]
+    pub sentry_dsn: Option<String>,
+    #[clap(long, env = "SENTRY_ENV")]
+    pub sentry_env: Option<String>,
 }
 
 #[derive(Args, Debug)]
