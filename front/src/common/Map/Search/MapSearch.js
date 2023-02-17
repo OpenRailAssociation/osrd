@@ -23,14 +23,17 @@ export default function MapSearch(props) {
     {
       className: 'active',
       title: t('map-search:station'),
+      ariaSelected: 'true',
     },
     {
       className: '',
       title: t('map-search:signalbox'),
+      ariaSelected: 'false',
     },
     {
       className: '',
       title: t('map-search:signal'),
+      ariaSelected: 'false',
     },
   ];
 
@@ -49,7 +52,7 @@ export default function MapSearch(props) {
                   data-toggle="tab"
                   role="tab"
                   aria-controls={`tab${index + 1}`}
-                  aria-selected="true"
+                  aria-selected={tab.ariaSelected}
                 >
                   {tab.title}
                 </a>
