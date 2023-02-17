@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Set, Tuple
 
 import requests
-from run_integration_tests import Scenario
 
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 15
@@ -23,6 +22,12 @@ This requires a running database setup with actual infra data, which can't be pu
 
 class FailedTest(Exception):
     pass
+
+
+@dataclass
+class Scenario:
+    infra: int
+    timetable: int
 
 
 class ErrorType(str, Enum):
@@ -434,12 +439,30 @@ def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
     return path_payload
 
 
-def create_scenario(base_url, infra_id):
-    scenario_payload = {"name": "foo", "infra": infra_id}
-    r = requests.post(base_url + "projects/1/studies/1/scenarios/", json=scenario_payload)
-    if r.status_code // 100 != 2:
-        err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(scenario_payload)}"
-        raise RuntimeError(err)
+def create_scenario(base_url: str, infra_id: int) -> Scenario:
+    # Create the project
+    project_payload = {"name": "fuzzer_project"}
+    r = requests.post(base_url + "projects/", json=project_payload)
+    r.raise_for_status()
+    project_id = r.json()["id"]
+    project_url = f"projects/{project_id}"
+
+    # Create the study
+    study_payload = {"name": "fuzzer_study"}
+    r = requests.post(base_url + f"{project_url}/studies/", json=study_payload)
+    r.raise_for_status()
+    study_id = r.json()["id"]
+    study_url = f"{project_url}/studies/{study_id}"
+
+    # Create the scenario
+    scenario_payload = {
+        "name": "fuzzer_scenario",
+        "infra": infra_id,
+    }
+    r = requests.post(base_url + f"{study_url}/scenarios/", json=scenario_payload)
+    r.raise_for_status()
+    timetable_id = r.json()["timetable"]
+    return Scenario(infra_id, timetable_id)
 
 
 def make_random_allowance_value(allowance_length) -> Dict:
@@ -540,4 +563,5 @@ def get_infra_name(base_url: str, infra_id: int):
 
 
 if __name__ == "__main__":
-    run(URL, INFRA_ID, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
+    scenario = create_scenario(URL, INFRA_ID)
+    run(URL, scenario, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
