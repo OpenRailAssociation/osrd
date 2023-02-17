@@ -446,6 +446,7 @@ impl InfraCache {
     }
 
     /// Get all track sections references of a given track and type
+    /// If the track is not found, it returns an empty vector
     pub fn get_track_refs_type(&self, track_id: &String, obj_type: ObjectType) -> Vec<&ObjectRef> {
         self.track_sections_refs
             .get(track_id)

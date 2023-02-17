@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 #[derivative(Default)]
 pub struct TrackSection {
     pub id: Identifier,
+    #[derivative(Default(value = "100."))]
     pub length: f64,
     pub slopes: Vec<Slope>,
     pub curves: Vec<Curve>,
