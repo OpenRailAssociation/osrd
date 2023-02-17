@@ -70,12 +70,11 @@ export default function MapButtons(props) {
         <ButtonFullscreen />
         {withInfraButton && <ButtonMapInfras />}
       </div>
-      <MapSearch active={showMapModal.search} toggleMapSearch={() => toggleMapModal('search')} />
-      <MapSettings
-        active={showMapModal.settings}
-        toggleMapSettings={() => toggleMapModal('settings')}
-      />
-      <MapKey active={showMapModal.key} toggleMapKey={() => toggleMapModal('key')} />
+      {showMapModal.search && <MapSearch toggleMapSearch={() => toggleMapModal('search')} />}
+      {showMapModal.settings && (
+        <MapSettings toggleMapSettings={() => toggleMapModal('settings')} />
+      )}
+      {showMapModal.key && <MapKey toggleMapKey={() => toggleMapModal('key')} />}
     </div>
   );
 }
