@@ -14,7 +14,7 @@ export default function MapSearch(props) {
     [dispatch]
   );
 
-  const { active, toggleMapSearch } = props;
+  const { toggleMapSearch } = props;
 
   const { t } = useTranslation(['translation', 'map-search']);
 
@@ -34,11 +34,11 @@ export default function MapSearch(props) {
   ];
 
   return (
-    <div className={`map-modal${active ? ' active' : ''}`}>
+    <div className="map-modal">
       <div className="d-flex justify-content-between align-items-start">
         <div className="h2">{t('translation:common.search')}</div>
         <button type="button" className="close" onClick={toggleMapSearch}>
-          ×
+          &times;
         </button>
       </div>
 
@@ -85,10 +85,5 @@ export default function MapSearch(props) {
 }
 
 MapSearch.propTypes = {
-  active: PropTypes.bool,
   toggleMapSearch: PropTypes.func.isRequired,
-};
-
-MapSearch.defaultProps = {
-  active: false,
 };
