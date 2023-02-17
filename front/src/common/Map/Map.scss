@@ -21,13 +21,12 @@
 /* Map Settings */
 .map-modal {
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   min-height: 5rem;
   max-height: 80%;
   overflow: auto;
   top: 4rem;
   right: 3.5rem;
-  opacity: 0;
   padding: 1rem;
   background-color: #fff;
   width: calc(100% - 5.5rem);
