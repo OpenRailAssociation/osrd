@@ -176,8 +176,8 @@ def test_stdcm(
     stdcm_payload = make_stdcm_payload(base_url, scenario, path, rolling_stock)
     r = post_with_timeout(base_url + "stdcm/", json=stdcm_payload)
     if r.status_code // 100 != 2:
-        if r.status_code // 100 == 4:
-            print("ignore: invalid user input")
+        if r.status_code // 100 == 4 and "no_path_found" in r.content.decode("utf-8"):
+            print("ignore: no path found")
             return
         make_error(
             ErrorType.STDCM,
