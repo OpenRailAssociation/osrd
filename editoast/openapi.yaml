@@ -7,6 +7,12 @@ info:
 tags:
   - name: infra
     description: Infra
+  - name: routes
+    description: Operations related to infra routes
+  - name: pathfinding
+    description: Pathfinding operations
+  - name: layers
+    description: Map layers
   - name: electrical_profiles
     description: Electrical profiles
 
@@ -556,6 +562,41 @@ paths:
                   type: number
                   format: float
                 example: [750.0, 1500.0, 2500.50]
+
+  /infra/{id}/attached/{track_id}/:
+    get:
+      tags:
+        - infra
+      summary: Retrieve all objects attached to a given track
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+        - in: path
+          name: track_id
+          schema:
+            type: string
+          description: Track ID
+          required: true
+      responses:
+        200:
+          description: All objects attached to the given track (arranged by types)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                    description: Object IDs
+                example:
+                  Switch: ["switch.0", "switch.1"]
+                  Detector: ["detector.0"]
+                  BufferStop: []
 
   /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
     get:
