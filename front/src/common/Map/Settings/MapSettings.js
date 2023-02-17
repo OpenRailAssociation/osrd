@@ -7,6 +7,7 @@ import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
 import MapSettingsSpeedLimits from 'common/Map/Settings/MapSettingsSpeedLimits';
 import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
 import { useTranslation } from 'react-i18next';
+import HearderPopUp from '../HeaderPopUp';
 
 export default function MapSettings(props) {
   const { toggleMapSettings } = props;
@@ -20,12 +21,7 @@ export default function MapSettings(props) {
 
   return (
     <div className="map-modal">
-      <div className="d-flex justify-content-between align-items-start">
-        <div className="h2">{t('map-settings:mapSettings')}</div>
-        <button type="button" className="close" onClick={toggleMapSettings}>
-          &times;
-        </button>
-      </div>
+      <HearderPopUp onClick={toggleMapSettings} title={t('map-settings:mapSettings')} />
       <MapSettingsTrackSources />
       <div className="my-1" />
       <MapSettingsMapStyle />
