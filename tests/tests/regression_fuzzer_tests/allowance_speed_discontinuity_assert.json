@@ -1,0 +1,85 @@
+{
+  "error_type": "SCHEDULE",
+  "code": 500,
+  "error": "{\"type\":\"core:assert_error\",\"cause\":\"INTERNAL\",\"stack_trace\":[\"AbstractAllowanceWithRanges.java:350\",\"AbstractAllowanceWithRanges.java:279\",\"AbstractAllowanceWithRanges.java:254\",\"AbstractAllowanceWithRanges.java:184\",\"AbstractAllowanceWithRanges.java:126\",\"StandaloneSim.java:108\",\"StandaloneSim.java:67\",\"StandaloneSimulationEndpoint.java:101\",\"FkRegex.java:153\",\"FkRegex.java:217\",\"FkChain.java:72\",\"TkFork.java:98\",\"TkFallback.java:84\",\"TkFallback.java:66\",\"TkWrap.java:58\",\"TkSlf4j.java:110\",\"BkBasic.java:123\",\"BkBasic.java:99\",\"BkSafe.java:46\",\"BkWrap.java:51\",\"BkParallel.java:81\",\"ThreadPoolExecutor.java:1136\",\"ThreadPoolExecutor.java:635\",\"Thread.java:833\"],\"trace\":[]}",
+  "infra_name": "small_infra",
+  "path_payload": {
+    "infra": 3,
+    "name": "foo",
+    "steps": [
+      {
+        "duration": 0,
+        "waypoints": [
+          {
+            "track_section": "TC1",
+            "offset": 587.8845800906008
+          }
+        ]
+      },
+      {
+        "duration": 875.9252267830976,
+        "waypoints": [
+          {
+            "track_section": "TC1",
+            "offset": 915.0986075177035
+          }
+        ]
+      },
+      {
+        "duration": 1,
+        "waypoints": [
+          {
+            "track_section": "TD2",
+            "offset": 127.1905869409029
+          }
+        ]
+      }
+    ]
+  },
+  "schedule_payload": {
+    "timetable": 14,
+    "path": 2033,
+    "schedules": [
+      {
+        "train_name": "foo",
+        "labels": [],
+        "departure_time": 15934,
+        "allowances": [
+          {
+            "allowance_type": "standard",
+            "default_value": {
+              "value_type": "time_per_distance",
+              "minutes": 7.939374137431228
+            },
+            "ranges": [
+              {
+                "begin_position": 0,
+                "end_position": 328.72441810116,
+                "value": {
+                  "value_type": "time",
+                  "seconds": 1.0888419428255478
+                }
+              }
+            ],
+            "capacity_speed_limit": 1.7982312207640638,
+            "distribution": "LINEAR"
+          },
+          {
+            "allowance_type": "engineering",
+            "begin_position": 14243.047126576319,
+            "end_position": 19221.40320543275,
+            "value": {
+              "value_type": "percentage",
+              "percentage": 10.071188593833375
+            },
+            "capacity_speed_limit": 0.6513002857517136,
+            "distribution": "MARECO"
+          }
+        ],
+        "initial_speed": 0,
+        "rolling_stock": 37,
+        "speed_limit_category": "foo"
+      }
+    ]
+  }
+}
