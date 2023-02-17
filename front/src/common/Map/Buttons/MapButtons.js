@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 // Buttons
@@ -16,6 +16,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
 
 import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
+import useOutsideClick from 'utils/hooks/useOutsideClick';
 import ButtonMapInfras from './ButtonMapInfras';
 
 export default function MapButtons(props) {
@@ -48,20 +49,16 @@ export default function MapButtons(props) {
   };
 
   const mapButtonsRef = useRef(null);
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        Object.values(showMapModal).some((show) => show === true) &&
-        !mapButtonsRef.current.contains(e.target)
-      ) {
-        setShowMapModal({ ...mapModalKeywords });
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showMapModal]);
+  const handleClickOutside = (e) => {
+    if (
+      Object.values(showMapModal).some((show) => show === true) &&
+      !mapButtonsRef.current.contains(e.target)
+    ) {
+      setShowMapModal({ ...mapModalKeywords });
+    }
+  };
+
+  useOutsideClick(mapButtonsRef, handleClickOutside);
 
   return (
     <div ref={mapButtonsRef}>
