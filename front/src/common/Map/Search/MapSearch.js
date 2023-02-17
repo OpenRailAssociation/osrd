@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import MapSearchSignalBox from 'common/Map/Search/MapSearchSignalBox';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
+import HearderPopUp from '../HeaderPopUp';
 
 export default function MapSearch(props) {
   const dispatch = useDispatch();
@@ -35,13 +36,7 @@ export default function MapSearch(props) {
 
   return (
     <div className="map-modal">
-      <div className="d-flex justify-content-between align-items-start">
-        <div className="h2">{t('translation:common.search')}</div>
-        <button type="button" className="close" onClick={toggleMapSearch}>
-          &times;
-        </button>
-      </div>
-
+      <HearderPopUp onClick={toggleMapSearch} title={t('translation:common.search')} />
       <div className="actionbar">
         <nav role="navigation" className="position-relative mt-2">
           <ul className="nav nav navtabs mb-0 dragscroll" role="tablist" id="listeTitreOnglets">
