@@ -17,7 +17,6 @@ INFRA_ID = 1
 
 """
 Generates random tests, running pathfinding + simulations on random paths.
-This requires a running database setup with actual infra data, which can't be publicly available on github
 """
 
 
@@ -74,6 +73,9 @@ def make_error(
     path_payload: Dict,
     **kwargs,
 ):
+    """
+    Generate an error in a format that can be logged in a json and integrated in the test suite
+    """
     error = "" if response.content is None else response.content.decode("utf-8")
     raise FailedTest(
         {
@@ -90,10 +92,10 @@ def make_error(
 def run_test(infra: InfraGraph, base_url: str, scenario: Scenario, infra_name: str):
     """
     Runs a single random test
-    :param infra_name: name of the infra, for better reporting
     :param infra: infra graph
     :param base_url: Api url
-    :param infra_id: Infra id
+    :param scenario: Scenario to use for the test
+    :param infra_name: name of the infra, for better reporting
     """
     rolling_stock = get_random_rolling_stock(base_url)
     path, path_length = make_valid_path(infra)
@@ -126,7 +128,7 @@ def test_new_train(
             path_payload,
         )
     path_id = r.json()["id"]
-    schedule_payload = make_payload_schedule(base_url, scenario, path_id, rolling_stock, path_length)
+    schedule_payload = make_payload_schedule(scenario, path_id, rolling_stock, path_length)
     r = post_with_timeout(
         base_url + "train_schedule/standalone_simulation/",
         json=schedule_payload,
@@ -173,7 +175,7 @@ def test_stdcm(
     Not finding a path isn't considered as an error, we only look for 500 codes here.
     """
     print("testing stdcm")
-    stdcm_payload = make_stdcm_payload(base_url, scenario, path, rolling_stock)
+    stdcm_payload = make_stdcm_payload(scenario, path, rolling_stock)
     r = post_with_timeout(base_url + "stdcm/", json=stdcm_payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4 and "no_path_found" in r.content.decode("utf-8"):
@@ -189,7 +191,7 @@ def test_stdcm(
     print("test PASSED")
 
 
-def make_stdcm_payload(base_url: str, scenario: Scenario, path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
+def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
     """
     Creates a payload for an STDCM request
     """
@@ -225,12 +227,12 @@ def run(
 ):
     """
     Runs every test
-    :param seed: first seed, incremented by 1 for each individual test
-    :param infra_name: name of the infra, for better reporting
     :param base_url: url to reach the api
-    :param infra_id: infra id
+    :param scenario: scenario to use for the tests
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
+    :param infra_name: name of the infra, for better reporting
+    :param seed: first seed, incremented by 1 for each individual test
     """
     infra_graph = make_graph(base_url, scenario.infra)
     for i in range(n_test):
@@ -526,11 +528,10 @@ def make_random_allowances(path_length: float) -> List[Dict]:
     return res
 
 
-def make_payload_schedule(base_url: str, scenario: Scenario, path: int, rolling_stock: int, path_length: float) -> Dict:
+def make_payload_schedule(scenario: Scenario, path: int, rolling_stock: int, path_length: float) -> Dict:
     """
     Makes the payload for the simulation
-    :param base_url: Api URL
-    :param infra: infra id
+    :param scenario: scenario used for the test
     :param path: path id
     :param rolling_stock: rolling stock id
     :param path_length: the path length
@@ -582,5 +583,5 @@ def get_infra_name(base_url: str, infra_id: int):
 
 
 if __name__ == "__main__":
-    scenario = create_scenario(URL, INFRA_ID)
-    run(URL, scenario, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
+    new_scenario = create_scenario(URL, INFRA_ID)
+    run(URL, new_scenario, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
