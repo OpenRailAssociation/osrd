@@ -24,18 +24,15 @@ export default function MapButtons(props) {
   const featureInfoClick = useSelector(getFeatureInfoClick);
   const dispatch = useDispatch();
 
-  const mapModalKeywords = {
-    search: false,
-    settings: false,
-    key: false,
-  };
+  const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
 
-  const [showMapModal, setShowMapModal] = useState(mapModalKeywords);
+  const [openedPopover, setOpenedPopover] = useState(undefined);
+
   const toggleMapModal = (keyModal) => {
-    setShowMapModal({
-      ...mapModalKeywords,
-      [keyModal]: !showMapModal[keyModal],
-    });
+    if (keyModal === openedPopover) {
+      keyModal = undefined;
+    }
+    setOpenedPopover(keyModal);
 
     // Close the pop up of the map
     if (featureInfoClick.displayPopup) {
@@ -50,11 +47,8 @@ export default function MapButtons(props) {
 
   const mapButtonsRef = useRef(null);
   const handleClickOutside = (e) => {
-    if (
-      Object.values(showMapModal).some((show) => show === true) &&
-      !mapButtonsRef.current.contains(e.target)
-    ) {
-      setShowMapModal({ ...mapModalKeywords });
+    if (openedPopover && !mapButtonsRef.current.contains(e.target)) {
+      setOpenedPopover(undefined);
     }
   };
 
@@ -63,18 +57,22 @@ export default function MapButtons(props) {
   return (
     <div ref={mapButtonsRef}>
       <div className="btn-map-container">
-        <ButtonMapSearch toggleMapSearch={() => toggleMapModal('search')} />
-        <ButtonMapSettings toggleMapSettings={() => toggleMapModal('settings')} />
-        <ButtonMapKey toggleMapKey={() => toggleMapModal('key')} />
+        <ButtonMapSearch toggleMapSearch={() => toggleMapModal('SEARCH')} />
+        <ButtonMapSettings toggleMapSettings={() => toggleMapModal('SETTINGS')} />
+        <ButtonMapKey toggleMapKey={() => toggleMapModal('KEY')} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
         <ButtonFullscreen />
         {withInfraButton && <ButtonMapInfras />}
       </div>
-      {showMapModal.search && <MapSearch toggleMapSearch={() => toggleMapModal('search')} />}
-      {showMapModal.settings && (
-        <MapSettings toggleMapSettings={() => toggleMapModal('settings')} />
+      {openedPopover === MAP_POPOVERS.SEARCH && (
+        <MapSearch toggleMapSearch={() => setOpenedPopover(undefined)} />
       )}
-      {showMapModal.key && <MapKey toggleMapKey={() => toggleMapModal('key')} />}
+      {openedPopover === MAP_POPOVERS.SETTINGS && (
+        <MapSettings toggleMapSettings={() => setOpenedPopover(undefined)} />
+      )}
+      {openedPopover === MAP_POPOVERS.KEY && (
+        <MapKey toggleMapKey={() => setOpenedPopover(undefined)} />
+      )}
     </div>
   );
 }
