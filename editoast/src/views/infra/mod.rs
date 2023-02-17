@@ -1,3 +1,4 @@
+mod attached;
 mod edition;
 mod errors;
 mod objects;
@@ -52,6 +53,7 @@ pub fn routes() -> impl HttpServiceFactory {
                     objects::routes(),
                     routes::routes(),
                     pathfinding::routes(),
+                    attached::routes(),
                 )),
         )
 }
