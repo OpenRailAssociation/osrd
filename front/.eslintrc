@@ -12,7 +12,7 @@
     "react/prefer-stateless-function": "off",
     "react/jsx-filename-extension": "off",
     "no-param-reassign": "off",
-    "no-console": "off",
+    "no-console": "error",
     "global-require": "off",
     "react/forbid-prop-types": "off",
     "no-named-as-default": "off",
@@ -65,19 +65,22 @@
         "react/function-component-definition": 0,
         "react/jsx-props-no-spreading": 0,
         "react/no-array-index-key": 0,
-        "react/require-default-props": 0
+        "react/require-default-props": 0,
+        "no-console": "error"
       }
     },
     {
       "files": ["**/*.ts", "**/*.tsx"],
       "rules": {
-        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        "no-console": "error"
       }
     },
     {
       "files": ["**/*.js", "**/*.jsx"],
       "rules": {
-        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        "no-console": "error"
       }
     }
   ]
