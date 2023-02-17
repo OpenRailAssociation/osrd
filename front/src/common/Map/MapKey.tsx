@@ -5,6 +5,7 @@ import colors from 'common/Map/Consts/colors';
 import { getMapStyle } from 'reducers/map/selectors';
 import { catenaryMapKey, MapKeyProps, speedLimitMapKey } from './const';
 import 'common/Map/MapKey.scss';
+import HearderPopUp from './HeaderPopUp';
 
 const MapSettings = ({ toggleMapKey }: MapKeyProps) => {
   const { t } = useTranslation(['translation', 'map-key']);
@@ -38,8 +39,8 @@ const MapSettings = ({ toggleMapKey }: MapKeyProps) => {
   ));
 
   return (
-    <div className="map-modal map-modal-dark active">
-      <div className="h2 text-light">{t('map-key:keyTitle')}</div>
+    <div className="map-modal map-modal-dark">
+      <HearderPopUp onClick={toggleMapKey} title={t('map-key:keyTitle')} isLight />
       <div className="row">
         <div className="col-lg-6">
           <div className="mapkey">
@@ -53,12 +54,6 @@ const MapSettings = ({ toggleMapKey }: MapKeyProps) => {
             {catenaries}
           </div>
         </div>
-      </div>
-
-      <div className="mt-2 d-flex flex-row-reverse w-100">
-        <button className="btn btn-secondary btn-sm" type="button" onClick={() => toggleMapKey()}>
-          {t('translation:common.close')}
-        </button>
       </div>
     </div>
   );
