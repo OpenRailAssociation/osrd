@@ -8,8 +8,8 @@
 - exec `yarn start` (perhaps you'll need `NODE_OPTIONS="--openssl-legacy-provider"` if your node version is too new)
 - enjoy
 
-To connect to online backend, you can use `yarn start-osrd-dev` instead `yarn start`.
-## Commands list
+
+## Commands
 ### `yarn start`
 
 Runs the app in a local development environment.
@@ -17,10 +17,6 @@ Runs the app in a local development environment.
 This requires the other services (api, core, postgres…) to be running in your local environment as well.
 
 See [Main Readme](../README.md) if you need more information to run the docker.
-
-### `yarn start-osrd-dev`
-
-Runs the app in a local environment, using osrd.dev.dgexsol backend services.
 
 ### `yarn test`
 

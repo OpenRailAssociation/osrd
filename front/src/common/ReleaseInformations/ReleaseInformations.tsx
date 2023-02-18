@@ -3,7 +3,6 @@
 
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import { env } from 'env';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
@@ -65,7 +64,7 @@ function ReleaseInformations() {
             {serviceRow('Editoast', editoastVersion?.git_describe)}
             {serviceRow('Core', coreVersion?.git_describe)}
             {serviceRow('API', apiVersion?.git_describe)}
-            {serviceRow('Front', env.REACT_APP_OSRD_GIT_DESCRIBE)}
+            {serviceRow('Front', import.meta.env.OSRD_GIT_DESCRIBE)}
           </tbody>
         </table>
       </ModalBodySNCF>
