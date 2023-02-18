@@ -37,6 +37,7 @@
     "@turf/nearest-point": "^6.3.0",
     "@turf/nearest-point-on-line": "^6.3.0",
     "@turf/transform-translate": "^6.5.0",
+    "@vitejs/plugin-react-swc": "^3.1.0",
     "are-we-there-yet": "^4.0.0",
     "axios": "^0.27.2",
     "babel-loader": "8.1.0",
