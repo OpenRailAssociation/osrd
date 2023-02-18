@@ -53,6 +53,7 @@
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
     "typeRoots": ["node_modules/@types"],
-    "target": "es5"
+    "types": ["vite/client", "vite-plugin-svgr/client"],
+    "target": "ESNext"
   }
 }
