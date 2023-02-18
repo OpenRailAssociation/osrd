@@ -15,7 +15,6 @@ import { persistor, store } from 'Store';
 import App from 'main/app';
 import Loader from 'common/Loader';
 import { version } from '../package.json';
-import reportWebVitals from './reportWebVitals';
 
 if (SENTRY_CONFIG.react_sentry_dsn) {
   Sentry.init({
@@ -42,8 +41,3 @@ export default function Container() {
 }
 
 ReactDOM.render(<Container />, document.getElementById('root'));
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
