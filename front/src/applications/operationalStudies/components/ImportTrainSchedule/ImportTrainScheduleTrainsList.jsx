@@ -3,16 +3,17 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
 import { get } from 'axios';
-import TrainDetail from 'applications/opendata/components/TrainDetail';
-import OpenDataImportModal from 'applications/opendata/views/OpenDataImportModal';
+import ImportTrainScheduleTrainDetail from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleTrainDetail';
+import ImportTrainScheduleModal from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleModal';
 import { GoRocket } from 'react-icons/go';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { keyBy } from 'lodash';
-import { GRAOU_URL } from '../consts';
-import rollingstockOpenData2OSRD from '../components/rollingstock_opendata2osrd.json';
+import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
+import nextId from 'react-id-generator';
+import { GRAOU_URL } from './consts';
 
 function LoadingIfSearching(props) {
-  const { t } = useTranslation(['opendata']);
+  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const { isSearching } = props;
   return (
     <h1 className="text-center text-muted my-5">
@@ -21,10 +22,10 @@ function LoadingIfSearching(props) {
   );
 }
 
-export default function OpenDataTrainsList(props) {
-  const { t } = useTranslation(['opendata']);
+export default function ImportTrainScheduleTrainsList(props) {
+  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const { openModal } = useContext(ModalContext);
-  const { config, rollingStockDB, setMustUpdateTimetable } = props;
+  const { config, rollingStockDB } = props;
   const [trainsList, setTrainList] = useState();
   const [isSearching, setIsSearching] = useState(false);
 
@@ -61,9 +62,9 @@ export default function OpenDataTrainsList(props) {
 
   return trainsList && trainsList.length > 0 ? (
     <div className="osrd-config-item mb-2">
-      <div className="osrd-config-item-container opendata-trainlist">
-        <div className="opendata-trainlist-launchbar">
-          <span className="opendata-trainlist-launchbar-nbresults">
+      <div className="osrd-config-item-container import-train-schedule-trainlist">
+        <div className="import-train-schedule-trainlist-launchbar">
+          <span className="import-train-schedule-trainlist-launchbar-nbresults">
             {trainsList.length} {t('trainsFound')}
           </span>
           <button
@@ -71,11 +72,7 @@ export default function OpenDataTrainsList(props) {
             type="button"
             onClick={() =>
               openModal(
-                <OpenDataImportModal
-                  rollingStockDB={rollingStockDB}
-                  trains={trainsList}
-                  setMustUpdateTimetable={setMustUpdateTimetable}
-                />
+                <ImportTrainScheduleModal rollingStockDB={rollingStockDB} trains={trainsList} />
               )
             }
           >
@@ -83,12 +80,12 @@ export default function OpenDataTrainsList(props) {
             <span className="ml-3">{t('launchImport')}</span>
           </button>
         </div>
-        <div className="opendata-trainlist-results">
+        <div className="import-train-schedule-trainlist-results">
           {trainsList.map((train, idx) => (
-            <TrainDetail
+            <ImportTrainScheduleTrainDetail
               trainData={train}
               idx={idx}
-              key={rollingstockOpenData2OSRD[train.type_em]}
+              key={nextId()}
               rollingStock={rollingStockDict[rollingstockOpenData2OSRD[train.type_em]]}
             />
           ))}
@@ -104,7 +101,7 @@ export default function OpenDataTrainsList(props) {
   );
 }
 
-OpenDataTrainsList.defaultProps = {
+ImportTrainScheduleTrainsList.defaultProps = {
   config: undefined,
 };
 
@@ -112,8 +109,7 @@ LoadingIfSearching.propTypes = {
   isSearching: PropTypes.bool.isRequired,
 };
 
-OpenDataTrainsList.propTypes = {
+ImportTrainScheduleTrainsList.propTypes = {
   config: PropTypes.object,
   rollingStockDB: PropTypes.array.isRequired,
-  setMustUpdateTimetable: PropTypes.func.isRequired,
 };

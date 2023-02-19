@@ -6,7 +6,6 @@ import editorImg from 'assets/pictures/home/editor.svg';
 import stdcmImg from 'assets/pictures/home/stdcm.svg';
 import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import customgetImg from 'assets/pictures/home/customget.svg';
-import opendataImg from 'assets/pictures/home/opendata.svg';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import osrdLogo from 'assets/pictures/osrd.png';
 import { useSelector } from 'react-redux';
@@ -42,9 +41,6 @@ export default function Home() {
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" />
-            </div>
-            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-              <Card img={opendataImg} title={t('opendataimport')} link="/opendata" />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={customgetImg} title={t('customget')} link="/customget" />

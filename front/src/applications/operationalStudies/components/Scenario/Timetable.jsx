@@ -149,8 +149,26 @@ export default function Timetable(props) {
 
   return (
     <div className="scenario-timetable">
+      <div className="scenario-timetable-addtrains-buttons">
+        <button
+          className="btn btn-secondary btn-sm"
+          type="button"
+          data-testid="scenarios-filter-button"
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.opendata)}
+        >
+          <FaPlus />
+        </button>
+        <button
+          className="btn btn-primary btn-sm"
+          type="button"
+          data-testid="scenarios-filter-button"
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
+        >
+          <FaPlus />
+        </button>
+      </div>
       <div className="scenario-timetable-toolbar">
-        <div className="">
+        <div className="small">
           {t('trainCount', {
             count: trainsList ? trainsList.filter((train) => !train.isFiltered).length : 0,
           })}
@@ -170,14 +188,6 @@ export default function Timetable(props) {
             data-testid="scenarios-filter"
           />
         </div>
-        <button
-          className="btn btn-primary btn-sm"
-          type="button"
-          data-testid="scenarios-filter-button"
-          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
-        >
-          <FaPlus />
-        </button>
       </div>
       <div className="scenario-timetable-trains">
         {trainsList &&

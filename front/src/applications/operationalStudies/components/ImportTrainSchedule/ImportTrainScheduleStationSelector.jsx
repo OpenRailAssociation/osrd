@@ -6,7 +6,7 @@ import { useDebounce } from 'utils/helpers';
 import { useTranslation } from 'react-i18next';
 import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
-import { GRAOU_URL } from '../consts';
+import { GRAOU_URL } from './consts';
 
 export function formatStation(stationData) {
   return (
@@ -33,9 +33,9 @@ export function formatStation(stationData) {
   );
 }
 
-function StationSelector(props) {
+function ImportTrainScheduleStationSelector(props) {
   const { id, onSelect, term, setTerm } = props;
-  const { t } = useTranslation(['opendata']);
+  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [stationsList, setStationsList] = useState();
   const [isSearching, setIsSearching] = useState(false);
   const debouncedTerm = useDebounce(term, 500);
@@ -93,15 +93,15 @@ function StationSelector(props) {
   );
 }
 
-StationSelector.defaultProps = {
+ImportTrainScheduleStationSelector.defaultProps = {
   term: '',
 };
 
-StationSelector.propTypes = {
+ImportTrainScheduleStationSelector.propTypes = {
   onSelect: PropTypes.func.isRequired,
   term: PropTypes.string,
   setTerm: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
 };
 
-export const MemoStationSelector = memo(StationSelector);
+export const MemoStationSelector = memo(ImportTrainScheduleStationSelector);

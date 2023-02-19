@@ -18,6 +18,7 @@ import { setSuccess } from 'reducers/main';
 import { GiElectric } from 'react-icons/gi';
 import SimulationResults from './SimulationResults';
 import ManageTrainSchedule from './ManageTrainSchedule';
+import ImportTrainSchedule from './ImportTrainSchedule';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import getTimetable from '../components/Scenario/getTimetable';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
@@ -158,12 +159,17 @@ export default function Scenario() {
               </div>
             </div>
             <div className="col-lg-8">
-              {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+              {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
                 <div className="scenario-managetrainschedule">
                   <ManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   />
+                </div>
+              )}
+              {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.opendata && (
+                <div className="scenario-managetrainschedule">
+                  <ImportTrainSchedule />
                 </div>
               )}
               <div className="scenario-results">
