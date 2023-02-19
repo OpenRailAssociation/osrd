@@ -23,7 +23,6 @@
   "scenarioModifyButton": "Modifier",
   "scenarioDeleteButton": "Supprimer",
   "scenarioNameMissing": "Vous devez renseigner un nom pour le scénario",
-  "dontUseElectricalProfileSet": "— Ne pas utiliser les profils électriques —",
   "noElectricalProfileSet": "Pas de profils électriques",
   "electricalProfileSet": "Set de profils électriques"
 }

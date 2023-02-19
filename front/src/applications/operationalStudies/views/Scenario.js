@@ -145,9 +145,7 @@ export default function Scenario() {
                         </div>
                       </div>
                     </div>
-                    <div className="scenario-details-description">
-                      {scenario.description}
-                    </div>
+                    <div className="scenario-details-description">{scenario.description}</div>
                   </div>
                 )}
                 {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
