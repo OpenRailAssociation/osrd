@@ -25,7 +25,7 @@ export default function RenderPopup() {
     const properties = {
       ...featureInfoClick.feature.properties,
       source: featureInfoClick.feature.source,
-      clickLngLat: [featureInfoClick.coordinates[0], featureInfoClick.coordinates[1]],
+      clickLngLat: featureInfoClick.coordinates.slice(0, 2),
     };
 
     return (

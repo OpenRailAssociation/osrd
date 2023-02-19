@@ -19,20 +19,16 @@ import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 import ButtonMapInfras from './ButtonMapInfras';
 
+const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
 export default function MapButtons(props) {
   const { resetPitchBearing, withInfraButton } = props;
   const featureInfoClick = useSelector(getFeatureInfoClick);
   const dispatch = useDispatch();
 
-  const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
-
   const [openedPopover, setOpenedPopover] = useState(undefined);
 
   const toggleMapModal = (keyModal) => {
-    if (keyModal === openedPopover) {
-      keyModal = undefined;
-    }
-    setOpenedPopover(keyModal);
+    setOpenedPopover(keyModal !== openedPopover ? keyModal : undefined);
 
     // Close the pop up of the map
     if (featureInfoClick.displayPopup) {
@@ -65,13 +61,13 @@ export default function MapButtons(props) {
         {withInfraButton && <ButtonMapInfras />}
       </div>
       {openedPopover === MAP_POPOVERS.SEARCH && (
-        <MapSearch toggleMapSearch={() => setOpenedPopover(undefined)} />
+        <MapSearch closeMapSearchPopUp={() => setOpenedPopover(undefined)} />
       )}
       {openedPopover === MAP_POPOVERS.SETTINGS && (
-        <MapSettings toggleMapSettings={() => setOpenedPopover(undefined)} />
+        <MapSettings closeMapSettingsPopUp={() => setOpenedPopover(undefined)} />
       )}
       {openedPopover === MAP_POPOVERS.KEY && (
-        <MapKey toggleMapKey={() => setOpenedPopover(undefined)} />
+        <MapKey closeMapKeyPopUp={() => setOpenedPopover(undefined)} />
       )}
     </div>
   );
