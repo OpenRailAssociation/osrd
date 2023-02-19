@@ -1,4 +1,4 @@
-import rollingstockOpenData2OSRD from 'applications/opendata/components/rollingstock_opendata2osrd.json';
+import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 
 export function seconds2hhmmss(seconds) {
   const dateTime = new Date(seconds * 1000);

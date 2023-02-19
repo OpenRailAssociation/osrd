@@ -1,31 +1,4 @@
-.opendata-import {
-  --opendatagreen: #329623;
-  
-  .opendata-import-global-settings {
-    background-color: var(--coolgray9);
-    border-radius: 4px;
-    padding: .25rem .5rem 0;
-    margin-bottom: .5rem;
-    transition: .2s;
-    &:hover {
-      background-color: var(--coolgray7);
-    }
-    .opendata-import-global-settings-bar {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      cursor: pointer;
-      color: var(--light);
-      padding: 0 0 .25rem;
-    }
-    .opendata-import-global-settings-items {
-      display: none;
-      &.active {
-        display: block;
-      }
-    }
-  }
-  
+.import-train-schedule {    
   .osrd-config-item-from {
     background-color: var(--green);
   }
@@ -128,9 +101,9 @@
     }
   }
 
-  .opendata-trainlist {
+  .import-train-schedule-trainlist {
     position: relative;
-    .opendata-trainlist-launchbar {
+    .import-train-schedule-trainlist-launchbar {
       display: flex;
       align-items: center;
       padding: .5rem;
@@ -139,32 +112,32 @@
       color: var(--light);
       background-color: var(--secondary);
     }
-    .opendata-trainlist-results {
+    .import-train-schedule-trainlist-results {
       position: relative;
       overflow: auto;
       max-height: calc(100vh - 17.5rem);
-      .opendata-traindetail {
+      .import-train-schedule-traindetail {
         position: relative;
         margin-bottom: .5rem;
         border: 2px solid var(--coolgray3);
         border-radius: 4px;
-        .opendata-traindetail-main {
+        .import-train-schedule-traindetail-main {
           display: flex;
           align-items: baseline;
           background-color: var(--coolgray1);
           padding: .5rem;
           transition: .2s;
-          .opendata-traindetail-idx {
+          .import-train-schedule-traindetail-idx {
             width: 1.5rem;
             font-size: .7rem;
           }
-          .opendata-traindetail-num {
+          .import-train-schedule-traindetail-num {
             width: 4.5rem;
             font-size: 1.2rem;
             font-weight: bold;
             color: var(--coolgray9);
             height: 2rem;
-            .opendata-traindetail-activity {
+            .import-train-schedule-traindetail-activity {
               display: block;
               font-weight: normal;
               text-transform: uppercase;
@@ -172,16 +145,16 @@
               line-height: .5rem;  
             }
           }
-          .opendata-traindetail-startend {
+          .import-train-schedule-traindetail-startend {
             width: 9rem;
             font-size: .9rem;
             text-align: center;
           }
-          .opendata-traindetail-duration {
+          .import-train-schedule-traindetail-duration {
             width: 3.5rem;
             font-size: .8rem;        
           }
-          .opendata-traindetail-rollingstock {
+          .import-train-schedule-traindetail-rollingstock {
             align-self: flex-start;
             overflow: hidden;
             height: 2rem;
@@ -192,7 +165,7 @@
               padding: .25rem 0;
             }
           }
-          .opendata-traindetail-transilien {   
+          .import-train-schedule-traindetail-transilien {   
             color: var(--blue);
             font-weight: 500;
             margin-left: auto;
@@ -200,7 +173,7 @@
             margin-right: .5rem;
             font-size: .8rem;        
           }
-          .opendata-traindetail-stepnb {   
+          .import-train-schedule-traindetail-stepnb {   
             color: var(--light);
             font-weight: bold;
             font-size: .8rem;
@@ -212,43 +185,43 @@
             text-align: center;
           }
         }
-        .opendata-traindetail-with-hover {
+        .import-train-schedule-traindetail-with-hover {
           cursor: pointer;
           &:hover {
             background-color: var(--coolgray3);
           }
         }
-        .opendata-traindetail-steps {
+        .import-train-schedule-traindetail-steps {
           overflow: auto;
           max-height: 0rem;
           transition: .2s;
           &.opened {
             max-height: 10rem;
           }
-          .opendata-traindetail-step {
+          .import-train-schedule-traindetail-step {
             display: flex;
             align-items: baseline;
             margin-left: 5rem;
             &:hover {
               background-color: var(--coolgray1);
             }
-            .opendata-traindetail-step-nb {
+            .import-train-schedule-traindetail-step-nb {
               width: 2rem;
               text-align: right;
               padding: 0 .5rem;
               font-size: .6rem;
             }
-            .opendata-traindetail-step-startend {
+            .import-train-schedule-traindetail-step-startend {
               width: 8.5rem;
               font-size: .9rem;
             }
-            .opendata-traindetail-step-duration {
+            .import-train-schedule-traindetail-step-duration {
               width: 2rem;
               margin-right: .5rem;
               text-align: right;
               font-size: .8rem;
             }
-            .opendata-traindetail-step-name {
+            .import-train-schedule-traindetail-step-name {
               font-size: .9rem;
             }
           }

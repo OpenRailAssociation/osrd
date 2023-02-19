@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import Map from 'applications/opendata/components/Map';
+import Map from 'applications/operationalStudies/components/ImportTrainSchedule/Map';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
-import generatePathfindingPayload from 'applications/opendata/components/generatePathfindingPayload';
-import generateTrainSchedulesPayload from 'applications/opendata/components/generateTrainSchedulesPayload';
+import generatePathfindingPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generatePathfindingPayload';
+import generateTrainSchedulesPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generateTrainSchedulesPayload';
+import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
 import { post } from 'common/requests';
 import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import { initialViewport, initialStatus, itineraryURI } from 'applications/opendata/consts';
-import OpenDataImportModalFooter from './OpenDataImportModalFooter';
-import { refactorUniquePaths } from '../components/OpenDataHelpers';
+import {
+  initialViewport,
+  initialStatus,
+  itineraryURI,
+} from 'applications/operationalStudies/components/ImportTrainSchedule//consts';
+import { refactorUniquePaths } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
+import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
 
 /* METHOD
  *
@@ -23,9 +28,9 @@ import { refactorUniquePaths } from '../components/OpenDataHelpers';
  *
  */
 
-export default function OpenDataImportModal(props) {
-  const { rollingStockDB, setMustUpdateTimetable, trains } = props;
-  const { t } = useTranslation('translation', 'opendata');
+export default function ImportTrainScheduleModal(props) {
+  const { rollingStockDB, trains } = props;
+  const { t } = useTranslation('translation', 'operationalStudies/importTrainSchedule');
   const infraID = useSelector(getInfraID);
   const rollingStockID = useSelector(getRollingStockID);
   const timetableID = useSelector(getTimetableID);
@@ -40,24 +45,30 @@ export default function OpenDataImportModal(props) {
   // Path to compute
   const [pathsDictionnary, setPathsDictionnary] = useState();
 
-  const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(t('opendata:status.ready'));
+  const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(
+    t('operationalStudies/importTrainSchedule:status.ready')
+  );
 
   const [viewport, setViewport] = useState(initialViewport);
   const [status, setStatus] = useState(initialStatus);
 
   function testMissingInfos() {
     const messages = [];
-    if (!infraID) messages.push(t('opendata:status.missingInfra'));
-    if (!rollingStockID) messages.push(t('opendata:status.missingRollingStock'));
-    if (!timetableID) messages.push(t('opendata:status.missingTimetable'));
+    if (!infraID) messages.push(t('operationalStudies/importTrainSchedule:status.missingInfra'));
+    if (!rollingStockID)
+      messages.push(t('operationalStudies/importTrainSchedule:status.missingRollingStock'));
+    if (!timetableID)
+      messages.push(t('operationalStudies/importTrainSchedule:status.missingTimetable'));
     if (messages.length > 0) {
       setWhatIAmDoingNow(
         <span className="text-danger">
-          {[t('opendata:status.noImportationPossible'), ''].concat(messages).join('\n')}
+          {[t('operationalStudies/importTrainSchedule:status.noImportationPossible'), '']
+            .concat(messages)
+            .join('\n')}
         </span>
       );
     } else {
-      setWhatIAmDoingNow(t('opendata:status.ready'));
+      setWhatIAmDoingNow(t('operationalStudies/importTrainSchedule:status.ready'));
     }
   }
 
@@ -91,12 +102,12 @@ export default function OpenDataImportModal(props) {
         pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].lng
       );
       setWhatIAmDoingNow(
-        `${uicNumberToCompleteLocal}/${uic2complete.length} ${t('opendata:status.complete')} ${
-          pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].name
-        }`
+        `${uicNumberToCompleteLocal}/${uic2complete.length} ${t(
+          'operationalStudies/importTrainSchedule:status.complete'
+        )} ${pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].name}`
       );
     } else {
-      setWhatIAmDoingNow(t('opendata:status.uicComplete'));
+      setWhatIAmDoingNow(t('operationalStudies/importTrainSchedule:status.uicComplete'));
       setUicNumberToComplete(undefined);
       setStatus({ ...status, uicComplete: true });
     }
@@ -129,7 +140,7 @@ export default function OpenDataImportModal(props) {
     } catch (e) {
       setWhatIAmDoingNow(
         <span className="text-danger">
-          {t('opendata:errorMessages.unableToRetrievePathfinding')}
+          {t('operationalStudies/importTrainSchedule:errorMessages.unableToRetrievePathfinding')}
         </span>
       );
       setStatus(initialStatus);
@@ -156,9 +167,9 @@ export default function OpenDataImportModal(props) {
     const path2complete = Object.keys(pathfindingPayloads);
     if (pathNumberToComplete < path2complete.length) {
       setWhatIAmDoingNow(
-        `${pathNumberToComplete}/${path2complete.length} ${t('opendata:status.searchingPath')} ${
-          path2complete[pathNumberToComplete]
-        }`
+        `${pathNumberToComplete}/${path2complete.length} ${t(
+          'operationalStudies/importTrainSchedule:status.searchingPath'
+        )} ${path2complete[pathNumberToComplete]}`
       );
       launchPathfinding(
         pathfindingPayloads[path2complete[pathNumberToComplete]],
@@ -169,7 +180,7 @@ export default function OpenDataImportModal(props) {
         autoComplete
       );
     } else {
-      setWhatIAmDoingNow(t('opendata:status.pathComplete'));
+      setWhatIAmDoingNow(t('operationalStudies/importTrainSchedule:status.pathComplete'));
       setTrainsWithPathRef(
         trainsWithPathRef.map((train) => ({
           ...train,
@@ -188,15 +199,22 @@ export default function OpenDataImportModal(props) {
   async function launchTrainSchedules(params) {
     try {
       await post(scheduleURL, params, {});
-      return `${t('opendata:status.calculatingTrainScheduleComplete')} (${params.path})`;
+      getTimetable();
+      return `${t(
+        'operationalStudies/importTrainSchedule:status.calculatingTrainScheduleComplete'
+      )} (${params.path})`;
     } catch (error) {
       console.log(error);
     }
-    return `${t('opendata:status.calculatingTrainScheduleError')} (${params.path})`;
+    return `${t('operationalStudies/importTrainSchedule:status.calculatingTrainScheduleError')} (${
+      params.path
+    })`;
   }
   async function generateTrainSchedules() {
     const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
-    setWhatIAmDoingNow(`${t('opendata:status.calculatingTrainSchedule')}`);
+    setWhatIAmDoingNow(
+      `${t('operationalStudies/importTrainSchedule:status.calculatingTrainSchedule')}`
+    );
     const messages = [];
     const promisesList = [];
     // eslint-disable-next-line no-restricted-syntax
@@ -209,8 +227,9 @@ export default function OpenDataImportModal(props) {
     }
     Promise.all(promisesList).then(() => {
       setStatus({ ...status, trainSchedulesDone: true });
-      setMustUpdateTimetable(true);
-      setWhatIAmDoingNow(t('opendata:status.calculatingTrainScheduleCompleteAll'));
+      setWhatIAmDoingNow(
+        t('operationalStudies/importTrainSchedule:status.calculatingTrainScheduleCompleteAll')
+      );
     });
   }
 
@@ -254,10 +273,14 @@ export default function OpenDataImportModal(props) {
                 type="button"
                 onClick={() => completePaths(true)}
               >
-                <span>1 — {t('opendata:completeTrackSectionID')}</span>
+                <span>
+                  1 — {t('operationalStudies/importTrainSchedule:completeTrackSectionID')}
+                </span>
                 <span>{Object.keys(pointsDictionnary).length}</span>
               </button>
-              <div className="my-1 text-center">{t('opendata:or')}</div>
+              <div className="my-1 text-center">
+                {t('operationalStudies/importTrainSchedule:or')}
+              </div>
               <button
                 className={`btn btn-sm btn-block d-flex justify-content-between text-wrap text-left ${
                   status.uicComplete || status.pathFindingDone
@@ -267,7 +290,7 @@ export default function OpenDataImportModal(props) {
                 type="button"
                 onClick={() => generatePaths(0, {}, true)}
               >
-                <span>1 — {t('opendata:generatePathsAuto')}</span>
+                <span>1 — {t('operationalStudies/importTrainSchedule:generatePathsAuto')}</span>
                 <span>{pathsDictionnary.length}</span>
               </button>
               <button
@@ -277,7 +300,7 @@ export default function OpenDataImportModal(props) {
                 type="button"
                 onClick={() => generatePaths(0)}
               >
-                <span>2 — {t('opendata:generatePaths')}</span>
+                <span>2 — {t('operationalStudies/importTrainSchedule:generatePaths')}</span>
                 <span>{pathsDictionnary.length}</span>
               </button>
               <button
@@ -287,7 +310,9 @@ export default function OpenDataImportModal(props) {
                 type="button"
                 onClick={generateTrainSchedules}
               >
-                <span>3 — {t('opendata:generateTrainSchedules')}</span>
+                <span>
+                  3 — {t('operationalStudies/importTrainSchedule:generateTrainSchedules')}
+                </span>
                 <span>{trains.length}</span>
               </button>
 
@@ -310,17 +335,16 @@ export default function OpenDataImportModal(props) {
       ) : (
         ''
       )}
-      <OpenDataImportModalFooter status={status} />
+      <ImportTrainScheduleModalFooter status={status} />
     </>
   );
 }
 
-OpenDataImportModal.defaultProps = {
+ImportTrainScheduleModal.defaultProps = {
   rollingStockDB: [],
 };
 
-OpenDataImportModal.propTypes = {
+ImportTrainScheduleModal.propTypes = {
   trains: PropTypes.array.isRequired,
   rollingStockDB: PropTypes.array,
-  setMustUpdateTimetable: PropTypes.func.isRequired,
 };

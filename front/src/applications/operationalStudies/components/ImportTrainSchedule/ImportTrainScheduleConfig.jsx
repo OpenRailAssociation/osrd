@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import PropTypes from 'prop-types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import {
   MemoStationSelector,
   formatStation,
-} from 'applications/opendata/components/StationSelector';
+} from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
 import { useDispatch } from 'react-redux';
 
@@ -14,9 +15,9 @@ function dateOfToday() {
   return date.toJSON().substring(0, 10);
 }
 
-export default function OpenDataImportConfig(props) {
+export default function ImportTrainScheduleConfig(props) {
   const { setConfig } = props;
-  const { t } = useTranslation(['opendata']);
+  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [from, setFrom] = useState();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState();
@@ -66,7 +67,7 @@ export default function OpenDataImportConfig(props) {
 
   return (
     <div className="row">
-      <div className="col-lg-4">
+      <div className="col-lg-6">
         <div className="osrd-config-item mb-2">
           <div className="osrd-config-item-container osrd-config-item-from">
             <h2>{t('from')}</h2>
@@ -90,7 +91,7 @@ export default function OpenDataImportConfig(props) {
           </div>
         </div>
       </div>
-      <div className="col-lg-4">
+      <div className="col-lg-6">
         <div className="osrd-config-item mb-2">
           <div className="osrd-config-item-container osrd-config-item-to">
             <h2>{t('to')}</h2>
@@ -114,7 +115,10 @@ export default function OpenDataImportConfig(props) {
           </div>
         </div>
       </div>
-      <div className="col-lg-4">
+      <div className="col-lg-6">
+        <RollingStockSelector />
+      </div>
+      <div className="col-lg-6">
         <div className="osrd-config-item mb-2">
           <div className="osrd-config-item-container osrd-config-item-datetime">
             <h2>{t('datetime')}</h2>
@@ -176,6 +180,6 @@ export default function OpenDataImportConfig(props) {
   );
 }
 
-OpenDataImportConfig.propTypes = {
+ImportTrainScheduleConfig.propTypes = {
   setConfig: PropTypes.func.isRequired,
 };

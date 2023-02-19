@@ -68,6 +68,7 @@ export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   none: 'NONE',
   add: 'ADD',
   update: 'UPDATE',
+  opendata: 'OPENDATA',
 });
 
 export const MODES = Object.freeze({
