@@ -9,13 +9,12 @@ import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
 import HearderPopUp from '../HeaderPopUp';
 
 export default function MapSearch(props) {
+  const { closeMapSearchPopUp } = props;
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
-
-  const { toggleMapSearch } = props;
 
   const { t } = useTranslation(['translation', 'map-search']);
 
@@ -39,7 +38,7 @@ export default function MapSearch(props) {
 
   return (
     <div className="map-modal">
-      <HearderPopUp onClick={toggleMapSearch} title={t('translation:common.search')} />
+      <HearderPopUp onClick={closeMapSearchPopUp} title={t('translation:common.search')} />
       <div className="actionbar">
         <nav role="navigation" className="position-relative mt-2">
           <ul className="nav nav navtabs mb-0 dragscroll" role="tablist" id="listeTitreOnglets">
@@ -83,5 +82,5 @@ export default function MapSearch(props) {
 }
 
 MapSearch.propTypes = {
-  toggleMapSearch: PropTypes.func.isRequired,
+  closeMapSearchPopUp: PropTypes.func.isRequired,
 };

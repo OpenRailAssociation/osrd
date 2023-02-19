@@ -10,18 +10,18 @@ import { useTranslation } from 'react-i18next';
 import HearderPopUp from '../HeaderPopUp';
 
 export default function MapSettings(props) {
-  const { toggleMapSettings } = props;
+  const { closeMapSettingsPopUp } = props;
   const { t } = useTranslation(['translation', 'map-settings']);
   const [showSettingsSignals, setShowSettingsSignals] = useState(false);
   const [showSettingsLayers, setShowSettingsLayers] = useState(false);
   const [showSettingsSpeedLimits, setShowSettingsSpeedLimits] = useState(false);
-  const toogleShowSettings = (setShowSettings) => {
+  const toggleShowSettings = (setShowSettings) => {
     setShowSettings((prevState) => !prevState);
   };
 
   return (
     <div className="map-modal">
-      <HearderPopUp onClick={toggleMapSettings} title={t('map-settings:mapSettings')} />
+      <HearderPopUp onClick={closeMapSettingsPopUp} title={t('map-settings:mapSettings')} />
       <MapSettingsTrackSources />
       <div className="my-1" />
       <MapSettingsMapStyle />
@@ -29,7 +29,7 @@ export default function MapSettings(props) {
       <MapSettingsBackgroundSwitches />
       <div
         className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
-        onClick={() => toogleShowSettings(setShowSettingsSignals)}
+        onClick={() => toggleShowSettings(setShowSettingsSignals)}
         role="button"
         tabIndex={0}
       >
@@ -42,7 +42,7 @@ export default function MapSettings(props) {
       {showSettingsSignals && <MapSettingsSignals />}
       <div
         className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
-        onClick={() => toogleShowSettings(setShowSettingsLayers)}
+        onClick={() => toggleShowSettings(setShowSettingsLayers)}
         role="button"
         tabIndex={0}
       >
@@ -55,7 +55,7 @@ export default function MapSettings(props) {
       {showSettingsLayers && <MapSettingsLayers />}
       <div
         className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
-        onClick={() => toogleShowSettings(setShowSettingsSpeedLimits)}
+        onClick={() => toggleShowSettings(setShowSettingsSpeedLimits)}
         role="button"
         tabIndex={0}
       >
@@ -71,5 +71,5 @@ export default function MapSettings(props) {
 }
 
 MapSettings.propTypes = {
-  toggleMapSettings: PropTypes.func.isRequired,
+  closeMapSettingsPopUp: PropTypes.func.isRequired,
 };
