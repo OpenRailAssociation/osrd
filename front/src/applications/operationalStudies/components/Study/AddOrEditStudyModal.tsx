@@ -38,7 +38,7 @@ const currentStudyDefaults = {
 };
 
 type Props = {
-  editionMode: false;
+  editionMode?: false;
   study?: studyTypes;
   getStudy?: any;
 };
