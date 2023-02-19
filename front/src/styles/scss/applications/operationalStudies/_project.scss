@@ -147,6 +147,9 @@
   margin-left: -0.5rem;
   margin-right: -0.5rem;
   .studies-list-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     position: relative;
     border-radius: 4px;
     margin: 0 0.5rem 1rem;
@@ -154,10 +157,42 @@
     background-color: var(--white);
     border: 2px solid var(--coolgray3);
     transition: .4s;
+    min-height: 16.5rem;
     &:hover, &:focus, &:active {
       border-color: var(--primary);
       button {
         opacity: 1 !important;
+      }
+    }
+    &.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-size: 6rem;
+      color: var(--coolgray5);
+      cursor: pointer;
+      background-color: transparent;
+      &:hover, &:focus, &:active {
+        border-color: var(--coolgray3);
+        background-color: var(--coolgray3);
+        color: var(--coolgray7);
+      }
+      .legend {
+        margin-top: 1rem;
+        font-size: 1.5rem;
+      }
+    }
+    @media screen and (max-width: 1279px) {
+      &.empty {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+        font-size: 2rem;
+        min-height: 5rem !important;
+        .legend {
+          margin: 0;
+        }
       }
     }
     button {
