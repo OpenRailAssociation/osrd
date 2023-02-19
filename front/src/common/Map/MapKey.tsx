@@ -7,7 +7,7 @@ import { catenaryMapKey, MapKeyProps, speedLimitMapKey } from './const';
 import 'common/Map/MapKey.scss';
 import HearderPopUp from './HeaderPopUp';
 
-const MapSettings = ({ toggleMapKey }: MapKeyProps) => {
+const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
   const { t } = useTranslation(['translation', 'map-key']);
   const mapStyle = useSelector(getMapStyle);
 
@@ -40,7 +40,7 @@ const MapSettings = ({ toggleMapKey }: MapKeyProps) => {
 
   return (
     <div className="map-modal map-modal-dark">
-      <HearderPopUp onClick={toggleMapKey} title={t('map-key:keyTitle')} isLight />
+      <HearderPopUp onClick={closeMapKeyPopUp} title={t('map-key:keyTitle')} isLight />
       <div className="row">
         <div className="col-lg-6">
           <div className="mapkey">
