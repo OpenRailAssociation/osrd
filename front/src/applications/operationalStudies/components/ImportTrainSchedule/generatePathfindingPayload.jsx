@@ -1,4 +1,4 @@
-import rollingstockOpenData2OSRD from 'applications/opendata/components/rollingstock_opendata2osrd.json';
+import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 
 function formatSteps(pointsDictionnary, trainFromPathRef, autoComplete) {
   if (autoComplete) {

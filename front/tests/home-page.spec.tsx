@@ -56,12 +56,4 @@ test.describe('Home page OSDR', () => {
     // Check that the URL of the page matches the expected pattern
     await expect(playwrightHomePage.page).toHaveURL(/.*\/stdcm/);
   });
-
-  test('should be correctly redirected to the  "Opendata Import" page after clicking on the link', async () => {
-    // Navigate to the "Opendata Import" page
-    await playwrightHomePage.goToImportPage();
-
-    // Check that the URL of the page matches the expected pattern
-    await expect(playwrightHomePage.page).toHaveURL(/.*\/opendata\/import/);
-  });
 });
