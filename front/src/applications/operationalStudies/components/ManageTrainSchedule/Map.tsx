@@ -75,9 +75,17 @@ function Map() {
       pitch: 0,
     });
   };
+  
+  const getTrackLayerName = () => {
+    const layerNames = {
+      geographic: ['chartis/tracks-geo/main'],
+      schematic: ['chartis/tracks-sch/main'],
+    };
+    return layerNames[mapTrackSources];
+  };
 
   const onFeatureClick = (e: MapLayerMouseEvent) => {
-    const result = getMapMouseEventNearestFeature(e);
+    const result = getMapMouseEventNearestFeature(e, { layersId: getTrackLayerName() });
     if (
       result &&
       result.feature.properties &&
@@ -102,7 +110,7 @@ function Map() {
   };
 
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {
-    const result = getMapMouseEventNearestFeature(e);
+    const result = getMapMouseEventNearestFeature(e, { layersId: getTrackLayerName() });
     if (
       result &&
       result.feature.properties &&
