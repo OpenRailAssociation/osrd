@@ -36,7 +36,7 @@ const scenarioTypesDefaults = {
 };
 
 type Props = {
-  editionMode: false;
+  editionMode?: false;
   scenario?: scenarioTypes;
   getScenario?: any;
 };
@@ -44,22 +44,23 @@ type Props = {
 export default function AddOrEditScenarioModal({ editionMode, scenario, getScenario }: Props) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
+  const noElectricalProfileSetOption = {
+    key: undefined,
+    value: t('noElectricalProfileSet'),
+  };
   const [currentScenario, setCurrentScenario] = useState<scenarioTypes>(
     scenario || scenarioTypesDefaults
   );
   const [displayErrors, setDisplayErrors] = useState(false);
   const [electricalProfileSetOptions, setElectricalProfileSetOptions] = useState([
-    {
-      key: undefined,
-      value: t('dontUseElectricalProfileSet'),
-    },
+    noElectricalProfileSetOption,
   ]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const infraID = useSelector(getInfraID);
-  const [selectedValue, setSelectedValue] = useState();
+  const [selectedValue, setSelectedValue] = useState(noElectricalProfileSetOption);
 
   type ElectricalProfileSetType = { id: number | undefined; name: string };
   type SelectOptionsType = { key: number | undefined; value: string };
@@ -70,10 +71,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
         a.name.localeCompare(b.name)
       );
       const options = [
-        {
-          key: undefined,
-          value: t('noElectricalProfileSet'),
-        },
+        noElectricalProfileSetOption,
         ...results.map((option: ElectricalProfileSetType) => ({
           key: option.id,
           value: option.name,
@@ -160,7 +158,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return selectedValue && electricalProfileSetOptions ? (
+  return electricalProfileSetOptions ? (
     <div className="scenario-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
@@ -233,7 +231,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
               tags={currentScenario.tags}
               removeTag={removeTag}
               title={t('scenarioTags')}
-              color="secondary"
+              color="teal"
             />
           </div>
           {!editionMode && (

@@ -6,8 +6,9 @@ import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
+import ScenarioCardEmpty from 'applications/operationalStudies/components/Study/ScenarioCardEmpty';
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
-import { FaPencilAlt, FaPlus } from 'react-icons/fa';
+import { FaPencilAlt } from 'react-icons/fa';
 import { budgetFormat } from 'utils/numbers';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useSelector, useDispatch } from 'react-redux';
@@ -18,13 +19,15 @@ import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import AddOrEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
 import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
 function displayScenariosList(scenariosList, setFilterChips) {
   return scenariosList ? (
     <div className="row no-gutters">
+      <div className="col-xl-4 col-lg-6" key={nextId()}>
+        <ScenarioCardEmpty />
+      </div>
       {scenariosList.map((scenario) => (
         <div className="col-xl-4 col-lg-6" key={nextId()}>
           <ScenarioCard scenario={scenario} setFilterChips={setFilterChips} />
@@ -286,14 +289,6 @@ export default function Study() {
               options={sortOptions}
               sm
             />
-            <button
-              className="btn btn-primary btn-sm"
-              type="button"
-              onClick={() => openModal(<AddOrEditScenarioModal />, 'xl')}
-            >
-              <FaPlus />
-              <span className="ml-2">{t('createScenario')}</span>
-            </button>
           </div>
 
           <div className="scenarios-list">
