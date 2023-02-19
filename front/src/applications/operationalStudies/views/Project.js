@@ -4,10 +4,11 @@ import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import StudyCard from 'applications/operationalStudies/components/Project/StudyCard';
+import StudyCardEmpty from 'applications/operationalStudies/components/Project/StudyCardEmpty';
 import Loader from 'common/Loader';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
-import { FaPencilAlt, FaPlus } from 'react-icons/fa';
+import { FaPencilAlt } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
@@ -17,7 +18,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
@@ -25,6 +25,9 @@ import BreadCrumbs from '../components/BreadCrumbs';
 function displayStudiesList(studiesList, setFilterChips) {
   return studiesList ? (
     <div className="row no-gutters">
+      <div className="col-xl-6" key={nextId()}>
+        <StudyCardEmpty />
+      </div>
       {studiesList.map((study) => (
         <div className="col-xl-6" key={nextId()}>
           <StudyCard study={study} setFilterChips={setFilterChips} />
@@ -130,13 +133,13 @@ export default function Project() {
           {project ? (
             <div className="project-details">
               <div className="project-details-title">
-                <div className="row w-100">
+                <div className="row w-100 no-gutters">
                   <div className={project.image_url ? 'col-lg-4 col-md-4' : 'd-none'}>
                     <div className="project-details-title-img">
                       <img src={imageUrl} alt="project logo" />
                     </div>
                   </div>
-                  <div className={project.image_url ? 'col-lg-8 col-md-8' : 'col-12'}>
+                  <div className={project.image_url ? 'pl-md-2 col-lg-8 col-md-8' : 'col-12'}>
                     <div className="project-details-title-content">
                       <div className="project-details-title-name">
                         {project.name}
@@ -225,14 +228,6 @@ export default function Project() {
               selectedValue={sortOption}
               options={sortOptions}
             />
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={() => openModal(<AddOrEditStudyModal />, 'xl')}
-            >
-              <FaPlus />
-              <span className="ml-2">{t('createStudy')}</span>
-            </button>
           </div>
 
           <div className="studies-list">
