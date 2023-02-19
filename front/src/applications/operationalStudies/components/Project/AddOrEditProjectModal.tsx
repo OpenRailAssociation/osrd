@@ -26,7 +26,7 @@ import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
 export type Props = {
-  editionMode: false;
+  editionMode?: false;
   project?: projectTypes;
   getProject?: any;
 };

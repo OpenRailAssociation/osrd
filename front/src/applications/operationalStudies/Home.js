@@ -1,15 +1,13 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/projects.svg';
-import AddOrEditProjectModal from 'applications/operationalStudies/components/Project/AddOrEditProjectModal';
 import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
+import ProjectCardEmpty from 'applications/operationalStudies/components/Home/ProjectCardEmpty';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import osrdLogo from 'assets/pictures/osrd.png';
 import Loader from 'common/Loader';
-import { FaPlus } from 'react-icons/fa';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { get } from 'common/requests';
 import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
@@ -18,6 +16,9 @@ function displayCards(projectsList, setFilterChips) {
   return projectsList ? (
     <div className="projects-list">
       <div className="row">
+        <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
+          <ProjectCardEmpty />
+        </div>
         {projectsList.map((project) => (
           <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
             <ProjectCard project={project} setFilterChips={setFilterChips} />
@@ -34,7 +35,6 @@ function displayCards(projectsList, setFilterChips) {
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
-  const { openModal } = useContext(ModalContext);
   const [projectsList, setProjectsList] = useState();
   const [sortOption, setSortOption] = useState('-last_modification');
   const [filter, setFilter] = useState('');
@@ -101,14 +101,6 @@ export default function Home() {
               selectedValue={sortOption}
               options={sortOptions}
             />
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={() => openModal(<AddOrEditProjectModal />, 'xl')}
-            >
-              <FaPlus />
-              <span className="ml-2">{t('createProject')}</span>
-            </button>
           </div>
           {useMemo(() => displayCards(projectsList, setFilterChips), [projectsList])}
         </div>
