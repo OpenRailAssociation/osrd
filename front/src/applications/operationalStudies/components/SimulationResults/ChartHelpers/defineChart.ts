@@ -1,6 +1,10 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
-import { gridX, gridY } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import {
+  gridX,
+  gridY,
+  isGET,
+} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import nextId from 'react-id-generator';
 import svgDefs from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/svgDefs';
 
@@ -49,7 +53,7 @@ const defineChart = (
   // Add X axis
   const x = defineX.range([0, width]);
   const axisBottomX =
-    !rotate && keyValues[0] === 'time'
+    !rotate && isGET(keyValues)
       ? d3.axisBottom<Date>(x).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisBottom(x);
   const xAxis = svg.append('g').attr('transform', `translate(0,${height})`).call(axisBottomX);
@@ -63,7 +67,7 @@ const defineChart = (
   // Add Y axis
   const y = defineY.range([height, 0]);
   const axisLeftY =
-    rotate && keyValues[0] === 'time'
+    rotate && isGET(keyValues)
       ? d3
           .axisLeft(y)
           .tickFormat(

@@ -8,29 +8,23 @@ import {
 import drawCurve from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawCurve';
 import drawRect from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawRect';
 import drawText from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawText';
-import {
-  updateContextMenu,
-  updateMustRedraw,
-  updateSelectedTrain,
-  updateDepartureArrivalTimes,
-} from 'reducers/osrdsimulation/actions';
 
 export default function drawTrain(
+  allowancesSettings,
   chart,
-  dispatch,
-  dataSimulation,
+  dispatchUpdateDepartureArrivalTimes,
+  dispatchUpdateMustRedraw,
+  dispatchUpdateSelectedTrain,
   isPathSelected,
   isSelected,
   keyValues,
-  allowancesSettings,
   rotate,
-  setDragEnding,
   setDragOffset,
-  simulation,
-  isStdcm,
-  setSelectedTrain
+  setSelectedTrain,
+  simulationTrains,
+  trainToDraw
 ) {
-  const groupID = `spaceTime-${dataSimulation.trainNumber}`;
+  const groupID = `spaceTime-${trainToDraw.trainNumber}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
 
@@ -63,12 +57,12 @@ export default function drawTrain(
   function debounceUpdateDepartureArrivalTimes(computedDepartureArrivalTimes, interval) {
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      dispatch(updateDepartureArrivalTimes(computedDepartureArrivalTimes));
+      dispatchUpdateDepartureArrivalTimes(computedDepartureArrivalTimes);
     }, interval);
   }
 
   const makeDepartureArrivalTimes = (dragOffset, selectedTrainId) =>
-    simulation.trains.map((train) => ({
+    simulationTrains.map((train) => ({
       id: train.id,
       labels: train.labels,
       name: train.name,
@@ -88,18 +82,17 @@ export default function drawTrain(
     .container((d) => d) // the component is dragged from its initial position
     .on('end', () => {
       dragTimeOffset(dragFullOffset, true);
-      setDragEnding(true);
-      dispatch(updateMustRedraw(true));
+      dispatchUpdateMustRedraw(true);
     })
     .on('start', () => {
       dragFullOffset = 0;
-      setSelectedTrain(dataSimulation.trainNumber);
-      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
+      setSelectedTrain(trainToDraw.trainNumber);
+      dispatchUpdateSelectedTrain(trainToDraw.trainNumber);
     })
     .on('drag', (event) => {
       dragFullOffset += rotate ? event.dy : event.dx;
       const value = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = makeDepartureArrivalTimes(value, dataSimulation.id);
+      const newDepartureArrivalTimes = makeDepartureArrivalTimes(value, trainToDraw.id);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
@@ -108,31 +101,18 @@ export default function drawTrain(
     .append('g')
     .attr('id', groupID)
     .attr('class', 'chartTrain')
-    .attr('filter', () => (isStdcm ? `url(#stdcmFilter)` : null))
-    .call(drag)
-    .on('contextmenu', (event) => {
-      event.preventDefault();
-      dispatch(
-        updateContextMenu({
-          id: dataSimulation.id,
-          xPos: event.layerX,
-          yPos: event.layerY,
-        })
-      );
-      setSelectedTrain(dataSimulation.trainNumber);
-      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
-      dispatch(updateMustRedraw(true));
-    });
+    .attr('filter', () => (trainToDraw?.isStdcm ? `url(#stdcmFilter)` : null))
+    .call(drag);
 
   // Test direction to avoid displaying block
-  const direction = getDirection(dataSimulation.headPosition);
+  const direction = getDirection(trainToDraw.headPosition);
   const currentAllowanceSettings = allowancesSettings
-    ? allowancesSettings[dataSimulation.id]
+    ? allowancesSettings[trainToDraw.id]
     : undefined;
 
   if (direction && currentAllowanceSettings) {
     // Let's draw route_aspects
-    dataSimulation.routeAspects.forEach((routeAspect) => {
+    trainToDraw.routeAspects.forEach((routeAspect) => {
       drawRect(
         chart,
         `${isSelected && 'selected'} route-aspect`,
@@ -147,9 +127,9 @@ export default function drawTrain(
       );
     });
 
-    if (dataSimulation.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {
+    if (trainToDraw.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {
       // Let's draw eco_route_aspects
-      dataSimulation.eco_routeAspects.forEach((ecoRouteAspect) => {
+      trainToDraw.eco_routeAspects.forEach((ecoRouteAspect) => {
         drawRect(
           chart,
           `${isSelected && 'selected'} route-aspect`,
@@ -166,7 +146,7 @@ export default function drawTrain(
   }
 
   if (currentAllowanceSettings?.base) {
-    dataSimulation.tailPosition.forEach((tailPositionSection) =>
+    trainToDraw.tailPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
         `${isSelected && 'selected'} tail`,
@@ -179,7 +159,7 @@ export default function drawTrain(
         isSelected
       )
     );
-    dataSimulation.headPosition.forEach((headPositionSection) =>
+    trainToDraw.headPosition.forEach((headPositionSection) =>
       drawCurve(
         chart,
         `${isSelected && 'selected'} head`,
@@ -194,8 +174,8 @@ export default function drawTrain(
     );
   }
 
-  if (dataSimulation.allowances_headPosition && currentAllowanceSettings?.allowances) {
-    dataSimulation.allowances_headPosition.forEach((tailPositionSection) =>
+  if (trainToDraw.allowances_headPosition && currentAllowanceSettings?.allowances) {
+    trainToDraw.allowances_headPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
         `${isSelected && 'selected'} head allowances`,
@@ -209,8 +189,8 @@ export default function drawTrain(
       )
     );
   }
-  if (currentAllowanceSettings?.eco && dataSimulation.eco_headPosition) {
-    dataSimulation.eco_headPosition.forEach((tailPositionSection) =>
+  if (currentAllowanceSettings?.eco && trainToDraw.eco_headPosition) {
+    trainToDraw.eco_headPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
         `${isSelected && 'selected'} head eco`,
@@ -229,12 +209,12 @@ export default function drawTrain(
     direction,
     groupID,
     isSelected,
-    `${isPathSelected ? '🎢' : ''} ${dataSimulation.name}`, // text
-    dataSimulation.headPosition[0] &&
-      dataSimulation.headPosition[0][0] &&
-      dataSimulation.headPosition[0][0].time, // x
-    dataSimulation.headPosition[0] &&
-      dataSimulation.headPosition[0][0] &&
-      dataSimulation.headPosition[0][0].position // y
+    `${isPathSelected ? '🎢' : ''} ${trainToDraw.name}`, // text
+    trainToDraw.headPosition[0] &&
+      trainToDraw.headPosition[0][0] &&
+      trainToDraw.headPosition[0][0].time, // x
+    trainToDraw.headPosition[0] &&
+      trainToDraw.headPosition[0][0] &&
+      trainToDraw.headPosition[0][0].position // y
   );
 }

@@ -13,6 +13,7 @@ import {
   SignalAspect,
   MergedDataPoint,
 } from 'reducers/osrdsimulation/types';
+import { TIME } from '../simulationResultsConsts';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));
@@ -293,9 +294,11 @@ export const interpolateOnTime = (
 ) => {
   const bisect = d3.bisector<any, any>((d) => d[keyValues[0]]).left;
   const positionInterpolated: Record<string, PositionSpeed> = {};
+
   listValues.forEach((listValue) => {
     let bisection;
-    if (dataSimulation?.[listValue]) {
+    // eslint-disable-next-line no-extra-boolean-cast
+    if (!!dataSimulation?.[listValue]) {
       // If not array of array
       if (listValue === 'speed' || listValue === 'speeds') {
         const comparator = dataSimulation?.[listValue] || dataSimulation?.[listValue][0];
@@ -332,3 +335,5 @@ export const interpolateOnTime = (
 
   return positionInterpolated;
 };
+
+export const isGET = (keyValues: string[]) => keyValues[0] === TIME;

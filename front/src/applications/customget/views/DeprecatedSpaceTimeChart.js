@@ -3,11 +3,8 @@ import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
 import enableInteractivity, {
   traceVerticalLine,
-} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
-import {
-  interpolateOnTime,
-  timeShiftTrain,
-} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+} from 'applications/customget/components/enableInteractivity';
+import { interpolateOnTime, timeShiftTrain } from 'applications/customget/components/ChartHelpers';
 import {
   updateChart,
   updateContextMenu,
@@ -17,14 +14,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CgLoadbar } from 'react-icons/cg';
-import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal/ChartModal';
+import ChartModal from 'applications/customget/components/ChartModal';
 import { GiResize } from 'react-icons/gi';
-import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/customget/components/consts';
 import PropTypes from 'prop-types';
-import { changeTrain } from 'applications/operationalStudies/components/SimulationResults/simulationResultsHelpers';
-import createChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createChart';
-import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
-import drawTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/drawTrain';
+import createChart from 'applications/customget/components/SpaceTimeChart/createChart';
+import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
+import drawTrain from 'applications/customget/components/SpaceTimeChart/drawTrain';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import { useTranslation } from 'react-i18next';
 
@@ -41,7 +37,7 @@ const drawAxisTitle = (chart, rotate) => {
     .text('KM');
 };
 
-export default function SpaceTimeChart(props) {
+export default function DeprecatedSpaceTimeChart(props) {
   const { heightOfSpaceTimeChart } = props;
   const ref = useRef();
   const dispatch = useDispatch();
@@ -58,7 +54,6 @@ export default function SpaceTimeChart(props) {
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
-  const [isResizeActive, setResizeActive] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [resetChart, setResetChart] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -66,9 +61,7 @@ export default function SpaceTimeChart(props) {
   const [dataSimulation, setDataSimulation] = useState(undefined);
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
-  const [dragEnding, setDragEnding] = useState(false);
-  // tmpSelectedTrain added for integration, this component should be deprecated soon
-  const [tmpSelectedTrain, setTmpSelectedTrain] = useState(selectedTrain);
+  const [, setDragEnding] = useState(false);
 
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
@@ -116,8 +109,7 @@ export default function SpaceTimeChart(props) {
     });
   };
 
-  // eslint-disable-next-line default-param-last
-  const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
+  const drawAllTrains = (reset, forceRedraw = false, newDataSimulation = undefined) => {
     const currentDataSimulation = newDataSimulation || dataSimulation;
 
     if (mustRedraw || forceRedraw) {
@@ -148,12 +140,11 @@ export default function SpaceTimeChart(props) {
           idx === selectedTrain,
           keyValues,
           allowancesSettings,
+          offsetTimeByDragging,
           rotate,
           setDragEnding,
           setDragOffset,
-          simulation,
-          train.isStdcm,
-          setTmpSelectedTrain
+          simulation
         );
       });
       enableInteractivity(
@@ -183,24 +174,14 @@ export default function SpaceTimeChart(props) {
     setTimeout(() => {
       dispatch(updateMustRedraw(true));
     }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
     offsetTimeByDragging(dragOffset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragOffset]);
-
-  useEffect(() => {
-    if (dragEnding) {
-      changeTrain(
-        {
-          departure_time: simulation.trains[selectedTrain].base.stops[0].time,
-        },
-        simulation.trains[selectedTrain].id
-      );
-      setDragEnding(false);
-    }
-  }, [dragEnding]);
 
   useEffect(() => {
     setResetChart(true);
@@ -220,6 +201,7 @@ export default function SpaceTimeChart(props) {
     const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t);
     if (dataSimulation) {
       // ADN drawAllTrain already traceVerticalLines
+
       drawAllTrains(resetChart, true, newDataSimulation);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,6 +218,7 @@ export default function SpaceTimeChart(props) {
       );
       dispatch(updatePositionValues(newPositionValues));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, mustRedraw]);
 
   useEffect(() => {
@@ -251,6 +234,7 @@ export default function SpaceTimeChart(props) {
         timePosition
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positionValues]);
 
   useEffect(() => {
@@ -307,6 +291,6 @@ export default function SpaceTimeChart(props) {
   );
 }
 
-SpaceTimeChart.propTypes = {
+DeprecatedSpaceTimeChart.propTypes = {
   heightOfSpaceTimeChart: PropTypes.number.isRequired,
 };

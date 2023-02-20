@@ -41,79 +41,61 @@ const drawAxisTitle = (chart, rotate) => {
 
 // eslint-disable-next-line default-param-last
 const drawAllTrains = (
-  reset,
-  newDataSimulation,
-  mustRedraw,
+  allowancesSettings,
   chart,
+  CHART_ID,
+  dispatchUpdateChart,
+  dispatchUpdateDepartureArrivalTimes,
+  dispatchUpdateMustRedraw,
+  dispatchUpdateSelectedTrain,
   heightOfSpaceTimeChart,
   keyValues,
   ref,
+  reset,
   rotate,
-  dispatch,
-  CHART_ID,
-  simulation,
-  selectedTrain,
-  positionValues,
-  setChart,
-  setResetChart,
-  setYPosition,
-  setZoomLevel,
-  setDragEnding,
-  setDragOffset,
-  yPosition,
-  zoomLevel,
   selectedProjection,
-  dispatchUpdateMustRedraw,
-  dispatchUpdateChart,
-  dispatchUpdateContextMenu,
-  allowancesSettings,
+  selectedTrain,
+  setChart,
+  setDragOffset,
   setSelectedTrain,
+  simulationTrains,
   simulationIsPlaying,
-  // TODO: romve forceRedraw (same as mustRedraw)
-  forceRedraw = false
+  trainsToDraw
 ) => {
-  const currentDataSimulation = newDataSimulation;
-  if (mustRedraw || forceRedraw) {
-    const chartLocal = createChart(
-      chart,
-      CHART_ID,
-      currentDataSimulation,
-      heightOfSpaceTimeChart,
+  const chartLocal = createChart(
+    chart,
+    CHART_ID,
+    trainsToDraw,
+    heightOfSpaceTimeChart,
+    keyValues,
+    ref,
+    reset,
+    rotate
+  );
+
+  drawOPs(chartLocal, simulationTrains[selectedTrain], rotate);
+
+  drawAxisTitle(chartLocal, rotate);
+  trainsToDraw.forEach((train, idx) => {
+    drawTrain(
+      allowancesSettings,
+      chartLocal,
+      dispatchUpdateDepartureArrivalTimes,
+      dispatchUpdateMustRedraw,
+      dispatchUpdateSelectedTrain,
+      train.id === selectedProjection?.id,
+      idx === selectedTrain,
       keyValues,
-      ref,
-      reset,
-      rotate
+      rotate,
+      setDragOffset,
+      setSelectedTrain,
+      simulationTrains,
+      train
     );
-
-    chartLocal.svg.on('click', () => {
-      dispatchUpdateContextMenu(undefined);
-    });
-
-    drawOPs(chartLocal, simulation.trains[selectedTrain], rotate);
-
-    drawAxisTitle(chartLocal, rotate);
-    currentDataSimulation.forEach((train, idx) => {
-      drawTrain(
-        chartLocal,
-        dispatch,
-        train,
-        train.id === selectedProjection?.id,
-        idx === selectedTrain,
-        keyValues,
-        allowancesSettings,
-        rotate,
-        setDragEnding,
-        setDragOffset,
-        simulation,
-        train.isStdcm,
-        setSelectedTrain
-      );
-    });
-    setChart(chartLocal);
-    dispatchUpdateChart({ ...chartLocal, rotate });
-    dispatchUpdateMustRedraw(false);
-    setResetChart(false);
-  }
+  });
+  setChart(chartLocal);
+  dispatchUpdateChart({ ...chartLocal, rotate });
+  dispatchUpdateMustRedraw(false);
 };
 
 export { drawOPs, drawAllTrains };
