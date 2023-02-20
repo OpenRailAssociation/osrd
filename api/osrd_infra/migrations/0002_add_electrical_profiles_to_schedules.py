@@ -2,8 +2,10 @@
 
 import django.db.models.deletion
 from django.db import migrations, models
+import django.db.models.deletion
+import osrd_schemas.train_schedule
+from django.db import migrations, models
 
-import osrd_infra.schemas.train_schedule
 import osrd_infra.utils
 from osrd_infra.migrations import run_sql_add_foreign_key
 
@@ -34,7 +36,7 @@ class Migration(migrations.Migration):
             name="allowances",
             field=models.JSONField(
                 default=list,
-                validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.train_schedule.Allowances)],
+                validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.train_schedule.Allowances)],
             ),
         ),
         migrations.AlterField(
@@ -42,7 +44,7 @@ class Migration(migrations.Migration):
             name="labels",
             field=models.JSONField(
                 default=list,
-                validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.train_schedule.TrainScheduleLabels)],
+                validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.train_schedule.TrainScheduleLabels)],
             ),
         ),
     ]

@@ -1,6 +1,5 @@
 from django.contrib.gis.db import models
-
-from osrd_infra.schemas.infra import (
+from osrd_schemas.infra import (
     ALL_OBJECT_TYPES,
     RAILJSON_INFRA_VERSION,
     BufferStop,
@@ -15,6 +14,7 @@ from osrd_infra.schemas.infra import (
     TrackSection,
     TrackSectionLink,
 )
+
 from osrd_infra.utils import PydanticValidator
 
 MODEL_TO_OBJ = {}

@@ -3,15 +3,15 @@ from pathlib import Path
 
 from django.core.management.base import BaseCommand
 from geojson_pydantic import LineString, Point
-
-from osrd_infra.models import Infra, RollingStock
-from osrd_infra.schemas.infra import (
+from osrd_schemas.infra import (
     ApplicableDirections,
     BufferStop,
     Direction,
     Route,
     TrackSection,
 )
+
+from osrd_infra.models import Infra, RollingStock
 
 
 class Command(BaseCommand):

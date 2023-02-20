@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib.gis.db import models
+from osrd_schemas.path import Curves, PathPayload, Slopes
 
 from osrd_infra.models import Infra
-from osrd_infra.schemas.path import Curves, PathPayload, Slopes
 from osrd_infra.utils import PydanticValidator
 
 

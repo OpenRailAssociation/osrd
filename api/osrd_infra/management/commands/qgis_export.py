@@ -5,6 +5,7 @@ from typing import Dict, Iterable
 
 from django.contrib.gis.geos import GEOSGeometry, LineString, Point
 from django.core.management.base import BaseCommand, CommandError
+from osrd_schemas.infra import Endpoint, TrackLocationTrait, TrackSection
 
 from osrd_infra.models import (
     BufferStopModel,
@@ -16,7 +17,6 @@ from osrd_infra.models import (
     TrackSectionLinkModel,
     TrackSectionModel,
 )
-from osrd_infra.schemas.infra import Endpoint, TrackLocationTrait, TrackSection
 
 
 @dataclass

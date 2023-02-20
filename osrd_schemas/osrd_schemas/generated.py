@@ -2,7 +2,7 @@ from typing import Annotated, Literal, Tuple, Union
 
 from pydantic import BaseModel, Field, constr
 
-from osrd_infra.schemas.infra import Identifier
+from .infra import Identifier
 
 
 class ObjectReference(BaseModel):
