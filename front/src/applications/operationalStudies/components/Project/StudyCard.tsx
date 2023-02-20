@@ -83,20 +83,21 @@ export default function StudyCard({ setFilterChips, study }: Props) {
         )}
       </div>
 
+      <div className="studies-list-card-tags">
+        {study.tags.map((tag) => (
+          <div
+            className="studies-list-card-tags-tag"
+            key={nextId()}
+            role="button"
+            tabIndex={0}
+            onClick={() => setFilterChips(tag)}
+          >
+            {tag}
+          </div>
+        ))}
+      </div>
+
       <div className="studies-list-card-footer">
-        <div className="studies-list-card-tags">
-          {study.tags.map((tag) => (
-            <div
-              className="studies-list-card-tags-tag"
-              key={nextId()}
-              role="button"
-              tabIndex={0}
-              onClick={() => setFilterChips(tag)}
-            >
-              {tag}
-            </div>
-          ))}
-        </div>
         <div className="studies-list-card-scenarios-count ml-auto">
           <span className="mr-1">
             <RiFolderChartLine />
