@@ -13,5 +13,6 @@
   "signalbox": "Poste",
   "station": "Gare",
   "trackname": "Voie",
-  "type": "Type"
+  "type": "Type",
+  "line": "Ligne"
 }

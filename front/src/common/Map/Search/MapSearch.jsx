@@ -6,8 +6,9 @@ import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import MapSearchSignalBox from 'common/Map/Search/MapSearchSignalBox';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
-import Tabs from 'common/Tabs';
+import MapSearchLine from './MapSearchLine';
 import HearderPopUp from '../HeaderPopUp';
+import Tabs from 'common/Tabs';
 
 export default function MapSearch(props) {
   const { closeMapSearchPopUp } = props;
