@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
@@ -19,5 +20,13 @@ export default defineConfig({
   },
   server: {
     open: true,
+  },
+  test: {
+    globals: true,
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    environment: 'happy-dom',
+    coverage: {
+      reportsDirectory: './tests/unit/coverage'
+    }
   },
 });
