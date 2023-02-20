@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import {
   updateMustRedraw,
-  updateContextMenu,
   updateChart,
   updatePositionValues,
   updateTimePositionValues,
+  updateSelectedTrain,
+  updateDepartureArrivalTimes,
 } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
@@ -30,6 +31,7 @@ const withOSRDData = (Component) =>
     const allowancesSettings = useSelector(getAllowancesSettings);
     const positionValues = useSelector(getPositionValues);
     const selectedTrain = useSelector(getSelectedTrain);
+    // à quoi correspond selectedProjection ?
     const selectedProjection = useSelector(getSelectedProjection);
     const timePosition = useSelector(getTimePosition);
     const simulation = useSelector(getPresentSimulation);
@@ -55,31 +57,35 @@ const withOSRDData = (Component) =>
       dispatch(updateMustRedraw(newMustRedraw));
     };
 
-    const dispatchUpdateContextMenu = (contextMenu) => {
-      dispatch(updateContextMenu(contextMenu));
-    };
-
     const dispatchUpdateChart = (chart) => {
       dispatch(updateChart(chart));
+    };
+
+    const dispatchUpdateSelectedTrain = (_selectedTrain) => {
+      dispatch(updateSelectedTrain(_selectedTrain));
+    };
+
+    const dispatchUpdateDepartureArrivalTimes = (newDepartureArrivalTimes) => {
+      dispatch(updateDepartureArrivalTimes(newDepartureArrivalTimes));
     };
 
     return (
       <Component
         {...props}
         allowancesSettings={allowancesSettings}
-        simulationIsPlaying={isPlaying}
-        positionValues={positionValues}
-        dispatch={dispatch}
-        simulation={simulation}
-        inputSelectedTrain={selectedTrain}
-        selectedProjection={selectedProjection}
-        timePosition={timePosition}
-        onOffsetTimeByDragging={onOffsetTimeByDragging}
-        dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
-        dispatchUpdateContextMenu={dispatchUpdateContextMenu}
         dispatchUpdateChart={dispatchUpdateChart}
+        dispatchUpdateDepartureArrivalTimes={dispatchUpdateDepartureArrivalTimes}
+        dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
+        dispatchUpdateSelectedTrain={dispatchUpdateSelectedTrain}
         dispatchUpdatePositionValues={dispatchUpdatePositionValues}
         dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
+        inputSelectedTrain={selectedTrain}
+        onOffsetTimeByDragging={onOffsetTimeByDragging}
+        positionValues={positionValues}
+        selectedProjection={selectedProjection}
+        simulation={simulation}
+        simulationIsPlaying={isPlaying}
+        timePosition={timePosition}
       />
     );
   };

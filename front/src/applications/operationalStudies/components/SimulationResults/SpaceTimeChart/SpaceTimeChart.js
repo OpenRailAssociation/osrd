@@ -6,19 +6,17 @@ import {
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
-import {
-  interpolateOnTime,
-  timeShiftTrain,
-} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import { timeShiftTrain } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import ORSD_GET_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
 import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal';
 import { GiResize } from 'react-icons/gi';
-import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import {
+  KEY_VALUES_FOR_SPACE_TIME_CHART,
+  LIST_VALUES_NAME_SPACE_TIME,
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import PropTypes from 'prop-types';
-import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
-
-import { useTranslation } from 'react-i18next';
+import { isolatedCreateTrain as createTrain } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 
 import { drawAllTrains } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/d3Helpers';
 
@@ -41,61 +39,165 @@ const CHART_MIN_HEIGHT = 250;
  */
 export default function SpaceTimeChart(props) {
   const ref = useRef();
-  const { t } = useTranslation(['allowances']);
+  const rndContainerRef = useRef(null);
+
   const {
     allowancesSettings,
-    positionValues,
-    selectedProjection,
-    inputSelectedTrain,
-    timePosition,
-    simulation,
-    simulationIsPlaying,
-    dispatch,
-    onOffsetTimeByDragging,
-    onSetBaseHeightOfSpaceTimeChart,
-    dispatchUpdateMustRedraw,
-    dispatchUpdatePositionValues,
     dispatchUpdateChart,
-    dispatchUpdateContextMenu,
+    dispatchUpdateDepartureArrivalTimes,
+    dispatchUpdateMustRedraw,
+    dispatchUpdateSelectedTrain,
     dispatchUpdateTimePositionValues,
     initialHeightOfSpaceTimeChart,
+    inputSelectedTrain,
+    onOffsetTimeByDragging,
+    onSetBaseHeightOfSpaceTimeChart,
+    positionValues,
+    selectedProjection,
+    simulation,
+    simulationIsPlaying,
+    timePosition,
   } = props;
 
-  const keyValues = ['time', 'position'];
-  const [rotate, setRotate] = useState(false);
+  const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] = useState(
+    initialHeightOfSpaceTimeChart
+  );
   const [chart, setChart] = useState(undefined);
-  const [resetChart, setResetChart] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [yPosition, setYPosition] = useState(0);
-  const [dataSimulation, setDataSimulation] = useState(undefined);
-  const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
-  // TODO: remove setDragEnding without creating a new error in the console
-  const [, setDragEnding] = useState(false);
-  const [selectedTrain, setSelectedTrain] = useState(inputSelectedTrain);
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(
     initialHeightOfSpaceTimeChart
   );
+  const [resetChart, setResetChart] = useState(false);
+  const [rotate, setRotate] = useState(false);
+  const [selectedTrain, setSelectedTrain] = useState(inputSelectedTrain);
+  const [showModal, setShowModal] = useState('');
+  const [trainSimulations, setTrainSimulations] = useState(undefined);
 
-  const rndContainerRef = useRef(null);
-
-  const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] =
-    useState(heightOfSpaceTimeChart);
-
-  // Everything should be done by Hoc, has no direct effect on Comp behavior
-  const offsetTimeByDragging = useCallback(
+  const dragShiftTrain = useCallback(
     (offset) => {
-      if (dataSimulation) {
-        const trains = Array.from(dataSimulation.trains);
-        trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
-        setDataSimulation({ ...simulation, trains });
+      if (trainSimulations) {
+        const trains = trainSimulations.map((train, ind) =>
+          ind === selectedTrain ? timeShiftTrain(train, offset) : train
+        );
+        setTrainSimulations(trains);
         onOffsetTimeByDragging(trains);
       }
     },
-    [dataSimulation, selectedTrain, simulation, onOffsetTimeByDragging]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [trainSimulations, selectedTrain, onOffsetTimeByDragging]
   );
 
-  // ACTIONS HANDLE
+  /**
+   * INPUT UPDATES
+   *
+   * take into account an input update
+   */
+  useEffect(() => {
+    setTrainSimulations(simulation.trains);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [simulation.trains]);
+
+  useEffect(() => {
+    // avoid useless re-render if selectedTrain is already correct
+    if (selectedTrain !== inputSelectedTrain) {
+      setSelectedTrain(inputSelectedTrain);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputSelectedTrain]);
+
+  /**
+   * ACTIONS HANDLE
+   *
+   * everything should be done by Hoc, has no direct effect on Comp behavior
+   */
+  const toggleRotation = () => {
+    setChart({ ...chart, x: chart.y, y: chart.x });
+    setRotate(!rotate);
+  };
+
+  /*
+   * shift the train after a drag and drop
+   */
+  useEffect(() => {
+    dragShiftTrain(dragOffset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragOffset]);
+
+  /*
+   * redraw the trains if
+   * - the simulation trains or the selected train have changed
+   * - the chart is rotated or centered (reset)
+   * - the window or the chart have been resized (heightOfSpaceTimeChart)
+   */
+  useEffect(() => {
+    if (trainSimulations) {
+      const trainsToDraw = createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, trainSimulations);
+      drawAllTrains(
+        allowancesSettings,
+        chart,
+        CHART_ID,
+        dispatchUpdateChart,
+        dispatchUpdateDepartureArrivalTimes,
+        dispatchUpdateMustRedraw,
+        dispatchUpdateSelectedTrain,
+        heightOfSpaceTimeChart,
+        KEY_VALUES_FOR_SPACE_TIME_CHART,
+        ref,
+        resetChart,
+        rotate,
+        selectedProjection,
+        selectedTrain,
+        setChart,
+        setDragOffset,
+        setSelectedTrain,
+        trainSimulations,
+        simulationIsPlaying,
+        trainsToDraw
+      );
+      setResetChart(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetChart, rotate, selectedTrain, trainSimulations, heightOfSpaceTimeChart]);
+
+  /**
+   * add behaviour on zoom and mousemove/mouseover/wheel on the new chart each time the chart changes
+   */
+  useEffect(() => {
+    if (trainSimulations) {
+      isolatedEnableInteractivity(
+        chart,
+        createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, trainSimulations)[selectedTrain],
+        KEY_VALUES_FOR_SPACE_TIME_CHART,
+        LIST_VALUES_NAME_SPACE_TIME,
+        rotate,
+        setChart,
+        simulationIsPlaying,
+        dispatchUpdateMustRedraw,
+        dispatchUpdateTimePositionValues
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chart]);
+
+  /**
+   * coordinates the vertical cursors with other graphs (GEV for instance)
+   */
+  useEffect(() => {
+    if (trainSimulations) {
+      traceVerticalLine(
+        chart,
+        trainSimulations?.[selectedTrain],
+        KEY_VALUES_FOR_SPACE_TIME_CHART,
+        LIST_VALUES_NAME_SPACE_TIME,
+        positionValues,
+        'headPosition',
+        rotate,
+        timePosition
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positionValues, timePosition]);
+
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
       setShowModal(key);
@@ -107,121 +209,9 @@ export default function SpaceTimeChart(props) {
     setHeightOfSpaceTimeChart(height);
   };
 
-  const toggleRotation = () => {
-    setChart({ ...chart, x: chart.y, y: chart.x });
-    setRotate(!rotate);
-  };
-
-  useEffect(() => {
-    offsetTimeByDragging(dragOffset);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragOffset]);
-
-  useEffect(() => {
-    const trains = dataSimulation?.trains || simulation.trains;
-    const newDataSimulation = createTrain(dispatch, keyValues, trains, t);
-    if (newDataSimulation) {
-      drawAllTrains(
-        resetChart,
-        newDataSimulation,
-        false,
-        chart,
-        heightOfSpaceTimeChart,
-        keyValues,
-        ref,
-        rotate,
-        dispatch,
-        CHART_ID,
-        simulation,
-        selectedTrain,
-        positionValues,
-        setChart,
-        setResetChart,
-        setYPosition,
-        setZoomLevel,
-        setDragEnding,
-        setDragOffset,
-        yPosition,
-        zoomLevel,
-        selectedProjection,
-        dispatchUpdateMustRedraw,
-        dispatchUpdateChart,
-        dispatchUpdateContextMenu,
-        allowancesSettings,
-        setSelectedTrain,
-        simulationIsPlaying,
-        true
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetChart, rotate, selectedTrain, dataSimulation, heightOfSpaceTimeChart]);
-
-  useEffect(() => {
-    // avoid useless re-render if selectedTrain is already correct
-    if (selectedTrain !== inputSelectedTrain) {
-      setSelectedTrain(inputSelectedTrain);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputSelectedTrain]);
-
-  // ADN: trigger a redraw on every simulation change. This is the right pattern.
-  useEffect(() => {
-    setDataSimulation(simulation);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [simulation.trains]);
-
-  useEffect(() => {
-    if (dataSimulation) {
-      // add behaviour on zoom and mousemove/mouseover/wheel on the new chart
-      isolatedEnableInteractivity(
-        chart,
-        createTrain(dispatch, keyValues, dataSimulation.trains, t)[selectedTrain],
-        keyValues,
-        LIST_VALUES_NAME_SPACE_TIME,
-        positionValues,
-        rotate,
-        setChart,
-        setYPosition,
-        setZoomLevel,
-        yPosition,
-        zoomLevel,
-        simulationIsPlaying,
-        dispatchUpdateContextMenu,
-        dispatchUpdateMustRedraw,
-        dispatchUpdateTimePositionValues
-      );
-    }
-    // what is it used for ?
-    if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {
-      // ADN: too heavy, dispatch on release (dragEnd), careful with dispatch !
-      const newPositionValues = interpolateOnTime(
-        dataSimulation[selectedTrain],
-        keyValues,
-        LIST_VALUES_NAME_SPACE_TIME,
-        timePosition
-      );
-      dispatchUpdatePositionValues(newPositionValues);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart]);
-
-  // coordinates the vertical cursors with other graphs (GEV for instance)
-  useEffect(() => {
-    if (dataSimulation) {
-      traceVerticalLine(
-        chart,
-        dataSimulation[selectedTrain],
-        keyValues,
-        LIST_VALUES_NAME_SPACE_TIME,
-        positionValues,
-        'headPosition',
-        rotate,
-        timePosition
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [positionValues]);
-
+  /**
+   * add behaviour: Type " + " or " - " to update departure time by second
+   */
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
     window.addEventListener('resize', debounceResize);
@@ -263,15 +253,15 @@ export default function SpaceTimeChart(props) {
           <ChartModal
             type={showModal}
             setShowModal={setShowModal}
-            trainName={dataSimulation?.trains[selectedTrain]?.name}
-            offsetTimeByDragging={offsetTimeByDragging}
+            trainName={trainSimulations?.[selectedTrain]?.name}
+            offsetTimeByDragging={dragShiftTrain}
           />
         ) : null}
         <div style={{ height: `100%` }} ref={ref} />
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate"
-          onClick={() => toggleRotation(rotate, setRotate, dataSimulation)}
+          onClick={() => toggleRotation()}
         >
           <i className="icons-refresh" />
         </button>
@@ -279,6 +269,7 @@ export default function SpaceTimeChart(props) {
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
           onClick={() => {
+            setRotate(false);
             setResetChart(true);
           }}
         >
@@ -294,36 +285,35 @@ export default function SpaceTimeChart(props) {
 
 SpaceTimeChart.propTypes = {
   allowancesSettings: PropTypes.any,
+  dispatchUpdateChart: PropTypes.any,
+  dispatchUpdateDepartureArrivalTimes: PropTypes.func,
+  dispatchUpdateMustRedraw: PropTypes.func,
+  dispatchUpdateSelectedTrain: PropTypes.func,
+  dispatchUpdateTimePositionValues: PropTypes.any,
+  initialHeightOfSpaceTimeChart: PropTypes.any,
+  inputSelectedTrain: PropTypes.any,
   positionValues: PropTypes.any,
   selectedProjection: PropTypes.any.isRequired,
-  inputSelectedTrain: PropTypes.any,
-  timePosition: PropTypes.any,
   simulation: PropTypes.any,
   simulationIsPlaying: PropTypes.bool,
-  dispatch: PropTypes.any,
+  timePosition: PropTypes.any,
   onOffsetTimeByDragging: PropTypes.func,
   onSetBaseHeightOfSpaceTimeChart: PropTypes.any,
-  dispatchUpdateMustRedraw: PropTypes.func,
-  dispatchUpdatePositionValues: PropTypes.any,
-  dispatchUpdateChart: PropTypes.any,
-  dispatchUpdateContextMenu: PropTypes.any,
-  dispatchUpdateTimePositionValues: PropTypes.any,
-  initialHeightOfSpaceTimeChart: PropTypes.any.isRequired,
 };
 
 SpaceTimeChart.defaultProps = {
-  simulation: ORSD_GET_SAMPLE_DATA.simulation.present,
-  simulationIsPlaying: false,
   allowancesSettings: ORSD_GET_SAMPLE_DATA.allowancesSettings,
-  dispatch: () => {},
-  positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
+  dispatchUpdateChart: () => {},
+  dispatchUpdateDepartureArrivalTimes: () => {},
+  dispatchUpdateMustRedraw: () => {},
+  dispatchUpdateSelectedTrain: () => {},
+  dispatchUpdateTimePositionValues: () => {},
   inputSelectedTrain: ORSD_GET_SAMPLE_DATA.selectedTrain,
-  timePosition: ORSD_GET_SAMPLE_DATA.timePosition,
+  initialHeightOfSpaceTimeChart: 400,
   onOffsetTimeByDragging: () => {},
   onSetBaseHeightOfSpaceTimeChart: () => {},
-  dispatchUpdateMustRedraw: () => {},
-  dispatchUpdateChart: () => {},
-  dispatchUpdatePositionValues: () => {},
-  dispatchUpdateContextMenu: () => {},
-  dispatchUpdateTimePositionValues: () => {},
+  positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
+  simulation: ORSD_GET_SAMPLE_DATA.simulation.present,
+  simulationIsPlaying: false,
+  timePosition: ORSD_GET_SAMPLE_DATA.timePosition,
 };
