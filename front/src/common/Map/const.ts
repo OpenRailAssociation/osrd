@@ -97,3 +97,11 @@ export const catenaryMapKey: CatenaryKey[] = [
   { color: 'color800V', text: '800V', current: 'directCurrent' },
   { color: 'color750V', text: '750V', current: 'directCurrent' },
 ];
+
+// Search
+export const SEARCH_URL = `/editoast/search`;
+
+export type searchPayloadType = {
+  object: string;
+  query: (string | any[])[];
+};

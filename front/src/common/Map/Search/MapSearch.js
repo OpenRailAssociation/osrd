@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import MapSearchSignalBox from 'common/Map/Search/MapSearchSignalBox';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
+import MapSearchLine from './MapSearchLine';
 
 export default function MapSearch(props) {
   const dispatch = useDispatch();
@@ -71,6 +72,7 @@ export default function MapSearch(props) {
           aria-labelledby="titletab1"
         >
           <MapSearchStation updateExtViewport={updateViewportChange} />
+          <MapSearchLine />
         </div>
         <div className="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="titletab2">
           <MapSearchSignalBox updateExtViewport={updateViewportChange} />
