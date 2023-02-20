@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 // Buttons
 import ButtonMapSearch from 'common/Map/Buttons/ButtonMapSearch';
@@ -24,13 +25,24 @@ export default function MapButtons(props) {
   const { resetPitchBearing, withInfraButton } = props;
   const featureInfoClick = useSelector(getFeatureInfoClick);
   const dispatch = useDispatch();
+  const { isModalOpen } = useContext(ModalContext);
 
   const [openedPopover, setOpenedPopover] = useState(undefined);
 
   const toggleMapModal = (keyModal) => {
     setOpenedPopover(keyModal !== openedPopover ? keyModal : undefined);
+  };
 
-    // Close the pop up of the map
+  const mapButtonsRef = useRef(null);
+
+  const handleClickOutside = (e) => {
+    if (openedPopover && !mapButtonsRef.current.contains(e.target)) {
+      setOpenedPopover(undefined);
+    }
+  };
+
+  // Close the pop up of the map
+  useEffect(() => {
     if (featureInfoClick.displayPopup) {
       dispatch(
         updateFeatureInfoClickOSRD({
@@ -39,14 +51,13 @@ export default function MapButtons(props) {
         })
       );
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openedPopover, isModalOpen]);
 
-  const mapButtonsRef = useRef(null);
-  const handleClickOutside = (e) => {
-    if (openedPopover && !mapButtonsRef.current.contains(e.target)) {
-      setOpenedPopover(undefined);
-    }
-  };
+  // Close the Popover when opening modal
+  useEffect(() => {
+    setOpenedPopover(undefined);
+  }, [isModalOpen]);
 
   useOutsideClick(mapButtonsRef, handleClickOutside);
 
