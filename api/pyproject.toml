@@ -18,6 +18,7 @@ requests = "2.28.1"
 pillow = "^9"
 pydantic = "1.10.4"
 geojson-pydantic = "0.5.0"
+osrd-schemas = { path = "../osrd_schemas/", develop = false }
 
 # production
 gunicorn = { version = "20.1.0", optional = true }

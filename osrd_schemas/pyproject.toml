@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "osrd_schemas"
+version = "0.1.0"
+description = ""
+authors = ["DGEX Solutions <contact@osrd.fr>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+pydantic = "1.10.4"
+geojson-pydantic = "0.5.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+isort = "^5.12.0"
+pyproject-flake8 = "^6.0.0.post1"
+
+[tool.flake8]
+ignore = "W503,E203"
+max-line-length = 120
+exclude = ["__pycache__", "*/migrations/*", "venv/", "config/"]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

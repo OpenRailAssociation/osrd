@@ -3,13 +3,13 @@
 import django.contrib.gis.db.models.fields
 import django.contrib.postgres.fields
 import django.db.models.deletion
+import osrd_schemas.generated
+import osrd_schemas.infra
+import osrd_schemas.path
+import osrd_schemas.rolling_stock
+import osrd_schemas.train_schedule
 from django.db import migrations, models
 
-import osrd_infra.schemas.generated
-import osrd_infra.schemas.infra
-import osrd_infra.schemas.path
-import osrd_infra.schemas.rolling_stock
-import osrd_infra.schemas.train_schedule
 import osrd_infra.utils
 from osrd_infra.migrations import run_sql_add_foreign_key_infra
 
@@ -44,16 +44,16 @@ class Migration(migrations.Migration):
                 (
                     "payload",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.path.PathPayload)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.path.PathPayload)]
                     ),
                 ),
                 (
                     "slopes",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.path.Slopes)]),
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.path.Slopes)]),
                 ),
                 (
                     "curves",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.path.Curves)]),
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.path.Curves)]),
                 ),
                 ("geographic", django.contrib.gis.db.models.fields.LineStringField(srid=4326)),
                 ("schematic", django.contrib.gis.db.models.fields.LineStringField(srid=4326)),
@@ -77,7 +77,7 @@ class Migration(migrations.Migration):
                     "effort_curves",
                     models.JSONField(
                         help_text="A group of curves mapping speed (in m/s) to maximum traction (in newtons)",
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.rolling_stock.EffortCurves)],
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.rolling_stock.EffortCurves)],
                     ),
                 ),
                 (
@@ -102,7 +102,7 @@ class Migration(migrations.Migration):
                     "gamma",
                     models.JSONField(
                         help_text="The const or max braking coefficient, for timetabling purposes, in m/s^2",
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.rolling_stock.Gamma)],
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.rolling_stock.Gamma)],
                     ),
                 ),
                 (
@@ -134,7 +134,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         help_text="The formula to use to compute rolling resistance",
                         validators=[
-                            osrd_infra.utils.PydanticValidator(osrd_infra.schemas.rolling_stock.RollingResistance)
+                            osrd_infra.utils.PydanticValidator(osrd_schemas.rolling_stock.RollingResistance)
                         ],
                     ),
                 ),
@@ -175,7 +175,7 @@ class Migration(migrations.Migration):
                     "comfort",
                     models.CharField(
                         choices=[("STANDARD", "STANDARD"), ("AC", "AC"), ("HEATING", "HEATING")],
-                        default=osrd_infra.schemas.rolling_stock.ComfortType["STANDARD"],
+                        default=osrd_schemas.rolling_stock.ComfortType["STANDARD"],
                         max_length=8,
                     ),
                 ),
@@ -186,7 +186,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         default=[],
                         validators=[
-                            osrd_infra.utils.PydanticValidator(osrd_infra.schemas.train_schedule.TrainScheduleLabels)
+                            osrd_infra.utils.PydanticValidator(osrd_schemas.train_schedule.TrainScheduleLabels)
                         ],
                     ),
                 ),
@@ -194,13 +194,13 @@ class Migration(migrations.Migration):
                     "allowances",
                     models.JSONField(
                         default=[],
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.train_schedule.Allowances)],
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.train_schedule.Allowances)],
                     ),
                 ),
                 (
                     "mrsp",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.train_schedule.MRSP)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.train_schedule.MRSP)]
                     ),
                 ),
                 ("base_simulation", models.JSONField()),
@@ -253,7 +253,7 @@ class Migration(migrations.Migration):
                 (
                     "information",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.generated.InfraError)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.generated.InfraError)]
                     ),
                 ),
             ],
@@ -269,7 +269,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.TrackSection)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.TrackSection)]
                     ),
                 ),
             ],
@@ -285,7 +285,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.TrackSectionLink)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.TrackSectionLink)]
                     ),
                 ),
             ],
@@ -325,7 +325,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.SwitchType)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.SwitchType)]
                     ),
                 ),
             ],
@@ -340,7 +340,7 @@ class Migration(migrations.Migration):
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.Switch)]),
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Switch)]),
                 ),
             ],
             options={
@@ -367,7 +367,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.SpeedSection)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.SpeedSection)]
                     ),
                 ),
             ],
@@ -394,7 +394,7 @@ class Migration(migrations.Migration):
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.Signal)]),
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Signal)]),
                 ),
             ],
             options={
@@ -420,7 +420,7 @@ class Migration(migrations.Migration):
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.Route)]),
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Route)]),
                 ),
             ],
             options={
@@ -435,7 +435,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.OperationalPoint)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.OperationalPoint)]
                     ),
                 ),
             ],
@@ -463,7 +463,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.Detector)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Detector)]
                     ),
                 ),
             ],
@@ -491,7 +491,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.Catenary)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Catenary)]
                     ),
                 ),
             ],
@@ -519,7 +519,7 @@ class Migration(migrations.Migration):
                 (
                     "data",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.BufferStop)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.BufferStop)]
                     ),
                 ),
             ],
@@ -548,7 +548,7 @@ class Migration(migrations.Migration):
                 ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
                 (
                     "data",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.Panel)]),
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.Panel)]),
                 ),
             ],
         ),
@@ -562,7 +562,7 @@ class Migration(migrations.Migration):
                     models.JSONField(
                         validators=[
                             osrd_infra.utils.PydanticValidator(
-                                osrd_infra.schemas.external_generated_inputs.ElectricalProfileSet
+                                osrd_schemas.external_generated_inputs.ElectricalProfileSet
                             )
                         ]
                     ),

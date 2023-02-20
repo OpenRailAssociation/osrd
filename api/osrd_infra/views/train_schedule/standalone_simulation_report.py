@@ -1,5 +1,6 @@
+from osrd_schemas.path import PathPayload
+
 from osrd_infra.models import PathModel, TrainScheduleModel
-from osrd_infra.schemas.path import PathPayload
 from osrd_infra.views.projection import Projection
 
 

@@ -513,6 +513,24 @@ files = [
 ]
 
 [[package]]
+name = "osrd-schemas"
+version = "0.1.0"
+description = ""
+category = "main"
+optional = false
+python-versions = ">=3.9,<3.11"
+files = []
+develop = false
+
+[package.dependencies]
+geojson-pydantic = "0.5.0"
+pydantic = "1.10.4"
+
+[package.source]
+type = "directory"
+url = "../osrd_schemas"
+
+[[package]]
 name = "pathspec"
 version = "0.11.0"
 description = "Utility library for gitignore style pattern matching of file paths."
@@ -1073,4 +1091,4 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "7132e72a1ee158b340661860521db4158e017b0265f58f16fea3b5cb567450fe"
+content-hash = "7c9044ed5b5fe14cd60b83e016bddc931f6cea358c4e91f5591f42c19065ef37"

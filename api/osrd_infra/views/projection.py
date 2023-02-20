@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from osrd_infra.schemas.path import DirectionalTrackRange, PathPayload
+from osrd_schemas.path import DirectionalTrackRange, PathPayload
 
 
 @dataclass
