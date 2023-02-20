@@ -13,6 +13,7 @@ import userReducer, { UserState, initialState as userInitialState } from './user
 import mapReducer, { MapState, initialState as mapInitialState } from './map';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
+import osrdStdcmConfReducer, { initialState as osrdStdcmConfInitialState } from './osrdStdcmConf';
 import osrdsimulationReducer, {
   initialState as osrdSimulationInitialState,
 } from './osrdsimulation';
@@ -57,6 +58,13 @@ const osrdconfPersistConfig: PersistConfig<OsrdConfState> = {
   blacklist: ['featureInfoClick', 'switchTypes'],
 };
 
+// Useful to only blacklist a sub-propertie of osrdStdcmConf
+const osrdStdcmConfPersistConfig: PersistConfig<OsrdConfState> = {
+  key: 'osrdStdcmConf',
+  storage,
+  blacklist: ['featureInfoClick', 'switchTypes'],
+};
+
 const persistConfig = {
   key: 'root',
   storage,
@@ -73,6 +81,7 @@ export interface RootState {
   editor: EditorState;
   main: MainState;
   osrdconf: OsrdConfState;
+  osrdStdcmConf: OsrdConfState;
   osrdsimulation: OsrdSimulationState;
   [osrdMiddlewareApi.reducerPath]: any;
   [osrdEditoastApi.reducerPath]: any;
@@ -84,6 +93,7 @@ export const rootInitialState: RootState = {
   editor: editorInitialState,
   main: mainInitialState,
   osrdconf: osrdconfInitialState,
+  osrdStdcmConf: osrdStdcmConfInitialState,
   osrdsimulation: osrdSimulationInitialState,
   [osrdMiddlewareApi.reducerPath]: {},
   [osrdEditoastApi.reducerPath]: {},
@@ -104,6 +114,8 @@ export const rootReducer: ReducersMapObject<RootState> = {
   main: mainReducer,
   // @ts-ignore
   osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer),
+  // @ts-ignore
+  osrdStdcmConf: persistReducer(osrdStdcmConfPersistConfig, osrdStdcmConfReducer),
   osrdsimulation: osrdsimulationReducer,
   [osrdMiddlewareApi.reducerPath]: osrdMiddlewareApi.reducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
