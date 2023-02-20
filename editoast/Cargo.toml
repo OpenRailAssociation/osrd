@@ -32,6 +32,8 @@ redis = { version = "0.22", features = [
     "connection-manager",
     "tokio-native-tls-comp",
 ] }
+sentry = "0.29.3"
+sentry-actix = "0.29.3"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"

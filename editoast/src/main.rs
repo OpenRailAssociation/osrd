@@ -13,7 +13,7 @@ mod views;
 
 use crate::schema::RailJson;
 use actix_cors::Cors;
-use actix_web::middleware::{Logger, NormalizePath};
+use actix_web::middleware::{Condition, Logger, NormalizePath};
 use actix_web::web::{Data, JsonConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
@@ -28,6 +28,8 @@ use diesel::{Connection, PgConnection};
 use infra::Infra;
 use infra_cache::InfraCache;
 use map::MapLayers;
+use sentry::ClientInitGuard;
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
@@ -60,6 +62,31 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 }
 
+fn init_sentry(args: &RunserverArgs) -> Option<ClientInitGuard> {
+    match (args.sentry_dsn.clone(), args.sentry_env.clone()) {
+        (Some(sentry_dsn), Some(sentry_env)) => Some(sentry::init((
+            sentry_dsn,
+            sentry::ClientOptions {
+                release: match env::var("OSRD_GIT_DESCRIBE").ok() {
+                    Some(release) => Some(release.into()),
+                    None => sentry::release_name!(),
+                },
+                environment: Some(sentry_env.into()),
+                ..Default::default()
+            },
+        ))),
+        (None, Some(_)) => {
+            println!("SENTRY_DSN must be set to send events to Sentry.");
+            None
+        }
+        (Some(_), None) => {
+            println!("SENTRY_ENV must be set to send events to Sentry.");
+            None
+        }
+        _ => None,
+    }
+}
+
 /// Create and run the server
 async fn runserver(
     args: RunserverArgs,
@@ -86,6 +113,10 @@ async fn runserver(
     // Setup shared states
     let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
 
+    // Setup sentry
+    let _guard = init_sentry(&args);
+    let is_sentry_initialized = _guard.is_some();
+
     let server = HttpServer::new(move || {
         // Build CORS
         let cors = Cors::default()
@@ -94,6 +125,10 @@ async fn runserver(
             .allow_any_header();
 
         App::new()
+            .wrap(Condition::new(
+                is_sentry_initialized,
+                sentry_actix::Sentry::new(),
+            ))
             .wrap(cors)
             .wrap(NormalizePath::trim())
             .wrap(Logger::default())
