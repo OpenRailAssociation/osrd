@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
 import com.google.common.collect.Range;
+import fr.sncf.osrd.envelope.DriverBehaviour;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
@@ -9,9 +10,8 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.train.RollingStock;
-import java.util.Collection;
+
 import java.util.List;
-import java.util.Set;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point */
 public class MRSP {
@@ -31,9 +31,10 @@ public class MRSP {
             TrainPath trainPath,
             RollingStock rollingStock,
             boolean addRollingStockLength,
-            String tag
-    ) {
-        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength, tag);
+            String tag,
+            DriverBehaviour driverBehaviour) {
+        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength, tag,
+                driverBehaviour);
     }
 
     /** Computes the most restricted speed profile from a list of track ranges */
@@ -41,7 +42,8 @@ public class MRSP {
             List<TrackRangeView> ranges,
             RollingStock rollingStock,
             boolean addRollingStockLength,
-            String tag
+            String tag,
+            DriverBehaviour driverBehaviour
     ) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = 0.;
@@ -63,8 +65,8 @@ public class MRSP {
             for (var speedRange : subMap.asMapOfRanges().entrySet()) {
                 // compute where this limit is active from and to
                 var interval = speedRange.getKey();
-                var begin = offset + interval.lowerEndpoint();
-                var end = offset + interval.upperEndpoint();
+                var begin = offset + interval.lowerEndpoint() + driverBehaviour.getSpeedTransitionOffsetIncreasing();
+                var end = offset + interval.upperEndpoint() + driverBehaviour.getSpeedTransitionOffsetDecreasing();
                 if (addRollingStockLength) {
                     end += rollingStock.length;
                     if (end > pathLength)
