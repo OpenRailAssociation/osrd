@@ -8,7 +8,8 @@ import { post } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import turfCenter from '@turf/center';
 import StationCard from 'common/StationCard';
-import { getConf } from 'reducers/osrdconf/selectors';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { SEARCH_URL } from '../const';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -17,16 +18,15 @@ export default function MapSearchStation(props) {
   const [searchState, setSearch] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState(undefined);
-  const osrdconf = useSelector(getConf);
+  const infraID = useSelector(getInfraID);
 
   const dispatch = useDispatch();
-  const searchURI = `/editoast/search`;
 
   const { t } = useTranslation(['map-search']);
 
   const updateSearch = async (params) => {
     try {
-      const data = await post(searchURI, params);
+      const data = await post(SEARCH_URL, params);
       setSearchResults(data);
     } catch (e) {
       /* empty */
@@ -55,7 +55,7 @@ export default function MapSearchStation(props) {
       query: [
         'and',
         ['or', ['search', ['name'], name], ['search', ['trigram'], trigram]],
-        ['=', ['infra_id'], osrdconf.infraID],
+        ['=', ['infra_id'], infraID],
       ],
     };
     return payload;
