@@ -178,11 +178,6 @@ public class RollingStock implements PhysicsRollingStock {
         return -gamma;
     }
 
-    public double getMaxEffort(String catenaryMode, String electricalProfile, Comfort comfort, double speed) {
-        var curve = findTractiveEffortCurve(catenaryMode, electricalProfile, comfort).curve;
-        return PhysicsRollingStock.getMaxEffort(speed, curve);
-    }
-
     /**
      * Returns the tractive effort curve that matches best, along with the condition that matched
      */
