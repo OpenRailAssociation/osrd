@@ -6,6 +6,8 @@ import requests
 from django.conf import settings
 from django.contrib.gis.geos import LineString, Point
 from intervaltree import IntervalTree
+from osrd_schemas.infra import Direction, TrackSection
+from osrd_schemas.path import PathPayload
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
@@ -14,8 +16,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import OperationalPointModel, PathModel, TrackSectionModel
-from osrd_infra.schemas.infra import Direction, TrackSection
-from osrd_infra.schemas.path import PathPayload
 from osrd_infra.serializers import (
     PathInputSerializer,
     PathOPInputSerializer,

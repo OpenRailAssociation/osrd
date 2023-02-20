@@ -2,13 +2,13 @@ from pathlib import Path
 
 from django.db import connection
 from django.http import HttpResponse
+from osrd_schemas.infra import RailJsonInfra
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import Infra
-from osrd_infra.schemas.infra import RailJsonInfra
 from osrd_infra.serializers import InfraSerializer
 from osrd_infra.views.railjson import import_infra, serialize_infra
 

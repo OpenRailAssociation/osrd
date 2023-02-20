@@ -2,6 +2,7 @@ from io import BytesIO
 
 from django.db.models import Q
 from django.http import HttpResponse
+from osrd_schemas.study import StudyState, StudyType
 from PIL import Image
 from rest_framework import filters, generics, mixins, status
 from rest_framework.decorators import action
@@ -10,7 +11,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import Project, Scenario, Study, Timetable
-from osrd_infra.schemas.study import StudyState, StudyType
 from osrd_infra.serializers import (
     ProjectSerializer,
     ScenarioSerializer,

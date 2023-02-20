@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib.gis.db import models
+from osrd_schemas.generated import InfraError
+from osrd_schemas.infra import Panel
 
-from osrd_infra.schemas.generated import InfraError
-from osrd_infra.schemas.infra import Panel
 from osrd_infra.utils import PydanticValidator
 
 

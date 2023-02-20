@@ -1,7 +1,8 @@
 from unittest import TestCase
 
-from osrd_infra.schemas.infra import Direction, DirectionalTrackRange, Identifier
-from osrd_infra.schemas.path import PathPayload, RoutePath
+from osrd_schemas.infra import Direction, DirectionalTrackRange, Identifier
+from osrd_schemas.path import PathPayload, RoutePath
+
 from osrd_infra.views.projection import Projection
 
 
