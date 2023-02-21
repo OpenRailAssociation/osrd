@@ -14,7 +14,7 @@ from pydantic import (
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION = "3.0"
+RAILJSON_ROLLING_STOCK_VERSION = "3.1"
 
 
 class ComfortType(str, Enum):
@@ -47,6 +47,7 @@ class EffortCurve(BaseModel, extra=Extra.forbid):
 class EffortCurveConditions(BaseModel, extra=Extra.forbid):
     comfort: Optional[ComfortType]
     electrical_profile_level: Optional[str]
+    power_restriction_code: Optional[str]
 
 
 class ConditionalEffortCurve(BaseModel, extra=Extra.forbid):
@@ -97,12 +98,33 @@ class RollingStockLivery(BaseModel):
     name: constr(max_length=255)
 
 
+class PowerRestrictions(BaseModel):
+    __root__: Mapping[str, str]
+
+
 class RollingStock(BaseModel, extra=Extra.forbid):
+    """Electrical profiles and power classes are used to model the power loss along a catenary:
+    * Rolling stocks are attributed a power class depending on their power usage.
+    * Electrical profiles are then computed for each power class along all catenaries.
+    The electrical profile's value along the catenary is akin to an "actual available power" value.
+    * Then, speed-effort curves can be computed for all electrical profile values.
+
+    To prevent power grid overloads, infrastructure managers can enforce power restrictions on some parts of their
+    infrastructure for some trains. These train-specific restrictions are given a code.
+    To respect the prescribed power restrictions, the driver has to change the power notch used in the train, which
+    changes the power consumption of the train, akin to a car's gear.
+    In our model, we consider that the power notches of a train and the associated power restriction codes are equivalent.
+    Thus power restrictions affect the effort curves, and change the power class of the rolling stock.
+    """
+
     version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
     effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
-    power_class: Optional[str] = Field(
+    base_power_class: Optional[str] = Field(
         description="The power usage class of the train (optional because it is specific to SNCF)"
+    )
+    power_restrictions: Optional[PowerRestrictions] = Field(
+        description="Mapping from train's power restriction codes to power classes"
     )
     length: PositiveFloat = Field(description="The length of the train, in m")
     max_speed: PositiveFloat = Field(description="Maximum speed in m/s")

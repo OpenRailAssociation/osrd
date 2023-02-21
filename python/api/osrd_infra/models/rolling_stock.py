@@ -8,6 +8,7 @@ from osrd_schemas.rolling_stock import (
     RAILJSON_ROLLING_STOCK_VERSION,
     EffortCurves,
     Gamma,
+    PowerRestrictions,
     RollingResistance,
 )
 from osrd_schemas.rolling_stock import RollingStock as RollingStockSchema
@@ -26,10 +27,16 @@ class RollingStock(models.Model):
         help_text=_("A group of curves mapping speed (in m/s) to maximum traction (in newtons)"),
         validators=[PydanticValidator(EffortCurves)],
     )
-    power_class = models.CharField(
+    base_power_class = models.CharField(
         max_length=255,
         help_text=_("The power usage class of the train (optional because it is specific to SNCF)"),
         null=True,
+    )
+    power_restrictions = models.JSONField(
+        help_text=_("Mapping from train's power restriction codes to power classes (optional)"),
+        null=True,
+        blank=True,
+        validators=[PydanticValidator(PowerRestrictions)],
     )
     length = models.FloatField(
         help_text=_("The length of the train, in meters"),

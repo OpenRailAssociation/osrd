@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 from osrd_schemas.rolling_stock import ComfortType
 from osrd_schemas.train_schedule import (
     Allowances,
+    PowerRestrictionRanges,
     TrainScheduleLabels,
     TrainScheduleOptions,
 )
@@ -27,4 +28,7 @@ class TrainSchedule(models.Model):
         max_length=8, choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD
     )
     speed_limit_tags = models.CharField(max_length=128, null=True)
+    power_restriction_ranges = models.JSONField(
+        null=True, blank=True, validators=[PydanticValidator(PowerRestrictionRanges)]
+    )
     options = models.JSONField(null=True, blank=True, validators=[PydanticValidator(TrainScheduleOptions)])
