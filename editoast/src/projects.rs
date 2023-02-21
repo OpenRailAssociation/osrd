@@ -1,8 +1,9 @@
 use crate::error::Result;
 use crate::tables::osrd_infra_project;
+use crate::tables::osrd_infra_project::dsl;
 use actix_web::web::Json;
 use chrono::NaiveDateTime;
-use diesel::sql_types::{Array, BigInt, Nullable, Text};
+use diesel::sql_types::{Array, Integer, Nullable, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
 use serde::{Deserialize, Serialize};
@@ -15,20 +16,20 @@ pub struct Project {
     pub description: Option<String>,
     pub objectives: Option<String>,
     pub funders: Option<Vec<String>>,
+    pub budget: Option<i32>,
+    pub image: Option<Vec<u8>>,
     pub creation_date: NaiveDateTime,
     pub last_modification: NaiveDateTime,
-    pub budget: Option<i64>,
-    pub image: Option<Vec<u8>>,
     pub tags: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct ProjectData {
     pub name: String,
-    pub description: Option<String>,
-    pub objectives: Option<String>,
+    pub description: String,
+    pub objectives: String,
     pub funders: Option<Vec<String>>,
-    pub budget: Option<i64>,
+    pub budget: Option<i32>,
     pub image: Option<Vec<u8>>,
     pub tags: Option<Vec<String>>,
 }
@@ -43,12 +44,18 @@ impl Project {
     .bind::<Nullable<Text>,_>(&data.description)
     .bind::<Nullable<Text>,_>(&data.objectives)
     .bind::<Nullable<Array<Text>>,_>(&data.funders)
-    .bind::<Nullable<BigInt>,_>(&data.budget)
+    .bind::<Nullable<Integer>,_>(&data.budget)
     .bind::<Nullable<Array<Text>>,_>(&data.tags)
     .get_result::<Project>(conn)
     {
         Ok(project) => Ok(project),
         Err(err) => Err(err.into()),
     }
+    }
+
+    pub fn list(conn: &mut PgConnection) -> Vec<Project> {
+        dsl::osrd_infra_project
+            .load(conn)
+            .expect("List project query failed")
     }
 }
