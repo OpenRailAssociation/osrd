@@ -9,9 +9,13 @@ RUN cargo chef prepare --recipe-path recipe.json
 FROM chef as builder
 
 COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo chef cook --release --recipe-path recipe.json
 COPY . .
-RUN cargo install --locked --path .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo install --locked --path .
 
 FROM debian:bullseye-slim as runner
 
