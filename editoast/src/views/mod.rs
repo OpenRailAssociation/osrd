@@ -3,6 +3,7 @@ mod infra;
 mod layers;
 pub mod pagination;
 pub mod params;
+pub mod projects;
 pub mod search;
 
 use crate::DbPool;
@@ -22,6 +23,7 @@ pub fn routes() -> impl HttpServiceFactory {
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),
+        projects::routes(),
     ]
 }
 

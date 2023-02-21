@@ -200,3 +200,19 @@ table! {
         data -> Jsonb,
     }
 }
+
+table! {
+    osrd_infra_project(id) {
+        id -> BigInt,
+        name -> Text,
+        description -> Nullable<Text>,
+        objectives -> Nullable<Text>,
+        funders -> Nullable<Array<Text>>,
+        budget -> Nullable<BigInt>,
+        image -> Nullable<Binary>,
+        creation_date -> Timestamp,
+        last_modification -> Timestamp,
+        tags -> Nullable<Array<Text>>,
+
+    }
+}
