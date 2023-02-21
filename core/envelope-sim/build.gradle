@@ -19,12 +19,8 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
     implementation project(':osrd-reporting')
-
-    // guava
-    implementation("com.google.guava:guava:24.0-jre")
-
-    // slf4j
-    implementation("org.slf4j:slf4j-api:1.7.30")
+    implementation libs.guava
+    implementation libs.slf4j
 
     // for debug UI
     implementation libs.jmathplot
@@ -41,7 +37,7 @@ dependencies {
     testImplementation libs.junit.jupiter.params
 
     testFixturesImplementation libs.junit.jupiter.api
-    testFixturesImplementation "com.google.guava:guava:24.0-jre"
+    testFixturesImplementation libs.guava
 
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
