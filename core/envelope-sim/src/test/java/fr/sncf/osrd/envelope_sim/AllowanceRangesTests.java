@@ -316,6 +316,33 @@ public class AllowanceRangesTests {
         applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope);
     }
 
+    /** Regression test: reproduces <a href="https://github.com/DGEXSolutions/osrd/issues/3199">this bug</a>.
+     * This is an extreme corner case.
+     * The last section computed is the section between the stop at 300m and the transition at 301.
+     * Because it's after a stop, the speed is very low.
+     * The capacity speed limit sets a binary search bound that is higher than the max speed on that part, resulting
+     * in a linear allowance that goes faster. The transition can be weird. */
+    @Test
+    public void regressionTestCornerCase() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testPath = new FlatPath(10_000, 0);
+        var stops = new double[]{300};
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var allowance = new LinearAllowance(
+                testContext,
+                0,
+                testPath.getLength(),
+                1.5,
+                List.of(
+                        new AllowanceRange(0, 301, new AllowanceValue.FixedTime(50)),
+                        new AllowanceRange(301, testPath.getLength(), new AllowanceValue.Percentage(50))
+                )
+        );
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 80, stops);
+        var res = allowance.apply(maxEffortEnvelope);
+        assert res != null;
+    }
+
     /** Applies the allowance to the envelope. Any user error (impossible margin) is ignored */
     private void applyAllowanceIgnoringUserError(Allowance allowance, Envelope envelope) {
         try {
