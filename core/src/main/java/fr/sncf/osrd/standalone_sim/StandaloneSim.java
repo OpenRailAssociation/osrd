@@ -1,7 +1,7 @@
 package fr.sncf.osrd.standalone_sim;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
@@ -27,7 +27,7 @@ public class StandaloneSim {
     public static StandaloneSimResult run(
             SignalingInfra infra,
             TrainPath trainPath,
-            EnvelopePath envelopePath,
+            EnvelopeSimPath envelopeSimPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep
     ) {
@@ -46,11 +46,11 @@ public class StandaloneSim {
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base
-                var modeAndProfileMap = envelopePath.getModeAndProfileMap(
+                var modeAndProfileMap = envelopeSimPath.getModeAndProfileMap(
                         trainSchedule.options.ignoreElectricalProfiles ? null : rollingStock.powerClass);
                 var curvesAndConditions = rollingStock.mapTractiveEffortCurves(modeAndProfileMap,
-                        trainSchedule.comfort, envelopePath.getLength());
-                var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep,
+                        trainSchedule.comfort, envelopeSimPath.getLength());
+                var context = new EnvelopeSimContext(rollingStock, envelopeSimPath, timeStep,
                         curvesAndConditions.curves());
                 cacheModeAndProfiles.put(trainSchedule, ResultModeAndProfilePoint.from(
                         curvesAndConditions.conditions(), modeAndProfileMap));

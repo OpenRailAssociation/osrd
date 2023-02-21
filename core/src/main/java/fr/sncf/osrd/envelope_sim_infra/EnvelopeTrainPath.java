@@ -3,7 +3,7 @@ package fr.sncf.osrd.envelope_sim_infra;
 import com.carrotsearch.hppc.DoubleArrayList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
-import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 public class EnvelopeTrainPath {
 
     /** Create EnvelopePath from a list of TrackRangeView */
-    public static EnvelopePath from(List<TrackRangeView> trackSectionPath) {
+    public static EnvelopeSimPath from(List<TrackRangeView> trackSectionPath) {
         var gradePositions = new DoubleArrayList();
         gradePositions.add(0);
         var gradeValues = new DoubleArrayList();
@@ -43,11 +43,11 @@ public class EnvelopeTrainPath {
             gradeValues.add(0);
         }
 
-        return new EnvelopePath(length, gradePositions.toArray(), gradeValues.toArray(), catenaries.build());
+        return new EnvelopeSimPath(length, gradePositions.toArray(), gradeValues.toArray(), catenaries.build());
     }
 
     /** Create EnvelopePath from a train path */
-    public static EnvelopePath from(TrainPath trainsPath) {
+    public static EnvelopeSimPath from(TrainPath trainsPath) {
         return from(TrainPath.removeLocation(trainsPath.trackRangePath()));
     }
 }

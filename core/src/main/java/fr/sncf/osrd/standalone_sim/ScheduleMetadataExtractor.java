@@ -3,7 +3,6 @@ package fr.sncf.osrd.standalone_sim;
 import static fr.sncf.osrd.envelope.EnvelopePhysics.getMechanicalEnergyConsumed;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeStopWrapper;
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
