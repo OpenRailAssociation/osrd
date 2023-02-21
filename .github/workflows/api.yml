@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - python/api/**
+      - .github/workflows/api.yml
   push:
     branches:
       - dev
@@ -103,7 +104,9 @@ jobs:
           cd api
           poetry install --only dev
       - name: Flake8
-        run: pflake8 --config python/api/pyproject.toml --format junit-xml python/api > flake8.xml
+        run: |
+          cd python/api
+          poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
       - name: Publish flake8 report
         uses: mikepenz/action-junit-report@v3
         if: failure()

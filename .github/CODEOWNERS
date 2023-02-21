@@ -7,7 +7,7 @@
 # --- EDITOAST ---
 /editoast                                                @DGEXSolutions/editoast-maintainers
 /chartos                                                 @DGEXSolutions/editoast-maintainers
-/api                                                     @DGEXSolutions/editoast-maintainers
+/python                                                  @DGEXSolutions/editoast-maintainers
 
 # --- INTEGRATION TESTS  ---
 /tests                                                   @eckter

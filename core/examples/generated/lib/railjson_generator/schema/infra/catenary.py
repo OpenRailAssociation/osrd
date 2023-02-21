@@ -3,7 +3,7 @@ from typing import List
 
 from railjson_generator.schema.infra.track_section import TrackSection
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 @dataclass

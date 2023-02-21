@@ -41,7 +41,7 @@ services:
     restart: unless-stopped
     build:
       context: python
-      dockerfile: Dockerfile
+      dockerfile: api/Dockerfile
       args:
         environment: test
     ports: ["8000:80"]

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 class Endpoint(IntEnum):

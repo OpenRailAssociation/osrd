@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 @dataclass
