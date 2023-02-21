@@ -5,8 +5,7 @@ import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxE
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
@@ -324,10 +323,11 @@ public class AllowanceRangesTests {
      * in a linear allowance that goes faster. The transition can be weird. */
     @Test
     public void regressionTestCornerCase() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var testPath = new FlatPath(10_000, 0);
         var stops = new double[]{300};
-        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, TIME_STEP, Comfort.STANDARD);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var allowance = new LinearAllowance(
                 testContext,
                 0,
@@ -339,8 +339,8 @@ public class AllowanceRangesTests {
                 )
         );
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 80, stops);
-        var res = allowance.apply(maxEffortEnvelope);
-        assert res != null;
+        var err = assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, err.errorType);
     }
 
     /** Applies the allowance to the envelope. Any user error (impossible margin) is ignored */
