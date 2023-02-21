@@ -1874,6 +1874,13 @@ components:
           properties:
             comfort:
               $ref: "#/components/schemas/Comfort"
+              nullable: true
+            electrical_profile_level:
+              type: string
+              nullable: true
+            power_restriction_code:
+              type: string
+              nullable: true
         curve:
           $ref: "#/components/schemas/EffortCurve"
     Comfort:
@@ -1977,6 +1984,17 @@ components:
                 properties:
                   is_electric:
                     type: boolean
+        base_power_class:
+          type: string
+          example: "5"
+        power_restrictions:
+          type: object
+          description: Mapping of power restriction code to power class
+          additionalProperties:
+            type: string
+          example:
+            "C1US": "4"
+            "C2US": "3"
         metadata:
           type: object
           example:
@@ -2040,10 +2058,35 @@ components:
                 type: string
               comfort:
                 $ref: "#/components/schemas/Comfort"
+              power_restriction_ranges:
+                description: A list of ranges along the train path where power restrictions apply.
+                type: array
+                items:
+                  $ref: "#/components/schemas/PowerRestrictionRange"
+                nullable: true
               options:
                 allOf:
                   - $ref: "#/components/schemas/TrainScheduleOptions"
                 nullable: true
+    PowerRestrictionRange:
+      description: A range along the train path where a power restriction is applied.
+      type: object
+      properties:
+        begin_position:
+          description: Offset from the start of the path, in meters.
+          type: number
+          format: float
+        end_position:
+          description: Offset from the start of the path, in meters.
+          type: number
+          format: float
+        power_restriction_code:
+          description: The power restriction code to apply.
+          type: string
+      example:
+        begin_position: 0.0
+        end_position: 1000.0
+        power_restriction_code: "C1US"
     WritableTrainSchedule:
       properties:
         train_name:

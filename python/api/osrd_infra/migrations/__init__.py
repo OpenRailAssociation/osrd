@@ -286,3 +286,15 @@ def run_sql_create_infra_search_table(
             migrations.CreateModel(name=phony_model_name, fields=[], options={"managed": False, "db_table": name})
         ],
     )
+
+
+def change_railjson_version(model, old_version, new_version):
+    def _upgrade_railjson_version(apps, schema_editor):
+        Model = apps.get_model("osrd_infra", model)
+        Model.objects.update(version=new_version)
+
+    def _downgrade_railjson_version(apps, schema_editor):
+        Model = apps.get_model("osrd_infra", model)
+        Model.objects.update(version=old_version)
+
+    return migrations.RunPython(_upgrade_railjson_version, _downgrade_railjson_version)
