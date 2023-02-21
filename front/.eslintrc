@@ -1,13 +1,22 @@
 {
   "extends": [
-    "react-app",
-    "react-app/jest",
+    "plugin:vitest/recommended",
     "airbnb",
     "plugin:import/recommended",
     "plugin:import/typescript",
     "prettier"
   ],
-  "plugins": ["prettier", "react", "react-hooks", "only-warn", "import"],
+  "plugins": [
+    "prettier",
+    "react",
+    "react-hooks",
+    "only-warn",
+    "import",
+    "vitest"
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
   "rules": {
     "react/prefer-stateless-function": "off",
     "react/jsx-filename-extension": "off",
