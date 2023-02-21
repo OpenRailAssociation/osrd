@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react-swc';
 import viteTsconfigPaths from 'vite-tsconfig-paths';
 import svgrPlugin from 'vite-plugin-svgr';
 import ImportMetaEnvPlugin from "@import-meta-env/unplugin";
+import checker from 'vite-plugin-checker';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,6 +14,14 @@ export default defineConfig({
     svgrPlugin(),
     ImportMetaEnvPlugin.vite({
       example: ".env.example",
+    }),
+    checker({
+      typescript: {
+        buildMode: true,
+      },
+      eslint: {
+        lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src',
+      },
     }),
   ],
   build: {
