@@ -4,7 +4,7 @@ from typing import Mapping, Tuple
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 def _switch_id():

@@ -4,7 +4,7 @@ from typing import List, Dict
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.waypoint import Detector
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 def _signal_id():
