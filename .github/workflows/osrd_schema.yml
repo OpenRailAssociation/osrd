@@ -1,0 +1,54 @@
+name: Test osrd_schemas
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - python/osrd_schemas/**
+      - .github/workflows/osrd_schemas.yml
+  push:
+    branches:
+      - dev
+      - staging
+      - prod
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        uses: actions/cache@v3
+        id: cached-poetry-osrd-schemas-only-dev-dependencies
+        with:
+          path: python/osrd_schemas/.venv
+          key: cached-poetry-osrd-schemas-only-dev-dependencies-${{ hashFiles('python/osrd_schemas/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-osrd-schemas-only-dev-dependencies.outputs.cache-hit != 'true'
+        run: |
+          cd python/osrd_schemas
+          poetry install --only dev
+        run: |
+          cd python/osrd_schemas
+          poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
+      - name: Publish flake8 report
+        uses: mikepenz/action-junit-report@v3
+        if: failure()
+        with:
+          report_paths: flake8.xml
+      - name: Black
+        run: |
+          cd python/osrd_schemas
+          poetry run black . --check
+      - name: Isort
+        run: |
+          cd python/osrd_schemas
+          poetry run isort . --check

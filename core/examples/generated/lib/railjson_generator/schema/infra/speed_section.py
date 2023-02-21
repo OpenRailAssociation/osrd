@@ -3,7 +3,7 @@ from typing import List
 
 from railjson_generator.schema.infra.range_elements import ApplicableDirectionsTrackRange
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 def _speed_section_id():

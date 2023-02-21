@@ -2,7 +2,7 @@ import heapq
 from dataclasses import dataclass, field
 from typing import List, Optional, Set
 
-from schemas import infra
+from osrd_schemas import infra
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint
 from railjson_generator.schema.infra.track_section import TrackSection

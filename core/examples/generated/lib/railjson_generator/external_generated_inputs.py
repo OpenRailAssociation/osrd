@@ -3,7 +3,7 @@ from typing import List
 
 from railjson_generator.schema.infra.range_elements import TrackRange
 
-from schemas import external_generated_inputs
+from osrd_schemas import external_generated_inputs
 
 
 @dataclass
