@@ -1,5 +1,5 @@
 {
-  "version": "3.0",
+  "version": "3.1",
   "length": 400,
   "max_speed": 80,
   "startup_time": 10,
@@ -75,7 +75,7 @@
       }
     }
   },
-  "power_class": "1",
+  "base_power_class": "1",
   "metadata": {
     "detail": "",
     "number": "1",

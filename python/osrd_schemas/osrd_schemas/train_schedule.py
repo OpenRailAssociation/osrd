@@ -133,6 +133,28 @@ class Allowances(BaseModel):
     __root__: List[Allowance] = Field(description="List of all well-defined allowances of the path")
 
 
+# Power restrictions
+"""Power restrictions are used to limit the power consumption of trains on some parts of the infrastructure.
+Infrastructure managers use them to prevent power grid overloads.
+We model power restrictions by assigning some power restriction codes to some parts of the train path.
+Rolling stocks then have an attribute that maps power restriction codes to power usages."""
+
+
+class PowerRestrictionRange(BaseModel):
+    """A user-specified range of the train path where a power restriction is applied.
+    Ideally, this should come from infrastructure data."""
+
+    begin_position: float = Field(description="Offset in meters from the beginning of the path", ge=0)
+    end_position: float = Field(description="Offset in meters from the beginning of the path", ge=0)
+    power_restriction_code: str = Field(description="The code of the power restriction to apply")
+
+
+class PowerRestrictionRanges(BaseModel):
+    """A list of power restriction ranges."""
+
+    __root__: List[PowerRestrictionRange]
+
+
 class TrainScheduleOptions(BaseModel):
     """Optional arguments for the standalone simulation."""
 
