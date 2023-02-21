@@ -16,7 +16,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off
 
-COPY poetry.lock pyproject.toml /home/service/
+COPY api/poetry.lock api/pyproject.toml /home/service/
+COPY osrd_schemas/ /home/osrd_schemas/
 
 ARG environment=prod
 
@@ -29,7 +30,7 @@ RUN poetry config virtualenvs.create false && \
 
 USER service
 
-COPY . /home/service
+COPY api/ /home/service/
 
 ARG OSRD_GIT_DESCRIBE
 ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
