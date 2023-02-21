@@ -266,6 +266,10 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         // perform a binary search
         var initialLowBound = computeInitialLowBound(envelopeSection);
         var initialHighBound = computeInitialHighBound(envelopeSection);
+        if (initialLowBound > initialHighBound) {
+            // This can happen when capacity speed limit > max speed. We know in advance no solution can be found.
+            throw AllowanceConvergenceException.tooMuchTime();
+        }
 
         Envelope res = null;
         AllowanceConvergenceException lastError = null;
@@ -441,7 +445,6 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             lastIntersection = constrainedBuilder.lastIntersection;
         } else if (imposedEndSpeed < envelopeSection.getEndSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, CEILING));
-            constraints.add(new EnvelopeConstraint(envelopeSection, CEILING));
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     constraints.toArray(new EnvelopePartConstraint[0])
