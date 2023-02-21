@@ -5,3 +5,9 @@ class OsrdSearchOperationalPoint(models.Model):
     class Meta:
         db_table = "osrd_search_operationalpoint"
         managed = False
+
+
+class OsrdSearchTrackSection(models.Model):
+    class Meta:
+        db_table = "osrd_search_tracksection"
+        managed = False
