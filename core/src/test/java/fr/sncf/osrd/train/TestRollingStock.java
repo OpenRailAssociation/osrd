@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -20,9 +20,9 @@ public class TestRollingStock {
         builder.put(Range.closed(10., 20.), "25000");
         builder.put(Range.closed(30., 50.), "unhandled");
 
-        var path1 = new EnvelopePath(40, new double[]{0, 40}, new double[]{0}, builder.build());
-        var path2 = new EnvelopePath(60, new double[]{0, 60}, new double[]{0}, builder.build());
-        var path3 = new EnvelopePath(50, new double[]{0, 50}, new double[]{0}, ImmutableRangeMap.of());
+        var path1 = new EnvelopeSimPath(40, new double[]{0, 40}, new double[]{0}, builder.build());
+        var path2 = new EnvelopeSimPath(60, new double[]{0, 60}, new double[]{0}, builder.build());
+        var path3 = new EnvelopeSimPath(50, new double[]{0, 50}, new double[]{0}, ImmutableRangeMap.of());
 
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
@@ -61,7 +61,7 @@ public class TestRollingStock {
 
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
-        var path = new EnvelopePath(50, new double[]{0, 50}, new double[]{0}, catenaryModes);
+        var path = new EnvelopeSimPath(50, new double[]{0, 50}, new double[]{0}, catenaryModes);
         path.setElectricalProfiles(Map.of(rollingStock.powerClass, electricalProfiles));
 
         var comfort = RollingStock.Comfort.STANDARD;

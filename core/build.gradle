@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.spotbugs)
     alias(libs.plugins.shadow)
     id 'jacoco'
+    id 'jacoco-report-aggregation'
     alias(libs.plugins.versions)
 }
 
@@ -22,6 +23,9 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
     implementation project(':osrd-railjson')
+    implementation project(':osrd-reporting')
+    implementation project(':envelope-sim')
+    testImplementation(testFixtures(project(":envelope-sim")))
 
     // kotlin
     implementation libs.kotlin.stdlib
@@ -52,12 +56,6 @@ dependencies {
 
     // HTTP client
     implementation libs.okhttp
-
-    // ClassGraph (FastClasspathScanner)
-    implementation libs.classgraph
-
-    // for debug UI
-    implementation libs.jmathplot
 
     // the logging API stub
     implementation libs.slf4j
@@ -190,14 +188,8 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
     }
 }
 
-test {
-    finalizedBy jacocoTestReport
-}
-
-jacocoTestReport {
-    reports {
-        xml.required = true
-    }
+tasks.named('check') {
+    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
 }
 
 // endregion

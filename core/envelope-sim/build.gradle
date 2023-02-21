@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'java-test-fixtures'
+    id 'jacoco'
+    alias(libs.plugins.spotbugs)
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+
+    implementation project(':osrd-reporting')
+    implementation libs.guava
+    implementation libs.slf4j
+
+    // for debug UI
+    implementation libs.jmathplot
+
+    // fast primitive collections
+    implementation libs.hppc
+
+    // for linter annotations
+    compileOnly libs.jcip.annotations
+    compileOnly libs.spotbugs.annotations
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation libs.junit.jupiter.api
+    testImplementation libs.junit.jupiter.params
+
+    testFixturesImplementation libs.junit.jupiter.api
+    testFixturesImplementation libs.guava
+
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly libs.junit.jupiter.engine
+
+    // linter annotations
+    testCompileOnly libs.spotbugs.annotations
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'jqwik', 'junit-jupiter'
+    }
+}

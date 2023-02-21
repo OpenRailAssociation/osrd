@@ -1,8 +1,9 @@
 package fr.sncf.osrd.standalone_sim.result;
 
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ModeAndProfile;
+
 import com.google.common.collect.RangeMap;
 import com.squareup.moshi.Json;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,8 +36,8 @@ public class ResultModeAndProfilePoint {
      * Builds a list of ResultModeAndProfilePoint from two range maps
      */
     public static List<ResultModeAndProfilePoint> from(
-            RangeMap<Double, PhysicsPath.ModeAndProfile> modesAndProfilesUsed,
-            RangeMap<Double, PhysicsPath.ModeAndProfile> modesAndProfilesSeen) {
+            RangeMap<Double, ModeAndProfile> modesAndProfilesUsed,
+            RangeMap<Double, ModeAndProfile> modesAndProfilesSeen) {
         var res = new ArrayList<ResultModeAndProfilePoint>();
         var modesAndProfilesSeenMap = modesAndProfilesSeen.asMapOfRanges();
         for (var entry : modesAndProfilesUsed.asMapOfRanges().entrySet()) {

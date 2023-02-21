@@ -8,6 +8,8 @@ include 'kt-osrd-signaling'
 include 'kt-osrd-sim-infra'
 include 'kt-osrd-sim-interlocking'
 include 'osrd-railjson'
+include 'envelope-sim'
+include 'osrd-reporting'
 
 
 dependencyResolutionManagement {
