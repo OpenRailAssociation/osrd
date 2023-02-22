@@ -9,7 +9,9 @@ from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import RollingStock, RollingStockLivery
 from osrd_infra.serializers import (
-    LightRollingStockSerializer, RollingStockSerializer, CreateRollingStockLiverySerializer
+    LightRollingStockSerializer,
+    RollingStockSerializer,
+    CreateRollingStockLiverySerializer,
 )
 from osrd_infra.views.pagination import CustomPageNumberPagination
 
@@ -53,7 +55,7 @@ class RollingStockLiveryView(
         stream = BytesIO(image_db)
         image = Image.open(stream)
 
-        response = HttpResponse(content_type='image/png')
+        response = HttpResponse(content_type="image/png")
         image.save(response, "PNG")
         return response
 
@@ -79,16 +81,16 @@ class RollingStockLiveryView(
             total_length += image.size[0]
             separated_images.append(image)
 
-        compound_image = Image.new('RGBA', (total_length, max_height), (255, 0, 0, 0))
+        compound_image = Image.new("RGBA", (total_length, max_height), (255, 0, 0, 0))
         ind_width = 0
         for image in separated_images:
             compound_image.paste(image, (ind_width, max_height - image.size[1]))
             ind_width += image.size[0]
         compound_image_bytes = BytesIO()
-        compound_image.save(compound_image_bytes, 'PNG')
+        compound_image.save(compound_image_bytes, "PNG")
         return InMemoryUploadedFile(
-            compound_image_bytes, None, 'compound_image.png', 'PNG',
-            sys.getsizeof(compound_image_bytes), None)
+            compound_image_bytes, None, "compound_image.png", "PNG", sys.getsizeof(compound_image_bytes), None
+        )
 
     def create(self, request, *args, **kwargs):
         """
@@ -101,10 +103,7 @@ class RollingStockLiveryView(
         compound_image = self.create_compound_image(images)
 
         input_data = dict(
-            rolling_stock_id=rolling_stock_id,
-            livery_name=livery_name,
-            images=images,
-            compound_image=compound_image
+            rolling_stock_id=rolling_stock_id, livery_name=livery_name, images=images, compound_image=compound_image
         )
 
         input_serializer = CreateRollingStockLiverySerializer(data=input_data)
@@ -112,6 +111,6 @@ class RollingStockLiveryView(
         input_serializer.create(input_serializer.validated_data)
 
         image_final = Image.open(compound_image)
-        response = HttpResponse(content_type='image/png')
+        response = HttpResponse(content_type="image/png")
         image_final.save(response, "PNG")
         return response

@@ -1,7 +1,7 @@
 import logging
 
 
-logger = logging.getLogger('request_logger')
+logger = logging.getLogger("request_logger")
 
 
 class RequestLogger:
