@@ -17,6 +17,8 @@ from .infra import LoadingGaugeType
 RAILJSON_ROLLING_STOCK_VERSION = "3.0"
 
 class Curve(BaseModel, extra=Extra.forbid):
+
+
     x: conlist(confloat(ge=0), min_items=2) = Field(description="Abscissa or x-axis of your curve ")
     f_x: conlist(confloat(ge=0), min_items=2) = Field(description="Corresponding ordinate or y-axis of your curve")
 
