@@ -2534,7 +2534,7 @@
   resolved "https://registry.yarnpkg.com/@storybook/mdx2-csf/-/mdx2-csf-1.0.0-next.5.tgz#b43b403b3a0b2ebdb3603bf6d20d7319b407e199"
   integrity sha512-02w0sgGZaK1agT050yCVhJ+o4rLHANWvLKWjQjeAsYbjneLC5ITt+3GDB4jRiWwJboZ8dHW1fGSK1Vg5fA34aQ==
 
-"@storybook/node-logger@7.0.0-beta.50", "@storybook/node-logger@^7.0.0-beta.50":
+"@storybook/node-logger@7.0.0-beta.50":
   version "7.0.0-beta.50"
   resolved "https://registry.yarnpkg.com/@storybook/node-logger/-/node-logger-7.0.0-beta.50.tgz#a9d5eab67a8979021d1f14427fc55e463e41c9ea"
   integrity sha512-uV2NaEJ5vnryLtMTlwtd5m5n3ki1I5KJ2pVLp0OQaiiH3uSsT1u3zmGwqMooMZtV/z8jZKM6laTLYem9Du7+hQ==
@@ -2552,6 +2552,16 @@
     "@types/npmlog" "^4.1.2"
     chalk "^4.1.0"
     core-js "^3.8.2"
+    npmlog "^5.0.1"
+    pretty-hrtime "^1.0.3"
+
+"@storybook/node-logger@^7.0.0-beta.53":
+  version "7.0.0-beta.53"
+  resolved "https://registry.yarnpkg.com/@storybook/node-logger/-/node-logger-7.0.0-beta.53.tgz#949543d5c1839038d2f2adf3ee58c17f1cc6282a"
+  integrity sha512-Zjhf74WWcFwmdVZhejss8cueZFe0ih4vzsNQJ97niBBph/5apcdTmVdBgCC2sZt3vfkH3wBwdTSF+rLZ8VBZMg==
+  dependencies:
+    "@types/npmlog" "^4.1.2"
+    chalk "^4.1.0"
     npmlog "^5.0.1"
     pretty-hrtime "^1.0.3"
 
