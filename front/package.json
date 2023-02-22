@@ -104,7 +104,7 @@
     "@import-meta-env/prepare": "^0.1.0",
     "@import-meta-env/unplugin": "^0.4.4",
     "@playwright/test": "^1.29.2",
-    "@storybook/addon-actions": "^7.0.0-beta.50",
+    "@storybook/addon-actions": "^7.0.0-beta.53",
     "@storybook/addon-essentials": "^7.0.0-beta.50",
     "@storybook/addon-interactions": "^7.0.0-beta.50",
     "@storybook/addon-links": "^7.0.0-beta.50",
