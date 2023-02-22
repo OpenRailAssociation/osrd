@@ -36,3 +36,8 @@ yarn-error.log*
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# .env is built from .env.local and .env.local.defaults
+/.env
+# .env.local is up to the developer
+/.env.local

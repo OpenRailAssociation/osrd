@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Set, Tuple
 
 import requests
-from run_integration_tests import Scenario
+from requests import Response, Timeout
 
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 15
@@ -17,12 +17,17 @@ INFRA_ID = 1
 
 """
 Generates random tests, running pathfinding + simulations on random paths.
-This requires a running database setup with actual infra data, which can't be publicly available on github
 """
 
 
 class FailedTest(Exception):
     pass
+
+
+@dataclass
+class Scenario:
+    infra: int
+    timetable: int
 
 
 class ErrorType(str, Enum):
@@ -63,16 +68,19 @@ class InfraGraph:
 
 def make_error(
     error_type: ErrorType,
-    code: int,
-    error: str,
+    response: Response,
     infra_name: str,
     path_payload: Dict,
     **kwargs,
 ):
+    """
+    Generate an error in a format that can be logged in a json and integrated in the test suite
+    """
+    error = "" if response.content is None else response.content.decode("utf-8")
     raise FailedTest(
         {
             "error_type": error_type.value,
-            "code": code,
+            "code": response.status_code,
             "error": error,
             "infra_name": infra_name,
             "path_payload": path_payload,
@@ -84,10 +92,10 @@ def make_error(
 def run_test(infra: InfraGraph, base_url: str, scenario: Scenario, infra_name: str):
     """
     Runs a single random test
-    :param infra_name: name of the infra, for better reporting
     :param infra: infra graph
     :param base_url: Api url
-    :param infra_id: Infra id
+    :param scenario: Scenario to use for the test
+    :param infra_name: name of the infra, for better reporting
     """
     rolling_stock = get_random_rolling_stock(base_url)
     path, path_length = make_valid_path(infra)
@@ -111,21 +119,19 @@ def test_new_train(
     """
     print("testing new train")
     path_payload = make_payload_path(scenario.infra, path)
-    r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
+    r = post_with_timeout(base_url + "pathfinding/", json=path_payload)
     if r.status_code // 100 != 2:
         make_error(
             ErrorType.PATHFINDING,
-            r.status_code,
-            r.content.decode("utf-8"),
+            r,
             infra_name,
             path_payload,
         )
     path_id = r.json()["id"]
-    schedule_payload = make_payload_schedule(base_url, scenario, path_id, rolling_stock, path_length)
-    r = requests.post(
+    schedule_payload = make_payload_schedule(scenario, path_id, rolling_stock, path_length)
+    r = post_with_timeout(
         base_url + "train_schedule/standalone_simulation/",
         json=schedule_payload,
-        timeout=TIMEOUT,
     )
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4:
@@ -133,20 +139,18 @@ def test_new_train(
             return
         make_error(
             ErrorType.SCHEDULE,
-            r.status_code,
-            r.content.decode("utf-8"),
+            r,
             infra_name,
             path_payload,
             schedule_payload=schedule_payload,
         )
 
     schedule_id = r.json()["ids"][0]
-    r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)
+    r = get_with_timeout(f"{base_url}train_schedule/{schedule_id}/result/")
     if r.status_code // 100 != 2:
         make_error(
             ErrorType.RESULT,
-            r.status_code,
-            r.content.decode("utf-8"),
+            r,
             infra_name,
             path_payload,
             schedule_payload=schedule_payload,
@@ -171,16 +175,15 @@ def test_stdcm(
     Not finding a path isn't considered as an error, we only look for 500 codes here.
     """
     print("testing stdcm")
-    stdcm_payload = make_stdcm_payload(base_url, scenario, path, rolling_stock)
-    r = requests.post(base_url + "stdcm/", json=stdcm_payload, timeout=TIMEOUT)
+    stdcm_payload = make_stdcm_payload(scenario, path, rolling_stock)
+    r = post_with_timeout(base_url + "stdcm/", json=stdcm_payload)
     if r.status_code // 100 != 2:
-        if r.status_code // 100 == 4:
-            print("ignore: invalid user input")
+        if r.status_code // 100 == 4 and "no_path_found" in r.content.decode("utf-8"):
+            print("ignore: no path found")
             return
         make_error(
             ErrorType.STDCM,
-            r.status_code,
-            r.content.decode("utf-8"),
+            r,
             infra_name,
             {},
             stdcm_payload=stdcm_payload,
@@ -188,17 +191,21 @@ def test_stdcm(
     print("test PASSED")
 
 
-def make_stdcm_payload(base_url: str, scenario: Scenario, path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
+def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
     """
     Creates a payload for an STDCM request
     """
     start_edge, start_offset = path[0]
     last_edge, last_offset = path[1]
-    return {
+    res = {
         "infra": scenario.infra,
         "rolling_stock": rolling_stock,
         "timetable": scenario.timetable,
-        "start_time": 0,
+        "start_time": random.randint(0, 3600 * 24),
+        "maximum_departure_delay": random.randint(0, 3600 * 4),
+        "maximum_relative_run_time": random.random() * 4,
+        "margin_before": random.randint(0, 600),
+        "margin_after": random.randint(0, 600),
         "start_points": [
             {
                 "track_section": start_edge,
@@ -212,6 +219,10 @@ def make_stdcm_payload(base_url: str, scenario: Scenario, path: List[Tuple[str, 
             }
         ],
     }
+    allowance_value = make_random_allowance_value(0)
+    if allowance_value["value_type"] != "time" and random.randint(0, 2) == 0:
+        res["standard_allowance"] = allowance_value
+    return res
 
 
 def run(
@@ -224,12 +235,12 @@ def run(
 ):
     """
     Runs every test
-    :param seed: first seed, incremented by 1 for each individual test
-    :param infra_name: name of the infra, for better reporting
     :param base_url: url to reach the api
-    :param infra_id: infra id
+    :param scenario: scenario to use for the tests
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
+    :param infra_name: name of the infra, for better reporting
+    :param seed: first seed, incremented by 1 for each individual test
     """
     infra_graph = make_graph(base_url, scenario.infra)
     for i in range(n_test):
@@ -256,7 +267,7 @@ def get_random_rolling_stock(base_url: str) -> int:
     :param base_url: Api url
     :return: ID of a valid rolling stock
     """
-    r = requests.get(base_url + "rolling_stock/", timeout=TIMEOUT)
+    r = get_with_timeout(base_url + "rolling_stock/")
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     stocks = r.json()["results"]
@@ -280,7 +291,7 @@ def make_graph(base_url: str, infra: int) -> InfraGraph:
     :param infra: infra id
     """
     url = base_url + f"infra/{infra}/railjson/"
-    r = requests.get(url, timeout=TIMEOUT)
+    r = get_with_timeout(url)
     infra = r.json()
     graph = InfraGraph(infra)
 
@@ -434,12 +445,30 @@ def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
     return path_payload
 
 
-def create_scenario(base_url, infra_id):
-    scenario_payload = {"name": "foo", "infra": infra_id}
-    r = requests.post(base_url + "projects/1/studies/1/scenarios/", json=scenario_payload)
-    if r.status_code // 100 != 2:
-        err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(scenario_payload)}"
-        raise RuntimeError(err)
+def create_scenario(base_url: str, infra_id: int) -> Scenario:
+    # Create the project
+    project_payload = {"name": "fuzzer_project"}
+    r = post_with_timeout(base_url + "projects/", json=project_payload)
+    r.raise_for_status()
+    project_id = r.json()["id"]
+    project_url = f"projects/{project_id}"
+
+    # Create the study
+    study_payload = {"name": "fuzzer_study"}
+    r = post_with_timeout(base_url + f"{project_url}/studies/", json=study_payload)
+    r.raise_for_status()
+    study_id = r.json()["id"]
+    study_url = f"{project_url}/studies/{study_id}"
+
+    # Create the scenario
+    scenario_payload = {
+        "name": "fuzzer_scenario",
+        "infra": infra_id,
+    }
+    r = post_with_timeout(base_url + f"{study_url}/scenarios/", json=scenario_payload)
+    r.raise_for_status()
+    timetable_id = r.json()["timetable"]
+    return Scenario(infra_id, timetable_id)
 
 
 def make_random_allowance_value(allowance_length) -> Dict:
@@ -507,11 +536,10 @@ def make_random_allowances(path_length: float) -> List[Dict]:
     return res
 
 
-def make_payload_schedule(base_url: str, scenario: Scenario, path: int, rolling_stock: int, path_length: float) -> Dict:
+def make_payload_schedule(scenario: Scenario, path: int, rolling_stock: int, path_length: float) -> Dict:
     """
     Makes the payload for the simulation
-    :param base_url: Api URL
-    :param infra: infra id
+    :param scenario: scenario used for the test
     :param path: path id
     :param rolling_stock: rolling stock id
     :param path_length: the path length
@@ -534,10 +562,34 @@ def make_payload_schedule(base_url: str, scenario: Scenario, path: int, rolling_
     }
 
 
+def post_with_timeout(*args, **kwargs) -> Response:
+    return request_with_timeout("post", *args, **kwargs)
+
+
+def get_with_timeout(*args, **kwargs) -> Response:
+    return request_with_timeout("get", *args, **kwargs)
+
+
+def request_with_timeout(request_type: str, *args, **kwargs) -> Response:
+    """
+    Run a post or get request, catching timeout exceptions to return a 500
+    """
+    try:
+        if request_type == "post":
+            return requests.post(*args, timeout=TIMEOUT, **kwargs)
+        elif request_type == "get":
+            return requests.get(*args, timeout=TIMEOUT, **kwargs)
+    except Timeout:
+        res = Response()
+        res.status_code = 500
+        return res
+
+
 def get_infra_name(base_url: str, infra_id: int):
-    r = requests.get(base_url + f"infra/{infra_id}/", timeout=TIMEOUT)
+    r = get_with_timeout(base_url + f"infra/{infra_id}/")
     return r.json()["name"]
 
 
 if __name__ == "__main__":
-    run(URL, INFRA_ID, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
+    new_scenario = create_scenario(URL, INFRA_ID)
+    run(URL, new_scenario, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))

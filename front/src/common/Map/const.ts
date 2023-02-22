@@ -64,7 +64,7 @@ export const FIELDS_LABEL = {
 // mapKey
 export interface MapKeyProps {
   active: boolean;
-  toggleMapKey: Function;
+  closeMapKeyPopUp: () => void;
 }
 
 interface SpeedLimitKey {

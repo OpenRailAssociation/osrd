@@ -53,7 +53,7 @@ body:
   - type: input
     id: osrdVersion
     attributes:
-      label: OSRD version
+      label: OSRD version (top right corner `Account` button > `Informations`)
       placeholder: "3dbd5632"
     validations:
       required: true

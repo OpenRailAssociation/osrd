@@ -28,9 +28,6 @@ jobs:
       - name: Run front test suite
         run: yarn --cwd front test-coverage
 
-      - name: Run typescript compilation
-        run: yarn --cwd front compile
-
       - name: Run storybook compilation
         run: yarn --cwd front build-storybook
 
@@ -42,8 +39,8 @@ jobs:
           override_commit: "${{ github.event.pull_request.head.sha }}"
           name: codecov
           flags: front
-          directory: ./front/test
-          files: cobertura-coverage.xml
+          directory: ./front/tests/unit/coverage
+          files: clover.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
