@@ -3,9 +3,7 @@ package fr.sncf.osrd.stdcm.graph;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
-import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
-import fr.sncf.osrd.envelope.DriverBehaviour;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -22,18 +20,15 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
 /** This class contains all the methods used to simulate the train behavior.
  * */
@@ -80,9 +75,9 @@ public class STDCMSimulations {
                     route.getInfraRoute().getTrackRanges(start, start + context.path.getLength()),
                     rollingStock,
                     false,
-                    tag,
-                    driverBehaviour
+                    tag
             );
+            mrsp = driverBehaviour.applyToMRSP(mrsp);
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
             return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
         } catch (ImpossibleSimulationError e) {

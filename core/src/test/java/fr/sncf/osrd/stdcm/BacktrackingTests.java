@@ -1,17 +1,16 @@
 package fr.sncf.osrd.stdcm;
 
+import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.envelope.DriverBehaviour;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
-
 import java.util.Set;
-
-import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
-import static java.lang.Double.POSITIVE_INFINITY;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BacktrackingTests {
 
@@ -26,7 +25,8 @@ public class BacktrackingTests {
         var infraBuilder = new DummyRouteGraphBuilder();
         var route = infraBuilder.addRoute("a", "b", 1000);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(route, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null, new DriverBehaviour());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
+                new DriverBehaviour(0, 0));
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
@@ -56,7 +56,8 @@ public class BacktrackingTests {
         infraBuilder.addRoute("c", "d", 10);
         var lastRoute = infraBuilder.addRoute("d", "e", 10);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null, new DriverBehaviour());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
+                new DriverBehaviour(0, 0));
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
@@ -84,7 +85,8 @@ public class BacktrackingTests {
         var firstRoute = infraBuilder.addRoute("a", "b", 1000);
         var secondRoute = infraBuilder.addRoute("b", "c", 100, 5);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null, new DriverBehaviour());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
+                new DriverBehaviour(0, 0));
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();

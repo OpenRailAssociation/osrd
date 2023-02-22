@@ -1,6 +1,6 @@
 package fr.sncf.osrd.standalone_sim;
 
-import fr.sncf.osrd.envelope.DriverBehaviour;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -43,8 +43,10 @@ public class StandaloneSim {
             if (!cacheMaxEffort.containsKey(trainSchedule)) {
                 var rollingStock = trainSchedule.rollingStock;
                 // MRSP & SpeedLimits
-                var mrsp = MRSP.from(trainPath, rollingStock, true, trainSchedule.tag, driverBehaviour);
-                var speedLimits = MRSP.from(trainPath, rollingStock, false, trainSchedule.tag, driverBehaviour);
+                var mrsp = MRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
+                var speedLimits = MRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
+                mrsp = driverBehaviour.applyToMRSP(mrsp);
+                speedLimits = driverBehaviour.applyToMRSP(speedLimits);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base

@@ -1,18 +1,17 @@
 package fr.sncf.osrd.stdcm;
 
+import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.envelope.DriverBehaviour;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Set;
-
-import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
-import static java.lang.Double.POSITIVE_INFINITY;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class EngineeringAllowanceTests {
 
@@ -38,7 +37,8 @@ public class EngineeringAllowanceTests {
         var secondRoute = infraBuilder.addRoute("b", "c", 10_000, 30);
         var thirdRoute = infraBuilder.addRoute("c", "d", 100, 30);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null, new DriverBehaviour());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
+                new DriverBehaviour(0, 0));
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMSimulations.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
@@ -92,11 +92,12 @@ public class EngineeringAllowanceTests {
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null, new DriverBehaviour());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
+                new DriverBehaviour(0, 0));
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMSimulations.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
-                new DriverBehaviour());
+                new DriverBehaviour(0, 0));
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
         var infra = infraBuilder.build();
@@ -151,11 +152,12 @@ public class EngineeringAllowanceTests {
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null, new DriverBehaviour());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
+                new DriverBehaviour(0, 0));
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMSimulations.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null,
-                new DriverBehaviour());
+                new DriverBehaviour(0, 0));
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
         var timeThirdRouteOccupied = firstRouteEnvelope.getTotalTime() + 5 + secondRouteEnvelope.getTotalTime() * 2;
