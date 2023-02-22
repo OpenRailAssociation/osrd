@@ -43,8 +43,7 @@ public class MRSP {
             RollingStock rollingStock,
             boolean addRollingStockLength,
             String tag,
-            DriverBehaviour driverBehaviour
-    ) {
+            DriverBehaviour driverBehaviour) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = 0.;
         for (var r : ranges)

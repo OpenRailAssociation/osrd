@@ -99,7 +99,7 @@ public class StandaloneSimulationEndpoint implements Take {
                         infra, request.timeStep, rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
 
             // Compute envelopes and extract metadata
-            var driverBehaviour = new DriverBehaviour();
+            DriverBehaviour driverBehaviour = new DriverBehaviour();
             var result = StandaloneSim.run(
                     infra,
                     trainPath,

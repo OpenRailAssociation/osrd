@@ -1,12 +1,9 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED;
-import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
-import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.TRAIN_LIMIT;
-import static fr.sncf.osrd.infra.InfraHelpers.setTrackSpeedSections;
-import static fr.sncf.osrd.train.TestTrains.*;
-
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
@@ -16,8 +13,15 @@ import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.TrackSectionImpl;
 import org.junit.jupiter.api.Test;
+
 import java.util.EnumMap;
 import java.util.List;
+
+import static fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED;
+import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
+import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.TRAIN_LIMIT;
+import static fr.sncf.osrd.infra.InfraHelpers.setTrackSpeedSections;
+import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 
 class MRSPEnvelopeBuilderTest {
     public static EnvelopePart makeFlatPart(TestAttr attr, double beginPos, double endPos, double speed) {
@@ -144,10 +148,10 @@ class MRSPEnvelopeBuilderTest {
                 new TrackRangeView(20, 100, new DiTrackEdgeImpl(edge, Direction.FORWARD))
         );
 
-        var mrspNoTags = MRSP.from(path, REALISTIC_FAST_TRAIN, false, null);
-        var mrspFast = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "FAST");
-        var mrspShort = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "SHORT");
-        var mrspLong = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "LONG");
+        var mrspNoTags = MRSP.from(path, REALISTIC_FAST_TRAIN, false, null, new DriverBehaviour());
+        var mrspFast = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "FAST", new DriverBehaviour());
+        var mrspShort = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "SHORT", new DriverBehaviour());
+        var mrspLong = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "LONG", new DriverBehaviour());
 
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(

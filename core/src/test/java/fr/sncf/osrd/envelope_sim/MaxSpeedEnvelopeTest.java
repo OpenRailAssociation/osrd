@@ -1,15 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope.EnvelopeShape.CONSTANT;
-import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
-import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
-import static fr.sncf.osrd.infra.InfraHelpers.makeSingleTrackRJSInfra;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeShape;
-import fr.sncf.osrd.envelope.EnvelopeTransitions;
-import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
+import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
@@ -24,10 +15,16 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock.Comfort;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
+
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
+
+import static fr.sncf.osrd.envelope.EnvelopeShape.CONSTANT;
+import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
+import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
+import static fr.sncf.osrd.infra.InfraHelpers.makeSingleTrackRJSInfra;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class MaxSpeedEnvelopeTest {
@@ -197,7 +194,7 @@ public class MaxSpeedEnvelopeTest {
         );
         var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
 
-        var mrsp = MRSP.from(path, testRollingStock, true, null);
+        var mrsp = MRSP.from(path, testRollingStock, true, null, new DriverBehaviour());
         assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
         assertEquals(42, mrsp.interpolateSpeedRightDir(15, 1));
         assertEquals(42, mrsp.interpolateSpeedRightDir(29, 1));
