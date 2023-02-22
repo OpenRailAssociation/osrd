@@ -5,7 +5,8 @@ use actix_web::web::Json;
 use chrono::NaiveDateTime;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Nullable, Text};
-use diesel::{sql_query, PgConnection, QueryDsl, RunQueryDsl};
+use diesel::ExpressionMethods;
+use diesel::{delete, sql_query, PgConnection, QueryDsl, RunQueryDsl};
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
@@ -76,6 +77,14 @@ impl Project {
             Ok(project) => Ok(project),
             Err(DieselError::NotFound) => Err(ProjectError::NotFound(project_id).into()),
             Err(e) => Err(e.into()),
+        }
+    }
+
+    pub fn delete(project_id: i64, conn: &mut PgConnection) -> Result<()> {
+        match delete(dsl::osrd_infra_project.filter(dsl::id.eq(project_id))).execute(conn) {
+            Ok(1) => Ok(()),
+            Ok(_) => Err(ProjectError::NotFound(project_id).into()),
+            Err(err) => Err(err.into()),
         }
     }
 }

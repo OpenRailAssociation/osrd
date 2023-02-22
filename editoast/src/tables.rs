@@ -202,7 +202,7 @@ table! {
 }
 
 table! {
-    osrd_infra_project(id) {
+    osrd_infra_project {
         id -> BigInt,
         name -> Text,
         description -> Nullable<Text>,

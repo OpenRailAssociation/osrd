@@ -3,7 +3,7 @@ use crate::DbPool;
 
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, block, scope, Data, Json, Path};
-use actix_web::{get, post, HttpResponse, Responder};
+use actix_web::{delete, get, post, HttpResponse, Responder};
 
 use crate::projects::Project;
 use crate::projects::ProjectData;
@@ -12,7 +12,7 @@ use crate::projects::ProjectData;
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/projects")
         .service((create, list))
-        .service(scope("/{project}").service(get))
+        .service(scope("/{project}").service((get, delete)))
 }
 
 #[post("")]
@@ -47,4 +47,19 @@ async fn get(db_pool: Data<DbPool>, project: Path<i64>) -> Result<Json<Project>>
     })
     .await
     .unwrap()
+}
+
+/// Delete an infra
+#[delete("")]
+async fn delete(project: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+    let infra = project.into_inner();
+    block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        Project::delete(infra, &mut conn)?;
+
+        Ok(())
+    })
+    .await
+    .unwrap()?;
+    Ok(HttpResponse::NoContent().finish())
 }
