@@ -37,6 +37,7 @@ class RefillLaw(BaseModel, extra=Extra.forbid):
         description="Setpoint of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)"
     )
 
+
 class ManagementSystem(BaseModel, extra=Extra.forbid):
     """Other - EMR QUALESI"""
 
@@ -55,6 +56,7 @@ class EnergyStorage(BaseModel, extra=Extra.forbid):
     optional_management_system: Optional[ManagementSystem]
     optional_soc_dependency: Optional[Curve]
 
+
 class EnergySource(BaseModel, extra=Extra.forbid):
     """EMR QUALESI"""
 
@@ -63,6 +65,7 @@ class EnergySource(BaseModel, extra=Extra.forbid):
     optional_energy_storage: Optional[EnergyStorage]
     optional_power_converter: Optional[PowerConverter]
     optional_speed_dependency: Optional[Curve]
+
 
 class ComfortType(str, Enum):
     """
