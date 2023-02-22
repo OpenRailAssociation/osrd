@@ -3,10 +3,22 @@ use crate::tables::osrd_infra_project;
 use crate::tables::osrd_infra_project::dsl;
 use actix_web::web::Json;
 use chrono::NaiveDateTime;
+use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Nullable, Text};
-use diesel::{sql_query, PgConnection, RunQueryDsl};
+use diesel::{sql_query, PgConnection, QueryDsl, RunQueryDsl};
+use editoast_derive::EditoastError;
+use thiserror::Error;
 
 use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra", context = "Self::context")]
+pub enum ProjectError {
+    /// Couldn't found the infra with the given id
+    #[error("Project '{0}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound(i64),
+}
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
 #[diesel(table_name = osrd_infra_project)]
@@ -57,5 +69,13 @@ impl Project {
         dsl::osrd_infra_project
             .load(conn)
             .expect("List project query failed")
+    }
+
+    pub fn retrieve(conn: &mut PgConnection, project_id: i64) -> Result<Project> {
+        match dsl::osrd_infra_project.find(project_id).first(conn) {
+            Ok(project) => Ok(project),
+            Err(DieselError::NotFound) => Err(ProjectError::NotFound(project_id).into()),
+            Err(e) => Err(e.into()),
+        }
     }
 }
