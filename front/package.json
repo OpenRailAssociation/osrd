@@ -55,7 +55,7 @@
     "i18next": "^21.10.0",
     "i18next-browser-languagedetector": "^6.1.8",
     "i18next-xhr-backend": "^3.2.2",
-    "immer": "^9.0.15",
+    "immer": "^9.0.19",
     "js-file-download": "^0.4.12",
     "js-sha256": "^0.9.0",
     "json-schema": "^0.4.0",
