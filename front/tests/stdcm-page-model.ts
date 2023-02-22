@@ -1,6 +1,7 @@
 import { expect, Locator, Page } from '@playwright/test';
 /* eslint-disable import/prefer-default-export */
 import infraManagement from '../public/locales/fr/infraManagement.json';
+import rollingstockTranslation from '../public/locales/fr/rollingstock.json';
 
 export class PlaywrightSTDCMPage {
   readonly page: Page;
@@ -8,6 +9,8 @@ export class PlaywrightSTDCMPage {
   readonly getBody: Locator;
 
   readonly translation: typeof infraManagement;
+
+  readonly rollingstockTranslation: typeof rollingstockTranslation;
 
   // Scenario Explorator
   readonly getScenarioExplorator: Locator;
@@ -51,6 +54,7 @@ export class PlaywrightSTDCMPage {
     this.getRollingStockSearchList = page.locator('.rollingstock-search-list');
     this.getRollingStockListItem = page.locator('.rollingstock-container');
     this.getRollingstockSpanNames = this.getRollingStockListItem.locator('.rollingstock-infos-end');
+    this.rollingstockTranslation = rollingstockTranslation;
   }
 
   getTranslations(key: keyof typeof infraManagement) {
@@ -89,5 +93,17 @@ export class PlaywrightSTDCMPage {
 
   async openRollingstockModal() {
     await this.getRollingStockSelector.click();
+  }
+
+  async closeRollingstockModal() {
+    await this.getRollingstockModal.locator('.close').click();
+  }
+
+  getRollingstockByTestId(dataTestId: string) {
+    return this.getRollingStockSearchList.getByTestId(dataTestId);
+  }
+
+  getRollingstockTranslations(key: keyof typeof rollingstockTranslation) {
+    return this.rollingstockTranslation[key];
   }
 }
