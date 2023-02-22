@@ -106,7 +106,7 @@
     "@playwright/test": "^1.29.2",
     "@storybook/addon-actions": "^7.0.0-beta.50",
     "@storybook/addon-essentials": "^7.0.0-beta.50",
-    "@storybook/addon-interactions": "^7.0.0-beta.50",
+    "@storybook/addon-interactions": "^7.0.0-beta.53",
     "@storybook/addon-links": "^7.0.0-beta.50",
     "@storybook/node-logger": "^7.0.0-beta.50",
     "@storybook/preset-create-react-app": "^7.0.0-beta.50",
