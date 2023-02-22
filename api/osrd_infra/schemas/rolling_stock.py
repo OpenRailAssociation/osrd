@@ -27,6 +27,11 @@ class Curve(BaseModel, extra=Extra.forbid):
         return v
 
 
+class PowerConverter(BaseModel, extra=Extra.forbid):
+    """The EnergyStorage refilling behavior - EMR QUALESI"""
+    efficiency: confloat(ge=0, le=1)
+
+
 class RefillLaw(BaseModel, extra=Extra.forbid):
     """The EnergyStorage refilling behavior - EMR QUALESI"""
 
@@ -50,7 +55,7 @@ class EnergyStorage(BaseModel, extra=Extra.forbid):
 
     capacity: confloat(ge=0) = Field(description="How much energy you can store (in Joules or Watts·Seconds)")
     soc: confloat(ge=0, le=1) = Field(
-        description="The State of Charge of your EnergyStorage, SoC·capacity = actual stock of energy"
+        description="The State of Charge of your EnergyStorage, soc·capacity = actual stock of energy"
     )
     optional_refill_law: Optional[RefillLaw]
     optional_management_system: Optional[ManagementSystem]
