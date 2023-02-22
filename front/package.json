@@ -83,7 +83,7 @@
     "react-select": "^5.4.0",
     "react-tether": "^2.0.8",
     "react-transition-group": "^4.4.5",
-    "redux": "^4.2.0",
+    "redux": "^4.2.1",
     "redux-persist": "^6.0.0",
     "redux-persist-transform-compress": "^4.2.0",
     "redux-persist-transform-filter": "0.0.20",
