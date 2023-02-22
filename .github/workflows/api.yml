@@ -77,7 +77,7 @@ jobs:
           source .venv/bin/activate
           python manage.py test
 
-  linter:
+  linter-formatter:
     runs-on: ubuntu-latest
 
     steps:
@@ -86,12 +86,35 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install flake8
-        run: pip install pyproject-flake8 flake8_formatter_junit_xml
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        uses: actions/cache@v3
+        id: cached-poetry-only-dev-dependencies
+        with:
+          path: api/.venv
+          key: cached-poetry-only-dev-dependencies-${{ hashFiles('api/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-only-dev-dependencies.outputs.cache-hit != 'true'
+        run: |
+          cd api
+          poetry install --only dev
       - name: Flake8
-        run: pflake8 --config api/pyproject.toml --format junit-xml api > flake8.xml
+        run: |
+          cd api
+          poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
       - name: Publish flake8 report
         uses: mikepenz/action-junit-report@v3
         if: failure()
         with:
           report_paths: flake8.xml
+      - name: Black
+        run: |
+          cd api
+          poetry run black . --check
+      - name: Isort
+        run: |
+          cd api
+          poetry run isort . --check
