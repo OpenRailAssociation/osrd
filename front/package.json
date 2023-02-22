@@ -69,7 +69,7 @@
     "react-countdown": "^2.3.5",
     "react-dom": "^17.0.2",
     "react-flatpickr": "^3.10.13",
-    "react-i18next": "^11.18.6",
+    "react-i18next": "^12.1.5",
     "react-icons": "^4.4.0",
     "react-id-generator": "^3.0.0",
     "react-infinite-scroll-component": "^6.1.0",
