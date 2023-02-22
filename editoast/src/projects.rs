@@ -6,14 +6,14 @@ use chrono::NaiveDateTime;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Nullable, Text};
 use diesel::ExpressionMethods;
-use diesel::{delete, sql_query, PgConnection, QueryDsl, RunQueryDsl};
+use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use editoast_derive::EditoastError;
 use thiserror::Error;
 
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "infra", context = "Self::context")]
+#[editoast_error(base_id = "project", context = "Self::context")]
 pub enum ProjectError {
     /// Couldn't found the infra with the given id
     #[error("Project '{0}', could not be found")]
@@ -21,7 +21,9 @@ pub enum ProjectError {
     NotFound(i64),
 }
 
-#[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
+#[derive(
+    Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, AsChangeset, Identifiable,
+)]
 #[diesel(table_name = osrd_infra_project)]
 pub struct Project {
     pub id: i64,
@@ -39,13 +41,25 @@ pub struct Project {
 #[derive(Serialize, Deserialize)]
 pub struct ProjectData {
     pub name: String,
-    pub description: String,
-    pub objectives: String,
+    pub description: Option<String>,
+    pub objectives: Option<String>,
     pub funders: Option<Vec<String>>,
     pub budget: Option<i32>,
     pub image: Option<Vec<u8>>,
     pub tags: Option<Vec<String>>,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ProjectPatch {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub objectives: Option<String>,
+    pub funders: Option<Vec<String>>,
+    pub budget: Option<i32>,
+    pub image: Option<Vec<u8>>,
+    pub tags: Option<Vec<String>>,
+}
+
 impl Project {
     pub fn create(data: Json<ProjectData>, conn: &mut PgConnection) -> Result<Project> {
         match sql_query(
@@ -86,5 +100,47 @@ impl Project {
             Ok(_) => Err(ProjectError::NotFound(project_id).into()),
             Err(err) => Err(err.into()),
         }
+    }
+
+    pub fn update(data: ProjectPatch, conn: &mut PgConnection, project_id: i64) -> Result<Project> {
+        let project: Project = dsl::osrd_infra_project
+            .filter(dsl::id.eq(project_id))
+            .first(conn)?;
+        let update_project = Project {
+            id: project.id,
+            name: match data.name {
+                Some(t) => t,
+                None => data.name.unwrap(),
+            },
+            description: match data.description {
+                Some(t) => Some(t),
+                None => data.description,
+            },
+            objectives: match data.objectives {
+                Some(t) => Some(t),
+                None => data.objectives,
+            },
+            funders: match data.funders {
+                Some(t) => Some(t),
+                None => data.funders,
+            },
+            budget: match data.budget {
+                Some(t) => Some(t),
+                None => data.budget,
+            },
+            image: match data.image {
+                Some(t) => Some(t),
+                None => data.image,
+            },
+            creation_date: project.creation_date,
+            last_modification: chrono::Utc::now().naive_utc(),
+            tags: match data.tags {
+                Some(t) => Some(t),
+                None => data.tags,
+            },
+        };
+        let target = dsl::osrd_infra_project.find(project.id);
+        update(target).set(&update_project).execute(conn)?;
+        Ok(update_project)
     }
 }
