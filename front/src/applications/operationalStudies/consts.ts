@@ -145,6 +145,7 @@ export interface OsrdConfState {
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   gridMarginBefore: number;
   gridMarginAfter: number;
+  powerRestriction: string;
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {

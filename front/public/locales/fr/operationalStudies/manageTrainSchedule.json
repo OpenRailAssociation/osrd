@@ -45,7 +45,8 @@
   "indications": {
     "chooseRollingStock": "Choisissez un matériel",
     "choosePath": "Déterminez un itinéraire",
-    "configValidate": "Ajustez et validez"
+    "configValidate": "Ajustez et validez",
+    "choosePowerNotch": "Choisissez un cran de puissance"
   },
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
@@ -54,6 +55,7 @@
   "noTrainCompo": "Aucun matériel défini…",
   "origin": "Origine",
   "pleaseWait": "Veuillez patientez",
+  "powerNotch": "Cran de puissance",
   "rollingstock": "Matériel",
   "searchingItinerary": "Recherche de sillon…",
   "simulation": "Simulation",

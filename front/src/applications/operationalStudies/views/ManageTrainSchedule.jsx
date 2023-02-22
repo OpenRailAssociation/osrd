@@ -11,6 +11,7 @@ import Itinerary from 'applications/operationalStudies/components/ManageTrainSch
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
+import PowerNotchSelector from '../components/ManageTrainSchedule/PowerNotchSelector';
 
 export default function ManageTrainSchedule(props) {
   const { setDisplayTrainScheduleManagement } = props;
@@ -58,7 +59,15 @@ export default function ManageTrainSchedule(props) {
         </div>
       </div>
       <div className="manage-train-schedule-title">
-        3.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.configValidate')}
+        3.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.choosePowerNotch')}
+      </div>
+      <div className="row no-gutters">
+        <div className="col-xl-6 pr-xl-2">
+          <PowerNotchSelector />
+        </div>
+      </div>
+      <div className="manage-train-schedule-title">
+        4.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.configValidate')}
       </div>
       <AddTrainLabels />
       <AddTrainSchedule setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement} />
