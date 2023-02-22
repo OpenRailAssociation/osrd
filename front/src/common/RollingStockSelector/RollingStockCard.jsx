@@ -115,22 +115,19 @@ function RollingStockCard(props) {
             <div className="col-2">
               <div className="rollingstock-size text-nowrap">
                 <AiOutlineColumnWidth />
-                {data.length}
-                <small>M</small>
+                {data.length}m
               </div>
             </div>
             <div className="col-2">
               <div className="rollingstock-weight text-nowrap">
                 <FaWeightHanging />
-                {Math.round(data.mass / 1000)}
-                <small>T</small>
+                {Math.round(data.mass / 1000)}t
               </div>
             </div>
             <div className="col-3">
               <div className="rollingstock-speed text-nowrap">
                 <IoIosSpeedometer />
-                {Math.round(data.max_speed * 3.6)}
-                <small>KM/H</small>
+                {Math.round(data.max_speed * 3.6)}km/h
               </div>
             </div>
           </div>
