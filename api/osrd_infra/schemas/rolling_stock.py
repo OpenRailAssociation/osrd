@@ -26,11 +26,16 @@ class Curve(BaseModel, extra=Extra.forbid):
         assert len(v["x"]) == len(v["f_x"]), "x and f_x must have same length"
         return v
 
+
 class RefillLaw(BaseModel, extra=Extra.forbid):
     """The EnergyStorage refilling behavior - EMR QUALESI"""
 
-    tau_rech: confloat(ge=0) = Field(description="Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant")
-    soc_ref: confloat(ge=0, le=1) = Field(description="Setpoint of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)")
+    tau_rech: confloat(ge=0) = Field(
+        description="Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant"
+        )
+    soc_ref: confloat(ge=0, le=1) = Field(
+        description="Setpoint of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)"
+        )
 
 class ManagementSystem(BaseModel, extra=Extra.forbid):
     """Other - EMR QUALESI"""
@@ -43,7 +48,9 @@ class EnergyStorage(BaseModel, extra=Extra.forbid):
     """If the EnergySource store some energy - EMR QUALESI"""
 
     capacity: confloat(ge=0) = Field(description="How much energy you can store (in Joules or Watts·Seconds)")
-    soc: confloat(ge=0, le=1) = Field(description="The State of Charge of your EnergyStorage, SoC·capacity = actual stock of energy")
+    soc: confloat(ge=0, le=1) = Field(
+        description="The State of Charge of your EnergyStorage, SoC·capacity = actual stock of energy"
+        )
     optional_refill_law: Optional[RefillLaw]
     optional_management_system: Optional[ManagementSystem]
     optional_soc_dependency: Optional[Curve]
