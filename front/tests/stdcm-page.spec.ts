@@ -74,10 +74,23 @@ test.describe('STDCM page', () => {
 
   test.afterEach(async () => {
     await playwrightHomePage.backToHomePage();
+    await playwrightHomePage.page.close();
   });
 
-  test('should be correctly displays the rolling stock list', async () => {
+  test('should be correctly displays the rolling stock list and select one', async () => {
     const rollingstocks = playwrightDataTest.rollingStocks.results;
+
+    const rollingstockItem = playwrightSTDCMPage.getRollingstockByTestId(
+      `rollingstock${rollingstocks[0].id}`
+    );
+
+    // Check that no rollingstock is selected
+    const rollingstockSelectorTexts =
+      await playwrightSTDCMPage.getRollingStockSelector.allTextContents();
+    expect(rollingstockSelectorTexts).toContain(
+      playwrightSTDCMPage.getRollingstockTranslations('rollingstockChoice')
+    );
+
     await playwrightSTDCMPage.getRollingstockModalClose();
     await playwrightSTDCMPage.openRollingstockModal();
     await playwrightSTDCMPage.getRollingstockModalOpen();
@@ -118,22 +131,6 @@ test.describe('STDCM page', () => {
       expect(infoCardText).toContain(infoTextFormat);
       expect(footerCardText).toContain(footerTextFormat);
     });
-    await playwrightSTDCMPage.closeRollingstockModal();
-  });
-
-  test('should be correctly displays the rolling stock detail', async () => {
-    await playwrightHomePage.goToSTDCMPage();
-    const rollingstock = playwrightDataTest.rollingStocks.results[0];
-
-    // Check that no rollingstock is selected
-    expect(await playwrightSTDCMPage.getRollingStockSelector.allTextContents()).toContain(
-      playwrightSTDCMPage.getRollingstockTranslations('rollingstockChoice')
-    );
-    await playwrightSTDCMPage.openRollingstockModal();
-
-    const rollingstockItem = playwrightSTDCMPage.getRollingstockByTestId(
-      `rollingstock${rollingstock.id}`
-    );
 
     // Check if rollingstock detail is close
     await expect(rollingstockItem).toHaveClass(/inactive/);
@@ -145,11 +142,8 @@ test.describe('STDCM page', () => {
     await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
 
     // Check that the rollingstock is selected
-    expect(await playwrightSTDCMPage.getRollingStockSelector.allTextContents()).not.toContain(
-      playwrightSTDCMPage.getRollingstockTranslations('rollingstockChoice')
+    expect(playwrightSTDCMPage.page.locator('.rollingstock-infos-series')).toContainText(
+      rollingstocks[0].metadata.series
     );
-    expect(
-      playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-infos-series')
-    ).toContainText(rollingstock.metadata.series);
   });
 });
