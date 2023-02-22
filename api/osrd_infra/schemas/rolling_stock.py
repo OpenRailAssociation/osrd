@@ -78,7 +78,7 @@ class RollingResistance(BaseModel, extra=Extra.forbid):
 
 
 class EffortCurve(BaseModel, extra=Extra.forbid):
-    speeds: conlist(confloat(ge=0), min_items=2) = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
+    speeds: conlist(confloat(ge=0), min_items=2)
     max_efforts: conlist(confloat(ge=0), min_items=2)
 
     @root_validator(skip_on_failure=True)
