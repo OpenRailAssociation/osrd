@@ -160,6 +160,10 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
 
+    battery: Optional[EnergySource]
+    pantograph: Optional[PowerConverter]
+    traction_ensemble: Optional[PowerConverter]
+
 
 if __name__ == "__main__":
     print(RollingStock.schema_json())
