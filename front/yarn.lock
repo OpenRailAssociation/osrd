@@ -8545,30 +8545,10 @@ lodash-es@^4.17.15:
   resolved "https://registry.npmjs.org/lodash-es/-/lodash-es-4.17.21.tgz"
   integrity sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
 
-lodash.clonedeep@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.npmjs.org/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz"
-  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
-
 lodash.debounce@^4.0.8:
   version "4.0.8"
   resolved "https://registry.npmjs.org/lodash.debounce/-/lodash.debounce-4.0.8.tgz"
   integrity sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==
-
-lodash.forin@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.npmjs.org/lodash.forin/-/lodash.forin-4.4.0.tgz"
-  integrity sha512-APldePP4yvGhMcplVxv9L+exdLHMRHRhH1Q9O70zRJMm9HbTm6zxaihXtNl+ICOBApeFWoH7jNmFr/L4XfWeiQ==
-
-lodash.get@^4.4.2:
-  version "4.4.2"
-  resolved "https://registry.npmjs.org/lodash.get/-/lodash.get-4.4.2.tgz"
-  integrity sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==
-
-lodash.isempty@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.npmjs.org/lodash.isempty/-/lodash.isempty-4.4.0.tgz"
-  integrity sha512-oKMuF3xEeqDltrGMfDxAPGIVMSSRv8tbRSODbrs4KGsRRLEhrW8N8Rd4DRgB2+621hY8A8XwwrTVhXWpxFvMzg==
 
 lodash.merge@^4.6.2:
   version "4.6.2"
@@ -8580,25 +8560,10 @@ lodash.pick@^4.4.0:
   resolved "https://registry.yarnpkg.com/lodash.pick/-/lodash.pick-4.4.0.tgz#52f05610fff9ded422611441ed1fc123a03001b3"
   integrity sha512-hXt6Ul/5yWjfklSGvLQl8vM//l3FtyHZeuelpzK6mm99pNvN9yTDruNZPEJZD1oWrqo+izBmB7oUfWgcCX7s4Q==
 
-lodash.pickby@^4.6.0:
-  version "4.6.0"
-  resolved "https://registry.npmjs.org/lodash.pickby/-/lodash.pickby-4.6.0.tgz"
-  integrity sha512-AZV+GsS/6ckvPOVQPXSiFFacKvKB4kOQu6ynt9wz0F3LO4R9Ij4K1ddYsIytDpSgLz88JHd9P+oaLeej5/Sl7Q==
-
-lodash.set@^4.3.2:
-  version "4.3.2"
-  resolved "https://registry.npmjs.org/lodash.set/-/lodash.set-4.3.2.tgz"
-  integrity sha512-4hNPN5jlm/N/HLMCO43v8BXKq9Z7QdAGc/VGrRD61w8gN9g/6jF9A4L1pbUgBLCffi0w9VsXfTOij5x8iTyFvg==
-
 lodash.throttle@^4.1.1:
   version "4.1.1"
   resolved "https://registry.npmjs.org/lodash.throttle/-/lodash.throttle-4.1.1.tgz"
   integrity sha512-wIkUCfVKpVsWo3JSZlc+8MB5it+2AN5W8J7YVMST30UrvcQNZ1Okbj+rbVniijTWE6FGYy4XJq/rHkas8qJMLQ==
-
-lodash.unset@^4.5.2:
-  version "4.5.2"
-  resolved "https://registry.npmjs.org/lodash.unset/-/lodash.unset-4.5.2.tgz"
-  integrity sha512-bwKX88k2JhCV9D1vtE8+naDKlLiGrSmf8zi/Y9ivFHwbmRfA8RxS/aVJ+sIht2XOwqoNr4xUPUkGZpc1sHFEKg==
 
 lodash@^4.17.11, lodash@^4.17.15, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4:
   version "4.17.21"
@@ -10778,18 +10743,12 @@ redux-persist-transform-compress@^4.2.0:
     json-stringify-safe "^5.0.1"
     lz-string "^1.4.4"
 
-redux-persist-transform-filter@0.0.20:
-  version "0.0.20"
-  resolved "https://registry.npmjs.org/redux-persist-transform-filter/-/redux-persist-transform-filter-0.0.20.tgz"
-  integrity sha512-cgxBjn0igGj0CccxV2hXmDlh36lZtuq2ily9dh7LlYciqNE0dFGjd3GizzmxEBkB9+SEvDwd2m/FgfVt4VnOQg==
+redux-persist-transform-filter@0.0.22:
+  version "0.0.22"
+  resolved "https://registry.yarnpkg.com/redux-persist-transform-filter/-/redux-persist-transform-filter-0.0.22.tgz#181480570a43b5061389991fc43ca52c6d114318"
+  integrity sha512-XtGN7UQ8w7b3qaxQfdYY1UmuYULqIIemD47IWxIyM8AOF48I6C74m9XxA7gQoC2nIi+rz4URi9Mye4fIbHhZPQ==
   dependencies:
-    lodash.clonedeep "^4.5.0"
-    lodash.forin "^4.4.0"
-    lodash.get "^4.4.2"
-    lodash.isempty "^4.4.0"
-    lodash.pickby "^4.6.0"
-    lodash.set "^4.3.2"
-    lodash.unset "^4.5.2"
+    lodash "^4.17.21"
 
 redux-persist@^6.0.0:
   version "6.0.0"

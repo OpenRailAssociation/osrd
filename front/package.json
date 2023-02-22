@@ -86,7 +86,7 @@
     "redux": "^4.2.0",
     "redux-persist": "^6.0.0",
     "redux-persist-transform-compress": "^4.2.0",
-    "redux-persist-transform-filter": "0.0.20",
+    "redux-persist-transform-filter": "0.0.22",
     "redux-thunk": "^2.3.0",
     "remark-gfm": "^3.0.1",
     "reselect": "^4.1.6",
