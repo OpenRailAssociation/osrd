@@ -110,7 +110,7 @@
     "@storybook/addon-links": "^7.0.0-beta.50",
     "@storybook/node-logger": "^7.0.0-beta.50",
     "@storybook/preset-create-react-app": "^7.0.0-beta.50",
-    "@storybook/react": "^7.0.0-beta.50",
+    "@storybook/react": "^7.0.0-beta.53",
     "@storybook/react-vite": "^7.0.0-beta.50",
     "@storybook/testing-library": "^0.0.14-next.1",
     "@testing-library/dom": "^7.21.4",
