@@ -16,33 +16,44 @@ from .infra import LoadingGaugeType
 
 RAILJSON_ROLLING_STOCK_VERSION = "3.0"
 
+class Curve(BaseModel, extra=Extra.forbid):
+    x: conlist(confloat(ge=0), min_items=2) = Field(description="Abscissa or x-axis of your curve ")
+    f_x: conlist(confloat(ge=0), min_items=2) = Field(description="Corresponding ordinate or y-axis of your curve")
+
+    @root_validator(skip_on_failure=True)
+    def check_size(cls, v):
+        assert len(v["x"]) == len(v["f_x"]), "x and f_x must have same length"
+        return v
+
 class EnergySource(BaseModel, extra=Extra.forbid):
     """EMR QUALESI"""
 
     p_min: confloat(le=0) = Field(description="Minimum negative power")
-    pMax: confloat(ge=0) = Field(description="Maximum positive power")
-    OptionalEnergyStorage: Optional[EnergyStorage]
-    OptionalPowerConverter: Optional[PowerConverter]
+    p_max: confloat(ge=0) = Field(description="Maximum positive power")
+    optional_energy_storage: Optional[EnergyStorage]
+    optional_power_converter: Optional[PowerConverter]
+    optional_speed_dependency: Optional[Curve]
 
 class EnergyStorage(BaseModel, extra=Extra.forbid):
     """If the EnergySource store some energy - EMR QUALESI"""
 
     capacity: confloat(ge=0) = Field(description="How much energy you can store (in Joules or Watts·Seconds)")
     soc: confloat(ge=0, le=1) = Field(description="The State of Charge of your EnergyStorage, SoC·capacity = actual stock of energy")
-    OptionalRefillLaw: Optional[RefillLaw]
-    OptionalManagementSystem: Optional[ManagementSystem]
+    optional_refill_law: Optional[RefillLaw]
+    optional_management_system: Optional[ManagementSystem]
+    optional_soc_dependency: Optional[Curve]
 
 class RefillLaw(BaseModel, extra=Extra.forbid):
     """The EnergyStorage refilling behavior - EMR QUALESI"""
 
-    tauRech: confloat(ge=0) = Field(description="Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant")
-    socRef: confloat(ge=0, le=1) = Field(description="Setpoint of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)")
+    tau_rech: confloat(ge=0) = Field(description="Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant")
+    soc_ref: confloat(ge=0, le=1) = Field(description="Setpoint of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)")
 
 class ManagementSystem(BaseModel, extra=Extra.forbid):
     """Other - EMR QUALESI"""
 
-   overChargeTreshold: confloat(ge=0, le=1) = Field(description="overcharge limit")
-   underChargeTreshold: confloat(ge=0, le=1) = Field(description="undercharge limit")
+   overcharge_treshold: confloat(ge=0, le=1) = Field(description="overcharge limit")
+   undercharge_treshold: confloat(ge=0, le=1) = Field(description="undercharge limit")
 
 class PowerConverter(BaseModel, extra=Extra.forbid):
     """The EnergyStorage refilling behavior - EMR QUALESI"""
@@ -66,7 +77,7 @@ class RollingResistance(BaseModel, extra=Extra.forbid):
 
 
 class EffortCurve(BaseModel, extra=Extra.forbid):
-    speeds: conlist(confloat(ge=0), min_items=2)
+    speeds: conlist(confloat(ge=0), min_items=2) = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
     max_efforts: conlist(confloat(ge=0), min_items=2)
 
     @root_validator(skip_on_failure=True)
@@ -148,9 +159,6 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
 
-    battery : Optional[EnergySource]
-    catenary : Optional[EnergySource]
-    traction_ensemble : Optional[PowerConverter]
 
 if __name__ == "__main__":
     print(RollingStock.schema_json())
