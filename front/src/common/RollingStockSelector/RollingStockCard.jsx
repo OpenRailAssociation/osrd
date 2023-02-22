@@ -55,6 +55,7 @@ function RollingStockCard(props) {
       onClick={displayCardDetail}
       tabIndex={0}
       ref={ref2scroll}
+      data-testid={`rollingstock${data.id}`}
     >
       <div
         className="rollingstock-header"
