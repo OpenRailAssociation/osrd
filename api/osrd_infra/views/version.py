@@ -1,11 +1,13 @@
 import os
-from rest_framework.viewsets import ViewSet
-from django.http import JsonResponse
-from rest_framework.exceptions import APIException
-from django.conf import settings
-from rest_framework.decorators import action
-from osrd_infra.utils import make_exception_from_error
+
 import requests
+from django.conf import settings
+from django.http import JsonResponse
+from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.viewsets import ViewSet
+
+from osrd_infra.utils import make_exception_from_error
 
 
 class InternalVersionError(APIException):

@@ -1,8 +1,9 @@
 import asyncio
-from rest_framework.authentication import BaseAuthentication
-from typing import List, Dict
-from django.contrib.auth.models import User, Group
+from typing import Dict, List
+
+from django.contrib.auth.models import Group, User
 from django.utils.decorators import sync_and_async_middleware
+from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import ParseError
 
 

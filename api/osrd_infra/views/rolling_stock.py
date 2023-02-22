@@ -1,17 +1,18 @@
 import sys
 from io import BytesIO
-from PIL import Image
-from django.http import HttpResponse
+
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.http import HttpResponse
+from PIL import Image
 from rest_framework import mixins, serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import RollingStock, RollingStockLivery
 from osrd_infra.serializers import (
+    CreateRollingStockLiverySerializer,
     LightRollingStockSerializer,
     RollingStockSerializer,
-    CreateRollingStockLiverySerializer,
 )
 from osrd_infra.views.pagination import CustomPageNumberPagination
 
