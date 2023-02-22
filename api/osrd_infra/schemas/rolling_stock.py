@@ -16,6 +16,37 @@ from .infra import LoadingGaugeType
 
 RAILJSON_ROLLING_STOCK_VERSION = "3.0"
 
+class EnergySource(BaseModel, extra=Extra.forbid):
+    """EMR QUALESI"""
+
+    p_min: confloat(le=0) = Field(description="Minimum negative power")
+    pMax: confloat(ge=0) = Field(description="Maximum positive power")
+    OptionalEnergyStorage: Optional[EnergyStorage]
+    OptionalPowerConverter: Optional[PowerConverter]
+
+class EnergyStorage(BaseModel, extra=Extra.forbid):
+    """If the EnergySource store some energy - EMR QUALESI"""
+
+    capacity: confloat(ge=0) = Field(description="How much energy you can store (in Joules or Watts·Seconds)")
+    soc: confloat(ge=0, le=1) = Field(description="The State of Charge of your EnergyStorage, SoC·capacity = actual stock of energy")
+    OptionalRefillLaw: Optional[RefillLaw]
+    OptionalManagementSystem: Optional[ManagementSystem]
+
+class RefillLaw(BaseModel, extra=Extra.forbid):
+    """The EnergyStorage refilling behavior - EMR QUALESI"""
+
+    tauRech: confloat(ge=0) = Field(description="Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant")
+    socRef: confloat(ge=0, le=1) = Field(description="Setpoint of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)")
+
+class ManagementSystem(BaseModel, extra=Extra.forbid):
+    """Other - EMR QUALESI"""
+
+   overChargeTreshold: confloat(ge=0, le=1) = Field(description="overcharge limit")
+   underChargeTreshold: confloat(ge=0, le=1) = Field(description="undercharge limit")
+
+class PowerConverter(BaseModel, extra=Extra.forbid):
+    """The EnergyStorage refilling behavior - EMR QUALESI"""
+    efficiency: confloat(ge=0, le=1)
 
 class ComfortType(str, Enum):
     """
@@ -117,6 +148,9 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
 
+    battery : Optional[EnergySource]
+    catenary : Optional[EnergySource]
+    traction_ensemble : Optional[PowerConverter]
 
 if __name__ == "__main__":
     print(RollingStock.schema_json())
