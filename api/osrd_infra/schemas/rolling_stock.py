@@ -52,8 +52,8 @@ class RefillLaw(BaseModel, extra=Extra.forbid):
 class ManagementSystem(BaseModel, extra=Extra.forbid):
     """Other - EMR QUALESI"""
 
-   overcharge_treshold: confloat(ge=0, le=1) = Field(description="overcharge limit")
-   undercharge_treshold: confloat(ge=0, le=1) = Field(description="undercharge limit")
+    overcharge_treshold: confloat(ge=0, le=1) = Field(description="overcharge limit")
+    undercharge_treshold: confloat(ge=0, le=1) = Field(description="undercharge limit")
 
 class PowerConverter(BaseModel, extra=Extra.forbid):
     """The EnergyStorage refilling behavior - EMR QUALESI"""
