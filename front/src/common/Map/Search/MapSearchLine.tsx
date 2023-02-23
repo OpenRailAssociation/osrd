@@ -14,7 +14,11 @@ const MapSearchLine: React.FC = () => {
   const infraID = useSelector(getInfraID);
 
   const [searchState, setSearchState] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<string[] | undefined>(undefined);
+  const [dontSearch, setDontSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState<{ [key: string]: string }[] | undefined>(
+    undefined
+  );
+  console.log('searchResults:', searchResults);
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
@@ -23,42 +27,41 @@ const MapSearchLine: React.FC = () => {
       const data = await post(SEARCH_URL, params);
       setSearchResults(data);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   };
 
   const getPayload = () => {
     let lineName = null;
-    let lineNumber = null;
+    let lineCode = null;
 
-    if (debouncedSearchTerm) {
+    if (!dontSearch && debouncedSearchTerm) {
       if (!Number.isNaN(Number(searchState))) {
         lineName = null;
-        lineNumber = searchState;
+        lineCode = searchState;
       } else {
         lineName = searchState;
-        lineNumber = null;
+        lineCode = null;
       }
     }
 
     const payload = {
-      object: 'line',
+      object: 'tracksection',
       query: [
         'and',
-        ['or', ['search', ['name'], lineName], ['search', ['number'], lineNumber]],
+        ['or', ['search', ['line_name'], lineName], ['search', ['line_code'], lineCode]],
         ['=', ['infra_id'], infraID],
       ],
     };
     return payload;
   };
 
-  const onResultClick = (result: string) => {
-    console.log('result:', result);
+  const onResultClick = (lineName: string) => {
+    console.log('lineName:', lineName);
   };
 
   useEffect(() => {
-    // updateSearch(getPayload());
-    getPayload();
+    updateSearch(getPayload());
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
@@ -70,10 +73,16 @@ const MapSearchLine: React.FC = () => {
       <button
         className="search-result-item d-flex justify-content-between mb-1 align-items-center"
         key={nextId()}
-        onClick={() => onResultClick(result)}
+        onClick={() => onResultClick(result.line_name)}
         type="button"
       >
-        <div>{result}</div>
+        <div className="name">{result.line_name}</div>
+        <div className="text-right">
+          <div className="trigram">
+            {result.line_code}&nbsp;
+            <span className="ch small">{}</span>
+          </div>
+        </div>
       </button>
     ));
   };
@@ -94,7 +103,7 @@ const MapSearchLine: React.FC = () => {
             id="map-search-line"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearchState(e.target.value);
-              // setDontSearch(false);
+              setDontSearch(false);
             }}
             onClear={clearSearchResult}
             value={searchState}
