@@ -28,6 +28,8 @@ export class PlaywrightHomePage {
 
   readonly translation: typeof home;
 
+  readonly getViteButton: Locator;
+
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -40,6 +42,7 @@ export class PlaywrightHomePage {
     this.getBackHomeLogo = page.locator('.mastheader-logo');
     this.getBody = page.locator('body');
     this.translation = home;
+    this.getViteButton = page.locator('.badge-base');
   }
 
   // Navigate to the Home page
@@ -86,5 +89,9 @@ export class PlaywrightHomePage {
 
   getTranslations(key: keyof typeof home) {
     return this.translation[key];
+  }
+
+  async closeViteModal() {
+    await this.getViteButton.click();
   }
 }
