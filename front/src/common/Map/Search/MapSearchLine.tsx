@@ -1,24 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { useDebounce } from 'utils/helpers';
 import { post } from 'common/requests';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { Viewport, updateMapSearchMarker } from 'reducers/map';
+import nextId from 'react-id-generator';
+import { Position } from '@turf/helpers';
 import { SEARCH_URL, searchPayloadType } from '../const';
+import SearchResultItem from './SearchResultItem';
 
-const MapSearchLine: React.FC = () => {
-  const { t } = useTranslation(['map-search']);
+type MapSearchLineProps = {
+  updateExtViewport: (viewport: Partial<Viewport>) => void;
+};
 
-  const infraID = useSelector(getInfraID);
-
+const MapSearchLine: React.FC<MapSearchLineProps> = () => {
   const [searchState, setSearchState] = useState<string>('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState<{ [key: string]: string }[] | undefined>(
     undefined
   );
-  console.log('searchResults:', searchResults);
+
+  const infraID = useSelector(getInfraID);
+
+  const dispatch = useDispatch();
+
+  const { t } = useTranslation(['map-search']);
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
@@ -56,8 +64,8 @@ const MapSearchLine: React.FC = () => {
     return payload;
   };
 
-  const onResultClick = (lineName: string) => {
-    console.log('lineName:', lineName);
+  const onResultClick = (searchResultItem: { [key: string]: string | Position[] }) => {
+    console.log('lineName:', searchResultItem);
   };
 
   useEffect(() => {
@@ -70,27 +78,14 @@ const MapSearchLine: React.FC = () => {
     const searchResultsContent = searchResults;
 
     return searchResultsContent?.map((result) => (
-      <button
-        className="search-result-item d-flex justify-content-between mb-1 align-items-center"
-        key={nextId()}
-        onClick={() => onResultClick(result.line_name)}
-        type="button"
-      >
-        <div className="name">{result.line_name}</div>
-        <div className="text-right">
-          <div className="trigram">
-            {result.line_code}&nbsp;
-            <span className="ch small">{}</span>
-          </div>
-        </div>
-      </button>
+      <SearchResultItem key={nextId()} resultSearchItem={result} onResultClick={onResultClick} />
     ));
   };
 
   const clearSearchResult = () => {
     setSearchState('');
     setSearchResults(undefined);
-    // dispatch(updateMapSearchMarker(undefined));
+    dispatch(updateMapSearchMarker(undefined));
   };
 
   return (
