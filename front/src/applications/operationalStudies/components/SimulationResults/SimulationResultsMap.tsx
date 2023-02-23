@@ -251,9 +251,10 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       const start = point(startCoordinates);
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
-      const timePositionLocal = interpolateOnPosition(
+      const keyValues = ['position', 'speed'] as const;
+      const timePositionLocal = interpolateOnPosition<(typeof keyValues)[number], PositionSpeed>(
         { speed: simulation.trains[selectedTrain][key].speeds },
-        ['position', 'speed'],
+        ['position', 'speed'] as const,
         positionLocal
       );
       dispatch(updateTimePositionValues(timePositionLocal));

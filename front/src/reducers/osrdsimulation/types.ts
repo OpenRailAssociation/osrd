@@ -40,16 +40,16 @@ export interface Position<Time = number> {
   time: Time;
   position: number;
 }
-export type ConsolidatedPosition = Position<Date | null>;
+export type ConsolidatedPosition<DateType = Date> = Position<DateType | null>;
 
 export type PositionSpeed<Time = number> = Position<Time> & {
   speed: number;
 };
-export type ConsolidatePositionSpeed = PositionSpeed<Date | null>;
+export type ConsolidatePositionSpeed<DateType = Date> = PositionSpeed<DateType | null>;
 
 interface Stop {
-  id: number;
-  name: string;
+  id: string | null;
+  name: string | null;
   time: number;
   duration: number;
   position: number;
@@ -58,7 +58,7 @@ interface Stop {
 }
 
 export interface RouteAspect<Time = number, Color = number> {
-  signal_id: string;
+  signal_id?: string;
   route_id: string;
   time_start: Time;
   time_end: Time;
@@ -67,7 +67,7 @@ export interface RouteAspect<Time = number, Color = number> {
   color: Color;
   blinking: boolean;
 }
-export type ConsolidatedRouteAspect = RouteAspect<Date | null, string>;
+export type ConsolidatedRouteAspect<DateType = Date> = RouteAspect<DateType | null, string>;
 
 export interface SignalAspect<Time = number, Color = number> {
   signal_id: string;
@@ -77,7 +77,7 @@ export interface SignalAspect<Time = number, Color = number> {
   blinking: boolean;
   aspect_label: string;
 }
-export type ConsolidatedSignalAspect = SignalAspect<Date | null, string>;
+export type ConsolidatedSignalAspect<DateType = Date> = SignalAspect<DateType | null, string>;
 
 export interface Regime {
   head_positions: Position[][];
@@ -87,8 +87,8 @@ export interface Regime {
   speeds: PositionSpeed[];
   stops: Stop[];
   route_aspects: RouteAspect[];
-  signal_aspects: SignalAspect[];
-  error: any;
+  signal_aspects?: SignalAspect[];
+  error?: any;
 }
 
 export interface ModesAndProfiles {
@@ -128,23 +128,23 @@ export interface PositionValues {
   };
 }
 
-export interface SimulationTrain {
+export interface SimulationTrain<DateType = Date> {
   id: number;
-  isStdcm: boolean;
+  isStdcm?: boolean;
   name: string;
   trainNumber: number;
-  headPosition: ConsolidatedPosition[][];
-  tailPosition: ConsolidatedPosition[][];
-  routeAspects: ConsolidatedRouteAspect[];
+  headPosition: ConsolidatedPosition<DateType>[][];
+  tailPosition: ConsolidatedPosition<DateType>[][];
+  routeAspects: ConsolidatedRouteAspect<DateType>[];
   signalAspects: ConsolidatedSignalAspect[];
   areaBlock?: ConsolidatedMergeDataPoint[][];
-  speed: ConsolidatePositionSpeed[];
-  eco_headPosition?: ConsolidatedPosition[][];
-  eco_tailPosition?: ConsolidatedPosition[][];
-  eco_routeAspects?: ConsolidatedRouteAspect[];
+  speed: ConsolidatePositionSpeed<DateType>[];
+  eco_headPosition?: ConsolidatedPosition<DateType>[][];
+  eco_tailPosition?: ConsolidatedPosition<DateType>[][];
+  eco_routeAspects?: ConsolidatedRouteAspect<DateType>[];
   eco_signalAspects?: ConsolidatedSignalAspect[];
   eco_areaBlock?: ConsolidatedMergeDataPoint[][];
-  eco_speed?: ConsolidatePositionSpeed[];
+  eco_speed?: ConsolidatePositionSpeed<DateType>[];
 }
 
 export interface OsrdSimulationState {

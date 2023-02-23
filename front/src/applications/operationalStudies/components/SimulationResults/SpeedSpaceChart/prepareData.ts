@@ -3,25 +3,27 @@ import createSlopeCurve from 'applications/operationalStudies/components/Simulat
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
 import { ModesAndProfiles, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 
-interface gevPreparedata {
-  speed: Record<string, unknown>[];
+export interface GevPreparedata {
+  speed: Record<string, number>[];
   margins_speed: Record<string, unknown>[];
   eco_speed: Record<string, unknown>[];
   areaBlock: any;
   vmax: Record<string, unknown>[];
   slopesCurve: Record<string, unknown>[];
-  slopesHistogram: Record<string, unknown>[];
+  slopesHistogram: Record<string, number>[];
   areaSlopesHistogram: Record<string, unknown>[];
   curvesHistogram: Record<string, unknown>[];
   modesAndProfiles: ModesAndProfiles[];
 }
 
+// called with keyValues
+// ['position', 'speed']
 function prepareData(
   simulation: SimulationSnapshot,
   selectedTrain: number,
   keyValues: string[]
-): gevPreparedata {
-  const dataSimulation: gevPreparedata = {
+): GevPreparedata {
+  const dataSimulation: GevPreparedata = {
     speed: [],
     margins_speed: [],
     eco_speed: [],

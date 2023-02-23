@@ -13,7 +13,7 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 
-import { SimulationSnapshot, Train, OsrdSimulationState } from './types';
+import { SimulationSnapshot, Train, OsrdSimulationState, SimulationTrain } from './types';
 
 import {
   UPDATE_CHART,
@@ -169,18 +169,16 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_TIME_POSITION_VALUES: {
         draft.timePosition = action.timePosition;
         // position value will be computed depending on current data simulation
-        // eslint-disable-next-line no-case-declarations
         const currentTrainSimulation = state.consolidatedSimulation.find(
-          (consolidatedSimulation: any) =>
+          (consolidatedSimulation: SimulationTrain) =>
             consolidatedSimulation.trainNumber === state.selectedTrain
         );
-        const positionsValues = interpolateOnTime(
+        draft.positionValues = interpolateOnTime(
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
           action.timePosition
-        ) as any;
-        draft.positionValues = positionsValues;
+        );
         break;
       }
       default:
