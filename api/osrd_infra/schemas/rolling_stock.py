@@ -115,6 +115,7 @@ class EnergySource(BaseModel, extra=Extra.forbid):
         description="If your EnergySource output power is dependant on speed of the train"
     )
 
+
 class ComfortType(str, Enum):
     """
     This enum defines the comfort type that can take a train.
@@ -216,7 +217,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
 
     battery: Optional[EnergySource]
-    pantograph: Optional[PowerConverter]
+    pantograph: Optional[EnergySource]
     traction_ensemble: Optional[PowerConverter]
 
 
