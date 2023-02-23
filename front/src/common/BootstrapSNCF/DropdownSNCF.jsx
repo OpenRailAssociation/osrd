@@ -37,7 +37,9 @@ function DropdownSNCF({ titleContent, items = [], type }) {
         />
       </button>
       <div
-        className={`dropdown-menu dropdown-menu-right osrd-dropdown-sncf ${isDropdownShown ? 'show' : null}`}
+        className={`dropdown-menu dropdown-menu-right osrd-dropdown-sncf ${
+          isDropdownShown ? 'show' : null
+        }`}
         /* style={{
           position: 'absolute',
           top: '400px !important',
