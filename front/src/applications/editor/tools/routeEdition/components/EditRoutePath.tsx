@@ -332,19 +332,17 @@ export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
 
       {/* Hovered waypoint */}
       {extremityEditionState.type === 'selection' && hoveredWayPoint && mousePosition && (
-        <>
-          <Popup
-            key="hover-popup"
-            className="popup"
-            anchor="bottom"
-            longitude={mousePosition[0]}
-            latitude={mousePosition[1]}
-            closeButton={false}
-            closeOnClick={false}
-          >
-            <EntitySumUp objType={hoveredWayPoint.objType} id={hoveredWayPoint.properties.id} />
-          </Popup>
-        </>
+        <Popup
+          key="hover-popup"
+          className="popup"
+          anchor="bottom"
+          longitude={mousePosition[0]}
+          latitude={mousePosition[1]}
+          closeButton={false}
+          closeOnClick={false}
+        >
+          <EntitySumUp objType={hoveredWayPoint.objType} id={hoveredWayPoint.properties.id} />
+        </Popup>
       )}
     </>
   );

@@ -24,6 +24,11 @@ jobs:
 
       - name: Install dependencies
         run: yarn --cwd front install
+      
+      - name: Build project
+        run: yarn --cwd front build
+        env:
+          CI: false
 
       - name: Run front test suite
         run: yarn --cwd front test-coverage
@@ -44,8 +49,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
-
-      - name: Build project
-        run: yarn --cwd front build
-        env:
-          CI: false

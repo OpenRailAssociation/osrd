@@ -3,8 +3,8 @@ import drawCurve from 'applications/operationalStudies/components/SimulationResu
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
-import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
 import { createProfileSegment } from 'applications/operationalStudies/consts';
+import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
 
 function createChart(
   CHART_ID,

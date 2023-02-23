@@ -174,7 +174,7 @@ export const ALL_SIGNAL_LAYERS = [
   'Z',
 ];
 
-export type SignalType = typeof ALL_SIGNAL_LAYERS[number];
+export type SignalType = (typeof ALL_SIGNAL_LAYERS)[number];
 
 export const ALL_SIGNAL_LAYERS_SET = new Set(ALL_SIGNAL_LAYERS);
 

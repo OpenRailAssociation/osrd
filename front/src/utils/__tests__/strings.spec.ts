@@ -7,7 +7,7 @@ describe('conditionalStringConcat', () => {
         [true, 'abcd'],
         [true, 'efg'],
       ])
-    ).toEqual('abcd, efg');
+    ).toBe('abcd, efg');
   });
   it('should ignore falsy entries', () => {
     expect(
@@ -18,7 +18,7 @@ describe('conditionalStringConcat', () => {
         [true, 'αβγ'],
         [null, 'efg'],
       ])
-    ).toEqual('abcd, αβγ');
+    ).toBe('abcd, αβγ');
   });
   it('custom separator', () => {
     expect(
@@ -29,6 +29,6 @@ describe('conditionalStringConcat', () => {
         ],
         '_'
       )
-    ).toEqual('abcd_efghij');
+    ).toBe('abcd_efghij');
   });
 });

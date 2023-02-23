@@ -5,6 +5,7 @@ import { HiSwitchVertical } from 'react-icons/hi';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
+import { useSelector } from 'react-redux';
 import WayPointInput from './WayPointInput';
 import {
   BufferStopEntity,
@@ -14,7 +15,6 @@ import {
   WayPointEntity,
 } from '../../../../../types';
 import { RouteState } from '../types';
-import { useSelector } from 'react-redux';
 import { OSRDConf } from '../../types';
 import EditorContext from '../../../context';
 import { getEntity } from '../../../data/api';

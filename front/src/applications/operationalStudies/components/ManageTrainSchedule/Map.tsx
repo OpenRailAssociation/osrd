@@ -75,7 +75,7 @@ function Map() {
       pitch: 0,
     });
   };
-  
+
   const getTrackLayerName = () => {
     const layerNames = {
       geographic: ['chartis/tracks-geo/main'],

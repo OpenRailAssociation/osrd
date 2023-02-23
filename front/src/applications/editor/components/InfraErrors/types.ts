@@ -2,7 +2,7 @@ import { Geometry } from '@turf/helpers';
 import { EditoastType } from '../../tools/types';
 
 export const InfraErrorLevelList = ['all', 'errors', 'warnings'];
-export type InfraErrorLevel = typeof InfraErrorLevelList[number];
+export type InfraErrorLevel = (typeof InfraErrorLevelList)[number];
 
 export const InfraErrorTypeList = [
   'invalid_reference',
@@ -21,7 +21,7 @@ export const InfraErrorTypeList = [
   'overlapping_switches',
   'overlapping_track_links',
 ];
-export type InfraErrorType = typeof InfraErrorTypeList[number];
+export type InfraErrorType = (typeof InfraErrorTypeList)[number];
 
 export interface InfraError {
   information: {

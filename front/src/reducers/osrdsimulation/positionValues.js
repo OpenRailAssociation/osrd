@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { LIST_VALUES_NAME_SPACE_TIME } from '../../applications/operationalStudies/components/Simulation/simulationResultsConsts';
-import { UPDATE_TIME_POSITION_VALUES } from '../osrdsimulation';
+import { UPDATE_TIME_POSITION_VALUES } from '.';
 
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
 
