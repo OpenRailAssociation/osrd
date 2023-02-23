@@ -1,10 +1,28 @@
+from typing import Optional
+
 from osrd_schemas.path import PathPayload
 
-from osrd_infra.models import PathModel, TrainScheduleModel
+from osrd_infra.models import PathModel, SimulationOutput, TrainSchedule
 from osrd_infra.views.projection import Projection
 
 
-def create_simulation_report(train_schedule: TrainScheduleModel, projection_path: PathModel):
+def create_simulation_report(
+    train_schedule: TrainSchedule,
+    projection_path: PathModel,
+    *,
+    simulation_output: Optional[SimulationOutput] = None,
+):
+    """Create simulation report for a given input.
+
+    Args:
+        train_schedule: Train schedule associated to the simulation on which report is created.
+        projection_path: Projection path.
+        simulation_output: Simulation output corresponding to the given ``train_schedule``.
+            Can be ``None`` since non STDCM's simulations are expected to come from database.
+            Currently STDCM's simulations are not stored in database.
+    """
+    if simulation_output is None:
+        simulation_output = train_schedule.simulation_output
     train_path = train_schedule.path
     train_path_payload = PathPayload.parse_obj(train_schedule.path.payload)
 
@@ -14,7 +32,7 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
     train_length = train_schedule.rolling_stock.length
 
     base = convert_simulation_results(
-        train_schedule.base_simulation,
+        simulation_output.base_simulation,
         train_path_payload,
         projection,
         projection_path_payload,
@@ -26,20 +44,20 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
         "labels": train_schedule.labels,
         "path": train_schedule.path_id,
         "name": train_schedule.train_name,
-        "vmax": train_schedule.mrsp,
+        "vmax": simulation_output.mrsp,
         "slopes": train_path.slopes,
         "curves": train_path.curves,
         "base": base,
         "speed_limit_tags": train_schedule.speed_limit_tags,
-        "modes_and_profiles": train_schedule.modes_and_profiles,
+        "modes_and_profiles": simulation_output.modes_and_profiles,
     }
 
     # Check if train schedule has margins
-    if train_schedule.eco_simulation is None:
+    if simulation_output.eco_simulation is None:
         return res
 
     # Add margins and eco results if available
-    sim_log = train_schedule.eco_simulation
+    sim_log = simulation_output.eco_simulation
     res["eco"] = convert_simulation_results(
         sim_log,
         train_path_payload,

@@ -1,10 +1,10 @@
-from typing import List
+from typing import Any, Dict, Iterator, List, Optional
 
 import requests
 from django.conf import settings
 from rest_framework.exceptions import APIException
 
-from osrd_infra.models import TrackSectionModel, TrainScheduleModel
+from osrd_infra.models import SimulationOutput, TrackSectionModel, TrainSchedule
 from osrd_infra.models.infra import Infra
 from osrd_infra.utils import make_exception_from_error
 
@@ -27,7 +27,7 @@ class InvalidSimulationInput(APIException):
     default_code = "simulation_invalid_input"
 
 
-def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
+def create_backend_request_payload(train_schedules: Iterator[TrainSchedule]):
     rolling_stocks = set(schedule.rolling_stock for schedule in train_schedules)
 
     path_payload = train_schedules[0].path.payload
@@ -83,7 +83,52 @@ def run_simulation(request_payload):
     return response.json()
 
 
-def process_simulation_response(infra: Infra, train_schedules: List[TrainScheduleModel], response_payload):
+def _update_simulation_stops(
+    simulation_stops: Iterator[Dict[str, Any]], stops_additional_information: Iterator[Dict[str, Any]]
+):
+    """Update simulation_stops.
+
+    Stops specified in simulation can miss some information that must be completed using ``path_waypoints`` data.
+
+    Args:
+        simulation_stops: Stops defined in the simulation.
+        stops_additional_information: Information related to track metadata that must be added to simulation stops.
+
+    """
+    for stop, stop_update in zip(simulation_stops, stops_additional_information):
+        stop.update(stop_update)
+
+
+def _create_and_fill_simulation_output(
+    train_schedule: TrainSchedule,
+    base_simulation: Any,
+    eco_simulation: Any,
+    stops_updates: List[Any],
+    mrsp: Any,
+    modes_and_profiles: Optional[Any],
+) -> SimulationOutput:
+    _update_simulation_stops(base_simulation["stops"], stops_updates)
+
+    simulation_output = SimulationOutput(
+        train_schedule=train_schedule,
+        base_simulation=base_simulation,
+        mrsp=mrsp,
+        modes_and_profiles=modes_and_profiles or [],
+    )
+
+    # Skip if no eco simulation is available
+    if not eco_simulation:
+        return simulation_output
+
+    _update_simulation_stops(eco_simulation["stops"], stops_updates)
+
+    simulation_output.eco_simulation = eco_simulation
+    return simulation_output
+
+
+def process_simulation_response(
+    infra: Infra, train_schedules: Iterator[TrainSchedule], response_payload
+) -> List[SimulationOutput]:
     """
     This function process the payload returned by the backend and fill schedules
     """
@@ -96,35 +141,29 @@ def process_simulation_response(infra: Infra, train_schedules: List[TrainSchedul
     assert len(modes_and_profiles) == 0 or len(train_schedules) == len(modes_and_profiles)
 
     stops = train_schedules[0].path.payload["path_waypoints"]
-    ops_tracks = TrackSectionModel.objects.filter(infra=infra, obj_id__in=[stop["track"] for stop in stops])
-    ops_tracks = {track.obj_id: track for track in ops_tracks}
+    track_sections = TrackSectionModel.objects.filter(infra=infra, obj_id__in=[stop["track"] for stop in stops])
+    id_to_tracks = {track.obj_id: track for track in track_sections}
 
-    stops_update = []
-    for stop in stops:
-        stops_update.append({"id": stop.get("id", None), "name": stop.get("name", None)})
-        track = ops_tracks[stop["track"]]
-        stops_update[-1]["line_code"] = track.data.get("extensions", {}).get("sncf", {}).get("line_code", None)
-        stops_update[-1]["track_number"] = track.data.get("extensions", {}).get("sncf", {}).get("track_number", None)
-        stops_update[-1]["line_name"] = track.data.get("extensions", {}).get("sncf", {}).get("line_name", None)
-        stops_update[-1]["track_name"] = track.data.get("extensions", {}).get("sncf", {}).get("track_name", None)
+    stops_additional_information = [
+        {
+            "id": stop.get("id"),
+            "name": stop.get("name"),
+            "line_code": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("line_code"),
+            "track_number": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("track_number"),
+            "line_name": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("line_name"),
+            "track_name": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("track_name"),
+        }
+        for stop in stops
+    ]
 
-    for i, train_schedule in enumerate(train_schedules):
-        # Update stops (adding id and name when available)
-        for stop, stop_update in zip(base_simulations[i]["stops"], stops_update):
-            stop.update(stop_update)
-
-        train_schedule.base_simulation = base_simulations[i]
-        train_schedule.mrsp = speed_limits[i]
-        if len(modes_and_profiles) > 0:
-            train_schedule.modes_and_profiles = modes_and_profiles[i]
-
-        # Skip if no eco simulation is available
-        if not eco_simulations[i]:
-            train_schedule.eco_simulation = None
-            continue
-
-        # Update stops (adding id and name when available)
-        for stop, stop_update in zip(eco_simulations[i]["stops"], stops_update):
-            stop.update(stop_update)
-
-        train_schedule.eco_simulation = eco_simulations[i]
+    return [
+        _create_and_fill_simulation_output(
+            train_schedule,
+            base_simulations[i],
+            eco_simulations[i],
+            stops_additional_information,
+            speed_limits[i],
+            modes_and_profiles[i] if len(modes_and_profiles) > 0 else None,
+        )
+        for i, train_schedule in enumerate(train_schedules)
+    ]
