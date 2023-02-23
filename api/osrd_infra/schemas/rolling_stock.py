@@ -111,7 +111,8 @@ class EnergySource(BaseModel, extra=Extra.forbid):
         description="If your EnergySource has power conversion and/or need to account for power losses "
     )
     speed_dependency: Optional[Curve] = Field(
-
+        description="If your EnergySource output power is dependant on speed of the train"
+    )
 
 class ComfortType(str, Enum):
     """
