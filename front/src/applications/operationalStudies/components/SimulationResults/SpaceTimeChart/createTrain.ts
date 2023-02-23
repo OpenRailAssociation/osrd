@@ -19,6 +19,8 @@ import { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
  * @param {*} simulationTrains simulation raw data
  * @param {*} t translation middle
  * @returns
+ *
+ * called with keyValues ['time', 'position']
  */
 export default function createTrain(
   dispatch: Dispatch,

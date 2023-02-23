@@ -234,7 +234,7 @@ function wheelDelta(event) {
 // /!\ NOT ISOLATED FUNCTION
 const enableInteractivity = (
   chart,
-  dataSimulation,
+  dataSimulation, // GevPreparedData
   dispatch,
   keyValues,
   listValues,
@@ -363,6 +363,7 @@ const enableInteractivity = (
   drawGuideLines(chart);
 };
 
+// keyValues ['time', 'position']
 export const isolatedEnableInteractivity = (
   chart,
   dataSimulation,

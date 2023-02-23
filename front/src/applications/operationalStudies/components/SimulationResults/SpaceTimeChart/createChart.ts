@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
-import { Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
+import { Chart, SimulationTrain, ConsolidatedPosition } from 'reducers/osrdsimulation/types';
 import {
   defineLinear,
   defineTime,
@@ -10,55 +10,45 @@ import {
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 
 // This is only used by SpaceTimeChart for now.
-export default function createChart(
+export default function createChart<T extends number | Date>(
   chart: Chart,
   chartID: string,
   dataSimulation: SimulationTrain[],
   heightOfSpaceTimeChart: number,
-  keyValues: string[],
+  keyValues: ['time', 'position'],
   ref: React.MutableRefObject<HTMLDivElement>,
   reset: boolean,
   rotate: boolean
 ): Chart {
   d3select(`#${chartID}`).remove();
 
-  const xValues: (number | Date)[] = dataSimulation
+  const xValues: T[] = dataSimulation
     .map((train) =>
       train.headPosition.map((section) =>
         section.map((position) => (isGET(keyValues) ? position.time : position.position))
       )
     )
-    .flat(Infinity) as (number | Date)[];
+    .flat(Infinity) as T[];
 
-  const dataSimulationLinearMax = d3.max([
-    d3.max(
-      [].concat(
-        ...dataSimulation.map((train) =>
+  function getMax(pos: 'tailPosition' | 'headPosition') {
+    return d3.max(
+      dataSimulation.flatMap(
+        (train) =>
           d3.max(
-            train.tailPosition.map((section) =>
-              d3.max(section.map((step: any) => step[keyValues[1]]))
+            train[pos].map(
+              (section) =>
+                d3.max(section.map((step: ConsolidatedPosition) => step[keyValues[1]])) as T
             )
-          )
-        )
+          ) as T
       )
-    ),
-    d3.max(
-      [].concat(
-        ...dataSimulation.map((train) =>
-          d3.max(
-            train.headPosition.map((section) =>
-              d3.max(section.map((step: any) => step[keyValues[1]]))
-            )
-          )
-        )
-      )
-    ),
-  ] as any);
+    );
+  }
+  const dataSimulationLinearMax = d3.max([getMax('tailPosition'), getMax('headPosition')] as T[]);
 
-  const defineX = chart === undefined || reset ? defineTime(d3.extent(xValues)) : chart.x;
+  const defineX = chart === undefined || reset ? defineTime(d3.extent(xValues) as [T, T]) : chart.x;
 
   const defineY =
-    chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
+    chart === undefined || reset ? defineLinear(Number(dataSimulationLinearMax), 0.05) : chart.y;
 
   const width = parseInt(d3select(`#container-${chartID}`)?.style('width'), 10);
 
