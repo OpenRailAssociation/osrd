@@ -7,7 +7,7 @@ import { updateViewport } from 'reducers/map';
 
 import AddTrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainLabels';
 import AddTrainSchedule from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule';
-import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
+import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';

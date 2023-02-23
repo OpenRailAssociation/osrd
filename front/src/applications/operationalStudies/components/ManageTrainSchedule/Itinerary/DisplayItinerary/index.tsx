@@ -1,28 +1,27 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Position } from 'geojson';
 import cx from 'classnames';
-
-import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
 
 import Pathfinding from 'common/Pathfinding';
 import Origin from './Origin';
 import Vias from './Vias';
 import Destination from './Destination';
 
+// Interfaces
+import { PointOnMap } from 'applications/operationalStudies/consts';
+
 interface DisplayItineraryProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
   viaModalContent: string;
+  origin: PointOnMap;
+  destination: PointOnMap;
+  vias: PointOnMap[];
 }
 
 export default function DisplayItinerary(props: DisplayItineraryProps) {
-  const { zoomToFeaturePoint, zoomToFeature, viaModalContent } = props;
-
-  const origin = useSelector(getOrigin);
-  const destination = useSelector(getDestination);
-  const vias = useSelector(getVias);
+  const { zoomToFeaturePoint, zoomToFeature, viaModalContent, origin, destination, vias } = props;
 
   return (
     <div
@@ -45,4 +44,18 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
 
 DisplayItinerary.propTypes = {
   zoomToFeaturePoint: PropTypes.func.isRequired,
+  zoomToFeature: PropTypes.func.isRequired,
+  viaModalContent: PropTypes.string,
+  origin: PropTypes.object,
+  destination: PropTypes.object,
+  vias: PropTypes.array,
+};
+
+DisplayItinerary.defaultProps = {
+  zoomToFeaturePoint: () => {},
+  zoomToFeature: () => {},
+  viaModalContent: '',
+  origin: {},
+  destination: {},
+  vias: [],
 };

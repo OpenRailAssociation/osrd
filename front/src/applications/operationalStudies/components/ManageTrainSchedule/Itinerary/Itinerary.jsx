@@ -1,22 +1,23 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 
-import { replaceVias, updateDestination, updateOrigin } from 'reducers/osrdconf';
-import { updateFeatureInfoClick } from 'reducers/map';
-
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 
 function Itinerary(props) {
-  const { vias } = useSelector((state) => state.osrdconf);
-  const { updateExtViewport } = props;
-  const dispatch = useDispatch();
-  const map = useSelector((state) => state.map);
-  const osrdconf = useSelector((state) => state.osrdconf);
-  const infra = useSelector(getInfraID);
+  const {
+    dispatchUpdateExtViewport,
+    dispatchUpdateFeatureInfoClick,
+    dispatchReplaceVias,
+    dispatchUpdateOrigin,
+    dispatchUpdateDestination,
+    map,
+    infra,
+    origin,
+    destination,
+    vias,
+  } = props;
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -38,9 +39,9 @@ function Itinerary(props) {
       latitude,
       zoom,
     };
-    updateExtViewport(newViewport);
+    dispatchUpdateExtViewPort(newViewport);
     if (id !== undefined && source !== undefined) {
-      updateFeatureInfoClick(Number(id), source);
+      dispatchUpdateFeatureInfoClick(Number(id), source);
     }
   };
 
@@ -52,31 +53,31 @@ function Itinerary(props) {
         latitude: lngLat[1],
         zoom: 16,
       };
-      updateExtViewport(newViewport);
+      dispatchUpdateExtViewport(newViewport);
       if (id !== undefined && source !== undefined) {
-        updateFeatureInfoClick(Number(id), source);
+        dispatchUpdateFeatureInfoClick(Number(id), source);
       }
     }
   };
 
   const removeViaFromPath = (step) => {
-    dispatch(replaceVias(vias.filter((via) => via.track !== step.track)));
+    dispatchReplaceVias(vias.filter((via) => via.track !== step.track));
   };
 
   const inverseOD = () => {
-    if (osrdconf.origin && osrdconf.destination) {
-      const origin = { ...osrdconf.origin };
-      dispatch(updateOrigin(osrdconf.destination));
-      dispatch(updateDestination(origin));
-      if (osrdconf.vias && osrdconf.vias.length > 1) {
-        const newVias = Array.from(osrdconf.vias);
-        dispatch(replaceVias(newVias.reverse()));
+    if (origin && destination) {
+      const origin = { ...origin };
+      dispatchUpdateOrigin(destination);
+      dispatchUpdateDestination(origin);
+      if (vias && vias.length > 1) {
+        const newVias = Array.from(vias);
+        dispatchReplaceVias(newVias.reverse());
       }
     }
   };
 
   const removeAllVias = () => {
-    dispatch(replaceVias([]));
+    dispatchReplaceVias([]);
   };
 
   const viaModalContent = (
@@ -91,10 +92,14 @@ function Itinerary(props) {
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container" data-testid="itinerary">
         <DisplayItinerary
+          {...props}
           data-testid="display-itinerary"
           zoomToFeaturePoint={zoomToFeaturePoint}
           zoomToFeature={zoomToFeature}
           viaModalContent={viaModalContent}
+          origin={origin}
+          destination={destination}
+          vias={vias}
         />
       </div>
     </div>

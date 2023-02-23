@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
-import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
+import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import ScenarioExplorator from 'common/ScenarioExplorator/ScenarioExplorator';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
@@ -18,7 +18,7 @@ import {
   getScenarioID,
   getStudyID,
   getTimetableID,
-} from 'reducers/osrdconf/selectors';
+} from 'reducers/osrdStdcmConf/selectors';
 
 type OSRDStdcmConfigProps = {
   setCurrentStdcmRequestStatus: (status: string) => void;

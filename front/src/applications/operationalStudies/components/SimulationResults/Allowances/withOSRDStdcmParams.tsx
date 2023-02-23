@@ -5,7 +5,7 @@ import {
   updateGridMarginBefore,
   updateGridMarginAfter,
   updateStdcmStandardAllowance,
-} from 'reducers/osrdconf';
+} from 'reducers/osrdStdcmConf';
 import SingleAllowance from './StandardAllowanceDefault';
 
 import { ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
@@ -14,10 +14,10 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
     const { t } = useTranslation(['allowances']);
     const dispatch = useDispatch();
-    const gridMarginBefore = useSelector((state: any) => state.osrdconf.gridMarginBefore);
-    const gridMarginAfter = useSelector((state: any) => state.osrdconf.gridMarginAfter);
+    const gridMarginBefore = useSelector((state: any) => state.osrdStdcmConf.gridMarginBefore);
+    const gridMarginAfter = useSelector((state: any) => state.osrdStdcmConf.gridMarginAfter);
     const stdcmStandardAllowance = useSelector(
-      (state: any) => state.osrdconf.standardStdcmAllowance
+      (state: any) => state.osrdStdcmConf.standardStdcmAllowance
     );
 
     const allowanceTypes = [

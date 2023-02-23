@@ -33,19 +33,31 @@ import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  stdcmMode: boolean;
+  mode: string;
+  origin: any; // declare origin as any type
+  originDate: string | Date;
+  originTime: Date;
+  originSpeed: number;
+  originLinkedBounds: any;
+  originUpperBoundDate: string | Date;
+  originUpperBoundTime: Date;
 }
 
 function Origin(props: OriginProps) {
-  const { zoomToFeaturePoint } = props;
-  const stdcmMode = useSelector(getStdcmMode);
-  const mode = useSelector(getMode);
-  const origin = useSelector(getOrigin);
-  const originDate = useSelector(getOriginDate);
-  const originTime = useSelector(getOriginTime);
-  const originSpeed = useSelector(getOriginSpeed);
-  const originLinkedBounds = useSelector(getOriginLinkedBounds);
-  const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
-  const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
+  const {
+    zoomToFeaturePoint,
+    stdcmMode,
+    mode,
+    origin,
+    originDate,
+    originTime,
+    originSpeed,
+    originLinkedBounds,
+    originUpperBoundDate,
+    originUpperBoundTime,
+  } = props;
+
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
