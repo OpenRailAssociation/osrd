@@ -58,8 +58,8 @@ describe('makeDisplayedHeadAndTail', () => {
         pathLineString,
         sideDimensions
       );
-      expect(head).toEqual(1);
-      expect(tail).toEqual(0);
+      expect(head).toBe(1);
+      expect(tail).toBe(0);
     });
     it('should take the size of the tail and head triangle into account', () => {
       const trainPosition: TrainPosition = {
@@ -121,8 +121,8 @@ describe('makeDisplayedHeadAndTail', () => {
         pathLineString,
         sideDimensions
       );
-      expect(head).toEqual(0);
-      expect(tail).toEqual(0);
+      expect(head).toBe(0);
+      expect(tail).toBe(0);
     });
   });
   describe('backward train', () => {
@@ -144,8 +144,8 @@ describe('makeDisplayedHeadAndTail', () => {
         pathLineString,
         sideDimensions
       );
-      expect(head).toEqual(1);
-      expect(tail).toEqual(0);
+      expect(head).toBe(1);
+      expect(tail).toBe(0);
     });
   });
   describe('train outside of the path', () => {

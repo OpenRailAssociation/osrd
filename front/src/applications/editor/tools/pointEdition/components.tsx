@@ -50,13 +50,13 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
   useEffect(() => {
     if (routesState.type === 'idle') {
       setRoutesState({ type: 'loading' });
-      getRoutesFromWaypoint(osrdConf.infraID + '', type, id)
+      getRoutesFromWaypoint(`${osrdConf.infraID}`, type, id)
         .then((res) => {
           const starting = res.starting || [];
           const ending = res.ending || [];
 
           if (starting.length || ending.length) {
-            getEntities<RouteEntity>(osrdConf.infraID + '', [...starting, ...ending], 'Route')
+            getEntities<RouteEntity>(`${osrdConf.infraID}`, [...starting, ...ending], 'Route')
               .then((entities) => {
                 setRoutesState({
                   type: 'ready',

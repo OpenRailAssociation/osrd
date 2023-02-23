@@ -23,7 +23,7 @@ export const LAYERS = [
   'routes',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(LAYERS);
-export type LayerType = typeof LAYERS[number];
+export type LayerType = (typeof LAYERS)[number];
 
 export const EDITOAST_TYPES = [
   'TrackSection',
@@ -34,7 +34,7 @@ export const EDITOAST_TYPES = [
   'Route',
 ] as const;
 export const EDITOAST_TYPES_SET: Set<string> = new Set(EDITOAST_TYPES);
-export type EditoastType = typeof EDITOAST_TYPES[number];
+export type EditoastType = (typeof EDITOAST_TYPES)[number];
 
 export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, LayerType> = {
   TrackSection: 'track_sections',
