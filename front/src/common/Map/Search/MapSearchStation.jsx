@@ -9,7 +9,9 @@ import { useDebounce } from 'utils/helpers';
 import turfCenter from '@turf/center';
 import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import nextId from 'react-id-generator';
 import { SEARCH_URL } from '../const';
+import SearchResultItem from './SearchResultItem';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -93,6 +95,17 @@ export default function MapSearchStation(props) {
   // Sort on name, and on yardname
   const orderResults = (results) =>
     results.sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+
+  const formatSearchResults = () => {
+    // sort name, then by mainstation true then false
+    let searchResultsContent = searchResults.sort((a, b) => a.name.localeCompare(b.name));
+    searchResultsContent = searchResultsContent.sort(
+      (a, b) => Number(b.mainstation) - Number(a.mainstation)
+    );
+    return searchResultsContent.map((result) => (
+      <SearchResultItem key={nextId()} resultSearchItem={result} onResultClick={onResultClick} />
+    ));
+  };
 
   const clearSearchResult = () => {
     setSearch('');
