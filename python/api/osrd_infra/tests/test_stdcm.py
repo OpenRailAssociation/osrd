@@ -6,9 +6,10 @@ from django.test import TestCase
 from osrd_infra.models import (
     Infra,
     RollingStock,
+    SimulationOutput,
     Timetable,
     TrackSectionModel,
-    TrainScheduleModel,
+    TrainSchedule,
 )
 from osrd_infra.views.stdcm import compute_stdcm
 
@@ -78,23 +79,26 @@ class STDCMTestCase(TestCase):
             obj_id="track",
         )
         self.rolling_stock = RollingStock.import_railjson(json.load(open("static/example_rolling_stock.json")))
-        self.schedule = TrainScheduleModel.objects.create(
+        self.train_schedule = TrainSchedule.objects.create(
             timetable=self.timetable,
-            base_simulation={},
             departure_time=0,
             initial_speed=0,
-            mrsp=[],
             rolling_stock=self.rolling_stock,
+        )
+        self.schedule_output = SimulationOutput.objects.create(
+            mrsp=[],
+            base_simulation={},
             eco_simulation={},
+            train_schedule=self.train_schedule,
         )
 
     @mock.patch("osrd_infra.views.stdcm.request_stdcm", side_effect=mock_api_call)
     def test_stdcm_single_train(self, mock):
-        self.schedule.eco_simulation["route_occupancies"] = {
+        self.schedule_output.eco_simulation["route_occupancies"] = {
             "route_1": {"time_head_occupy": 0, "time_tail_free": 42},
             "route_2": {"time_head_occupy": 21, "time_tail_free": 63},
         }
-        self.schedule.save()
+        self.schedule_output.save()
         result = compute_stdcm(
             {
                 "infra": self.infra,
