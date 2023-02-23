@@ -132,7 +132,7 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
             return null;
 
         // if the curves intersect exactly at the next point, use some simplifications
-        if (speedDelta == 0.0) {
+        if (Math.abs(speedDelta) < 1e-8) {
             if (curveEvent.kind != NextPointKind.BASE_POINT)
                 return new EnvelopePoint(position, speed);
             return new EnvelopePoint(curveEvent.pointPosition, curveEvent.overlaySpeed);
