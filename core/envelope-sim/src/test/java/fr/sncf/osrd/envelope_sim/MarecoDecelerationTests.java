@@ -21,7 +21,7 @@ import java.util.List;
 
 public class MarecoDecelerationTests {
 
-    /** Try to apply a mareco allowance from (start offset) to a stop point.
+    /** Try to apply a mareco allowance from start to end offset, on a path mostly made of braking curves.
      * Most of the time it fails to converge because we can't add time, we just check for other errors.
      * This triggers many edge cases. */
     public static void testDecelerationSection(double startOffset, double endOffset) {

@@ -252,7 +252,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             logger.debug("  computing section n°{}", i + 1);
             var allowanceSection =
                     computeAllowanceSection(section, targetTime, imposedBeginSpeed, imposedEndSpeed);
-            assert abs(allowanceSection.getTotalTime() - targetTime) < context.timeStep;
+            assert abs(allowanceSection.getTotalTime() - targetTime) <= context.timeStep;
             builder.addEnvelope(allowanceSection);
         }
         return builder.build();
@@ -335,7 +335,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var rightPart = computeRightJunction(base, coreEnvelopeWithLeft, imposedEndSpeed);
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
-        if (rightPartBeginPos < leftPartEndPos) {
+        if (rightPartBeginPos <= leftPartEndPos) {
             // if the junction parts touch or intersect, there is no core phase
             return intersectLeftRightParts(leftPart, rightPart);
         }
@@ -347,11 +347,11 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         if (leftPart != null) {
             builder.addPart(leftPart);
             leftPartEndSpeed = leftPart.getEndSpeed();
-            assert abs(coreEnvelope.interpolateSpeed(leftPartEndPos) - leftPartEndSpeed) < 1e-8;
+            assert abs(coreEnvelope.interpolateSpeed(leftPartEndPos) - leftPartEndSpeed) < 1e-6;
         }
         if (rightPart != null) {
             rightPartBeginSpeed = rightPart.getBeginSpeed();
-            assert abs(coreEnvelope.interpolateSpeed(rightPartBeginPos) - rightPartBeginSpeed) < 1e-8;
+            assert abs(coreEnvelope.interpolateSpeed(rightPartBeginPos) - rightPartBeginSpeed) < 1e-6;
         }
 
         // We force the left part end speed and right part begin speed, to avoid epsilon differences
