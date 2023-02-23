@@ -22,6 +22,10 @@ test.describe('STDCM page', () => {
     // Go to the home page of OSDR
     await playwrightHomePage.goToHomePage();
 
+    if (await playwrightHomePage.getViteButton.isVisible()) {
+      await playwrightHomePage.closeViteModal();
+    }
+
     await playwrightHomePage.goToSTDCMPage();
 
     // Intercept the project request and return data test results
@@ -72,11 +76,6 @@ test.describe('STDCM page', () => {
     );
   });
 
-  test.afterEach(async () => {
-    await playwrightHomePage.backToHomePage();
-    await playwrightHomePage.page.close();
-  });
-
   test('should be correctly displays the rolling stock list and select one', async () => {
     const rollingstocks = playwrightDataTest.rollingStocks.results;
 
@@ -85,15 +84,15 @@ test.describe('STDCM page', () => {
     );
 
     // Check that no rollingstock is selected
-    const rollingstockSelectorTexts =
-      await playwrightSTDCMPage.getRollingStockSelector.allTextContents();
-    expect(rollingstockSelectorTexts).toContain(
-      playwrightSTDCMPage.getRollingstockTranslations('rollingstockChoice')
-    );
+    await expect(
+      playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
+    ).not.toBeVisible();
 
     await playwrightSTDCMPage.getRollingstockModalClose();
     await playwrightSTDCMPage.openRollingstockModal();
     await playwrightSTDCMPage.getRollingstockModalOpen();
+
+    await playwrightSTDCMPage.page.waitForSelector('.rollingstock-container');
 
     const numberOfRollingstock = await playwrightSTDCMPage.getRollingStockListItem.count();
 
@@ -121,6 +120,7 @@ test.describe('STDCM page', () => {
       const rollingstockVolages = Object.keys(rollingstock.effort_curves.modes)
         .map((key) => `${key}V`)
         .join('');
+
       const rollingstockLength = `${rollingstock.length}m`;
       const rollingstockMass = `${Math.round(rollingstock.mass / 1000)}t`;
       const rollingstockMaxSpeed = `${Math.round(rollingstock.max_speed * 3.6)}km/h`;
@@ -142,8 +142,10 @@ test.describe('STDCM page', () => {
     await rollingstockItem.locator('.rollingstock-footer-buttons > button').click();
 
     // Check that the rollingstock is selected
-    expect(playwrightSTDCMPage.page.locator('.rollingstock-infos-series')).toContainText(
-      rollingstocks[0].metadata.series
-    );
+    await expect(
+      playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
+    ).toBeVisible();
+
+    await playwrightHomePage.backToHomePage();
   });
 });
