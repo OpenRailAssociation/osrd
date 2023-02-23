@@ -1,16 +1,13 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import { RiMapPin5Fill } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
+import { ValueOf } from 'utils/types';
+import { PointOnMap } from 'applications/operationalStudies/consts';
+import { Dispatch } from 'redux';
 
-import {
-  getStdcmMode,
-  getMode,
-  getDestination,
-  getDestinationDate,
-  getDestinationTime,
-} from 'reducers/osrdconf/selectors';
+import { getStdcmMode, getMode, getDestination } from 'reducers/osrdconf/selectors';
 import {
   updateDestination,
   updateDestinationDate,
@@ -25,17 +22,50 @@ import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 interface DestinationProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  stdcmMode: ValueOf<typeof STDCM_MODES>;
+  destination: PointOnMap;
+  destinationDate: string;
+  destinationTime: string;
+  dispatch: Dispatch;
+  t: (s: string) => string;
+  mode: ValueOf<typeof MODES>;
+}
+
+export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+  return (hocProps: DestinationProps) => {
+    const dispatch = useDispatch();
+    const stdcmMode = useSelector(getStdcmMode);
+
+    const mode = useSelector(getMode);
+    const destination = useSelector(getDestination);
+
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        stdcmMode={stdcmMode}
+        mode={mode}
+        origin={origin}
+        destination={destination}
+        t={t}
+      />
+    );
+  };
 }
 
 function Destination(props: DestinationProps) {
-  const { zoomToFeaturePoint } = props;
-  const stdcmMode = useSelector(getStdcmMode);
-  const mode = useSelector(getMode);
-  const destination = useSelector(getDestination);
-  const destinationDate = useSelector(getDestinationDate);
-  const destinationTime = useSelector(getDestinationTime);
-  const dispatch = useDispatch();
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const {
+    zoomToFeaturePoint,
+    t,
+    dispatch,
+    destinationTime,
+    destinationDate,
+    destination,
+    stdcmMode,
+    mode,
+  } = props;
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
   const { isStdcm } = makeEnumBooleans(MODES, mode);

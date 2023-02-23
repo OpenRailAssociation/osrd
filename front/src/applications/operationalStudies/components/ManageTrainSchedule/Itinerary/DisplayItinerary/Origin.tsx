@@ -1,9 +1,15 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import { RiMapPin2Fill } from 'react-icons/ri';
 import { BiLink, BiUnlink } from 'react-icons/bi';
 import { useTranslation } from 'react-i18next';
+
+import { makeEnumBooleans } from 'utils/constants';
+import { ValueOf } from 'utils/types';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 import {
   updateOrigin,
@@ -15,26 +21,12 @@ import {
   updateStdcmMode,
   toggleOriginLinkedBounds,
 } from 'reducers/osrdconf';
-import {
-  getStdcmMode,
-  getMode,
-  getOrigin,
-  getOriginDate,
-  getOriginTime,
-  getOriginSpeed,
-  getOriginLinkedBounds,
-  getOriginUpperBoundDate,
-  getOriginUpperBoundTime,
-} from 'reducers/osrdconf/selectors';
-import { makeEnumBooleans } from 'utils/constants';
-
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
+import { Dispatch } from 'redux';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
-  stdcmMode: boolean;
-  mode: string;
+  stdcmMode: ValueOf<typeof STDCM_MODES>;
+  mode: ValueOf<typeof MODES>;
   origin: any; // declare origin as any type
   originDate: string | Date;
   originTime: Date;
@@ -42,6 +34,7 @@ interface OriginProps {
   originLinkedBounds: any;
   originUpperBoundDate: string | Date;
   originUpperBoundTime: Date;
+  dispatch: Dispatch;
 }
 
 function Origin(props: OriginProps) {
@@ -56,9 +49,9 @@ function Origin(props: OriginProps) {
     originLinkedBounds,
     originUpperBoundDate,
     originUpperBoundTime,
+    dispatch,
   } = props;
 
-  const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
@@ -133,7 +126,7 @@ function Origin(props: OriginProps) {
                         type="date"
                         className="form-control form-control-sm mx-1"
                         onChange={(e) => dispatch(updateOriginDate(e.target.value))}
-                        value={originDate}
+                        value={originDate as string}
                         disabled
                       />
                     )}
@@ -155,7 +148,7 @@ function Origin(props: OriginProps) {
                         type="date"
                         className="form-control form-control-sm mx-1"
                         onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
-                        value={originUpperBoundDate}
+                        value={originUpperBoundDate as string}
                         disabled
                       />
                       <InputSNCF
@@ -212,5 +205,32 @@ function Origin(props: OriginProps) {
     </>
   );
 }
+
+Origin.propTypes = {
+  zoomToFeaturePoint: PropTypes.func.isRequired,
+  stdcmMode: PropTypes.oneOf(Object.values(STDCM_MODES)).isRequired,
+  mode: PropTypes.oneOf(Object.values(MODES)).isRequired,
+  origin: PropTypes.any, // you can declare origin as any type
+  originDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]).isRequired,
+  originTime: PropTypes.instanceOf(Date),
+  originSpeed: PropTypes.number,
+  originLinkedBounds: PropTypes.any,
+  originUpperBoundDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+  originUpperBoundTime: PropTypes.instanceOf(Date),
+  dispatch: PropTypes.func,
+};
+
+Origin.defaultProps = {
+  stdcmMode: STDCM_MODES.byOrigin,
+  mode: MODES.simulation,
+  origin: null,
+  originDate: null,
+  originTime: null,
+  originSpeed: null,
+  originLinkedBounds: null,
+  originUpperBoundDate: null,
+  originUpperBoundTime: null,
+  dispatch: () => {},
+};
 
 export default Origin;
