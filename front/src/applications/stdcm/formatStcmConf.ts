@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 
-import { TYPES_UNITS } from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
+import { ALLOWANCE_UNIT_TYPES, TYPES_UNITS } from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
 import { STDCM_MODES, OsrdConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
@@ -108,7 +108,7 @@ export default function formatStdcmConf(
 
   if (!error) {
     const standardAllowanceType: string =
-      (osrdconf.standardStdcmAllowance?.type as string) || 'time';
+      (osrdconf.standardStdcmAllowance?.type as string) || ALLOWANCE_UNIT_TYPES.PERCENTAGE;
     const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
     const standardAllowance: { [index: string]: any } = {};
     const typeUnitTanslationIndex: { [index: string]: any } = TYPES_UNITS;
