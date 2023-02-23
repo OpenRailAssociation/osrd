@@ -7,6 +7,7 @@ import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import MapSearchSignalBox from 'common/Map/Search/MapSearchSignalBox';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
 import HearderPopUp from '../HeaderPopUp';
+import Tabs from 'common/Tabs';
 
 export default function MapSearch(props) {
   const { closeMapSearchPopUp } = props;
@@ -39,44 +40,22 @@ export default function MapSearch(props) {
   return (
     <div className="map-modal">
       <HearderPopUp onClick={closeMapSearchPopUp} title={t('translation:common.search')} />
-      <div className="actionbar">
-        <nav role="navigation" className="position-relative mt-2">
-          <ul className="nav nav navtabs mb-0 dragscroll" role="tablist" id="listeTitreOnglets">
-            {tabItems.map((tab, index) => (
-              <li className="navtabs-item pr-4" key={`tab-${tab.title}`}>
-                <a
-                  href={`#tab${index + 1}`}
-                  className={tab.className}
-                  id={`titletab${index + 1}`}
-                  data-toggle="tab"
-                  role="tab"
-                  aria-controls={`tab${index + 1}`}
-                  aria-selected={tab.ariaSelected}
-                >
-                  {tab.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-
-      <div className="tab-content" id="myTabContent">
-        <div
-          className="tab-pane fade show active"
-          id="tab1"
-          role="tabpanel"
-          aria-labelledby="titletab1"
-        >
-          <MapSearchStation updateExtViewport={updateViewportChange} />
-        </div>
-        <div className="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="titletab2">
-          <MapSearchSignalBox updateExtViewport={updateViewportChange} />
-        </div>
-        <div className="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="titletab3">
-          <MapSearchSignal updateExtViewport={updateViewportChange} />
-        </div>
-      </div>
+      <Tabs
+        tabs={[
+          {
+            label: t('map-search:station'),
+            content: <MapSearchStation updateExtViewport={updateViewportChange} />,
+          },
+          {
+            label: t('map-search:signalbox'),
+            content: <MapSearchSignalBox updateExtViewport={updateViewportChange} />,
+          },
+          {
+            label: t('map-search:signal'),
+            content: <MapSearchSignal updateExtViewport={updateViewportChange} />,
+          },
+        ]}
+      />
     </div>
   );
 }
