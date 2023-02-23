@@ -14,7 +14,7 @@ def run(*args, **kwargs):
     infra_id = kwargs["all_scenarios"]["small_infra"].infra
     project = create_project(base_url)
     op_study = create_op_study(base_url, project)
-    scenario, timetable = create_scenario(base_url, infra_id, project, op_study)
+    _, timetable = create_scenario(base_url, infra_id, project, op_study)
     payload = {
         "infra": infra_id,
         "rolling_stock": get_rolling_stock(base_url),
