@@ -5,6 +5,8 @@ import { WebMercatorViewport } from 'viewport-mercator-project';
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
 
+
+
 function Itinerary(props) {
   const {
     dispatchUpdateExtViewport,
@@ -97,9 +99,6 @@ function Itinerary(props) {
           zoomToFeaturePoint={zoomToFeaturePoint}
           zoomToFeature={zoomToFeature}
           viaModalContent={viaModalContent}
-          origin={origin}
-          destination={destination}
-          vias={vias}
         />
       </div>
     </div>
