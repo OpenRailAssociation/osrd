@@ -17,13 +17,39 @@ from .infra import LoadingGaugeType
 RAILJSON_ROLLING_STOCK_VERSION = "3.0"
 
 
-class Curve(BaseModel, extra=Extra.forbid):
-    x: conlist(confloat(ge=0), min_items=2) = Field(description="Abscissa or x-axis of your curve ")
-    f_x: conlist(confloat(ge=0), min_items=2) = Field(description="Corresponding ordinate or y-axis of your curve")
+class SpeedDependantPowerCoefficient(BaseModel, extra=Extra.forbid):
+    """
+    A curve that account for speed-related power (output/availability) behavior of specific energy sources,
+    - the pantograph power is lowered at low speed to avoid welding the pantograph to the catenary
+    - the power outputted by Hydrogen fuel cells increases with speed
+    - EMR QUALESI
+    """
+
+    speeds: conlist(confloat(ge=0), min_items=2) = Field(description="speed values")
+    power_coefficient: conlist(confloat(ge=0), min_items=2) = Field(
+        description="associated dimensionless power_coefficient which modulate output power"
+    )
 
     @root_validator(skip_on_failure=True)
     def check_size(cls, v):
-        assert len(v["x"]) == len(v["f_x"]), "x and f_x must have same length"
+        assert len(v["speeds"]) == len(v["power_coefficient"]), "speeds and power_coefficient must have the same length"
+        return v
+
+
+class SocDependantPowerCoefficient(BaseModel, extra=Extra.forbid):
+    """
+    Account for StateOfCharge-related power (output/availability) behavior of EnergyStorage-equipped EnergySources,
+    - battery power capability is dependant on how recharged it is
+    """
+
+    speeds: conlist(confloat(ge=0), min_items=2) = Field(description="speed values")
+    power_coefficient: conlist(confloat(ge=0), min_items=2) = Field(
+        description="associated dimensionless power_coefficient which modulate output power"
+    )
+
+    @root_validator(skip_on_failure=True)
+    def check_size(cls, v):
+        assert len(v["speeds"]) == len(v["power_coefficient"]), "speeds and power_coefficient must have the same length"
         return v
 
 
@@ -45,7 +71,6 @@ class RefillLaw(BaseModel, extra=Extra.forbid):
 
 class ManagementSystem(BaseModel, extra=Extra.forbid):
     """Other - EMR QUALESI"""
-
     overcharge_treshold: confloat(ge=0, le=1) = Field(description="overcharge limit")
     undercharge_treshold: confloat(ge=0, le=1) = Field(description="undercharge limit")
 
@@ -57,19 +82,35 @@ class EnergyStorage(BaseModel, extra=Extra.forbid):
     soc: confloat(ge=0, le=1) = Field(
         description="The State of Charge of your EnergyStorage, soc·capacity = actual stock of energy"
     )
-    optional_refill_law: Optional[RefillLaw]
-    optional_management_system: Optional[ManagementSystem]
-    optional_soc_dependency: Optional[Curve]
+    refill_law: Optional[RefillLaw]
+    management_system: Optional[ManagementSystem]
+    soc_dependency: Optional[Curve]
 
 
 class EnergySource(BaseModel, extra=Extra.forbid):
-    """EMR QUALESI"""
+    """
+    Base block for an energy supply of the train - EMR QUALESI
 
-    p_min: confloat(le=0) = Field(description="Minimum negative power")
-    p_max: confloat(ge=0) = Field(description="Maximum positive power")
-    optional_energy_storage: Optional[EnergyStorage]
-    optional_power_converter: Optional[PowerConverter]
-    optional_speed_dependency: Optional[Curve]
+    We choose to be in emitter convention, which means :
+    power>=0 the EnergySource is giving energy to supply the train (or anything connected to it)
+    power<=0 the EnergySource is receiving/consuming energy
+
+    if you want your EnergySource to give power exclusively, set p_min to 0
+    else if you want your EnergySource to consume power exclusively, set p_max to 0
+
+    Side note to whoever it helps, it's like power convention for electricity concepts, where an I/O can source or sink
+    current depending on the situation
+    """
+
+    p_min: confloat(le=0) = Field(description="Negative power limit")
+    p_max: confloat(ge=0) = Field(description="Positive power limit")
+    energy_storage: Optional[EnergyStorage] = Field(
+        description="If your EnergySource have a limited quantity of energy"
+    )
+    power_converter: Optional[PowerConverter] = Field(
+        description="If your EnergySource has power conversion and/or need to account for power losses "
+    )
+    speed_dependency: Optional[Curve] = Field(
 
 
 class ComfortType(str, Enum):
