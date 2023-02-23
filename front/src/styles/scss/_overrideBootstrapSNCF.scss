@@ -1,4 +1,3 @@
-
 /*
 *
 *   SELECT
@@ -8,6 +7,7 @@
   .select-menu {
     z-index: 3 !important;
   }
+
   .form-control {
     overflow: hidden !important;
     text-overflow: ellipsis;
@@ -34,6 +34,7 @@
 .modal-header.modal-header-border-bottom {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+
   div {
     width: 100%;
     border-top: 1px solid var(--coolgray3);
@@ -52,18 +53,22 @@
   min-height: 2rem;
   line-height: 1;
 }
+
 .chips.chips-label {
   font-size: .9rem;
   line-height: 1.2;
   height: 2rem;
 }
+
 button.chips.chips-btn {
   min-height: 2rem;
+
   &:hover {
     background-color: var(--secondary);
     color: var(--white) !important;
   }
 }
+
 .chips {
   border: none !important;
 }
@@ -78,4 +83,43 @@ blockquote {
   border-left: 3px solid var(--secondary);
   background-color: var(--coolgray1);
   padding-left: 0.5rem;
+}
+
+/*
+*
+*   TABS
+*
+*/
+
+.tabs {
+  .tab {
+    position: relative;
+    border-bottom: 3px solid transparent;
+    transition: text-shadow 0.3s;
+    &::after {
+      transition: all ease 0.3s;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0.3125rem;
+      content: "";
+      background-color: transparent;
+      border-radius: 3px;
+    }
+
+    &:hover {
+      cursor: pointer;
+      color: var(--primary);
+    }
+
+    &.active {
+      text-shadow: 0 0 0.65px var(--primary);
+      color: var(--primary);
+
+      &::after {        
+        background-color: var(--primary);
+      }
+    }
+  }
 }
