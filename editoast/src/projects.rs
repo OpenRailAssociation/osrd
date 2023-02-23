@@ -1,7 +1,6 @@
 use crate::error::Result;
 use crate::tables::osrd_infra_project;
 use crate::tables::osrd_infra_project::dsl;
-use actix_web::web::Json;
 use chrono::NaiveDateTime;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Nullable, Text};
@@ -61,18 +60,18 @@ pub struct ProjectPatch {
 }
 
 impl Project {
-    pub fn create(data: Json<ProjectData>, conn: &mut PgConnection) -> Result<Project> {
+    pub fn create(data: ProjectData, conn: &mut PgConnection) -> Result<Project> {
         match sql_query(
         "INSERT INTO osrd_infra_project (name, description, objectives, funders, budget, image, creation_date,last_modification, tags)
          VALUES ($1, $2, $3, $4, $5, NULL,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP,$6)
          RETURNING *",
     )
-    .bind::<Text, _>(&data.name)
-    .bind::<Nullable<Text>,_>(&data.description)
-    .bind::<Nullable<Text>,_>(&data.objectives)
-    .bind::<Nullable<Array<Text>>,_>(&data.funders)
-    .bind::<Nullable<Integer>,_>(&data.budget)
-    .bind::<Nullable<Array<Text>>,_>(&data.tags)
+    .bind::<Text, _>(data.name)
+    .bind::<Nullable<Text>,_>(data.description)
+    .bind::<Nullable<Text>,_>(data.objectives)
+    .bind::<Nullable<Array<Text>>,_>(data.funders)
+    .bind::<Nullable<Integer>,_>(data.budget)
+    .bind::<Nullable<Array<Text>>,_>(data.tags)
     .get_result::<Project>(conn)
     {
         Ok(project) => Ok(project),
@@ -106,41 +105,65 @@ impl Project {
         let project: Project = dsl::osrd_infra_project
             .filter(dsl::id.eq(project_id))
             .first(conn)?;
-        let update_project = Project {
-            id: project.id,
-            name: match data.name {
-                Some(t) => t,
-                None => data.name.unwrap(),
-            },
-            description: match data.description {
-                Some(t) => Some(t),
-                None => data.description,
-            },
-            objectives: match data.objectives {
-                Some(t) => Some(t),
-                None => data.objectives,
-            },
-            funders: match data.funders {
-                Some(t) => Some(t),
-                None => data.funders,
-            },
-            budget: match data.budget {
-                Some(t) => Some(t),
-                None => data.budget,
-            },
-            image: match data.image {
-                Some(t) => Some(t),
-                None => data.image,
-            },
-            creation_date: project.creation_date,
-            last_modification: chrono::Utc::now().naive_utc(),
-            tags: match data.tags {
-                Some(t) => Some(t),
-                None => data.tags,
-            },
-        };
-        let target = dsl::osrd_infra_project.find(project.id);
-        update(target).set(&update_project).execute(conn)?;
+        let update_project = update(dsl::osrd_infra_project.find(project_id))
+            .set((
+                dsl::name.eq(data.name.unwrap_or(project.name)),
+                dsl::description.eq(data.description.or(project.description)),
+                dsl::objectives.eq(data.objectives.or(project.objectives)),
+                dsl::funders.eq(data.funders.or(project.funders)),
+                dsl::budget.eq(data.budget.or(project.budget)),
+                dsl::image.eq(data.image.or(project.image)),
+                dsl::tags.eq(data.tags.or(project.tags)),
+                dsl::last_modification.eq(chrono::Utc::now().naive_utc()),
+            ))
+            .get_result::<Project>(conn)?;
         Ok(update_project)
+    }
+}
+
+#[cfg(test)]
+
+pub mod test {
+
+    use super::{Project, ProjectData};
+    use crate::client::PostgresConfig;
+    use actix_web::http::StatusCode;
+    use actix_web::ResponseError;
+    use diesel::result::Error;
+    use diesel::{Connection, PgConnection};
+
+    pub fn test_project_transaction(fn_test: fn(&mut PgConnection, Project)) {
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let project_data: ProjectData = ProjectData {
+            name: "test".into(),
+            description: Some("description".into()),
+            objectives: Some("objectives".into()),
+            funders: None,
+            budget: None,
+            image: None,
+            tags: None,
+        };
+        conn.test_transaction::<_, Error, _>(|conn| {
+            let infra = Project::create(project_data, conn).unwrap();
+
+            fn_test(conn, infra);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn create_project() {
+        test_project_transaction(|_, project| {
+            assert_eq!("test", project.name);
+        });
+    }
+
+    #[test]
+    fn delete_project() {
+        test_project_transaction(|conn, project| {
+            assert!(Project::delete(project.id, conn).is_ok());
+            let err = Project::delete(project.id, conn).unwrap_err();
+            assert_eq!(err.status_code(), StatusCode::NOT_FOUND);
+        });
     }
 }
