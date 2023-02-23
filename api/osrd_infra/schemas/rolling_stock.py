@@ -38,7 +38,8 @@ class SpeedDependantPowerCoefficient(BaseModel, extra=Extra.forbid):
 
 class SocDependantPowerCoefficient(BaseModel, extra=Extra.forbid):
     """
-    Account for StateOfCharge-related power (output/availability) behavior of EnergyStorage-equipped EnergySources,
+    A curve that account for StateOfCharge-related power (output/availability) behavior of
+    EnergyStorage-equipped EnergySources,
     - battery power capability is dependant on how recharged it is
     """
 
@@ -84,7 +85,7 @@ class EnergyStorage(BaseModel, extra=Extra.forbid):
     )
     refill_law: Optional[RefillLaw]
     management_system: Optional[ManagementSystem]
-    soc_dependency: Optional[Curve]
+    soc_dependency: Optional[SocDependantPowerCoefficient]
 
 
 class EnergySource(BaseModel, extra=Extra.forbid):
@@ -110,7 +111,7 @@ class EnergySource(BaseModel, extra=Extra.forbid):
     power_converter: Optional[PowerConverter] = Field(
         description="If your EnergySource has power conversion and/or need to account for power losses "
     )
-    speed_dependency: Optional[Curve] = Field(
+    speed_dependency: Optional[SpeedDependantPowerCoefficient] = Field(
         description="If your EnergySource output power is dependant on speed of the train"
     )
 
