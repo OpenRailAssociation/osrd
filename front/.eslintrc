@@ -6,14 +6,7 @@
     "plugin:import/typescript",
     "prettier"
   ],
-  "plugins": [
-    "prettier",
-    "react",
-    "react-hooks",
-    "only-warn",
-    "import",
-    "vitest"
-  ],
+  "plugins": ["prettier", "react", "react-hooks", "only-warn", "import", "vitest"],
   "parserOptions": {
     "ecmaVersion": "latest"
   },
@@ -44,7 +37,8 @@
     ],
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": ["error"],
-    "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }]
+    "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }],
+    "arrow-body-style": ["error", "as-needed"]
   },
   "settings": {
     "import/resolver": {
