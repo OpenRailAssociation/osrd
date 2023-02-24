@@ -78,7 +78,9 @@ test.describe('STDCM page', () => {
 
   test('should be correctly displays the rolling stock list and select one', async () => {
     const rollingstocks = playwrightDataTest.rollingStocks.results;
-
+    const rollingStockTranslation =
+      playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
+    const rollingStockTranslationRegEx = new RegExp(rollingStockTranslation as string);
     const rollingstockItem = playwrightSTDCMPage.getRollingstockByTestId(
       `rollingstock${rollingstocks[0].id}`
     );
@@ -87,6 +89,7 @@ test.describe('STDCM page', () => {
     await expect(
       playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
     ).not.toBeVisible();
+    await expect(playwrightSTDCMPage.getMissingParam).toContainText(rollingStockTranslationRegEx);
 
     await playwrightSTDCMPage.getRollingstockModalClose();
     await playwrightSTDCMPage.openRollingstockModal();
@@ -145,6 +148,10 @@ test.describe('STDCM page', () => {
     await expect(
       playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
     ).toBeVisible();
+
+    await expect(playwrightSTDCMPage.getMissingParam).not.toContainText(
+      rollingStockTranslationRegEx
+    );
 
     await playwrightHomePage.backToHomePage();
   });
