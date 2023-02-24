@@ -2,6 +2,7 @@ import { expect, Locator, Page } from '@playwright/test';
 /* eslint-disable import/prefer-default-export */
 import infraManagement from '../public/locales/fr/infraManagement.json';
 import rollingstockTranslation from '../public/locales/fr/rollingstock.json';
+import manageTrainScheduleTranslation from '../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
 export class PlaywrightSTDCMPage {
   readonly page: Page;
@@ -11,6 +12,10 @@ export class PlaywrightSTDCMPage {
   readonly translation: typeof infraManagement;
 
   readonly rollingstockTranslation: typeof rollingstockTranslation;
+
+  readonly manageTrainScheduleTranslation: typeof manageTrainScheduleTranslation;
+
+  readonly getMissingParam: Locator;
 
   // Scenario Explorator
   readonly getScenarioExplorator: Locator;
@@ -38,6 +43,8 @@ export class PlaywrightSTDCMPage {
     this.page = page;
     this.getBody = page.locator('body');
     this.translation = infraManagement;
+    this.manageTrainScheduleTranslation = manageTrainScheduleTranslation;
+    this.getMissingParam = page.locator('.missing-params');
 
     // Scenario Explorator
     this.getScenarioExplorator = page.getByTestId('scenario-explorator');
@@ -59,6 +66,10 @@ export class PlaywrightSTDCMPage {
 
   getTranslations(key: keyof typeof infraManagement) {
     return this.translation[key];
+  }
+
+  getmanageTrainScheduleTranslations(key: keyof typeof manageTrainScheduleTranslation) {
+    return this.manageTrainScheduleTranslation[key];
   }
 
   // Scenario Explorator
