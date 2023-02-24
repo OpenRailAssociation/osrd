@@ -22,12 +22,23 @@ pub async fn delete(redis: &mut ConnectionManager, keys_to_delete: Vec<String>) 
     Ok(del.query_async::<_, u64>(redis).await?)
 }
 
-pub async fn set<T: ToRedisArgs>(redis: &mut ConnectionManager, key: &str, value: T) -> Result<()> {
-    Ok(cmd("SET")
+pub async fn set<T: ToRedisArgs>(
+    redis: &mut ConnectionManager,
+    key: &str,
+    value: T,
+    cache_duration: u32,
+) -> Result<()> {
+    cmd("SET")
         .arg(key)
         .arg(value)
         .query_async::<_, ()>(redis)
-        .await?)
+        .await?;
+    cmd("EXPIRE")
+        .arg(key)
+        .arg(cache_duration)
+        .query_async::<_, ()>(redis)
+        .await?;
+    Ok(())
 }
 
 /// Gets Redis value associated to a  specific key
@@ -45,6 +56,8 @@ pub async fn get<T: Default + FromRedisValue>(
 
 #[cfg(test)]
 mod tests {
+    use std::{thread::sleep, time::Duration};
+
     use crate::{
         client::RedisConfig,
         map::redis_utils::{delete, get, keys, set},
@@ -65,8 +78,12 @@ mod tests {
         let test_keys = keys(&mut redis_pool, "test_*").await.unwrap();
         assert!(test_keys.is_empty());
         // Add two keys and check presence
-        set(&mut redis_pool, "test_1", "value_1").await.unwrap();
-        set(&mut redis_pool, "test_2", "value_2").await.unwrap();
+        set(&mut redis_pool, "test_1", "value_1", 600)
+            .await
+            .unwrap();
+        set(&mut redis_pool, "test_2", "value_2", 600)
+            .await
+            .unwrap();
         let mut test_keys = keys(&mut redis_pool, "test_*").await.unwrap();
         test_keys.sort();
         assert_eq!(test_keys, vec!["test_1", "test_2"]);
@@ -78,7 +95,7 @@ mod tests {
         assert!(does_not_exist.is_none());
         // Set and get empty vec
         let empty_vec: Vec<u8> = vec![];
-        set(&mut redis_pool, "test_empty", empty_vec.clone())
+        set(&mut redis_pool, "test_empty", empty_vec.clone(), 600)
             .await
             .unwrap();
         let test_empty = get::<Vec<u8>>(&mut redis_pool, "test_empty").await;
@@ -97,6 +114,11 @@ mod tests {
         .unwrap();
         assert_eq!(result, 3);
         let test_keys = keys(&mut redis_pool, "test_*").await.unwrap();
+        assert!(test_keys.is_empty());
+        // Test expire parameter
+        set(&mut redis_pool, "test_1", "value_1", 1).await.unwrap();
+        sleep(Duration::from_secs(2));
+        let test_keys = keys(&mut redis_pool, "test_1").await.unwrap();
         assert!(test_keys.is_empty());
     }
 }
