@@ -4,8 +4,9 @@ import { useSelector } from 'react-redux';
 import { getDestination, getOrigin, getRollingStockID } from 'reducers/osrdconf/selectors';
 import DisplayMissingInfo from './DisplayMissingInfo';
 
-const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => {
-  return (hocProps: T) => {
+const withOSRDStdcmMissingInfo =
+  <T extends {}>(Component: ComponentType<T>) =>
+  (hocProps: T) => {
     const { t } = useTranslation('missingInfo');
 
     const origin = useSelector(getOrigin);
@@ -39,6 +40,5 @@ const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => 
       )
     );
   };
-};
 
 export default withOSRDStdcmMissingInfo(DisplayMissingInfo);

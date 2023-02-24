@@ -290,9 +290,10 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
   );
 };
 
-export const getPointEditionLeftPanel = (type: EditoastType): ComponentType => {
-  return () => <PointEditionLeftPanel type={type} />;
-};
+export const getPointEditionLeftPanel =
+  (type: EditoastType): ComponentType =>
+  () =>
+    <PointEditionLeftPanel type={type} />;
 
 export const BasePointEditionLayers: FC<{
   // eslint-disable-next-line react/no-unused-prop-types
