@@ -155,7 +155,7 @@ public class Pathfinding<NodeT, EdgeT> {
     ) {
         checkParameters();
         for (var location : starts) {
-            var startRange = new EdgeRange<>(location.edge, location.offset, edgeToLength.apply(location.edge));
+            var startRange = new EdgeRange<>(location.edge, location.offset, location.offset);
             registerStep(startRange, null, 0, 0, List.of(location));
         }
         while (true) {
