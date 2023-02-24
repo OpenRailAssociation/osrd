@@ -566,6 +566,41 @@ public class PathfindingTests {
         assertNull(res);
     }
 
+    @Test
+    public void pathfindingDisjointedPaths() {
+        /* Two disjointed paths, top one is direct and fastest, bottom one is split
+
+        0 -> B1 ------> E1 -> 1
+        2 -> B2 -> 3 -> 4 -> E2 -> 5
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(6);
+        builder.makeEdge(0, 1, 10_000);
+        builder.makeEdge(2, 3, 1_000);
+        builder.makeEdge(3, 4, 1_000);
+        builder.makeEdge(4, 5, 1_000);
+        var g = builder.build();
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
+                        List.of(
+                                builder.getEdgeLocation("0-1", 5_000),
+                                builder.getEdgeLocation("2-3")
+                        ),
+                        List.of(
+                                builder.getEdgeLocation("0-1", 6_999),
+                                builder.getEdgeLocation("4-5", 1_000)
+                        )
+                ));
+        var resIDs = res.stream().map(x -> x.label).toList();
+        assertEquals(
+                List.of(
+                        "0-1"
+                ),
+                resIDs
+        );
+    }
+
     private static List<SimpleRange> convertRes(Pathfinding.Result<SimpleGraphBuilder.Edge> res) {
         return res.ranges().stream()
                 .map(x -> new SimpleRange(x.edge().label, x.start(), x.end()))
