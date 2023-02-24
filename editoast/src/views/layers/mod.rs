@@ -149,9 +149,14 @@ async fn cache_and_get_mvt_tile(
     let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(z, x, y, layer_slug, records)
         .to_bytes()
         .unwrap();
-    set(&mut redis_conn, &cache_key, mvt_bytes.clone())
-        .await
-        .unwrap_or_else(|_| panic!("Fail to set value in redis with key {cache_key}"));
+    set(
+        &mut redis_conn,
+        &cache_key,
+        mvt_bytes.clone(),
+        view.cache_duration,
+    )
+    .await
+    .unwrap_or_else(|_| panic!("Fail to set value in redis with key {cache_key}"));
     Ok(HttpResponse::Ok()
         .content_type("application/x-protobuf")
         .body(mvt_bytes))
