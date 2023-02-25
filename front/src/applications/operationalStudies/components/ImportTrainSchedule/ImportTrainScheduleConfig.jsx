@@ -3,12 +3,10 @@ import { useTranslation } from 'react-i18next';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import PropTypes from 'prop-types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import {
-  MemoStationSelector,
-  formatStation,
-} from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
+import MemoStationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
 import { useDispatch } from 'react-redux';
+import StationCard from 'common/StationCard';
 
 function dateOfToday() {
   const date = new Date();
@@ -83,7 +81,7 @@ export default function ImportTrainScheduleConfig(props) {
                   role="button"
                   tabIndex={0}
                 >
-                  {formatStation(from)}
+                  <StationCard station={from} />
                 </div>
               ) : (
                 <MemoStationSelector
@@ -107,7 +105,7 @@ export default function ImportTrainScheduleConfig(props) {
                   role="button"
                   tabIndex={0}
                 >
-                  {formatStation(to)}
+                  <StationCard station={to} />
                 </div>
               ) : (
                 <MemoStationSelector
