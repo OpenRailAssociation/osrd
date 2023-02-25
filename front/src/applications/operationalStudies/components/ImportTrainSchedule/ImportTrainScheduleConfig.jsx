@@ -81,7 +81,7 @@ export default function ImportTrainScheduleConfig(props) {
                   role="button"
                   tabIndex={0}
                 >
-                  <StationCard station={from} />
+                  <StationCard station={from} fixedHeight />
                 </div>
               ) : (
                 <MemoStationSelector
@@ -105,7 +105,7 @@ export default function ImportTrainScheduleConfig(props) {
                   role="button"
                   tabIndex={0}
                 >
-                  <StationCard station={to} />
+                  <StationCard station={to} fixedHeight />
                 </div>
               ) : (
                 <MemoStationSelector
