@@ -22,6 +22,7 @@ export default defineConfig({
       eslint: {
         lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 345',
       },
+      overlay: false,
     }),
   ],
   build: {
