@@ -84,10 +84,9 @@
     cursor: pointer;
   }
   .search-results {
-    background-color: #f2f2f2;
-    max-height: 50vh;
-    border-radius: 4px;
-    cursor: pointer;
+    max-height: 30vh;
+    overflow: auto;
+    padding-right: 0.5rem;
     .search-result-item {
       display: block;
       background-color: inherit;
