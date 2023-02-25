@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateMapSearchMarker } from 'reducers/map';
-import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { post } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import turfCenter from '@turf/center';
+import StationCard from 'common/StationCard';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -89,29 +89,9 @@ export default function MapSearchStation(props) {
     }
   };
 
-  const formatSearchResults = () => {
-    // sort name, then by mainstation true then false
-    let searchResultsContent = searchResults.sort((a, b) => a.name.localeCompare(b.name));
-    searchResultsContent = searchResultsContent.sort(
-      (a, b) => Number(b.mainstation) - Number(a.mainstation)
-    );
-    return searchResultsContent.map((result) => (
-      <button
-        className="search-result-item d-flex justify-content-between mb-1 align-items-center"
-        key={nextId()}
-        onClick={() => onResultClick(result)}
-        type="button"
-      >
-        <div className="name">{result.name}</div>
-        <div className="text-right">
-          <div className="trigram">
-            {result.trigram}&nbsp;
-            <span className="ch small">{result.ch}</span>
-          </div>
-        </div>
-      </button>
-    ));
-  };
+  // Sort on name, and on yardname
+  const orderResults = (results) =>
+    results.sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
 
   const clearSearchResult = () => {
     setSearch('');
@@ -140,12 +120,20 @@ export default function MapSearchStation(props) {
           />
         </span>
       </div>
-      <div style={{ maxHeight: '200px', overflow: 'auto' }}>
-        {searchResults !== undefined && searchResults.length > 0 ? (
-          <div className="search-results pt-1 pl-1 pr-2">{formatSearchResults()}</div>
-        ) : (
-          <h2 className="text-center mt-3">{t('map-search:noresult')}</h2>
-        )}
+      <h2 className="text-center mt-3">
+        {t('map-search:resultsCount', { count: searchResults ? searchResults.length : 0 })}
+      </h2>
+      <div className="search-results">
+        {searchResults &&
+          orderResults(searchResults).map((result) => (
+            <div className="mb-1">
+              <StationCard
+                station={{ ...result, yardname: result.ch }}
+                onClick={() => onResultClick(result)}
+                key={`${result.trigram}${result.yardname}${result.uic}`}
+              />
+            </div>
+          ))}
       </div>
     </>
   );

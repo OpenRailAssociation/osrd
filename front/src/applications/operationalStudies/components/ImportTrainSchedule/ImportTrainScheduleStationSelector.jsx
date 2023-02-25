@@ -59,7 +59,7 @@ function ImportTrainScheduleStationSelector(props) {
         <div className="results-stations">
           {stationsList.map((station) => (
             <div role="button" tabIndex={0} onClick={() => onSelect(station)} key={nextId()}>
-              <StationCard station={station} />
+              <StationCard station={station} fixedHeight />
             </div>
           ))}
         </div>

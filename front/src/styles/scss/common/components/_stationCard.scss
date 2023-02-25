@@ -9,7 +9,9 @@
   padding-top: .15rem;
   border-radius: 4px;
   transition: .2s;
-  min-height: 4rem;
+  &.fixed-height {
+    min-height: 4rem;
+  }
   &:hover {
     border-color: var(--coolgray9);
   }
@@ -48,6 +50,9 @@
     .station-card-department {
       text-transform: uppercase;
       font-size: .6rem;
+    }
+    .station-card-separator {
+      font-size: 0.6rem;
     }
     .station-card-region {
       text-transform: uppercase;
