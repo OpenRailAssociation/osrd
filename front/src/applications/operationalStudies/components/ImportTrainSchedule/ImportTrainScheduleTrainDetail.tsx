@@ -1,12 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 
-export default function ImportTrainScheduleTrainDetail(props) {
-  const { trainData, idx, rollingStock } = props;
+type Props = {
+  trainData: any;
+  idx: number;
+  rollingStock?: any;
+};
+
+export default function ImportTrainScheduleTrainDetail({ trainData, idx, rollingStock }: Props) {
   const [isOpened, setIsOpened] = useState(false);
 
   const openCard = () => {
@@ -57,7 +62,7 @@ export default function ImportTrainScheduleTrainDetail(props) {
         </span>
       </div>
       <div className={`import-train-schedule-traindetail-steps ${isOpened ? 'opened' : ''}`}>
-        {trainData.etapes.map((step, stepIdx) =>
+        {trainData.etapes.map((step: any, stepIdx: number) =>
           // Remove origin & destination
           stepIdx !== 0 && stepIdx !== trainData.etapes.length - 1 ? (
             <div className="import-train-schedule-traindetail-step" key={nextId()}>
@@ -74,9 +79,3 @@ export default function ImportTrainScheduleTrainDetail(props) {
     </div>
   );
 }
-
-ImportTrainScheduleTrainDetail.propTypes = {
-  trainData: PropTypes.object.isRequired,
-  idx: PropTypes.number.isRequired,
-  rollingStock: PropTypes.object.isRequired,
-};
