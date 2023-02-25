@@ -4,7 +4,7 @@
   "blocktype": "Type de block",
   "BoundsAreLinked": "Les deux bornes sont liées",
   "BoundsAreNotLinked": "Les deux bornes ne sont pas liées",
-  "cancelAddTrainSchedule": "Annuler",
+  "cancelAddTrainSchedule": "Retourner aux résultats de simulation",
   "cancelRequest": "Annuler la requête",
   "chooseOnMap": "Choisir sur la carte",
   "composition": "Composition",

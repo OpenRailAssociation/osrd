@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { FaPlus } from 'react-icons/fa';
+import { FaDownload, FaPlus } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 
 import nextId from 'react-id-generator';
@@ -156,7 +156,10 @@ export default function Timetable(props) {
           data-testid="scenarios-filter-button"
           onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.opendata)}
         >
-          <FaPlus />
+          <span className="mr-2">
+            <FaDownload />
+          </span>
+          {t('timetable.importTrainSchedule')}
         </button>
         <button
           className="btn btn-primary btn-sm"
@@ -164,7 +167,10 @@ export default function Timetable(props) {
           data-testid="scenarios-filter-button"
           onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
         >
-          <FaPlus />
+          <span className="mr-2">
+            <FaPlus />
+          </span>
+          {t('timetable.addTrainSchedule')}
         </button>
       </div>
       <div className="scenario-timetable-toolbar">

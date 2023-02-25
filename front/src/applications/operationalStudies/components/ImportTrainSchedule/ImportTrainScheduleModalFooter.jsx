@@ -12,30 +12,19 @@ export default function ImportTrainScheduleModalFooter(props) {
   const navigate = useNavigate();
   return (
     <ModalFooterSNCF>
-      <div>
-        {Object.values(status).every((el) => el) ? (
-          <div className="d-flex justify-content-between mb-2">
-            <button
-              type="button"
-              className="btn text-wrap btn-success flex-grow-1 mr-1"
-              onClick={() => {
-                closeModal();
-              }}
-            >
-              {t('operationalStudies/importTrainSchedule:goToSimulation')}
-            </button>
-            <button
-              type="button"
-              className="btn text-wrap btn-success flex-grow-1 ml-1"
-              onClick={() => {
-                closeModal();
-                navigate('/stdcm');
-              }}
-            >
-              {t('operationalStudies/importTrainSchedule:goToSTDCM')}
-            </button>
-          </div>
-        ) : null}
+      <div className="w-100">
+        {Object.values(status).every((el) => el) && (
+          <button
+            type="button"
+            className="btn text-wrap btn-success mb-1 btn-block"
+            onClick={() => {
+              closeModal();
+              navigate('/stdcm');
+            }}
+          >
+            {t('operationalStudies/importTrainSchedule:goToSTDCM')}
+          </button>
+        )}
         <button onClick={closeModal} type="button" className="btn btn-sm btn-secondary btn-block">
           {t('translation:common.close')}
         </button>

@@ -4,6 +4,8 @@
   "modifyScenario": "Modifier le scénario",
   "isUpdating": "Mise à jour...",
   "timetable": {
+    "addTrainSchedule": "Ajouter",
+    "importTrainSchedule": "Importer",
     "trainDeleted": "Le train {{name}} a bien été supprimé."
   },
   "trainCount_zero": "Aucun train",
