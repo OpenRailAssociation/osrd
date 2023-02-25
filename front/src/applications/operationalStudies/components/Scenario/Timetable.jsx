@@ -153,7 +153,7 @@ export default function Timetable(props) {
         <button
           className="btn btn-secondary btn-sm"
           type="button"
-          data-testid="scenarios-filter-button"
+          data-testid="scenarios-import-train-schedule-button"
           onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.opendata)}
         >
           <span className="mr-2">
@@ -164,7 +164,7 @@ export default function Timetable(props) {
         <button
           className="btn btn-primary btn-sm"
           type="button"
-          data-testid="scenarios-filter-button"
+          data-testid="scenarios-add-train-schedule-button"
           onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
         >
           <span className="mr-2">
