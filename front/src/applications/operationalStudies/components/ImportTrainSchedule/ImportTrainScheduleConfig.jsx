@@ -65,118 +65,130 @@ export default function ImportTrainScheduleConfig(props) {
     }
   }
 
+  function importFile() {
+    return null;
+  }
+
   return (
-    <div className="row">
-      <div className="col-lg-6">
-        <div className="osrd-config-item mb-2">
-          <div className="osrd-config-item-container osrd-config-item-from">
-            <h2>{t('from')}</h2>
-            {from ? (
-              <div
-                className="result-station-selected"
-                onClick={() => setFrom(undefined)}
-                role="button"
-                tabIndex={0}
-              >
-                {formatStation(from)}
-              </div>
-            ) : (
-              <MemoStationSelector
-                id="fromSearch"
-                onSelect={setFrom}
-                term={fromSearchString}
-                setTerm={setFromSearchString}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="col-lg-6">
-        <div className="osrd-config-item mb-2">
-          <div className="osrd-config-item-container osrd-config-item-to">
-            <h2>{t('to')}</h2>
-            {to ? (
-              <div
-                className="result-station-selected"
-                onClick={() => setTo(undefined)}
-                role="button"
-                tabIndex={0}
-              >
-                {formatStation(to)}
-              </div>
-            ) : (
-              <MemoStationSelector
-                id="toSearch"
-                onSelect={setTo}
-                term={toSearchString}
-                setTerm={setToSearchString}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="col-lg-6">
-        <RollingStockSelector />
-      </div>
-      <div className="col-lg-6">
-        <div className="osrd-config-item mb-2">
-          <div className="osrd-config-item-container osrd-config-item-datetime">
-            <h2>{t('datetime')}</h2>
-            <div className="row no-gutters">
-              <div className="col-9">
-                <div className="mb-2">
-                  <InputSNCF
-                    id="date"
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    sm
-                    noMargin
-                    step={0}
-                    unit={t('date')}
-                  />
-                </div>
-                <div className="row">
-                  <span className="col-sm-6 col-lg-12 col-xl-6 mb-2 mb-sm-0 mb-lg-2 mb-xl-0">
-                    <InputSNCF
-                      id="startTime"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      sm
-                      noMargin
-                      step={0}
-                      unit={t('startTime')}
-                    />
-                  </span>
-                  <span className="col-sm-6 col-lg-12 col-xl-6">
-                    <InputSNCF
-                      id="endTime"
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      sm
-                      noMargin
-                      step={0}
-                      unit={t('endTime')}
-                    />
-                  </span>
-                </div>
-              </div>
-              <div className="col-3 pl-2">
-                <button
-                  type="button"
-                  className="btn btn-primary btn-block h-100"
-                  onClick={defineConfig}
+    <>
+      <div className="row no-gutters">
+        <div className="col-lg-6 station-selector sm-gutters">
+          <div className="osrd-config-item mb-2">
+            <div className="osrd-config-item-container osrd-config-item-from">
+              <h2>{t('from')}</h2>
+              {from ? (
+                <div
+                  className="result-station-selected"
+                  onClick={() => setFrom(undefined)}
+                  role="button"
+                  tabIndex={0}
                 >
-                  <i className="icons-search" />
-                </button>
-              </div>
+                  {formatStation(from)}
+                </div>
+              ) : (
+                <MemoStationSelector
+                  id="fromSearch"
+                  onSelect={setFrom}
+                  term={fromSearchString}
+                  setTerm={setFromSearchString}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="col-lg-6 station-selector sm-gutters">
+          <div className="osrd-config-item mb-2">
+            <div className="osrd-config-item-container osrd-config-item-to">
+              <h2>{t('to')}</h2>
+              {to ? (
+                <div
+                  className="result-station-selected"
+                  onClick={() => setTo(undefined)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {formatStation(to)}
+                </div>
+              ) : (
+                <MemoStationSelector
+                  id="toSearch"
+                  onSelect={setTo}
+                  term={toSearchString}
+                  setTerm={setToSearchString}
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <div className="row no-gutters">
+        <div className="col-lg-6 sm-gutters">
+          <RollingStockSelector />
+        </div>
+        <div className="col-lg-5 col-9 sm-gutters">
+          <div className="osrd-config-item">
+            <div className="osrd-config-item-container osrd-config-item-datetime">
+              <h2>{t('datetime')}</h2>
+              <div className="mb-2">
+                <InputSNCF
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  sm
+                  noMargin
+                  step={0}
+                  unit={t('date')}
+                />
+              </div>
+              <div className="row no-gutters">
+                <span className="col-6 sm-gutters">
+                  <InputSNCF
+                    id="startTime"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    sm
+                    noMargin
+                    step={0}
+                    unit={t('startTime')}
+                  />
+                </span>
+                <span className="col-6 sm-gutters">
+                  <InputSNCF
+                    id="endTime"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    sm
+                    noMargin
+                    step={0}
+                    unit={t('endTime')}
+                  />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-lg-1 col-3 d-flex flex-column sm-gutters pb-lg-2">
+          <button
+            type="button"
+            className="btn btn-sm btn-primary btn-block h-100"
+            onClick={defineConfig}
+          >
+            <i className="icons-search" />
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary btn-block h-100"
+            onClick={importFile}
+          >
+            <i className="icons-download" />
+          </button>
+        </div>
+      </div>
+    </>
   );
 }
 

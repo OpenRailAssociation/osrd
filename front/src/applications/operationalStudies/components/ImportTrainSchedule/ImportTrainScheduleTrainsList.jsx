@@ -60,6 +60,8 @@ export default function ImportTrainScheduleTrainsList(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
+  if (!config) return null;
+
   return trainsList && trainsList.length > 0 ? (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container import-train-schedule-trainlist">
