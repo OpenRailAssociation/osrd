@@ -1,0 +1,88 @@
+.station-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--white);
+  flex-grow: 1;
+  cursor: pointer;
+  border: 2px solid var(--coolgray1);
+  padding-top: .15rem;
+  border-radius: 4px;
+  transition: .2s;
+  min-height: 4rem;
+  &:hover {
+    border-color: var(--coolgray9);
+  }
+  .station-card-head {
+    display: flex;
+    align-items: baseline;
+    padding: 0 .25rem;
+    height: 1.5rem;
+    .station-card-code {
+      font-size: .8rem;
+      width: 2.25rem;
+    }
+    .station-card-name {
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 1.1rem;
+    }
+    .station-card-ch {
+      margin-left: auto;
+      font-weight: 500;
+      font-size: .8rem;
+    }
+  }
+  .station-card-localization {
+    display: flex;
+    align-items: baseline;
+    position: relative;
+    padding: 0 .25rem 0 2.5rem;
+    height: 1rem;
+    line-height: .8rem;
+    color: var(--coolgray9);
+    gap: .25rem;
+    .station-card-city {
+      font-size: .7rem;
+    }
+    .station-card-department {
+      text-transform: uppercase;
+      font-size: .6rem;
+    }
+    .station-card-region {
+      text-transform: uppercase;
+      font-size: .6rem;   
+    }
+    .station-card-uic {
+      margin-left: auto;
+      font-size: .6rem;
+      color: var(--primary);    
+    }
+  }
+  .station-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 .25rem;
+    font-size: .7rem;
+    background-color: var(--coolgray1);
+    border-radius: 0 0 4px 4px;
+    height: 1rem;
+    .station-card-line {
+      overflow: hidden;
+      white-space: nowrap;
+      color: var(--coolgray9);
+    }
+    .station-card-pk {
+      overflow: hidden;
+      white-space: nowrap;
+      margin-left: auto;
+      margin-right: .25rem;
+      font-size: .6rem;
+    }
+    .station-card-line-number {
+      font-size: .6rem;    
+      color: var(--purple);
+    }
+  }
+}

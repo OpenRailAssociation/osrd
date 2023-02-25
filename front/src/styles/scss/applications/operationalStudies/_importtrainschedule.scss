@@ -37,7 +37,7 @@
   .results-stations {
     height: 15rem;
     overflow: auto;
-    .results-station-data {
+    .station-card {
       margin-bottom: 0.25rem;
     }
   }
@@ -45,94 +45,6 @@
     border-radius: 4px;
     position: relative;
     margin-top: .5rem;
-    .results-station-data {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background-color: var(--white);
-      flex-grow: 1;
-      cursor: pointer;
-      border: 2px solid var(--coolgray1);
-      padding-top: .15rem;
-      border-radius: 4px;
-      transition: .2s;
-      min-height: 4rem;
-      &:hover {
-        border-color: var(--coolgray9);
-      }
-      .station-data-head {
-        display: flex;
-        align-items: baseline;
-        padding: 0 .25rem;
-        height: 1.5rem;
-        .station-data-code {
-          font-size: .8rem;
-          width: 2.25rem;
-        }
-        .station-data-name {
-          overflow: hidden;
-          white-space: nowrap;
-          font-size: 1.1rem;
-        }
-        .station-data-ch {
-          margin-left: auto;
-          font-weight: 500;
-          font-size: .8rem;
-        }
-      }
-      .station-data-localization {
-        display: flex;
-        align-items: baseline;
-        position: relative;
-        padding: 0 .25rem 0 2.5rem;
-        height: 1rem;
-        line-height: .8rem;
-        color: var(--coolgray9);
-        gap: .25rem;
-        .station-data-city {
-          font-size: .7rem;
-        }
-        .station-data-department {
-          text-transform: uppercase;
-          font-size: .6rem;
-        }
-        .station-data-region {
-          text-transform: uppercase;
-          font-size: .6rem;   
-        }
-        .station-data-uic {
-          margin-left: auto;
-          font-size: .6rem;
-          color: var(--primary);    
-        }
-      }
-      .station-data-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 .25rem;
-        font-size: .7rem;
-        background-color: var(--coolgray1);
-        border-radius: 0 0 4px 4px;
-        height: 1rem;
-        .station-data-line {
-          overflow: hidden;
-          white-space: nowrap;
-          color: var(--coolgray9);
-        }
-        .station-data-pk {
-          overflow: hidden;
-          white-space: nowrap;
-          margin-left: auto;
-          margin-right: .25rem;
-          font-size: .6rem;
-        }
-        .station-data-line-number {
-          font-size: .6rem;    
-          color: var(--purple);
-        }
-      }
-    }
   }
 
   .import-train-schedule-trainlist {
