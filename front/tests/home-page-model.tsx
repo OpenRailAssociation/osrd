@@ -15,8 +15,6 @@ export class PlaywrightHomePage {
 
   readonly getSTDCMLink: Locator;
 
-  readonly getImportLink: Locator;
-
   // Locator for all links
   readonly getLinks: Locator;
 
@@ -37,7 +35,6 @@ export class PlaywrightHomePage {
     this.getCartoLink = page.getByRole('link', { name: /Cartographie/ });
     this.getEditorLink = page.getByRole('link', { name: /Éditeur d'infrastructure/ });
     this.getSTDCMLink = page.getByRole('link', { name: /Sillons de dernière minute/ });
-    this.getImportLink = page.getByRole('link', { name: /Importation horaires/ });
     this.getLinks = page.locator('h5');
     this.getBackHomeLogo = page.locator('.mastheader-logo');
     this.getBody = page.locator('body');
@@ -80,10 +77,6 @@ export class PlaywrightHomePage {
 
   async goToSTDCMPage() {
     await this.getSTDCMLink.click();
-  }
-
-  async goToImportPage() {
-    await this.getImportLink.click();
   }
 
   getTranslations(key: keyof typeof home) {
