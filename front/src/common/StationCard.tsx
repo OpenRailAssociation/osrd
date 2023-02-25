@@ -1,0 +1,45 @@
+import React from 'react';
+
+type StationTypes = {
+  trigram?: string;
+  name?: string;
+  yardname?: string;
+  town?: string;
+  department?: string;
+  region?: string;
+  uic?: string;
+  linename?: string;
+  pk?: string;
+  linecode?: string;
+};
+
+type Props = {
+  station: StationTypes;
+};
+
+export default function StationCard({ station }: Props) {
+  const { trigram, name, yardname, town, department, region, uic, linename, pk, linecode } =
+    station;
+  return (
+    <div className="station-card">
+      <div className="station-card-head">
+        <span className="station-card-code">{trigram}</span>
+        <span className="station-card-name">{name}</span>
+        <span className="station-card-ch">{yardname}</span>
+      </div>
+      <div className="station-card-localization">
+        <span className="station-card-city">{town}</span>
+        <span className="station-card-department">{department} / </span>
+        <span className="station-card-region">{region}</span>
+        <span className="station-card-uic">{uic}</span>
+      </div>
+      {linename ? (
+        <div className="station-card-footer">
+          <span className="station-card-line">{linename}</span>
+          {pk ? <span className="station-card-pk">PK {pk}</span> : null}
+          <span className="station-card-line-number">{linecode}</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
