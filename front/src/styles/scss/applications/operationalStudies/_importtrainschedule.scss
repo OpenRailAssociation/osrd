@@ -1,28 +1,60 @@
-.import-train-schedule {    
+.import-train-schedule {
+  .station-selector {
+    position: relative;
+    height: 7rem;
+  }
+
   .osrd-config-item-from {
     background-color: var(--green);
+    z-index: 3;
   }
   .osrd-config-item-to {
     background-color: var(--yellow);
+    z-index: 2;
+  }
+
+  @media screen and (min-width: 768px) {
+    .osrd-config-item-from, .osrd-config-item-to {
+      position: absolute;
+      width: 100%;
+    }
+    .sm-gutters {
+      &:first-child {
+        padding-right: 0.25rem;
+      }
+      &:nth-child(1n) {
+        padding-right: 0.25rem;
+        padding-left: 0.25rem;
+      }
+      &:last-child {
+        padding-left: 0.25rem;
+      }
+    }
   }
 
   .results-stations {
     height: 15rem;
     overflow: auto;
+    .results-station-data {
+      margin-bottom: 0.25rem;
+    }
   }
   .results-stations, .result-station-selected {
     border-radius: 4px;
     position: relative;
     margin-top: .5rem;
     .results-station-data {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       background-color: var(--white);
       flex-grow: 1;
       cursor: pointer;
       border: 2px solid var(--coolgray1);
       padding-top: .15rem;
-      margin-bottom: .25rem;
       border-radius: 4px;
       transition: .2s;
+      min-height: 4rem;
       &:hover {
         border-color: var(--coolgray9);
       }

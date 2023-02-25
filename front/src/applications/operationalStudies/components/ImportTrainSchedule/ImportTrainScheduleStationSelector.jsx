@@ -22,13 +22,15 @@ export function formatStation(stationData) {
         <span className="station-data-region">{stationData.region}</span>
         <span className="station-data-uic">{stationData.uic}</span>
       </div>
-      {stationData.ligne ? (
-        <div className="station-data-footer">
-          <span className="station-data-line">{stationData.libelle}</span>
-          {stationData.pk ? <span className="station-data-pk">PK {stationData.pk}</span> : null}
-          <span className="station-data-line-number">{stationData.ligne}</span>
-        </div>
-      ) : null}
+      <div className="station-data-footer">
+        {stationData.ligne ? (
+          <>
+            <span className="station-data-line">{stationData.libelle}</span>
+            {stationData.pk ? <span className="station-data-pk">PK {stationData.pk}</span> : null}
+            <span className="station-data-line-number">{stationData.ligne}</span>
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }
