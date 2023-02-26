@@ -236,21 +236,21 @@ export type GetInfraByIdErrorsApiArg = {
   pageSize?: number;
   /** The type of error to filter on */
   errorType?:
-  | 'invalid_reference'
-  | 'out_of_range'
-  | 'empty_path'
-  | 'path_does_not_match_endpoints'
-  | 'unknown_port_name'
-  | 'invalid_switch_ports'
-  | 'empty_object'
-  | 'object_out_of_path'
-  | 'missing_route'
-  | 'unused_port'
-  | 'duplicated_group'
-  | 'no_buffer_stop'
-  | 'path_is_not_continuous'
-  | 'overlapping_switches'
-  | 'overlapping_track_links';
+    | 'invalid_reference'
+    | 'out_of_range'
+    | 'empty_path'
+    | 'path_does_not_match_endpoints'
+    | 'unknown_port_name'
+    | 'invalid_switch_ports'
+    | 'empty_object'
+    | 'object_out_of_path'
+    | 'missing_route'
+    | 'unused_port'
+    | 'duplicated_group'
+    | 'no_buffer_stop'
+    | 'path_is_not_continuous'
+    | 'overlapping_switches'
+    | 'overlapping_track_links';
   /** errors and warnings that only part of a given object */
   objectId?: string;
   /** Whether the response should include errors or warnings */
@@ -291,9 +291,9 @@ export type GetInfraByIdVoltagesApiArg = {
 };
 export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse =
   /** status 200 All routes that starting and ending by the given waypoint */ {
-  starting?: string[];
-  ending?: string[];
-};
+    starting?: string[];
+    ending?: string[];
+  };
 export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
   /** Infra ID */
   id: number;
@@ -305,14 +305,14 @@ export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
 export type GetInfraByIdRoutesTrackRangesApiResponse =
   /** status 200 Foreach route, the track ranges through which it passes or an error */ (
     | ({
-      type: 'RouteTrackRangesNotFoundError';
-    } & RouteTrackRangesNotFoundError)
+        type: 'RouteTrackRangesNotFoundError';
+      } & RouteTrackRangesNotFoundError)
     | ({
-      type: 'RouteTrackRangesCantComputePathError';
-    } & RouteTrackRangesCantComputePathError)
+        type: 'RouteTrackRangesCantComputePathError';
+      } & RouteTrackRangesCantComputePathError)
     | ({
-      type: 'RouteTrackRangesComputed';
-    } & RouteTrackRangesComputed)
+        type: 'RouteTrackRangesComputed';
+      } & RouteTrackRangesComputed)
   )[];
 export type GetInfraByIdRoutesTrackRangesApiArg = {
   /** Infra ID */
@@ -321,12 +321,12 @@ export type GetInfraByIdRoutesTrackRangesApiArg = {
 };
 export type PostInfraByIdPathfindingApiResponse =
   /** status 200 Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned. */ {
-  track_ranges?: DirectionalTrackRange[];
-  detectors?: string[];
-  switches_directions?: {
-    [key: string]: string;
-  };
-}[];
+    track_ranges?: DirectionalTrackRange[];
+    detectors?: string[];
+    switches_directions?: {
+      [key: string]: string;
+    };
+  }[];
 export type PostInfraByIdPathfindingApiArg = {
   /** Infra ID */
   id: number;
@@ -413,11 +413,11 @@ export type OperationObject = {
 };
 export type OperationResult =
   | ({
-    operation_type: 'DeleteOperation';
-  } & DeleteOperation)
+      operation_type: 'DeleteOperation';
+    } & DeleteOperation)
   | ({
-    operation_type: 'OperationObject';
-  } & OperationObject);
+      operation_type: 'OperationObject';
+    } & OperationObject);
 export type RailjsonObject = {
   operation_type?: 'CREATE';
   obj_type?: ObjectType;
@@ -438,14 +438,14 @@ export type UpdateOperation = {
 };
 export type Operation =
   | ({
-    operation_type: 'RailjsonObject';
-  } & RailjsonObject)
+      operation_type: 'RailjsonObject';
+    } & RailjsonObject)
   | ({
-    operation_type: 'DeleteOperation';
-  } & DeleteOperation)
+      operation_type: 'DeleteOperation';
+    } & DeleteOperation)
   | ({
-    operation_type: 'UpdateOperation';
-  } & UpdateOperation);
+      operation_type: 'UpdateOperation';
+    } & UpdateOperation);
 export type RailjsonFile = {
   version?: string;
   operational_points?: any;
