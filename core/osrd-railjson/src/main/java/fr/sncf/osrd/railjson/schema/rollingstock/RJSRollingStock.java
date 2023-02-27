@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+import java.util.Map;
 
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
@@ -14,7 +15,7 @@ public class RJSRollingStock implements Identified {
             .adapter(RJSRollingStock.class);
 
 
-    public static final transient String CURRENT_VERSION = "3.0";
+    public static final transient String CURRENT_VERSION = "3.1";
 
     /** The version of the rolling stock format used */
     public String version = null;
@@ -32,9 +33,12 @@ public class RJSRollingStock implements Identified {
     @Json(name = "effort_curves")
     public RJSEffortCurves effortCurves;
 
+    @Json(name="power_restrictions")
+    public Map<String, String> powerRestrictions;
+
     /** The class of power usage of the train */
-    @Json(name = "power_class")
-    public String powerClass = null;
+    @Json(name = "base_power_class")
+    public String basePowerClass = null;
 
     /** the length of the train, in meters. */
     public double length = Double.NaN;
