@@ -9,9 +9,9 @@ import java.util.List;
 
 public class LineString {
 
-    /** A list of N coordinates (X component) */
+    /** A list of N coordinates (X component, longitude) */
     private final double[] bufferX;
-    /** A list of N coordinates (Y component) */
+    /** A list of N coordinates (Y component, latitude) */
     private final double[] bufferY;
     /** A cumulative list of N-1 distances between coordinates */
     private final double[] cumulativeLengths;

@@ -23,6 +23,9 @@ dependencies {
     implementation libs.moshi
     implementation libs.moshi.adapters
 
+    // Geographic computations
+    implementation libs.geodesy
+
     // for linter annotations
     compileOnly libs.jcip.annotations
     compileOnly libs.spotbugs.annotations

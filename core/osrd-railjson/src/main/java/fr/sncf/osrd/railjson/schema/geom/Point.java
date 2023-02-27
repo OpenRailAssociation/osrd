@@ -2,8 +2,14 @@ package fr.sncf.osrd.railjson.schema.geom;
 
 import com.squareup.moshi.*;
 import java.io.IOException;
+import org.gavaghan.geodesy.*;
 
-public record Point (double x, double y) {
+public record Point (
+        // Longitude
+        double x,
+        // Latitude
+        double y
+) {
 
     public static class Adapter extends JsonAdapter<Point> {
 
@@ -65,13 +71,13 @@ public record Point (double x, double y) {
         }
     }
 
-    /** Returns the distance between this point and another in meters, assuming x and y are latitude and longitude.
-     * This is an approximation. */
+    /** Returns the distance between this point and another in meters,
+     * assuming x = longitude and y = latitude */
     public double distanceAsMeters(Point other) {
-        var mPerLatDeg = 111132.954 - 559.822 * Math.cos(2.0 * x) + 1.175 * Math.cos(4.0 * x);
-        var mPerLonDeg = (Math.PI / 180) * 6367449 * Math.cos(x);
-        var latDistance = (x - other.x) * mPerLatDeg;
-        var lonDistance = (y - other.y) * mPerLonDeg;
-        return Math.sqrt(latDistance * latDistance + lonDistance * lonDistance);
+        GeodeticCalculator geoCalc = new GeodeticCalculator();
+        Ellipsoid reference = Ellipsoid.WGS84;
+        GlobalPosition thisPosition = new GlobalPosition(y, x, 0.0);
+        GlobalPosition otherPosition = new GlobalPosition(other.y, other.x, 0.0);
+        return geoCalc.calculateGeodeticCurve(reference, thisPosition, otherPosition).getEllipsoidalDistance();
     }
 }
