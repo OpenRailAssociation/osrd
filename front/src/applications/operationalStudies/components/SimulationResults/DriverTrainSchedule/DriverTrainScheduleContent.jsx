@@ -56,7 +56,7 @@ export default function DriverTrainScheduleContent(props) {
           <div className="row no-gutters">
             <div className="col-4">{t('drivertrainschedule:composition')}</div>
             <div className="font-weight-bold text-primary col-8">
-              {data.speed_limit_composition}
+              {data.speed_limit_tags}
             </div>
           </div>
         </div>

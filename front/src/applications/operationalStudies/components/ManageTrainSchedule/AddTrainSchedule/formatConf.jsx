@@ -63,7 +63,7 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
       initial_speed: Math.abs(osrdconf.originSpeed / 3.6),
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
-      speed_limit_composition: osrdconf.speedLimitByTag,
+      speed_limit_tags: osrdconf.speedLimitByTag,
     };
     return osrdConfSchedule;
   }

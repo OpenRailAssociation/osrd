@@ -29,7 +29,7 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
         "slopes": train_path.slopes,
         "curves": train_path.curves,
         "base": base,
-        "speed_limit_composition": train_schedule.speed_limit_composition,
+        "speed_limit_tags": train_schedule.speed_limit_tags,
         "modes_and_profiles": train_schedule.modes_and_profiles,
     }
 

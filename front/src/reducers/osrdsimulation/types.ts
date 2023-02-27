@@ -110,7 +110,7 @@ export interface Train {
   eco: Regime;
   margins: Regime;
   isStdcm: boolean;
-  speed_limit_composition: string;
+  speed_limit_tags: string;
 }
 
 export interface SimulationSnapshot {

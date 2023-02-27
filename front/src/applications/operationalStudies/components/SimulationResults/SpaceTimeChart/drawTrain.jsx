@@ -75,7 +75,7 @@ export default function drawTrain(
         selectedTrainId !== undefined && selectedTrainId === train.id
           ? offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset)
           : train.base.stops[train.base.stops.length - 1].time,
-      speed_limit_composition: train.speed_limit_composition,
+      speed_limit_tags: train.speed_limit_tags,
     }));
 
   const drag = d3drag()

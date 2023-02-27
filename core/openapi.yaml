@@ -680,7 +680,7 @@ components:
           items:
             $ref: "#/components/schemas/Waypoint"
           minimum: 1
-        speed_limit_composition:
+        speed_limit_tags:
           type: string
           description: Train composition used for speed limit
         margin_before:

@@ -575,7 +575,7 @@ export type StandaloneSimulationParameters = {
     initial_speed?: number;
     labels?: string[];
     allowances?: Allowance[];
-    speed_limit_composition?: string;
+    speed_limit_tags?: string;
     comfort?: Comfort;
   }[];
 };
@@ -679,7 +679,7 @@ export type StdcmRequest = {
   end_points?: Waypoint[];
   maximum_departure_delay?: number;
   maximum_relative_run_time?: number;
-  speed_limit_composition?: string;
+  speed_limit_tags?: string;
   margin_before?: number;
   margin_after?: number;
   standard_allowance?: AllowanceValue;
