@@ -14,6 +14,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
