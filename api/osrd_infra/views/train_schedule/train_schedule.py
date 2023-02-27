@@ -42,7 +42,7 @@ class TrainScheduleView(
             "path",
             "initial_speed",
             "allowances",
-            "speed_limit_composition",
+            "speed_limit_tags",
             "comfort",
             "options",
         ]

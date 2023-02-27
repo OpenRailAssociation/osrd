@@ -98,7 +98,7 @@ export default function Timetable(props) {
         rolling_stock: trainDetail.rolling_stock,
         train_name: newTrainName,
         allowances: trainDetail.allowances,
-        speed_limit_composition: trainDetail.speed_limit_composition,
+        speed_limit_tags: trainDetail.speed_limit_tags,
       });
       actualTrainCount += trainStep;
     }

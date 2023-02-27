@@ -1744,7 +1744,7 @@ components:
           description: |
             How much longer the total run time can be compared to the shortest path on an empty timetable.
             Defaults to 2 if unspecified, meaning that the result can't take more than twice the minimum time.
-        speed_limit_composition:
+        speed_limit_tags:
           type: string
           description: Train category for speed limits
         margin_before:
@@ -2034,7 +2034,7 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/Allowance"
-              speed_limit_composition:
+              speed_limit_tags:
                 description: Train category for speed limits
                 type: string
               comfort:
@@ -2067,7 +2067,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Allowance"
-        speed_limit_composition:
+        speed_limit_tags:
           description: Train category for speed limits
           type: string
         comfort:
