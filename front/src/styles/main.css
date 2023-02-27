@@ -1241,12 +1241,6 @@ body {
   z-index: 1;
   opacity: 1;
 }
-.osrd-config-item-container-map .osrd-conf-map-via-number {
-  font-weight: bold;
-  color: white;
-  position: absolute;
-  font-size: 0.7rem;
-}
 
 .osrd-config-place {
   position: relative;

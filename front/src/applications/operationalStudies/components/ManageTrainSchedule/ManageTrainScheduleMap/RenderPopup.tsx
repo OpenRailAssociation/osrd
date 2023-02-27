@@ -4,9 +4,10 @@ import { Popup } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 
 import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
-import { RiMapPin2Fill, RiMapPin3Fill, RiMapPin5Fill } from 'react-icons/ri';
+import { RiMapPin2Fill, RiMapPin3Fill } from 'react-icons/ri';
 import setPointIti from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 import { useTranslation } from 'react-i18next';
+import { IoFlag } from 'react-icons/io5';
 
 type FeatureInfoClickType = {
   displayPopup: boolean;
@@ -68,7 +69,7 @@ function RenderPopup() {
             type="button"
             onClick={() => setPointIti('end', properties)}
           >
-            <RiMapPin5Fill />
+            <IoFlag />
             <span className="d-none">{t('destination')}</span>
           </button>
         </div>
