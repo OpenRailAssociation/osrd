@@ -235,12 +235,14 @@ class Command(BaseCommand):
         for op in OperationalPointModel.objects.filter(infra=infra):
             op = op.into_obj()
             for part in op.parts:
-                operational_points.append(CustomOperationalPointPart(
-                    interpolate_location(part, track_sections, True),
-                    interpolate_location(part, track_sections, False),
-                    op.name,
-                    op.id
-                ))
+                operational_points.append(
+                    CustomOperationalPointPart(
+                        interpolate_location(part, track_sections, True),
+                        interpolate_location(part, track_sections, False),
+                        op.name,
+                        op.id,
+                    )
+                )
 
         with (out_dir / "operational_points.csv").open("w") as fp:
             dump_entities(
