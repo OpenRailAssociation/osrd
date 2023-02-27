@@ -1,8 +1,9 @@
 import asyncio
-from rest_framework.authentication import BaseAuthentication
-from typing import List, Dict
-from django.contrib.auth.models import User, Group
+from typing import Dict, List
+
+from django.contrib.auth.models import Group, User
 from django.utils.decorators import sync_and_async_middleware
+from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import ParseError
 
 
@@ -94,13 +95,13 @@ class MagicSet:
 
 def make_test_user():
     return GatewayUser(
-        '00000000-0000-0000-0000-000000000000',
-        'joseph.marchand',
-        'Joseph',
-        'Marchand',
-        'joseph.marchand@sncf.fr',
+        "00000000-0000-0000-0000-000000000000",
+        "joseph.marchand",
+        "Joseph",
+        "Marchand",
+        "joseph.marchand@sncf.fr",
         MagicSet(),
-        'short'
+        "short",
     )
 
 
@@ -136,6 +137,7 @@ class TestGatewayAuth(BaseAuthentication):
 @sync_and_async_middleware
 def GatewayUserMiddleware(get_response):
     if asyncio.iscoroutinefunction(get_response):
+
         async def middleware(request):
             user = get_user_from_request(request)
             if user is not None:
@@ -143,11 +145,13 @@ def GatewayUserMiddleware(get_response):
             return await get_response(request)
 
     else:
+
         def middleware(request):
             user = get_user_from_request(request)
             if user is not None:
                 request.user = user
             return get_response(request)
+
     return middleware
 
 

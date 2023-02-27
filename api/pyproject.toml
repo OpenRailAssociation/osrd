@@ -36,11 +36,12 @@ isort = "^5.12.0"
 pyproject-flake8 = "^6.0.0.post1"
 django-debug-toolbar = "^3.8.1"
 django-cors-headers = "^3.13.0"
+flake8-formatter-junit-xml = "^0.0.6"
 
 [tool.flake8]
 ignore = "W503,E203"
 max-line-length = 120
-exclude = ["__pycache__", "*/migrations/*", "venv/", "config/"]
+exclude = ["*/migrations/*", ".venv/", "config/"]
 
 [tool.black]
 line-length = 120
