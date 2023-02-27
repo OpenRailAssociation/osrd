@@ -35,7 +35,7 @@ black = "^22.12.0"
 isort = "^5.12.0"
 pyproject-flake8 = "^6.0.0.post1"
 django-debug-toolbar = "^3.8.1"
-django-cors-headers = "^3.13.0"
+django-cors-headers = "^3.14.0"
 flake8-formatter-junit-xml = "^0.0.6"
 
 [tool.flake8]
