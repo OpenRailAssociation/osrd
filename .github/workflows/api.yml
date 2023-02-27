@@ -109,7 +109,7 @@ jobs:
         uses: mikepenz/action-junit-report@v3
         if: failure()
         with:
-          report_paths: flake8.xml
+          report_paths: api/flake8.xml
       - name: Black
         run: |
           cd api
