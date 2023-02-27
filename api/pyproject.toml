@@ -16,7 +16,7 @@ django-redis = "5.2.0"
 drf-nested-routers = "0.93.4"
 requests = "2.28.1"
 pillow = "^9"
-pydantic = "1.10.4"
+pydantic = "1.10.5"
 geojson-pydantic = "0.5.0"
 
 # production
