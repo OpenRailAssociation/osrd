@@ -1,14 +1,12 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import com.google.common.collect.Multimap;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
-import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.slf4j.Logger;
@@ -31,7 +29,7 @@ public class STDCMStandardAllowance {
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
+            RouteAvailabilityInterface routeAvailability,
             double departureTime
     ) {
         if (standardAllowance == null)
@@ -47,53 +45,37 @@ public class STDCMStandardAllowance {
                     comfort,
                     rangeTransitions
             );
-            var firstConflictOffset = findFirstConflict(
-                    newEnvelope, unavailableTimes, ranges, timeStep, departureTime);
-            if (Double.isNaN(firstConflictOffset))
+            var conflictOffset = findConflictOffsets(
+                    newEnvelope, routeAvailability, ranges, departureTime);
+            if (Double.isNaN(conflictOffset))
                 return newEnvelope;
-            logger.info("Conflict in new envelope at offset {}, splitting mareco ranges", firstConflictOffset);
-            assert !rangeTransitions.contains(firstConflictOffset);
-            rangeTransitions.add(firstConflictOffset);
+            assert !rangeTransitions.contains(conflictOffset) : "conflict offset is already on a range transition";
+            logger.info("Conflict in new envelope at offset {}, splitting mareco ranges", conflictOffset);
+            rangeTransitions.add(conflictOffset);
         }
         throw new RuntimeException("Couldn't find an envelope that wouldn't cause a conflict");
     }
 
-    /** Looks for the first conflict that would happen on the given envelope and unavailable times.
-     * If a conflict is founds, returns its offset.
+    /** Looks for the first detected conflict that would happen on the given envelope.
+     * If a conflict is found, returns its offset.
      * Otherwise, returns NaN. */
-    private static double findFirstConflict(
+    private static double findConflictOffsets(
             Envelope envelope,
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
+            RouteAvailabilityInterface routeAvailability,
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
-            double timeStep,
             double departureTime
     ) {
-        double tolerance = 2 * timeStep;
-        double routeStartOffset = 0;
-        for (var range : ranges) {
-            var blocksOnRoute = unavailableTimes.get(range.edge().route());
-            var firstConflict = Double.POSITIVE_INFINITY;
-            for (var block : blocksOnRoute) {
-                var startOffset = routeStartOffset + block.distanceStart();
-                var endOffset = routeStartOffset + block.distanceEnd();
-                var enterTime = departureTime + envelope.interpolateTotalTimeClamp(startOffset);
-                var exitTime = departureTime + envelope.interpolateTotalTimeClamp(endOffset);
-                if (enterTime < block.timeEnd() - tolerance && exitTime > block.timeStart() + tolerance) {
-                    // Conflict, but we need to find if we were supposed to pass before or after this block
-                    if (range.edge().timeNextOccupancy() == block.timeStart()) {
-                        // We were supposed to pass before, and we leave too late: conflict at the end position
-                        firstConflict = Double.min(firstConflict, endOffset);
-                    } else {
-                        // We were supposed to pass after, and we enter too early: conflict at the start position
-                        firstConflict = Double.min(firstConflict, startOffset);
-                    }
-                }
-            }
-            // We only returns after going through all the blocks for the route, to find the earliest
-            if (Double.isFinite(firstConflict))
-                return firstConflict;
-            routeStartOffset += range.edge().envelope().getEndPos();
-        }
+        var path = STDCMUtils.makePathFromRanges(ranges);
+        var availability = routeAvailability.getAvailability(
+                path,
+                0,
+                path.length(),
+                envelope,
+                departureTime
+        );
+        assert !(availability.getClass() == RouteAvailabilityInterface.NotEnoughLookahead.class);
+        if (availability instanceof RouteAvailabilityInterface.Unavailable unavailable)
+            return unavailable.firstConflictOffset;
         return Double.NaN;
     }
 
@@ -127,12 +109,14 @@ public class STDCMStandardAllowance {
         double transition = 0;
         var res = new ArrayList<AllowanceRange>();
         for (var end : rangeTransitions) {
+            if (transition == end)
+                continue;
             assert transition < end;
             res.add(new AllowanceRange(transition, end, allowance));
             transition = end;
         }
-        assert transition < pathLength;
-        res.add(new AllowanceRange(transition, pathLength, allowance));
+        if (transition < pathLength)
+            res.add(new AllowanceRange(transition, pathLength, allowance));
         return res;
     }
 }

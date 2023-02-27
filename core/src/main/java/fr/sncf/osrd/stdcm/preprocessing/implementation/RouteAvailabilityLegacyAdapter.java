@@ -6,7 +6,6 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
-import fr.sncf.osrd.train.TrainStop;
 import java.util.List;
 
 /** This class implements the RouteAvailabilityInterface using the legacy route occupancy data.
@@ -28,18 +27,18 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
             double startOffset,
             double endOffset,
             Envelope envelope,
-            double startTime,
-            List<TrainStop> stops
+            double startTime
     ) {
-        var minimumDelay = findMinimumDelay(path, startOffset, endOffset, envelope, startTime);
-        if (minimumDelay > 0)
-            return new UnavailableFor(minimumDelay);
-        return new AvailableFor(findMaximumDelay(path, startOffset, endOffset, envelope, startTime));
+        assert Math.abs((endOffset - startOffset) - envelope.getEndPos()) < 1e-5;
+        var unavailability = findMinimumDelay(path, startOffset, endOffset, envelope, startTime);
+        if (unavailability != null)
+            return unavailability;
+        return findMaximumDelay(path, startOffset, endOffset, envelope, startTime);
     }
 
     /** Find the minimum delay needed to avoid any conflict.
      * Returns 0 if the train isn't currently causing any conflict. */
-    double findMinimumDelay(
+    Unavailable findMinimumDelay(
             TrainPath path,
             double startOffset,
             double endOffset,
@@ -47,6 +46,7 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
             double startTime
     ) {
         double minimumDelay = 0;
+        double conflictOffset = 0;
         for (var locatedRoute : iteratePathInRange(path, startOffset, endOffset)) {
             for (var block : unavailableSpace.get(locatedRoute.element())) {
                 var trainInBlock = timeTrainInBlock(
@@ -56,21 +56,39 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
                         envelope,
                         startTime
                 );
+                if (trainInBlock == null)
+                    continue;
                 if (trainInBlock.start < block.timeEnd()
-                        && trainInBlock.end > block.timeStart())
-                    minimumDelay = Math.max(minimumDelay, block.timeEnd() - trainInBlock.start);
+                        && trainInBlock.end > block.timeStart()) {
+                    var blockMinimumDelay = block.timeEnd() - trainInBlock.start;
+                    if (blockMinimumDelay > minimumDelay) {
+                        minimumDelay = blockMinimumDelay;
+                        if (trainInBlock.start <= block.timeStart()) {
+                            // The train enters the block before it's unavailable: conflict at end location
+                            conflictOffset = locatedRoute.pathOffset() + block.distanceEnd();
+                        } else {
+                            // The train enters the block when it's already unavailable: conflict at start location
+                            conflictOffset = locatedRoute.pathOffset() + block.distanceStart();
+                        }
+                    }
+                }
             }
         }
-        if (minimumDelay > 0) {
-            // We need to add delay, a recursive call is needed to detect new conflicts later on
-            return findMinimumDelay(path, startOffset, endOffset, envelope, startTime + minimumDelay);
+        if (minimumDelay == 0)
+            return null;
+        if (Double.isFinite(minimumDelay)) {
+            // We need to add delay, a recursive call is needed to detect new conflicts that appear with the added delay
+            var recursive = findMinimumDelay(path, startOffset, endOffset, envelope, startTime + minimumDelay);
+            if (recursive != null)
+                minimumDelay += recursive.duration;
         }
-        return minimumDelay;
+        conflictOffset = Math.max(0, Math.min(path.length(), conflictOffset));
+        return new Unavailable(minimumDelay, conflictOffset);
     }
 
     /** Find the maximum amount of delay that can be added to the train without causing conflict.
      * Cannot be called if the train is currently causing a conflict. */
-    double findMaximumDelay(
+    Available findMaximumDelay(
             TrainPath path,
             double startOffset,
             double endOffset,
@@ -78,6 +96,7 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
             double startTime
     ) {
         double maximumDelay = Double.POSITIVE_INFINITY;
+        double timeOfNextOccupancy = Double.POSITIVE_INFINITY;
         for (var locatedRoute : iteratePathInRange(path, startOffset, endOffset)) {
             for (var block : unavailableSpace.get(locatedRoute.element())) {
                 var trainInBlock = timeTrainInBlock(
@@ -87,13 +106,17 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
                         envelope,
                         startTime
                 );
-                if (trainInBlock.start > block.timeEnd())
+                if (trainInBlock == null || trainInBlock.start >= block.timeEnd())
                     continue; // The block is occupied before we enter it
-                assert trainInBlock.start < block.timeStart();
-                maximumDelay = Math.min(maximumDelay, block.timeStart() - trainInBlock.start);
+                assert trainInBlock.start <= block.timeStart();
+                var maxDelayForBlock = block.timeStart() - trainInBlock.end;
+                if (maxDelayForBlock < maximumDelay) {
+                    maximumDelay = maxDelayForBlock;
+                    timeOfNextOccupancy = block.timeStart();
+                }
             }
         }
-        return maximumDelay;
+        return new Available(maximumDelay, timeOfNextOccupancy);
     }
 
     /** Returns the list of routes in the given interval on the path */
@@ -120,6 +143,9 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
         // Offsets on the envelope
         var blockEnterOffset = startRouteOffsetOnEnvelope + block.distanceStart();
         var blockExitOffset = startRouteOffsetOnEnvelope + block.distanceEnd();
+
+        if (blockEnterOffset > envelope.getEndPos() || blockExitOffset < 0)
+            return null;
 
         var enterTime = startTime + envelope.interpolateTotalTimeClamp(blockEnterOffset);
         var exitTime = startTime + envelope.interpolateTotalTimeClamp(blockExitOffset);
