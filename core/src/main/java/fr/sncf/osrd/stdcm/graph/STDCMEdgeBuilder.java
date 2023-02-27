@@ -136,12 +136,9 @@ public class STDCMEdgeBuilder {
         var res = new ArrayList<STDCMEdge>();
         Set<Double> delaysPerOpening;
         if (forceMaxDelay)
-            delaysPerOpening = Set.of(Math.min(
-                    prevMaximumAddedDelay,
-                    graph.delayManager.findMaximumAddedDelay(route, startTime, envelope))
-            );
+            delaysPerOpening = findMaxDelay();
         else
-            delaysPerOpening = graph.delayManager.minimumDelaysPerOpening(route, startTime, envelope);
+            delaysPerOpening = graph.delayManager.minimumDelaysPerOpening(route, startTime, envelope, startOffset);
         for (var delayNeeded : delaysPerOpening) {
             var newEdge = makeSingleEdge(delayNeeded);
             if (newEdge != null)
@@ -150,13 +147,31 @@ public class STDCMEdgeBuilder {
         return res;
     }
 
+    /** Finds the maximum amount of delay that can be added by simply shifting the departure time
+     * (no engineering allowance) */
+    private Set<Double> findMaxDelay() {
+        var allDelays = graph.delayManager.minimumDelaysPerOpening(route, startTime, envelope, startOffset);
+        var lastOpeningDelay = allDelays.floor(prevMaximumAddedDelay);
+        if (lastOpeningDelay == null)
+            return Set.of();
+        return Set.of(Math.min(
+                prevMaximumAddedDelay,
+                graph.delayManager.findMaximumAddedDelay(
+                        route,
+                        startTime + lastOpeningDelay,
+                        startOffset,
+                        envelope
+                )
+        ));
+    }
+
     /** Creates a single STDCM edge, adding the given amount of delay */
     private STDCMEdge makeSingleEdge(double delayNeeded) {
         if (Double.isInfinite(delayNeeded))
             return null;
         var maximumDelay = Math.min(
                 prevMaximumAddedDelay - delayNeeded,
-                graph.delayManager.findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
+                graph.delayManager.findMaximumAddedDelay(route, startTime + delayNeeded, startOffset, envelope)
         );
         var actualStartTime = startTime + delayNeeded;
         var res = new STDCMEdge(
@@ -165,7 +180,7 @@ public class STDCMEdgeBuilder {
                 actualStartTime,
                 maximumDelay,
                 delayNeeded,
-                graph.delayManager.findNextOccupancy(route, startTime + delayNeeded),
+                graph.delayManager.findNextOccupancy(route, startTime + delayNeeded, startOffset, envelope),
                 prevAddedDelay + delayNeeded,
                 prevNode,
                 route.getInfraRoute().getLength() - envelope.getEndPos(),
