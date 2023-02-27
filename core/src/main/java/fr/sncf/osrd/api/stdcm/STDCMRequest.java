@@ -98,7 +98,7 @@ public final class STDCMRequest {
     /**
      * Train category for speed limits
      */
-    @Json(name = "speed_limit_composition")
+    @Json(name = "speed_limit_tags")
     public String speedLimitComposition = null;
 
     /**
