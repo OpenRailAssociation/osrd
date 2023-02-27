@@ -17,11 +17,11 @@ import { useTranslation } from 'react-i18next';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
 interface ItineraryProps {
-  dispatchUpdateExtViewPort: () => Dispatch;
-  dispatchUpdateFeatureInfoClick: () => Dispatch;
+  dispatchUpdateExtViewPort: (viewPort: any) => Dispatch;
+  dispatchUpdateFeatureInfoClick: (infoClick: any) => Dispatch;
   dispatchReplaceVias: (vias: PointOnMap[]) => Dispatch;
-  dispatchUpdateOrigin: () => Dispatch;
-  dispatchUpdateDestination: () => Dispatch;
+  dispatchUpdateOrigin: (origin: any) => Dispatch;
+  dispatchUpdateDestination: (destination: any) => Dispatch;
   origin: any;
   infra: number;
   destination: any;
@@ -38,13 +38,6 @@ function withOSRDSimulationData<T>(Component: ComponentType<T>) {
     const vias = useSelector(getVias);
     const infra = useSelector(getInfraID);
     const map = useSelector((state: any) => state.map);
-
-    const [, setSyncInProgress] = useState(false);
-    const [trainDetail, setTrainDetail] = useState<any>({ allowances: [] });
-
-    const dispatchUpdatePositionValues = (newPositionValues: any) => {
-      dispatch(updateDestination(newPositionValues));
-    };
 
     const dispatchReplaceVias = (newVias: any[]) => {
       dispatch(replaceVias(newVias));
@@ -136,7 +129,7 @@ function Itinerary(props: ItineraryProps) {
         latitude: lngLat[1],
         zoom: 16,
       };
-      dispatchUpdateExtViewport(newViewport);
+      dispatchUpdateExtViewPort(newViewport);
       if (id !== undefined && source !== undefined) {
         dispatchUpdateFeatureInfoClick(Number(id), source);
       }
