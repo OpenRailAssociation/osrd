@@ -9,6 +9,11 @@ import { Dispatch } from 'redux';
 
 import { getStdcmMode, getMode, getDestination } from 'reducers/osrdconf/selectors';
 import {
+  getStdcmMode as getStdcmModeStdcm,
+  getMode as getModeStdcm,
+  getDestination as getDestinationStdcm,
+} from 'reducers/osrdStdcmConf/selectors';
+import {
   updateDestination,
   updateDestinationDate,
   updateDestinationTime,
@@ -20,15 +25,41 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { store } from 'Store';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
-interface DestinationProps {
+// Values of all these props are supposed to be provided by up to n-2 container (Itinerary), yet the component should work alone
+export interface DestinationProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
-  stdcmMode: ValueOf<typeof STDCM_MODES>;
-  destination: PointOnMap;
-  destinationDate: string;
-  destinationTime: string;
-  dispatch: Dispatch;
-  t: (s: string) => string;
-  mode: ValueOf<typeof MODES>;
+  stdcmMode?: ValueOf<typeof STDCM_MODES>;
+  destination?: PointOnMap;
+  destinationDate?: string;
+  destinationTime?: string;
+  'data-testid'?: string;
+  dispatch?: Dispatch;
+  t?: (s: string) => string;
+  mode?: ValueOf<typeof MODES>;
+}
+
+export function withStdcmData<T>(Component: ComponentType<T>) {
+  return (hocProps: DestinationProps) => {
+    const dispatch = useDispatch();
+    const stdcmMode = useSelector(getStdcmModeStdcm);
+
+    const mode = MODES.stdcm;
+    const destination = useSelector(getDestinationStdcm);
+
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        stdcmMode={stdcmMode}
+        mode={mode}
+        origin={origin}
+        destination={destination}
+        t={t}
+      />
+    );
+  };
 }
 
 export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
@@ -36,7 +67,7 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
     const dispatch = useDispatch();
     const stdcmMode = useSelector(getStdcmMode);
 
-    const mode = useSelector(getMode);
+    const mode = MODES.simulation;
     const destination = useSelector(getDestination);
 
     const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -57,9 +88,9 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
 
 function Destination(props: DestinationProps) {
   const {
-    zoomToFeaturePoint,
-    t,
-    dispatch,
+    zoomToFeaturePoint = () => null,
+    t = () => null,
+    dispatch = () => null,
     destinationTime,
     destinationDate,
     destination,

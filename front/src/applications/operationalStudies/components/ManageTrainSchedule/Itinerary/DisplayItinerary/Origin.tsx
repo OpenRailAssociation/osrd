@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
@@ -12,6 +12,29 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 import {
+  getStdcmMode,
+  getMode,
+  getOrigin,
+  getOriginTime,
+  getOriginSpeed,
+  getOriginLinkedBounds,
+  getOriginUpperBoundDate,
+  getOriginUpperBoundTime,
+  getOriginDate,
+} from 'reducers/osrdconf/selectors';
+import {
+  getStdcmMode as getStdcmModeStdcm,
+  getMode as getModeStdcm,
+  getDestination as getDestinationStdcm,
+  getOriginTime as getOriginTimeStdcm,
+  getOriginSpeed as getOriginSpeedStdcm,
+  getOriginLinkedBounds as getOriginLinkedBoundsStdcm,
+  getOriginUpperBoundDate as getOriginUpperBoundDateStdcm,
+  getOriginUpperBoundTime as getOriginUpperBoundTimeStdcm,
+  getOriginDate as getOriginDateStdcm,
+} from 'reducers/osrdStdcmConf/selectors';
+
+import {
   updateOrigin,
   updateOriginDate,
   updateOriginTime,
@@ -23,23 +46,89 @@ import {
 } from 'reducers/osrdconf';
 import { Dispatch } from 'redux';
 
-interface OriginProps {
-  zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
-  stdcmMode: ValueOf<typeof STDCM_MODES>;
-  mode: ValueOf<typeof MODES>;
-  origin: any; // declare origin as any type
-  originDate: string | Date;
-  originTime: Date;
-  originSpeed: number;
-  originLinkedBounds: any;
-  originUpperBoundDate: string | Date;
-  originUpperBoundTime: Date;
-  dispatch: Dispatch;
+export interface OriginProps {
+  zoomToFeaturePoint?: (lngLat?: Position, id?: string, source?: string) => void;
+  stdcmMode?: ValueOf<typeof STDCM_MODES>;
+  mode?: ValueOf<typeof MODES>;
+  origin?: any; // declare origin as any type
+  originDate?: string | Date;
+  originTime?: Date;
+  originSpeed?: number;
+  originLinkedBounds?: any;
+  originUpperBoundDate?: string | Date;
+  originUpperBoundTime?: Date;
+  dispatch?: Dispatch;
+}
+
+export function withStdcmData<T>(Component: ComponentType<T>) {
+  return (hocProps: OriginProps) => {
+    const dispatch = useDispatch();
+    const stdcmMode = useSelector(getStdcmModeStdcm);
+    const mode = MODES.stdcm;
+    const originDate = useSelector(getStdcmModeStdcm);
+    const originTime = useSelector(getStdcmModeStdcm);
+    const originSpeed = useSelector(getStdcmModeStdcm);
+    const originLinkedBounds = useSelector(getStdcmModeStdcm);
+    const originUpperBoundDate = useSelector(getStdcmModeStdcm);
+    const originUpperBoundTime = useSelector(getStdcmModeStdcm);
+
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        stdcmMode={stdcmMode}
+        mode={mode}
+        origin={origin}
+        originDate={originDate}
+        originTime={originTime}
+        originSpeed={originSpeed}
+        originLinkedBounds={originLinkedBounds}
+        originUpperBoundDate={originUpperBoundDate}
+        originUpperBoundTime={originUpperBoundTime}
+        t={t}
+      />
+    );
+  };
+}
+
+export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+  return (hocProps: OriginProps) => {
+    const dispatch = useDispatch();
+    const stdcmMode = useSelector(getStdcmMode);
+    const mode = MODES.simulation;
+    const originDate = useSelector(getOriginDate);
+    const originTime = useSelector(getOriginTime);
+    const originSpeed = useSelector(getOriginSpeed);
+    const originLinkedBounds = useSelector(getOriginLinkedBounds);
+    const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
+    const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
+
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        stdcmMode={stdcmMode}
+        mode={mode}
+        origin={origin}
+        originDate={originDate}
+        originTime={originTime}
+        originSpeed={originSpeed}
+        originLinkedBounds={originLinkedBounds}
+        originUpperBoundDate={originUpperBoundDate}
+        originUpperBoundTime={originUpperBoundTime}
+        t={t}
+      />
+    );
+  };
 }
 
 function Origin(props: OriginProps) {
   const {
-    zoomToFeaturePoint,
+    zoomToFeaturePoint = () => null,
     stdcmMode,
     mode,
     origin,
@@ -49,7 +138,7 @@ function Origin(props: OriginProps) {
     originLinkedBounds,
     originUpperBoundDate,
     originUpperBoundTime,
-    dispatch,
+    dispatch = () => null,
   } = props;
 
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -230,7 +319,8 @@ Origin.defaultProps = {
   originLinkedBounds: null,
   originUpperBoundDate: null,
   originUpperBoundTime: null,
-  dispatch: () => {},
+  dispatch: () => null,
+  t: () => null,
 };
 
 export default Origin;

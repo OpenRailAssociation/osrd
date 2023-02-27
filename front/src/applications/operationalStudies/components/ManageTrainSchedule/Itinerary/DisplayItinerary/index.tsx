@@ -8,9 +8,9 @@ import { useTranslation } from 'react-i18next';
 
 import Pathfinding from 'common/Pathfinding';
 import { getStdcmMode, getMode, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
-import Origin from './Origin';
+import Origin, { OriginProps } from './Origin';
 import Vias from './Vias';
-import Destination from './Destination';
+import Destination, { DestinationProps } from './Destination';
 
 // Interfaces
 import { PointOnMap } from 'applications/operationalStudies/consts';
@@ -22,10 +22,21 @@ interface DisplayItineraryProps {
   origin: PointOnMap;
   destination: PointOnMap;
   vias: PointOnMap[];
+  destinationProps?: DestinationProps;
+  originProps?: OriginProps;
 }
 
 // We use this HOC to pass only props needed by DisplayIntinerary subComponents(Vias, Origin, Destination, Pathfinding). Us a composition from the container
 // Props for Display Intinerary itself are provided by Itinerary, even if it is formaly isolated.
+
+export function withOSRDStdcmData<T>(Component: ComponentType<T>) {
+  return (hocProps: DisplayItineraryProps) => {
+    const origin = useSelector(getOrigin);
+    const destination = useSelector(getDestination);
+
+    return <Component {...(hocProps as T)} origin={origin} destination={destination} />;
+  };
+}
 
 export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
   return (hocProps: DisplayItineraryProps) => {
@@ -38,24 +49,16 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
   };
 }
 
-/**
- *
- *   getOriginDate,
-  getOriginTime,
-  getOriginSpeed,
-  getOriginLinkedBounds,
-  getOriginUpperBoundDate,
-  getOriginUpperBoundTime,
-    const originDate = useSelector(getOriginDate);
-    const originTime = useSelector(getOriginTime);
-    const originSpeed = useSelector(getOriginSpeed);
-    const originLinkedBounds = useSelector(getOriginLinkedBounds);
-    const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
-    const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
- */
-
 export default function DisplayItinerary(props: DisplayItineraryProps) {
-  const { zoomToFeaturePoint, zoomToFeature, viaModalContent, origin, destination, vias } = props;
+  const {
+    zoomToFeaturePoint,
+    zoomToFeature,
+    viaModalContent,
+    origin,
+    destination,
+    vias,
+    destinationProps,
+  } = props;
 
   return (
     <div
@@ -69,7 +72,11 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
         zoomToFeaturePoint={zoomToFeaturePoint}
         viaModalContent={viaModalContent}
       />
-      <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
+      <Destination
+        {...destinationProps}
+        data-testid="itinerary-destination"
+        zoomToFeaturePoint={zoomToFeaturePoint}
+      />
 
       <Pathfinding zoomToFeature={zoomToFeature} />
     </div>
