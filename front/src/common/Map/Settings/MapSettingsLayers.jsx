@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
 import { GiElectric } from 'react-icons/gi';
 import { AiOutlineBlock } from 'react-icons/ai';
-import { MdSpaceBar, MdLinearScale } from 'react-icons/md';
+import { MdSpaceBar } from 'react-icons/md';
 import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
@@ -59,9 +59,10 @@ export default function MapSettingsLayers() {
       <div className="col-md-6">
         <FormatSwitch name="tvds" icon={<MdSpaceBar />} disabled />
       </div>
+      {/* Hidden before https://github.com/orgs/DGEXSolutions/projects/3?pane=issue&itemId=17742568 is done
       <div className="col-md-6">
         <FormatSwitch name="routes" icon={<MdLinearScale />} color="text-orange" />
-      </div>
+      </div> */}
       <div className="col-md-6">
         <FormatSwitch
           name="operationalpoints"
