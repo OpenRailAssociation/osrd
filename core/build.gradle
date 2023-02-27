@@ -67,6 +67,9 @@ dependencies {
     // Sentry
     implementation libs.sentry
 
+    // Geographic computations
+    implementation libs.geodesy
+
     // Use JUnit Jupiter API for testing.
     testImplementation libs.junit.jupiter.api
     testImplementation libs.junit.jupiter.params
