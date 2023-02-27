@@ -6,6 +6,7 @@ import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -129,7 +130,7 @@ public class STDCMPathfindingBuilder {
                 0,
                 startLocations,
                 endLocations,
-                unavailableTimes,
+                new RouteAvailabilityLegacyAdapter(unavailableTimes),
                 timeStep,
                 maxDepartureDelay,
                 maxRunTime,

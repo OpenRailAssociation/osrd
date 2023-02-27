@@ -58,7 +58,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
         assertEquals(10, res.departureTime(), 2 * timeStep);
     }
 
@@ -111,7 +111,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
         assertEquals(0, res.departureTime(), 2 * timeStep);
     }
 
@@ -171,7 +171,7 @@ public class EngineeringAllowanceTests {
                 .run();
 
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
         assertEquals(0, res.departureTime(), 2 * timeStep);
     }
 
@@ -252,14 +252,16 @@ public class EngineeringAllowanceTests {
                 thirdRoute, new OccupancyBlock(0, 1800, 0, 100),
                 forthRoute, new OccupancyBlock(0, 4_000, 0, 100)
         );
+        double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthRoute, 1)))
                 .setUnavailableTimes(occupancyGraph)
+                .setTimeStep(timeStep)
                 .run();
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
     }
 
     /** Test that we return null with no crash when we can't slow down fast enough */

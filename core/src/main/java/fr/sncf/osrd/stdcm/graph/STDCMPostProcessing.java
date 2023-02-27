@@ -1,14 +1,12 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import com.google.common.collect.Multimap;
-import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayDeque;
@@ -29,7 +27,7 @@ public class STDCMPostProcessing {
             double timeStep,
             RollingStock.Comfort comfort,
             double maxRunTime,
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
+            RouteAvailabilityInterface routeAvailability
     ) {
         var ranges = makeEdgeRange(path);
         var routeRanges = ranges.stream()
@@ -49,7 +47,7 @@ public class STDCMPostProcessing {
                 rollingStock,
                 timeStep,
                 comfort,
-                unavailableTimes,
+                routeAvailability,
                 departureTime
         );
         var res = new STDCMResult(

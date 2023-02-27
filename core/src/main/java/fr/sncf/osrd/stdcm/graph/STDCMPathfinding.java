@@ -1,14 +1,13 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
-import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
@@ -31,7 +30,7 @@ public class STDCMPathfinding {
             double endTime,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
+            RouteAvailabilityInterface routeAvailability,
             double timeStep,
             double maxDepartureDelay,
             double maxRunTime,
@@ -43,7 +42,7 @@ public class STDCMPathfinding {
                 rollingStock,
                 comfort,
                 timeStep,
-                unavailableTimes,
+                routeAvailability,
                 maxRunTime,
                 startTime,
                 endLocations,
@@ -75,7 +74,7 @@ public class STDCMPathfinding {
                 timeStep,
                 comfort,
                 maxRunTime,
-                unavailableTimes
+                routeAvailability
         );
     }
 

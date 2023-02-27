@@ -26,6 +26,7 @@ import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
@@ -128,7 +129,7 @@ public class STDCMEndpoint implements Take {
                     endTime,
                     startLocations,
                     endLocations,
-                    unavailableSpace,
+                    new RouteAvailabilityLegacyAdapter(unavailableSpace),
                     request.timeStep,
                     request.maximumDepartureDelay,
                     request.maximumRelativeRunTime * minRunTime,
