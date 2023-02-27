@@ -58,6 +58,8 @@ mockito-junit-jupiter = { module = 'org.mockito:mockito-junit-jupiter', version.
 junit-platform-launcher = { module = 'org.junit.platform:junit-platform-launcher', version = '1.9.+' }  # EPL 2.0
 jcip-annotations = { module = 'net.jcip:jcip-annotations', version = '1.0' }  # CC Attribution
 spotbugs-annotations = { module = 'com.github.spotbugs:spotbugs-annotations', version = '4.7.+' }  # LGPLv2.1
+geodesy = { module = 'org.gavaghan:geodesy', version = '1.1.+' }  # Apache 2.0
+
 
 [plugins]
 # kotlin
