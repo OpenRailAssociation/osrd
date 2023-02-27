@@ -8,17 +8,27 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.train.RollingStock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.HashMap;
+import java.util.Objects;
 
 
 public class RJSRollingStockParser {
+    static final Logger logger = LoggerFactory.getLogger(RJSRollingStockParser.class);
+
     /** Parse the RailJSON  rolling stock into something the backend can work with */
     public static RollingStock parse(RJSRollingStock rjsRollingStock) throws InvalidRollingStock {
-        if (!rjsRollingStock.version.equals(RJSRollingStock.CURRENT_VERSION)) {
+        // Check major version
+        var inputMajor = rjsRollingStock.version.split("\\.")[0];
+        var currentMajor = RJSRollingStock.CURRENT_VERSION.split("\\.")[0];
+        if (!Objects.equals(inputMajor, currentMajor))
             throw new InvalidRollingStock(
-                    String.format("Invalid rolling stock format version: got '%s' expected '%s'",
-                            rjsRollingStock.version, RJSRollingStock.CURRENT_VERSION));
-        }
+                    String.format("Invalid rolling stock: major version mismatch, expected %s, got %s",
+                            RJSRollingStock.CURRENT_VERSION, rjsRollingStock.version));
+        else if (!rjsRollingStock.version.equals(RJSRollingStock.CURRENT_VERSION))
+            logger.warn("Rolling stock version mismatch, expected {}, got {}", RJSRollingStock.CURRENT_VERSION,
+                    rjsRollingStock.version);
 
         // Parse effort_curves
         if (rjsRollingStock.effortCurves == null)
@@ -98,7 +108,7 @@ public class RJSRollingStockParser {
                 rjsRollingStock.loadingGauge,
                 modes,
                 rjsRollingStock.effortCurves.defaultMode,
-                rjsRollingStock.powerClass
+                rjsRollingStock.basePowerClass
         );
     }
 
