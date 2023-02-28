@@ -9,13 +9,13 @@ import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { getPathfindingID } from 'reducers/osrdconf/selectors';
-import { getPathfindingID as getPathfindingIDStdcm} from 'reducers/osrdStdcmConf/selectors';
+import { getPathfindingID as getPathfindingIDStdcm } from 'reducers/osrdStdcmConf/selectors';
 
 interface ModalPathJSONDetailProps {
-  dispatch?: Dispatch
-  getPathJSON?: () => object
+  dispatch?: Dispatch;
+  getPathJSON?: () => Promise<any>;
   t?: (s: string) => string;
-  pathfindingID: number | string
+  pathfindingID: number | undefined;
 }
 
 export function withStdcmData<T>(Component: ComponentType<T>) {
@@ -26,7 +26,7 @@ export function withStdcmData<T>(Component: ComponentType<T>) {
     const getPathJSON = async (zoom: number, params: object) => {
       try {
         const pathJSON = await get(`/pathfinding/${pathfindingID}/`, { params });
-        return pathJSON
+        return pathJSON;
       } catch (e: any) {
         dispatch(
           setFailure({
@@ -55,11 +55,11 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
     const dispatch = useDispatch();
     const pathfindingID = useSelector(getPathfindingID);
     const { t } = useTranslation('operationalStudies/manageTrainSchedule');
-    const getPathJSON = async (zoom: number, params: object) => {
+    const getPathJSON = async (zoom: number, params: object): Promise<any> => {
       try {
         const pathJSON = await get(`/pathfinding/${pathfindingID}/`, { params });
-        return pathJSON
-      } catch (e) {
+        return pathJSON;
+      } catch (e: any) {
         dispatch(
           setFailure({
             name: t('errorMessages.unableToRetrievePath'),
@@ -68,6 +68,7 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
         );
         console.log('ERROR', e);
       }
+      return {};
     };
 
     return (
@@ -82,18 +83,15 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
   };
 }
 
-export default function ModalPathJSONDetail() {
-  
-  const { dispatch = () => null, pathfindingID, t = () => null, getPathJSON = () => null } = props
+export default function ModalPathJSONDetail(props: ModalPathJSONDetailProps) {
+  const { dispatch = () => null, pathfindingID, t = () => null, getPathJSON = () => {} } = props;
   const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
-  const textareaRef = useRef(null);
-  
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const { closeModal } = useContext(ModalContext);
 
-  
-
-  const copyToClipboard = (e:any) => {
-    if(textareaRef !== null) textareaRef?.current.select();
+  const copyToClipboard = (e: any) => {
+    if (textareaRef !== null) textareaRef?.current?.select();
     document.execCommand('copy');
     // This is just personal preference.
     // I prefer to not show the whole text area selected.
@@ -102,7 +100,8 @@ export default function ModalPathJSONDetail() {
 
   useEffect(() => {
     if (pathfindingID) {
-      setPathJSONDetail(getPathJSON());
+      const pathJSON: any = getPathJSON();
+      setPathJSONDetail(pathJSON);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathfindingID]);
@@ -111,10 +110,10 @@ export default function ModalPathJSONDetail() {
     <>
       <ModalHeaderSNCF>
         <div>
-        <h1>{`PathFinding n°${pathfindingID}`}</h1>
-        <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
-          <i className="icons-close" />
-        </button>
+          <h1>{`PathFinding n°${pathfindingID}`}</h1>
+          <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
+            <i className="icons-close" />
+          </button>
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>

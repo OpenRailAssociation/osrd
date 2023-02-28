@@ -16,12 +16,12 @@ import Destination, { DestinationProps } from './Destination';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
 interface DisplayItineraryProps {
-  zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  zoomToFeaturePoint: (lngLat?: Position, id?: string | undefined, source?: string) => void;
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
-  viaModalContent: string;
-  origin: PointOnMap;
-  destination: PointOnMap;
-  vias: PointOnMap[];
+  viaModalContent: string | JSX.Element;
+  origin?: PointOnMap;
+  destination?: PointOnMap;
+  vias?: PointOnMap[];
   destinationProps?: DestinationProps;
   originProps?: OriginProps;
 }
@@ -56,7 +56,7 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
     viaModalContent,
     origin,
     destination,
-    vias,
+    vias = [],
     destinationProps,
   } = props;
 

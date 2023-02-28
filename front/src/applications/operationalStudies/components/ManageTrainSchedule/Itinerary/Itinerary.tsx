@@ -1,4 +1,4 @@
-import React, { ComponentType, useState } from 'react';
+import React, { ComponentType, useReducer } from 'react';
 import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 import { Dispatch } from 'redux';
@@ -14,22 +14,27 @@ import { replaceVias, updateDestination, updateOrigin } from 'reducers/osrdconf'
 
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { PointOnMap } from 'applications/operationalStudies/consts';
+import { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
+import { getViewport } from 'reducers/map/selectors';
+import { MapState } from 'reducers/map';
+import { reducer, init } from 'common/Pathfinding/Pathfinding';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 
 interface ItineraryProps {
   dispatchUpdateExtViewPort: (viewPort: any) => Dispatch;
-  dispatchUpdateFeatureInfoClick: (infoClick: any) => Dispatch;
+  dispatchUpdateFeatureInfoClick: (id: number, source: any) => Dispatch;
   dispatchReplaceVias: (vias: PointOnMap[]) => Dispatch;
   dispatchUpdateOrigin: (origin: any) => Dispatch;
   dispatchUpdateDestination: (destination: any) => Dispatch;
-  origin: any;
-  infra: number;
-  destination: any;
-  vias?: PointOnMap[];
-  map: object;
+  pathfindingState: any;
+  origin: OsrdConfState['origin'];
+  infra: OsrdConfState['infraID'];
+  destination: OsrdConfState['destination'];
+  vias?: OsrdConfState['vias'];
+  mapViewPort: MapState['viewport'];
 }
 
-function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
     const { t } = useTranslation(['allowances']);
     const dispatch = useDispatch();
@@ -37,7 +42,9 @@ function withOSRDSimulationData<T>(Component: ComponentType<T>) {
     const destination = useSelector(getDestination);
     const vias = useSelector(getVias);
     const infra = useSelector(getInfraID);
-    const map = useSelector((state: any) => state.map);
+    const mapViewPort = useSelector(getViewport);
+    const [, pathfindingState] = osrdMiddlewareApi.usePostPathfindingMutation();
+    //const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
 
     const dispatchReplaceVias = (newVias: any[]) => {
       dispatch(replaceVias(newVias));
@@ -75,7 +82,8 @@ function withOSRDSimulationData<T>(Component: ComponentType<T>) {
         destination={destination}
         vias={vias}
         infra={infra}
-        map={map}
+        mapViewPort={mapViewPort}
+        pathfindingState={pathfindingState}
       />
     );
   };
@@ -88,17 +96,17 @@ function Itinerary(props: ItineraryProps) {
     dispatchReplaceVias,
     dispatchUpdateOrigin,
     dispatchUpdateDestination,
-    map,
+    mapViewPort,
     infra,
     origin,
     destination,
-    vias,
+    vias = [],
   } = props;
 
   const zoomToFeature = (boundingBox: number[], id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
 
-    const viewport = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
+    const viewport = new WebMercatorViewport({ ...mapViewPort, width: 600, height: 400 });
 
     const { longitude, latitude, zoom } = viewport.fitBounds(
       [
@@ -110,7 +118,7 @@ function Itinerary(props: ItineraryProps) {
       }
     );
     const newViewport = {
-      ...map.viewport,
+      ...mapViewPort,
       longitude,
       latitude,
       zoom,
@@ -121,10 +129,14 @@ function Itinerary(props: ItineraryProps) {
     }
   };
 
-  const zoomToFeaturePoint = (lngLat: any, id = undefined, source = undefined) => {
+  const zoomToFeaturePoint = (
+    lngLat: any,
+    id: string | undefined = undefined,
+    source: string | undefined = undefined
+  ) => {
     if (lngLat) {
       const newViewport = {
-        ...map.viewport,
+        ...mapViewPort,
         longitude: lngLat[0],
         latitude: lngLat[1],
         zoom: 16,
@@ -142,9 +154,9 @@ function Itinerary(props: ItineraryProps) {
 
   const inverseOD = () => {
     if (origin && destination) {
-      const origin = { ...origin };
+      const newOrigin = { ...origin };
       dispatchUpdateOrigin(destination);
-      dispatchUpdateDestination(origin);
+      dispatchUpdateDestination(newOrigin);
       if (vias && vias.length > 1) {
         const newVias = Array.from(vias);
         dispatchReplaceVias(newVias.reverse());
@@ -158,6 +170,7 @@ function Itinerary(props: ItineraryProps) {
 
   const viaModalContent = (
     <ModalSugerredVias
+      pathfindingInProgress={false}
       inverseOD={inverseOD}
       removeAllVias={removeAllVias}
       removeViaFromPath={removeViaFromPath}

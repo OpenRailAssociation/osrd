@@ -19,7 +19,7 @@ import { PointOnMap } from 'applications/operationalStudies/consts';
 
 interface ViasProps {
   zoomToFeaturePoint?: (lngLat?: Position, id?: string, source?: string) => void;
-  viaModalContent: string;
+  viaModalContent: string | JSX.Element;
   dispatch?: Dispatch;
   vias?: PointOnMap[];
   t?: (s: string) => string;

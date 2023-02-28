@@ -148,7 +148,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
   }
 }
 
-function init({
+export function init({
   pathfindingID,
   geojson,
   mapTrackSources,
@@ -201,7 +201,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
 
   const openModalWrapperBecauseTypescriptSucks = () => {
-    openModal(<ModalPathJSONDetail />, 'lg');
+    openModal(<ModalPathJSONDetail pathfindingID={pathfindingID} />, 'lg');
   };
 
   // Way to ensure marker position on track

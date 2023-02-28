@@ -18,24 +18,26 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { Path } from 'common/api/osrdMiddlewareApi';
+import { MapState } from 'reducers/map';
 
 interface ModalSugerredViasProps {
   pathfindingInProgress: boolean; // To be provided by container
   dispatch?: Dispatch;
   vias?: Path['steps'];
-  suggeredVias: Path['steps'];
-  mapTrackSources: any;
+  suggeredVias?: Path['steps'];
+  mapTrackSources?: MapState['mapTrackSources'];
   inverseOD: () => void;
   removeAllVias: () => void;
-  removeViaFromPath: (step: PointOnMap) => void
-
+  removeViaFromPath: (step: PointOnMap) => void;
+  t?: (s: string) => string;
 }
 
 export function withStdcmData<T>(Component: ComponentType<T>) {
   return (hocProps: ModalSugerredViasProps) => {
     const dispatch = useDispatch();
     const suggeredVias = useSelector(getSuggeredVias);
-    const vias = useSelector(getVias)
+    const mapTrackSources = useSelector(getMapTrackSources);
+    const vias = useSelector(getVias);
     const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
     return (
@@ -45,6 +47,7 @@ export function withStdcmData<T>(Component: ComponentType<T>) {
         suggeredVias={suggeredVias}
         vias={vias}
         t={t}
+        mapTrackSources={mapTrackSources}
       />
     );
   };
@@ -54,7 +57,8 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
   return (hocProps: ModalSugerredViasProps) => {
     const dispatch = useDispatch();
     const suggeredVias = useSelector(getSuggeredVias);
-    const vias = useSelector(getVias)
+    const mapTrackSources = useSelector(getMapTrackSources);
+    const vias = useSelector(getVias);
     const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
     return (
@@ -64,6 +68,7 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
         suggeredVias={suggeredVias}
         vias={vias}
         t={t}
+        mapTrackSources={mapTrackSources}
       />
     );
   };
@@ -74,7 +79,13 @@ function LoaderPathfindingInProgress() {
 }
 
 export default function ModalSugerredVias(props: ModalSugerredViasProps) {
-  const { dispatch = () => null, suggeredVias = [], vias = [], mapTrackSources, t } = props;
+  const {
+    dispatch = () => null,
+    suggeredVias = [],
+    vias = [],
+    mapTrackSources = 'geographic',
+    t = () => null,
+  } = props;
   const { inverseOD, removeAllVias, removeViaFromPath, pathfindingInProgress } = props;
   const nbVias = suggeredVias.length - 1;
   const selectedViasTracks = vias.map((via) => via.position);
@@ -91,7 +102,7 @@ export default function ModalSugerredVias(props: ModalSugerredViasProps) {
     dispatch(replaceVias(newVias));
   };
 
-  const formatVia = (via:any, idx:number, idxTrueVia:any) => (
+  const formatVia = (via: any, idx: number, idxTrueVia: any) => (
     <div
       key={nextId()}
       className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
@@ -124,10 +135,10 @@ export default function ModalSugerredVias(props: ModalSugerredViasProps) {
     <>
       <ModalHeaderSNCF>
         <div>
-        <h1>{`${t('manageVias')} ${vias.length > 0 ? `(${vias.length})` : ''}`}</h1>
-        <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
-          <i className="icons-close" />
-        </button>
+          <h1>{`${t('manageVias')} ${vias.length > 0 ? `(${vias.length})` : ''}`}</h1>
+          <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
+            <i className="icons-close" />
+          </button>
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
