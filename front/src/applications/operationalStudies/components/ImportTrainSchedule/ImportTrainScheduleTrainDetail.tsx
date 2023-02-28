@@ -43,13 +43,13 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
         <span className="import-train-schedule-traindetail-duration">
           {seconds2hhmmss(trainData.duree)}
         </span>
-        {rollingStock ? (
+        {rollingStock && (
           <LazyLoadComponent>
             <span className="import-train-schedule-traindetail-rollingstock">
               <RollingStock2Img rollingStock={rollingStock} />
             </span>
           </LazyLoadComponent>
-        ) : null}
+        )}
         <span className="import-train-schedule-traindetail-transilien">
           {trainData.num_transilien}
         </span>
@@ -62,18 +62,22 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
         </span>
       </div>
       <div className={`import-train-schedule-traindetail-steps ${isOpened ? 'opened' : ''}`}>
-        {trainData.etapes.map((step: any, stepIdx: number) =>
-          // Remove origin & destination
-          stepIdx !== 0 && stepIdx !== trainData.etapes.length - 1 ? (
-            <div className="import-train-schedule-traindetail-step" key={nextId()}>
-              <span className="import-train-schedule-traindetail-step-nb">{stepIdx}</span>
-              <span className="import-train-schedule-traindetail-step-startend">
-                {`${step.debut} - ${step.fin}`}
-              </span>
-              <span className="import-train-schedule-traindetail-step-duration">{step.duree}s</span>
-              <span className="import-train-schedule-traindetail-step-name">{step.gare}</span>
-            </div>
-          ) : null
+        {trainData.etapes.map(
+          (step: any, stepIdx: number) =>
+            // Remove origin & destination
+            stepIdx !== 0 &&
+            stepIdx !== trainData.etapes.length - 1 && (
+              <div className="import-train-schedule-traindetail-step" key={nextId()}>
+                <span className="import-train-schedule-traindetail-step-nb">{stepIdx}</span>
+                <span className="import-train-schedule-traindetail-step-startend">
+                  {`${step.debut} - ${step.fin}`}
+                </span>
+                <span className="import-train-schedule-traindetail-step-duration">
+                  {step.duree}s
+                </span>
+                <span className="import-train-schedule-traindetail-step-name">{step.gare}</span>
+              </div>
+            )
         )}
       </div>
     </div>

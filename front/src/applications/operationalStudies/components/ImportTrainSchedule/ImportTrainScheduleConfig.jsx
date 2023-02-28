@@ -7,11 +7,7 @@ import MemoStationSelector from 'applications/operationalStudies/components/Impo
 import { setFailure } from 'reducers/main';
 import { useDispatch } from 'react-redux';
 import StationCard from 'common/StationCard';
-
-function dateOfToday() {
-  const date = new Date();
-  return date.toJSON().substring(0, 10);
-}
+import { formatIsoDate } from 'utils/date';
 
 export default function ImportTrainScheduleConfig(props) {
   const { setConfig } = props;
@@ -20,7 +16,7 @@ export default function ImportTrainScheduleConfig(props) {
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState();
   const [toSearchString, setToSearchString] = useState('');
-  const [date, setDate] = useState(dateOfToday());
+  const [date, setDate] = useState(formatIsoDate(new Date()));
   const [startTime, setStartTime] = useState('00:00');
   const [endTime, setEndTime] = useState('23:59');
   const dispatch = useDispatch();
