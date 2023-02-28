@@ -1,3 +1,4 @@
+from osrd_infra.models.documents import *  # noqa
 from osrd_infra.models.electrical_profiles import *  # noqa
 from osrd_infra.models.generated import *  # noqa
 from osrd_infra.models.infra import *  # noqa
