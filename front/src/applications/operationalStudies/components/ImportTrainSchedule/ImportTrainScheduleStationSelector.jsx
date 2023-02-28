@@ -55,7 +55,7 @@ function ImportTrainScheduleStationSelector(props) {
         focus
         selectAllOnFocus
       />
-      {stationsList && stationsList.length > 0 ? (
+      {stationsList && stationsList.length > 0 && (
         <div className="results-stations">
           {stationsList.map((station) => (
             <div role="button" tabIndex={0} onClick={() => onSelect(station)} key={nextId()}>
@@ -63,8 +63,8 @@ function ImportTrainScheduleStationSelector(props) {
             </div>
           ))}
         </div>
-      ) : null}
-      {isSearching ? <Loader position="center" /> : null}
+      )}
+      {isSearching && <Loader position="center" />}
     </>
   );
 }

@@ -45,7 +45,7 @@ export default function ImportTrainScheduleModal(props) {
   // Path to compute
   const [pathsDictionnary, setPathsDictionnary] = useState();
 
-  const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(
+  const [importStatus, setImportStatus] = useState(
     t('operationalStudies/importTrainSchedule:status.ready')
   );
 
@@ -60,7 +60,7 @@ export default function ImportTrainScheduleModal(props) {
     if (!timetableID)
       messages.push(t('operationalStudies/importTrainSchedule:status.missingTimetable'));
     if (messages.length > 0) {
-      setWhatIAmDoingNow(
+      setImportStatus(
         <span className="text-danger">
           {[t('operationalStudies/importTrainSchedule:status.noImportationPossible'), '']
             .concat(messages)
@@ -68,7 +68,7 @@ export default function ImportTrainScheduleModal(props) {
         </span>
       );
     } else {
-      setWhatIAmDoingNow(t('operationalStudies/importTrainSchedule:status.ready'));
+      setImportStatus(t('operationalStudies/importTrainSchedule:status.ready'));
     }
   }
 
@@ -101,13 +101,13 @@ export default function ImportTrainScheduleModal(props) {
         pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].lat,
         pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].lng
       );
-      setWhatIAmDoingNow(
+      setImportStatus(
         `${uicNumberToCompleteLocal}/${uic2complete.length} ${t(
           'operationalStudies/importTrainSchedule:status.complete'
         )} ${pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].name}`
       );
     } else {
-      setWhatIAmDoingNow(t('operationalStudies/importTrainSchedule:status.uicComplete'));
+      setImportStatus(t('operationalStudies/importTrainSchedule:status.uicComplete'));
       setUicNumberToComplete(undefined);
       setStatus({ ...status, uicComplete: true });
     }
@@ -138,7 +138,7 @@ export default function ImportTrainScheduleModal(props) {
         autoComplete
       );
     } catch (e) {
-      setWhatIAmDoingNow(
+      setImportStatus(
         <span className="text-danger">
           {t('operationalStudies/importTrainSchedule:errorMessages.unableToRetrievePathfinding')}
         </span>
@@ -166,7 +166,7 @@ export default function ImportTrainScheduleModal(props) {
 
     const path2complete = Object.keys(pathfindingPayloads);
     if (pathNumberToComplete < path2complete.length) {
-      setWhatIAmDoingNow(
+      setImportStatus(
         `${pathNumberToComplete}/${path2complete.length} ${t(
           'operationalStudies/importTrainSchedule:status.searchingPath'
         )} ${path2complete[pathNumberToComplete]}`
@@ -180,7 +180,7 @@ export default function ImportTrainScheduleModal(props) {
         autoComplete
       );
     } else {
-      setWhatIAmDoingNow(t('operationalStudies/importTrainSchedule:status.pathComplete'));
+      setImportStatus(t('operationalStudies/importTrainSchedule:status.pathComplete'));
       setTrainsWithPathRef(
         trainsWithPathRef.map((train) => ({
           ...train,
@@ -212,7 +212,7 @@ export default function ImportTrainScheduleModal(props) {
   }
   async function generateTrainSchedules() {
     const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
-    setWhatIAmDoingNow(
+    setImportStatus(
       `${t('operationalStudies/importTrainSchedule:status.calculatingTrainSchedule')}`
     );
     const messages = [];
@@ -223,11 +223,11 @@ export default function ImportTrainScheduleModal(props) {
       const message = await launchTrainSchedules(params);
       promisesList.push(message);
       messages.push(`${message} ${idx + 1}/${Object.values(payload).length}`);
-      setWhatIAmDoingNow(messages.join('\n'));
+      setImportStatus(messages.join('\n'));
     }
     Promise.all(promisesList).then(() => {
       setStatus({ ...status, trainSchedulesDone: true });
-      setWhatIAmDoingNow(
+      setImportStatus(
         t('operationalStudies/importTrainSchedule:status.calculatingTrainScheduleCompleteAll')
       );
     });
@@ -320,9 +320,9 @@ export default function ImportTrainScheduleModal(props) {
             </>
           )}
 
-          <pre>{whatIAmDoingNow}</pre>
+          <pre>{importStatus}</pre>
 
-          {uicNumberToComplete !== undefined ? (
+          {uicNumberToComplete !== undefined && (
             <div className="automated-map">
               <Map
                 viewport={viewport}
@@ -330,7 +330,7 @@ export default function ImportTrainScheduleModal(props) {
                 setClickedFeature={setClickedFeature}
               />
             </div>
-          ) : null}
+          )}
         </ModalBodySNCF>
       ) : (
         ''
