@@ -12,7 +12,7 @@ export function budgetFormat(amount: number | bigint) {
   const amountFormatted = new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'EUR',
-    maximumSignificantDigits: 2,
+    minimumFractionDigits: 0,
   }).format(amount);
   return amountFormatted;
 }
