@@ -879,6 +879,23 @@ paths:
                 example:
                   "1500": ["A", "B", "C"]
                   "25000": ["25000", "22500", "20000"]
+
+  /documents/{key}:
+    get:
+      tags:
+        - documents
+      summary: Retrieve a document binary content
+      parameters:
+        - in: path
+          name: key
+          schema:
+            type: integer
+          description: A key identifying the document, often given by another endpoint
+          required: true
+      responses:
+        200:
+          description: A document of any type (can be an image, a pdf...)
+
 components:
   schemas:
     Infra:
