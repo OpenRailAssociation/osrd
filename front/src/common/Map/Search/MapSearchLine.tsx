@@ -10,6 +10,7 @@ import nextId from 'react-id-generator';
 import { Position } from '@turf/helpers';
 import { SEARCH_URL, searchPayloadType } from '../const';
 import SearchResultItem from './SearchResultItem';
+import { useSearchContext } from './SearchContext';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -21,6 +22,8 @@ const MapSearchLine: React.FC<MapSearchLineProps> = () => {
   const [searchResults, setSearchResults] = useState<{ [key: string]: string }[] | undefined>(
     undefined
   );
+
+  const searchContext = useSearchContext();
 
   const infraID = useSelector(getInfraID);
 
@@ -66,6 +69,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = () => {
 
   const onResultClick = (searchResultItem: { [key: string]: string | Position[] }) => {
     console.log('lineName:', searchResultItem);
+    searchContext?.setLineSearch && searchContext?.setLineSearch(searchResultItem.geographic);
   };
 
   useEffect(() => {
