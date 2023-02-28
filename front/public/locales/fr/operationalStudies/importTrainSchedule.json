@@ -21,11 +21,10 @@
   "inputPlaceholder": "Nom, trigramme",
   "launchImport": "Démarrer l'importation",
   "noResults": "Aucun résultat",
-  "openOSRDConfig": "Infra / Table horaire / Matériel",
   "startTime": "DÉBUT",
   "status": {
     "calculatingTrainSchedule": "Calculs de marches en cours…",
-    "calculatingTrainScheduleComplete": "Calculs de marches terminé",
+    "calculatingTrainScheduleComplete": "Calculs de marches terminés",
     "calculatingTrainScheduleCompleteAll": "Tous les calculs de marches sont terminés.",
     "calculatingTrainScheduleError": "Le calcul de marche a échoué",
     "complete": "positionnez",
