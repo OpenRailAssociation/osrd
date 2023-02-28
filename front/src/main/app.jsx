@@ -20,6 +20,8 @@ import Project from 'applications/operationalStudies/views/Project';
 import Study from 'applications/operationalStudies/views/Study';
 import Scenario from 'applications/operationalStudies/views/Scenario';
 
+import { SearchProvider } from 'common/Map/Search/SearchContext';
+
 export default function App() {
   const user = useSelector((state) => state.user);
 
