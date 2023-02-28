@@ -1,3 +1,4 @@
+mod documents;
 mod electrical_profiles;
 mod infra;
 mod layers;
@@ -22,6 +23,7 @@ pub fn routes() -> impl HttpServiceFactory {
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),
+        documents::routes()
     ]
 }
 

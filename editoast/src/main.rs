@@ -2,6 +2,7 @@
 extern crate diesel;
 
 mod client;
+mod documents;
 mod error;
 mod generated_data;
 mod infra;

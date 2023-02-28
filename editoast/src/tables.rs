@@ -200,3 +200,11 @@ table! {
         data -> Jsonb,
     }
 }
+
+table! {
+    osrd_infra_document(id) {
+        id -> BigInt,
+        content_type -> Text,
+        data -> Binary,
+    }
+}
