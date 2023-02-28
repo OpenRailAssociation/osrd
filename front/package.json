@@ -162,6 +162,7 @@
     "@nivo/core": "^0.80.0"
   },
   "scripts": {
+    "compile": "tsc -b",
     "start": "import-meta-env-prepare -x .env.example && vite",
     "build": "vite build",
     "test": "import-meta-env-prepare -x .env.example && vitest",
