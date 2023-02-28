@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useContext, ComponentType } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
-
+import { Dispatch } from 'redux';
 import { adjustPointOnTrack } from 'utils/pathfinding';
 
 import { replaceVias } from 'reducers/osrdconf';
@@ -16,24 +16,71 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
+import { PointOnMap } from 'applications/operationalStudies/consts';
+import { Path } from 'common/api/osrdMiddlewareApi';
+
+interface ModalSugerredViasProps {
+  pathfindingInProgress: boolean; // To be provided by container
+  dispatch?: Dispatch;
+  vias?: Path['steps'];
+  suggeredVias: Path['steps'];
+  mapTrackSources: any;
+  inverseOD: () => void;
+  removeAllVias: () => void;
+  removeViaFromPath: (step: PointOnMap) => void
+
+}
+
+export function withStdcmData<T>(Component: ComponentType<T>) {
+  return (hocProps: ModalSugerredViasProps) => {
+    const dispatch = useDispatch();
+    const suggeredVias = useSelector(getSuggeredVias);
+    const vias = useSelector(getVias)
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        suggeredVias={suggeredVias}
+        vias={vias}
+        t={t}
+      />
+    );
+  };
+}
+
+export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+  return (hocProps: ModalSugerredViasProps) => {
+    const dispatch = useDispatch();
+    const suggeredVias = useSelector(getSuggeredVias);
+    const vias = useSelector(getVias)
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        suggeredVias={suggeredVias}
+        vias={vias}
+        t={t}
+      />
+    );
+  };
+}
 
 function LoaderPathfindingInProgress() {
   return <Spinner className="loaderPathfindingInProgress" />;
 }
 
-export default function ModalSugerredVias(props) {
-  const dispatch = useDispatch();
-  const suggeredVias = useSelector(getSuggeredVias);
-  const vias = useSelector(getVias);
-  const mapTrackSources = useSelector(getMapTrackSources);
-
+export default function ModalSugerredVias(props: ModalSugerredViasProps) {
+  const { dispatch = () => null, suggeredVias = [], vias = [], mapTrackSources, t } = props;
   const { inverseOD, removeAllVias, removeViaFromPath, pathfindingInProgress } = props;
-  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias.length - 1;
   const selectedViasTracks = vias.map((via) => via.position);
   const { closeModal } = useContext(ModalContext);
 
-  const convertPathfindingVias = (steps, idxToAdd) => {
+  const convertPathfindingVias = (steps: Path['steps'] = [], idxToAdd: number) => {
     const newVias = steps.slice(1, -1).flatMap((step, idx) => {
       if (!step.suggestion || idxToAdd === idx) {
         return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
@@ -44,7 +91,7 @@ export default function ModalSugerredVias(props) {
     dispatch(replaceVias(newVias));
   };
 
-  const formatVia = (via, idx, idxTrueVia) => (
+  const formatVia = (via:any, idx:number, idxTrueVia:any) => (
     <div
       key={nextId()}
       className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
@@ -76,10 +123,12 @@ export default function ModalSugerredVias(props) {
   return (
     <>
       <ModalHeaderSNCF>
+        <div>
         <h1>{`${t('manageVias')} ${vias.length > 0 ? `(${vias.length})` : ''}`}</h1>
         <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
           <i className="icons-close" />
         </button>
+        </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <div className="suggered-vias">
@@ -123,4 +172,5 @@ ModalSugerredVias.propTypes = {
   removeAllVias: PropTypes.func.isRequired,
   removeViaFromPath: PropTypes.func.isRequired,
   pathfindingInProgress: PropTypes.bool.isRequired,
+  t: PropTypes.func.isRequired,
 };
