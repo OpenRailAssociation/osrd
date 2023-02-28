@@ -61,6 +61,7 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import { useSearchContext } from 'common/Map/Search/SearchContext';
 import { MapLayerMouseEvent } from '../../../../types';
 import RenderBlockState from './SimulationResultsMap/RenderBlockState';
 
@@ -322,6 +323,8 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     setMapLoaded(true);
   };
 
+  const searchContext = useSearchContext();
+
   return (
     <>
       <MapButtons resetPitchBearing={resetPitchBearing} />
@@ -499,6 +502,13 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
+
+        {searchContext?.lineSearch && (
+          <RenderItinerary
+            geojsonPath={searchContext?.lineSearch}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+          />
+        )}
 
         {geojsonPath && (
           <RenderItinerary

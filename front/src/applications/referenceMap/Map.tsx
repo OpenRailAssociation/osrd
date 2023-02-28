@@ -37,6 +37,8 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import RenderItinerary from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/RenderItinerary';
+import { useSearchContext } from 'common/Map/Search/SearchContext';
 import { MapLayerMouseEvent } from '../../types';
 
 import 'common/Map/Map.scss';
@@ -274,9 +276,17 @@ function Map() {
           </>
         )}
 
-        {mapSearchMarker !== undefined ? (
+        {mapSearchMarker !== undefined && (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
-        ) : null}
+        )}
+
+        {searchContext?.isSearchLine && searchContext?.lineSearch && (
+          <RenderItinerary
+            geojsonPath={searchContext?.lineSearch}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+            isSearchLine
+          />
+        )}
       </ReactMapGL>
     </main>
   );
