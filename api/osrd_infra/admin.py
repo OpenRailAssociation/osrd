@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from osrd_infra.models import (  # misc; timetable
     MODEL_TO_OBJ,
+    Document,
     ElectricalProfileSet,
     Infra,
     PathModel,
@@ -30,6 +31,7 @@ admin.site.register(
         Timetable,
         TrainScheduleModel,
         # study
+        Document,
         Scenario,
         Study,
         Project,
