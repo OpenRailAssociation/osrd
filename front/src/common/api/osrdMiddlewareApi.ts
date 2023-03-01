@@ -6,7 +6,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: () => ({ url: `/health/` }),
     }),
     getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
-      query: () => ({ url: `/editoast/infra/` }),
+      query: () => ({ url: `/infra/` }),
     }),
     getVersionApi: build.query<GetVersionApiApiResponse, GetVersionApiApiArg>({
       query: () => ({ url: `/version/api/` }),
@@ -15,18 +15,14 @@ const injectedRtkApi = api.injectEndpoints({
       query: () => ({ url: `/version/core/` }),
     }),
     getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
     }),
     postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
-      query: (queryArg) => ({
-        url: `/editoast/infra/railjson/`,
-        method: 'POST',
-        body: queryArg.body,
-      }),
+      query: (queryArg) => ({ url: `/infra/railjson/`, method: 'POST', body: queryArg.body }),
     }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/editoast/infra/${queryArg.id}/railjson/`,
+        url: `/infra/${queryArg.id}/railjson/`,
         params: { exclude_extensions: queryArg.excludeExtensions },
       }),
     }),
@@ -67,6 +63,21 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
+    }),
+    getRollingStockByIdLivery: build.query<
+      GetRollingStockByIdLiveryApiResponse,
+      GetRollingStockByIdLiveryApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/rolling_stock/${queryArg.id}/livery/`,
+        params: { livery_id: queryArg.liveryId },
+      }),
+    }),
+    postRollingStockLivery: build.mutation<
+      PostRollingStockLiveryApiResponse,
+      PostRollingStockLiveryApiArg
+    >({
+      query: (queryArg) => ({ url: `/rolling_stock_livery/`, method: 'POST', body: queryArg.body }),
     }),
     getLightRollingStock: build.query<GetLightRollingStockApiResponse, GetLightRollingStockApiArg>({
       query: (queryArg) => ({
@@ -153,16 +164,176 @@ const injectedRtkApi = api.injectEndpoints({
       GetInfraByIdSpeedLimitTagsApiResponse,
       GetInfraByIdSpeedLimitTagsApiArg
     >({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/speed_limit_tags/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
     }),
     getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/voltages/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/voltages/` }),
     }),
     getInfraSchema: build.query<GetInfraSchemaApiResponse, GetInfraSchemaApiArg>({
       query: () => ({ url: `/infra/schema/` }),
     }),
     postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
       query: (queryArg) => ({ url: `/stdcm/`, method: 'POST', body: queryArg.stdcmRequest }),
+    }),
+    postProjects: build.mutation<PostProjectsApiResponse, PostProjectsApiArg>({
+      query: (queryArg) => ({ url: `/projects/`, method: 'POST', body: queryArg.projectRequest }),
+    }),
+    getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
+      query: (queryArg) => ({
+        url: `/projects/`,
+        params: {
+          ordering: queryArg.ordering,
+          name: queryArg.name,
+          description: queryArg.description,
+          tags: queryArg.tags,
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+        },
+      }),
+    }),
+    getProjectsByProjectId: build.query<
+      GetProjectsByProjectIdApiResponse,
+      GetProjectsByProjectIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/` }),
+    }),
+    patchProjectsByProjectId: build.mutation<
+      PatchProjectsByProjectIdApiResponse,
+      PatchProjectsByProjectIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/`,
+        method: 'PATCH',
+        body: queryArg.projectRequest,
+      }),
+    }),
+    deleteProjectsByProjectId: build.mutation<
+      DeleteProjectsByProjectIdApiResponse,
+      DeleteProjectsByProjectIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
+    }),
+    getProjectsByProjectIdImage: build.query<
+      GetProjectsByProjectIdImageApiResponse,
+      GetProjectsByProjectIdImageApiArg
+    >({
+      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/image/` }),
+    }),
+    postProjectsByProjectIdStudies: build.mutation<
+      PostProjectsByProjectIdStudiesApiResponse,
+      PostProjectsByProjectIdStudiesApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/`,
+        method: 'POST',
+        body: queryArg.studyRequest,
+      }),
+    }),
+    getProjectsByProjectIdStudies: build.query<
+      GetProjectsByProjectIdStudiesApiResponse,
+      GetProjectsByProjectIdStudiesApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/`,
+        params: {
+          name: queryArg.name,
+          description: queryArg.description,
+          tags: queryArg.tags,
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+        },
+      }),
+    }),
+    getProjectsByProjectIdStudiesAndStudyId: build.query<
+      GetProjectsByProjectIdStudiesAndStudyIdApiResponse,
+      GetProjectsByProjectIdStudiesAndStudyIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+      }),
+    }),
+    patchProjectsByProjectIdStudiesAndStudyId: build.mutation<
+      PatchProjectsByProjectIdStudiesAndStudyIdApiResponse,
+      PatchProjectsByProjectIdStudiesAndStudyIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+        method: 'PATCH',
+        body: queryArg.studyRequest,
+      }),
+    }),
+    deleteProjectsByProjectIdStudiesAndStudyId: build.mutation<
+      DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse,
+      DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+        method: 'DELETE',
+      }),
+    }),
+    getProjectsByProjectIdStudyTypes: build.query<
+      GetProjectsByProjectIdStudyTypesApiResponse,
+      GetProjectsByProjectIdStudyTypesApiArg
+    >({
+      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/study_types/` }),
+    }),
+    getProjectsByProjectIdStudyStates: build.query<
+      GetProjectsByProjectIdStudyStatesApiResponse,
+      GetProjectsByProjectIdStudyStatesApiArg
+    >({
+      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/study_states/` }),
+    }),
+    postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
+      PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+      PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+        method: 'POST',
+        body: queryArg.scenarioRequest,
+      }),
+    }),
+    getProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+        params: {
+          name: queryArg.name,
+          description: queryArg.description,
+          tags: queryArg.tags,
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+        },
+      }),
+    }),
+    getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+      }),
+    }),
+    patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+      PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+      PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        method: 'PATCH',
+        body: queryArg.scenarioRequest,
+      }),
+    }),
+    deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+      DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+      DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        method: 'DELETE',
+      }),
     }),
   }),
   overrideExisting: false,
@@ -251,6 +422,21 @@ export type GetRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
 };
+export type GetRollingStockByIdLiveryApiResponse = unknown;
+export type GetRollingStockByIdLiveryApiArg = {
+  /** Rolling Stock ID */
+  id: number;
+  /** Rolling Stock Livery ID */
+  liveryId: number;
+};
+export type PostRollingStockLiveryApiResponse = unknown;
+export type PostRollingStockLiveryApiArg = {
+  body: {
+    name?: string;
+    rolling_stock_id?: number;
+    images?: Blob[];
+  };
+};
 export type GetLightRollingStockApiResponse = /** status 200 The rolling stock list */ {
   count?: number;
   next?: any;
@@ -291,18 +477,21 @@ export type PostTimetableApiResponse = /** status 201 The timetable created */ {
   id?: number;
   name?: string;
   infra?: number;
+  electrical_profile_set?: number | null;
 };
 export type PostTimetableApiArg = {
   /** Infrastructure id and waypoints */
   body: {
-    infra?: number;
-    name?: string;
+    infra: number;
+    electrical_profile_set?: number | null;
+    name: string;
   };
 };
 export type GetTimetableByIdApiResponse = /** status 200 The timetable content */ {
   id?: number;
   name?: string;
   infra?: number;
+  electrical_profile_set?: number | null;
   train_schedule?: {
     id?: number;
     train_name?: string;
@@ -329,12 +518,13 @@ export type PutTimetableByIdApiArg = {
   id: number;
   /** Infrastructure id and waypoints */
   body: {
-    infra?: number;
-    name?: string;
+    infra: number;
+    name: string;
+    electrical_profile_set?: number | null;
   };
 };
 export type PostTrainScheduleStandaloneSimulationApiResponse =
-  /** status 201 The id of the train_schedule created */ {
+  /** status 201 The ids of the train_schedules created */ {
     ids?: number[];
   };
 export type PostTrainScheduleStandaloneSimulationApiArg = {
@@ -399,6 +589,184 @@ export type PostStdcmApiResponse =
     };
 export type PostStdcmApiArg = {
   stdcmRequest: StdcmRequest;
+};
+export type PostProjectsApiResponse = /** status 201 The created project */ ProjectResult;
+export type PostProjectsApiArg = {
+  projectRequest: ProjectRequest;
+};
+export type GetProjectsApiResponse = /** status 200 the project list */ {
+  count?: number;
+  next?: any;
+  previous?: any;
+  results?: {
+    schema?: ProjectResult;
+  }[];
+};
+export type GetProjectsApiArg = {
+  ordering?:
+    | 'name'
+    | '-name'
+    | 'creation_date'
+    | '-creation_date'
+    | 'last_modification'
+    | '-last_modification';
+  /** Filter projects by name */
+  name?: string;
+  /** Filter projects by description */
+  description?: string;
+  /** Filter projects by tags */
+  tags?: string;
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
+export type GetProjectsByProjectIdApiResponse = /** status 200 The project info */ ProjectResult;
+export type GetProjectsByProjectIdApiArg = {
+  /** project id you want to retrieve */
+  projectId: number;
+};
+export type PatchProjectsByProjectIdApiResponse =
+  /** status 200 The project updated */ ProjectResult;
+export type PatchProjectsByProjectIdApiArg = {
+  /** project id you want to update */
+  projectId: number;
+  /** The fields you want to update */
+  projectRequest: ProjectRequest;
+};
+export type DeleteProjectsByProjectIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdApiArg = {
+  /** project id you want to delete */
+  projectId: number;
+};
+export type GetProjectsByProjectIdImageApiResponse = unknown;
+export type GetProjectsByProjectIdImageApiArg = {
+  /** project id you want to retrieve the image */
+  projectId: number;
+};
+export type PostProjectsByProjectIdStudiesApiResponse =
+  /** status 201 The created operational study */ StudyResult;
+export type PostProjectsByProjectIdStudiesApiArg = {
+  projectId: number;
+  studyRequest: StudyRequest;
+};
+export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studies list */ {
+  count?: number;
+  next?: any;
+  previous?: any;
+  results?: {
+    schema?: StudyResult;
+  }[];
+};
+export type GetProjectsByProjectIdStudiesApiArg = {
+  projectId: number;
+  /** Filter operational studies by name */
+  name?: string;
+  /** Filter operational studies by description */
+  description?: string;
+  /** Filter operational studies by tags */
+  tags?: string;
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdApiResponse =
+  /** status 200 The operational study info */ StudyResult;
+export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
+  /** project id refered to the operational study */
+  projectId: number;
+  /** study id you want to retrieve */
+  studyId: number;
+};
+export type PatchProjectsByProjectIdStudiesAndStudyIdApiResponse =
+  /** status 200 The operational study updated */ StudyResult;
+export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
+  /** project id refered to the study */
+  projectId: number;
+  /** study id you want to retrieve */
+  studyId: number;
+  /** The fields you want to update */
+  studyRequest: StudyRequest;
+};
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
+  /** project id refered to the operational study */
+  projectId: number;
+  /** study id you want to delete */
+  studyId: number;
+};
+export type GetProjectsByProjectIdStudyTypesApiResponse =
+  /** status 200 The list of study types */ string[];
+export type GetProjectsByProjectIdStudyTypesApiArg = {
+  /** project id refered to the operational study */
+  projectId: number;
+};
+export type GetProjectsByProjectIdStudyStatesApiResponse =
+  /** status 200 The list of study states */ string[];
+export type GetProjectsByProjectIdStudyStatesApiArg = {
+  /** project id refered to the operational study */
+  projectId: number;
+};
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 201 The created scenario */ ScenarioResult;
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  projectId: number;
+  studyId: number;
+  scenarioRequest: ScenarioRequest;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 200 list of scenarios */ {
+    count?: number;
+    next?: any;
+    previous?: any;
+    results?: {
+      schema?: ScenarioResult;
+    }[];
+  };
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  projectId: number;
+  studyId: number;
+  /** Filter scenarios by name */
+  name?: string;
+  /** Filter scenarios by description */
+  description?: string;
+  /** Filter scenarios by tags */
+  tags?: string;
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The operational study info */ ScenarioResult;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** project id refered to the scenario */
+  projectId: number;
+  studyId: number;
+  /** scenario id you want to retrieve */
+  scenarioId: number;
+};
+export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The scenario updated */ ScenarioResult;
+export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** project id refered to the scenario */
+  projectId: number;
+  /** study refered to the scenario */
+  studyId: number;
+  /** scenario you want to update */
+  scenarioId: number;
+  /** The fields you want to update */
+  scenarioRequest: ScenarioRequest;
+};
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** project id refered to the scenario */
+  projectId: number;
+  /** study id refered to the scenario */
+  studyId: number;
+  /** scenario id you want to delete */
+  scenarioId: number;
 };
 export type Infra = {
   id?: number;
@@ -495,6 +863,10 @@ export type LightRollingStock = {
     };
   };
   metadata?: object;
+  liveries?: {
+    id?: number;
+    name?: string;
+  }[];
 };
 export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type EffortCurve = {
@@ -565,6 +937,9 @@ export type Allowance =
   | ({
       allowance_type: 'StandardAllowance';
     } & StandardAllowance);
+export type TrainScheduleOptions = {
+  ignore_electrical_profiles?: boolean | null;
+};
 export type StandaloneSimulationParameters = {
   timetable?: number;
   path?: number;
@@ -577,6 +952,7 @@ export type StandaloneSimulationParameters = {
     allowances?: Allowance[];
     speed_limit_tags?: string;
     comfort?: Comfort;
+    options?: TrainScheduleOptions | null;
   }[];
 };
 export type WritableTrainSchedule = {
@@ -588,6 +964,9 @@ export type WritableTrainSchedule = {
   initial_speed?: number;
   labels?: string[];
   allowances?: Allowance[];
+  speed_limit_tags?: string;
+  comfort?: Comfort;
+  options?: TrainScheduleOptions | null;
 };
 export type TrainSchedule = {
   id?: number;
@@ -642,7 +1021,7 @@ export type TrainScheduleResultData = {
     geo_position?: number[];
     schema_position?: number[];
   }[];
-  mechanical_energy_consumed?: any;
+  mechanical_energy_consumed?: number;
 };
 export type TrainScheduleResult = {
   id?: number;
@@ -667,6 +1046,14 @@ export type TrainScheduleResult = {
     | {
         error?: string;
       };
+  modes_and_profiles?: {
+    start?: number;
+    stop?: number;
+    mode_used?: string;
+    profile_used?: string | null;
+    mode_seen?: string | null;
+    profile_seen?: string | null;
+  }[][];
 };
 export type StdcmRequest = {
   infra?: number;
@@ -683,4 +1070,95 @@ export type StdcmRequest = {
   margin_before?: number;
   margin_after?: number;
   standard_allowance?: AllowanceValue;
+};
+export type ProjectResult = {
+  id?: number;
+  name?: string;
+  objectives?: string;
+  description?: string;
+  funders?: string[];
+  budget?: number;
+  image_url?: string;
+  creation_date?: string;
+  last_modification?: string;
+  studies?: number[];
+  tags?: string[];
+};
+export type ProjectRequest = {
+  name: string;
+  objectives?: string;
+  description?: string;
+  funders?: string[];
+  budget?: number;
+  image?: object;
+  tags?: string[];
+};
+export type StudyResult = {
+  id?: number;
+  name?: string;
+  description?: string;
+  budget?: number;
+  service_code?: string;
+  business_code?: string;
+  creation_date?: string;
+  last_modification?: string;
+  scenarios?: number[];
+  start_date_study?: string;
+  expected_end_date_study?: string;
+  actual_end_date_study?: string;
+  state?: 'started' | 'inProgress' | 'finish';
+  type?:
+    | 'timeTables'
+    | 'flowRate'
+    | 'parkSizing'
+    | 'garageRequirement'
+    | 'operationOrSizing'
+    | 'operability'
+    | 'strategicPlanning'
+    | 'chartStability'
+    | 'disturbanceTests';
+};
+export type StudyRequest = {
+  name: string;
+  service_code?: string;
+  business_code?: string;
+  description?: string;
+  budget?: number;
+  tags?: string[];
+  start_date?: string;
+  expected_end_date?: string;
+  actual_end_date?: string;
+  state?: 'started' | 'inProgress' | 'finish';
+  type?:
+    | 'timeTables'
+    | 'flowRate'
+    | 'parkSizing'
+    | 'garageRequirement'
+    | 'operationOrSizing'
+    | 'operability'
+    | 'strategicPlanning'
+    | 'chartStability'
+    | 'disturbanceTests';
+};
+export type ScenarioResult = {
+  id?: number;
+  name?: string;
+  description?: string[];
+  tags?: string[];
+  infra?: number;
+  infra_name?: string;
+  electrical_profile_set?: number | null;
+  electrical_profile_set_name?: string | null;
+  creation_date?: string;
+  last_modification?: string;
+  timetable?: number;
+  trains_count?: number;
+  trains_schedules?: string[];
+};
+export type ScenarioRequest = {
+  name: string;
+  description?: string;
+  tags?: string[];
+  infra?: number;
+  electrical_profile_set?: number | null;
 };

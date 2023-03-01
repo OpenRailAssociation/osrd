@@ -1,5 +1,4 @@
 import { baseEditoastApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -8,8 +7,8 @@ const injectedRtkApi = api.injectEndpoints({
     getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
       query: () => ({ url: `/version/` }),
     }),
-    getLayersInfo: build.query<GetLayersInfoApiResponse, GetLayersInfoApiArg>({
-      query: () => ({ url: `/layers/info/` }),
+    postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
+      query: (queryArg) => ({ url: `/search/`, method: 'POST', body: queryArg.body }),
     }),
     getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
       GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
@@ -20,9 +19,9 @@ const injectedRtkApi = api.injectEndpoints({
         params: { infra: queryArg.infra },
       }),
     }),
-    mvtViewTileTileLayerSlugViewSlugZXYGet: build.query<
-      MvtViewTileTileLayerSlugViewSlugZXYGetApiResponse,
-      MvtViewTileTileLayerSlugViewSlugZXYGetApiArg
+    getLayersTileByLayerSlugAndViewSlugZXY: build.query<
+      GetLayersTileByLayerSlugAndViewSlugZXYApiResponse,
+      GetLayersTileByLayerSlugAndViewSlugZXYApiArg
     >({
       query: (queryArg) => ({
         url: `/layers/tile/${queryArg.layerSlug}/${queryArg.viewSlug}/${queryArg.z}/${queryArg.x}/${queryArg.y}/`,
@@ -30,13 +29,13 @@ const injectedRtkApi = api.injectEndpoints({
       }),
     }),
     getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
-      query: () => ({ url: `/editoast/infra/` }),
+      query: () => ({ url: `/infra/` }),
     }),
     postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
       query: (queryArg) => ({ url: `/infra/`, method: 'POST', body: queryArg.body }),
     }),
     getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
     }),
     deleteInfraById: build.mutation<DeleteInfraByIdApiResponse, DeleteInfraByIdApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
@@ -49,13 +48,13 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/editoast/infra/${queryArg.id}/railjson/`,
+        url: `/infra/${queryArg.id}/railjson/`,
         params: { exclude_extensions: queryArg.excludeExtensions },
       }),
     }),
     postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/editoast/infra/railjson/`,
+        url: `/infra/railjson/`,
         method: 'POST',
         body: queryArg.railjsonFile,
         params: { name: queryArg.name, generate_data: queryArg.generateData },
@@ -96,10 +95,16 @@ const injectedRtkApi = api.injectEndpoints({
       GetInfraByIdSpeedLimitTagsApiResponse,
       GetInfraByIdSpeedLimitTagsApiArg
     >({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/speed_limit_tags/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
     }),
     getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/voltages/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/voltages/` }),
+    }),
+    getInfraByIdAttachedAndTrackId: build.query<
+      GetInfraByIdAttachedAndTrackIdApiResponse,
+      GetInfraByIdAttachedAndTrackIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
     }),
     getInfraByIdRoutesAndWaypointTypeWaypointId: build.query<
       GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
@@ -126,7 +131,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg.number },
+        params: { number: queryArg['number'] },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -139,6 +144,30 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.body,
       }),
     }),
+    postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/clone/`, method: 'POST' }),
+    }),
+    getElectricalProfileSet: build.query<
+      GetElectricalProfileSetApiResponse,
+      GetElectricalProfileSetApiArg
+    >({
+      query: () => ({ url: `/electrical_profile_set/` }),
+    }),
+    getElectricalProfileSetById: build.query<
+      GetElectricalProfileSetByIdApiResponse,
+      GetElectricalProfileSetByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/` }),
+    }),
+    getElectricalProfileSetByIdLevelOrder: build.query<
+      GetElectricalProfileSetByIdLevelOrderApiResponse,
+      GetElectricalProfileSetByIdLevelOrderApiArg
+    >({
+      query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/level_order/` }),
+    }),
+    getDocumentsByKey: build.query<GetDocumentsByKeyApiResponse, GetDocumentsByKeyApiArg>({
+      query: (queryArg) => ({ url: `/documents/${queryArg.key}` }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -148,24 +177,32 @@ export type GetHealthApiArg = void;
 export type GetVersionApiResponse = /** status 200 Return the service version */ {
   git_describe: string | null;
 };
-export type MvtViewTileTileLayerSlugViewSlugZXYGetApiResponse =
-  /** status 200 Successful Response */ Blob;
-export type MvtViewTileTileLayerSlugViewSlugZXYGetApiArg = {
-  layerSlug: string;
-  viewSlug: string;
-  z: number;
-  x: number;
-  y: number;
-  infra: number;
-};
 export type GetVersionApiArg = void;
-export type GetLayersInfoApiResponse = /** status 200 Successful Response */ Layer[];
-export type GetLayersInfoApiArg = void;
+export type PostSearchApiResponse =
+  /** status 200 Search results, the structure of the returned objects depend on their type */ object[];
+export type PostSearchApiArg = {
+  /** Search query */
+  body: {
+    object?: string;
+    query?: SearchQuery;
+    page?: number;
+    page_size?: number;
+  };
+};
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ ViewMetadata;
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiArg = {
   layerSlug: string;
   viewSlug: string;
+  infra: number;
+};
+export type GetLayersTileByLayerSlugAndViewSlugZXYApiResponse = unknown;
+export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
+  layerSlug: string;
+  viewSlug: string;
+  z: number;
+  x: number;
+  y: number;
   infra: number;
 };
 export type GetInfraApiResponse = /** status 200 The infra list */ Infra[];
@@ -290,6 +327,16 @@ export type GetInfraByIdVoltagesApiArg = {
   /** Infra ID */
   id: number;
 };
+export type GetInfraByIdAttachedAndTrackIdApiResponse =
+  /** status 200 All objects attached to the given track (arranged by types) */ {
+    [key: string]: string[];
+  };
+export type GetInfraByIdAttachedAndTrackIdApiArg = {
+  /** Infra ID */
+  id: number;
+  /** Track ID */
+  trackId: string;
+};
 export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse =
   /** status 200 All routes that starting and ending by the given waypoint */ {
     starting?: string[];
@@ -354,22 +401,39 @@ export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   /** List of object id's */
   body: string[];
 };
-export type MapLayerView = {
-  name?: string;
-  on_field?: string;
-  data_expr?: string[];
-  exclude_fields?: string[];
-  joins?: string[];
-  cache_duration?: number;
-  where?: string[];
+export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
+  id?: number;
 };
-export type Layer = {
-  name?: string;
-  table_name?: string;
-  views?: MapLayerView[];
-  id_field?: string;
-  attribution?: string;
+export type PostInfraByIdCloneApiArg = {
+  /** Infra id */
+  id: number;
 };
+export type GetElectricalProfileSetApiResponse =
+  /** status 200 The list of ids and names of electrical profile sets available */ {
+    id?: number;
+    name?: string;
+  }[];
+export type GetElectricalProfileSetApiArg = void;
+export type GetElectricalProfileSetByIdApiResponse =
+  /** status 200 The list of electrical profiles in the set */ ElectricalProfile[];
+export type GetElectricalProfileSetByIdApiArg = {
+  /** Electrical profile set ID */
+  id: number;
+};
+export type GetElectricalProfileSetByIdLevelOrderApiResponse =
+  /** status 200 A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength */ {
+    [key: string]: string[];
+  };
+export type GetElectricalProfileSetByIdLevelOrderApiArg = {
+  /** Electrical profile set ID */
+  id: number;
+};
+export type GetDocumentsByKeyApiResponse = unknown;
+export type GetDocumentsByKeyApiArg = {
+  /** A key identifying the document, often given by another endpoint */
+  key: number;
+};
+export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {
   type?: string;
   name?: string;
@@ -486,4 +550,14 @@ export type RouteTrackRangesComputed = {
 export type TrackLocation = {
   track?: string;
   offset?: number;
+};
+export type TrackRange = {
+  track?: string;
+  begin?: number;
+  end?: number;
+};
+export type ElectricalProfile = {
+  value?: string;
+  power_class?: string;
+  track_ranges?: TrackRange[];
 };
