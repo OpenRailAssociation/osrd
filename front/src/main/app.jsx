@@ -11,7 +11,7 @@ import HomeEditor from 'applications/editor/Home';
 import HomeMap from 'applications/referenceMap/Home';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import HomeStdcm from 'applications/stdcm/Home';
-import { ModalProvider, ModalSNCF } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Loader from 'common/Loader';
 import history from 'main/history';
 import Home from 'main/home';
@@ -52,22 +52,24 @@ export default function App() {
     <Suspense fallback={<Loader />}>
       {(user.isLogged || isLocalBackend) && (
         <HistoryRouter history={history}>
-          <ModalProvider>
-            <NotificationsState />
-            <Routes>
-              <Route path="/operational-studies">
-                <Route path="/operational-studies" element={<HomeOperationalStudies />} />
-                <Route path="/operational-studies/project" element={<Project />} />
-                <Route path="/operational-studies/study" element={<Study />} />
-                <Route path="/operational-studies/scenario" element={<Scenario />} />
-              </Route>
-              <Route path="/map/*" element={<HomeMap />} />
-              <Route path="/editor/*" element={<HomeEditor />} />
-              <Route path="/stdcm/*" element={<HomeStdcm />} />
-              <Route path="/customget/*" element={<HomeCustomGET />} />
-              <Route path="/*" element={<Home />} />
-            </Routes>
-          </ModalProvider>
+          <SearchProvider>
+            <ModalProvider>
+              <NotificationsState />
+              <Routes>
+                <Route path="/operational-studies">
+                  <Route path="/operational-studies" element={<HomeOperationalStudies />} />
+                  <Route path="/operational-studies/project" element={<Project />} />
+                  <Route path="/operational-studies/study" element={<Study />} />
+                  <Route path="/operational-studies/scenario" element={<Scenario />} />
+                </Route>
+                <Route path="/map/*" element={<HomeMap />} />
+                <Route path="/editor/*" element={<HomeEditor />} />
+                <Route path="/stdcm/*" element={<HomeStdcm />} />
+                <Route path="/customget/*" element={<HomeCustomGET />} />
+                <Route path="/*" element={<Home />} />
+              </Routes>
+            </ModalProvider>
+          </SearchProvider>
         </HistoryRouter>
       )}
       {!user.isLogged && !isLocalBackend && <Loader />}
