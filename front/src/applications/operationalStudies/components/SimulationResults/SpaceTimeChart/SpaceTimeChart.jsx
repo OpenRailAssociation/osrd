@@ -196,7 +196,7 @@ export default function SpaceTimeChart(props) {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [positionValues, timePosition]);
+  }, [chart, positionValues, timePosition]);
 
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
