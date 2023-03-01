@@ -15,7 +15,7 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
-import { ElectricalProfilesLegend } from './ElectricalProfilesLegend';
+import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
