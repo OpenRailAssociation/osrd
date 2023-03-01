@@ -349,7 +349,6 @@ impl InfraCache {
         // Load track sections list
         sql_query(
             "SELECT
-                
                 obj_id,
                 (data->'extensions'->'sncf'->>'line_code')::integer as line_code,
                 (data->>'length')::float as length,
@@ -357,7 +356,6 @@ impl InfraCache {
                 data->>'slopes' as slopes, 
                 data->>'geo' as geo,
                 data->>'sch' as sch
-            
             FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
         )
         .bind::<BigInt, _>(infra_id)

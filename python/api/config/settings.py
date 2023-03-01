@@ -50,6 +50,12 @@ POSTGRES_USER = getenv("POSTGRES_USER", "osrd")
 POSTGRES_PASSWORD = getenv("POSTGRES_PASSWORD", "password")
 POSTGRES_HOST = getenv("POSTGRES_HOST", "localhost")
 
+if gdal_lib := getenv("GDAL_LIBRARY_PATH"):
+    GDAL_LIBRARY_PATH = gdal_lib
+if geos_lib := getenv("GEOS_LIBRARY_PATH"):
+    GEOS_LIBRARY_PATH = geos_lib
+
+
 REDIS_CACHE_URI = getenv("REDIS_CACHE_URI")
 
 
