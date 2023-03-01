@@ -8,7 +8,6 @@ import { updateFeatureInfoClick } from 'reducers/map';
 
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 
 function Itinerary(props) {
   const { vias } = useSelector((state) => state.osrdconf);
@@ -16,7 +15,6 @@ function Itinerary(props) {
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const infra = useSelector(getInfraID);
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
