@@ -118,7 +118,7 @@ impl ElectricalProfileSet {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "electrical_profiles")]
 pub enum ElectricalProfilesError {
-    /// Couldn't found the infra with the given id
+    /// Couldn't find the electrical profile set with the given id
     #[error("Electrical Profile Set '{electical_profile_set_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { electical_profile_set_id: i64 },

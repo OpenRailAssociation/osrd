@@ -36,12 +36,12 @@ pub struct InfraName {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra")]
 pub enum InfraApiError {
-    /// Couldn't found the infra with the given id
+    /// Couldn't find the infra with the given id
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { infra_id: i64 },
 }
-
+s
 impl Infra {
     pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
         match dsl::osrd_infra_infra.find(infra_id).first(conn) {
