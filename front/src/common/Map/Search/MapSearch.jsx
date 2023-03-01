@@ -4,11 +4,9 @@ import { updateViewport } from 'reducers/map';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
-import MapSearchSignalBox from 'common/Map/Search/MapSearchSignalBox';
-import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
+import Tabs from 'common/Tabs';
 import MapSearchLine from './MapSearchLine';
 import HearderPopUp from '../HeaderPopUp';
-import Tabs from 'common/Tabs';
 
 export default function MapSearch(props) {
   const { closeMapSearchPopUp } = props;
@@ -30,12 +28,8 @@ export default function MapSearch(props) {
             content: <MapSearchStation updateExtViewport={updateViewportChange} />,
           },
           {
-            label: t('map-search:signalbox'),
-            content: <MapSearchSignalBox updateExtViewport={updateViewportChange} />,
-          },
-          {
-            label: t('map-search:signal'),
-            content: <MapSearchSignal updateExtViewport={updateViewportChange} />,
+            label: t('map-search:line'),
+            content: <MapSearchLine updateExtViewport={updateViewportChange} />,
           },
         ]}
       />
