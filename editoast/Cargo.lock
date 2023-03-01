@@ -726,7 +726,7 @@ dependencies = [
  "json-patch",
  "mvt",
  "pathfinding",
- "pointy",
+ "pointy 0.3.0",
  "rand 0.8.5",
  "redis",
  "sentry",
@@ -1406,7 +1406,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "137403895b2731e6d750405e0ce012a5d5cdf6c15229eb656362cf236a0dac8c"
 dependencies = [
  "log",
- "pointy",
+ "pointy 0.2.1",
  "protobuf",
 ]
 
@@ -1637,6 +1637,15 @@ name = "pointy"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4d08aa04435c90720e887d62fdad481413cfb73dfcdc3852e6daaf147c22616"
+
+[[package]]
+name = "pointy"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "139bf0e592367a743213257b5d7d2b4b899ebdd7377441e8901d38e9c6994901"
+dependencies = [
+ "num-traits",
+]
 
 [[package]]
 name = "ppv-lite86"
