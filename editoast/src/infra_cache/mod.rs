@@ -5,7 +5,7 @@ use crate::infra::Infra;
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
-use diesel::sql_types::{BigInt, Double, Text};
+use diesel::sql_types::{BigInt, Double, Integer, Nullable, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use enum_map::EnumMap;
@@ -199,6 +199,8 @@ impl ObjectCache {
 pub struct TrackQueryable {
     #[diesel(sql_type = Text)]
     pub obj_id: String,
+    #[diesel(sql_type = Nullable<Integer>)]
+    pub line_code: Option<i32>,
     #[diesel(sql_type = Double)]
     pub length: f64,
     #[diesel(sql_type = Text)]
@@ -220,6 +222,7 @@ impl From<TrackQueryable> for TrackSectionCache {
             length: track.length,
             curves: serde_json::from_str(&track.curves).unwrap(),
             slopes: serde_json::from_str(&track.slopes).unwrap(),
+            line_code: track.line_code,
             bbox_geo: geo.get_bbox(),
             bbox_sch: sch.get_bbox(),
         }
@@ -345,12 +348,16 @@ impl InfraCache {
 
         // Load track sections list
         sql_query(
-            "SELECT 
-                obj_id, (data->>'length')::float as length, 
+            "SELECT
+                
+                obj_id,
+                (data->'extensions'->'sncf'->>'line_code')::integer as line_code,
+                (data->>'length')::float as length,
                 data->>'curves' as curves, 
                 data->>'slopes' as slopes, 
-                data->>'geo' as geo, 
-                data->>'sch' as sch 
+                data->>'geo' as geo,
+                data->>'sch' as sch
+            
             FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
         )
         .bind::<BigInt, _>(infra_id)
@@ -708,6 +715,7 @@ pub mod tests {
         TrackSectionCache {
             obj_id: obj_id.as_ref().into(),
             length,
+            line_code: None,
             bbox_geo: BoundingBox::default(),
             bbox_sch: BoundingBox::default(),
             ..Default::default()

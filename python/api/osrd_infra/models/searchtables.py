@@ -7,7 +7,7 @@ class OsrdSearchOperationalPoint(models.Model):
         managed = False
 
 
-class OsrdSearchTrackSection(models.Model):
+class OsrdSearchTrack(models.Model):
     class Meta:
-        db_table = "osrd_search_tracksection"
+        db_table = "osrd_search_track"
         managed = False

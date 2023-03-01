@@ -484,6 +484,31 @@ paths:
                 items:
                   type: integer
 
+  /infra/{id}/lines/{line_code}/bbox:
+    get:
+      tags: ["infra"]
+      summary: Returns the BBoxes (geo and schematic) of a line
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+        - in: path
+          name: line_code
+          schema:
+            type: integer
+          description: a line code
+          required: true
+      responses:
+        200:
+          description: The BBox of the line
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidationZone"
+
   /infra/{id}/lock/:
     post:
       tags:
@@ -1109,6 +1134,18 @@ paths:
 
 components:
   schemas:
+    BoundingBox:
+      description: A bounding box
+      type: array
+      minItems: 2
+      maxItems: 2
+      items:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: integer
+
     Comfort:
       description: Train comfort that will be used for the simulation
       type: string
@@ -1173,6 +1210,14 @@ components:
           format: date
         locked:
           type: boolean
+
+    InvalidationZone:
+      type: object
+      properties:
+        geo:
+          $ref: "#/components/schemas/BoundingBox"
+        sch:
+          $ref: "#/components/schemas/BoundingBox"
 
     ObjectType:
       type: string
