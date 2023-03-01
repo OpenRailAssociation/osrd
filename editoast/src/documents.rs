@@ -103,9 +103,9 @@ impl Document {
             let mut conn = db_pool.get().expect("Failed to get DB connection");
             match insert_into(osrd_infra_document)
                 .values(&form)
-                .get_results(&mut conn)
+                .get_result(&mut conn)
             {
-                Ok(mut v) => Ok(v.pop().unwrap()),
+                Ok(project) => Ok(project),
                 Err(e) => Err(e.into()),
             }
         })
