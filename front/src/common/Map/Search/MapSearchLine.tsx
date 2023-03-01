@@ -3,11 +3,11 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from 'utils/helpers';
 import { post } from 'common/requests';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { Viewport, updateMapSearchMarker } from 'reducers/map';
+import { Viewport } from 'reducers/map';
 import nextId from 'react-id-generator';
-import { BBox, Position, lineString } from '@turf/helpers';
+import { BBox, MultiLineString, multiLineString } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { RootState } from 'reducers';
@@ -25,6 +25,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const [searchResults, setSearchResults] = useState<{ [key: string]: string }[] | undefined>(
     undefined
   );
+  const [geoResult, setGeoResult] = useState<MultiLineString | undefined>(undefined);
   const map = useSelector((state: RootState) => state.map);
   const searchContext = useSearchContext();
 
@@ -48,22 +49,18 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
 
   useEffect(() => {
     if (searchContext?.lineSearch) {
-      const features = lineString(searchContext?.lineSearch.coordinates);
-      console.log('features:', features);
-      // setGeojsonPath(features);
+      const features = multiLineString(searchContext?.lineSearch.coordinates);
       zoomToFeature(bbox(features));
     }
   }, [searchContext?.lineSearch]);
 
   const infraID = useSelector(getInfraID);
 
-  const dispatch = useDispatch();
-
   const { t } = useTranslation(['map-search']);
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
-  const updateSearch = async (params: searchPayloadType) => {
+  const updateSearch = async (params: searchPayloadType | null) => {
     try {
       const data = await post(SEARCH_URL, params);
       setSearchResults(data);
@@ -72,40 +69,49 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
     }
   };
 
-  const getPayload = () => {
-    let lineName = null;
-    let lineCode = null;
+  const getPayload = (lineSearch: string) => {
+    let payload = {
+      object: 'track',
+      query: ['and', ['=', ['infra_id'], infraID], ['search', ['line_name'], lineSearch]],
+    };
 
-    if (!dontSearch && debouncedSearchTerm) {
-      if (!Number.isNaN(Number(searchState))) {
-        lineName = null;
-        lineCode = searchState;
-      } else {
-        lineName = searchState;
-        lineCode = null;
-      }
+    if (!Number.isNaN(Number(lineSearch))) {
+      payload = {
+        object: 'geo_track',
+        query: ['and', ['=', ['infra_id'], infraID], ['=', ['line_code'], Number(lineSearch)]],
+      };
     }
 
-    const payload = {
-      object: 'tracksection',
-      query: [
-        'and',
-        ['or', ['search', ['line_name'], lineName], ['search', ['line_code'], lineCode]],
-        ['=', ['infra_id'], infraID],
-      ],
-    };
     return payload;
   };
 
-  const onResultClick = (searchResultItem: { [key: string]: string | Position[] }) => {
-    if (searchContext?.setLineSearch && searchContext?.setIsSearchLine) {
-      searchContext?.setLineSearch(searchResultItem.geographic);
-      searchContext?.setIsSearchLine(true);
+  const coordinates = (search: { [key: string]: string | MultiLineString }) =>
+    map.mapTrackSources === 'schematic' ? search.schematic : search.geographic;
+
+  const onResultClick = async (searchResultItem: { [key: string]: string | MultiLineString }) => {
+    if (searchResultItem.geographic || searchResultItem.schematic) {
+      setGeoResult(coordinates(searchResultItem) as MultiLineString);
+    } else {
+      const payload = getPayload(searchResultItem.line_code as string);
+
+      try {
+        const data = await post(SEARCH_URL, payload);
+        setGeoResult(coordinates(data[0]) as MultiLineString);
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
   useEffect(() => {
-    updateSearch(getPayload());
+    searchContext?.setLineSearch(geoResult);
+    searchContext?.setIsSearchLine(true);
+  }, [geoResult]);
+
+  useEffect(() => {
+    if (!dontSearch && debouncedSearchTerm) {
+      updateSearch(getPayload(searchState));
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
@@ -121,7 +127,8 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const clearSearchResult = () => {
     setSearchState('');
     setSearchResults(undefined);
-    dispatch(updateMapSearchMarker(undefined));
+    searchContext?.setIsSearchLine(false);
+    searchContext?.setLineSearch(undefined);
   };
 
   return (
