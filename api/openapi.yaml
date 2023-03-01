@@ -1149,11 +1149,12 @@ paths:
         - studies
       summary: update an operational study
       parameters:
-        - in: query
+        - in: path
           name: project_id
           schema:
             type: integer
           description: project id refered to the study
+          required: true
         - in: path
           required: true
           name: study_id
