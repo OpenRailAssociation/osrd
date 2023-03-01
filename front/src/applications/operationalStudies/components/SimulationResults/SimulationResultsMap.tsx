@@ -290,7 +290,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     setInteractiveLayerIds(defineInteractiveLayers());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geojsonPath, otherTrainsHoverPosition.length]);
-
+  const searchContext = useSearchContext();
   useEffect(() => {
     if (mapRef.current) {
       if (urlLat) {
@@ -304,6 +304,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         });
       }
     }
+
+    return () => {
+      searchContext?.setLineSearch(undefined);
+      searchContext?.setIsSearchLine(false);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -318,17 +323,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timePosition]);
-
-  const searchContext = useSearchContext();
-
-  useEffect(() => {
-    if (searchContext?.lineSearch) {
-      const features = lineString(searchContext?.lineSearch.coordinates);
-      console.log('features:', features);
-      setGeojsonPath(features);
-      zoomToFeature(bbox(features));
-    }
-  }, [searchContext?.isSearchLine]);
 
   const handleLoadFinished = () => {
     setMapLoaded(true);
@@ -514,7 +508,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
 
         {searchContext?.isSearchLine && searchContext?.lineSearch && (
           <RenderItinerary
-            geojsonPath={searchContext?.lineSearch}
+            geojsonPath={searchContext.lineSearch}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
           />
         )}
