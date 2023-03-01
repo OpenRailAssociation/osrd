@@ -7,6 +7,7 @@ mod geo_json;
 pub mod operation;
 mod operational_point;
 mod railjson;
+pub mod rolling_stock;
 mod route;
 mod signal;
 mod speed_section;

@@ -927,8 +927,71 @@ paths:
                     type: integer
                     example: 42
 
+  /rolling_stock/{id}/:
+    get:
+      tags:
+        - rolling_stock
+      summary: Retrieve a rolling stock
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+      responses:
+        200:
+          description: The rolling stock information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollingStock"
+
 components:
   schemas:
+    Comfort:
+      description: Train comfort that will be used for the simulation
+      type: string
+      enum: ["AC", "HEATING", "STANDARD"]
+      default: "STANDARD"
+
+    ConditionalEffortCurve:
+      type: object
+      properties:
+        cond:
+          type: object
+          nullable: true
+          properties:
+            comfort:
+              $ref: "#/components/schemas/Comfort"
+              nullable: true
+            electrical_profile_level:
+              type: string
+              nullable: true
+            power_restriction_code:
+              type: string
+              nullable: true
+        curve:
+          $ref: "#/components/schemas/EffortCurve"
+
+    EffortCurve:
+      type: object
+      properties:
+        speeds:
+          type: array
+          example: [0.0, 2.958, 46.719]
+          minItems: 2
+          items:
+            type: number
+            format: float
+        max_efforts:
+          type: array
+          example: [23500.0, 23200.0, 21200.0]
+          minItems: 2
+          items:
+            type: number
+            format: float
+
     Infra:
       properties:
         id:
@@ -1215,6 +1278,142 @@ components:
         direction:
           $ref: "#/components/schemas/Direction"
 
+    LightRollingStock:
+      properties:
+        id:
+          type: number
+        version:
+          type: string
+          example: "3.0"
+        name:
+          type: string
+        length:
+          type: number
+          format: float
+        max_speed:
+          type: number
+          format: float
+        startup_time:
+          type: number
+          format: float
+        startup_acceleration:
+          type: number
+          format: float
+        comfort_acceleration:
+          type: number
+          format: float
+        gamma:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: ["CONST", "MAX"]
+            value:
+              type: number
+              format: float
+        inertia_coefficient:
+          type: number
+          format: float
+        features:
+          type: array
+          items:
+            type: string
+        mass:
+          type: number
+          format: float
+        rolling_resistance:
+          type: object
+          properties:
+            A:
+              type: number
+            B:
+              type: number
+            C:
+              type: number
+            type:
+              type: string
+              enum: ["davis"]
+        loading_gauge:
+          type: string
+          enum:
+            - "G1"
+            - "G2"
+            - "GA"
+            - "GB"
+            - "GB1"
+            - "GC"
+            - "FR3.3"
+            - "FR3.3/GB/G2"
+            - "GLOTT"
+        effort_curves:
+          type: object
+          properties:
+            default_mode:
+              type: string
+            modes:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  is_electric:
+                    type: boolean
+        base_power_class:
+          type: string
+          example: "5"
+        power_restrictions:
+          type: object
+          description: Mapping of power restriction code to power class
+          additionalProperties:
+            type: string
+          example:
+            "C1US": "4"
+            "C2US": "3"
+        metadata:
+          type: object
+          example:
+            detail: "BB 7200"
+            family: "LOCOMOTIVES"
+            grouping: "Locomotives électriques courant continu"
+            number: "1"
+            reference: "7200"
+            series: "BB 7200"
+            subseries: "GV"
+            type: "Locomotives électriques"
+            unit: "US"
+        liveries:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+    
+    RollingStock:
+      allOf:
+        - $ref: "#/components/schemas/LightRollingStock"
+        - type: object
+          properties:
+            effort_curves:
+              type: object
+              properties:
+                default_mode:
+                  type: string
+                modes:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      curves:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ConditionalEffortCurve"
+                      default_curve:
+                        $ref: "#/components/schemas/EffortCurve"
+                      is_electric:
+                        type: boolean
+    
     RouteTrackRangesComputed:
       type: object
       description: Route track ranges successfully computed
