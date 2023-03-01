@@ -319,11 +319,20 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timePosition]);
 
+  const searchContext = useSearchContext();
+
+  useEffect(() => {
+    if (searchContext?.lineSearch) {
+      const features = lineString(searchContext?.lineSearch.coordinates);
+      console.log('features:', features);
+      setGeojsonPath(features);
+      zoomToFeature(bbox(features));
+    }
+  }, [searchContext?.isSearchLine]);
+
   const handleLoadFinished = () => {
     setMapLoaded(true);
   };
-
-  const searchContext = useSearchContext();
 
   return (
     <>
@@ -503,7 +512,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
-        {searchContext?.lineSearch && (
+        {searchContext?.isSearchLine && searchContext?.lineSearch && (
           <RenderItinerary
             geojsonPath={searchContext?.lineSearch}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
