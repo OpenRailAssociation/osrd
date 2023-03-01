@@ -46,6 +46,7 @@ export default function Scenario() {
       console.error(error);
     }
   };
+
   const getStudy = async () => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
@@ -54,6 +55,7 @@ export default function Scenario() {
       console.error(error);
     }
   };
+
   const getScenario = async (withNotification = false) => {
     try {
       const result = await get(
@@ -87,6 +89,7 @@ export default function Scenario() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   return scenario ? (
     <>
       <NavBarSNCF
