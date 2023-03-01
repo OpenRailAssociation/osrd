@@ -166,11 +166,11 @@
     "start": "import-meta-env-prepare -x .env.example && vite",
     "build": "vite build",
     "test": "import-meta-env-prepare -x .env.example && vitest",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 345",
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
-    "generate-types": "npx @rtk-query/codegen-openapi src/config/openapi-middleware-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-editoast-config.ts",
+    "generate-types": "exec scripts/generate-types.sh",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 345"
+    "build-storybook": "storybook build"
   },
   "browserslist": {
     "production": [
