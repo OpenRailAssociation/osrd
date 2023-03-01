@@ -1,9 +1,13 @@
-import React, { ComponentType, useReducer } from 'react';
+import React, { ComponentType } from 'react';
 import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 import { Dispatch } from 'redux';
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
+import {
+  withStdcmData as withModalSuggeredViasStdcmData,
+  withOSRDSimulationData as withModalSuggeredViasOSRData,
+} from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
 import { ValueOf } from 'utils/types';
 // All of these should come from proper Stdcm Context
 import { updateFeatureInfoClick } from 'reducers/map';
@@ -32,6 +36,8 @@ import { reducer, init } from 'common/Pathfinding/Pathfinding';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
+const StdcmSuggeredVias = withModalSuggeredViasStdcmData(ModalSugerredVias);
+const SimulationSuggeredVias = withModalSuggeredViasOSRData(ModalSugerredVias);
 interface ItineraryProps {
   dispatchUpdateExtViewPort?: (viewPort: any) => Dispatch;
   dispatchUpdateFeatureInfoClick?: (id: number, source: any) => Dispatch;
@@ -48,13 +54,8 @@ interface ItineraryProps {
 }
 
 export function withStdcmData<T extends ItineraryProps>(Component: ComponentType<T>) {
-  return (
-    hocProps: Omit<
-      T,
-      'mode'
-    >
-  ) => {
-    const { t } = useTranslation(['allowances']);
+  return (hocProps: Omit<T, 'mode'>) => {
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
     const dispatch = useDispatch();
     const origin = useSelector(getOriginStdcm);
     const destination = useSelector(getDestinationStdcm);
@@ -63,6 +64,8 @@ export function withStdcmData<T extends ItineraryProps>(Component: ComponentType
     const mapViewPort = useSelector(getViewport);
     const [, pathfindingState] = osrdMiddlewareApi.usePostPathfindingMutation();
     const mode = MODES.stdcm;
+
+    const modalSuggeredVias = withModalSuggeredViasStdcmData(ModalSugerredVias);
 
     const dispatchReplaceVias = (newVias: any[]) => {
       dispatch(replaceViasStdcm(newVias));
@@ -102,7 +105,8 @@ export function withStdcmData<T extends ItineraryProps>(Component: ComponentType
         infra={infra}
         mapViewPort={mapViewPort}
         pathfindingState={pathfindingState}
-        mode = {mode}
+        mode={mode}
+       
       />
     );
   };
@@ -110,7 +114,7 @@ export function withStdcmData<T extends ItineraryProps>(Component: ComponentType
 
 export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
-    const { t } = useTranslation(['allowances']);
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
     const dispatch = useDispatch();
     const origin = useSelector(getOrigin);
     const destination = useSelector(getDestination);
@@ -118,6 +122,7 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
     const infra = useSelector(getInfraID);
     const mapViewPort = useSelector(getViewport);
     const [, pathfindingState] = osrdMiddlewareApi.usePostPathfindingMutation();
+    const mode = MODES.simulation;
 
     const dispatchReplaceVias = (newVias: any[]) => {
       dispatch(replaceVias(newVias));
@@ -153,6 +158,7 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
         dispatchUpdateDestination={dispatchUpdateDestination}
         origin={origin}
         destination={destination}
+        mode={mode}
         vias={vias}
         infra={infra}
         mapViewPort={mapViewPort}
@@ -165,14 +171,15 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
 function Itinerary(props: ItineraryProps) {
   const {
     dispatchUpdateExtViewPort = () => null,
-    dispatchUpdateFeatureInfoClick= () => null,
-    dispatchReplaceVias= () => null,
-    dispatchUpdateOrigin= () => null,
-    dispatchUpdateDestination= () => null,
+    dispatchUpdateFeatureInfoClick = () => null,
+    dispatchReplaceVias = () => null,
+    dispatchUpdateOrigin = () => null,
+    dispatchUpdateDestination = () => null,
     mapViewPort = {},
     infra,
     origin,
     destination,
+    mode = MODES.simulation,
     vias = [],
   } = props;
 
@@ -241,14 +248,22 @@ function Itinerary(props: ItineraryProps) {
     dispatchReplaceVias([]);
   };
 
-  const viaModalContent = (
-    <ModalSugerredVias
-      pathfindingInProgress={false}
-      inverseOD={inverseOD}
-      removeAllVias={removeAllVias}
-      removeViaFromPath={removeViaFromPath}
-    />
-  );
+  const viaModalContent =
+    mode === MODES.stdcm ? (
+      <StdcmSuggeredVias
+        pathfindingInProgress={false}
+        inverseOD={inverseOD}
+        removeAllVias={removeAllVias}
+        removeViaFromPath={removeViaFromPath}
+      />
+    ) : (
+      <SimulationSuggeredVias
+        pathfindingInProgress={false}
+        inverseOD={inverseOD}
+        removeAllVias={removeAllVias}
+        removeViaFromPath={removeViaFromPath}
+      />
+    );
 
   return (
     <div className="osrd-config-item mb-2">
@@ -265,8 +280,6 @@ function Itinerary(props: ItineraryProps) {
   );
 }
 
-Itinerary.propTypes = {
-  
-};
+Itinerary.propTypes = {};
 
 export default Itinerary;

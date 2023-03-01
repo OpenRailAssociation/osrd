@@ -10,6 +10,7 @@ import { adjustPointOnTrack } from 'utils/pathfinding';
 import { replaceVias } from 'reducers/osrdconf';
 import { getMapTrackSources } from 'reducers/map/selectors';
 import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
+import { getSuggeredVias as getSuggeredViasStdcm, getVias as getViasStdcm} from 'reducers/osrdconf/selectors';
 
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -35,11 +36,11 @@ interface ModalSugerredViasProps {
 export function withStdcmData<T extends ModalSugerredViasProps>(Component: ComponentType<T>) {
   return (hocProps: ModalSugerredViasProps) => {
     const dispatch = useDispatch();
-    const suggeredVias = useSelector(getSuggeredVias);
+    const suggeredVias = useSelector(getSuggeredViasStdcm);
     const mapTrackSources = useSelector(getMapTrackSources);
-    const vias = useSelector(getVias);
+    const vias = useSelector(getViasStdcm);
     const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-
+    console.log(t)
     return (
       <Component
         {...(hocProps as T)}

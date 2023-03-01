@@ -10,6 +10,7 @@ import { withStdcmData as withDisplayItineraryStdcmData } from 'applications/ope
 import { withStdcmData as withOriginStdcmData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary/Origin';
 import { withStdcmData as withDestinationStdcmData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary/Destination';
 
+
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import ScenarioExplorator from 'common/ScenarioExplorator/ScenarioExplorator';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
@@ -30,10 +31,12 @@ type OSRDStdcmConfigProps = {
 };
 
 const StdcmItinerary = compose<any>(
+  withDisplayItineraryStdcmData,
   withDestinationStdcmData,
   withOriginStdcmData,
   withStdcmData,
 )(Itinerary);
+
 
 export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmConfigProps) {
   const projectID = useSelector(getProjectID);
