@@ -10,7 +10,7 @@ license = "LGPL-3.0"
 
 [dependencies]
 chashmap = "2.2.2"
-clap = { version = "4.1.1", features = ["derive", "env"] }
+clap = { version = "4.1.8", features = ["derive", "env"] }
 colored = "2.0.0"
 chrono = { version = "0.4.23", features = ["serde"] }
 derivative = "2.2.0"
@@ -32,8 +32,8 @@ redis = { version = "0.22", features = [
     "connection-manager",
     "tokio-native-tls-comp",
 ] }
-sentry = "0.29.3"
-sentry-actix = "0.29.3"
+sentry = "0.30.0"
+sentry-actix = "0.30.0"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
@@ -42,7 +42,7 @@ strum = "~0.24.1"
 strum_macros = "~0.24.3"
 thiserror = "~1.0.37"
 enum-map = "2.4.2"
-tempfile = "3.3.0"
+tempfile = "3.4.0"
 editoast_derive = { path = "./editoast_derive" }
 mvt = "0.7.0"
 pointy = "0.2.1"
