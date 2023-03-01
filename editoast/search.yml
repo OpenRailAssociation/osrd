@@ -21,21 +21,14 @@ operationalpoint:
       geographic: ST_AsGeoJSON(ST_Transform(opl.geographic, 4326))::json
       schematic: ST_AsGeoJSON(ST_Transform(opl.schematic, 4326))::json
 
-tracksection:
-  table: osrd_search_tracksection
+track:
+  table: osrd_search_track
   columns:
-    obj_id: string
     infra_id: integer
     line_name: string
     line_code: integer
   result:
-    joins: |
-      INNER JOIN osrd_infra_tracksectionmodel AS opm ON opm.id = osrd_search_tracksection.id
-      INNER JOIN osrd_infra_tracksectionlayer AS opl ON opm.obj_id = opl.obj_id AND opm.infra_id = opl.infra_id
     columns:
-      obj_id: opm.obj_id
-      infra_id: opm.infra_id
-      line_code: opm.data#>>'{extensions,sncf,line_code}'
-      line_name: opm.data#>>'{extensions,sncf,line_name}'
-      geographic: ST_AsGeoJSON(ST_Transform(opl.geographic, 4326))::json
-      schematic: ST_AsGeoJSON(ST_Transform(opl.schematic, 4326))::json
+      infra_id: osrd_search_track.infra_id
+      line_code: osrd_search_track.line_code
+      line_name: osrd_search_track.unprocessed_line_name

@@ -136,6 +136,8 @@ impl LineString {
 pub struct TrackSectionCache {
     pub obj_id: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub line_code: Option<i32>,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
     pub length: f64,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     pub slopes: Vec<Slope>,
@@ -182,6 +184,7 @@ impl From<TrackSection> for TrackSectionCache {
             length: track.length,
             curves: track.curves,
             slopes: track.slopes,
+            line_code: track.extensions.sncf.map(|scnf| scnf.line_code),
             bbox_geo: track.geo.get_bbox(),
             bbox_sch: track.sch.get_bbox(),
         }

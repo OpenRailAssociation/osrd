@@ -1,6 +1,7 @@
 mod attached;
 mod edition;
 mod errors;
+mod lines;
 mod objects;
 mod pathfinding;
 mod railjson;
@@ -51,6 +52,7 @@ pub fn routes() -> impl HttpServiceFactory {
                 .service((
                     errors::routes(),
                     objects::routes(),
+                    lines::routes(),
                     routes::routes(),
                     pathfinding::routes(),
                     attached::routes(),

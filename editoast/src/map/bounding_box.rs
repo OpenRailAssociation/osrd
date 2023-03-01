@@ -29,7 +29,7 @@ impl Default for BoundingBox {
 }
 
 /// Geographic and Schematic bounding box zone impacted by a list of operations
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct InvalidationZone {
     pub geo: BoundingBox,
     pub sch: BoundingBox,
@@ -53,6 +53,11 @@ impl InvalidationZone {
             geo.union(&track.bbox_geo);
             sch.union(&track.bbox_sch);
         }
+    }
+
+    pub fn union(&mut self, other: &Self) {
+        self.geo.union(&other.geo);
+        self.sch.union(&other.sch);
     }
 
     /// Given a list of operations, compute the geographic and schematic bounding box of their impact
