@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import MapSearchSignalBox from 'common/Map/Search/MapSearchSignalBox';
 import MapSearchSignal from 'common/Map/Search/MapSearchSignal';
-import HearderPopUp from '../HeaderPopUp';
 import Tabs from 'common/Tabs';
+import HearderPopUp from '../HeaderPopUp';
 
 export default function MapSearch(props) {
   const { closeMapSearchPopUp } = props;
@@ -18,24 +18,6 @@ export default function MapSearch(props) {
   );
 
   const { t } = useTranslation(['translation', 'map-search']);
-
-  const tabItems = [
-    {
-      className: 'active',
-      title: t('map-search:station'),
-      ariaSelected: 'true',
-    },
-    {
-      className: '',
-      title: t('map-search:signalbox'),
-      ariaSelected: 'false',
-    },
-    {
-      className: '',
-      title: t('map-search:signal'),
-      ariaSelected: 'false',
-    },
-  ];
 
   return (
     <div className="map-modal">
