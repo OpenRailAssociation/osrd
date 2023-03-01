@@ -47,8 +47,13 @@ import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { MapLayerMouseEvent } from '../../../../types';
 import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
+import { ValueOf } from 'utils/types';
+import { MODES } from 'applications/operationalStudies/consts';
+interface MapProps {
+  mode: ValueOf<typeof MODES>;
+}
 
-function Map() {
+function Map(props: MapProps) {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
@@ -62,6 +67,7 @@ function Map() {
     [dispatch]
   );
   const mapRef = useRef<MapRef | null>(null);
+  const { mode = MODES.simulation } = props;
 
   const scaleControlStyle = {
     left: 20,
@@ -75,7 +81,7 @@ function Map() {
       pitch: 0,
     });
   };
-  
+
   const getTrackLayerName = () => {
     const layerNames = {
       geographic: ['chartis/tracks-geo/main'],
@@ -343,9 +349,9 @@ function Map() {
           </>
         )}
 
-        <RenderPopup />
-        <RenderItinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
-        <RenderItineraryMarkers />
+        <RenderPopup mode={mode} />
+        <RenderItinerary mode={mode} layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
+        <RenderItineraryMarkers mode={mode} />
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}

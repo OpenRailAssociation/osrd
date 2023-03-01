@@ -18,12 +18,12 @@ interface ModalPathJSONDetailProps {
   pathfindingID: number | undefined;
 }
 
-export function withStdcmData<T>(Component: ComponentType<T>) {
-  return (hocProps: ModalPathJSONDetailProps) => {
+export function withStdcmData<T extends ModalPathJSONDetailProps>(Component: ComponentType<T>) {
+  return (hocProps: T) => {
     const dispatch = useDispatch();
     const pathfindingID = useSelector(getPathfindingIDStdcm);
     const { t } = useTranslation('operationalStudies/manageTrainSchedule');
-    const getPathJSON = async (zoom: number, params: object) => {
+    const getPathJSON = async (params: object) => {
       try {
         const pathJSON = await get(`/pathfinding/${pathfindingID}/`, { params });
         return pathJSON;
@@ -50,12 +50,12 @@ export function withStdcmData<T>(Component: ComponentType<T>) {
   };
 }
 
-export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+export function withOSRDSimulationData<T extends ModalPathJSONDetailProps>(Component: ComponentType<T>) {
   return (hocProps: ModalPathJSONDetailProps) => {
     const dispatch = useDispatch();
     const pathfindingID = useSelector(getPathfindingID);
     const { t } = useTranslation('operationalStudies/manageTrainSchedule');
-    const getPathJSON = async (zoom: number, params: object): Promise<any> => {
+    const getPathJSON = async (params: object): Promise<any> => {
       try {
         const pathJSON = await get(`/pathfinding/${pathfindingID}/`, { params });
         return pathJSON;

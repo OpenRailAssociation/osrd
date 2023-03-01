@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Marker } from 'react-map-gl';
 import nextId from 'react-id-generator';
@@ -6,9 +6,18 @@ import originSVG from 'assets/pictures/origin.svg';
 import destinationSVG from 'assets/pictures/destination.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import { RootState } from 'reducers';
+import { ValueOf } from 'utils/types';
+import { MODES } from 'applications/operationalStudies/consts';
 
-const RenderItineraryMarkers: FC = () => {
-  const { origin, destination, vias } = useSelector((state: RootState) => state.osrdconf);
+interface RenderItineraryMarkersProps {
+  mode: ValueOf<typeof MODES>;
+}
+
+export function RenderItineraryMarkers(props: RenderItineraryMarkersProps) {
+  const { mode } = props
+  const { origin, destination, vias } = useSelector((state: RootState) =>
+    mode === MODES.stdcm ? state.osrdStdcmConf : state.osrdconf
+  );
   const markers = useMemo(() => {
     const result = [];
     if (origin !== undefined) {

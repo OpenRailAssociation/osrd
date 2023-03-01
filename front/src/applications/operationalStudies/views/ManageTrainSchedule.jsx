@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import { compose } from 'redux';
 import PropTypes from 'prop-types';
 
 import { updateViewport } from 'reducers/map';
@@ -12,11 +13,22 @@ import Map from 'applications/operationalStudies/components/ManageTrainSchedule/
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 
+import { withOSRDSimulationData as withDisplayItinerarySimulationData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
+import { withOSRDSimulationData as withOriginSimulationData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary/Origin';
+import { withOSRDSimulationData as withDestinationSimulationData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary/Destination';
+
+const SimulationItinerary = compose(
+  withDisplayItinerarySimulationData,
+  withOriginSimulationData,
+  withDestinationSimulationData,
+)(Itinerary);
 export default function ManageTrainSchedule(props) {
   const { setDisplayTrainScheduleManagement } = props;
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const [extViewport, setExtViewport] = useState(undefined);
+
+
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -47,7 +59,7 @@ export default function ManageTrainSchedule(props) {
       </div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
-          <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
+          <SimulationItinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
         </div>
         <div className="col-xl-6">
           <div className="osrd-config-item mb-2">

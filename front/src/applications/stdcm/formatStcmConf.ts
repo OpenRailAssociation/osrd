@@ -26,12 +26,13 @@ export default function formatStdcmConf(
   dispatch: Dispatch,
   setFailure: (e: Error) => ThunkAction<ActionFailure>,
   t: TFunction,
-  osrdconf: OsrdConfState
+  osrdconf: OsrdConfState,
+  osrdStdcmConf: OsrdConfState
 ) {
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
 
   let error = false;
-  if (!osrdconf.origin && isByOrigin) {
+  if (!osrdStdcmConf.origin && isByOrigin) {
     error = true;
     dispatch(
       setFailure({
@@ -40,7 +41,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.originTime && isByOrigin) {
+  if (!osrdStdcmConf.originTime && isByOrigin) {
     error = true;
     dispatch(
       setFailure({
@@ -49,7 +50,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.destination && isByDestination) {
+  if (!osrdStdcmConf.destination && isByDestination) {
     error = true;
     dispatch(
       setFailure({
@@ -58,7 +59,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.destinationTime && isByDestination) {
+  if (!osrdStdcmConf.destinationTime && isByDestination) {
     error = true;
     dispatch(
       setFailure({
@@ -99,17 +100,17 @@ export default function formatStdcmConf(
   // Demander: format de date
   // Demander: pourquoi tableaux
 
-  const originDate = osrdconf.originTime ? time2sec(osrdconf.originTime) : null;
-  const destinationDate = osrdconf.destinationTime ? time2sec(osrdconf.destinationTime) : null;
+  const originDate = osrdStdcmConf.originTime ? time2sec(osrdconf.originTime) : null;
+  const destinationDate = osrdStdcmConf.destinationTime ? time2sec(osrdconf.destinationTime) : null;
   const maximumDepartureDelay =
-    osrdconf.originTime && osrdconf.originUpperBoundTime
+  osrdStdcmConf.originTime && osrdStdcmConf.originUpperBoundTime
       ? time2sec(osrdconf.originUpperBoundTime) - time2sec(osrdconf.originTime)
       : null;
 
   if (!error) {
     const standardAllowanceType: string =
-      (osrdconf.standardStdcmAllowance?.type as string) || 'time';
-    const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
+      (osrdStdcmConf.standardStdcmAllowance?.type as string) || 'time';
+    const standardAllowanceValue: number = osrdStdcmConf.standardStdcmAllowance?.value || 0;
     const standardAllowance: { [index: string]: any } = {};
     const typeUnitTanslationIndex: { [index: string]: any } = TYPES_UNITS;
     const correspondantTypesForApi: string = typeUnitTanslationIndex[standardAllowanceType];
@@ -125,14 +126,14 @@ export default function formatStdcmConf(
       end_time: destinationDate, // Build a date
       start_points: [
         {
-          track_section: osrdconf?.origin?.id,
-          geo_coordinate: osrdconf?.origin?.clickLngLat,
+          track_section: osrdStdcmConf?.origin?.id,
+          geo_coordinate: osrdStdcmConf?.origin?.clickLngLat,
         },
       ],
       end_points: [
         {
-          track_section: osrdconf?.destination?.id,
-          geo_coordinate: osrdconf?.destination?.clickLngLat,
+          track_section: osrdStdcmConf?.destination?.id,
+          geo_coordinate: osrdStdcmConf?.destination?.clickLngLat,
         },
       ],
       maximum_departure_delay: maximumDepartureDelay,

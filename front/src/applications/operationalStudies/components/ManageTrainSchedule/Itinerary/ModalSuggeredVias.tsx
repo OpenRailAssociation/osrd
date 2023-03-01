@@ -32,7 +32,7 @@ interface ModalSugerredViasProps {
   t?: (s: string) => string;
 }
 
-export function withStdcmData<T>(Component: ComponentType<T>) {
+export function withStdcmData<T extends ModalSugerredViasProps>(Component: ComponentType<T>) {
   return (hocProps: ModalSugerredViasProps) => {
     const dispatch = useDispatch();
     const suggeredVias = useSelector(getSuggeredVias);
@@ -53,7 +53,9 @@ export function withStdcmData<T>(Component: ComponentType<T>) {
   };
 }
 
-export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+export function withOSRDSimulationData<T extends ModalSugerredViasProps>(
+  Component: ComponentType<T>
+) {
   return (hocProps: ModalSugerredViasProps) => {
     const dispatch = useDispatch();
     const suggeredVias = useSelector(getSuggeredVias);
@@ -182,6 +184,5 @@ ModalSugerredVias.propTypes = {
   inverseOD: PropTypes.func.isRequired,
   removeAllVias: PropTypes.func.isRequired,
   removeViaFromPath: PropTypes.func.isRequired,
-  pathfindingInProgress: PropTypes.bool.isRequired,
-  t: PropTypes.func.isRequired,
+  pathfindingInProgress: PropTypes.bool.isRequired,  
 };

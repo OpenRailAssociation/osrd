@@ -4,8 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
-import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
-import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/Itinerary';
+import { MODES, STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
+import Itinerary, { withStdcmData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/Itinerary';
+import { withStdcmData as withDisplayItineraryStdcmData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
+import { withStdcmData as withOriginStdcmData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary/Origin';
+import { withStdcmData as withDestinationStdcmData } from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary/Destination';
+
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import ScenarioExplorator from 'common/ScenarioExplorator/ScenarioExplorator';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
@@ -19,10 +23,17 @@ import {
   getStudyID,
   getTimetableID,
 } from 'reducers/osrdStdcmConf/selectors';
+import { compose } from 'redux';
 
 type OSRDStdcmConfigProps = {
   setCurrentStdcmRequestStatus: (status: string) => void;
 };
+
+const StdcmItinerary = compose<any>(
+  withDestinationStdcmData,
+  withOriginStdcmData,
+  withStdcmData,
+)(Itinerary);
 
 export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmConfigProps) {
   const projectID = useSelector(getProjectID);
@@ -70,7 +81,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
             <>
               <RollingStockSelector />
               <SpeedLimitByTagSelector />
-              <Itinerary {...itineraryProps} />
+              <StdcmItinerary />
               <div className="row">
                 <div className="col-xl-6">
                   <div className="osrd-config-item mb-2 osrd-config-item-container">
@@ -119,7 +130,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
           <div className="col-md-5 col-lg-6">
             <div className="osrd-config-item mb-2">
               <div className="osrd-config-item-container osrd-config-item-container-map">
-                <Map />
+                <Map mode={MODES.stdcm} />
               </div>
             </div>
           </div>

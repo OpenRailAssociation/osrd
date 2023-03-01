@@ -11,6 +11,10 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
 import userReducer, { UserState, initialState as userInitialState } from './user';
 import mapReducer, { MapState, initialState as mapInitialState } from './map';
+import mapStdcmReducer, {
+  MapState as MapStdcmState,
+  initialState as mapStdcmInitialState,
+} from './mapStdcm';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
 import osrdStdcmConfReducer, { initialState as osrdStdcmConfInitialState } from './osrdStdcmConf';
@@ -78,6 +82,7 @@ type AllActions = EditorActions | MainActions | Action;
 export interface RootState {
   user: UserState;
   map: MapState;
+  mapStdcm: MapStdcmState;
   editor: EditorState;
   main: MainState;
   osrdconf: OsrdConfState;
@@ -90,6 +95,7 @@ export interface RootState {
 export const rootInitialState: RootState = {
   user: userInitialState,
   map: mapInitialState,
+  mapStdcm: mapStdcmInitialState,
   editor: editorInitialState,
   main: mainInitialState,
   osrdconf: osrdconfInitialState,
@@ -102,6 +108,7 @@ export const rootInitialState: RootState = {
 export type AnyReducerState =
   | UserState
   | MapState
+  | MapStdcmState
   | EditorState
   | MainState
   | OsrdConfState
@@ -110,6 +117,7 @@ export type AnyReducerState =
 export const rootReducer: ReducersMapObject<RootState> = {
   user: userReducer,
   map: mapReducer,
+  mapStdcm: mapStdcmReducer,
   editor: editorReducer,
   main: mainReducer,
   // @ts-ignore

@@ -26,12 +26,12 @@ interface ViasProps {
   osrdConfGeoJson?: string;
 }
 
-export function withStdcmData<T>(Component: ComponentType<T>) {
+export function withStdcmData<T extends ViasProps>(Component: ComponentType<T>) {
   return (hocProps: ViasProps) => {
     const dispatch = useDispatch();
-    const vias = useSelector(getVias);
+    const vias = useSelector(getViasStdcm);
     const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-    const isOsrdConfGeoJson = useSelector(getGeojson);
+    const isOsrdConfGeoJson = useSelector(getGeoJsonStdcm);
     return (
       <Component
         {...(hocProps as T)}
@@ -44,7 +44,7 @@ export function withStdcmData<T>(Component: ComponentType<T>) {
   };
 }
 
-export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+export function withOSRDSimulationData<T extends ViasProps>(Component: ComponentType<T>) {
   return (hocProps: ViasProps) => {
     const dispatch = useDispatch();
     const vias = useSelector(getVias);
@@ -94,7 +94,7 @@ function Vias(props: ViasProps) {
       {viasTitle}
       <div className="mb-3">
         {vias?.length > 0 ? (
-          <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
+          <DisplayVias dispatch={dispatch} zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (
           <small className="ml-4">{t('noplacechosen')}</small>
         )}

@@ -10,14 +10,22 @@ import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
 import { getMapTrackSources } from 'reducers/map/selectors';
 import { setFailure } from 'reducers/main';
 
-import { ArrayElement } from 'utils/types';
+import { ArrayElement, ValueOf } from 'utils/types';
 import { adjustPointOnTrack } from 'utils/pathfinding';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 
 import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { PointOnMap } from 'applications/operationalStudies/consts';
+import { MODES, PointOnMap } from 'applications/operationalStudies/consts';
+
+import {
+  replaceVias as replaceViasStdcm,
+  updateDestination as updateDestinationStdcm,
+  updateItinerary as updateItineraryStdcm,
+  updateOrigin as updateOriginStdcm,
+  updateSuggeredVias as updateSuggeredViasStdcm,
+} from 'reducers/osrdStdcmConf';
 
 import {
   replaceVias,
@@ -27,6 +35,7 @@ import {
   updatePathfindingID,
   updateSuggeredVias,
 } from 'reducers/osrdconf';
+
 import {
   getInfraID,
   getOrigin,
@@ -36,6 +45,13 @@ import {
   getPathfindingID,
   getGeojson,
 } from 'reducers/osrdconf/selectors';
+
+import {
+  getOrigin as getOriginStdcm,
+  getDestination as getDestinationStdcm,
+  getVias as getViasStdcm,
+  getGeojson as getGeoJsonStdcm,
+} from 'reducers/osrdStdcmConf/selectors';
 
 import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
 import { Spinner } from '../Loader';
@@ -174,17 +190,21 @@ export function init({
 
 interface PathfindingProps {
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
+  mode?: ValueOf<typeof MODES>;
 }
 
-function Pathfinding({ zoomToFeature }: PathfindingProps) {
+function Pathfinding({ zoomToFeature, mode }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] = useState<any>();
   const { openModal } = useContext(ModalContext);
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID, isEqual);
-  const origin = useSelector(getOrigin, isEqual);
-  const destination = useSelector(getDestination, isEqual);
-  const vias = useSelector(getVias, isEqual);
+  const origin = useSelector(mode === MODES.stdcm ? getOriginStdcm : getOrigin, isEqual);
+  const destination = useSelector(
+    mode === MODES.stdcm ? getDestinationStdcm : getDestination,
+    isEqual
+  );
+  const vias = useSelector(mode === MODES.stdcm ? getViasStdcm : getVias, isEqual);
   const rollingStockID = useSelector(getRollingStockID, isEqual);
   const pathfindingID = useSelector(getPathfindingID, isEqual);
   const geojson = useSelector(getGeojson, isEqual);
@@ -206,7 +226,8 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
 
   // Way to ensure marker position on track
   const correctWaypointsGPS = ({ steps = [] }: Path) => {
-    dispatch(updateOrigin(adjustPointOnTrack(origin, steps[0], mapTrackSources)));
+    const updateOriginMethod = MODES.stdcm ? updateOriginStdcm : updateOrigin;
+    dispatch(updateOriginMethod(adjustPointOnTrack(origin, steps[0], mapTrackSources)));
     if (vias.length > 0 || steps.length > 2) {
       const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
         if (!step.suggestion) {
@@ -214,14 +235,17 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
         }
         return [];
       });
-      dispatch(replaceVias(newVias));
-      dispatch(updateSuggeredVias(steps));
+      dispatch(mode === MODES.stdcm ? replaceViasStdcm(newVias) : replaceVias(newVias));
+      dispatch(mode === MODES.stdcm ? updateSuggeredViasStdcm(steps) : updateSuggeredVias(steps));
     }
-    dispatch(updateDestination(adjustPointOnTrack(destination, last(steps), mapTrackSources)));
+    const updateDestinationMethod = MODES.stdcm ? updateDestinationStdcm : updateDestination;
+    dispatch(
+      updateDestinationMethod(adjustPointOnTrack(destination, last(steps), mapTrackSources))
+    );
   };
 
   const generatePathfindingParams = (): PathQuery => {
-    dispatch(updateItinerary(undefined));
+    dispatch(mode === MODES.stdcm ? updateItineraryStdcm(undefined) : updateItinerary(undefined));
     if (origin && destination && rollingStockID) {
       return {
         infra: infraID,
@@ -270,7 +294,11 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
         .unwrap()
         .then((itineraryCreated) => {
           correctWaypointsGPS(itineraryCreated);
-          dispatch(updateItinerary(itineraryCreated));
+          dispatch(
+            mode === MODES.stdcm
+              ? updateItineraryStdcm(itineraryCreated)
+              : updateItinerary(itineraryCreated)
+          );
           dispatch(updatePathfindingID(itineraryCreated.id));
           if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
           pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });

@@ -7,9 +7,9 @@ import PopupInfos from 'common/Map/Popup/PopupInfos';
 import PopupInfosCustomContent from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/PopupInfosCustomContent';
 import PopupInfosCustomTitle from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/PopupInfosCustomTitle';
 
-export default function RenderPopup() {
+export default function RenderPopup(props) {
   const featureInfoClick = useSelector(getFeatureInfoClick);
-
+  const { mode } = props;
   if (featureInfoClick.displayPopup) {
     let backgroundColor;
     switch (featureInfoClick.feature.properties.typeVoie) {
@@ -34,10 +34,11 @@ export default function RenderPopup() {
         latitude={featureInfoClick.coordinates[1]}
         closeButton={false}
         className="mapboxgl-hover-custom-popup"
+        mode={mode}
       >
         <PopupInfos
           title={<PopupInfosCustomTitle properties={properties} />}
-          content={<PopupInfosCustomContent data={properties} />}
+          content={<PopupInfosCustomContent mode={mode} data={properties} />}
           backgroundColor={backgroundColor}
         />
       </Popup>

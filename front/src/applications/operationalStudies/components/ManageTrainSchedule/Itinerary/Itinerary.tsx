@@ -4,13 +4,24 @@ import { WebMercatorViewport } from 'viewport-mercator-project';
 import { Dispatch } from 'redux';
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-
+import { ValueOf } from 'utils/types';
 // All of these should come from proper Stdcm Context
 import { updateFeatureInfoClick } from 'reducers/map';
 import { updateViewport } from 'reducers/map';
-import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
+//import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
 import { getOrigin, getDestination, getVias, getInfraID } from 'reducers/osrdconf/selectors';
+import {
+  getOrigin as getOriginStdcm,
+  getDestination as getDestinationStdcm,
+  getVias as getViasStdcm,
+  getInfraID as getInfraIDStdcm,
+} from 'reducers/osrdStdcmConf/selectors';
 import { replaceVias, updateDestination, updateOrigin } from 'reducers/osrdconf';
+import {
+  replaceVias as replaceViasStdcm,
+  updateDestination as updateDestinationStdcm,
+  updateOrigin as updateOriginStdcm,
+} from 'reducers/osrdStdcmConf';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -19,19 +30,82 @@ import { getViewport } from 'reducers/map/selectors';
 import { MapState } from 'reducers/map';
 import { reducer, init } from 'common/Pathfinding/Pathfinding';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 interface ItineraryProps {
-  dispatchUpdateExtViewPort: (viewPort: any) => Dispatch;
-  dispatchUpdateFeatureInfoClick: (id: number, source: any) => Dispatch;
-  dispatchReplaceVias: (vias: PointOnMap[]) => Dispatch;
-  dispatchUpdateOrigin: (origin: any) => Dispatch;
-  dispatchUpdateDestination: (destination: any) => Dispatch;
-  pathfindingState: any;
-  origin: OsrdConfState['origin'];
-  infra: OsrdConfState['infraID'];
-  destination: OsrdConfState['destination'];
+  dispatchUpdateExtViewPort?: (viewPort: any) => Dispatch;
+  dispatchUpdateFeatureInfoClick?: (id: number, source: any) => Dispatch;
+  dispatchReplaceVias?: (vias: PointOnMap[]) => Dispatch;
+  dispatchUpdateOrigin?: (origin: any) => Dispatch;
+  dispatchUpdateDestination?: (destination: any) => Dispatch;
+  pathfindingState?: any;
+  origin?: OsrdConfState['origin'];
+  infra?: OsrdConfState['infraID'];
+  destination?: OsrdConfState['destination'];
   vias?: OsrdConfState['vias'];
-  mapViewPort: MapState['viewport'];
+  mapViewPort?: MapState['viewport'];
+  mode?: ValueOf<typeof MODES>;
+}
+
+export function withStdcmData<T extends ItineraryProps>(Component: ComponentType<T>) {
+  return (
+    hocProps: Omit<
+      T,
+      'mode'
+    >
+  ) => {
+    const { t } = useTranslation(['allowances']);
+    const dispatch = useDispatch();
+    const origin = useSelector(getOriginStdcm);
+    const destination = useSelector(getDestinationStdcm);
+    const vias = useSelector(getViasStdcm);
+    const infra = useSelector(getInfraIDStdcm);
+    const mapViewPort = useSelector(getViewport);
+    const [, pathfindingState] = osrdMiddlewareApi.usePostPathfindingMutation();
+    const mode = MODES.stdcm;
+
+    const dispatchReplaceVias = (newVias: any[]) => {
+      dispatch(replaceViasStdcm(newVias));
+    };
+
+    const dispatchUpdateExtViewPort = (viewPort: any) => {
+      dispatch(
+        updateViewport({
+          ...viewPort,
+        })
+      );
+    };
+
+    const dispatchUpdateDestination = (newPosition: any) => {
+      dispatch(updateDestinationStdcm(newPosition));
+    };
+
+    const dispatchUpdateOrigin = (newPosition: any) => {
+      dispatch(updateOriginStdcm(newPosition));
+    };
+
+    const dispatchUpdateFeatureInfoClick = (id: number, source: any) => {
+      dispatch(updateFeatureInfoClick(id, source));
+    };
+
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatchUpdateFeatureInfoClick={dispatchUpdateFeatureInfoClick}
+        dispatchUpdateExtViewPort={dispatchUpdateExtViewPort}
+        dispatchReplaceVias={dispatchReplaceVias}
+        dispatchUpdateOrigin={dispatchUpdateOrigin}
+        dispatchUpdateDestination={dispatchUpdateDestination}
+        origin={origin}
+        destination={destination}
+        vias={vias}
+        infra={infra}
+        mapViewPort={mapViewPort}
+        pathfindingState={pathfindingState}
+        mode = {mode}
+      />
+    );
+  };
 }
 
 export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
@@ -44,7 +118,6 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
     const infra = useSelector(getInfraID);
     const mapViewPort = useSelector(getViewport);
     const [, pathfindingState] = osrdMiddlewareApi.usePostPathfindingMutation();
-    //const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
 
     const dispatchReplaceVias = (newVias: any[]) => {
       dispatch(replaceVias(newVias));
@@ -91,12 +164,12 @@ export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
 
 function Itinerary(props: ItineraryProps) {
   const {
-    dispatchUpdateExtViewPort,
-    dispatchUpdateFeatureInfoClick,
-    dispatchReplaceVias,
-    dispatchUpdateOrigin,
-    dispatchUpdateDestination,
-    mapViewPort,
+    dispatchUpdateExtViewPort = () => null,
+    dispatchUpdateFeatureInfoClick= () => null,
+    dispatchReplaceVias= () => null,
+    dispatchUpdateOrigin= () => null,
+    dispatchUpdateDestination= () => null,
+    mapViewPort = {},
     infra,
     origin,
     destination,
@@ -193,7 +266,7 @@ function Itinerary(props: ItineraryProps) {
 }
 
 Itinerary.propTypes = {
-  updateExtViewport: PropTypes.func.isRequired,
+  
 };
 
 export default Itinerary;

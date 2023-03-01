@@ -7,10 +7,9 @@ import { ValueOf } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { Dispatch } from 'redux';
 
-import { getStdcmMode, getMode, getDestination } from 'reducers/osrdconf/selectors';
+import { getStdcmMode, getDestination } from 'reducers/osrdconf/selectors';
 import {
   getStdcmMode as getStdcmModeStdcm,
-  getMode as getModeStdcm,
   getDestination as getDestinationStdcm,
 } from 'reducers/osrdStdcmConf/selectors';
 import {
@@ -38,7 +37,7 @@ export interface DestinationProps {
   mode?: ValueOf<typeof MODES>;
 }
 
-export function withStdcmData<T>(Component: ComponentType<T>) {
+export function withStdcmData<T extends DestinationProps>(Component: ComponentType<T>) {
   return (hocProps: DestinationProps) => {
     const dispatch = useDispatch();
     const stdcmMode = useSelector(getStdcmModeStdcm);
@@ -62,7 +61,7 @@ export function withStdcmData<T>(Component: ComponentType<T>) {
   };
 }
 
-export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
+export function withOSRDSimulationData<T extends DestinationProps>(Component: ComponentType<T>) {
   return (hocProps: DestinationProps) => {
     const dispatch = useDispatch();
     const stdcmMode = useSelector(getStdcmMode);
@@ -127,7 +126,7 @@ function Destination(props: DestinationProps) {
                 className="flex-grow-1"
               >
                 <strong className="mr-1 text-nowrap">
-                  {destination.name ? destination.name : destination.id.split('-')[0]}
+                  {destination.name ? destination.name : destination?.id?.split('-')[0]}
                 </strong>
               </div>
 

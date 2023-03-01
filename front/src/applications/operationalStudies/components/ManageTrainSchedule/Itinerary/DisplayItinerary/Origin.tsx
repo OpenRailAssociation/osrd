@@ -13,8 +13,6 @@ import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 import {
   getStdcmMode,
-  getMode,
-  getOrigin,
   getOriginTime,
   getOriginSpeed,
   getOriginLinkedBounds,
@@ -24,8 +22,6 @@ import {
 } from 'reducers/osrdconf/selectors';
 import {
   getStdcmMode as getStdcmModeStdcm,
-  getMode as getModeStdcm,
-  getDestination as getDestinationStdcm,
   getOriginTime as getOriginTimeStdcm,
   getOriginSpeed as getOriginSpeedStdcm,
   getOriginLinkedBounds as getOriginLinkedBoundsStdcm,
@@ -44,6 +40,18 @@ import {
   updateStdcmMode,
   toggleOriginLinkedBounds,
 } from 'reducers/osrdconf';
+
+import {
+  updateOrigin as updateOriginStdcm,
+  updateOriginDate as updateOriginDateStdcm,
+  updateOriginTime as updateOriginTimeStdcm,
+  updateOriginUpperBoundDate as updateOriginUpperBoundDateStdcm,
+  updateOriginUpperBoundTime as updateOriginUpperBoundTimeStcdcm,
+  updateOriginSpeed as updateOriginSpeedStdcm,
+  updateStdcmMode as updateStdcmModeStdcm,
+  toggleOriginLinkedBounds as toggleOriginLinkedBoundsStdcm,
+} from 'reducers/osrdStdcmConf';
+
 import { Dispatch } from 'redux';
 
 export interface OriginProps {
@@ -58,22 +66,22 @@ export interface OriginProps {
   originUpperBoundDate?: string | Date;
   originUpperBoundTime?: Date;
   dispatch?: Dispatch;
+  t?: (s: string) => string;
 }
 
-export function withStdcmData<T>(Component: ComponentType<T>) {
-  return (hocProps: OriginProps) => {
+export function withStdcmData<T extends OriginProps>(Component: ComponentType<T>) {
+  return (hocProps: Omit<T, 'mode'>) => {
     const dispatch = useDispatch();
     const stdcmMode = useSelector(getStdcmModeStdcm);
     const mode = MODES.stdcm;
-    const originDate = useSelector(getStdcmModeStdcm);
-    const originTime = useSelector(getStdcmModeStdcm);
-    const originSpeed = useSelector(getStdcmModeStdcm);
-    const originLinkedBounds = useSelector(getStdcmModeStdcm);
-    const originUpperBoundDate = useSelector(getStdcmModeStdcm);
-    const originUpperBoundTime = useSelector(getStdcmModeStdcm);
+    const originDate = useSelector(getOriginDateStdcm);
+    const originTime = useSelector(getOriginTimeStdcm);
+    const originSpeed = useSelector(getOriginSpeedStdcm);
+    const originLinkedBounds = useSelector(getOriginLinkedBoundsStdcm);
+    const originUpperBoundDate = useSelector(getOriginUpperBoundDateStdcm);
+    const originUpperBoundTime = useSelector(getOriginUpperBoundTimeStdcm);
 
     const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-
     return (
       <Component
         {...(hocProps as T)}
@@ -93,8 +101,8 @@ export function withStdcmData<T>(Component: ComponentType<T>) {
   };
 }
 
-export function withOSRDSimulationData<T>(Component: ComponentType<T>) {
-  return (hocProps: OriginProps) => {
+export function withOSRDSimulationData<T extends OriginProps>(Component: ComponentType<T>) {
+  return (hocProps: Omit<T, 'mode' | 't'>) => {
     const dispatch = useDispatch();
     const stdcmMode = useSelector(getStdcmMode);
     const mode = MODES.simulation;
@@ -139,9 +147,8 @@ function Origin(props: OriginProps) {
     originUpperBoundDate,
     originUpperBoundTime,
     dispatch = () => null,
+    t = () => undefined,
   } = props;
-
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
   const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
@@ -164,7 +171,7 @@ function Origin(props: OriginProps) {
       tabIndex={0}
     >
       <strong className="mr-1 text-nowrap">
-        {origin?.name ? origin?.name : origin?.id.split('-')[0]}
+        {origin?.name ? origin?.name : origin?.id?.split('-')[0]}
       </strong>
     </div>
   );
@@ -176,7 +183,7 @@ function Origin(props: OriginProps) {
       name="stdcmMode"
       // className="custom-control-input"
       checked={isByOrigin}
-      onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byOrigin))}
+      onChange={() => dispatch(updateStdcmModeStdcm(STDCM_MODES.byOrigin))}
     />
   );
 
@@ -186,7 +193,9 @@ function Origin(props: OriginProps) {
         className="btn btn-sm btn-only-icon btn-white"
         type="button"
         onClick={() => {
-          dispatch(toggleOriginLinkedBounds());
+          dispatch(
+            mode === MODES.stdcm ? toggleOriginLinkedBoundsStdcm() : toggleOriginLinkedBounds()
+          );
         }}
         title={t(originLinkedBounds ? 'BoundsAreLinked' : 'BoundsAreNotLinked')}
       >
@@ -214,7 +223,13 @@ function Origin(props: OriginProps) {
                       <input
                         type="date"
                         className="form-control form-control-sm mx-1"
-                        onChange={(e) => dispatch(updateOriginDate(e.target.value))}
+                        onChange={(e) =>
+                          dispatch(
+                            mode === MODES.stdcm
+                              ? updateOriginDateStdcm(e.target.value)
+                              : updateOriginDate(e.target.value)
+                          )
+                        }
                         value={originDate as string}
                         disabled
                       />
@@ -223,7 +238,11 @@ function Origin(props: OriginProps) {
                       type="time"
                       id="osrd-config-time-origin"
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        dispatch(updateOriginTime(e.target.value))
+                        dispatch(
+                          mode === MODES.stdcm
+                            ? updateOriginTimeStdcm(e.target.value)
+                            : updateOriginTime(e.target.value)
+                        )
                       }
                       value={originTime}
                       sm
@@ -236,7 +255,13 @@ function Origin(props: OriginProps) {
                       <input
                         type="date"
                         className="form-control form-control-sm mx-1"
-                        onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
+                        onChange={(e) =>
+                          dispatch(
+                            mode === MODES.stdcm
+                              ? updateOriginUpperBoundDateStdcm(e.target.value)
+                              : updateOriginUpperBoundDate(e.target.value)
+                          )
+                        }
                         value={originUpperBoundDate as string}
                         disabled
                       />
@@ -244,7 +269,11 @@ function Origin(props: OriginProps) {
                         type="time"
                         id="osrd-config-time-origin"
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          dispatch(updateOriginUpperBoundTime(e.target.value))
+                          dispatch(
+                            mode === MODES.stdcm
+                              ? updateOriginUpperBoundTimeStcdcm(e.target.value)
+                              : updateOriginUpperBoundTime(e.target.value)
+                          )
                         }
                         value={originUpperBoundTime}
                         sm
@@ -260,9 +289,13 @@ function Origin(props: OriginProps) {
                   <InputSNCF
                     type="number"
                     id="osrd-config-speed-origin"
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      dispatch(updateOriginSpeed(e.target.value));
-                    }}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      dispatch(
+                        mode === MODES.stdcm
+                          ? updateOriginSpeedStdcm(e.target.value)
+                          : updateOriginSpeed(e.target.value)
+                      )
+                    }
                     value={originSpeed}
                     unit="km/h"
                     min={0}
@@ -277,7 +310,7 @@ function Origin(props: OriginProps) {
                 className="btn btn-sm btn-only-icon btn-white"
                 type="button"
                 onClick={() => {
-                  dispatch(updateOrigin(undefined));
+                  dispatch(updateOriginStdcm(undefined));
                 }}
               >
                 <i className="icons-circle-delete" />
@@ -301,11 +334,11 @@ Origin.propTypes = {
   mode: PropTypes.oneOf(Object.values(MODES)).isRequired,
   origin: PropTypes.any, // you can declare origin as any type
   originDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]).isRequired,
-  originTime: PropTypes.instanceOf(Date),
+  originTime: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
   originSpeed: PropTypes.number,
   originLinkedBounds: PropTypes.any,
   originUpperBoundDate: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-  originUpperBoundTime: PropTypes.instanceOf(Date),
+  originUpperBoundTime: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
   dispatch: PropTypes.func,
 };
 

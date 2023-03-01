@@ -6,7 +6,7 @@ import setPointIti from 'applications/operationalStudies/components/ManageTrainS
 
 export default function PopupInfosCustomContent(props) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { data } = props;
+  const { data, mode } = props;
   return (
     <>
       <div className="mr-2 small text-center mb-2">
@@ -16,7 +16,7 @@ export default function PopupInfosCustomContent(props) {
       <button
         className="btn btn-sm btn-block btn-success"
         type="button"
-        onClick={() => setPointIti('start', data)}
+        onClick={() => setPointIti('start', data, mode)}
       >
         <RiMapPin2Fill />
         <span className="ml-1">{t('origin')}</span>
@@ -24,7 +24,7 @@ export default function PopupInfosCustomContent(props) {
       <button
         className="btn btn-sm btn-block btn-info"
         type="button"
-        onClick={() => setPointIti('via', data)}
+        onClick={() => setPointIti('via', data, mode)}
       >
         <RiMapPin3Fill />
         <span className="ml-1">{t('via')}</span>
@@ -32,7 +32,7 @@ export default function PopupInfosCustomContent(props) {
       <button
         className="btn btn-sm btn-block btn-warning"
         type="button"
-        onClick={() => setPointIti('end', data)}
+        onClick={() => setPointIti('end', data, mode)}
       >
         <RiMapPin5Fill />
         <span className="ml-1">{t('destination')}</span>

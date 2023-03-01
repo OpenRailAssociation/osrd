@@ -28,7 +28,7 @@ import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
-import { updateItinerary } from 'reducers/osrdconf';
+import { updateItinerary } from 'reducers/osrdStdcmConf';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from 'common/Loader';
 
@@ -37,6 +37,7 @@ const timetableURI = '/timetable/';
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdStdcmConf = useSelector((state) => state.osrdStdcmConf);
 
   const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
@@ -52,7 +53,7 @@ export default function StdcmRequestModal(props) {
 
   // Returns a promise that will be a fetch or an axios (through react-query)
   const stdcmRequest = async () => {
-    const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
+    const params = formatStdcmConf(dispatch, setFailure, t, osrdconf, osrdStdcmConf);
 
     return post(stdcmURL, params, {});
   };

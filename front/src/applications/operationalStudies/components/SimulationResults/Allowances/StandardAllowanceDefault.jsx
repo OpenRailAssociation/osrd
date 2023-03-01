@@ -294,7 +294,7 @@ StandardAllowanceDefault.propTypes = {
   distributionsTypes: PropTypes.array.isRequired,
   allowanceTypes: PropTypes.array,
   getAllowances: PropTypes.func.isRequired,
-  setIsUpdating: PropTypes.func.isRequired,
+  setIsUpdating: PropTypes.func,
   trainDetail: PropTypes.object.isRequired,
   selectedTrain: PropTypes.number,
   mutateSingleAllowance: PropTypes.func,
@@ -308,6 +308,7 @@ StandardAllowanceDefault.defaultProps = {
     immediateMutation: false,
     setDistribution: true,
   },
+  setIsUpdating : () => {},
   changeType: () => {
     console.log('default changeType');
   },
