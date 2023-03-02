@@ -144,7 +144,6 @@ export default function ImportTrainScheduleModal(props) {
         </span>
       );
       setStatus(initialStatus);
-      console.log('ERROR', e);
     }
   }
 
@@ -204,7 +203,7 @@ export default function ImportTrainScheduleModal(props) {
         'operationalStudies/importTrainSchedule:status.calculatingTrainScheduleComplete'
       )} (${params.path})`;
     } catch (error) {
-      console.log(error);
+      /* empty */
     }
     return `${t('operationalStudies/importTrainSchedule:status.calculatingTrainScheduleError')} (${
       params.path

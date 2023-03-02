@@ -55,9 +55,10 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
 
     const [trainDetail] = useState<any>({ allowances: [] });
 
+    // @TODO implement this behaviour or refacto
     // Alowance mutation in REST strat
-    const mutateSingleAllowances = (newAllowances: any) => {
-      console.log('mutateSingleAllowances', newAllowances);
+    const mutateSingleAllowances = () => {
+      /* empty */
     };
 
     const changeType = (type: any, typeKey: string) => {

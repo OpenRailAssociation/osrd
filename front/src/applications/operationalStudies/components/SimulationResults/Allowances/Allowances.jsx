@@ -66,7 +66,6 @@ function EmptyLine(props) {
   const { t } = useTranslation(['allowances']);
 
   const handleDistribution = (e) => {
-    console.log('handleDistribution', JSON.parse(e.target.value));
     setValues({
       ...values,
       distribution: JSON.parse(e.target.value).id,

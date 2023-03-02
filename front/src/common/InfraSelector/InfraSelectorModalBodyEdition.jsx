@@ -55,7 +55,7 @@ export default function InfraSelectorModalBodyEdition(props) {
         getInfrasList();
         setErrorMessage(undefined);
       } catch (e) {
-        console.log(e);
+        /* empty */
       }
     } else {
       setErrorMessage(t('infraManagement:errorMessages.noEmptyName'));

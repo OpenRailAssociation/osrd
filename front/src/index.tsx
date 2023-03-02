@@ -28,8 +28,7 @@ if (SENTRY_CONFIG.react_sentry_dsn) {
 }
 
 export default function Container() {
-  // eslint-disable-next-line no-console
-  console.log('OSRD VERSION', version);
+  console.info('OSRD VERSION', version);
 
   return (
     <Provider store={store}>

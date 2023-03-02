@@ -23,7 +23,7 @@ function RollingStock2Img(props) {
       });
       if (image) setImageUrl(URL.createObjectURL(image));
     } catch (e) {
-      console.log(e);
+      /* empty */
     }
   }, [rollingStock]);
 

@@ -15,7 +15,7 @@ export default function InfraSelectorEditionActionsBarDelete(props) {
       setRunningDelete(undefined);
       getInfrasList();
     } catch (e) {
-      console.log(e);
+      /* empty */
     }
   }
 

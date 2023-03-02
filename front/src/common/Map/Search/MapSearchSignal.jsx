@@ -30,7 +30,7 @@ export default function MapSearchSignal(props) {
       const data = await get(searchURI, { params });
       setSearchResults(data);
     } catch (e) {
-      console.log(e);
+      /* empty */
     }
   };
 

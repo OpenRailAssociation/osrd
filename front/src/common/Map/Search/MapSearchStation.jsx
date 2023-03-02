@@ -28,7 +28,7 @@ export default function MapSearchStation(props) {
       const data = await post(searchURI, params);
       setSearchResults(data);
     } catch (e) {
-      console.log(e);
+      /* empty */
     }
   };
 
