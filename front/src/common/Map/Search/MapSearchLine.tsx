@@ -12,7 +12,7 @@ import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { RootState } from 'reducers';
 import { SEARCH_URL, searchPayloadType } from '../const';
-import SearchResultItem from './SearchResultItem';
+import LineCard from './LineCard';
 import { useSearchContext } from './SearchContext';
 
 type MapSearchLineProps = {
@@ -43,6 +43,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
       ],
       { padding: 40 }
     );
+
     const tempMap = { ...map };
     const newViewport = {
       ...tempMap.viewport,
@@ -123,14 +124,6 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
 
-  const formatSearchResults = () => {
-    const searchResultsContent = searchResults;
-
-    return searchResultsContent?.map((result) => (
-      <SearchResultItem key={nextId()} resultSearchItem={result} onResultClick={onResultClick} />
-    ));
-  };
-
   const clearSearchResult = () => {
     setSearchState('');
     setSearchResults(undefined);
@@ -159,12 +152,14 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
           />
         </span>
       </div>
-      <div style={{ maxHeight: '200px', overflow: 'auto' }}>
-        {searchResults !== undefined && searchResults.length > 0 ? (
-          <div className="search-results pt-1 pl-1 pr-2">{formatSearchResults()}</div>
-        ) : (
-          <h2 className="text-center mt-3">{t('map-search:noresult')}</h2>
-        )}
+      <h2 className="text-center mt-3">
+        {t('map-search:resultsCount', { count: searchResults ? searchResults.length : 0 })}
+      </h2>
+      <div className="search-results">
+        {searchResults &&
+          searchResults.map((result) => (
+            <LineCard key={nextId()} resultSearchItem={result} onResultClick={onResultClick} />
+          ))}
       </div>
     </>
   );

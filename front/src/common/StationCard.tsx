@@ -45,13 +45,13 @@ export default function StationCard({ station, onClick, fixedHeight = false }: P
         <span className="station-card-region">{region}</span>
         <span className="station-card-uic">{uic}</span>
       </div>
-      {linename ? (
+      {linename && (
         <div className="station-card-footer">
           <span className="station-card-line">{linename}</span>
-          {pk ? <span className="station-card-pk">PK {pk}</span> : null}
+          {pk && <span className="station-card-pk">PK {pk}</span>}
           <span className="station-card-line-number">{linecode}</span>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
