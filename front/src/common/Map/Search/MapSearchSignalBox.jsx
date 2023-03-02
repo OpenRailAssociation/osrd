@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -9,8 +8,6 @@ import { useDebounce } from 'utils/helpers';
 const searchURI = '/gaia/osrd/signalbox/'; // '/matgaia/search_station';
 
 export default function MapSearchSignalBox() {
-  const map = useSelector((state) => state.map);
-
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
@@ -23,7 +20,7 @@ export default function MapSearchSignalBox() {
       const data = await get(searchURI, { params });
       setSearchResults(data);
     } catch (e) {
-      console.log(e);
+      /* empty */
     }
   };
 
@@ -43,32 +40,10 @@ export default function MapSearchSignalBox() {
     }
   }, [debouncedSearchTerm, debouncedSearchLine]);
 
-  /*
-   * Convert data from signalboxes in geojson format
-   */
-  const cdv2geosjon = (data) => ({
-    type: 'FeatureCollection',
-    features: data.map((item) => ({
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'MultiLineString',
-        coordinates: item,
-      },
-    })),
-  });
-
   const onResultClick = (result) => {
     setDontSearch(true);
     setSearch(result.name);
     setSearchResults(undefined);
-
-    const geojson =
-      map.mapTrackSources === 'schematic'
-        ? cdv2geosjon(result.coordinates.sch)
-        : cdv2geosjon(result.coordinates.geo);
-
-    console.log('geojson', geojson);
 
     /* if (latlon !== null) {
       const newViewport = {

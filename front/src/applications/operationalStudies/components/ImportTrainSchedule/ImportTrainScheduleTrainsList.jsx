@@ -46,7 +46,6 @@ export default function ImportTrainScheduleTrainsList(props) {
       setTrainList(result.data);
       setIsSearching(false);
     } catch (error) {
-      console.log(error);
       setIsSearching(false);
     }
   }

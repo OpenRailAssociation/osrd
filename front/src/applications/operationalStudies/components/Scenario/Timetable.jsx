@@ -30,7 +30,6 @@ import TimetableTrainCard from './TimetableTrainCard';
   }));
   const min = Math.min(...durationList.map((train) => train.duration));
   const max = Math.max(...durationList.map((train) => train.duration));
-  // console.log(durationList.map((train) => train.duration), min, max);
   return durationList;
 } */
 

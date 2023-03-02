@@ -77,8 +77,6 @@ export default function MarecoMultiRange({
 
   const ref = useD3(
     (svg) => {
-      console.log('Begin useD3');
-
       // svg.select('g.brush-area').selectAll('g').remove()
 
       const xAxisStops = (node) =>
@@ -150,8 +148,6 @@ export default function MarecoMultiRange({
             return i === gBrush.size() - 1 && brush !== undefined ? 'none' : 'none';
           });
       });
-
-      console.log('end update useD3', brushes);
 
       // better FILTERING BEFORE SENDING BACK
       // only if different fro extensions sent
@@ -256,8 +252,6 @@ export default function MarecoMultiRange({
   }
 
   const newBrush = () => {
-    console.log('new Brush', brushesRef.current);
-
     const brush = brushX()
       .extent([
         [margin.left, margin.top],

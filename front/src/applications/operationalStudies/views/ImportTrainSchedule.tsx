@@ -15,7 +15,7 @@ export default function ImportTrainSchedule() {
       const data = await get(ROLLING_STOCK_URL, { params: { page_size: 1000 } });
       setRollingStockDB(data.results);
     } catch (error) {
-      console.log(error);
+      /* empty */
     }
   }
 

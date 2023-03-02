@@ -59,7 +59,6 @@ export default function RollingStockCardDetail(props) {
           message: e.message,
         })
       );
-      console.log(e);
     }
   };
 

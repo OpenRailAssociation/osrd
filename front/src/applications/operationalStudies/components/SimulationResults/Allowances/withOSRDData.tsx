@@ -29,7 +29,6 @@ function withOSRDData<T>(Component: ComponentType<T>) {
         setTrainDetail(result);
         setSyncInProgress(false);
       } catch (e: any) {
-        console.log('ERROR', e);
         dispatch(
           setFailure({
             name: e.name,
@@ -70,7 +69,6 @@ function withOSRDData<T>(Component: ComponentType<T>) {
         setSyncInProgress(false);
       } catch (e: any) {
         setSyncInProgress(false);
-        console.log('ERROR', e);
         dispatch(
           setFailure({
             name: e.name,

@@ -46,7 +46,6 @@ export default function InfraSelectorModal({ onlySelectionMode = false }: Props)
       filterInfras(infrasListQuery);
       setIsFetching(false);
     } catch (e) {
-      console.log('ERROR', e);
       setIsFetching(false);
     }
   };

@@ -28,7 +28,7 @@ export default function RollingStockSelector() {
       const rollingStock = await get(`${ROLLINGSTOCK_URL}/${rollingStockID}/`);
       setRollingStockSelected(rollingStock);
     } catch (e) {
-      console.log('ERROR', e);
+      /* empty */
     }
   };
 

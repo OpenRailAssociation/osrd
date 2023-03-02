@@ -38,9 +38,9 @@ export async function changeTrain(details, id) {
       };
       await patch(`${trainscheduleURI}${id}/`, params);
     } catch (e) {
-      console.log('ERROR', e);
+      /* empty */
     }
   } catch (e) {
-    console.log('ERROR', e);
+    /* empty */
   }
 }

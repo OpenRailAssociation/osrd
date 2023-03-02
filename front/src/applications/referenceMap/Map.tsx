@@ -69,8 +69,9 @@ function Map() {
     });
   };
 
-  const onFeatureClick = (e: MapLayerMouseEvent) => {
-    console.log(e);
+  // @TODO: implement behaviour or remove
+  const onFeatureClick = () => {
+    /* empty */
   };
 
   const onFeatureHover = (e: MapLayerMouseEvent) => {

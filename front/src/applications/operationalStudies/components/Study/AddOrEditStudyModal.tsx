@@ -74,7 +74,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
       options.unshift({ key: null, value: t(`${translationList}.nothingSelected`) });
       setFunction(options);
     } catch (error) {
-      console.log(error);
+      /* empty */
     }
   };
 
