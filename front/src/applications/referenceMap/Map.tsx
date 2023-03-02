@@ -51,7 +51,7 @@ function Map() {
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
-
+  const searchContext = useSearchContext();
   const updateViewportChange = useCallback(
     (value, updateRouter = false) => {
       dispatch(updateViewport(value, `/map`, updateRouter));

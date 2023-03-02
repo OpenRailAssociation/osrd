@@ -9,6 +9,7 @@ import { useDebounce } from 'utils/helpers';
 import turfCenter from '@turf/center';
 import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import nextId from 'react-id-generator';
 import { SEARCH_URL } from '../const';
 import { useSearchContext } from './SearchContext';
 
@@ -27,8 +28,6 @@ export default function MapSearchStation(props) {
   const { t } = useTranslation(['map-search']);
 
   const updateSearch = async (params) => {
-    console.log('station');
-
     try {
       const data = await post(SEARCH_URL, params);
       setSearchResults(data);
@@ -134,7 +133,7 @@ export default function MapSearchStation(props) {
           orderResults(searchResults).map((result) => (
             <div
               className="mb-1"
-              key={`mapSearchStation-${result.trigram}${result.yardname}${result.uic}`}
+              key={`mapSearchStation-${nextId()}-${result.trigram}${result.yardname}${result.uic}`}
             >
               <StationCard
                 station={{ ...result, yardname: result.ch }}
