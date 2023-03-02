@@ -112,7 +112,7 @@
     },
     "tools": {
       "track-edition": {
-        "label": "Outil \"Ligne\",",
+        "label": "Outil \"Ligne\"",
         "actions": {
           "mode-move-point": "Déplacer les points",
           "mode-add-point": "Ajouter un point",
@@ -143,7 +143,7 @@
         "default-routes-error": "Une erreur est survenue lors du chargement des itinéraires liés."
       },
       "switch-edition": {
-        "label": "Outil \"Aiguillage\",",
+        "label": "Outil \"Aiguillage\"",
         "actions": {
           "delete-switch": "Supprimer l'aiguillage",
           "new-switch": "Créer un nouvel aiguillage",
@@ -165,7 +165,7 @@
         "actions": {
           "single": "Sélection simple",
           "rectangle": "Sélection rectangle",
-          "polygon": "Sélection polygône",
+          "polygon": "Sélection polygone",
           "edit-info": "Éditer la sélection",
           "unselect-all": "Tout désélectionner",
           "delete-selection": "Supprimer la sélection",
@@ -176,9 +176,9 @@
           "no-heterogenous-edition": "Il n'est pas possible d'éditer plusieurs éléments de différents types en même temps."
         },
         "help": {
-          "single-selection": "Cliquez sur un élément pour le sélectionner ou le déselectionner. Vous pouvez sélectionner plusieurs éléments en pressant la touche Contrôle.",
+          "single-selection": "Cliquez sur un élément pour le sélectionner ou le désélectionner. Vous pouvez sélectionner plusieurs éléments en pressant la touche Contrôle.",
           "rectangle-selection": "Cliquez deux fois pour délimiter un rectangle. Tous les éléments dans ce rectangle seront alors sélectionnés.",
-          "polygon-selection": "Cliquez pour délimiter un polygône. Double-cliquez pour le fermer, et sélectionner tous les éléments à l'intérieur."
+          "polygon-selection": "Cliquez pour délimiter un polygone. Double-cliquez pour le fermer, et sélectionner tous les éléments à l'intérieur."
         },
         "focus": "Focus",
         "unselect": "Désélectionner",
@@ -191,28 +191,28 @@
         "linked-to-line_other": "lié aux lignes"
       },
       "signal-edition": {
-        "label": "Outil \"Signal\",",
+        "label": "Outil \"Signal\"",
         "actions": {
           "reset-entity": "Réinitialiser les données",
           "new-entity": "Créer un nouveau signal"
         }
       },
       "buffer-stop-edition": {
-        "label": "Outil \"Heurtoir\",",
+        "label": "Outil \"Heurtoir\"",
         "actions": {
           "reset-entity": "Réinitialiser les données",
           "new-entity": "Créer un nouveau heurtoir"
         }
       },
       "detector-edition": {
-        "label": "Outil \"Détecteur\",",
+        "label": "Outil \"Détecteur\"",
         "actions": {
           "reset-entity": "Réinitialiser les données",
           "new-entity": "Créer un nouveau détecteur"
         }
       },
       "routes-edition": {
-        "label": "Outil \"Itinéraires\",",
+        "label": "Outil \"Itinéraires\"",
         "create-route": "Création d'un nouvel itinéraire",
         "edit-route": "Édition d'un itinéraire existant",
         "actions": {
