@@ -65,8 +65,6 @@ export function withStdcmData<T extends ItineraryProps>(Component: ComponentType
     const [, pathfindingState] = osrdMiddlewareApi.usePostPathfindingMutation();
     const mode = MODES.stdcm;
 
-    const modalSuggeredVias = withModalSuggeredViasStdcmData(ModalSugerredVias);
-
     const dispatchReplaceVias = (newVias: any[]) => {
       dispatch(replaceViasStdcm(newVias));
     };
@@ -229,6 +227,8 @@ function Itinerary(props: ItineraryProps) {
   };
 
   const removeViaFromPath = (step: PointOnMap) => {
+    console.log(step)
+    console.log(vias)
     dispatchReplaceVias(vias.filter((via) => via.track !== step.track));
   };
 

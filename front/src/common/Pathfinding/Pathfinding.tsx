@@ -223,6 +223,7 @@ function Pathfinding({ zoomToFeature, mode }: PathfindingProps) {
   const openModalWrapperBecauseTypescriptSucks = () => {
     openModal(<ModalPathJSONDetail pathfindingID={pathfindingID} />, 'lg');
   };
+ 
 
   // Way to ensure marker position on track
   const correctWaypointsGPS = ({ steps = [] }: Path) => {
