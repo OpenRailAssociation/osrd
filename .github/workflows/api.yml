@@ -70,7 +70,6 @@ jobs:
           cd python/api
           source .venv/bin/activate
           python manage.py migrate
-        run: 
       - name: Run Tests
         env:
           OSRD_DEV: "True"
@@ -96,12 +95,12 @@ jobs:
         uses: actions/cache@v3
         id: cached-poetry-only-dev-dependencies
         with:
-          path: api/.venv
-          key: cached-poetry-only-dev-dependencies-${{ hashFiles('api/poetry.lock') }}
+          path: python/api/.venv
+          key: cached-poetry-only-dev-dependencies-${{ hashFiles('python/api/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-only-dev-dependencies.outputs.cache-hit != 'true'
         run: |
-          cd api
+          cd python/api
           poetry install --only dev
       - name: Flake8
         run: |
@@ -114,9 +113,9 @@ jobs:
           report_paths: api/flake8.xml
       - name: Black
         run: |
-          cd api
+          cd python/api
           poetry run black . --check
       - name: Isort
         run: |
-          cd api
+          cd python/api
           poetry run isort . --check
