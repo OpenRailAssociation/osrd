@@ -1,14 +1,12 @@
 use crate::error::Result;
 use crate::schema::InfraErrorType;
-use crate::views::pagination::{
-    paginate, PaginatedResponse, PaginationError, PaginationQueryParam,
-};
+use crate::views::pagination::{Paginate, PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{block, Data, Json as WebJson, Path, Query};
+use actix_web::web::{Data, Json as WebJson, Path, Query};
+use diesel::sql_query;
 use diesel::sql_types::{BigInt, Json, Nullable, Text};
-use diesel::{PgConnection, RunQueryDsl};
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -35,7 +33,7 @@ async fn list_errors(
     infra: Path<i64>,
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
-) -> Result<WebJson<PaginatedResponse<InfraErrorModel>>> {
+) -> Result<WebJson<PaginatedResponse<InfraError>>> {
     let infra = infra.into_inner();
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
@@ -46,25 +44,8 @@ async fn list_errors(
         }
     }
 
-    let (infra_errors, count) = block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
-        get_paginated_infra_errors(&mut conn, infra, page, per_page, &params)
-    })
-    .await
-    .unwrap()?;
-    let previous = if page == 1 { None } else { Some(page - 1) };
-    let max_page = (count as f64 / per_page as f64).ceil() as i64;
-    let next = if page >= max_page {
-        None
-    } else {
-        Some(page + 1)
-    };
-    Ok(WebJson(PaginatedResponse {
-        count,
-        previous,
-        next,
-        results: infra_errors,
-    }))
+    let errors = get_paginated_infra_errors(db_pool, infra, page, per_page, &params).await?;
+    Ok(WebJson(errors))
 }
 
 /// Check if the query parameter error_type exist
@@ -81,10 +62,9 @@ enum ListErrorsErrors {
     WrongErrorTypeProvided,
 }
 
-#[derive(QueryableByName, Debug, Clone)]
-struct InfraErrorQueryable {
-    #[diesel(sql_type = BigInt)]
-    pub count: i64,
+#[derive(QueryableByName, Debug, Clone, Serialize)]
+#[serde(deny_unknown_fields)]
+struct InfraError {
     #[diesel(sql_type = Json)]
     pub information: JsonValue,
     #[diesel(sql_type = Nullable<Json>)]
@@ -102,31 +82,13 @@ pub enum Level {
     All,
 }
 
-#[derive(Debug, Clone, Serialize)]
-#[serde(deny_unknown_fields)]
-struct InfraErrorModel {
-    pub information: JsonValue,
-    pub geographic: Option<JsonValue>,
-    pub schematic: Option<JsonValue>,
-}
-
-impl From<InfraErrorQueryable> for InfraErrorModel {
-    fn from(error: InfraErrorQueryable) -> Self {
-        Self {
-            information: error.information,
-            geographic: error.geographic,
-            schematic: error.schematic,
-        }
-    }
-}
-
-fn get_paginated_infra_errors(
-    conn: &mut PgConnection,
+async fn get_paginated_infra_errors(
+    db_pool: Data<DbPool>,
     infra: i64,
     page: i64,
     per_page: i64,
     params: &QueryParams,
-) -> Result<(Vec<InfraErrorModel>, u64)> {
+) -> Result<PaginatedResponse<InfraError>> {
     let mut query =
         String::from("SELECT information::text, ST_AsGeoJSON(ST_Transform(geographic, 4326))::json as geographic,
         ST_AsGeoJSON(ST_Transform(schematic, 4326))::json as schematic FROM osrd_infra_errorlayer WHERE infra_id = $1");
@@ -142,17 +104,15 @@ fn get_paginated_infra_errors(
         query += " AND information->>'obj_id' = $3"
     }
 
-    let infra_errors = paginate(query, page, per_page)
+    let infra_errors = sql_query(query)
         .bind::<BigInt, _>(infra)
         .bind::<Text, _>(params.error_type.clone().unwrap_or_default())
         .bind::<Text, _>(params.object_id.clone().unwrap_or_default())
-        .load::<InfraErrorQueryable>(conn)?;
-    let count = infra_errors.first().map(|e| e.count).unwrap_or_default();
-    let infra_errors: Vec<InfraErrorModel> = infra_errors.into_iter().map(|e| e.into()).collect();
-    if infra_errors.is_empty() && page > 1 {
-        return Err(PaginationError::InvalidPage.into());
-    }
-    Ok((infra_errors, count as u64))
+        .paginate(page)
+        .per_page(per_page)
+        .load_and_count::<InfraError>(db_pool)
+        .await?;
+    Ok(infra_errors)
 }
 
 #[cfg(test)]
