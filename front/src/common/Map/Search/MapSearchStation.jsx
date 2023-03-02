@@ -10,6 +10,7 @@ import turfCenter from '@turf/center';
 import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { SEARCH_URL } from '../const';
+import { useSearchContext } from './SearchContext';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -21,10 +22,13 @@ export default function MapSearchStation(props) {
   const infraID = useSelector(getInfraID);
 
   const dispatch = useDispatch();
+  const searchContext = useSearchContext();
 
   const { t } = useTranslation(['map-search']);
 
   const updateSearch = async (params) => {
+    console.log('station');
+
     try {
       const data = await post(SEARCH_URL, params);
       setSearchResults(data);
@@ -62,11 +66,12 @@ export default function MapSearchStation(props) {
   };
 
   useEffect(() => {
-    updateSearch(getPayload());
+    if (searchState) updateSearch(getPayload());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
 
   const onResultClick = (result) => {
+    searchContext.clearLineSearch();
     setSearch(result.name);
 
     const coordinates = map.mapTrackSources === 'schematic' ? result.schematic : result.geographic;
@@ -127,7 +132,10 @@ export default function MapSearchStation(props) {
       <div className="search-results">
         {searchResults &&
           orderResults(searchResults).map((result) => (
-            <div className="mb-1" key={`${result.trigram}${result.yardname}${result.uic}`}>
+            <div
+              className="mb-1"
+              key={`mapSearchStation-${result.trigram}${result.yardname}${result.uic}`}
+            >
               <StationCard
                 station={{ ...result, yardname: result.ch }}
                 onClick={() => onResultClick(result)}

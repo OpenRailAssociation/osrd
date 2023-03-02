@@ -5,6 +5,7 @@ type SearchContextType = {
   setIsSearchLine: React.Dispatch<React.SetStateAction<boolean>>;
   lineSearch: any;
   setLineSearch: React.Dispatch<React.SetStateAction<any>>;
+  clearLineSearch: () => void;
 };
 
 export const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -15,12 +16,17 @@ export const SearchProvider: React.FC = ({ children }) => {
   const [isSearchLine, setIsSearchLine] = useState<boolean>(false);
   const [lineSearch, setLineSearch] = useState<any>(undefined);
 
+  const clearLineSearch = () => {
+    setIsSearchLine(false);
+    setLineSearch(undefined);
+  };
   const searchValueContext = useMemo(
     () => ({
       isSearchLine,
       setIsSearchLine,
       lineSearch,
       setLineSearch,
+      clearLineSearch,
     }),
     [isSearchLine, lineSearch]
   );

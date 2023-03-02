@@ -3,9 +3,9 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from 'utils/helpers';
 import { post } from 'common/requests';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { Viewport } from 'reducers/map';
+import { Viewport, updateMapSearchMarker } from 'reducers/map';
 import nextId from 'react-id-generator';
 import { BBox, MultiLineString, multiLineString } from '@turf/helpers';
 import bbox from '@turf/bbox';
@@ -20,14 +20,18 @@ type MapSearchLineProps = {
 };
 
 const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
+  const infraID = useSelector(getInfraID);
+  const { t } = useTranslation(['map-search']);
+  const map = useSelector((state: RootState) => state.map);
+  const searchContext = useSearchContext();
+  const dispatch = useDispatch();
+
   const [searchState, setSearchState] = useState<string>('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState<{ [key: string]: string }[] | undefined>(
     undefined
   );
   const [geoResult, setGeoResult] = useState<MultiLineString | undefined>(undefined);
-  const map = useSelector((state: RootState) => state.map);
-  const searchContext = useSearchContext();
 
   const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -39,28 +43,29 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
       ],
       { padding: 40 }
     );
-    updateExtViewport({
-      ...map.viewport,
+    const tempMap = { ...map };
+    const newViewport = {
+      ...tempMap.viewport,
       longitude,
       latitude,
       zoom,
-    });
+    };
+    console.log('map.viewport', map.viewport);
+    console.log('newViewport', newViewport);
+    updateExtViewport(newViewport);
   };
 
   useEffect(() => {
-    if (searchContext?.lineSearch) {
-      const features = multiLineString(searchContext?.lineSearch.coordinates);
+    if (searchContext?.lineSearch && geoResult) {
+      const features = multiLineString(geoResult.coordinates);
       zoomToFeature(bbox(features));
     }
   }, [searchContext?.lineSearch]);
 
-  const infraID = useSelector(getInfraID);
-
-  const { t } = useTranslation(['map-search']);
-
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
   const updateSearch = async (params: searchPayloadType | null) => {
+    console.log('line');
     try {
       const data = await post(SEARCH_URL, params);
       setSearchResults(data);
@@ -89,6 +94,8 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
     map.mapTrackSources === 'schematic' ? search.schematic : search.geographic;
 
   const onResultClick = async (searchResultItem: { [key: string]: string | MultiLineString }) => {
+    dispatch(updateMapSearchMarker(undefined));
+
     if (searchResultItem.geographic || searchResultItem.schematic) {
       setGeoResult(coordinates(searchResultItem) as MultiLineString);
     } else {
@@ -104,7 +111,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   };
 
   useEffect(() => {
-    searchContext?.setLineSearch(geoResult);
+    searchContext?.setLineSearch(geoResult || searchContext?.lineSearch);
     searchContext?.setIsSearchLine(true);
   }, [geoResult]);
 
