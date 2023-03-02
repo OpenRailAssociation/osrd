@@ -112,9 +112,6 @@ const updateChart = (chart, keyValues, rotate, event) => {
           : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) * -1
     );
 
-  // chart.drawZone.selectAll('rect.route-aspect')
-  // .attr('x', d => {console.log(d)})
-
   chart.drawZone.selectAll('.area').attr(
     'd',
     rotate

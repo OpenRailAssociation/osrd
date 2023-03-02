@@ -32,7 +32,6 @@ export default function InfraSelector(props) {
           message: e.message,
         })
       );
-      console.log('ERROR', e);
     }
   };
 

@@ -27,7 +27,6 @@ function ImportTrainScheduleStationSelector(props) {
       setStationsList(result.data);
       setIsSearching(false);
     } catch (error) {
-      console.log(error);
       setIsSearching(false);
     }
   }

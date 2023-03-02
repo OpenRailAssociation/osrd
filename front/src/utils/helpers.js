@@ -214,10 +214,6 @@ export const findPathsToKey = (obj, key) => {
     }
   })(obj, key);
 
-  // const results = findKey(obj, key, undefined, []);
-
-  console.log(results);
-
   return results;
 };
 

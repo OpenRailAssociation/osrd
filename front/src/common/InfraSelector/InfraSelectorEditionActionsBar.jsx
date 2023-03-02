@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { post, get, put } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
-import { INFRA_URL, INFRA_URL_OLD } from './Consts';
+import { INFRA_URL } from './Consts';
 
 export default function ActionsBar(props) {
   const { infra, isFocused, setIsFocused, getInfrasList, inputValue } = props;
@@ -20,7 +20,6 @@ export default function ActionsBar(props) {
         getInfrasList();
         setIsWaiting(false);
       } catch (e) {
-        console.log(e);
         setIsWaiting(false);
       }
     }
@@ -34,7 +33,6 @@ export default function ActionsBar(props) {
         fileDownload(JSON.stringify(railjson), `${infra.name}.id${infra.id}.railjson.json`);
         setIsWaiting(false);
       } catch (e) {
-        console.log(e);
         setIsWaiting(false);
       }
     }
@@ -45,11 +43,9 @@ export default function ActionsBar(props) {
       setIsWaiting(true);
       try {
         // await duplicate infra
-        console.log('duplicate', infra.id);
         getInfrasList();
         setIsWaiting(false);
       } catch (e) {
-        console.log(e);
         setIsWaiting(false);
       }
     }
@@ -64,7 +60,6 @@ export default function ActionsBar(props) {
         setIsFocused(undefined);
         setIsWaiting(false);
       } catch (e) {
-        console.log(e);
         setIsWaiting(false);
       }
     }

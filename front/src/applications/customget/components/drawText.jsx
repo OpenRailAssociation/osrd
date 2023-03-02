@@ -1,6 +1,5 @@
 const drawText = (chart, direction, groupID, isSelected, text, x, y, color = '#333333') => {
   const drawZone = chart.drawZone.select(`#${groupID}`);
-  console.log(color);
   drawZone
     .append('text')
     .attr('class', `curve-label ${isSelected && 'selected'}`)

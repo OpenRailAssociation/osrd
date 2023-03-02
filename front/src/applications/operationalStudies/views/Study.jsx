@@ -60,7 +60,7 @@ export default function Study() {
       const list = await get(`/projects/${id}/study_states/`);
       setStudyStates(list);
     } catch (error) {
-      console.log(error);
+      /* empty */
     }
   };
 

@@ -43,7 +43,6 @@ const wrapperThatFollowLine = tail(defaultLine.coordinates).reduce<
   return acc;
 }, []);
 
-// console.log(wrapper1);
 // [
 //   { begin: 0, end: 1334.9166539490695, degree: 0 },
 //   { begin: 1334.9166539490695, end: 2265.7879100768832, degree: 1 },
@@ -151,9 +150,9 @@ describe('Testing linear metadata functions', () => {
     };
     wrapperTests.forEach((test) => {
       if (DEBUG)
-        console.log('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
+        console.debug('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
       const result = update(defaultLine, newLine, test.wrapper);
-      if (DEBUG) console.log('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
+      if (DEBUG) console.debug('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
 
       // validity test
       checkWrapperValidity(result, newLine, test.title);
@@ -180,9 +179,9 @@ describe('Testing linear metadata functions', () => {
 
     wrapperTests.forEach((test) => {
       if (DEBUG)
-        console.log('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
+        console.debug('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
       const result = update(defaultLine, newLine, test.wrapper);
-      if (DEBUG) console.log('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
+      if (DEBUG) console.debug('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
 
       // validity test
       checkWrapperValidity(result, newLine, test.title);

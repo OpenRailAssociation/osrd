@@ -50,7 +50,7 @@ export default function ScenarioExploratorModal() {
       const data = await get(url, { params });
       setFunction(data.results);
     } catch (error) {
-      console.log(error);
+      /* empty */
     }
   };
 

@@ -27,7 +27,6 @@ export default function ModalPathJSONDetail() {
           message: `${e.message} : ${e.response && e.response.data.detail}`,
         })
       );
-      console.log('ERROR', e);
     }
   };
 

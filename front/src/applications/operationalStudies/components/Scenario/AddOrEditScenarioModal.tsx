@@ -82,7 +82,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
       );
       setElectricalProfileSetOptions(options);
     } catch (error) {
-      console.log(error);
+      /* empty */
     }
   };
 

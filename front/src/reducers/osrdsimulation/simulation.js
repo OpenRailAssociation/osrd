@@ -77,7 +77,6 @@ export async function progressiveDuplicateTrain(
         message: `${e.message} : ${e.response.data.detail}`,
       })
     );
-    console.log('ERROR', e);
   }
 }
 
@@ -108,7 +107,6 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
       try {
         deleteRequest(`${trainscheduleURI}${id}/`);
       } catch (e) {
-        console.log('ERROR', e);
         dispatch(
           setFailure({
             name: e.name,
