@@ -306,7 +306,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     }
 
     return () => {
-      searchContext?.setLineSearch(undefined);
+      // searchContext?.setLineSearch(undefined);
       searchContext?.setIsSearchLine(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
