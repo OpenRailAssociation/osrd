@@ -19,10 +19,6 @@ pub fn routes() -> impl HttpServiceFactory {
     web::scope("/electrical_profile_set").service((list, get, get_level_order))
 }
 
-/// =================================
-/// Endpoints
-/// =================================
-
 /// Return a list of electrical profile sets
 #[get("")]
 async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<ElectricalProfileSetMetaData>>> {
@@ -68,10 +64,6 @@ async fn get_level_order(
     .await
     .unwrap()
 }
-
-/// =================================
-/// Queryables
-/// =================================
 
 #[derive(Debug, PartialEq, Queryable, Serialize)]
 pub struct ElectricalProfileSetMetaData {
