@@ -11,7 +11,7 @@ from osrd_infra.migrations import change_railjson_version
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("osrd_infra", "0012_simulationoutput_trainschedule_and_more"),
+        ("osrd_infra", "0011_document"),
     ]
 
     operations = [
@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AddField(
-            model_name="trainschedule",
+            model_name="trainschedulemodel",
             name="power_restriction_ranges",
             field=models.JSONField(
                 blank=True,
