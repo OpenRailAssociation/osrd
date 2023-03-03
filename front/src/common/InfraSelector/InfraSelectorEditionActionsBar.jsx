@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { post, get, put } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
-import { INFRA_URL, INFRA_URL_OLD } from './Consts';
+import { INFRA_URL } from './Consts';
 
 export default function ActionsBar(props) {
   const { infra, isFocused, setIsFocused, getInfrasList, inputValue } = props;

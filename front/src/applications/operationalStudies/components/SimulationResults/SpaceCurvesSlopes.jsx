@@ -54,7 +54,6 @@ export default function SpaceCurvesSlopes(props) {
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
-  const [isResizeActive, setResizeActive] = useState(false);
   const ref = useRef();
   const keyValues = ['position', 'gradient'];
 

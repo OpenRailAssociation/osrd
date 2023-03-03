@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import Allowances from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDData';
 
-import ContextMenu from 'applications/operationalStudies/components/SimulationResults/ContextMenu';
 import SimulationResultsMap from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap';
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/operationalStudies/components/SimulationResults/SpaceCurvesSlopes';
@@ -28,15 +27,7 @@ import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 
-const CHART_MIN_HEIGHT = '150px';
 const MAP_MIN_HEIGHT = 450;
-
-function getMapMaxHeight(timeTableRef: React.MutableRefObject<HTMLDivElement | null>) {
-  if (timeTableRef.current) {
-    return timeTableRef.current.clientHeight - 42;
-  }
-  return 10000;
-}
 
 export default function SimulationResults() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
@@ -45,16 +36,10 @@ export default function SimulationResults() {
   const [displayAllowances, setDisplayAllowances] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
-  const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
-    useState(heightOfSpaceTimeChart);
 
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
-  const [initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart] =
-    useState(heightOfSpeedSpaceChart);
 
-  const [heightOfSimulationMap, setHeightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
-  const [initialHeightOfSimulationMap, setinitialHeightOfSimulationMap] =
-    useState(heightOfSimulationMap);
+  const [heightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
 
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
@@ -70,7 +55,6 @@ export default function SimulationResults() {
     (state: RootState) => state.osrdsimulation.displaySimulation
   );
   const timetableID = useSelector((state: RootState) => state.osrdconf.timetableID);
-  // const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   const toggleAllowancesDisplay = () => {
@@ -122,7 +106,6 @@ export default function SimulationResults() {
       <h1 className="text-center">{t('simulation:noData')}</h1>
     ) : null;
 
-  const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
     <>
       {!displaySimulation || isUpdating ? (

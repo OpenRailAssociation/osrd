@@ -9,19 +9,6 @@ import { makeEnumBooleans } from 'utils/constants';
 import { ActionFailure } from 'reducers/main';
 import { ThunkAction } from 'types';
 
-type standardStdcmAllowanceForApi = {
-  value_type: number;
-  minutes?: number;
-  seconds?: number;
-  percentage?: number;
-};
-
-type typeUnitTranslation = {
-  time: string;
-  percentage: string;
-  time_per_distance: string;
-};
-
 export default function formatStdcmConf(
   dispatch: Dispatch,
   setFailure: (e: Error) => ThunkAction<ActionFailure>,

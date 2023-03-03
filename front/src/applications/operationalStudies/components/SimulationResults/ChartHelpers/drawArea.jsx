@@ -14,7 +14,7 @@ const drawArea = (chart, classes, dataSimulation, groupID, interpolation, keyVal
         .area()
         .x((d) => chart.x(d[keyValues[0]]))
         .y0((d) => chart.y(d.value0))
-        .y1((d) => chart.y(0))
+        .y1(() => chart.y(0))
         .curve(d3[interpolation]);
 
   chart.drawZone

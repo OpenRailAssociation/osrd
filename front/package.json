@@ -166,7 +166,7 @@
     "start": "import-meta-env-prepare -x .env.example && vite",
     "build": "vite build",
     "test": "import-meta-env-prepare -x .env.example && vitest",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 345",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 246",
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
     "storybook": "storybook dev -p 6006",
