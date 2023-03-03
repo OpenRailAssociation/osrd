@@ -59,11 +59,11 @@ export default function InfraSelector(props) {
             <>
               <span className="">{selectedInfra.name}</span>
               <span className="ml-1 small align-self-center">({selectedInfra.id})</span>
-              {selectedInfra.locked ? (
+              {selectedInfra.locked && (
                 <span className="infra-lock ml-auto">
                   <FaLock />
                 </span>
-              ) : null}
+              )}
             </>
           ) : (
             t('infraManagement:chooseInfrastructure')
