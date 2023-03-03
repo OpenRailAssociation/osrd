@@ -93,12 +93,14 @@ pub enum ProcessingError {
     #[error("unexpected column '{0}'")]
     UnexpectedColummn(String),
     #[error("expected type {expected}, got value '{value}' of type {actual} instead")]
+    #[editoast_error(no_context)]
     RuntimeTypeCheckFail {
         value: String,
         expected: TypeSpec,
         actual: TypeSpec,
     },
     #[error("expected value of type {expected}, but got ersatz '{value}'")]
+    #[editoast_error(no_context)]
     UnexpectedErsatz { value: String, expected: TypeSpec },
     #[error("in function '{0}': {1}")]
     InFunction(String, InternalError),
