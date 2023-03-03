@@ -1,4 +1,3 @@
-from django.db import transaction
 from django.http import Http404
 from rest_framework import mixins
 from rest_framework.decorators import action
@@ -7,7 +6,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import PathModel, SimulationOutput, TrainSchedule
+from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.serializers import (
     StandaloneSimulationSerializer,
     TrainScheduleSerializer,
@@ -27,11 +26,11 @@ class TrainScheduleView(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = TrainSchedule.objects.all()
+    queryset = TrainScheduleModel.objects.all()
     serializer_class = TrainScheduleSerializer
 
     def update(self, request, *args, **kwargs):
-        train_schedule: TrainSchedule = self.get_object()
+        train_schedule: TrainScheduleModel = self.get_object()
         serializer = self.get_serializer(train_schedule, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
@@ -90,7 +89,7 @@ class TrainScheduleView(
             raise ParseError("duplicate train_ids")
 
         # get the schedules from database
-        schedules = TrainSchedule.objects.filter(pk__in=train_ids)
+        schedules = TrainScheduleModel.objects.filter(pk__in=train_ids)
 
         # if some schedules were not found, raise an error
         schedules_map = {schedule.id: schedule for schedule in schedules}
@@ -130,14 +129,8 @@ class TrainScheduleView(
         response_payload = run_simulation(request_payload)
 
         # Process simulation response
-        simulation_outputs = process_simulation_response(
-            train_schedules[0].timetable.infra, train_schedules, response_payload
-        )
+        process_simulation_response(train_schedules[0].timetable.infra, train_schedules, response_payload)
 
-        with transaction.atomic():
-            # Save inputs
-            TrainSchedule.objects.bulk_create(train_schedules)
-            # Save outputs
-            SimulationOutput.objects.bulk_create(simulation_outputs)
-
+        # Save results
+        TrainScheduleModel.objects.bulk_create(train_schedules)
         return Response({"ids": [schedule.id for schedule in train_schedules]}, status=201)
