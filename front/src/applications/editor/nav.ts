@@ -1,11 +1,12 @@
 import { Dispatch } from 'redux';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { BiTargetLock } from 'react-icons/bi';
-import { BsMap, BsFillExclamationOctagonFill } from 'react-icons/bs';
+import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 
 import { Viewport } from 'reducers/map';
+import { GiRailway } from 'react-icons/gi';
 import {
   EditorState,
   ModalRequest,
@@ -135,7 +136,7 @@ const NavButtons: NavButton[][] = [
     },
     {
       id: 'infras',
-      icon: BsMap,
+      icon: GiRailway,
       labelTranslationKey: 'Editor.nav.select-infra',
       async onClick({ openModal }) {
         openModal({

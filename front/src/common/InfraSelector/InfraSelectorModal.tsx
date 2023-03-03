@@ -96,11 +96,11 @@ export default function InfraSelectorModal({ onlySelectionMode = false }: Props)
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        {isFetching ? (
+        {isFetching && (
           <div className="infra-loader-absolute">
             <Loader position="center" />
           </div>
-        ) : null}
+        )}
         {editionMode ? (
           <InfraSelectorModalBodyEdition
             infrasList={filteredInfrasList}

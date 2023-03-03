@@ -11,7 +11,7 @@ import Modal from './Modal';
 import { get } from '../../../common/requests';
 import { addNotification, setFailure } from '../../../reducers/main';
 
-const infraURL = '/editoast/infra/';
+const infraURL = '/infra/';
 type InfrasList = {
   id: string;
   name: string;
@@ -26,7 +26,7 @@ async function getInfrasList(): Promise<InfrasList> {
 const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation(['translation', 'infraManagement']);
   const [infras, setInfras] = useState<InfrasList | null>(null);
   const { closeModal } = useContext(ModalContext);
 
@@ -45,7 +45,7 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   }, [dispatch, t]);
 
   return (
-    <Modal onClose={cancel} title={t('operationalStudies/manageTrainSchedule:infrachoose')}>
+    <Modal onClose={cancel} title={t('infraManagement:chooseInfrastructure')}>
       <div className="mb-3 osrd-config-infraselector">
         {infras?.map((infra) => (
           <div
