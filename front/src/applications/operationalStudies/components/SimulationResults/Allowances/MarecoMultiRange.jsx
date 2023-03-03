@@ -189,11 +189,11 @@ export default function MarecoMultiRange({
     setBrushes((brushes) => [...brushes, ...extensionMapped]);
   }, [extensions]);
 
-  function brushstart({ sourceEvent }) {
+  function brushstart() {
     // empty for now
   }
 
-  const brushed = ({ mode, sourceEvent, selection, target }) => {
+  const brushed = ({ sourceEvent, selection, target }) => {
     if (!sourceEvent) return;
 
     // keep a ref to the selection

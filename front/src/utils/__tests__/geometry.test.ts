@@ -1,5 +1,5 @@
 import { getTangent, getCurrentBearing } from 'utils/geometry';
-import { point, lineString, feature, featureCollection } from '@turf/helpers';
+import { point, lineString, featureCollection } from '@turf/helpers';
 
 describe('getTangent', () => {
   describe('2 points segment', () => {

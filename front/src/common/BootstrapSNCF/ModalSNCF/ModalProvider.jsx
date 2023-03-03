@@ -1,15 +1,16 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
 
-const ModalContext = createContext({
+export const ModalContext = createContext({
   isModalOpen: false,
   modalContent: null,
+  // eslint-disable-next-line no-unused-vars
   openModal: (content, size, optionalClasses = '') => {},
   closeModal: () => {},
   size: undefined,
   optionalClasses: '',
 });
 
-function ModalProvider({ children }) {
+export function ModalProvider({ children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
   const [size, setSize] = useState(undefined);
@@ -55,7 +56,7 @@ function ModalProvider({ children }) {
   );
 }
 
-function ModalSNCF() {
+export function ModalSNCF() {
   const { isModalOpen, modalContent, closeModal, size, optionalClasses, isVisible } =
     useContext(ModalContext);
 
@@ -93,5 +94,3 @@ function ModalSNCF() {
     </div>
   );
 }
-
-export { ModalProvider, ModalContext, ModalSNCF };

@@ -1,6 +1,4 @@
 import { GiPathDistance } from 'react-icons/gi';
-import { TiDeleteOutline } from 'react-icons/ti';
-import { IoMdAddCircleOutline } from 'react-icons/io';
 
 import { Tool } from '../types';
 import { RouteEditionState } from './types';

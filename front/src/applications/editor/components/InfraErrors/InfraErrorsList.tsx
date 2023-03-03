@@ -7,7 +7,7 @@ import turfCenter from '@turf/center';
 import { LoaderFill, Spinner } from '../../../../common/Loader';
 import { updateViewport } from '../../../../reducers/map';
 import EditorContext from '../../context';
-import { getEntity, getMixedEntities } from '../../data/api';
+import { getEntity } from '../../data/api';
 import SelectionTool from '../../tools/selection/tool';
 import useInfraErrors from './useInfraErrors';
 import InfraErrorComponent from './InfraError';
