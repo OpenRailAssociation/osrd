@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from config import settings
-from osrd_infra.models import PathModel, TrainSchedule
+from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.serializers import PathSerializer, STDCMInputSerializer
 from osrd_infra.utils import make_exception_from_error
 from osrd_infra.views import fetch_track_sections, parse_waypoint, postprocess_path
@@ -46,11 +46,12 @@ def request_stdcm(payload):
 
 
 def make_route_occupancies(timetable):
-    schedules = TrainSchedule.objects.filter(timetable=timetable)
-    res = []
+    schedules = TrainScheduleModel.objects.filter(timetable=timetable)
+    res = list()
     for schedule in schedules:
-        output = schedule.simulation_output
-        sim = output.eco_simulation or output.base_simulation
+        sim = schedule.eco_simulation
+        if not sim:
+            sim = schedule.base_simulation
         for route_id, occupancy in sim["route_occupancies"].items():
             res.append(
                 {
@@ -107,21 +108,21 @@ def compute_stdcm(request, user):
     postprocess_path(path, core_output["path"], request["infra"], user, [0, 0])
     path.save()
 
-    schedule = TrainSchedule()
+    schedule = TrainScheduleModel()
     schedule.departure_time = core_output["departure_time"]
     schedule.path = path
     schedule.initial_speed = 0
     schedule.rolling_stock = request["rolling_stock"]
     schedule.comfort = request["comfort"]
 
-    simulation_output = process_simulation_response(request["infra"], [schedule], core_output["simulation"])[0]
-    simulation = create_simulation_report(schedule, path, simulation_output=simulation_output)
+    process_simulation_response(request["infra"], [schedule], core_output["simulation"])
+    sim_result = create_simulation_report(schedule, path)
     return {
         "path": {
             **PathSerializer(path).data,
             "steps": path.payload["path_waypoints"],
         },
-        "simulation": simulation,
+        "simulation": sim_result,
     }
 
 
