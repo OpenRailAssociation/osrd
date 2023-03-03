@@ -6,6 +6,7 @@ import nextId from 'react-id-generator';
 import Loader from 'common/Loader';
 import InputSNCF from './InputSNCF';
 
+// TODO: check if this component is still used, if not, remove it
 class SearchSNCF extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
@@ -59,7 +60,6 @@ class SearchSNCF extends React.Component {
     const {
       searchResults,
       onResultClick,
-      advancedSearch,
       value,
       isSearchLoading,
       noMargin,

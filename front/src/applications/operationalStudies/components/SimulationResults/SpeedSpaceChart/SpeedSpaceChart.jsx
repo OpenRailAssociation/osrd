@@ -389,5 +389,5 @@ SpeedSpaceChart.defaultProps = {
   toggleSetting: () => {},
   onSetSettings: () => {},
   dispatchUpdateMustRedraw: () => {},
-  onSetBaseHeightOfSpeedSpaceChart: ({ ...args }) => {},
+  onSetBaseHeightOfSpeedSpaceChart: () => {},
 };
