@@ -62,9 +62,9 @@ class TrainScheduleView(
         simulation_output = process_simulation_response(
             train_schedule.timetable.infra, [train_schedule], response_payload
         )[0]
-        with transaction.atomic():
-            SimulationOutput.objects.filter(train_schedule=train_schedule).delete()
-            simulation_output.save()
+        # with transaction.atomic():
+        #     SimulationOutput.objects.filter(train_schedule=train_schedule).delete()
+        #     simulation_output.save()
         return Response(serializer.data)
 
     @action(detail=True)

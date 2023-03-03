@@ -1,7 +1,6 @@
 import json
 
 import requests
-
 from tests.get_rolling_stocks import get_rolling_stock
 from tests.utils.schedule import make_payload_schedule
 
@@ -10,7 +9,7 @@ def add_train(base_url, scenario, start, stop, departure_time):
     path_id = _run_pathfinding(base_url, scenario.infra, start, stop)
     rolling_stock_id = get_rolling_stock(base_url)
     schedule_payload = make_payload_schedule(
-        base_url, scenario, path_id, rolling_stock_id, departure_time
+        scenario, path_id, rolling_stock_id, departure_time
     )
     r = requests.post(
         base_url + "train_schedule/standalone_simulation/", json=schedule_payload
