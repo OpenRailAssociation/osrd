@@ -20,7 +20,7 @@ use thiserror::Error;
 enum DocumentErrors {
     #[error("Document not found")]
     #[editoast_error(status = 404)]
-    NotFound,
+    NotFound { document_key: i64 },
 }
 
 #[derive(Debug, Insertable)]
@@ -73,7 +73,7 @@ impl Document {
                 .get_result(&mut conn)
             {
                 Ok(doc) => Ok(doc),
-                Err(DieselError::NotFound) => Err(DocumentErrors::NotFound.into()),
+                Err(DieselError::NotFound) => Err(DocumentErrors::NotFound { document_key }.into()),
                 Err(e) => Err(e.into()),
             }
         })
@@ -128,7 +128,7 @@ impl Document {
             match diesel::delete(osrd_infra_document.filter(id.eq(document_key))).execute(&mut conn)
             {
                 Ok(1) => Ok(()),
-                Ok(_) => Err(DocumentErrors::NotFound.into()),
+                Ok(_) => Err(DocumentErrors::NotFound { document_key }.into()),
                 Err(e) => Err(e.into()),
             }
         })
@@ -168,7 +168,7 @@ mod tests {
                 .await
                 .unwrap_err()
                 .get_type(),
-            DocumentErrors::NotFound.get_type()
+            DocumentErrors::NotFound { document_key: 0 }.get_type()
         );
     }
 }

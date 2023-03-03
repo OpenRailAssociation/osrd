@@ -10,7 +10,6 @@ use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Map, Value};
 use thiserror::Error;
 
 pub const RAILJSON_VERSION: &str = "3.1.0";
@@ -35,32 +34,19 @@ pub struct InfraName {
 }
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "infra", context = "Self::context")]
+#[editoast_error(base_id = "infra")]
 pub enum InfraApiError {
     /// Couldn't found the infra with the given id
-    #[error("Infra '{0}', could not be found")]
+    #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
-    NotFound(i64),
-}
-
-impl InfraApiError {
-    fn context(&self) -> Map<String, Value> {
-        match self {
-            InfraApiError::NotFound(infra_id) => json!({
-                "infra_id": infra_id,
-            })
-            .as_object()
-            .cloned()
-            .unwrap(),
-        }
-    }
+    NotFound { infra_id: i64 },
 }
 
 impl Infra {
     pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
         match dsl::osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id }.into()),
             Err(e) => Err(e.into()),
         }
     }
@@ -72,7 +58,7 @@ impl Infra {
             .first(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id }.into()),
             Err(e) => Err(e.into()),
         }
     }
@@ -83,7 +69,7 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(infra_id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id }.into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -113,7 +99,7 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id: self.id }.into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -124,7 +110,7 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id: self.id }.into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -135,7 +121,7 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id: self.id }.into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -146,7 +132,7 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id: self.id }.into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -170,7 +156,7 @@ impl Infra {
     pub fn delete(infra_id: i64, conn: &mut PgConnection) -> Result<()> {
         match delete(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
-            Ok(_) => Err(InfraApiError::NotFound(infra_id).into()),
+            Ok(_) => Err(InfraApiError::NotFound { infra_id }.into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -204,7 +190,7 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound(self.id).into()),
+            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id: self.id }.into()),
             Err(err) => Err(err.into()),
         }
     }
