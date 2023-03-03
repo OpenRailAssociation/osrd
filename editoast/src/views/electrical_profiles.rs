@@ -11,7 +11,7 @@ use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 use editoast_derive::EditoastError;
 use serde::Serialize;
-use serde_json::{json, Map, Value as JsonValue};
+use serde_json::Value as JsonValue;
 use thiserror::Error;
 
 /// Returns `/electrical_profile_set` routes
@@ -80,13 +80,19 @@ pub struct ElectricalProfileSet {
 }
 
 impl ElectricalProfileSet {
-    fn retrieve(conn: &mut PgConnection, ep_set_id: i64) -> Result<ElectricalProfileSet> {
+    fn retrieve(
+        conn: &mut PgConnection,
+        electical_profile_set_id: i64,
+    ) -> Result<ElectricalProfileSet> {
         match dsl::osrd_infra_electricalprofileset
-            .find(ep_set_id)
+            .find(electical_profile_set_id)
             .first(conn)
         {
             Ok(ep_set) => Ok(ep_set),
-            Err(DieselError::NotFound) => Err(ElectricalProfilesError::NotFound(ep_set_id).into()),
+            Err(DieselError::NotFound) => Err(ElectricalProfilesError::NotFound {
+                electical_profile_set_id,
+            }
+            .into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -110,29 +116,15 @@ impl ElectricalProfileSet {
 }
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "electrical_profiles", context = "Self::context")]
+#[editoast_error(base_id = "electrical_profiles")]
 pub enum ElectricalProfilesError {
     /// Couldn't found the infra with the given id
-    #[error("Electrical Profile Set '{0}', could not be found")]
+    #[error("Electrical Profile Set '{electical_profile_set_id}', could not be found")]
     #[editoast_error(status = 404)]
-    NotFound(i64),
+    NotFound { electical_profile_set_id: i64 },
     #[error("An internal error occurred: '{}'", .0.to_string())]
     #[editoast_error(status = 500)]
     InternalError(String),
-}
-
-impl ElectricalProfilesError {
-    fn context(&self) -> Map<String, JsonValue> {
-        match self {
-            ElectricalProfilesError::NotFound(electrical_profile_set_id) => json!({
-                "electrical_profile_set_id": electrical_profile_set_id,
-            })
-            .as_object()
-            .cloned()
-            .unwrap(),
-            _ => Default::default(),
-        }
-    }
 }
 
 #[cfg(test)]

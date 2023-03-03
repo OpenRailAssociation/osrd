@@ -10,17 +10,20 @@ use thiserror::Error;
 #[editoast_error(base_id = "search")]
 enum TypeCheckError {
     #[error("expected variadic argument of type {expected}, but got {actual}")]
+    #[editoast_error(no_context)]
     VariadicArgTypeMismatch {
         expected: TypeSpec,
         actual: TypeSpec,
     },
     #[error("expected argument of type {expected} at position {arg_pos}, but got {actual}")]
+    #[editoast_error(no_context)]
     ArgTypeMismatch {
         expected: TypeSpec,
         actual: TypeSpec,
         arg_pos: usize,
     },
     #[error("expected argument of type {expected} at position {arg_pos} is missing")]
+    #[editoast_error(no_context)]
     ArgMissing { expected: TypeSpec, arg_pos: usize },
     #[error("unexpected argument of type {0} found")]
     UnexpectedArg(TypeSpec),

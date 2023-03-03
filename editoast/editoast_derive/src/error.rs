@@ -1,10 +1,8 @@
-use std::collections::HashMap;
-
 use darling::{Error, Result};
 use darling::{FromDeriveInput, FromVariant};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DataEnum, DeriveInput, Ident, Path};
+use syn::{DataEnum, DeriveInput, Fields, Ident};
 
 const DEFAULT_STATUS_CODE: u16 = 400;
 
@@ -12,8 +10,6 @@ const DEFAULT_STATUS_CODE: u16 = 400;
 #[darling(attributes(editoast_error), forward_attrs(allow, doc, cfg))]
 struct ErrorOptions {
     base_id: String,
-    #[darling(rename = "context")]
-    context_function: Option<Path>,
     default_status: Option<u16>,
 }
 
@@ -21,6 +17,13 @@ struct ErrorOptions {
 #[darling(attributes(editoast_error), forward_attrs(allow, doc, cfg))]
 struct ErrorVariantParams {
     status: Option<u16>,
+    no_context: Option<bool>,
+}
+
+struct ParsedVariant {
+    ident: Ident,
+    params: ErrorVariantParams,
+    fields: Fields,
 }
 
 pub fn expand_editoast_error(input: &mut DeriveInput) -> Result<TokenStream> {
@@ -39,7 +42,7 @@ pub fn expand_editoast_error(input: &mut DeriveInput) -> Result<TokenStream> {
         &variants,
         options.default_status.unwrap_or(DEFAULT_STATUS_CODE),
     )?;
-    let contexts = expand_contexts(&options.context_function);
+    let contexts = expand_contexts(&variants);
     let get_types = expand_get_types(&variants, base_id.clone());
 
     Ok(quote! {
@@ -52,23 +55,28 @@ pub fn expand_editoast_error(input: &mut DeriveInput) -> Result<TokenStream> {
                 #get_types
             }
 
-            fn context(&self) -> serde_json::Map<String, serde_json::Value> {
+            fn context(&self) -> std::collections::HashMap<String, serde_json::Value> {
                 #contexts
             }
         }
     })
 }
 
-fn parse_variants(enum_data: &DataEnum) -> Result<HashMap<Ident, ErrorVariantParams>> {
+fn parse_variants(enum_data: &DataEnum) -> Result<Vec<ParsedVariant>> {
     let mut errors = Error::accumulator();
-    let variants: HashMap<_, _> = enum_data
+    let variants: Vec<_> = enum_data
         .variants
         .iter()
         .filter_map(|v| {
             errors.handle_in(|| {
                 let ident = v.ident.clone();
                 let params = ErrorVariantParams::from_variant(v)?;
-                Ok((ident, params))
+                let fields = v.fields.clone();
+                Ok(ParsedVariant {
+                    ident,
+                    params,
+                    fields,
+                })
             })
         })
         .collect();
@@ -76,16 +84,14 @@ fn parse_variants(enum_data: &DataEnum) -> Result<HashMap<Ident, ErrorVariantPar
     Ok(variants)
 }
 
-fn expand_get_statuses(
-    variants: &HashMap<Ident, ErrorVariantParams>,
-    default_status: u16,
-) -> Result<TokenStream> {
-    let match_variants = variants.keys().map(|variant_name| {
-        quote! {#variant_name {..}}
+fn expand_get_statuses(variants: &Vec<ParsedVariant>, default_status: u16) -> Result<TokenStream> {
+    let match_variants = variants.iter().map(|variant| {
+        let ident = &variant.ident;
+        quote! {#ident {..}}
     });
 
-    let statuses = variants.values().map(|params| {
-        let status = params.status.unwrap_or(default_status);
+    let statuses = variants.iter().map(|variant| {
+        let status = variant.params.status.unwrap_or(default_status);
         quote! { actix_web::http::StatusCode::from_u16(#status).unwrap() }
     });
 
@@ -96,14 +102,15 @@ fn expand_get_statuses(
     })
 }
 
-fn expand_get_types(variants: &HashMap<Ident, ErrorVariantParams>, base_id: String) -> TokenStream {
-    let match_variants = variants.keys().map(|variant_name| {
-        quote! {#variant_name {..}}
+fn expand_get_types(variants: &Vec<ParsedVariant>, base_id: String) -> TokenStream {
+    let match_variants = variants.iter().map(|variant| {
+        let ident = &variant.ident;
+        quote! {#ident {..}}
     });
 
     let ids = variants
-        .keys()
-        .map(|variant_name| format!("editoast:{}:{}", base_id, variant_name));
+        .iter()
+        .map(|variant| format!("editoast:{}:{}", base_id, variant.ident));
 
     quote! {
         match self {
@@ -112,14 +119,26 @@ fn expand_get_types(variants: &HashMap<Ident, ErrorVariantParams>, base_id: Stri
     }
 }
 
-fn expand_contexts(ctx_function: &Option<Path>) -> TokenStream {
-    if let Some(ctx_function) = ctx_function {
-        quote! {
-            #ctx_function(self)
+fn expand_contexts(variants: &Vec<ParsedVariant>) -> TokenStream {
+    let context = variants.iter().map(|variant| {
+        let ident = &variant.ident;
+        let no_context = variant.params.no_context.unwrap_or(false);
+        match (&variant.fields, no_context) {
+            (Fields::Named(fields_named), false) => {
+                let field_ident = fields_named.named.iter().map(|f| {
+                    let ident = f.ident.clone().unwrap();
+                    quote! {#ident}
+                });
+                let field_ident2 = field_ident.clone();
+                let field_ident3 = field_ident.clone();
+                quote! {Self::#ident { #(#field_ident),*} => [#((stringify!(#field_ident2).to_string(), serde_json::to_value(#field_ident3).unwrap())),*].into()}
+            }
+            _ => quote! {Self::#ident {..} => Default::default()},
         }
-    } else {
-        quote! {
-            Default::default()
+    });
+    quote! {
+        match self {
+            #(#context),*
         }
     }
 }
