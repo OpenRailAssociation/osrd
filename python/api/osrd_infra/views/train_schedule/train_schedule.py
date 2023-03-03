@@ -53,17 +53,18 @@ class TrainScheduleView(
                 break
 
         serializer.save()
-
         if not simulation_needed:
             return Response(serializer.data)
-
         # Create backend request payload
         request_payload = create_backend_request_payload([train_schedule])
         # Run standalone simulation
         response_payload = run_simulation(request_payload)
-        # Process simulation response
-        process_simulation_response(train_schedule.timetable.infra, [train_schedule], response_payload)
-        train_schedule.save()
+        simulation_output = process_simulation_response(
+            train_schedule.timetable.infra, [train_schedule], response_payload
+        )[0]
+        with transaction.atomic():
+            SimulationOutput.objects.filter(train_schedule=train_schedule).delete()
+            simulation_output.save()
         return Response(serializer.data)
 
     @action(detail=True)

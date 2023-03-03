@@ -57,9 +57,8 @@ def create_simulation_report(
         return res
 
     # Add margins and eco results if available
-    sim_log = simulation_output.eco_simulation
     res["eco"] = convert_simulation_results(
-        sim_log,
+        simulation_output.eco_simulation,
         train_path_payload,
         projection,
         projection_path_payload,
