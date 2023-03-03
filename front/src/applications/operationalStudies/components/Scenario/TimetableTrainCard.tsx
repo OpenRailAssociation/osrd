@@ -91,7 +91,7 @@ export default function TimetableTrainCard({
         >
           <MdContentCopy />
         </button>
-        <button className="scenario-timetable-train-buttons-update" type="button">
+        <button className="scenario-timetable-train-buttons-update d-none" type="button">
           <FaPencilAlt />
         </button>
         <button
