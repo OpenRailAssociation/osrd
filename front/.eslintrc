@@ -1,4 +1,7 @@
 {
+  "env": {
+    "browser": true
+},
   "extends": [
     "plugin:vitest/recommended",
     "airbnb",

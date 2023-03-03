@@ -15,7 +15,6 @@ function createChart(
   keyValues,
   heightOfSpeedSpaceChart,
   ref,
-  _dispatch,
   setResetChart
 ) {
   d3.select(`#${CHART_ID}`).remove();
@@ -78,7 +77,6 @@ function drawTrain(
   LIST_VALUES_NAME_SPEED_SPACE,
   simulation,
   selectedTrain,
-
   dataSimulation,
   keyValues,
   positionValues,
@@ -89,7 +87,6 @@ function drawTrain(
   setYPosition,
   setZoomLevel,
   yPosition,
-  dispatch,
   zoomLevel,
   CHART_ID,
   chart,
@@ -229,28 +226,6 @@ function drawTrain(
         );
       });
     }
-    // Operational points
-    /*
-    drawOPs(simulation, selectedTrain, rotate, chartLocal);
-
-    enableInteractivity(
-      chartLocal,
-      dataSimulation,
-      dispatch,
-      keyValues,
-      LIST_VALUES_NAME_SPEED_SPACE,
-      positionValues,
-      rotate,
-      setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      zoomLevel
-    );
-
-    setChart(chartLocal);
-    dispatch(updateMustRedraw(false));
-    */
   }
 }
 

@@ -5,7 +5,8 @@ import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
 import { Rnd } from 'react-rnd';
 import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
-import enableInteractivity, {
+import {
+  isolatedEnableInteractivity,
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
@@ -30,7 +31,6 @@ const CHART_MIN_HEIGHT = 250;
   const {
     simulation,
     chartXGEV,
-    dispatch,
     mustRedraw,
     positionValues,
     selectedTrain,
@@ -41,6 +41,8 @@ const CHART_MIN_HEIGHT = 250;
     onSetSettings,
     onSetBaseHeightOfSpeedSpaceChart,
     dispatchUpdateMustRedraw,
+    dispatchUpdateTimePositionValues,
+    simulationIsPlaying,
   } = props;
 
   const [showSettings, setShowSettings] = useState(false);
@@ -84,7 +86,6 @@ const CHART_MIN_HEIGHT = 250;
       keyValues,
       heightOfSpeedSpaceChart,
       ref,
-      dispatch,
       setResetChart
     );
     setChart(localChart);
@@ -102,7 +103,6 @@ const CHART_MIN_HEIGHT = 250;
       setYPosition,
       setZoomLevel,
       yPosition,
-      dispatch,
       zoomLevel,
       CHART_ID,
       localChart,
@@ -115,7 +115,6 @@ const CHART_MIN_HEIGHT = 250;
   }, [
     chart,
     dataSimulation,
-    dispatch,
     heightOfSpeedSpaceChart,
     keyValues,
     localSettings,
@@ -156,7 +155,6 @@ const CHART_MIN_HEIGHT = 250;
         keyValues,
         heightOfSpeedSpaceChart,
         ref,
-        dispatch,
         setResetChart
       )
     );
@@ -183,7 +181,6 @@ const CHART_MIN_HEIGHT = 250;
         keyValues,
         heightOfSpeedSpaceChart,
         ref,
-        dispatch,
         setResetChart
       )
     );
@@ -191,19 +188,16 @@ const CHART_MIN_HEIGHT = 250;
 
   // plug event handlers once the chart is ready or recreated
   useEffect(() => {
-    enableInteractivity(
+    isolatedEnableInteractivity(
       chart,
       dataSimulation,
-      dispatch,
       keyValues,
       LIST_VALUES_NAME_SPEED_SPACE,
-      positionValues,
       rotate,
       setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      zoomLevel
+      simulationIsPlaying,
+      dispatchUpdateMustRedraw,
+      dispatchUpdateTimePositionValues
     );
   }, [chart]);
 
@@ -330,10 +324,6 @@ const CHART_MIN_HEIGHT = 250;
 SpeedSpaceChart.propTypes = {
   dispatchUpdateMustRedraw: PropTypes.func,
   /**
-   * height of chart
-   */
-  heightOfSpeedSpaceChart: PropTypes.number,
-  /**
    * current simulation (selected train) ! to be removed
    */
   simulation: PropTypes.object,
@@ -341,10 +331,6 @@ SpeedSpaceChart.propTypes = {
    * Current X linear scale for synced charts
    */
   chartXGEV: PropTypes.func,
-  /**
-   * Dispath to store func
-   */
-  dispatch: PropTypes.func,
   /**
    * Force d3 render trigger ! To be removed
    */
@@ -369,25 +355,25 @@ SpeedSpaceChart.propTypes = {
    * Current Simulation with more data (for current train)
    */
   consolidatedSimulation: PropTypes.array,
-  /**
-   * Toggle the Settings div ! Not isolated
-   */
-  toggleSetting: PropTypes.func,
+  initialHeightOfSpeedSpaceChart: PropTypes.number.isRequired,
+  onSetSettings: PropTypes.func,
+  onSetBaseHeightOfSpeedSpaceChart: PropTypes.func,
+  dispatchUpdateTimePositionValues: PropTypes.func,
+  simulationIsPlaying: PropTypes.bool,
 };
 
 SpeedSpaceChart.defaultProps = {
-  heightOfSpeedSpaceChart: 250,
   simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   chartXGEV: undefined,
-  dispatch: () => {},
   mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
   speedSpaceSettings: ORSD_GEV_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
-  toggleSetting: () => {},
   onSetSettings: () => {},
-  dispatchUpdateMustRedraw: () => {},
   onSetBaseHeightOfSpeedSpaceChart: () => {},
+  dispatchUpdateMustRedraw: () => {},
+  dispatchUpdateTimePositionValues: () => {},
+  simulationIsPlaying: false,
 };

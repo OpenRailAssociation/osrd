@@ -1,7 +1,11 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
-import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
+import {
+  updateMustRedraw,
+  updateSpeedSpaceSettings,
+  updateTimePositionValues,
+} from 'reducers/osrdsimulation/actions';
+import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
 import SpeedSpaceChart from './SpeedSpaceChart';
 
 /**
@@ -21,8 +25,17 @@ const withOSRDData = (Component) =>
     const consolidatedSimulation = useSelector(
       (state) => state.osrdsimulation.consolidatedSimulation
     );
+    const isPlaying = useSelector(getIsPlaying);
 
     const dispatch = useDispatch();
+
+    const dispatchUpdateMustRedraw = (newMustRedraw) => {
+      dispatch(updateMustRedraw(newMustRedraw));
+    };
+
+    const dispatchUpdateTimePositionValues = (newTimePositionValues) => {
+      dispatch(updateTimePositionValues(newTimePositionValues));
+    };
 
     const toggleSetting = (settingName) => {
       dispatch(
@@ -40,13 +53,15 @@ const withOSRDData = (Component) =>
         simulation={simulation}
         chartXGEV={chartXGEV}
         mustRedraw={mustRedraw}
-        dispatch={dispatch}
+        dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
+        dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
         positionValues={positionValues}
         selectedTrain={selectedTrain}
         speedSpaceSettings={speedSpaceSettings}
         timePosition={timePosition}
         consolidatedSimulation={consolidatedSimulation}
         toggleSetting={toggleSetting}
+        simulationIsPlaying={isPlaying}
       />
     );
   };
