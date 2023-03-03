@@ -187,8 +187,14 @@ fn compute_path(
     let get_length = |track: &String| track_sections[track].unwrap_track_section().length;
     let success = |step: &PathfindingStep| step.found;
     let successors = |step: &PathfindingStep| {
-        // The successor is our ending location
+        // The successor is our on ending track
         if step.track == input.ending.track.0 {
+            // If we aren't in the good direction to reach the ending position, it's a dead end
+            if step.direction == Direction::StartToStop && step.position > input.ending.position
+                || step.direction == Direction::StopToStart && step.position < input.ending.position
+            {
+                return vec![];
+            }
             return vec![(
                 PathfindingStep::new(
                     step.track.clone(),
