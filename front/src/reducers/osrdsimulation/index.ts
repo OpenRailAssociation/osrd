@@ -97,6 +97,7 @@ export const initialState: OsrdSimulationState = {
 // eslint-disable-next-line default-param-last
 export default function reducer(inputState: OsrdSimulationState | undefined, action: AnyAction) {
   const state = inputState || initialState;
+  let currentTrainSimulation;
   return produce(state, (draft) => {
     if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action);
     switch (action.type) {
@@ -132,6 +133,16 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         break;
       case UPDATE_SELECTED_TRAIN:
         draft.selectedTrain = action.selectedTrain;
+        currentTrainSimulation = state.consolidatedSimulation.find(
+          (consolidatedSimulation: SimulationTrain) =>
+            consolidatedSimulation.trainNumber === draft.selectedTrain
+        );
+        draft.positionValues = interpolateOnTime(
+          currentTrainSimulation,
+          ['time'],
+          LIST_VALUES_NAME_SPACE_TIME,
+          state.timePosition
+        );
         break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:
         draft.departureArrivalTimes = action.departureArrivalTimes;
@@ -169,7 +180,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_TIME_POSITION_VALUES: {
         draft.timePosition = action.timePosition;
         // position value will be computed depending on current data simulation
-        const currentTrainSimulation = state.consolidatedSimulation.find(
+        currentTrainSimulation = state.consolidatedSimulation.find(
           (consolidatedSimulation: SimulationTrain) =>
             consolidatedSimulation.trainNumber === state.selectedTrain
         );

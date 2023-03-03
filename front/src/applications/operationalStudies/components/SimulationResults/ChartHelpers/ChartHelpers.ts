@@ -294,7 +294,6 @@ export const interpolateOnTime = <ListValues extends string, Time = number>(
   };
   const bisect = d3.bisector<ObjectWithGivenKey, Time>((d) => d[keyValues[0]]).left;
   const positionInterpolated = {} as Record<ListValues, PositionSpeed<Time>>;
-
   listValues.forEach((listValue) => {
     let bisection;
     if (dataSimulation?.[listValue]) {
