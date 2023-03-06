@@ -7,12 +7,11 @@
 use crate::error::Result;
 use crate::tables::osrd_infra_document;
 use crate::DbPool;
-use actix_web::http::header::ContentType;
 use actix_web::web::{block, Data};
-use diesel::expression_methods::ExpressionMethods;
 use diesel::result::Error as DieselError;
 use diesel::{insert_into, QueryDsl, RunQueryDsl};
 use editoast_derive::EditoastError;
+use diesel::ExpressionMethods;
 use thiserror::Error;
 
 #[derive(Debug, Error, EditoastError)]
@@ -85,17 +84,17 @@ impl Document {
     ///
     /// ```rust
     /// let image: Vec<u8> = ...;
-    /// let doc = Document::insert(db_pool, ContentType::png(), image).await?;
+    /// let doc = Document::insert(db_pool, "image/png", image).await?;
     /// let doc_key = doc.get_key(); // Can be used as a foreign key
     /// ```
     #[allow(dead_code)] // TODO: Remove once it's used by studies
-    pub async fn insert(
+    pub async fn insert<T: AsRef<str>>(
         db_pool: Data<DbPool>,
-        content_type: ContentType,
+        content_type: T,
         data: Vec<u8>,
     ) -> Result<Document> {
         let form = DocumentForm {
-            content_type: content_type.essence_str().to_string(),
+            content_type: content_type.as_ref().into(),
             data,
         };
         block::<_, Result<_>>(move || {
@@ -155,7 +154,7 @@ mod tests {
         let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
         let data = "Test Data".as_bytes().to_vec();
 
-        let doc = Document::insert(pool.clone(), ContentType::plaintext(), data)
+        let doc = Document::insert(pool.clone(), ContentType::plaintext().essence_str(), data)
             .await
             .unwrap();
 
