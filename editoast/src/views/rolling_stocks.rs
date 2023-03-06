@@ -9,10 +9,6 @@ pub fn routes() -> impl HttpServiceFactory {
     web::scope("/rolling_stock").service(get)
 }
 
-/// =================================
-/// Endpoints
-/// =================================
-
 /// Return a specific set of electrical profiles
 #[get("/{rolling_stock}")]
 async fn get(db_pool: Data<DbPool>, rolling_stock: Path<i64>) -> Result<Json<RollingStock>> {

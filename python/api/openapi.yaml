@@ -277,6 +277,7 @@ paths:
           description: No content
   /rolling_stock/:
     get:
+      deprecated: true
       tags:
         - rolling_stock
       summary: Paginated list of rolling stock
