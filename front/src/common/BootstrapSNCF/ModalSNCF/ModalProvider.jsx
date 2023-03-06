@@ -1,4 +1,5 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const ModalContext = createContext({
   isModalOpen: false,
@@ -16,6 +17,7 @@ export function ModalProvider({ children }) {
   const [size, setSize] = useState(undefined);
   const [optionalClasses, setOptionalClasses] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const location = useLocation();
 
   const openModal = (content, sizeSetting = undefined, optionalClassesSetting = '') => {
     setModalContent(content);
@@ -34,6 +36,11 @@ export function ModalProvider({ children }) {
     document.body.classList.remove('modal-open');
     setIsVisible(false);
   };
+
+  // close modal on route change
+  useEffect(() => {
+    closeModal();
+  }, [location]);
 
   return (
     <ModalContext.Provider
