@@ -134,17 +134,15 @@ mod tests {
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::PgConnection;
-    use std::fs;
 
     #[actix_test]
     async fn create_get_delete_rolling_stock() {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(2).build(manager).unwrap());
 
-        let path = "./src/tests/example_rolling_stock.json";
-        let data = fs::read_to_string(path).expect("Unable to read file");
         let rolling_stock_form: RollingStockForm =
-            serde_json::from_str(&data).expect("Unable to parse");
+            serde_json::from_str(&include_str!("../tests/example_rolling_stock.json"))
+                .expect("Unable to parse");
 
         let rolling_stock = RollingStock::create(db_pool.clone(), rolling_stock_form)
             .await
