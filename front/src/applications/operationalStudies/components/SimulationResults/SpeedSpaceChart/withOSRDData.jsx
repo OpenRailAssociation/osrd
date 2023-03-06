@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   updateMustRedraw,
@@ -6,6 +6,7 @@ import {
   updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
 import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
+import prepareData from './prepareData';
 import SpeedSpaceChart from './SpeedSpaceChart';
 
 /**
@@ -47,16 +48,21 @@ const withOSRDData = (Component) =>
       dispatch(updateMustRedraw(true));
     };
 
+    // Prepare data
+    const trainSimulation = useMemo(
+      () => prepareData(simulation, selectedTrain),
+      [simulation, selectedTrain]
+    );
+
     return (
       <Component
         {...props}
-        simulation={simulation}
+        trainSimulation={trainSimulation}
         chartXGEV={chartXGEV}
         mustRedraw={mustRedraw}
         dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
         dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
         positionValues={positionValues}
-        selectedTrain={selectedTrain}
         speedSpaceSettings={speedSpaceSettings}
         timePosition={timePosition}
         consolidatedSimulation={consolidatedSimulation}

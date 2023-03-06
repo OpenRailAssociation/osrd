@@ -1,83 +1,5 @@
-const ORSD_GEV_SAMPLE_DATA = {
-  chart: {
-    width: 1864,
-    height: 369,
-    margin: {
-      top: 1,
-      right: 1,
-      bottom: 30,
-      left: 55,
-    },
-    xAxis: {
-      _groups: [[{}]],
-      _parents: [null],
-    },
-    xAxisGrid: {
-      _groups: [[{}]],
-      _parents: [null],
-    },
-    yAxis: {
-      _groups: [[{}]],
-      _parents: [null],
-    },
-    yAxisGrid: {
-      _groups: [[{}]],
-      _parents: [null],
-    },
-    svg: {
-      _groups: [
-        [
-          {
-            __on: [
-              {
-                type: 'click',
-                name: '',
-              },
-              {
-                type: 'mouseover',
-                name: '',
-              },
-              {
-                type: 'mousemove',
-                name: '',
-              },
-              {
-                type: 'wheel',
-                name: '',
-              },
-              {
-                type: 'wheel',
-                name: 'zoom',
-                options: {
-                  passive: false,
-                },
-              },
-              {
-                type: 'mousedown',
-                name: 'zoom',
-              },
-              {
-                type: 'dblclick',
-                name: 'zoom',
-              },
-            ],
-            __zoom: {
-              k: 1,
-              x: 0,
-              y: 0,
-            },
-          },
-        ],
-      ],
-      _parents: [null],
-    },
-    drawZone: {
-      _groups: [[{}]],
-      _parents: [null],
-    },
-    rotate: false,
-  },
-  isPlaying: false,
+// data sample for GET and GEV
+const ORSD_GRAPH_SAMPLE_DATA = {
   allowancesSettings: {
     16: {
       base: true,
@@ -86,7 +8,6 @@ const ORSD_GEV_SAMPLE_DATA = {
       ecoBlocks: false,
     },
   },
-  mustRedraw: false,
   positionValues: {
     headPosition: {
       position: 40.79330208661017,
@@ -133,670 +54,7 @@ const ORSD_GEV_SAMPLE_DATA = {
     maxSpeed: true,
     slopes: false,
   },
-  signalBase: 'BAL3',
   timePosition: '1900-01-01T08:30:44.897Z',
-  consolidatedSimulation: [
-    {
-      id: 16,
-      name: 'total',
-      trainNumber: 0,
-      headPosition: [
-        [
-          {
-            time: '1900-01-01T08:30:39.000Z',
-            position: 0,
-          },
-          {
-            time: '1900-01-01T08:30:41.000Z',
-            position: 5.426054740359632,
-          },
-          {
-            time: '1900-01-01T08:30:45.000Z',
-            position: 41.72807921688059,
-          },
-          {
-            time: '1900-01-01T08:30:49.000Z',
-            position: 100.01430606310873,
-          },
-          {
-            time: '1900-01-01T08:30:53.000Z',
-            position: 174.18222411167721,
-          },
-          {
-            time: '1900-01-01T08:30:57.000Z',
-            position: 261.31197574861244,
-          },
-          {
-            time: '1900-01-01T08:31:01.000Z',
-            position: 359.5959218875846,
-          },
-          {
-            time: '1900-01-01T08:31:05.000Z',
-            position: 467.759190267137,
-          },
-          {
-            time: '1900-01-01T08:31:11.000Z',
-            position: 646.4656234538966,
-          },
-          {
-            time: '1900-01-01T08:34:58.000Z',
-            position: 8238.133993178684,
-          },
-          {
-            time: '1900-01-01T08:35:07.000Z',
-            position: 8508.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:13.000Z',
-            position: 8673.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:21.000Z',
-            position: 8865.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:29.000Z',
-            position: 9025.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:37.000Z',
-            position: 9153.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:43.000Z',
-            position: 9228.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:51.000Z',
-            position: 9300.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:59.000Z',
-            position: 9340.245104289796,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            position: 9349.245104289796,
-          },
-        ],
-      ],
-      tailPosition: [
-        [
-          {
-            time: '1900-01-01T08:30:39.000Z',
-            position: 0,
-          },
-          {
-            time: '1900-01-01T08:30:41.000Z',
-            position: 0,
-          },
-          {
-            time: '1900-01-01T08:30:45.000Z',
-            position: 21.448079216880586,
-          },
-          {
-            time: '1900-01-01T08:30:49.000Z',
-            position: 79.73430606310873,
-          },
-          {
-            time: '1900-01-01T08:30:53.000Z',
-            position: 153.9022241116772,
-          },
-          {
-            time: '1900-01-01T08:30:57.000Z',
-            position: 241.03197574861244,
-          },
-          {
-            time: '1900-01-01T08:31:01.000Z',
-            position: 339.31592188758464,
-          },
-          {
-            time: '1900-01-01T08:31:05.000Z',
-            position: 447.479190267137,
-          },
-          {
-            time: '1900-01-01T08:31:11.000Z',
-            position: 626.1856234538966,
-          },
-          {
-            time: '1900-01-01T08:34:58.000Z',
-            position: 8217.853993178684,
-          },
-          {
-            time: '1900-01-01T08:35:07.000Z',
-            position: 8487.965104289795,
-          },
-          {
-            time: '1900-01-01T08:35:13.000Z',
-            position: 8652.965104289795,
-          },
-          {
-            time: '1900-01-01T08:35:21.000Z',
-            position: 8844.965104289795,
-          },
-          {
-            time: '1900-01-01T08:35:29.000Z',
-            position: 9004.965104289795,
-          },
-          {
-            time: '1900-01-01T08:35:37.000Z',
-            position: 9132.965104289795,
-          },
-          {
-            time: '1900-01-01T08:35:43.000Z',
-            position: 9207.965104289795,
-          },
-          {
-            time: '1900-01-01T08:35:51.000Z',
-            position: 9279.965104289795,
-          },
-          {
-            time: '1900-01-01T08:35:59.000Z',
-            position: 9319.965104289795,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            position: 9328.965104289795,
-          },
-        ],
-      ],
-      routeEndOccupancy: [
-        [
-          {
-            time: '1900-01-01T08:30:43.000Z',
-            position: 0,
-          },
-          {
-            time: '1900-01-01T08:31:06.000Z',
-            position: 0,
-          },
-          {
-            time: '1900-01-01T08:31:06.000Z',
-            position: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:35:24.000Z',
-            position: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:35:24.000Z',
-            position: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            position: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            position: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            position: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            position: 9349.245104289796,
-          },
-        ],
-      ],
-      routeBeginOccupancy: [
-        [
-          {
-            time: '1900-01-01T08:30:39.000Z',
-            position: 0,
-          },
-          {
-            time: '1900-01-01T08:30:39.000Z',
-            position: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:31:05.000Z',
-            position: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:31:05.000Z',
-            position: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:32:54.000Z',
-            position: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:32:54.000Z',
-            position: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:35:23.000Z',
-            position: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:35:23.000Z',
-            position: 9349.245104289796,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            position: 9349.245104289796,
-          },
-        ],
-      ],
-      routeAspects: [
-        {
-          signal_id: 'SA1',
-          route_id: 'rt.DA1->DA7_2',
-          time_start: '1900-01-01T08:31:05.000Z',
-          time_end: '1900-01-01T08:32:55.000Z',
-          position_start: 477.46298045501817,
-          position_end: 4107.462980455019,
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-        },
-        {
-          signal_id: 'SA1',
-          route_id: 'rt.DA1->DA7_2',
-          time_start: '1900-01-01T08:32:55.000Z',
-          time_end: '1900-01-01T08:35:24.000Z',
-          position_start: 477.46298045501817,
-          position_end: 4107.462980455019,
-          color: 'rgba(255, 255, 0, 255)',
-          blinking: false,
-        },
-        {
-          signal_id: 'SA1',
-          route_id: 'rt.DA1->DA7_2',
-          time_start: '1900-01-01T08:30:47.000Z',
-          time_end: '1900-01-01T08:31:05.000Z',
-          position_start: 477.46298045501817,
-          position_end: 4107.462980455019,
-          color: 'rgba(0, 255, 0, 255)',
-          blinking: false,
-        },
-        {
-          signal_id: 'SA7_2r',
-          route_id: 'rt.DA7_2->DA7_5',
-          time_start: '1900-01-01T08:32:54.000Z',
-          time_end: '1900-01-01T08:35:24.000Z',
-          position_start: 4107.462980455019,
-          position_end: 8907.462980455019,
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-        },
-        {
-          signal_id: 'SA7_2r',
-          route_id: 'rt.DA7_2->DA7_5',
-          time_start: '1900-01-01T08:35:24.000Z',
-          time_end: '1900-01-01T08:36:06.000Z',
-          position_start: 4107.462980455019,
-          position_end: 8907.462980455019,
-          color: 'rgba(255, 255, 0, 255)',
-          blinking: false,
-        },
-        {
-          signal_id: 'SA7_2r',
-          route_id: 'rt.DA7_2->DA7_5',
-          time_start: '1900-01-01T08:32:42.000Z',
-          time_end: '1900-01-01T08:32:54.000Z',
-          position_start: 4107.462980455019,
-          position_end: 8907.462980455019,
-          color: 'rgba(0, 255, 0, 255)',
-          blinking: false,
-        },
-        {
-          signal_id: 'SA7_5r',
-          route_id: 'rt.DA7_5->DA6',
-          time_start: '1900-01-01T08:35:23.000Z',
-          time_end: '1900-01-01T08:36:06.000Z',
-          position_start: 8907.462980455019,
-          position_end: 9349.245104289796,
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-        },
-        {
-          signal_id: 'SA7_5r',
-          route_id: 'rt.DA7_5->DA6',
-          time_start: '1900-01-01T08:35:07.000Z',
-          time_end: '1900-01-01T08:35:23.000Z',
-          position_start: 8907.462980455019,
-          position_end: 9349.245104289796,
-          color: 'rgba(0, 255, 0, 255)',
-          blinking: false,
-        },
-      ],
-      signalAspects: [
-        {
-          signal_id: 'SA7_5r',
-          time_start: '1900-01-01T08:35:23.000Z',
-          time_end: '1900-01-01T08:36:06.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'S',
-        },
-        {
-          signal_id: 'SA7_2',
-          time_start: '1900-01-01T08:31:05.000Z',
-          time_end: '1900-01-01T08:32:55.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'S',
-        },
-        {
-          signal_id: 'SA7_3',
-          time_start: '1900-01-01T08:31:05.000Z',
-          time_end: '1900-01-01T08:32:54.000Z',
-          color: 'rgba(255, 255, 0, 255)',
-          blinking: false,
-          aspect_label: 'S A',
-        },
-        {
-          signal_id: 'SA7_3',
-          time_start: '1900-01-01T08:32:54.000Z',
-          time_end: '1900-01-01T08:35:24.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'S',
-        },
-        {
-          signal_id: 'SA7_1',
-          time_start: '1900-01-01T08:31:05.000Z',
-          time_end: '1900-01-01T08:32:55.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'S',
-        },
-        {
-          signal_id: 'SA7_1',
-          time_start: '1900-01-01T08:32:55.000Z',
-          time_end: '1900-01-01T08:36:06.000Z',
-          color: 'rgba(255, 255, 0, 255)',
-          blinking: false,
-          aspect_label: 'S A',
-        },
-        {
-          signal_id: 'SA7_5',
-          time_start: '1900-01-01T08:32:54.000Z',
-          time_end: '1900-01-01T08:35:24.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'S',
-        },
-        {
-          signal_id: 'SA7_2r',
-          time_start: '1900-01-01T08:32:54.000Z',
-          time_end: '1900-01-01T08:35:24.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'S',
-        },
-        {
-          signal_id: 'SA7_2r',
-          time_start: '1900-01-01T08:35:24.000Z',
-          time_end: '1900-01-01T08:36:06.000Z',
-          color: 'rgba(255, 255, 0, 255)',
-          blinking: false,
-          aspect_label: 'S A',
-        },
-        {
-          signal_id: 'SA7_4',
-          time_start: '1900-01-01T08:32:54.000Z',
-          time_end: '1900-01-01T08:35:24.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'S',
-        },
-        {
-          signal_id: 'SA1',
-          time_start: '1900-01-01T08:31:05.000Z',
-          time_end: '1900-01-01T08:32:55.000Z',
-          color: 'rgba(255, 0, 0, 255)',
-          blinking: false,
-          aspect_label: 'CARRE',
-        },
-        {
-          signal_id: 'SA1',
-          time_start: '1900-01-01T08:32:55.000Z',
-          time_end: '1900-01-01T08:35:24.000Z',
-          color: 'rgba(255, 255, 0, 255)',
-          blinking: false,
-          aspect_label: 'CARRE A',
-        },
-        {
-          signal_id: 'SA7_5r',
-          time_start: '1900-01-01T08:35:07.000Z',
-          time_end: '1900-01-01T08:35:23.000Z',
-          color: 'rgba(0, 255, 0, 255)',
-          blinking: false,
-          aspect_label: 'S VL',
-        },
-        {
-          signal_id: 'SA1',
-          time_start: '1900-01-01T08:30:47.000Z',
-          time_end: '1900-01-01T08:31:05.000Z',
-          color: 'rgba(0, 255, 0, 255)',
-          blinking: false,
-          aspect_label: 'CARRE VL',
-        },
-        {
-          signal_id: 'SA7_2r',
-          time_start: '1900-01-01T08:32:42.000Z',
-          time_end: '1900-01-01T08:32:54.000Z',
-          color: 'rgba(0, 255, 0, 255)',
-          blinking: false,
-          aspect_label: 'S VL',
-        },
-      ],
-      areaBlock: [
-        [
-          {
-            time: '1900-01-01T08:30:43.000Z',
-            value0: 0,
-            value1: 0,
-          },
-          {
-            time: '1900-01-01T08:30:39.000Z',
-            value0: 0,
-            value1: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:30:39.000Z',
-            value0: 0,
-            value1: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:31:06.000Z',
-            value0: 0,
-            value1: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:31:06.000Z',
-            value0: 477.46298045501817,
-            value1: 477.46298045501817,
-          },
-          {
-            time: '1900-01-01T08:31:05.000Z',
-            value0: 477.46298045501817,
-            value1: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:31:05.000Z',
-            value0: 477.46298045501817,
-            value1: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:35:24.000Z',
-            value0: 477.46298045501817,
-            value1: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:35:24.000Z',
-            value0: 4107.462980455019,
-            value1: 4107.462980455019,
-          },
-          {
-            time: '1900-01-01T08:32:54.000Z',
-            value0: 4107.462980455019,
-            value1: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:32:54.000Z',
-            value0: 4107.462980455019,
-            value1: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            value0: 4107.462980455019,
-            value1: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            value0: 8907.462980455019,
-            value1: 8907.462980455019,
-          },
-          {
-            time: '1900-01-01T08:35:23.000Z',
-            value0: 8907.462980455019,
-            value1: 9349.245104289796,
-          },
-          {
-            time: '1900-01-01T08:35:23.000Z',
-            value0: 8907.462980455019,
-            value1: 9349.245104289796,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            value0: 8907.462980455019,
-            value1: 9349.245104289796,
-          },
-          {
-            time: '1900-01-01T08:36:06.000Z',
-            value0: 9349.245104289796,
-            value1: 9349.245104289796,
-          },
-        ],
-      ],
-      speed: [
-        {
-          time: '1900-01-01T08:30:39.000Z',
-          speed: 0,
-          position: 0,
-        },
-        {
-          time: '1900-01-01T08:30:41.000Z',
-          speed: 5.426054740359583,
-          position: 5.426054740359583,
-        },
-        {
-          time: '1900-01-01T08:30:43.000Z',
-          speed: 9.315338129894915,
-          position: 20.16744761061408,
-        },
-        {
-          time: '1900-01-01T08:30:45.000Z',
-          speed: 12.24529347637165,
-          position: 41.728079216880644,
-        },
-        {
-          time: '1900-01-01T08:30:47.000Z',
-          speed: 14.653763328200775,
-          position: 68.62713602145307,
-        },
-        {
-          time: '1900-01-01T08:30:49.000Z',
-          speed: 16.73340671345493,
-          position: 100.01430606310878,
-        },
-        {
-          time: '1900-01-01T08:30:53.000Z',
-          speed: 20.263887629643204,
-          position: 174.1822241116772,
-        },
-        {
-          time: '1900-01-01T08:30:57.000Z',
-          speed: 23.245696950370917,
-          position: 261.31197574861255,
-        },
-        {
-          time: '1900-01-01T08:31:03.000Z',
-          speed: 27.055980970687834,
-          position: 412.50871042488404,
-        },
-        {
-          time: '1900-01-01T08:31:09.000Z',
-          speed: 30.318700005818712,
-          position: 584.8335602944686,
-        },
-        {
-          time: '1900-01-01T08:31:15.000Z',
-          speed: 33.333333333333336,
-          position: 785.9212736535599,
-        },
-        {
-          time: '1900-01-01T08:34:58.000Z',
-          speed: 33.333333333333336,
-          position: 8238.133993178684,
-        },
-        {
-          time: '1900-01-01T08:35:07.000Z',
-          speed: 29,
-          position: 8508.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:15.000Z',
-          speed: 25,
-          position: 8724.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:23.000Z',
-          speed: 21,
-          position: 8908.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:31.000Z',
-          speed: 17,
-          position: 9060.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:39.000Z',
-          speed: 13,
-          position: 9180.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:47.000Z',
-          speed: 9,
-          position: 9268.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:51.000Z',
-          speed: 7,
-          position: 9300.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:55.000Z',
-          speed: 5,
-          position: 9324.245104289796,
-        },
-        {
-          time: '1900-01-01T08:35:59.000Z',
-          speed: 3,
-          position: 9340.245104289796,
-        },
-        {
-          time: '1900-01-01T08:36:01.000Z',
-          speed: 2,
-          position: 9345.245104289796,
-        },
-        {
-          time: '1900-01-01T08:36:03.000Z',
-          speed: 1,
-          position: 9348.245104289796,
-        },
-        {
-          time: '1900-01-01T08:36:06.000Z',
-          speed: 0,
-          position: 9349.245104289796,
-        },
-      ],
-    },
-  ],
   departureArrivalTimes: [
     {
       labels: [],
@@ -2820,6 +2078,545 @@ const ORSD_GEV_SAMPLE_DATA = {
     },
     future: [],
   },
+  selectedTrainSimulation: {
+    speed: [
+      {
+        time: 31200,
+        speed: 0,
+        position: 0,
+      },
+      {
+        time: 31202,
+        speed: 19.5337970652945,
+        position: 5.426054740359583,
+      },
+      {
+        time: 31204,
+        speed: 33.5352172676217,
+        position: 20.16744761061408,
+      },
+      {
+        time: 31206,
+        speed: 44.083056514937944,
+        position: 41.728079216880644,
+      },
+      {
+        time: 31208,
+        speed: 52.75354798152279,
+        position: 68.62713602145307,
+      },
+      {
+        time: 31210,
+        speed: 60.24026416843775,
+        position: 100.01430606310878,
+      },
+      {
+        time: 31214,
+        speed: 72.94999546671554,
+        position: 174.1822241116772,
+      },
+      {
+        time: 31218,
+        speed: 83.6845090213353,
+        position: 261.31197574861255,
+      },
+      {
+        time: 31224,
+        speed: 97.4015314944762,
+        position: 412.50871042488404,
+      },
+      {
+        time: 31230,
+        speed: 109.14732002094736,
+        position: 584.8335602944686,
+      },
+      {
+        time: 31236.313033008424,
+        speed: 120.00000000000001,
+        position: 785.9212736535599,
+      },
+      {
+        time: 31459.879414594176,
+        speed: 120.00000000000001,
+        position: 8238.133993178684,
+      },
+      {
+        time: 31468.546081260843,
+        speed: 104.4,
+        position: 8508.245104289796,
+      },
+      {
+        time: 31476.546081260843,
+        speed: 90,
+        position: 8724.245104289796,
+      },
+      {
+        time: 31484.546081260843,
+        speed: 75.60000000000001,
+        position: 8908.245104289796,
+      },
+      {
+        time: 31492.546081260843,
+        speed: 61.2,
+        position: 9060.245104289796,
+      },
+      {
+        time: 31500.546081260843,
+        speed: 46.800000000000004,
+        position: 9180.245104289796,
+      },
+      {
+        time: 31508.546081260843,
+        speed: 32.4,
+        position: 9268.245104289796,
+      },
+      {
+        time: 31512.546081260843,
+        speed: 25.2,
+        position: 9300.245104289796,
+      },
+      {
+        time: 31516.546081260843,
+        speed: 18,
+        position: 9324.245104289796,
+      },
+      {
+        time: 31520.546081260843,
+        speed: 10.8,
+        position: 9340.245104289796,
+      },
+      {
+        time: 31522.546081260843,
+        speed: 7.2,
+        position: 9345.245104289796,
+      },
+      {
+        time: 31524.546081260843,
+        speed: 3.6,
+        position: 9348.245104289796,
+      },
+      {
+        time: 31527.546081260843,
+        speed: 0,
+        position: 9349.245104289796,
+      },
+    ],
+    margins_speed: [],
+    eco_speed: [],
+    areaBlock: [
+      {
+        position: 0,
+        value0: 0,
+        value1: [0],
+      },
+      {
+        position: 5.426054740359583,
+        value0: 19.5337970652945,
+        value1: [0],
+      },
+      {
+        position: 20.16744761061408,
+        value0: 33.5352172676217,
+        value1: [0],
+      },
+      {
+        position: 41.728079216880644,
+        value0: 44.083056514937944,
+        value1: [0],
+      },
+      {
+        position: 68.62713602145307,
+        value0: 52.75354798152279,
+        value1: [0],
+      },
+      {
+        position: 100.01430606310878,
+        value0: 60.24026416843775,
+        value1: [0],
+      },
+      {
+        position: 174.1822241116772,
+        value0: 72.94999546671554,
+        value1: [0],
+      },
+      {
+        position: 261.31197574861255,
+        value0: 83.6845090213353,
+        value1: [0],
+      },
+      {
+        position: 412.50871042488404,
+        value0: 97.4015314944762,
+        value1: [0],
+      },
+      {
+        position: 584.8335602944686,
+        value0: 109.14732002094736,
+        value1: [0],
+      },
+      {
+        position: 785.9212736535599,
+        value0: 120.00000000000001,
+        value1: [0],
+      },
+      {
+        position: 8238.133993178684,
+        value0: 120.00000000000001,
+        value1: [0],
+      },
+      {
+        position: 8508.245104289796,
+        value0: 104.4,
+        value1: [0],
+      },
+      {
+        position: 8724.245104289796,
+        value0: 90,
+        value1: [0],
+      },
+      {
+        position: 8908.245104289796,
+        value0: 75.60000000000001,
+        value1: [0],
+      },
+      {
+        position: 9060.245104289796,
+        value0: 61.2,
+        value1: [0],
+      },
+      {
+        position: 9180.245104289796,
+        value0: 46.800000000000004,
+        value1: [0],
+      },
+      {
+        position: 9268.245104289796,
+        value0: 32.4,
+        value1: [0],
+      },
+      {
+        position: 9300.245104289796,
+        value0: 25.2,
+        value1: [0],
+      },
+      {
+        position: 9324.245104289796,
+        value0: 18,
+        value1: [0],
+      },
+      {
+        position: 9340.245104289796,
+        value0: 10.8,
+        value1: [0],
+      },
+      {
+        position: 9345.245104289796,
+        value0: 7.2,
+        value1: [0],
+      },
+      {
+        position: 9348.245104289796,
+        value0: 3.6,
+        value1: [0],
+      },
+      {
+        position: 9349.245104289796,
+        value0: 0,
+        value1: [0],
+      },
+    ],
+    vmax: [
+      {
+        speed: 120.00000000000001,
+        position: 0,
+      },
+      {
+        speed: 120.00000000000001,
+        position: 9349.245104289796,
+      },
+    ],
+    slopesCurve: [
+      {
+        height: 0,
+        position: 0,
+      },
+      {
+        height: 0,
+        position: 4707.462980455019,
+      },
+      {
+        height: -25.714285714285715,
+        position: 5007.462980455019,
+      },
+      {
+        height: -94.28571428571428,
+        position: 5407.462980455019,
+      },
+      {
+        height: -120.00000000000001,
+        position: 5707.462980455019,
+      },
+      {
+        height: -120.00000000000001,
+        position: 7707.462980455019,
+      },
+      {
+        height: -94.28571428571429,
+        position: 8007.462980455019,
+      },
+      {
+        height: -25.714285714285726,
+        position: 8407.462980455019,
+      },
+      {
+        height: -9.516197353929914e-15,
+        position: 8707.462980455019,
+      },
+    ],
+    slopesHistogram: [
+      {
+        position: 0,
+        gradient: 0,
+      },
+      {
+        position: 4707.462980455019,
+        gradient: 0,
+      },
+      {
+        position: 4707.462980455019,
+        gradient: -12,
+      },
+      {
+        position: 5007.462980455019,
+        gradient: -12,
+      },
+      {
+        position: 5007.462980455019,
+        gradient: -24,
+      },
+      {
+        position: 5407.462980455019,
+        gradient: -24,
+      },
+      {
+        position: 5407.462980455019,
+        gradient: -12,
+      },
+      {
+        position: 5707.462980455019,
+        gradient: -12,
+      },
+      {
+        position: 5707.462980455019,
+        gradient: 0,
+      },
+      {
+        position: 7707.462980455019,
+        gradient: 0,
+      },
+      {
+        position: 7707.462980455019,
+        gradient: 12,
+      },
+      {
+        position: 8007.462980455019,
+        gradient: 12,
+      },
+      {
+        position: 8007.462980455019,
+        gradient: 24,
+      },
+      {
+        position: 8407.462980455019,
+        gradient: 24,
+      },
+      {
+        position: 8407.462980455019,
+        gradient: 12,
+      },
+      {
+        position: 8707.462980455019,
+        gradient: 12,
+      },
+      {
+        position: 8707.462980455019,
+        gradient: 0,
+      },
+      {
+        position: 9349.245104289796,
+        gradient: 0,
+      },
+    ],
+    areaSlopesHistogram: [
+      {
+        position: 0,
+        value0: 0,
+        value1: [0],
+      },
+      {
+        position: 4707.462980455019,
+        value0: 0,
+        value1: [0],
+      },
+      {
+        position: 4707.462980455019,
+        value0: -12,
+        value1: [0],
+      },
+      {
+        position: 5007.462980455019,
+        value0: -12,
+        value1: [0],
+      },
+      {
+        position: 5007.462980455019,
+        value0: -24,
+        value1: [0],
+      },
+      {
+        position: 5407.462980455019,
+        value0: -24,
+        value1: [0],
+      },
+      {
+        position: 5407.462980455019,
+        value0: -12,
+        value1: [0],
+      },
+      {
+        position: 5707.462980455019,
+        value0: -12,
+        value1: [0],
+      },
+      {
+        position: 5707.462980455019,
+        value0: 0,
+        value1: [0],
+      },
+      {
+        position: 7707.462980455019,
+        value0: 0,
+        value1: [0],
+      },
+      {
+        position: 7707.462980455019,
+        value0: 12,
+        value1: [0],
+      },
+      {
+        position: 8007.462980455019,
+        value0: 12,
+        value1: [0],
+      },
+      {
+        position: 8007.462980455019,
+        value0: 24,
+        value1: [0],
+      },
+      {
+        position: 8407.462980455019,
+        value0: 24,
+        value1: [0],
+      },
+      {
+        position: 8407.462980455019,
+        value0: 12,
+        value1: [0],
+      },
+      {
+        position: 8707.462980455019,
+        value0: 12,
+        value1: [0],
+      },
+      {
+        position: 8707.462980455019,
+        value0: 0,
+        value1: [0],
+      },
+      {
+        position: 9349.245104289796,
+        value0: 0,
+        value1: [0],
+      },
+    ],
+    curvesHistogram: [
+      {
+        radius: 0,
+        position: 0,
+      },
+      {
+        radius: 0,
+        position: 9349.245104289796,
+      },
+    ],
+    modesAndProfiles: [
+      {
+        start: 0,
+        stop: 900,
+        used_mode: '1500',
+        used_profile: 'O',
+      },
+      {
+        start: 900,
+        stop: 1200,
+        used_mode: '1500',
+        used_profile: 'A',
+      },
+      {
+        start: 1200,
+        stop: 1350,
+        used_mode: '1500',
+        used_profile: 'O',
+      },
+      {
+        start: 1350,
+        stop: 3400,
+        used_mode: '1500',
+        used_profile: 'B1',
+      },
+      {
+        start: 3400,
+        stop: 3900,
+        used_mode: '1500',
+        used_profile: 'E',
+      },
+      {
+        start: 3900,
+        stop: 4800,
+        used_mode: '25000',
+        used_profile: 'B',
+      },
+      {
+        start: 4800,
+        stop: 4950,
+        used_mode: '1500',
+        used_profile: 'O',
+      },
+      {
+        start: 4950,
+        stop: 7600,
+        used_mode: '1500',
+      },
+      {
+        start: 7600,
+        stop: 7850,
+        used_mode: '25000',
+        used_profile: '25000',
+      },
+      {
+        start: 7850,
+        stop: 8500,
+        used_mode: '25000',
+        used_profile: '20000',
+      },
+      {
+        start: 8500,
+        stop: 9350,
+        used_mode: '25000',
+        used_profile: '22500',
+      },
+    ],
+  },
 };
 
-export default ORSD_GEV_SAMPLE_DATA;
+export default ORSD_GRAPH_SAMPLE_DATA;

@@ -5,6 +5,7 @@ import { defineLinear } from 'applications/operationalStudies/components/Simulat
 import * as d3 from 'd3';
 import { createProfileSegment } from 'applications/operationalStudies/consts';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
+import { SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
 
 function createChart(
   CHART_ID,
@@ -12,7 +13,6 @@ function createChart(
   resetChart,
   dataSimulation,
   rotate,
-  keyValues,
   heightOfSpeedSpaceChart,
   ref,
   setResetChart
@@ -22,7 +22,11 @@ function createChart(
     chart === undefined || resetChart
       ? defineLinear(
           d3.max(Object.values(dataSimulation), (data) =>
-            d3.max(data, (d) => d[rotate ? keyValues[1] : keyValues[0]] + 100)
+            d3.max(
+              data,
+              (d) =>
+                d[rotate ? SPEED_SPACE_CHART_KEY_VALUES[1] : SPEED_SPACE_CHART_KEY_VALUES[0]] + 100
+            )
           )
         )
       : chart.x;
@@ -30,7 +34,11 @@ function createChart(
     chart === undefined || resetChart
       ? defineLinear(
           d3.max(Object.values(dataSimulation), (data) =>
-            d3.max(data, (d) => d[rotate ? keyValues[0] : keyValues[1]] + 50)
+            d3.max(
+              data,
+              (d) =>
+                d[rotate ? SPEED_SPACE_CHART_KEY_VALUES[0] : SPEED_SPACE_CHART_KEY_VALUES[1]] + 50
+            )
           )
         )
       : chart.y;
@@ -48,7 +56,7 @@ function createChart(
     defineY,
     ref,
     rotate,
-    keyValues,
+    SPEED_SPACE_CHART_KEY_VALUES,
     CHART_ID
   );
 }
@@ -73,36 +81,10 @@ function drawAxisTitle(chart, rotate) {
     .text('M');
 }
 
-function drawTrain(
-  LIST_VALUES_NAME_SPEED_SPACE,
-  simulation,
-  selectedTrain,
-  dataSimulation,
-  keyValues,
-  positionValues,
-  rotate,
-  speedSpaceSettings,
-  mustRedraw,
-  setChart,
-  setYPosition,
-  setZoomLevel,
-  yPosition,
-  zoomLevel,
-  CHART_ID,
-  chart,
-  resetChart,
-  heightOfSpeedSpaceChart,
-  ref,
-  setResetChart,
-  force = false
-) {
-  if (chart && (mustRedraw || force)) {
+function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
+  if (chart) {
     const chartLocal = chart;
     chartLocal.drawZone.select('g').remove();
-    /*
-      chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
-      drawAxisTitle(chartLocal, rotate);
-      */
     chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
     drawAxisTitle(chartLocal, rotate);
 
@@ -112,7 +94,7 @@ function drawTrain(
       dataSimulation.areaBlock,
       'speedSpaceChart',
       'curveLinear',
-      keyValues,
+      SPEED_SPACE_CHART_KEY_VALUES,
       rotate
     );
 
@@ -122,7 +104,7 @@ function drawTrain(
       dataSimulation.speed,
       'speedSpaceChart',
       'curveLinear',
-      keyValues,
+      SPEED_SPACE_CHART_KEY_VALUES,
       'speed',
       rotate
     );
@@ -133,7 +115,7 @@ function drawTrain(
         dataSimulation.margins_speed,
         'speedSpaceChart',
         'curveLinear',
-        keyValues,
+        SPEED_SPACE_CHART_KEY_VALUES,
         'margins_speed',
         rotate
       );
@@ -145,7 +127,7 @@ function drawTrain(
         dataSimulation.eco_speed,
         'speedSpaceChart',
         'curveLinear',
-        keyValues,
+        SPEED_SPACE_CHART_KEY_VALUES,
         'eco_speed',
         rotate
       );
@@ -157,7 +139,7 @@ function drawTrain(
         dataSimulation.vmax,
         'speedSpaceChart',
         'curveLinear',
-        keyValues,
+        SPEED_SPACE_CHART_KEY_VALUES,
         'vmax',
         rotate
       );

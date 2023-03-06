@@ -360,10 +360,10 @@ const enableInteractivity = (
   drawGuideLines(chart);
 };
 
-// keyValues ['time', 'position']
+// keyValues ['time', 'position'] or ['position', 'speed']
 export const isolatedEnableInteractivity = (
   chart,
-  dataSimulation,
+  selectedTrainData,
   keyValues,
   listValues,
   rotate,
@@ -416,7 +416,7 @@ export const isolatedEnableInteractivity = (
 
         debounceUpdateTimePositionValues(timePositionLocal, 15);
         const immediatePositionsValuesForPointer = interpolateOnTime(
-          dataSimulation,
+          selectedTrainData,
           keyValues,
           LIST_VALUES_NAME_SPACE_TIME,
           timePositionLocal
@@ -427,9 +427,13 @@ export const isolatedEnableInteractivity = (
         const positionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
-        const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
+        const timePositionLocal = interpolateOnPosition(
+          selectedTrainData,
+          keyValues,
+          positionLocal
+        );
         const immediatePositionsValuesForPointer = interpolateOnTime(
-          dataSimulation,
+          selectedTrainData,
           keyValues,
           LIST_VALUES_NAME_SPEED_SPACE,
           datetime2sec(timePositionLocal)

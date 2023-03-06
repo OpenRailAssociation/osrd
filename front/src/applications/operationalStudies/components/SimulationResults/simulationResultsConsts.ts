@@ -12,9 +12,13 @@ export const LIST_VALUES_NAME_SPEED_SPACE = ['speed', 'margins_speed', 'eco_spee
 export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = ['slopesCurve'];
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 
+// CHARTS
+
 export const TIME = 'time';
 export const POSITION = 'position';
+export const SPEED = 'speed';
 export const KEY_VALUES_FOR_SPACE_TIME_CHART = [TIME, POSITION];
+export const SPEED_SPACE_CHART_KEY_VALUES = [POSITION, SPEED];
 
 // Signal Base is the Signaling system chosen for results display
 

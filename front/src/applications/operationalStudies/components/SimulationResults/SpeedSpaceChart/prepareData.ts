@@ -2,6 +2,7 @@ import { mergeDatasAreaConstant } from 'applications/operationalStudies/componen
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
 import { ModesAndProfiles, SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
 
 export interface GevPreparedata {
   speed: Record<string, number>[];
@@ -16,13 +17,8 @@ export interface GevPreparedata {
   modesAndProfiles: ModesAndProfiles[];
 }
 
-// called with keyValues
-// ['position', 'speed']
-function prepareData(
-  simulation: SimulationSnapshot,
-  selectedTrain: number,
-  keyValues: string[]
-): GevPreparedata {
+// SpeedSpaceChart only
+function prepareData(simulation: SimulationSnapshot, selectedTrain: number): GevPreparedata {
   const dataSimulation: GevPreparedata = {
     speed: [],
     margins_speed: [],
@@ -56,7 +52,11 @@ function prepareData(
       speed: step.speed * 3.6,
     }));
   }
-  dataSimulation.areaBlock = mergeDatasAreaConstant(dataSimulation.speed, [0], keyValues);
+  dataSimulation.areaBlock = mergeDatasAreaConstant(
+    dataSimulation.speed,
+    [0],
+    SPEED_SPACE_CHART_KEY_VALUES
+  );
   dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map((step) => ({
     speed: step.speed * 3.6,
     position: step.position,
