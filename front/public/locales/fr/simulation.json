@@ -1,10 +1,6 @@
 {
   "allowances": "Marges",
-  "choosePath": "Utiliser ce chemin",
-  "copy": "copie",
   "departureTime": "Départ",
-  "delete": "Supprimer",
-  "duplicate": "Dupliquer",
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Calcul de marche impossible"
   },

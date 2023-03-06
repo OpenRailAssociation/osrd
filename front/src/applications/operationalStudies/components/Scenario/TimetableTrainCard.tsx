@@ -36,7 +36,7 @@ export default function TimetableTrainCard({
   selectPathProjection,
   duplicateTrain,
 }: Props) {
-  const { t } = useTranslation(['simulation']);
+  const { t } = useTranslation(['operationalStudies/scenario']);
 
   return (
     <div className={`scenario-timetable-train ${isSelected ? 'selected' : ''}`}>
@@ -78,7 +78,7 @@ export default function TimetableTrainCard({
         <button
           className="scenario-timetable-train-buttons-selectprojection"
           type="button"
-          title={t('simulation:choosePath')}
+          title={t('timetable.choosePath')}
           onClick={() => selectPathProjection(train)}
         >
           <GiPathDistance />
@@ -86,19 +86,23 @@ export default function TimetableTrainCard({
         <button
           className="scenario-timetable-train-buttons-duplicate"
           type="button"
-          title={t('simulation:duplicate')}
+          title={t('timetable.duplicate')}
           onClick={() => duplicateTrain(train)}
         >
           <MdContentCopy />
         </button>
-        <button className="scenario-timetable-train-buttons-update d-none" type="button">
+        <button
+          className="scenario-timetable-train-buttons-update"
+          type="button"
+          title={t('timetable.update')}
+        >
           <FaPencilAlt />
         </button>
         <button
           className="scenario-timetable-train-buttons-delete"
           type="button"
           onClick={() => deleteTrain(train)}
-          title={t('simulation:delete')}
+          title={t('timetable.delete')}
         >
           <FaTrash />
         </button>

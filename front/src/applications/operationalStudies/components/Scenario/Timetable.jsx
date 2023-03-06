@@ -43,7 +43,7 @@ export default function Timetable(props) {
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState();
   const dispatch = useDispatch();
-  const { t } = useTranslation('operationalStudies/scenario');
+  const { t } = useTranslation(['operationalStudies/scenario']);
 
   const debouncedTerm = useDebounce(filter, 500);
 
@@ -58,7 +58,7 @@ export default function Timetable(props) {
       getTimetable(timetableID);
       dispatch(
         setSuccess({
-          title: t('timetable:trainDeleted', { name: train.name }),
+          title: t('timetable.trainDeleted', { name: train.name }),
           text: '',
         })
       );
@@ -75,7 +75,7 @@ export default function Timetable(props) {
 
   const duplicateTrain = async (train) => {
     // Static for now, will be dynamic when UI will be ready
-    const trainName = `${train.name} (${t('copy')})`;
+    const trainName = `${train.name} (${t('timetable.copy')})`;
     const trainDelta = 5;
     const trainCount = 1;
     const trainStep = 5;
@@ -108,7 +108,7 @@ export default function Timetable(props) {
       getTimetable(timetableID);
       dispatch(
         setSuccess({
-          title: t('osrdconf:trainAdded'),
+          title: t('timetable.trainAdded'),
           text: `${trainName}`,
         })
       );
