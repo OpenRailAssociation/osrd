@@ -20,6 +20,7 @@ import 'common/Map/Map.scss';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platforms from 'common/Map/Layers/Platforms';
 import { getMapMouseEventNearestFeature } from 'utils/mapboxHelper';
+import { CUSTOM_ATTRIBUTION } from '../../../../common/Map/const';
 
 export default function Map(props) {
   const { viewport, setViewport, setClickedFeature } = props;
@@ -88,7 +89,7 @@ export default function Map(props) {
       touchZoomRotate
     >
       <VirtualLayers />
-      <AttributionControl className="attribution-control" customAttribution="©SNCF Réseau" />
+      <AttributionControl className="attribution-control" customAttribution={CUSTOM_ATTRIBUTION} />
       <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
       <Background

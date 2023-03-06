@@ -17,6 +17,7 @@ import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { RootState } from 'reducers';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import Background from '../../common/Map/Layers/Background';
 import OSM from '../../common/Map/Layers/OSM';
 import Hillshade from '../../common/Map/Layers/Hillshade';
@@ -222,7 +223,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           }}
         >
           <VirtualLayers />
-          <AttributionControl position="bottom-right" customAttribution="©SNCF Réseau" />
+          <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
           <ScaleControl
             maxWidth={100}
             unit="metric"
