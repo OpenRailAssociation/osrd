@@ -37,6 +37,7 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { MapLayerMouseEvent } from '../../types';
 
 import 'common/Map/Map.scss';
@@ -127,7 +128,7 @@ function Map() {
         touchZoomRotate
       >
         <VirtualLayers />
-        <AttributionControl customAttribution="©SNCF Réseau" />
+        <AttributionControl customAttribution={CUSTOM_ATTRIBUTION} />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background
