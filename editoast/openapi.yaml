@@ -896,6 +896,23 @@ paths:
         200:
           description: A document of any type (can be an image, a pdf...)
 
+  /documents/:
+    post:
+      tags:
+        - documents
+      summary: Add a document
+      responses:
+        201:
+          description: The key of the added document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document_key:
+                    type: integer
+                    example: 42
+
 components:
   schemas:
     Infra:
