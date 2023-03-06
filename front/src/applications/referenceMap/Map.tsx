@@ -50,8 +50,8 @@ function Map() {
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => {
-      dispatch(updateViewport(value, '/map'));
+    (value, updateRouter = false) => {
+      dispatch(updateViewport(value, '/map', updateRouter));
     },
     [dispatch]
   );
@@ -113,6 +113,7 @@ function Map() {
         style={{ width: '100%', height: '100%' }}
         mapStyle={osmBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
+        onMoveEnd={(e) => updateViewportChange(e.viewState, true)}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onResize={(e) => {

@@ -181,7 +181,11 @@ function updateViewportAction(viewport: Partial<Viewport>) {
 }
 
 // Functions
-export function updateViewport(viewport: Partial<Viewport>, baseUrl?: string, updateRouter = true) {
+export function updateViewport(
+  viewport: Partial<Viewport>,
+  baseUrl?: string,
+  updateRouter = false
+) {
   return (dispatch: Dispatch, getState: () => { map: MapState }) => {
     dispatch(updateViewportAction(viewport));
     if (baseUrl !== undefined && updateRouter) {
