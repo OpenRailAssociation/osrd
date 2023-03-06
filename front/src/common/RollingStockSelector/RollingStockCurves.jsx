@@ -31,7 +31,7 @@ function LegendComfortSwitches(props) {
   const changeComfortState = (id) => {
     setComfortsStates({ ...comfortsStates, [id]: !comfortsStates[id] });
   };
-  return curvesComfortList ? (
+  return curvesComfortList.length > 1 ? (
     <span className="d-flex">
       {curvesComfortList.map((comfort) => (
         <span
@@ -47,7 +47,11 @@ function LegendComfortSwitches(props) {
         </span>
       ))}
     </span>
-  ) : null;
+  ) : (
+    <span className="curves-chart-legend-comfort-button active">
+      {comfort2pictogram(curvesComfortList[0])}
+    </span>
+  );
 }
 
 function Legend(props) {
@@ -56,7 +60,8 @@ function Legend(props) {
     setCurvesState({ ...curvesState, [id]: !curvesState[id] });
   };
 
-  return (
+  if (!curves.length) return null;
+  return curves.length > 1 ? (
     <span className="d-flex">
       {curves.map((curve) => (
         <span
@@ -71,6 +76,14 @@ function Legend(props) {
           {curve.comfort !== 'STANDARD' ? comfort2pictogram(curve.comfort) : null}
         </span>
       ))}
+    </span>
+  ) : (
+    <span
+      className="curves-chart-legend-item"
+      style={curvesState[curves[0].id] ? { borderColor: curves[0].color } : null}
+    >
+      {curves[0].mode}
+      {curves[0].comfort !== 'STANDARD' ? comfort2pictogram(curves[0].comfort) : null}
     </span>
   );
 }
