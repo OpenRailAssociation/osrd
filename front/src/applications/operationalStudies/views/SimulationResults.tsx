@@ -208,11 +208,11 @@ export default function SimulationResults() {
             <div
               role="button"
               tabIndex={-1}
-              className="btn-selected-train d-flex align-items-center mb-2"
+              className="btn osrd-config-item-container d-flex align-items-center mb-2 font-weight-bold"
               onClick={toggleAllowancesDisplay}
             >
               {t('simulation:allowances')}
-              <i className="icons-arrow-down ml-auto" />
+              <i className="icons-arrow-down m-auto" />
             </div>
           )}
 
