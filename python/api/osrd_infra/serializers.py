@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from osrd_schemas.rolling_stock import ComfortType
 from rest_framework import serializers
@@ -21,7 +21,7 @@ from osrd_infra.models import (
     Scenario,
     Study,
     Timetable,
-    TrainScheduleModel,
+    TrainSchedule,
 )
 from osrd_infra.models.electrical_profiles import ElectricalProfileSet
 
@@ -170,26 +170,17 @@ class TimetableSerializer(ModelSerializer):
 
 class TrainScheduleSerializer(ModelSerializer):
     class Meta:
-        model = TrainScheduleModel
-        exclude = [
-            "mrsp",
-            "base_simulation",
-            "eco_simulation",
-            "modes_and_profiles",
-        ]
+        model = TrainSchedule
+        fields = "__all__"
 
 
 class StandaloneSimulationSerializer(Serializer):
     class Schedule(ModelSerializer):
         class Meta:
-            model = TrainScheduleModel
+            model = TrainSchedule
             exclude = [
                 "timetable",
                 "path",
-                "mrsp",
-                "base_simulation",
-                "eco_simulation",
-                "modes_and_profiles",
             ]
 
     timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())
@@ -200,15 +191,15 @@ class StandaloneSimulationSerializer(Serializer):
         path = data["path"]
         timetable = data["timetable"]
         if path.infra != timetable.infra:
-            raise serializers.ValidationError("path and timteable doesn't have the same infra")
+            raise serializers.ValidationError("path and timetable doesn't have the same infra")
         return data
 
-    def create(self, validated_data) -> list[TrainScheduleModel]:
+    def create(self, validated_data) -> List[TrainSchedule]:
         schedules = []
         timetable = validated_data["timetable"]
         path = validated_data["path"]
         for schedule in validated_data["schedules"]:
-            schedules.append(TrainScheduleModel(timetable=timetable, path=path, **schedule))
+            schedules.append(TrainSchedule(timetable=timetable, path=path, **schedule))
         return schedules
 
 

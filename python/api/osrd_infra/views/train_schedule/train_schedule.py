@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.http import Http404
 from rest_framework import mixins
 from rest_framework.decorators import action
@@ -6,7 +7,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import PathModel, TrainScheduleModel
+from osrd_infra.models import PathModel, SimulationOutput, TrainSchedule
 from osrd_infra.serializers import (
     StandaloneSimulationSerializer,
     TrainScheduleSerializer,
@@ -26,11 +27,11 @@ class TrainScheduleView(
     mixins.DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = TrainScheduleModel.objects.all()
+    queryset = TrainSchedule.objects.all()
     serializer_class = TrainScheduleSerializer
 
     def update(self, request, *args, **kwargs):
-        train_schedule: TrainScheduleModel = self.get_object()
+        train_schedule: TrainSchedule = self.get_object()
         serializer = self.get_serializer(train_schedule, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
@@ -52,17 +53,18 @@ class TrainScheduleView(
                 break
 
         serializer.save()
-
         if not simulation_needed:
             return Response(serializer.data)
-
         # Create backend request payload
         request_payload = create_backend_request_payload([train_schedule])
         # Run standalone simulation
         response_payload = run_simulation(request_payload)
-        # Process simulation response
-        process_simulation_response(train_schedule.timetable.infra, [train_schedule], response_payload)
-        train_schedule.save()
+        simulation_output = process_simulation_response(
+            train_schedule.timetable.infra, [train_schedule], response_payload
+        )[0]
+        with transaction.atomic():
+            SimulationOutput.objects.filter(train_schedule=train_schedule).delete()
+            simulation_output.save()
         return Response(serializer.data)
 
     @action(detail=True)
@@ -89,7 +91,7 @@ class TrainScheduleView(
             raise ParseError("duplicate train_ids")
 
         # get the schedules from database
-        schedules = TrainScheduleModel.objects.filter(pk__in=train_ids)
+        schedules = TrainSchedule.objects.filter(pk__in=train_ids)
 
         # if some schedules were not found, raise an error
         schedules_map = {schedule.id: schedule for schedule in schedules}
@@ -129,8 +131,14 @@ class TrainScheduleView(
         response_payload = run_simulation(request_payload)
 
         # Process simulation response
-        process_simulation_response(train_schedules[0].timetable.infra, train_schedules, response_payload)
+        simulation_outputs = process_simulation_response(
+            train_schedules[0].timetable.infra, train_schedules, response_payload
+        )
 
-        # Save results
-        TrainScheduleModel.objects.bulk_create(train_schedules)
+        with transaction.atomic():
+            # Save inputs
+            TrainSchedule.objects.bulk_create(train_schedules)
+            # Save outputs
+            SimulationOutput.objects.bulk_create(simulation_outputs)
+
         return Response({"ids": [schedule.id for schedule in train_schedules]}, status=201)

@@ -9,9 +9,10 @@ from osrd_infra.models import (  # misc; timetable
     Project,
     RollingStock,
     Scenario,
+    SimulationOutput,
     Study,
     Timetable,
-    TrainScheduleModel,
+    TrainSchedule,
 )
 
 
@@ -29,7 +30,8 @@ admin.site.register(
         ElectricalProfileSet,
         # timetable
         Timetable,
-        TrainScheduleModel,
+        TrainSchedule,
+        SimulationOutput,
         # study
         Document,
         Scenario,
