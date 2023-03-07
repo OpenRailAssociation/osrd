@@ -46,7 +46,7 @@ jobs:
       - name: Setup rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           override: true
 
       - name: Load cached target
@@ -94,7 +94,7 @@ jobs:
       - name: Setup toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           components: rustfmt, clippy
           override: true
 

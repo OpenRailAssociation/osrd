@@ -1,5 +1,6 @@
 FROM rust:latest as chef
 WORKDIR /app
+RUN rustup override set nightly
 RUN cargo install cargo-chef
 
 FROM chef as planner

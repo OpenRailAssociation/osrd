@@ -1,3 +1,4 @@
+#![feature(alloc_error_hook)]
 #[macro_use]
 extern crate diesel;
 
@@ -30,6 +31,7 @@ use infra::Infra;
 use infra_cache::InfraCache;
 use map::MapLayers;
 use sentry::ClientInitGuard;
+use std::alloc::{set_alloc_error_hook, Layout};
 use std::env;
 use std::error::Error;
 use std::fs::File;
@@ -38,6 +40,11 @@ use std::process::exit;
 use views::search::config::Config as SearchConfig;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+
+/// Custom hook to return a message when editoast runs oom
+fn custom_alloc_error_hook(layout: Layout) {
+    panic!("Memory allocation of {} bytes failed", layout.size());
+}
 
 #[actix_web::main]
 async fn main() {
@@ -94,6 +101,7 @@ async fn runserver(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    set_alloc_error_hook(custom_alloc_error_hook);
     println!("Building server...");
     // Config databases
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
