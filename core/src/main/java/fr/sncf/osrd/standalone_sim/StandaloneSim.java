@@ -46,7 +46,6 @@ public class StandaloneSim {
                 var mrsp = MRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
                 var speedLimits = MRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
                 mrsp = driverBehaviour.applyToMRSP(mrsp);
-                speedLimits = driverBehaviour.applyToMRSP(speedLimits);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base

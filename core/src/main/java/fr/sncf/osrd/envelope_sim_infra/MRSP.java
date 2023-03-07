@@ -53,7 +53,6 @@ public class MRSP {
                 if (addRollingStockLength) {
                     end += rollingStock.length;
                 }
-                begin = Math.max(0, begin);
                 end = Math.min(pathLength, end);
                 var speed = speedRange.getValue().getSpeedLimit(tag);
                 if (Double.isInfinite(speed) || speed == 0)
