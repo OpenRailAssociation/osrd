@@ -52,12 +52,11 @@ public class MRSP {
                 var end = offset + interval.upperEndpoint();
                 if (addRollingStockLength) {
                     end += rollingStock.length;
+                    end = Math.min(pathLength, end);
                 }
-                end = Math.min(pathLength, end);
                 var speed = speedRange.getValue().getSpeedLimit(tag);
                 if (Double.isInfinite(speed) || speed == 0)
                     continue;
-
                 // Add the envelope part corresponding to the restricted speed section
                 builder.addPart(EnvelopePart.generateTimes(
                         List.of(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT),
