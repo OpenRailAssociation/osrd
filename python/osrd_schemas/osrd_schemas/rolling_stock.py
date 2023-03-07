@@ -113,7 +113,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     infrastructure for some trains. These train-specific restrictions are given a code.
     To respect the prescribed power restrictions, the driver has to change the power notch used in the train, which
     changes the power consumption of the train, akin to a car's gear.
-    In our model, we consider that the power notches of a train and the associated power restriction codes are equivalent.
+    In our model, we consider that trains' power notches and the associated power restriction codes are equivalent.
     Thus power restrictions affect the effort curves, and change the power class of the rolling stock.
     """
 
