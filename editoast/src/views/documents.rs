@@ -5,11 +5,11 @@ use actix_http::StatusCode;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
 use actix_web::web::{scope, Bytes, Data, Header, Path};
-use actix_web::{get, post, HttpResponse};
+use actix_web::{delete, get, post, HttpResponse};
 use serde_json::json;
 
 pub fn routes() -> impl HttpServiceFactory {
-    scope("/documents").service((get, post))
+    scope("/documents").service((get, post, delete))
 }
 
 #[get("/{document_key}")]
@@ -36,6 +36,12 @@ async fn post(
     Ok(HttpResponse::build(StatusCode::CREATED).json(json!( {
         "document_key": doc.get_key(),
     })))
+}
+
+#[delete("/{document_key}")]
+async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpResponse> {
+    Document::delete(db_pool, document_key.into_inner()).await?;
+    Ok(HttpResponse::build(StatusCode::NO_CONTENT).body(""))
 }
 
 impl Document {
@@ -135,12 +141,10 @@ mod tests {
     }
 
     #[actix_test]
-    async fn document_post() {
+    async fn document_post_and_delete() {
         let service = create_test_service().await;
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
-        // Insert data
+        // Insert document
         let request = TestRequest::post()
             .uri("/documents")
             .insert_header(ContentType::plaintext())
@@ -149,8 +153,9 @@ mod tests {
         let response: PostDocumentResponse = call_and_read_body_json(&service, request).await;
 
         // Delete the document
-        Document::delete(pool.clone(), response.document_key)
-            .await
-            .unwrap();
+        let request = TestRequest::delete()
+            .uri(format!("/documents/{}", response.document_key).as_str())
+            .to_request();
+        assert!(call_service(&service, request).await.status().is_success());
     }
 }

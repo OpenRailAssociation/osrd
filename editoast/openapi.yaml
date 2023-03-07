@@ -880,7 +880,7 @@ paths:
                   "1500": ["A", "B", "C"]
                   "25000": ["25000", "22500", "20000"]
 
-  /documents/{key}:
+  /documents/{key}/:
     get:
       tags:
         - documents
@@ -890,11 +890,25 @@ paths:
           name: key
           schema:
             type: integer
-          description: A key identifying the document, often given by another endpoint
+          description: A key identifying the document
           required: true
       responses:
         200:
           description: A document of any type (can be an image, a pdf...)
+    delete:
+      tags:
+        - documents
+      summary: Delete a document
+      parameters:
+        - in: path
+          name: key
+          schema:
+            type: integer
+          description: A key identifying the document
+          required: true
+      responses:
+        204:
+          description: No content
 
   /documents/:
     post:
