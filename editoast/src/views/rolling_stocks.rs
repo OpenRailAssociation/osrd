@@ -3,7 +3,7 @@ use crate::schema::rolling_stock::RollingStock;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{self, block, Data, Json, Path};
+use actix_web::web::{self, Data, Json, Path};
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/rolling_stock").service(get)
@@ -12,10 +12,11 @@ pub fn routes() -> impl HttpServiceFactory {
 /// Return a specific set of electrical profiles
 #[get("/{rolling_stock}")]
 async fn get(db_pool: Data<DbPool>, rolling_stock: Path<i64>) -> Result<Json<RollingStock>> {
-    let rolling_stock = rolling_stock.into_inner();
-    block(move || Ok(Json(RollingStock::retrieve(db_pool, rolling_stock)?)))
-        .await
-        .unwrap()
+    let rolling_stock_data = rolling_stock.into_inner();
+    match RollingStock::retrieve(db_pool, rolling_stock_data).await {
+        Ok(rolling_stock) => Ok(Json(rolling_stock)),
+        Err(e) => Err(e),
+    }
 }
 
 #[cfg(test)]
