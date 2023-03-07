@@ -17,7 +17,7 @@ pyproject-flake8 = "^6.0.0.post1"
 [tool.flake8]
 ignore = "W503,E203"
 max-line-length = 120
-exclude = ["__pycache__", "*/migrations/*", "venv/", "config/"]
+exclude = [".venv/"]
 
 [tool.black]
 line-length = 120
