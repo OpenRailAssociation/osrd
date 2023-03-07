@@ -41,7 +41,7 @@ pub enum InfraApiError {
     #[editoast_error(status = 404)]
     NotFound { infra_id: i64 },
 }
-s
+
 impl Infra {
     pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
         match dsl::osrd_infra_infra.find(infra_id).first(conn) {
