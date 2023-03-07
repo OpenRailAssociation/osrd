@@ -109,7 +109,7 @@ public class STDCMEndpoint implements Take {
                     request.gridMarginAfterSTDCM,
                     request.gridMarginBeforeSTDCM
             );
-            DriverBehaviour driverBehaviour = new DriverBehaviour();
+            DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
             double minRunTime = getMinRunTime(
                     infra,
                     rollingStock,
@@ -145,7 +145,7 @@ public class STDCMEndpoint implements Take {
             // Build the response
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
-                    driverBehaviour.applyToMRSP(MRSP.from(res.trainPath(), rollingStock, false, tag))
+                    MRSP.from(res.trainPath(), rollingStock, false, tag)
             ));
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),

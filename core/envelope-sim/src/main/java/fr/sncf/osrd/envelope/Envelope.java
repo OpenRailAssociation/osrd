@@ -117,9 +117,6 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         return minSpeed;
     }
 
-    /** Returns the envelope parts list */
-    public EnvelopePart[] getParts() { return Arrays.copyOf(parts, parts.length); }
-
     // endregion
 
     // region SEARCH

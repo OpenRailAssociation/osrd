@@ -23,7 +23,7 @@ public class DriverBehaviour {
     public Envelope applyToMRSP(Envelope mrsp) {
         var builder = new MRSPEnvelopeBuilder();
         var totalLength = mrsp.getTotalDistance();
-        for(EnvelopePart part: mrsp.getParts()) {
+        for(EnvelopePart part: mrsp) {
             var begin = part.getBeginPos();
             var end = part.getEndPos();
             // compute driver behaviour offsets
