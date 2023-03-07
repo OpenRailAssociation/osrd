@@ -9,17 +9,19 @@ use crate::tables::osrd_infra_document;
 use crate::DbPool;
 use actix_web::web::{block, Data};
 use diesel::result::Error as DieselError;
+use diesel::ExpressionMethods;
 use diesel::{insert_into, QueryDsl, RunQueryDsl};
 use editoast_derive::EditoastError;
-use diesel::ExpressionMethods;
 use thiserror::Error;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "documents")]
 enum DocumentErrors {
-    #[error("Document not found")]
+    #[error("Document '{document_key}' not found")]
     #[editoast_error(status = 404)]
     NotFound { document_key: i64 },
+    #[error("Document '{document_key}' cannot be deleted. It is probably used.")]
+    CanNotDelete { document_key: i64 },
 }
 
 #[derive(Debug, Insertable)]
@@ -128,6 +130,9 @@ impl Document {
             {
                 Ok(1) => Ok(()),
                 Ok(_) => Err(DocumentErrors::NotFound { document_key }.into()),
+                Err(DieselError::DatabaseError { .. }) => {
+                    Err(DocumentErrors::CanNotDelete { document_key }.into())
+                }
                 Err(e) => Err(e.into()),
             }
         })
