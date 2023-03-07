@@ -1,0 +1,8 @@
+{
+  "badJSON": "The JSON file is malformed",
+  "emptyFile": "The file is empty",
+  "noData": "Please import data using the + button",
+  "notJSONFormat": "The file is not in JSON format ",
+  "results": "Results",
+  "uploadFile": "Import"
+}
