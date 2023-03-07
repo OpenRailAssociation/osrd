@@ -144,22 +144,44 @@ const CHART_MIN_HEIGHT = 250;
 
   // Reset Chart Handle (first button on right bottom)
   const resetChartToggle = () => {
-    d3.select(`#${CHART_ID}`).remove();
-    setRotate(false);
-    setChart(
-      createChart(
-        CHART_ID,
-        chart,
-        resetChart,
-        dataSimulation,
-        false,
-        keyValues,
-        heightOfSpeedSpaceChart,
-        ref,
-        dispatch,
-        setResetChart
-      )
+    const localChart = createChart(
+      CHART_ID,
+      chart,
+      resetChart,
+      dataSimulation,
+      false,
+      keyValues,
+      heightOfSpeedSpaceChart,
+      ref,
+      dispatch,
+      setResetChart
     );
+    setChart(localChart);
+    drawTrain(
+      LIST_VALUES_NAME_SPEED_SPACE,
+      simulation,
+      selectedTrain,
+      dataSimulation,
+      keyValues,
+      positionValues,
+      false,
+      localSettings,
+      mustRedraw,
+      setChart,
+      setYPosition,
+      setZoomLevel,
+      yPosition,
+      dispatch,
+      zoomLevel,
+      CHART_ID,
+      localChart,
+      resetChart,
+      heightOfSpeedSpaceChart,
+      ref,
+      setResetChart,
+      true
+    );
+    setRotate(false);
   };
 
   const debounceResize = (interval) => {
