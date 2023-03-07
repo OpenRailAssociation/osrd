@@ -36,6 +36,7 @@ jobs:
         run: |
           cd python/osrd_schemas
           poetry install --only dev
+      - name: Flake8
         run: |
           cd python/osrd_schemas
           poetry run pflake8 --config ./pyproject.toml --output-file flake8.xml --format junit-xml
