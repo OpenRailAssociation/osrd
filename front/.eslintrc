@@ -1,4 +1,7 @@
 {
+  "env": {
+    "browser": true
+  },
   "extends": [
     "plugin:vitest/recommended",
     "airbnb",
@@ -6,7 +9,7 @@
     "plugin:import/typescript",
     "prettier"
   ],
-  "plugins": ["import", "only-warn", "prettier", "react", "react-hooks",   "vitest"],
+  "plugins": ["import", "only-warn", "prettier", "react", "react-hooks", "vitest"],
   "parserOptions": {
     "ecmaVersion": "latest"
   },
