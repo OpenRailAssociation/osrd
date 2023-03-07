@@ -8,7 +8,7 @@ use diesel::expression_methods::ExpressionMethods;
 use diesel::result::Error as DieselError;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Map, Value as JsonValue};
+use serde_json::Value as JsonValue;
 use thiserror::Error;
 
 #[derive(Debug, Insertable, Deserialize)]
@@ -57,16 +57,22 @@ pub struct RollingStock {
 }
 
 impl RollingStock {
-    pub fn retrieve(db_pool: Data<DbPool>, rolling_stock_id: i64) -> Result<RollingStock> {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
-        match dsl::osrd_infra_rollingstock
-            .find(rolling_stock_id)
-            .first(&mut conn)
-        {
-            Ok(rolling_stock) => Ok(rolling_stock),
-            Err(DieselError::NotFound) => Err(RollingStockError::NotFound(rolling_stock_id).into()),
-            Err(e) => Err(e.into()),
-        }
+    pub async fn retrieve(db_pool: Data<DbPool>, rolling_stock_id: i64) -> Result<RollingStock> {
+        block::<_, Result<RollingStock>>(move || {
+            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            match dsl::osrd_infra_rollingstock
+                .find(rolling_stock_id)
+                .first(&mut conn)
+            {
+                Ok(rolling_stock) => Ok(rolling_stock),
+                Err(DieselError::NotFound) => {
+                    Err(RollingStockError::NotFound { rolling_stock_id }.into())
+                }
+                Err(e) => Err(e.into()),
+            }
+        })
+        .await
+        .unwrap()
     }
 
     pub async fn create(
@@ -95,7 +101,7 @@ impl RollingStock {
                 .execute(&mut conn)
             {
                 Ok(1) => Ok(()),
-                Ok(_) => Err(RollingStockError::NotFound(rolling_stock_id).into()),
+                Ok(_) => Err(RollingStockError::NotFound { rolling_stock_id }.into()),
                 Err(e) => Err(e.into()),
             }
         })
@@ -105,24 +111,11 @@ impl RollingStock {
 }
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "rollingstocks", context = "Self::context")]
+#[editoast_error(base_id = "rollingstocks")]
 enum RollingStockError {
-    #[error("Rolling stock '{0}', could not be found")]
+    #[error("Rolling stock '{rolling_stock_id}', could not be found")]
     #[editoast_error(status = 404)]
-    NotFound(i64),
-}
-
-impl RollingStockError {
-    fn context(&self) -> Map<String, JsonValue> {
-        match self {
-            RollingStockError::NotFound(rolling_stock_id) => json!({
-                "rolling_stock_id": rolling_stock_id,
-            })
-            .as_object()
-            .cloned()
-            .unwrap(),
-        }
-    }
+    NotFound { rolling_stock_id: i64 },
 }
 
 #[cfg(test)]
@@ -138,7 +131,7 @@ mod tests {
     #[actix_test]
     async fn create_get_delete_rolling_stock() {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(2).build(manager).unwrap());
+        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
         let rolling_stock_form: RollingStockForm =
             serde_json::from_str(&include_str!("../tests/example_rolling_stock.json"))
@@ -148,8 +141,9 @@ mod tests {
             .await
             .unwrap();
 
-        let rolling_stock_retrieved =
-            RollingStock::retrieve(db_pool.clone(), rolling_stock.id).unwrap();
+        let rolling_stock_retrieved = RollingStock::retrieve(db_pool.clone(), rolling_stock.id)
+            .await
+            .unwrap();
         assert_eq!(rolling_stock_retrieved.id, rolling_stock.id);
 
         RollingStock::delete(db_pool.clone(), rolling_stock.id)
@@ -158,6 +152,7 @@ mod tests {
 
         assert_eq!(
             RollingStock::retrieve(db_pool.clone(), rolling_stock.id)
+                .await
                 .unwrap_err()
                 .get_status(),
             StatusCode::NOT_FOUND
