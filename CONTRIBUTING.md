@@ -8,7 +8,7 @@ If you are brand new to OSRD or open-source development, we recommend chatting w
 
 ## Contribute code
 
-Commit style is detailed in the [osrd.fr/docs](https://osrd.fr/en/docs/guides/contribute/code/).
+Commit style is detailed in the [osrd.fr/docs](https://osrd.fr/en/docs/guides/contribute/code/#git-commit-style).
 
 ### Pull request / code review
 
@@ -38,12 +38,12 @@ Handling the incoming support requests efficiently is thus a top priority.
 - Bug must have a correct description and the bug's issue template must be filled carefully.
 - Bug must be tagged with:
   - `kind:bug`
-  - one or several `area:<affected_area>`
+  - one or several `area:<affected_area>` if possible, if the affected area is not known leave it blank it will be added later by another team member`.
   - one `severity:<bug_severity>` if possible, if severity is not known leave it blank it will be added later by another team member
 - Contributors can change issues' tags (severity, area, kind, ...) if necessary. 
   Keep in mind that explaining why you are editing an issue is the best way to avoid misunderstanding.
 - If you are working on a bug or plan to work on a bug, assign yourself to the bug.
-  If a bug is assigned to someone, consider that they are is already working on the resolution.
+  If a bug is assigned, consider that they are already working on the resolution.
 - PRs solving bugs should add a regression tests to ensure that bug will not be back in the future.
 
 ### General code recommendations
@@ -54,18 +54,20 @@ Handling the incoming support requests efficiently is thus a top priority.
 ### Python
 
 - Follow [the Zen of Python](https://www.python.org/dev/peps/pep-0020/).
-- To keep our API surface minimal, only document and make public what is necessary.
+- To keep our API surface minimal, only make public what is necessary.
+- Documentation should only be there to explain things that aren't self evident.
 - Code is linted with [flake8](https://github.com/csachs/pyproject-flake8).
 - Code is formatted with [Black](https://github.com/psf/black).
 - Imports are sorted with [Isort](https://github.com/PyCQA/isort).
 
 ### Test
 
-- TODO
+- Python tests are written using [pytest](https://docs.pytest.org/).
 
 ### Rust
 
-- To keep our API surface minimal, only document and make public what is necessary.
+- To keep our API surface minimal, only make public what is necessary.
+- Documentation should only be there to explain things that aren't self evident.
 - Use the [documentation example](https://doc.rust-lang.org/rust-by-example/meta/doc.html) to know how to phrase and format your documentation.
 - Code is linted with [clippy](https://github.com/rust-lang/rust-clippy).
 - Code is formatted with [fmt](https://github.com/rust-lang/rustfmt).
@@ -77,6 +79,7 @@ Handling the incoming support requests efficiently is thus a top priority.
 
 ### Java
 
+- To keep our API surface minimal, only make public what is necessary.
 - All public methods must be documented.
   Avoid paraphrasing doc.
 - Code is formatted with [checkstyle](https://checkstyle.sourceforge.io/).
@@ -87,6 +90,8 @@ Handling the incoming support requests efficiently is thus a top priority.
 
 ### Javascript / Typescript / Front
 
+- To keep our API surface minimal, only make public what is necessary.
+- Documentation should only be there to explain things that aren't self evident.
 - When adding new files, write them in TypeScript as there is a goal to move to TypeScript.
 - Code is linted with [eslint](https://eslint.org/).
 - Code is formatted with [prettier](https://prettier.io/).
@@ -96,3 +101,8 @@ Handling the incoming support requests efficiently is thus a top priority.
 - End-to-end tests are required for stable and critical features.
   [Playwright](https://playwright.dev/) is used to write these tests.
 - To write unit test use [vitest](https://vitest.dev/).
+
+### Integration tests
+
+- Integration tests are written using [pytest](https://docs.pytest.org/) under the `/tests` folder.
+- Test as much as you can when adding a new api.
