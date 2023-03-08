@@ -2,6 +2,7 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from osrd_schemas.study import StudyState, StudyType
 
+from osrd_infra.models.documents import Document
 from osrd_infra.models.electrical_profiles import ElectricalProfileSet
 from osrd_infra.models.infra import Infra
 from osrd_infra.models.timetable import Timetable
@@ -13,7 +14,7 @@ class Project(models.Model):
     description = models.CharField(max_length=1024, blank=True, default="")
     funders = ArrayField(models.CharField(max_length=255), blank=True, null=True)
     budget = models.IntegerField(blank=True, null=True)
-    image = models.BinaryField(null=True, blank=True, editable=True)
+    image = models.OneToOneField(Document, related_name="project", null=True, on_delete=models.PROTECT)
     creation_date = models.DateTimeField(editable=False, auto_now_add=True)
     last_modification = models.DateTimeField(auto_now=True)
     tags = ArrayField(models.CharField(max_length=255), blank=True, null=True)
