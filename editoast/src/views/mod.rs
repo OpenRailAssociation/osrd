@@ -4,6 +4,7 @@ mod infra;
 mod layers;
 pub mod pagination;
 pub mod params;
+pub mod projects;
 pub mod rolling_stocks;
 pub mod search;
 
@@ -24,6 +25,7 @@ pub fn routes() -> impl HttpServiceFactory {
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),
+        projects::routes(),
         documents::routes(),
         rolling_stocks::routes(),
     ]
