@@ -42,7 +42,6 @@ pub struct Document {
 impl Document {
     /// Return the primary key of the document
     /// Can be useful for foreign key relations with a document
-    #[allow(dead_code)] // TODO: Remove once it's used by studies
     pub fn get_key(&self) -> i64 {
         self.id
     }
@@ -89,7 +88,6 @@ impl Document {
     /// let doc = Document::insert(db_pool, "image/png", image).await?;
     /// let doc_key = doc.get_key(); // Can be used as a foreign key
     /// ```
-    #[allow(dead_code)] // TODO: Remove once it's used by studies
     pub async fn insert<T: AsRef<str>>(
         db_pool: Data<DbPool>,
         content_type: T,
@@ -121,7 +119,6 @@ impl Document {
     /// let doc_key: i64 = ...;
     /// Document::delete(db_pool, doc_key).await?;
     /// ```
-    #[allow(dead_code)] // TODO: Remove once it's used by studies or rolling stocks
     pub async fn delete(db_pool: Data<DbPool>, document_key: i64) -> Result<()> {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_document::dsl::*;
