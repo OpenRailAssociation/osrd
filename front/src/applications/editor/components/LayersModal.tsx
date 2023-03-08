@@ -1,6 +1,7 @@
 import React, { FC, useContext, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString } from 'lodash';
+import { useTranslation } from 'react-i18next';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
@@ -10,14 +11,14 @@ import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Modal } from 'common/BootstrapSNCF/ModalSNCF/Modal';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
-import EditorContext from '../context';
-import Modal from './Modal';
-import { LayerType, ModalProps, EDITOAST_TO_LAYER_DICT, EditoastType } from '../tools/types';
+import { LayerType, EDITOAST_TO_LAYER_DICT, EditoastType } from '../tools/types';
 import { selectLayers } from '../../../reducers/editor';
 import { EditorEntity } from '../../../types';
 
-const LAYERS: { id: LayerType; icon: string | JSX.Element }[] = [
+const LAYERS: Array<{ id: LayerType; icon: string | JSX.Element }> = [
   { id: 'track_sections', icon: trackSectionsIcon },
   { id: 'signals', icon: signalsIcon },
   { id: 'buffer_stops', icon: bufferStopIcon },
@@ -29,18 +30,21 @@ const LAYERS: { id: LayerType; icon: string | JSX.Element }[] = [
   },
 ];
 
-const LayersModal: FC<
-  ModalProps<
-    {
-      initialLayers: Set<LayerType>;
-      selection?: EditorEntity[];
-      frozenLayers?: Set<LayerType>;
-    },
-    { newLayers: Set<LayerType> }
-  >
-> = ({ arguments: { initialLayers, selection, frozenLayers }, cancel, submit }) => {
+interface LayersModalProps {
+  initialLayers: Set<LayerType>;
+  selection?: EditorEntity[];
+  frozenLayers?: Set<LayerType>;
+  onSubmit: (args: { newLayers: Set<LayerType> }) => void;
+}
+const LayersModal: FC<LayersModalProps> = ({
+  initialLayers,
+  selection,
+  frozenLayers,
+  onSubmit,
+}) => {
   const dispatch = useDispatch();
-  const { t } = useContext(EditorContext);
+  const { t } = useTranslation();
+  const { closeModal } = useContext(ModalContext);
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
   const selectionCounts = useMemo(
     () =>
@@ -63,7 +67,7 @@ const LayersModal: FC<
   );
 
   return (
-    <Modal onClose={cancel} title={t('Editor.nav.toggle-layers')}>
+    <Modal title={t('Editor.nav.toggle-layers')}>
       <div className="container-fluid mb-3">
         <div className="row">
           {LAYERS.map(({ id, icon }) => (
@@ -118,7 +122,7 @@ const LayersModal: FC<
             {t('Editor.layers-modal.selection-warning', { count: unselectCount })}
           </div>
         )}
-        <button type="button" className="btn btn-danger mr-2" onClick={cancel}>
+        <button type="button" className="btn btn-danger mr-2" onClick={closeModal}>
           {t('common.cancel')}
         </button>
         <button
@@ -126,7 +130,8 @@ const LayersModal: FC<
           className="btn btn-primary"
           onClick={() => {
             dispatch(selectLayers(selectedLayers));
-            submit({ newLayers: selectedLayers });
+            onSubmit({ newLayers: selectedLayers });
+            closeModal();
           }}
         >
           {t('common.confirm')}

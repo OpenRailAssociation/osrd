@@ -5,9 +5,8 @@ import { datetime2string } from 'utils/timeManipulation';
 import { useNavigate } from 'react-router';
 
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Modal } from 'common/BootstrapSNCF/ModalSNCF/Modal';
 import { Spinner } from 'common/Loader';
-import { ModalProps } from '../tools/types';
-import Modal from './Modal';
 import { get } from '../../../common/requests';
 import { addNotification, setFailure } from '../../../reducers/main';
 
@@ -23,12 +22,12 @@ async function getInfrasList(): Promise<InfrasList> {
   return response.results;
 }
 
-const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
+const InfraSelectorModal: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { closeModal } = useContext(ModalContext);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [infras, setInfras] = useState<InfrasList | null>(null);
-  const { closeModal } = useContext(ModalContext);
 
   useEffect(() => {
     getInfrasList()
@@ -45,7 +44,7 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   }, [dispatch, t]);
 
   return (
-    <Modal onClose={cancel} title={t('infraManagement:chooseInfrastructure')}>
+    <Modal title={t('infraManagement:chooseInfrastructure')}>
       <div className="mb-3 osrd-config-infraselector">
         {infras?.map((infra) => (
           <div
@@ -59,8 +58,6 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
                 })
               );
               navigate(`/editor/${infra.id}`);
-              submit({});
-              closeModal();
             }}
             key={infra.id}
             className="osrd-config-infraselector-item mb-2"
@@ -81,16 +78,8 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
       </div>
 
       <div className="text-right">
-        <button type="button" className="btn btn-danger mr-2" onClick={cancel}>
+        <button type="button" className="btn btn-danger mr-2" onClick={closeModal}>
           {t('common.cancel')}
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => submit({})}
-          disabled={!infras}
-        >
-          {t('common.confirm')}
         </button>
       </div>
     </Modal>

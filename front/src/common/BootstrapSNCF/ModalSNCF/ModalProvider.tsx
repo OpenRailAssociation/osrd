@@ -15,10 +15,10 @@ import cx from 'classnames';
 /**
  * Type of the modal context
  */
-interface ModalContextType {
+export interface ModalContextType {
   isOpen: boolean;
   size?: string;
-  classNames?: string;
+  className?: string;
   content: ReactNode | JSX.Element | null;
   openModal: (
     content: ReactNode | JSX.Element | null,
@@ -45,64 +45,9 @@ const initialModalContext: ModalContextType = {
  */
 export const ModalContext = createContext(initialModalContext);
 
-/*
- * Provider of the modal context
- */
-export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
-  const location = useLocation();
-  const [modalContext, setModalContext] = useState<ModalContextType>(initialModalContext);
-
-  const openModal: ModalContextType['openModal'] = useCallback((content, size, classNames) => {
-    setModalContext((prev) => ({
-      ...prev,
-      isOpen: true,
-      size,
-      classNames,
-      content,
-    }));
-    document.body.classList.add('modal-open');
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setModalContext((prev) => ({
-      ...prev,
-      isOpen: false,
-      size: undefined,
-      classNames: undefined,
-      content: null,
-    }));
-    document.body.classList.remove('modal-open');
-  }, []);
-
-  /**
-   * When functions changes
-   * => update the modal context with their new definition
-   */
-  useEffect(() => {
-    setModalContext((prev) => ({ ...prev, closeModal, openModal }));
-  }, [closeModal, openModal]);
-
-  /**
-   * When route change
-   * => close modal on route change
-   */
-  useEffect(() => {
-    closeModal();
-  }, [location]);
-
-  return (
-    <ModalContext.Provider value={modalContext}>
-      {children}
-      {modalContext.content && (
-        <div className={cx('modal-backdrop fade', modalContext.isOpen && 'show')} />
-      )}
-    </ModalContext.Provider>
-  );
-};
-
 export const ModalSNCF: FC = () => {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const { isOpen, content, closeModal, size, classNames } = useContext(ModalContext);
+  const { isOpen, content, closeModal, size, className } = useContext(ModalContext);
 
   /**
    * Register click outside event to close the modal.
@@ -137,11 +82,7 @@ export const ModalSNCF: FC = () => {
         >
           <div
             ref={modalRef}
-            className={cx(
-              'modal-dialog modal-dialog-centered',
-              classNames,
-              size && `modal-${size}`
-            )}
+            className={cx('modal-dialog modal-dialog-centered', className, size && `modal-${size}`)}
             role="document"
           >
             <div className="modal-content">{content}</div>
@@ -149,6 +90,62 @@ export const ModalSNCF: FC = () => {
         </div>
       )}
     </>
+  );
+};
+
+/*
+ * Provider of the modal context
+ */
+export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const location = useLocation();
+  const [modalContext, setModalContext] = useState<ModalContextType>(initialModalContext);
+
+  const openModal: ModalContextType['openModal'] = useCallback((content, size, className) => {
+    setModalContext((prev) => ({
+      ...prev,
+      isOpen: true,
+      size,
+      className,
+      content,
+    }));
+    document.body.classList.add('modal-open');
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setModalContext((prev) => ({
+      ...prev,
+      isOpen: false,
+      size: undefined,
+      className: undefined,
+      content: null,
+    }));
+    document.body.classList.remove('modal-open');
+  }, []);
+
+  /**
+   * When functions changes
+   * => update the modal context with their new definition
+   */
+  useEffect(() => {
+    setModalContext((prev) => ({ ...prev, closeModal, openModal }));
+  }, [closeModal, openModal]);
+
+  /**
+   * When route change
+   * => close modal on route change
+   */
+  useEffect(() => {
+    closeModal();
+  }, [location]);
+
+  return (
+    <ModalContext.Provider value={modalContext}>
+      {children}
+      {modalContext.content && (
+        <div className={cx('modal-backdrop fade', modalContext.isOpen && 'show')} />
+      )}
+      <ModalSNCF />
+    </ModalContext.Provider>
   );
 };
 

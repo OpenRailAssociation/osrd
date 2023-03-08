@@ -1,12 +1,13 @@
+import React from 'react';
 import { BiLoader, BiSelection, BsCursor, BsTrash, FaDrawPolygon, FiEdit } from 'react-icons/all';
 import { PointLike } from 'mapbox-gl';
 import { isEqual, max, min } from 'lodash';
 
+import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { DEFAULT_COMMON_TOOL_STATE, LAYER_TO_EDITOAST_DICT, LayerType, Tool } from '../types';
 import { save } from '../../../../reducers/editor';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
-import ConfirmModal from '../../components/ConfirmModal';
 import TrackEditionTool from '../trackEdition/tool';
 import {
   BufferStopEntity,
@@ -159,17 +160,17 @@ const SelectionTool: Tool<SelectionState> = {
           return !state.selection.length;
         },
         onClick({ openModal, state, setState, dispatch, t }) {
-          openModal({
-            component: ConfirmModal,
-            arguments: {
-              title: t('Editor.tools.select-items.actions.delete-selection'),
-              message: t('Editor.tools.select-items.actions.confirm-delete-selection'),
-            },
-            async afterSubmit() {
-              await dispatch<ReturnType<typeof save>>(save({ delete: state.selection }));
-              setState({ ...state, selection: [] });
-            },
-          });
+          openModal(
+            <ConfirmModal
+              title={t('Editor.tools.select-items.actions.delete-selection')}
+              onConfirm={async () => {
+                await dispatch<ReturnType<typeof save>>(save({ delete: state.selection }));
+                setState({ ...state, selection: [] });
+              }}
+            >
+              <p>{t('Editor.tools.select-items.actions.confirm-delete-selection')}</p>
+            </ConfirmModal>
+          );
         },
       },
     ],

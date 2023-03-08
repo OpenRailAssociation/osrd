@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, useContext } from 'react';
 import Form, { FieldProps, utils } from '@rjsf/core';
 import { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
@@ -8,7 +8,8 @@ import { IoIosCut } from 'react-icons/io';
 import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
-import Modal from '../Modal';
+import HelpModal from './HelpModal';
+import { ModalContext } from '../../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { tooltipPosition, notEmpty } from './utils';
 import {
   LinearMetadataItem,
@@ -31,11 +32,10 @@ import './style.scss';
 
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
+  const { openModal, closeModal } = useContext(ModalContext);
   const { t } = useTranslation();
   const Fields = utils.getDefaultRegistry().fields;
 
-  // is help modal opened
-  const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
@@ -121,7 +121,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
    * => we recompute the linearmedata
    */
   useEffect(() => {
-    setIsHelpOpened(false);
+    closeModal();
     setData(fixedData);
     setSelected((old) => (old !== null && fixedData[old] ? old : null));
     setHovered((old) => (old != null && fixedData[old.index] ? old : null));
@@ -147,7 +147,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
           type="button"
           className="btn btn-unstyled p-1 ml-1"
           title={t('common.help-display')}
-          onClick={() => setIsHelpOpened(true)}
+          onClick={() => openModal(<HelpModal />, 'lg')}
         >
           <MdOutlineHelpOutline />
         </button>
@@ -417,12 +417,6 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
           </div>
         )}
       </div>
-
-      {isHelpOpened && (
-        <Modal onClose={() => setIsHelpOpened(false)} title={t('common.help')}>
-          <p>{t('Editor.linear-metadata.help')}</p>
-        </Modal>
-      )}
     </div>
   );
 };

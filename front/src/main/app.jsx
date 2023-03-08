@@ -59,7 +59,6 @@ export default function App() {
       {(user.isLogged || isLocalBackend) && (
         <HistoryRouter history={history}>
           <ModalProvider>
-            <ModalSNCF />
             <NotificationsState />
             <Routes>
               <Route path="/operational-studies">
