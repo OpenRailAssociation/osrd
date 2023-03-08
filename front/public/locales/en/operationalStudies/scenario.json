@@ -1,0 +1,30 @@
+{
+  "copy": "copy",
+  "filterPlaceholder": "Filter, tags",
+  "modifyScenario": "Modify scenario",
+  "isUpdating": "Updating...",
+  "timetable": {
+    "addTrainSchedule": "Add",
+    "importTrainSchedule": "Import",
+    "trainDeleted": "{{ name }} train has been deleted."
+  },
+  "trainCount_zero": "No train",
+  "trainCount_one": "1 train",
+  "trainCount_other": "{{ count }} trains",
+  "scenarioCreationTitle": "Create a scenario",
+  "scenarioName": "Scenario's name",
+  "scenarioDescription": "Description",
+  "scenarioTags": "Tags",
+  "scenarioCancel": "Cancel",
+  "scenarioCreateButton": "Create a scenario",
+  "scenarioModificationTitle": "Modify scenario",
+  "scenarioDeleted": "Successful deletion!",
+  "scenarioDeletedDetails": "Scenario {{ name }} has been deleted.",
+  "scenarioUpdated": "Successful update!",
+  "scenarioUpdatedDetails": "Scenario {{ name }} has been updated.",
+  "scenarioModifyButton": "Edit",
+  "scenarioDeleteButton": "Delete",
+  "scenarioNameMissing": "You have to set a name for scenario",
+  "noElectricalProfileSet": "No electrical profile",
+  "electricalProfileSet": "Electrical profiles set"
+}
