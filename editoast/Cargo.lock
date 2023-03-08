@@ -726,7 +726,7 @@ dependencies = [
  "json-patch",
  "mvt",
  "pathfinding",
- "pointy",
+ "pointy 0.2.1",
  "rand 0.8.5",
  "redis",
  "sentry",
@@ -1401,13 +1401,15 @@ dependencies = [
 
 [[package]]
 name = "mvt"
-version = "0.7.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "137403895b2731e6d750405e0ce012a5d5cdf6c15229eb656362cf236a0dac8c"
+checksum = "565b864b271f21b3fff747d5c2d7827a102f7d93375d67337b09fa4d4b3487c6"
 dependencies = [
  "log",
- "pointy",
+ "num-traits",
+ "pointy 0.4.0",
  "protobuf",
+ "thiserror",
 ]
 
 [[package]]
@@ -1639,6 +1641,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4d08aa04435c90720e887d62fdad481413cfb73dfcdc3852e6daaf147c22616"
 
 [[package]]
+name = "pointy"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f08dc89a46f7c7f8f7233a3e5f2a0964ec7c9e3b4d1a949e52cd371940ab409d"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1688,9 +1699,23 @@ dependencies = [
 
 [[package]]
 name = "protobuf"
-version = "2.17.0"
+version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb14183cc7f213ee2410067e1ceeadba2a7478a59432ff0747a335202798b1e2"
+checksum = "b55bad9126f378a853655831eb7363b7b01b81d19f8cb1218861086ca4a1a61e"
+dependencies = [
+ "once_cell",
+ "protobuf-support",
+ "thiserror",
+]
+
+[[package]]
+name = "protobuf-support"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5d4d7b8601c814cfb36bcebb79f0e61e45e1e93640cf778837833bbed05c372"
+dependencies = [
+ "thiserror",
+]
 
 [[package]]
 name = "quote"
