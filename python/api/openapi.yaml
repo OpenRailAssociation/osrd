@@ -277,7 +277,6 @@ paths:
           description: No content
   /rolling_stock/:
     get:
-      deprecated: true
       tags:
         - rolling_stock
       summary: Paginated list of rolling stock
@@ -326,6 +325,7 @@ paths:
                 $ref: "#/components/schemas/RollingStock"
   /rolling_stock/{id}/:
     get:
+      deprecated: true
       tags:
         - rolling_stock
       summary: Retrieve a rolling stock
@@ -401,6 +401,7 @@ paths:
                 format: binary
   /light_rolling_stock/:
     get:
+      deprecated: true
       tags:
         - rolling_stock
       summary: Paginated list of rolling stock with a lighter response
@@ -438,6 +439,7 @@ paths:
                       $ref: "#/components/schemas/LightRollingStock"
   /light_rolling_stock/{id}/:
     get:
+      deprecated: true
       tags:
         - rolling_stock
       summary: Retrieve a rolling stock's light representation

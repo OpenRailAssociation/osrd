@@ -1,4 +1,5 @@
 import { baseEditoastApi as api } from './emptyApi';
+
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -131,7 +132,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg['number'] },
+        params: { number: queryArg.number },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -186,6 +187,18 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
       query: () => ({ url: `/documents/`, method: 'POST' }),
+    }),
+    getLightRollingStock: build.query<GetLightRollingStockApiResponse, GetLightRollingStockApiArg>({
+      query: (queryArg) => ({
+        url: `/light_rolling_stock/`,
+        params: { page: queryArg.page, page_size: queryArg.pageSize },
+      }),
+    }),
+    getLightRollingStockById: build.query<
+      GetLightRollingStockByIdApiResponse,
+      GetLightRollingStockByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
     }),
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
@@ -469,6 +482,24 @@ export type PostDocumentsApiResponse = /** status 201 The key of the added docum
   document_key?: number;
 };
 export type PostDocumentsApiArg = void;
+export type GetLightRollingStockApiResponse = /** status 200 The rolling stock list */ {
+  count?: number;
+  next?: any;
+  previous?: any;
+  results?: LightRollingStock[];
+};
+export type GetLightRollingStockApiArg = {
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
+export type GetLightRollingStockByIdApiResponse =
+  /** status 200 The rolling stock without effort curves nor rolling resistance */ LightRollingStock;
+export type GetLightRollingStockByIdApiArg = {
+  /** Rolling Stock ID */
+  id: number;
+};
 export type GetRollingStockByIdApiResponse =
   /** status 200 The rolling stock information */ RollingStock;
 export type GetRollingStockByIdApiArg = {
