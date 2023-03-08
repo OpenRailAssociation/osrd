@@ -1,6 +1,6 @@
 mod mvt_utils;
 
-use crate::client::MapLayersConfig;
+use crate::client::{get_root_url, MapLayersConfig};
 use crate::error::Result;
 use crate::map::{get, get_cache_tile_key, get_view_cache_prefix, set, Layer, MapLayers, Tile};
 use crate::DbPool;
@@ -81,7 +81,7 @@ async fn layer_view(
 
     let tiles_url_pattern = format!(
         "{root_url}/layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}",
-        root_url = map_layers_config.root_url
+        root_url = get_root_url()
     );
 
     Ok(Json(json!({
