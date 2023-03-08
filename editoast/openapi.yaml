@@ -1701,6 +1701,9 @@ components:
             type: string
         budget:
           type: integer
+        image:
+          type: integer
+          description: the image id
         image_url:
           type: string
           description: the image url

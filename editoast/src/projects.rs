@@ -55,8 +55,8 @@ pub struct Project {
     #[diesel(deserialize_as = i32)]
     pub budget: Option<i32>,
     #[diesel(deserialize_as = Option<i64>)]
-    #[serde(skip_serializing)]
-    pub image_id: Option<Option<i64>>,
+    #[diesel(column_name = "image_id")]
+    pub image: Option<Option<i64>>,
     #[diesel(deserialize_as = NaiveDateTime)]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
@@ -100,7 +100,7 @@ impl From<ProjectCreateForm> for Project {
             objectives: Some(project.objectives),
             funders: Some(project.funders),
             budget: Some(project.budget),
-            image_id: project.image.map(Some),
+            image: project.image.map(Some),
             tags: Some(project.tags),
             creation_date: Some(Utc::now().naive_utc()),
             ..Default::default()
@@ -128,7 +128,7 @@ impl From<ProjectPatchForm> for Project {
             objectives: project.objectives,
             funders: project.funders,
             budget: project.budget,
-            image_id: Some(project.image),
+            image: Some(project.image),
             tags: project.tags,
             ..Default::default()
         }
@@ -230,7 +230,7 @@ impl Project {
         })
         .await
         .unwrap()?;
-        if let Some(image) = project.image_id.unwrap() {
+        if let Some(image) = project.image.unwrap() {
             // We don't check the result. We don't want to throw an error if the image is used in another project.
             let _ = Document::delete(db_pool.clone(), image).await;
         };
@@ -248,8 +248,8 @@ impl Project {
 
         let project_studies = Project::retrieve(db_pool.clone(), project_id).await?;
         let project = &project_studies.project;
-        let image_to_delete = if project.image_id.unwrap() != form.image {
-            project.image_id.unwrap()
+        let image_to_delete = if project.image.unwrap() != form.image {
+            project.image.unwrap()
         } else {
             None
         };
