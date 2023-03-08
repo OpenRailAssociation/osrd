@@ -24,7 +24,7 @@ import { getMixedEntities } from '../../../data/api';
 import { EditorEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
 import { addNotification } from '../../../../../reducers/main';
-import ConfirmModal from '../../../components/ConfirmModal';
+import { ConfirmModal } from '../../../../../common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from '../../../../../reducers/editor';
 import { DisplayEndpoints } from './Endpoints';
 
@@ -90,23 +90,23 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
           className="btn btn-danger btn-sm mt-1"
           type="button"
           onClick={() => {
-            openModal({
-              component: ConfirmModal,
-              arguments: {
-                title: t('Editor.tools.routes-edition.delete-route'),
-                message: t('Editor.tools.routes-edition.confirm-delete-route'),
-              },
-              async afterSubmit() {
-                setIsLoading(true);
-                await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
-                setIsLoading(false);
-                addNotification({
-                  type: 'success',
-                  text: t('Editor.tools.routes-edition.delete-route-success'),
-                });
-                setState(getEmptyCreateRouteState());
-              },
-            });
+            openModal(
+              <ConfirmModal
+                title={t('Editor.tools.routes-edition.delete-route')}
+                onConfirm={async () => {
+                  setIsLoading(true);
+                  await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
+                  setIsLoading(false);
+                  addNotification({
+                    type: 'success',
+                    text: t('Editor.tools.routes-edition.delete-route-success'),
+                  });
+                  setState(getEmptyCreateRouteState());
+                }}
+              >
+                <p>{t('Editor.tools.routes-edition.confirm-delete-route')}</p>
+              </ConfirmModal>
+            );
           }}
         >
           <MdDelete /> {t('Editor.tools.routes-edition.delete-route')}

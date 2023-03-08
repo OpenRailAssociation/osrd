@@ -1,4 +1,4 @@
-import { FC, useContext, PropsWithChildren } from 'react';
+import React, { FC, useContext, PropsWithChildren } from 'react';
 import { ModalContext } from './ModalProvider';
 
 interface ModalHeaderSNCFProps {
@@ -23,11 +23,11 @@ const ModalHeaderSNCF: FC<PropsWithChildren<ModalHeaderSNCFProps>> = ({
           </button>
         )}
       </div>
-      {withBorderBottom ? (
+      {withBorderBottom && (
         <div className="modal-header modal-header-border-bottom">
           <div />
         </div>
-      ) : null}
+      )}
     </>
   );
 };
