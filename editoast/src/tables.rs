@@ -202,6 +202,29 @@ table! {
 }
 
 table! {
+    osrd_infra_project {
+        id -> BigInt,
+        name -> Text,
+        description -> Text,
+        objectives -> Text,
+        funders -> Text,
+        budget -> Integer,
+        image_id -> Nullable<BigInt>,
+        creation_date -> Timestamp,
+        last_modification -> Timestamp,
+        tags -> Array<Text>,
+    }
+}
+
+table! {
+    osrd_infra_study {
+        id -> BigInt,
+        project_id -> BigInt,
+        // TODO: add other fields fields
+    }
+}
+
+table! {
     osrd_infra_document(id) {
         id -> BigInt,
         content_type -> Text,
