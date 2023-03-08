@@ -1,21 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { get } from 'common/requests';
-import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  LEGACY_PROJECTS_URI,
   PROJECTS_URI,
   SCENARIOS_URI,
   STUDIES_URI,
 } from 'applications/operationalStudies/components/operationalStudiesConsts';
-import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
-import projectIcon from 'assets/pictures/views/projects.svg';
-import studyIcon from 'assets/pictures/views/study.svg';
 import infraIcon from 'assets/pictures/components/tracks.svg';
 import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
+import projectIcon from 'assets/pictures/views/projects.svg';
+import studyIcon from 'assets/pictures/views/study.svg';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { get } from 'common/requests';
+import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
+import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
 import ScenarioExploratorModal from './ScenarioExploratorModal';
 
 export default function ScenarioExplorator() {
@@ -51,9 +52,9 @@ export default function ScenarioExplorator() {
   useEffect(() => {
     if (projectID && studyID && scenarioID) {
       getDetails(`${PROJECTS_URI}${projectID}/`, setProjectDetails);
-      getDetails(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
+      getDetails(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
       getDetails(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
+        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
         setScenarioDetails
       );
     }

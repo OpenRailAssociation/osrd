@@ -18,7 +18,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
+import {
+  LEGACY_PROJECTS_URI,
+  PROJECTS_URI,
+  STUDIES_URI,
+} from '../components/operationalStudiesConsts';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
@@ -101,7 +105,7 @@ export default function Project() {
         description: filter,
         tags: filter,
       };
-      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
+      const data = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
       setStudiesList(data.results);
     } catch (error) {
       console.error(error);
@@ -124,10 +128,7 @@ export default function Project() {
 
   return (
     <>
-      <NavBarSNCF
-        appName={<BreadCrumbs projectName={project ? project.name : null} />}
-        logo={logo}
-      />
+      <NavBarSNCF appName={<BreadCrumbs projectName={project && project.name} />} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
           {project ? (
@@ -136,7 +137,7 @@ export default function Project() {
                 <div className="row w-100 no-gutters">
                   <div className={project.image_url ? 'col-lg-4 col-md-4' : 'd-none'}>
                     <div className="project-details-title-img">
-                      <img src={imageUrl} alt="project logo" />
+                      <img src={project.image_url} alt="project logo" />
                     </div>
                   </div>
                   <div className={project.image_url ? 'pl-md-2 col-lg-8 col-md-8' : 'col-12'}>

@@ -1,27 +1,32 @@
-import React, { useContext, useEffect, useState } from 'react';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/home/operationalStudies.svg';
-import { useTranslation } from 'react-i18next';
-import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
-import infraLogo from 'assets/pictures/components/tracks.svg';
-import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
-import { useSelector, useDispatch } from 'react-redux';
-import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
-import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
-import { get } from 'common/requests';
+import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
+import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
+import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
+import { MANAGE_TRAIN_SCHEDULE_TYPES, MODES } from 'applications/operationalStudies/consts';
+import infraLogo from 'assets/pictures/components/tracks.svg';
+import logo from 'assets/pictures/home/operationalStudies.svg';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import { get } from 'common/requests';
+import { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaPencilAlt } from 'react-icons/fa';
-import { setSuccess } from 'reducers/main';
 import { GiElectric } from 'react-icons/gi';
-import SimulationResults from './SimulationResults';
-import ManageTrainSchedule from './ManageTrainSchedule';
-import ImportTrainSchedule from './ImportTrainSchedule';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import getTimetable from '../components/Scenario/getTimetable';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSuccess } from 'reducers/main';
+import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
+import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
+import {
+  LEGACY_PROJECTS_URI,
+  PROJECTS_URI,
+  SCENARIOS_URI,
+  STUDIES_URI,
+} from '../components/operationalStudiesConsts';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
+import getTimetable from '../components/Scenario/getTimetable';
+import ImportTrainSchedule from './ImportTrainSchedule';
+import ManageTrainSchedule from './ManageTrainSchedule';
+import SimulationResults from './SimulationResults';
 
 export default function Scenario() {
   const dispatch = useDispatch();
@@ -49,7 +54,7 @@ export default function Scenario() {
 
   const getStudy = async () => {
     try {
-      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      const result = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
       setStudy(result);
     } catch (error) {
       console.error(error);
@@ -59,7 +64,7 @@ export default function Scenario() {
   const getScenario = async (withNotification = false) => {
     try {
       const result = await get(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
+        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
       );
       setScenario(result);
       dispatch(updateTimetableID(result.timetable));

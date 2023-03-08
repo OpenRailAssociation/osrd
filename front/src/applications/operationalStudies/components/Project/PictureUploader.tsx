@@ -23,8 +23,10 @@ type Props = {
 
 function PicturePlaceholder({ currentProject, isValid }: PropsPlaceholder) {
   const { t } = useTranslation('operationalStudies/project');
-  if (currentProject.image) {
-    return <img src={URL.createObjectURL(currentProject.image)} alt="Project illustration" />;
+  if (currentProject.image && Number.isNaN(Number(currentProject.image))) {
+    return (
+      <img src={URL.createObjectURL(currentProject.image as Blob)} alt="Project illustration" />
+    );
   }
   if (currentProject.image_url) {
     return <img src={currentProject.image_url} alt="Project illustration" />;

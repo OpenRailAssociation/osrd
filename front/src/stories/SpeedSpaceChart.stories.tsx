@@ -24,9 +24,19 @@ export const Standard = Template.bind({});
 
 Standard.args = {
   heightOfSpeedSpaceChart: 250,
-  dispatch: () => {},
-  toggleSetting: () => {},
-  onSetSettings: () => {},
-  dispatchUpdateMustRedraw: () => {},
-  onSetBaseHeightOfSpeedSpaceChart: () => {},
+  dispatch: () => {
+    /* empty */
+  },
+  toggleSetting: () => {
+    /* empty */
+  },
+  onSetSettings: () => {
+    /* empty */
+  },
+  dispatchUpdateMustRedraw: () => {
+    /* empty */
+  },
+  onSetBaseHeightOfSpeedSpaceChart: () => {
+    /* empty */
+  },
 };

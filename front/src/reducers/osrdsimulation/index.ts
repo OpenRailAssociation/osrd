@@ -144,10 +144,14 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
 
         draft.consolidatedSimulation = createTrain(
-          () => {},
+          () => {
+            /* empty */
+          },
           KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
           draft.simulation.present.trains,
-          () => {}
+          () => {
+            /* empty */
+          }
         );
         draft.displaySimulation =
           draft.simulation.present?.trains.length > 0 &&

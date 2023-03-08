@@ -1,27 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useState } from 'react';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import projectLogo from 'assets/pictures/views/projects.svg';
-import { useTranslation } from 'react-i18next';
+import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useDebounce } from 'utils/helpers';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+import DOCUMENT_URI from 'common/consts';
+import { deleteRequest, patch, patchMultipart, post } from 'common/requests';
+import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
-import remarkGfm from 'remark-gfm';
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
 import { RiMoneyEuroCircleLine } from 'react-icons/ri';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
-import { deleteRequest, patch, patchMultipart, post } from 'common/requests';
-import { updateProjectID } from 'reducers/osrdconf';
-import { useNavigate } from 'react-router-dom';
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { setSuccess } from 'reducers/main';
-import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
+import { updateProjectID } from 'reducers/osrdconf';
+import remarkGfm from 'remark-gfm';
+import { useDebounce } from 'utils/helpers';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
@@ -67,14 +68,13 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else {
       try {
-        let result;
         if (currentProject.image) {
-          const { image, ...currentProjectWithoutImage } = currentProject;
-          result = await post(PROJECTS_URI, currentProjectWithoutImage);
-          await patchMultipart(`${PROJECTS_URI}${result.id}/`, { image });
-        } else {
-          result = await post(PROJECTS_URI, currentProject);
+          const { document_key: docKey } = await post(`${DOCUMENT_URI}/`, currentProject.image, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          currentProject.image = docKey;
         }
+        const result = await post(PROJECTS_URI, currentProject);
         dispatch(updateProjectID(result.id));
         navigate('/operational-studies/project');
         closeModal();

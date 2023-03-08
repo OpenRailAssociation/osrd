@@ -1,26 +1,31 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/views/study.svg';
-import { useTranslation } from 'react-i18next';
-import Loader from 'common/Loader';
-import nextId from 'react-id-generator';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
 import ScenarioCardEmpty from 'applications/operationalStudies/components/Study/ScenarioCardEmpty';
-import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
-import { FaPencilAlt } from 'react-icons/fa';
-import { budgetFormat } from 'utils/numbers';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { useSelector, useDispatch } from 'react-redux';
-import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
-import { get } from 'common/requests';
-import { setSuccess } from 'reducers/main';
-import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
-import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
+import logo from 'assets/pictures/views/study.svg';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import Loader from 'common/Loader';
+import { get } from 'common/requests';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FaPencilAlt } from 'react-icons/fa';
+import { VscFile, VscFiles, VscLink } from 'react-icons/vsc';
+import nextId from 'react-id-generator';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSuccess } from 'reducers/main';
+import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
+import { budgetFormat } from 'utils/numbers';
 import BreadCrumbs from '../components/BreadCrumbs';
+import {
+  LEGACY_PROJECTS_URI,
+  PROJECTS_URI,
+  SCENARIOS_URI,
+  STUDIES_URI,
+} from '../components/operationalStudiesConsts';
+import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 
 function displayScenariosList(scenariosList, setFilterChips) {
   return scenariosList ? (
@@ -90,7 +95,7 @@ export default function Study() {
   };
   const getStudy = async (withNotification = false) => {
     try {
-      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      const result = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
       setStudy(result);
       if (withNotification) {
         dispatch(
@@ -114,7 +119,7 @@ export default function Study() {
         tags: filter,
       };
       const data = await get(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
+        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
         { params }
       );
       setScenariosList(data.results);
