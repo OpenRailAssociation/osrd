@@ -2,8 +2,7 @@ package fr.sncf.osrd.envelope.part.constraints;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
@@ -34,8 +33,11 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
         cursor = new EnvelopeCursor(envelope, direction < 0, partIndex, stepIndex, position);
         if (type == CEILING)
             return envelopeSpeed >= speed;
-        else
+        if (type == FLOOR)
             return envelopeSpeed <= speed;
+        if (type == MAINTAIN_SPEED)
+            return envelopeSpeed == speed;
+        return false;
     }
 
     // region INTERSECTION
@@ -168,6 +170,12 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
 
     @Override
     public EnvelopePoint stepCheck(double lastOverlayPos, double lastOverlaySpeed, double position, double speed) {
+
+        if (type == MAINTAIN_SPEED){    //specific case : check if we maintained speed between steps
+            if (speed == cursor.getSpeed())
+                return null;
+        }
+
         while (cursor.comparePos(position, cursor.getStepBeginPos()) > 0) {
             // attempt to find an intersection
             var inter = intersect(lastOverlayPos, lastOverlaySpeed, position, speed);
