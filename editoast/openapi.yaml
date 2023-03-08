@@ -970,6 +970,64 @@ paths:
                     type: integer
                     example: 42
 
+  /light_rolling_stock/:
+    get:
+      tags:
+        - rolling_stock
+      summary: Paginated list of rolling stock with a lighter response
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
+      responses:
+        200:
+          description: The rolling stock list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LightRollingStock"
+  
+  /light_rolling_stock/{id}/:
+    get:
+      tags:
+        - rolling_stock
+      summary: Retrieve a rolling stock's light representation
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+      responses:
+        200:
+          description: The rolling stock without effort curves nor rolling resistance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LightRollingStock"
+
   /rolling_stock/{id}/:
     get:
       tags:

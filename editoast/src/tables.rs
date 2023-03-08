@@ -254,3 +254,21 @@ table! {
         power_restrictions -> Nullable<Jsonb>,
     }
 }
+
+table! {
+    osrd_infra_rollingstocklivery(id) {
+        id -> BigInt,
+        name -> Text,
+        rolling_stock_id -> BigInt,
+        compound_image_id -> BigInt,
+    }
+}
+
+table! {
+    osrd_infra_rollingstockimage(id) {
+        id -> BigInt,
+        image -> Binary,
+        livery_id -> Nullable<BigInt>,
+        order -> Nullable<BigInt>,
+    }
+}
