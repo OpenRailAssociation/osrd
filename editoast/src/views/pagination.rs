@@ -26,6 +26,19 @@ pub struct PaginatedResponse<T> {
     pub results: Vec<T>,
 }
 
+impl<T> PaginatedResponse<T> {
+    pub fn into<U: From<T>>(self) -> PaginatedResponse<U> {
+        let items = self.results.into_iter().map(|item| item.into()).collect();
+
+        PaginatedResponse {
+            count: self.count,
+            previous: self.previous,
+            next: self.next,
+            results: items,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Deserialize)]
 pub struct PaginationQueryParam {
     #[serde(default = "default_page")]
