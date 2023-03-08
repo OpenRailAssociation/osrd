@@ -5,7 +5,7 @@ use clap::{Args, Parser, Subcommand};
 use derivative::Derivative;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[clap(author, version)]
@@ -37,9 +37,6 @@ pub struct MapLayersConfig {
     #[derivative(Default(value = "250_000"))]
     #[clap(long, env, default_value_t = 250_000)]
     pub max_tiles: u64,
-    #[derivative(Default(value = r#""http://localhost:8090".into()"#))]
-    #[clap(long, env, default_value_t = String::from("http://localhost:8090"))]
-    pub root_url: String,
 }
 
 #[derive(Args, Debug, Derivative)]
@@ -96,4 +93,9 @@ pub struct ImportProfileSetArgs {
     pub name: String,
     /// Electrical profile set file path
     pub electrical_profile_set_path: PathBuf,
+}
+
+/// Retrieve the ROOT_URL env var. If not found returns default local url.
+pub fn get_root_url() -> String {
+    env::var("ROOT_URL").unwrap_or(String::from("http://localhost:8090"))
 }
