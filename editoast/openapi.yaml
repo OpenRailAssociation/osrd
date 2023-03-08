@@ -830,7 +830,7 @@ paths:
                     name:
                       type: string
                       example: "France 2023"
-  
+
   /electrical_profile_set:
     post:
       tags:
@@ -965,6 +965,148 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollingStock"
+
+  /projects/:
+    post:
+      tags:
+        - projects
+      summary: Create a new project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectCreateRequest"
+      responses:
+        201:
+          description: The created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResult"
+    get:
+      tags:
+        - projects
+      summary: Paginated list of projects
+      parameters:
+        - in: query
+          name: ordering
+          schema:
+            type: string
+            enum:
+              [
+                "name",
+                "-name",
+                "creation_date",
+                "-creation_date",
+                "last_modification",
+                "-last_modification",
+              ]
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter projects by name
+        - in: query
+          name: description
+          schema:
+            type: string
+          description: Filter projects by description
+        - in: query
+          name: tags
+          schema:
+            type: string
+          description: Filter projects by tags
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
+      responses:
+        200:
+          description: the project list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        schema:
+                          $ref: "#/components/schemas/ProjectResult"
+
+  /projects/{project_id}/:
+    get:
+      tags:
+        - projects
+      summary: Retrieve a project
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id you want to retrieve
+          required: true
+      responses:
+        200:
+          description: The project info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResult"
+    patch:
+      tags:
+        - projects
+      summary: Update a project
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id you want to update
+          required: true
+      requestBody:
+        description: The fields you want to update
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectPatchRequest"
+      responses:
+        200:
+          description: The project updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResult"
+    delete:
+      tags:
+        - projects
+      summary: delete a project
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id you want to delete
+          required: true
+      responses:
+        204:
+          description: No content
 
 components:
   schemas:
@@ -1408,7 +1550,7 @@ components:
                 type: number
               name:
                 type: string
-    
+
     RollingStock:
       allOf:
         - $ref: "#/components/schemas/LightRollingStock"
@@ -1432,7 +1574,7 @@ components:
                         $ref: "#/components/schemas/EffortCurve"
                       is_electric:
                         type: boolean
-    
+
     RouteTrackRangesComputed:
       type: object
       description: Route track ranges successfully computed
@@ -1490,3 +1632,90 @@ components:
           ],
           ["=", ["infra_id"], 2],
         ]
+    ProjectCreateRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        objectives:
+          type: string
+          maxLength: 4096
+          default: ""
+        description:
+          type: string
+          maxLength: 1024
+          default: ""
+        funders:
+          type: string
+          maxLength: 1024
+          default: ""
+        budget:
+          type: integer
+        image:
+          type: integer
+          description: The id of the image in the document table
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+      required:
+        - name
+    ProjectPatchRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        objectives:
+          type: string
+          maxLength: 4096
+        description:
+          type: string
+          maxLength: 1024
+        funders:
+          type: string
+          maxLength: 1024
+        budget:
+          type: integer
+        image:
+          type: integer
+          description: The id of the image in the document table
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+    ProjectResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        objectives:
+          type: string
+        description:
+          type: string
+        funders:
+          type: array
+          items:
+            type: string
+        budget:
+          type: integer
+        image_url:
+          type: string
+          description: the image url
+          example: http://localhost:8090/documents/20/
+        creation_date:
+          type: string
+          format: date-time
+        last_modification:
+          type: string
+          format: date-time
+        studies:
+          type: array
+          items:
+            type: integer
+        tags:
+          type: array
+          items:
+            type: string
