@@ -1,22 +1,35 @@
 use crate::error::Result;
-use crate::schema::rolling_stock::{RollingStock, RollingStockWithLiveries};
+use crate::schema::rolling_stock::{LightRollingStock, LightRollingStockWithLiveries};
+use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
-use actix_web::web::{self, Data, Json, Path};
+use actix_web::web::{self, Data, Json, Path, Query};
 
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/rolling_stock").service(get)
+    web::scope("/light_rolling_stock").service((get, list))
 }
 
-#[get("/{rolling_stock}")]
+#[get("")]
+async fn list(
+    db_pool: Data<DbPool>,
+    page_settings: Query<PaginationQueryParam>,
+) -> Result<Json<PaginatedResponse<LightRollingStock>>> {
+    let page = page_settings.page;
+    let per_page = page_settings.page_size.unwrap_or(25);
+    Ok(Json(
+        LightRollingStock::list(db_pool, page, per_page).await?,
+    ))
+}
+
+#[get("/{rolling_stock_id}")]
 async fn get(
     db_pool: Data<DbPool>,
-    rolling_stock: Path<i64>,
-) -> Result<Json<RollingStockWithLiveries>> {
-    let rolling_stock_data = rolling_stock.into_inner();
+    rolling_stock_id: Path<i64>,
+) -> Result<Json<LightRollingStockWithLiveries>> {
+    let rolling_stock_id = rolling_stock_id.into_inner();
     Ok(Json(
-        RollingStock::retrieve(db_pool, rolling_stock_data).await?,
+        LightRollingStock::retrieve(db_pool, rolling_stock_id).await?,
     ))
 }
 
@@ -33,7 +46,15 @@ mod tests {
     use diesel::PgConnection;
 
     #[actix_test]
-    async fn get_rolling_stock() {
+    async fn list_light_rolling_stock() {
+        let app = create_test_service().await;
+        let req = TestRequest::get().uri("/light_rolling_stock").to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[actix_test]
+    async fn get_light_rolling_stock() {
         let app = create_test_service().await;
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(2).build(manager).unwrap());
@@ -41,13 +62,13 @@ mod tests {
         let mut rolling_stock_form: RollingStockForm =
             serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
-        rolling_stock_form.name = String::from("get_rolling_stock_test");
+        rolling_stock_form.name = String::from("get_light_rolling_stock_test");
         let rolling_stock = RollingStock::create(db_pool.clone(), rolling_stock_form)
             .await
             .unwrap();
 
         let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}", rolling_stock.id).as_str())
+            .uri(format!("/light_rolling_stock/{}", rolling_stock.id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
@@ -57,7 +78,7 @@ mod tests {
             .unwrap();
 
         let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}", rolling_stock.id).as_str())
+            .uri(format!("/light_rolling_stock/{}", rolling_stock.id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);

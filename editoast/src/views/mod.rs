@@ -2,6 +2,7 @@ mod documents;
 pub mod electrical_profiles;
 mod infra;
 mod layers;
+pub mod light_rolling_stocks;
 pub mod pagination;
 pub mod params;
 pub mod projects;
@@ -28,6 +29,7 @@ pub fn routes() -> impl HttpServiceFactory {
         projects::routes(),
         documents::routes(),
         rolling_stocks::routes(),
+        light_rolling_stocks::routes(),
     ]
 }
 
