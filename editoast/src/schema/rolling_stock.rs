@@ -134,7 +134,7 @@ mod tests {
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
         let rolling_stock_form: RollingStockForm =
-            serde_json::from_str(&include_str!("../tests/example_rolling_stock.json"))
+            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
 
         let rolling_stock = RollingStock::create(db_pool.clone(), rolling_stock_form)
