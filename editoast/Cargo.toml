@@ -20,6 +20,7 @@ diesel = { version = "2.0", features = [
     "serde_json",
     "chrono",
 ] }
+diesel_json = "0.2.0"
 json-patch = "0.3.0"
 pathfinding = "4.2.1"
 rand = "0.8.5"
