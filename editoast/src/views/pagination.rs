@@ -11,35 +11,19 @@ use diesel::PgConnection;
 use diesel::QueryResult;
 use diesel::QueryableByName;
 use diesel::RunQueryDsl;
-use serde::ser::SerializeStruct;
 use serde::Deserialize;
 use serde::Serialize;
-use std::result::Result as StdResult;
 use thiserror::Error;
 
 use editoast_derive::EditoastError;
 
 /// A paginated response
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct PaginatedResponse<T> {
     pub count: i64,
     pub previous: Option<i64>,
     pub next: Option<i64>,
     pub results: Vec<T>,
-}
-
-impl<T: Serialize> Serialize for PaginatedResponse<T> {
-    fn serialize<S>(&self, serializer: S) -> StdResult<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut s = serializer.serialize_struct("PaginatedResponse", 4)?;
-        s.serialize_field("count", &self.count)?;
-        s.serialize_field("previous", &self.previous)?;
-        s.serialize_field("next", &self.next)?;
-        s.serialize_field("result", &self.results)?;
-        s.end()
-    }
 }
 
 #[derive(Debug, Clone, Copy, Deserialize)]
