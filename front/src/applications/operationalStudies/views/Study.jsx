@@ -17,10 +17,15 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
-import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import BreadCrumbs from '../components/BreadCrumbs';
+import {
+  LEGACY_PROJECTS_URI,
+  PROJECTS_URI,
+  SCENARIOS_URI,
+  STUDIES_URI,
+} from '../components/operationalStudiesConsts';
+import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
+import FilterTextField from '../components/FilterTextField';
 
 function displayScenariosList(scenariosList, setFilterChips) {
   return scenariosList ? (
@@ -90,7 +95,7 @@ export default function Study() {
   };
   const getStudy = async (withNotification = false) => {
     try {
-      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      const result = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
       setStudy(result);
       if (withNotification) {
         dispatch(
@@ -114,7 +119,7 @@ export default function Study() {
         tags: filter,
       };
       const data = await get(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
+        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
         { params }
       );
       setScenariosList(data.results);

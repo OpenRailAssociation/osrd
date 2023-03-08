@@ -14,14 +14,19 @@ import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selec
 import { get } from 'common/requests';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaPencilAlt } from 'react-icons/fa';
-import { setSuccess } from 'reducers/main';
 import { GiElectric } from 'react-icons/gi';
-import SimulationResults from './SimulationResults';
-import ManageTrainSchedule from './ManageTrainSchedule';
-import ImportTrainSchedule from './ImportTrainSchedule';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
-import getTimetable from '../components/Scenario/getTimetable';
+import { setSuccess } from 'reducers/main';
+import {
+  LEGACY_PROJECTS_URI,
+  PROJECTS_URI,
+  SCENARIOS_URI,
+  STUDIES_URI,
+} from '../components/operationalStudiesConsts';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
+import getTimetable from '../components/Scenario/getTimetable';
+import ImportTrainSchedule from './ImportTrainSchedule';
+import ManageTrainSchedule from './ManageTrainSchedule';
+import SimulationResults from './SimulationResults';
 
 export default function Scenario() {
   const dispatch = useDispatch();
@@ -49,7 +54,7 @@ export default function Scenario() {
 
   const getStudy = async () => {
     try {
-      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      const result = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
       setStudy(result);
     } catch (error) {
       console.error(error);
@@ -59,7 +64,7 @@ export default function Scenario() {
   const getScenario = async (withNotification = false) => {
     try {
       const result = await get(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
+        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
       );
       setScenario(result);
       dispatch(updateTimetableID(result.timetable));

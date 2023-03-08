@@ -1,27 +1,27 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useEffect, useState } from 'react';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { studyTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import studyLogo from 'assets/pictures/views/studies.svg';
-import { useTranslation } from 'react-i18next';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import { deleteRequest, get, patch, post } from 'common/requests';
+import { useTranslation } from 'react-i18next';
 import { FaPencilAlt, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
+import { GoNote } from 'react-icons/go';
 import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
-import { useSelector, useDispatch } from 'react-redux';
-import { getProjectID } from 'reducers/osrdconf/selectors';
-import { deleteRequest, get, patch, post } from 'common/requests';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { updateStudyID } from 'reducers/osrdconf';
 import { setSuccess } from 'reducers/main';
-import { GoNote } from 'react-icons/go';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { studyTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
-import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { updateStudyID } from 'reducers/osrdconf';
+import { getProjectID } from 'reducers/osrdconf/selectors';
+import { LEGACY_PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const currentStudyDefaults = {
   name: '',
@@ -57,7 +57,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}`;
+  const rootURI = `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}`;
 
   const createSelectOptions = async (
     translationList: string,

@@ -8,7 +8,7 @@ export type projectTypes = {
   funders: string[];
   tags: string[];
   budget: number;
-  image?: Blob | null;
+  image?: Blob | null | number;
   image_url?: string;
   studies?: number[];
 };
