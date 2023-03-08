@@ -6,6 +6,7 @@ import { TFunction } from 'i18next';
 import { reduce } from 'lodash';
 
 import { Feature } from 'geojson';
+import { ModalContextType } from '../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
 
 export interface EditorState {
@@ -62,35 +63,10 @@ export interface OSRDConf {
   switchTypes: SwitchType[] | null;
 }
 
-export interface ModalProps<
-  ArgumentsType = Record<string, unknown>,
-  SubmitArgumentsType = Record<string, unknown>
-> {
-  arguments: ArgumentsType;
-  cancel: () => void;
-  submit: (args: SubmitArgumentsType) => void;
-}
-
-export interface ModalRequest<ArgumentsType, SubmitArgumentsType> {
-  component: ComponentType<ModalProps<ArgumentsType, SubmitArgumentsType>>;
-  arguments: ArgumentsType;
-  beforeCancel?: () => void;
-  afterCancel?: () => void;
-  beforeSubmit?: (args: SubmitArgumentsType) => void;
-  afterSubmit?: (args: SubmitArgumentsType) => void;
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface EditorContextType<S = any> {
+export type EditorContextType<S = any> = {
   // Localisation:
   t: TFunction;
-
-  // Modals management:
-  modal: ModalRequest<unknown, unknown> | null;
-  openModal: <ArgumentsType, SubmitArgumentsType>(
-    request: ModalRequest<ArgumentsType, SubmitArgumentsType>
-  ) => void;
-  closeModal: () => void;
 
   // Tool logic:
   activeTool: Tool<S>;
@@ -102,7 +78,7 @@ export interface EditorContextType<S = any> {
     tool: Tool<NewToolState>,
     state?: Partial<NewToolState>
   ) => void;
-}
+} & Pick<ModalContextType, 'openModal' | 'closeModal'>;
 
 export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
