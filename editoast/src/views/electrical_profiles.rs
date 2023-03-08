@@ -9,9 +9,9 @@ use actix_web::web::{self, block, Data, Json, Path, Query};
 use actix_web::{get, post};
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
+use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
-use serde_json::{to_value, Value as JsonValue};
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -104,14 +104,14 @@ pub struct ElectricalProfileSetMetaData {
 pub struct ElectricalProfileSet {
     pub id: i64,
     pub name: String,
-    pub data: JsonValue,
+    pub data: DieselJson<ElectricalProfileSetData>,
 }
 
 #[derive(Debug, PartialEq, Insertable, Queryable)]
 #[diesel(table_name = osrd_infra_electricalprofileset)]
 struct NewElectricalProfileSet {
     pub name: String,
-    pub data: JsonValue,
+    pub data: DieselJson<ElectricalProfileSetData>,
 }
 
 impl ElectricalProfileSet {
@@ -137,8 +137,10 @@ impl ElectricalProfileSet {
         name: String,
         data: ElectricalProfileSetData,
     ) -> Result<ElectricalProfileSet> {
-        let data = to_value(data).unwrap();
-        let ep_set = NewElectricalProfileSet { name, data };
+        let ep_set = NewElectricalProfileSet {
+            name,
+            data: DieselJson::new(data),
+        };
         match block(move || {
             let mut conn = db_pool.get().expect("Failed to get DB connection");
             diesel::insert_into(dsl::osrd_infra_electricalprofileset)
@@ -158,10 +160,7 @@ impl ElectricalProfileSet {
         ep_set_id: i64,
     ) -> Result<ElectricalProfileSetData> {
         let ep_set_wrapper = Self::retrieve(conn, ep_set_id)?;
-        match serde_json::from_value::<ElectricalProfileSetData>(ep_set_wrapper.data) {
-            Ok(ep_set) => Ok(ep_set),
-            Err(e) => Err(ElectricalProfilesError::InternalError(e.to_string()).into()),
-        }
+        Ok(ep_set_wrapper.data.0)
     }
 
     pub fn list(conn: &mut PgConnection) -> Result<Vec<ElectricalProfileSetMetaData>> {
@@ -178,9 +177,6 @@ pub enum ElectricalProfilesError {
     #[error("Electrical Profile Set '{electical_profile_set_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { electical_profile_set_id: i64 },
-    #[error("An internal error occurred: '{}'", .0.to_string())]
-    #[editoast_error(status = 500)]
-    InternalError(String),
 }
 
 #[cfg(test)]
@@ -196,7 +192,7 @@ mod tests {
     use actix_web::test::{call_service, read_body_json};
     use diesel::prelude::*;
     use diesel::result::Error;
-    use serde_json::{from_value, to_value};
+    use diesel_json::Json as DieselJson;
 
     use crate::tables::osrd_infra_electricalprofileset::dsl;
 
@@ -218,7 +214,7 @@ mod tests {
             let ep_set = ElectricalProfileSet {
                 id: 1,
                 name: "test".to_string(),
-                data: to_value(&ep_set_data).unwrap(),
+                data: DieselJson::new(ep_set_data.clone()),
             };
             diesel::insert_into(dsl::osrd_infra_electricalprofileset)
                 .values(&ep_set)
@@ -228,7 +224,7 @@ mod tests {
             let ep_set_2 = ElectricalProfileSet {
                 id: 2,
                 name: "test_2".to_string(),
-                data: to_value(&ep_set_data).unwrap(),
+                data: DieselJson::new(ep_set_data),
             };
             diesel::insert_into(dsl::osrd_infra_electricalprofileset)
                 .values(&ep_set_2)
@@ -310,7 +306,6 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let created_ep_set: ElectricalProfileSet = read_body_json(response).await;
         assert_eq!(created_ep_set.name, "elec");
-        assert!(from_value::<ElectricalProfileSetData>(created_ep_set.data).is_ok());
     }
 
     #[actix_test]
