@@ -1,3 +1,4 @@
+use crate::client::get_root_url;
 use crate::documents::Document;
 use crate::error::Result;
 use crate::DbPool;
@@ -49,17 +50,15 @@ impl Document {
     ///
     /// ```
     /// let doc_key = 42;
-    /// let doc = Document::load(db_pool, doc_key).await?;
-    /// let url = doc.get_url("http://localhost:8090");
+    /// let url = Document::get_url(doc_key);
     /// assert_eq!(url, "http://localhost:8090/documents/42".to_string())
     /// ```
-    #[allow(dead_code)] // TODO: Remove once it's used by studies or rolling stocks
-    pub fn get_url<T: AsRef<str>>(&self, base_url: T) -> String {
-        let base_url = base_url.as_ref();
-        if base_url.ends_with('/') {
-            format!("{}documents/{}", base_url, self.get_key())
+    pub fn get_url(key: i64) -> String {
+        let root_url = get_root_url();
+        if root_url.ends_with('/') {
+            format!("{}documents/{}", root_url, key)
         } else {
-            format!("{}/documents/{}", base_url, self.get_key())
+            format!("{}/documents/{}", root_url, key)
         }
     }
 }
@@ -94,7 +93,7 @@ mod tests {
         .await
         .unwrap();
 
-        let url = doc.get_url("/");
+        let url = format!("/documents/{}", doc.get_key());
 
         // Should succeed
         let request = TestRequest::get().uri(&url).to_request();
@@ -128,8 +127,8 @@ mod tests {
 
         // Testing get_url
         let url_ref = format!("http://localhost:8090/documents/{key}");
-        assert_eq!(doc.get_url("http://localhost:8090"), url_ref);
-        assert_eq!(doc.get_url("http://localhost:8090/"), url_ref);
+        assert_eq!(Document::get_url(key), url_ref);
+        assert_eq!(Document::get_url(key), url_ref);
 
         // Delete doc
         Document::delete(pool.clone(), key).await.unwrap();

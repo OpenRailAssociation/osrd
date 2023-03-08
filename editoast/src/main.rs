@@ -8,6 +8,7 @@ mod generated_data;
 mod infra;
 mod infra_cache;
 mod map;
+mod projects;
 mod schema;
 mod tables;
 mod views;
