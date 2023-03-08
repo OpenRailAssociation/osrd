@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict
 
 from django.contrib.postgres.fields import ArrayField
@@ -99,13 +101,16 @@ class RollingStock(models.Model):
 
     @staticmethod
     @transaction.atomic
-    def import_railjson(rolling_stock_dict: Dict, force: bool = False):
+    def import_railjson(rolling_stock_dict: Dict, force: bool = False) -> RollingStock:
         # Parse rolling stock payload
         rs_obj: RollingStockSchema = RollingStockSchema.parse_obj(rolling_stock_dict)
 
-        if force:
-            return RollingStock.objects.update_or_create(**rs_obj.dict())
-        return RollingStock.objects.create(**rs_obj.dict())
+        rolling_stock: RollingStock
+        with transaction.atomic():
+            if force:
+                RollingStock.objects.filter(name=rs_obj.name).delete()
+            rolling_stock = RollingStock.objects.create(**rs_obj.dict())
+        return rolling_stock
 
 
 class RollingStockImage(models.Model):
