@@ -209,8 +209,7 @@ function EmptyLine(props) {
 }
 
 function Allowance(props) {
-  const { data, delAllowance, idx, selectedTrain, simulation } = props;
-  const { t } = useTranslation(['allowances']);
+  const { data, delAllowance, idx, selectedTrain, simulation, t} = props;
 
   const position2name = (position) => {
     const place = simulation.trains[selectedTrain].base.stops.find(
@@ -265,6 +264,7 @@ export default function Allowances(props) {
     mutateAllowances,
     getAllowances,
     trainDetail,
+    getAllowanceTypes
   } = props;
 
   const [allowances, setAllowances] = useState([]);
@@ -379,6 +379,7 @@ export default function Allowances(props) {
               simulation={simulation}
               t={t}
               dispatch={dispatch}
+              getAllowanceTypes={getAllowanceTypes}
             />
             <button
               type="button"
@@ -396,6 +397,7 @@ export default function Allowances(props) {
             .find((a) => a.ranges)
             ?.ranges?.map((allowance, idx) => (
               <Allowance
+                t={t}
                 data={allowance}
                 delAllowance={delAllowance}
                 idx={idx}

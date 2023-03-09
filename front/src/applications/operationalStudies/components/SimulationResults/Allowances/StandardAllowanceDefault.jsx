@@ -43,6 +43,7 @@ export default function StandardAllowanceDefault(props) {
       unit: ALLOWANCE_UNITS_KEYS.percentage,
     },
   ]);
+
   const [distribution, setDistribution] = useState(distributionsTypes[0]);
 
   const debouncedChangeType = useMemo(
