@@ -1,4 +1,7 @@
 .project-edition-modal {
+  max-height: 80vh;
+  overflow: auto;
+
   .project-edition-modal-picture {
     position: absolute;
     overflow: hidden;
