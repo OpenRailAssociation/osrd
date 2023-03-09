@@ -1,5 +1,5 @@
 use diesel::sql_types::{Jsonb, Text};
-use mvt::{Feature, GeomData, GeomEncoder, MapGrid, Tile as MvtTile, TileId};
+use mvt::{Feature, GeomData, GeomEncoder, Tile as MvtTile};
 use pointy::Transform;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -16,9 +16,9 @@ pub struct GeoJsonAndData {
 
 impl GeoJsonAndData {
     /// Converts GeoJsonAndData as mvt GeomData
-    pub fn as_geom_data(&self, transform: Transform<f64>) -> GeomData {
+    pub fn as_geom_data(&self) -> GeomData {
         let geo_json = serde_json::from_str::<GeoJson>(&self.geo_json).unwrap();
-        let mut encoder = GeomEncoder::new(geo_json.get_geom_type(), transform);
+        let mut encoder = GeomEncoder::new(geo_json.get_geom_type(), Transform::default());
         match geo_json {
             GeoJson::Point { coordinates } => {
                 encoder.add_point(coordinates.0, coordinates.1).unwrap();
@@ -99,9 +99,6 @@ fn add_tags_to_feature(feature: &mut Feature, tags: JsonValue, tag_name: String)
 /// * `layer_name` - Name of the layer
 /// * `records` - Records to add as features to the MVT tile
 pub fn create_and_fill_mvt_tile<T: AsRef<str>>(
-    z: u64,
-    x: u64,
-    y: u64,
     layer_name: T,
     records: Vec<GeoJsonAndData>,
 ) -> MvtTile {
@@ -111,19 +108,8 @@ pub fn create_and_fill_mvt_tile<T: AsRef<str>>(
         return tile;
     }
     let mut mvt_layer = tile.create_layer(layer_name.as_ref());
-    let ts = tile.extent() as f64;
-    let transform = MapGrid::default()
-        .tile_transform(
-            TileId::new(
-                x.try_into().unwrap(),
-                y.try_into().unwrap(),
-                z.try_into().unwrap(),
-            )
-            .unwrap(),
-        )
-        .scale(ts, ts);
     for record in records.into_iter() {
-        let mut feature = mvt_layer.into_feature(record.as_geom_data(transform));
+        let mut feature = mvt_layer.into_feature(record.as_geom_data());
         add_tags_to_feature(&mut feature, record.data, String::new());
         mvt_layer = feature.into_layer();
     }
@@ -142,16 +128,23 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
         "
         WITH bbox AS (
             SELECT TileBBox($1, $2, $3, 3857) AS geom
+        ), matches AS (
+             SELECT
+                 ST_AsGeoJson(ST_AsMVTGeom({on_field}, bbox.geom)) AS geo_json,
+             layer.obj_id AS obj_id
+             FROM {table_name} layer
+             CROSS JOIN bbox
+             WHERE layer.infra_id = $4
+                   AND {on_field} && bbox.geom
+                   AND ST_GeometryType({on_field}) != 'ST_GeometryCollection'
         )
-        SELECT ST_AsGeoJson(geographic) AS geo_json, 
-            {data_expr} {exclude_fields} AS data 
-        FROM {table_name} layer 
-            CROSS JOIN bbox 
-            {joins} 
-        WHERE layer.infra_id = $4
-            {where_condition}
-            AND {on_field} && bbox.geom 
-            AND ST_GeometryType({on_field}) != 'ST_GeometryCollection'
+        SELECT
+            matches.geo_json as geo_json,
+            {data_expr} {exclude_fields} AS data
+        FROM matches
+        INNER JOIN {table_name} layer on matches.obj_id = layer.obj_id and layer.infra_id = $4
+        {joins}
+        WHERE geo_json is not NULL {where_condition}
         ",
         on_field = view.on_field,
         data_expr = view.data_expr,
@@ -186,30 +179,44 @@ mod tests {
         "
         WITH bbox AS (
             SELECT TileBBox($1, $2, $3, 3857) AS geom
+        ), matches AS (
+             SELECT
+                 ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
+             layer.obj_id AS obj_id
+             FROM osrd_infra_tracksectionlayer layer
+             CROSS JOIN bbox
+             WHERE layer.infra_id = $4
+                   AND schematic && bbox.geom
+                   AND ST_GeometryType(schematic) != 'ST_GeometryCollection'
         )
-        SELECT ST_AsGeoJson(geographic) AS geo_json, 
-            track_section.data - 'geo' - 'sch' AS data 
-        FROM osrd_infra_tracksectionlayer layer 
-            CROSS JOIN bbox 
-            inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id 
-        WHERE layer.infra_id = $4
-            
-            AND schematic && bbox.geom 
-            AND ST_GeometryType(schematic) != 'ST_GeometryCollection'
+        SELECT
+            matches.geo_json as geo_json,
+            track_section.data - 'geo' - 'sch' AS data
+        FROM matches
+        INNER JOIN osrd_infra_tracksectionlayer layer on matches.obj_id = layer.obj_id and layer.infra_id = $4
+        inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
+        WHERE geo_json is not NULL
         ",
         "
         WITH bbox AS (
             SELECT TileBBox($1, $2, $3, 3857) AS geom
+        ), matches AS (
+             SELECT
+                 ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
+             layer.obj_id AS obj_id
+             FROM osrd_infra_speedsectionlayer layer
+             CROSS JOIN bbox
+             WHERE layer.infra_id = $4
+                   AND schematic && bbox.geom
+                   AND ST_GeometryType(schematic) != 'ST_GeometryCollection'
         )
-        SELECT ST_AsGeoJson(geographic) AS geo_json, 
-            speed_section.data  AS data 
-        FROM osrd_infra_speedsectionlayer layer 
-            CROSS JOIN bbox 
-            inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id 
-        WHERE layer.infra_id = $4
-            AND (not (speed_section.data @? '$.extensions.lpv_sncf.z'))
-            AND schematic && bbox.geom 
-            AND ST_GeometryType(schematic) != 'ST_GeometryCollection'
+        SELECT
+            matches.geo_json as geo_json,
+            speed_section.data  AS data
+        FROM matches
+        INNER JOIN osrd_infra_speedsectionlayer layer on matches.obj_id = layer.obj_id and layer.infra_id = $4
+        inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+        WHERE geo_json is not NULL AND (not (speed_section.data @? '$.extensions.lpv_sncf.z'))
         "
         ];
         for (i, layer_name) in ["track_sections", "speed_sections"].iter().enumerate() {
@@ -218,7 +225,7 @@ mod tests {
                 &track_sections.table_name,
                 track_sections.views.get("sch").unwrap(),
             );
-            assert_eq!(expected_queries[i], query);
+            assert_eq!(expected_queries[i].trim(), query.trim());
         }
     }
 
@@ -261,30 +268,31 @@ mod tests {
               }
             })
           }];
-        let tile = create_and_fill_mvt_tile(7, 64, 44, "signal_layers", records);
+        let tile = create_and_fill_mvt_tile("signal_layers", records);
         assert_eq!(tile.num_layers(), 1);
         assert_eq!(
             tile.to_bytes().unwrap(),
             vec![
-                26, 226, 1, 120, 2, 10, 13, 115, 105, 103, 110, 97, 108, 95, 108, 97, 121, 101,
-                114, 115, 18, 21, 18, 6, 0, 0, 1, 1, 2, 2, 24, 2, 34, 9, 9, 218, 51, 72, 18, 1, 0,
-                0, 0, 18, 22, 18, 6, 0, 3, 3, 4, 2, 5, 24, 2, 34, 10, 9, 240, 52, 196, 1, 18, 0, 0,
-                1, 1, 26, 2, 105, 100, 26, 24, 115, 112, 101, 101, 100, 95, 108, 105, 109, 105,
-                116, 95, 98, 121, 95, 116, 97, 103, 95, 116, 114, 97, 105, 110, 26, 12, 116, 114,
-                97, 99, 107, 95, 114, 97, 110, 103, 101, 115, 26, 28, 115, 112, 101, 101, 100, 95,
-                108, 105, 109, 105, 116, 95, 98, 121, 95, 116, 97, 103, 95, 110, 101, 119, 32, 116,
-                114, 97, 105, 110, 34, 3, 10, 1, 97, 34, 9, 25, 51, 51, 51, 51, 51, 51, 51, 64, 34,
-                24, 10, 22, 91, 123, 34, 98, 101, 103, 105, 110, 34, 58, 48, 44, 34, 101, 110, 100,
-                34, 58, 55, 55, 125, 93, 34, 3, 10, 1, 98, 34, 9, 25, 102, 102, 102, 102, 102, 102,
-                46, 64, 34, 25, 10, 23, 91, 123, 34, 98, 101, 103, 105, 110, 34, 58, 48, 44, 34,
-                101, 110, 100, 34, 58, 50, 49, 49, 125, 93, 40, 128, 32
+                26, 234, 1, 120, 2, 10, 13, 115, 105, 103, 110, 97, 108, 95, 108, 97, 121, 101,
+                114, 115, 18, 26, 18, 6, 0, 0, 1, 1, 2, 2, 24, 2, 34, 14, 9, 154, 240, 30, 226,
+                132, 252, 5, 18, 163, 1, 65, 9, 3, 18, 25, 18, 6, 0, 3, 3, 4, 2, 5, 24, 2, 34, 13,
+                9, 162, 201, 31, 172, 186, 251, 5, 18, 1, 6, 35, 126, 26, 2, 105, 100, 26, 24, 115,
+                112, 101, 101, 100, 95, 108, 105, 109, 105, 116, 95, 98, 121, 95, 116, 97, 103, 95,
+                116, 114, 97, 105, 110, 26, 12, 116, 114, 97, 99, 107, 95, 114, 97, 110, 103, 101,
+                115, 26, 28, 115, 112, 101, 101, 100, 95, 108, 105, 109, 105, 116, 95, 98, 121, 95,
+                116, 97, 103, 95, 110, 101, 119, 32, 116, 114, 97, 105, 110, 34, 3, 10, 1, 97, 34,
+                9, 25, 51, 51, 51, 51, 51, 51, 51, 64, 34, 24, 10, 22, 91, 123, 34, 98, 101, 103,
+                105, 110, 34, 58, 48, 44, 34, 101, 110, 100, 34, 58, 55, 55, 125, 93, 34, 3, 10, 1,
+                98, 34, 9, 25, 102, 102, 102, 102, 102, 102, 46, 64, 34, 25, 10, 23, 91, 123, 34,
+                98, 101, 103, 105, 110, 34, 58, 48, 44, 34, 101, 110, 100, 34, 58, 50, 49, 49, 125,
+                93, 40, 128, 32
             ]
         );
     }
 
     #[test]
     fn test_empty_tile() {
-        let empty_tile = create_and_fill_mvt_tile(7, 63, 23, "track_sections", vec![]);
+        let empty_tile = create_and_fill_mvt_tile("track_sections", vec![]);
         assert!(empty_tile.to_bytes().unwrap().is_empty());
     }
 }
