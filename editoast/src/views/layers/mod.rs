@@ -146,7 +146,7 @@ async fn cache_and_get_mvt_tile(
     .await
     .unwrap()?;
 
-    let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(z, x, y, layer_slug, records)
+    let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(layer_slug, records)
         .to_bytes()
         .unwrap();
     set(
