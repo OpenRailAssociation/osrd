@@ -24,7 +24,8 @@ export function sec2datetime(sec: number) {
 }
 
 export function time2sec(time: TimeString) {
-  const timeArray = time.split(':');
+  const timeString = String(time);
+  const timeArray = timeString.split(':');
   const seconds = timeArray[2] ? Number(timeArray[2]) : 0;
   return Number(timeArray[0]) * 3600 + Number(timeArray[1]) * 60 + seconds;
 }
