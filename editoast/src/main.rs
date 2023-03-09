@@ -2,12 +2,12 @@
 extern crate diesel;
 
 mod client;
-mod documents;
 mod error;
 mod generated_data;
 mod infra;
 mod infra_cache;
 mod map;
+mod models;
 mod projects;
 mod schema;
 mod tables;

@@ -1,5 +1,5 @@
-use crate::documents::Document;
 use crate::error::{InternalError, Result};
+use crate::models::{Delete, Document, Retrieve};
 use crate::tables::osrd_infra_project;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -22,6 +22,9 @@ pub enum ProjectError {
     #[error("Project '{project_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { project_id: i64 },
+    // Couldn't found the project with the given id
+    #[error("Image document '{document_key}' not found")]
+    ImageNotFound { document_key: i64 },
     // Couldn't found the project with the given id
     #[error("The provided image is not valid : {0}")]
     ImageError(ImageError),
@@ -136,8 +139,12 @@ impl From<ProjectPatchForm> for Project {
 }
 
 async fn check_image_content(db_pool: Data<DbPool>, document_key: i64) -> Result<()> {
-    let doc: Document = Document::load(db_pool, document_key).await?;
-    match image::load_from_memory(&doc.inner_data()) {
+    let doc = match Document::retrieve(db_pool, document_key).await? {
+        Some(doc) => doc,
+        None => return Err(ProjectError::ImageNotFound { document_key }.into()),
+    };
+
+    match image::load_from_memory(&doc.data.unwrap()) {
         Ok(_) => Ok(()),
         Err(e) => Err(ProjectError::ImageError(e).into()),
     }

@@ -1,24 +1,38 @@
 use crate::client::get_root_url;
-use crate::documents::Document;
 use crate::error::Result;
+use crate::models::{Create, Delete, Document, Retrieve};
 use crate::DbPool;
 use actix_http::StatusCode;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
 use actix_web::web::{scope, Bytes, Data, Header, Path};
 use actix_web::{delete, get, post, HttpResponse};
+use editoast_derive::EditoastError;
 use serde_json::json;
+use thiserror::Error;
 
 pub fn routes() -> impl HttpServiceFactory {
     scope("/documents").service((get, post, delete))
 }
 
+#[derive(Error, Debug, EditoastError)]
+#[editoast_error(base_id = "document")]
+pub enum DocumentErrors {
+    #[error("Document '{document_key}' not found")]
+    #[editoast_error(status = 404)]
+    NotFound { document_key: i64 },
+}
+
 #[get("/{document_key}")]
 async fn get(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpResponse> {
-    let doc = Document::load(db_pool, document_key.into_inner()).await?;
+    let document_key = document_key.into_inner();
+    let doc = match Document::retrieve(db_pool, document_key).await? {
+        Some(doc) => doc,
+        None => return Err(DocumentErrors::NotFound { document_key }.into()),
+    };
     Ok(HttpResponse::build(StatusCode::OK)
-        .content_type(doc.get_content_type().clone())
-        .body(doc.inner_data()))
+        .content_type(doc.content_type.unwrap())
+        .body(doc.data.unwrap()))
 }
 
 #[post("")]
@@ -31,17 +45,22 @@ async fn post(
     let content_type = content_type.essence_str();
 
     // Create document
-    let doc = Document::insert(db_pool, content_type, bytes.to_vec()).await?;
+    let doc = Document::new(content_type.to_string(), bytes.to_vec())
+        .create(db_pool)
+        .await?;
 
     // Response
     Ok(HttpResponse::build(StatusCode::CREATED).json(json!( {
-        "document_key": doc.get_key(),
+        "document_key": doc.id.unwrap(),
     })))
 }
 
 #[delete("/{document_key}")]
 async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpResponse> {
-    Document::delete(db_pool, document_key.into_inner()).await?;
+    let document_key = document_key.into_inner();
+    if !Document::delete(db_pool, document_key).await? {
+        return Err(DocumentErrors::NotFound { document_key }.into());
+    }
     Ok(HttpResponse::build(StatusCode::NO_CONTENT).body(""))
 }
 
@@ -74,7 +93,7 @@ mod tests {
     use serde::Deserialize;
 
     use crate::client::PostgresConfig;
-    use crate::documents::Document;
+    use crate::models::{Create, Delete, Document};
     use crate::views::tests::create_test_service;
 
     #[actix_test]
@@ -85,15 +104,13 @@ mod tests {
 
         // Creating the document
         let doc_data = "Test data".as_bytes().to_vec();
-        let doc = Document::insert(
-            pool.clone(),
-            ContentType::plaintext().essence_str(),
-            doc_data,
-        )
-        .await
-        .unwrap();
+        let doc = Document::new("text/plain".to_string(), doc_data.clone())
+            .create(pool.clone())
+            .await
+            .unwrap();
 
-        let url = format!("/documents/{}", doc.get_key());
+        let doc_key = doc.id.unwrap();
+        let url = format!("/documents/{}", doc_key);
 
         // Should succeed
         let request = TestRequest::get().uri(&url).to_request();
@@ -101,7 +118,7 @@ mod tests {
         assert!(response.status().is_success());
 
         // Delete the document
-        Document::delete(pool.clone(), doc.get_key()).await.unwrap();
+        assert!(Document::delete(pool.clone(), doc_key).await.unwrap());
 
         // Should fail
         let request = TestRequest::get().uri(&url).to_request();
@@ -116,22 +133,18 @@ mod tests {
 
         // Creating the document
         let doc_data = "Test data".as_bytes().to_vec();
-        let doc = Document::insert(
-            pool.clone(),
-            ContentType::plaintext().essence_str(),
-            doc_data,
-        )
-        .await
-        .unwrap();
-        let key = doc.get_key();
+        let doc = Document::new("text/plain".to_string(), doc_data.clone())
+            .create(pool.clone())
+            .await
+            .unwrap();
+        let key = doc.id.unwrap();
 
         // Testing get_url
         let url_ref = format!("http://localhost:8090/documents/{key}");
         assert_eq!(Document::get_url(key), url_ref);
-        assert_eq!(Document::get_url(key), url_ref);
 
         // Delete doc
-        Document::delete(pool.clone(), key).await.unwrap();
+        assert!(Document::delete(pool.clone(), key).await.unwrap());
     }
 
     #[derive(Deserialize, Clone, Debug)]

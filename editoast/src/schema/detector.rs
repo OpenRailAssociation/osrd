@@ -12,11 +12,11 @@ use diesel::sql_types::{Double, Text};
 
 use serde::{Deserialize, Serialize};
 
-use editoast_derive::Model;
+use editoast_derive::InfraModel;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[model(table = "crate::tables::osrd_infra_detectormodel")]
+#[infra_model(table = "crate::tables::osrd_infra_detectormodel")]
 #[derivative(Default)]
 pub struct Detector {
     pub id: Identifier,
