@@ -5,11 +5,12 @@ export type projectTypes = {
   name: string;
   description: string;
   objectives: string;
-  funders: string[];
+  funders: string;
   tags: string[];
   budget: number;
   image?: Blob | null | number;
   image_url?: string;
+  image_id?: number;
   studies?: number[];
 };
 

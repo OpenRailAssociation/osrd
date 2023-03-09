@@ -125,7 +125,14 @@ function PicturePlaceholderButtons({ currentProject, setCurrentProject }: Props)
       <button
         className="remove"
         type="button"
-        onClick={() => setCurrentProject({ ...currentProject, image: null, image_url: undefined })}
+        onClick={() =>
+          setCurrentProject({
+            ...currentProject,
+            image: null,
+            image_url: undefined,
+            image_id: undefined,
+          })
+        }
       >
         <TiDelete />
       </button>

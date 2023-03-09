@@ -36,7 +36,7 @@ const currentProjectDefaults = {
   name: '',
   description: '',
   objectives: '',
-  funders: [],
+  funders: '',
   tags: [],
   budget: 0,
 };
@@ -64,16 +64,20 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     setCurrentProject({ ...currentProject, tags: newTags });
   };
 
+  const getDocKey = async (image: Blob) => {
+    const { document_key: docKey } = await post(`${DOCUMENT_URI}`, image, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return docKey;
+  };
+
   const createProject = async () => {
     if (!currentProject.name) {
       setDisplayErrors(true);
     } else {
       try {
         if (currentProject.image) {
-          const { document_key: docKey } = await post(`${DOCUMENT_URI}`, currentProject.image, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-          currentProject.image = docKey;
+          currentProject.image = await getDocKey(currentProject.image as Blob);
         }
         const result = await post(PROJECTS_URI, currentProject);
         dispatch(updateProjectID(result.id));
@@ -90,13 +94,13 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else if (project) {
       try {
+        let imageId = currentProject.image_id;
         if (currentProject.image) {
-          const { image, ...currentProjectWithoutImage } = currentProject;
-          await patchMultipart(`${PROJECTS_URI}${project.id}/`, { image });
-          await patch(`${PROJECTS_URI}${project.id}/`, currentProjectWithoutImage);
-        } else {
-          await patch(`${PROJECTS_URI}${project.id}/`, currentProject);
+          imageId = await getDocKey(currentProject.image as Blob);
         }
+
+        currentProject.image = imageId;
+        await patch(`${PROJECTS_URI}${project.id}/`, currentProject);
         getProject(true);
         closeModal();
       } catch (error) {
@@ -236,11 +240,11 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectFunders')}
                 </div>
               }
-              value={currentProject.funders?.join()}
+              value={currentProject.funders}
               onChange={(e: any) =>
                 setCurrentProject({
                   ...currentProject,
-                  funders: e.target.value ? [e.target.value] : [],
+                  funders: e.target.value ? e.target.value : '',
                 })
               }
             />
