@@ -55,7 +55,6 @@ pub struct Project {
     #[diesel(deserialize_as = i32)]
     pub budget: Option<i32>,
     #[diesel(deserialize_as = Option<i64>)]
-    #[serde(skip_serializing)]
     pub image_id: Option<Option<i64>>,
     #[diesel(deserialize_as = NaiveDateTime)]
     pub creation_date: Option<NaiveDateTime>,
