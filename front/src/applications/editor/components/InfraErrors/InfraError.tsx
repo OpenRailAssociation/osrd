@@ -1,9 +1,8 @@
 import React, { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'react-icons/bs';
-import { DROPDOWN_STYLE_TYPES } from 'common/BootstrapSNCF/DropdownSNCF';
+import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from 'common/BootstrapSNCF/DropdownSNCF';
 import { InfraError } from './types';
-import TetherDropdown from '../TetherDropdown';
 
 /**
  * A component that display an infra error.
@@ -55,7 +54,7 @@ const InfraErrorComponent: React.FC<PropsWithChildren<{ error: InfraError; index
       </div>
       {children && (
         <div className="management-item-action">
-          <TetherDropdown
+          <DropdownSNCF
             titleContent={<i className="icons-options icons-size-1x75" />}
             items={[children]}
             type={DROPDOWN_STYLE_TYPES.transparent}
