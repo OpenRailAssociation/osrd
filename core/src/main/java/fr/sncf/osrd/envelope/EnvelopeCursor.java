@@ -207,6 +207,14 @@ public final class EnvelopeCursor {
         return a - b;
     }
 
+    /** Moves the cursor to the beginning of the envelope */
+    public void moveToBeginning() {
+        partIndex = firstIndex(envelope.size());
+        part = envelope.get(partIndex);
+        stepIndex = firstIndex(part.stepCount());
+        setPosition(getStepBeginPos());
+    }
+
     /** Moves the cursor to the end of the envelope */
     public void moveToEnd() {
         part = null;

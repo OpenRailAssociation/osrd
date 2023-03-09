@@ -24,13 +24,7 @@ public class StandaloneSim {
      * Runs a batch of standalone simulations for multiple trains.
      * Interactions between trains are ignored.
      */
-    public static StandaloneSimResult run(
-            SignalingInfra infra,
-            TrainPath trainPath,
-            EnvelopePath envelopePath,
-            List<StandaloneTrainSchedule> schedules,
-            double timeStep
-    ) {
+    public static StandaloneSimResult run(SignalingInfra infra, TrainPath trainPath, EnvelopePath envelopePath, List<StandaloneTrainSchedule> schedules, double timeStep) {
         // Compute envelopes
         var result = new StandaloneSimResult();
         var cacheSpeedLimits = new HashMap<StandaloneTrainSchedule, List<ResultEnvelopePoint>>();
@@ -46,30 +40,18 @@ public class StandaloneSim {
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base
-                var modeAndProfileMap = envelopePath.getModeAndProfileMap(
-                        trainSchedule.options.ignoreElectricalProfiles ? null : rollingStock.powerClass);
-                var curvesAndConditions = rollingStock.mapTractiveEffortCurves(modeAndProfileMap,
-                        trainSchedule.comfort, envelopePath.getLength());
-                var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep,
-                        curvesAndConditions.curves());
-                cacheModeAndProfiles.put(trainSchedule, ResultModeAndProfilePoint.from(
-                        curvesAndConditions.conditions(), modeAndProfileMap));
+                var modeAndProfileMap = envelopePath.getModeAndProfileMap(trainSchedule.options.ignoreElectricalProfiles ? null : rollingStock.powerClass);
+                var curvesAndConditions = rollingStock.mapTractiveEffortCurves(modeAndProfileMap, trainSchedule.comfort, envelopePath.getLength());
+                var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, curvesAndConditions.curves());
+                cacheModeAndProfiles.put(trainSchedule, ResultModeAndProfilePoint.from(curvesAndConditions.conditions(), modeAndProfileMap));
                 var envelope = computeMaxEffortEnvelope(context, mrsp, trainSchedule);
-                var simResultTrain = ScheduleMetadataExtractor.run(
-                        envelope,
-                        trainPath,
-                        trainSchedule,
-                        infra);
+                var simResultTrain = ScheduleMetadataExtractor.run(envelope, trainPath, trainSchedule, infra);
                 cacheMaxEffort.put(trainSchedule, simResultTrain);
 
                 // Eco
                 if (!trainSchedule.allowances.isEmpty()) {
                     var ecoEnvelope = applyAllowances(envelope, trainSchedule.allowances);
-                    var simEcoResultTrain = ScheduleMetadataExtractor.run(
-                            ecoEnvelope,
-                            trainPath,
-                            trainSchedule,
-                            infra);
+                    var simEcoResultTrain = ScheduleMetadataExtractor.run(ecoEnvelope, trainPath, trainSchedule, infra);
                     cacheEco.put(trainSchedule, simEcoResultTrain);
                 }
             }
