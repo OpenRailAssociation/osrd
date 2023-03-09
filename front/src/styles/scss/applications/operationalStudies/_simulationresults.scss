@@ -21,7 +21,7 @@ select.sm {
     border-radius: 4px;
     width: 100%;
     background: var(--secondary);
-    z-index: 1;
+    z-index: 2;
     top: 0;
     left: 0;
     padding: 0.5rem;
@@ -32,10 +32,14 @@ select.sm {
       padding: 0.1rem;
       line-height: 0.8rem;
     }
-    .rounded, .form-control, .btn {
+    .rounded,
+    .form-control,
+    .btn {
       border-radius: 4px !important;
     }
-    .rounded, .form-control, .btn {
+    .rounded,
+    .form-control,
+    .btn {
       border-radius: 4px !important;
     }
   }
