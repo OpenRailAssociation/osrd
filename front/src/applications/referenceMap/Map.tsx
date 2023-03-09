@@ -36,7 +36,6 @@ import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { MapLayerMouseEvent } from '../../types';
 
@@ -50,9 +49,10 @@ function Map() {
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
+
   const updateViewportChange = useCallback(
     (value, updateRouter = false) => {
-      dispatch(updateViewport(value, '/map', updateRouter));
+      dispatch(updateViewport(value, `/map`, updateRouter));
     },
     [dispatch]
   );
@@ -91,7 +91,12 @@ function Map() {
     return interactiveLayersLocal;
   };
 
+  /**
+   * When the component mount
+   * => we check if url has viewport and set it in store
+   */
   useEffect(() => {
+    // viewport
     const newViewport: Partial<Viewport> = {};
     if (!isNil(urlLat)) newViewport.latitude = parseFloat(urlLat);
     if (!isNil(urlLon)) newViewport.longitude = parseFloat(urlLon);

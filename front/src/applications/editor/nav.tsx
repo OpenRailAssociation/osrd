@@ -7,6 +7,8 @@ import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 import { GiRailway } from 'react-icons/gi';
 import turfCenter from '@turf/center';
+import { isNil } from 'lodash';
+import { NavigateFunction } from 'react-router-dom';
 
 import { Viewport } from 'reducers/map';
 import { ModalContextType } from '../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -17,7 +19,7 @@ import {
   EditoastType,
   EditorContextType,
 } from './tools/types';
-import InfraSelectionModal from './components/InfraSelectionModal';
+import InfraSelectorModal from '../../common/InfraSelector/InfraSelectorModal';
 import InfraErrorsModal from './components/InfraErrors/InfraErrorsModal';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
@@ -42,13 +44,17 @@ export interface NavButton {
   id: string;
   icon: IconType;
   labelTranslationKey: string;
+
   // Tool appearance:
   isActive?: (editorState: EditorState) => boolean;
   isHidden?: (editorState: EditorState) => boolean;
   isDisabled?: (editorState: EditorState) => boolean;
+  isBlink?: (editorState: EditorState, infraId?: string | number) => boolean;
+
   // On click button:
   onClick?: <S = unknown>(
     context: {
+      navigate: NavigateFunction;
       dispatch: Dispatch;
       viewport: Viewport;
       editorState: EditorState;
@@ -148,8 +154,9 @@ const NavButtons: NavButton[][] = [
       id: 'infras',
       icon: GiRailway,
       labelTranslationKey: 'Editor.nav.select-infra',
-      async onClick({ openModal }) {
-        openModal(<InfraSelectionModal />, 'lg');
+      isBlink: (_editorState, infraId) => isNil(infraId),
+      async onClick({ navigate, openModal }) {
+        openModal(<InfraSelectorModal onInfraChange={(id) => navigate(`/editor/${id}`)} />, 'lg');
       },
     },
     {

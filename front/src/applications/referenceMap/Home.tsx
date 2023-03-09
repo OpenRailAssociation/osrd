@@ -7,9 +7,8 @@ import { FaLock } from 'react-icons/fa';
 import logo from 'assets/pictures/home/map.svg';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import LoaderFill from 'common/Loader';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Map from './Map';
-import { osrdEditoastApi } from '../../common/api/osrdEditoastApi';
 
 const HomeReferenceMap: FC = () => {
   const { t } = useTranslation(['home', 'referenceMap']);
