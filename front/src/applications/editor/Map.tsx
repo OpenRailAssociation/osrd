@@ -46,7 +46,7 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   activeTool: Tool<S>;
   mapStyle: string;
   viewport: Viewport;
-  setViewport: (newViewport: Partial<Viewport>) => void;
+  setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
 }
 
 interface MapState {
@@ -118,7 +118,9 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           mapStyle={osmBlankStyle}
           onMove={(e) => setViewport(e.viewState)}
           onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
-          onMoveEnd={() => setMapState((prev) => ({ ...prev, isDragging: false }))}
+          onMoveEnd={() => {
+            setMapState((prev) => ({ ...prev, isDragging: false }));
+          }}
           onMouseOut={() => {
             setToolState({ hovered: null });
           }}

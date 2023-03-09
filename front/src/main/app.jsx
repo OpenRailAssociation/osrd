@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 
 import 'i18n';
-import { bootstrapOSRDConf } from 'reducers/osrdconf';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { attemptLoginOnLaunch } from 'reducers/user';
 
@@ -23,7 +22,6 @@ import Scenario from 'applications/operationalStudies/views/Scenario';
 
 export default function App() {
   const user = useSelector((state) => state.user);
-  const infraID = useSelector(getInfraID);
 
   const { darkmode } = useSelector((state) => state.main);
   const dispatch = useDispatch();
@@ -47,12 +45,6 @@ export default function App() {
       import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
     }
   }, [darkmode]);
-
-  // Loading initial data
-  useEffect(() => {
-    dispatch(bootstrapOSRDConf(infraID));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <Suspense fallback={<Loader />}>
