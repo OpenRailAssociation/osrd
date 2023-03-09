@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo, useContext } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Form, { FieldProps, utils } from '@rjsf/core';
 import { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
@@ -8,8 +8,8 @@ import { IoIosCut } from 'react-icons/io';
 import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
+import { useModal } from '../../../../common/BootstrapSNCF/ModalSNCF';
 import HelpModal from './HelpModal';
-import { ModalContext } from '../../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { tooltipPosition, notEmpty } from './utils';
 import {
   LinearMetadataItem,
@@ -32,7 +32,7 @@ import './style.scss';
 
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
-  const { openModal, closeModal } = useContext(ModalContext);
+  const { openModal, closeModal } = useModal();
   const { t } = useTranslation();
   const Fields = utils.getDefaultRegistry().fields;
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { FaPencilAlt } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { budgetFormat } from 'utils/numbers';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getProjectID } from 'reducers/osrdconf/selectors';
 import { useSelector, useDispatch } from 'react-redux';
 import { get } from 'common/requests';
@@ -43,7 +43,7 @@ function displayStudiesList(studiesList, setFilterChips) {
 
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const [project, setProject] = useState();
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,7 @@ import ScenarioCardEmpty from 'applications/operationalStudies/components/Study/
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import { FaPencilAlt } from 'react-icons/fa';
 import { budgetFormat } from 'utils/numbers';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
@@ -43,7 +43,7 @@ function displayScenariosList(scenariosList, setFilterChips) {
 
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const [project, setProject] = useState();
   const [study, setStudy] = useState();
   const [scenariosList, setScenariosList] = useState();

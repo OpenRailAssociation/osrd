@@ -1,4 +1,4 @@
-import React, { FC, useContext, useMemo, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -11,8 +11,7 @@ import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { Modal } from 'common/BootstrapSNCF/ModalSNCF/Modal';
+import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { LayerType, EDITOAST_TO_LAYER_DICT, EditoastType } from '../tools/types';
 import { selectLayers } from '../../../reducers/editor';
@@ -44,7 +43,7 @@ const LayersModal: FC<LayersModalProps> = ({
 }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { closeModal } = useContext(ModalContext);
+  const { closeModal } = useModal();
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
   const selectionCounts = useMemo(
     () =>

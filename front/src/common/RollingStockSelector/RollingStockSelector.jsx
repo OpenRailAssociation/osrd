@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
@@ -10,12 +10,12 @@ import {
   RollingStockInfos,
 } from 'common/RollingStockSelector/RollingStockHelpers';
 import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/selectors';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function RollingStockSelector() {
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const rollingStockID = useSelector(getRollingStockID);
   const rollingStockComfort = useSelector(getRollingStockComfort);
 

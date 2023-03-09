@@ -1,11 +1,10 @@
-import React, { FC, useContext, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { datetime2string } from 'utils/timeManipulation';
 import { useNavigate } from 'react-router';
 
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { Modal } from 'common/BootstrapSNCF/ModalSNCF/Modal';
+import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import { Spinner } from 'common/Loader';
 import { get } from '../../../common/requests';
 import { addNotification, setFailure } from '../../../reducers/main';
@@ -25,7 +24,7 @@ async function getInfrasList(): Promise<InfrasList> {
 const InfraSelectorModal: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { closeModal } = useContext(ModalContext);
+  const { closeModal } = useModal();
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [infras, setInfras] = useState<InfrasList | null>(null);
 

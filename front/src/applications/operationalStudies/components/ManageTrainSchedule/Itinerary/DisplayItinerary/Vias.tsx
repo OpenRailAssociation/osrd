@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import { RiMapPin3Fill } from 'react-icons/ri';
@@ -9,7 +9,7 @@ import { getVias } from 'reducers/osrdconf/selectors';
 
 import DisplayVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayVias';
 import { RootState } from 'reducers';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
@@ -21,7 +21,7 @@ function Vias(props: ViasProps) {
   const vias = useSelector(getVias);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector((state: RootState) => state.osrdconf);
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
 
   const viasTitle = (
     <h2 className="d-flex align-items-center mb-0 ml-4">

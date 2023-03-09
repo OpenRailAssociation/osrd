@@ -3,19 +3,19 @@ import { Route, Routes } from 'react-router-dom';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import React, { useContext } from 'react';
+import React from 'react';
 import logo from 'assets/pictures/home/customget.svg';
 import { useTranslation } from 'react-i18next';
 
 import CustomGET from 'applications/customget/views/CustomGET';
 
 import './Home.scss';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import UploadFileModal from './components/uploadFileModal';
 
 function HomeCustomGET() {
   const { t } = useTranslation(['customget', 'home']);
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
 
   return (
     <div className="customget-home">
