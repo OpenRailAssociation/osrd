@@ -1,22 +1,23 @@
 extern crate proc_macro;
 
 mod error;
+mod infra_model;
 mod model;
 
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
-/// A Model custom derive.
+/// An InfraModel custom derive.
 ///
 /// Usage: you should provide a diesel table path, like so
-/// `#[model(table = "crate::tables::osrd_infra_bufferstopmodel")]`
+/// `#[infra_model(table = "crate::tables::osrd_infra_bufferstopmodel")]`
 ///
 /// The type must be OSRDIdentified, and must be serializable
 ///
 /// Provides a type impl with an insertion method, persist_batch
-#[proc_macro_derive(Model, attributes(model))]
-pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    model::model(input)
+#[proc_macro_derive(InfraModel, attributes(infra_model))]
+pub fn infra_model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    infra_model::infra_model(input)
 }
 
 /// An EditoastError custom derive.
@@ -51,6 +52,43 @@ pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 pub fn error(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
     error::expand_editoast_error(&mut input)
+        .unwrap_or_else(darling::Error::write_errors)
+        .into()
+}
+
+/// # A Model custom derive.
+///
+/// This derive provides implementations for common database operations traits.
+///
+/// ## Usage
+///
+/// You should provide a diesel table path, like so
+/// ```#[model(table = "crate::tables::osrd_infra_project")]```
+///
+/// Then you can enable implementations like so:
+/// ```#[model(retrieve, create, delete)]```
+///
+/// ## Available implementations
+///
+/// - **retrieve** (enable `Retrieve` trait)
+///   - `retrieve(Data<DbPool>, i64) -> Result<Option<Self>>`
+///   - `retrieve_conn(&mut PgConnection, i64) -> Result<Option<Self>>`
+/// - **create** (enable `Create` trait)
+///   - `create(self, Data<DbPool>) -> Result<Self>`
+///   - `create_conn(self, &mut PgConnection) -> Result<Self>`
+/// - **delete** (enable `Delete` trait)
+///   - `delete(Data<DbPool>, i64) -> Result<bool>`
+///   - `delete_conn(&mut PgConnection, i64) -> Result<bool>`
+///
+/// ## Requirements
+///
+/// The type must implements:
+///   - Queryable (for **retrieve**)
+///   - Insertable (for **create**)
+#[proc_macro_derive(Model, attributes(model))]
+pub fn model(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let mut input = parse_macro_input!(input as DeriveInput);
+    model::model(&mut input)
         .unwrap_or_else(darling::Error::write_errors)
         .into()
 }

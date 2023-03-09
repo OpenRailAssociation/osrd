@@ -803,6 +803,7 @@ dependencies = [
  "actix-cors",
  "actix-http",
  "actix-web",
+ "async-trait",
  "chashmap",
  "chrono",
  "clap",

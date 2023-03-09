@@ -11,12 +11,12 @@ use crate::infra_cache::ObjectCache;
 use crate::map::BoundingBox;
 
 use derivative::Derivative;
-use editoast_derive::Model;
+use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[model(table = "crate::tables::osrd_infra_tracksectionmodel")]
+#[infra_model(table = "crate::tables::osrd_infra_tracksectionmodel")]
 #[derivative(Default)]
 pub struct TrackSection {
     pub id: Identifier,

@@ -2,7 +2,7 @@ use super::utils::Identifier;
 use super::utils::NonBlankString;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDIdentified;
-use editoast_derive::Model;
+use editoast_derive::InfraModel;
 
 use super::OSRDTyped;
 use super::ObjectType;
@@ -12,9 +12,9 @@ use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
 
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[model(table = "crate::tables::osrd_infra_catenarymodel")]
+#[infra_model(table = "crate::tables::osrd_infra_catenarymodel")]
 #[derivative(Default)]
 pub struct Catenary {
     pub id: Identifier,
