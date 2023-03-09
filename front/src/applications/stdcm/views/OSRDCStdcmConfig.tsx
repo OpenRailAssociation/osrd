@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
@@ -133,5 +134,5 @@ OSRDConfig.propTypes = {
   setCurrentStdcmRequestStatus: PropTypes.func,
 };
 OSRDConfig.defaultProps = {
-  setCurrentStdcmRequestStatus: () => {},
+  setCurrentStdcmRequestStatus: noop,
 };

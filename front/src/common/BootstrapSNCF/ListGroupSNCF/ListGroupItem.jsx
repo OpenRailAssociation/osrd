@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ListItem from 'common/BootstrapSNCF/ListGroupSNCF/ListItem';
@@ -39,7 +40,7 @@ export default class ListGroupItem extends Component {
           onClick={this.toggleActive}
           role="button"
           tabIndex={0}
-          onKeyPress={() => {}}
+          onKeyPress={noop}
         >
           <div className="management-item-caret" />
           <div className="management-item-main">

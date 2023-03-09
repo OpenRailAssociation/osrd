@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-
+import { noop } from 'lodash';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   isolatedEnableInteractivity,
@@ -338,15 +338,15 @@ SpaceTimeChart.propTypes = {
 
 SpaceTimeChart.defaultProps = {
   allowancesSettings: ORSD_GET_SAMPLE_DATA.allowancesSettings,
-  dispatchUpdateChart: () => {},
-  dispatchUpdateDepartureArrivalTimes: () => {},
-  dispatchUpdateMustRedraw: () => {},
-  dispatchUpdateSelectedTrain: () => {},
-  dispatchUpdateTimePositionValues: () => {},
+  dispatchUpdateChart: noop,
+  dispatchUpdateDepartureArrivalTimes: noop,
+  dispatchUpdateMustRedraw: noop,
+  dispatchUpdateSelectedTrain: noop,
+  dispatchUpdateTimePositionValues: noop,
   inputSelectedTrain: ORSD_GET_SAMPLE_DATA.selectedTrain,
   initialHeightOfSpaceTimeChart: 400,
-  onOffsetTimeByDragging: () => {},
-  onSetBaseHeightOfSpaceTimeChart: () => {},
+  onOffsetTimeByDragging: noop,
+  onSetBaseHeightOfSpaceTimeChart: noop,
   positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
   simulation: ORSD_GET_SAMPLE_DATA.simulation.present,
   simulationIsPlaying: false,

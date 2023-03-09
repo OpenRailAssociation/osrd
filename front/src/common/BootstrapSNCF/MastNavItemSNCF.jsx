@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router';
@@ -29,7 +30,7 @@ function MastNavItemSNCF(props) {
     <div className="mastnav-bottom d-none d-lg-block">
       <Link
         to={link}
-        onClick={match !== null ? customAction : () => {}}
+        onClick={match !== null ? customAction : noop}
         className="mastnav-item mastnav-item-horizontal"
       >
         {iconHTML}
@@ -40,7 +41,7 @@ function MastNavItemSNCF(props) {
     <li>
       <Link
         to={link}
-        onClick={match !== null ? customAction : () => {}}
+        onClick={match !== null ? customAction : noop}
         className={`mastnav-item ${mastNavItemSNCFActive}`}
       >
         {iconHTML}
@@ -60,7 +61,7 @@ MastNavItemSNCF.propTypes = {
 
 MastNavItemSNCF.defaultProps = {
   bottom: false,
-  customAction: () => {},
+  customAction: noop,
 };
 
 export default MastNavItemSNCF;

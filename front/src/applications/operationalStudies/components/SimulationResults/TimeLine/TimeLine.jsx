@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import * as d3 from 'd3';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -139,7 +140,7 @@ export default function TimeLine() {
         dispatch(updateChart({ ...chart, x: chart.x.domain([newX0, newX1]) }));
         dispatch(updateMustRedraw(true));
       })
-      .on('start', () => {})
+      .on('start', noop)
       .on('drag', () => {
         dragValue += d3.event.dx;
         d3.select('#rectZoomTimeLine').attr('transform', `translate(${dragValue},0)`);
