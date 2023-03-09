@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
+
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
 import fr.sncf.osrd.envelope.EnvelopePoint;
@@ -17,10 +19,7 @@ import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintain;
-
 import java.util.*;
-
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
 
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
  * It is the max physical speed at any given point, ignoring allowances */
@@ -37,8 +36,8 @@ public class MaxEffortEnvelope {
             Envelope maxSpeedProfile,
             double initialSpeed
     ) {
-        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
+        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
 
         TreeMap<EnvelopePoint,EnvelopeProfile> positionsMap = new TreeMap<>(new EnvelopePoint.EnvelopePointComparator());
 
