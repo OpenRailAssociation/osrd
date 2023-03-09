@@ -1,5 +1,6 @@
+import { noop } from 'lodash';
 import PropTypes from 'prop-types';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
 import { useSelector } from 'react-redux';
 
@@ -498,7 +499,7 @@ EmptyLine.defaultProps = {
 
 Allowance.defaultProps = {
   t: (key) => key,
-  dispatch: () => {},
-  getAllowances: () => {},
-  mutateAllowances: () => {},
+  dispatch: noop,
+  getAllowances: noop,
+  mutateAllowances: noop,
 };

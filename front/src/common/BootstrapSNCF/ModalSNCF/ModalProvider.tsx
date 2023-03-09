@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import React, {
   FC,
   PropsWithChildren,
@@ -35,9 +36,9 @@ const initialModalContext: ModalContextType = {
   isOpen: false,
   content: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  openModal: (_content) => {},
+  openModal: noop,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  closeModal: () => {},
+  closeModal: noop,
 };
 
 /**

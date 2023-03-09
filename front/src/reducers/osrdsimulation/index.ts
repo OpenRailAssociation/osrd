@@ -1,5 +1,6 @@
 import { AnyAction } from 'redux';
 import produce from 'immer';
+import { noop } from 'lodash';
 
 import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 import {
@@ -144,10 +145,10 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
 
         draft.consolidatedSimulation = createTrain(
-          () => {},
+          noop,
           KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
           draft.simulation.present.trains,
-          () => {}
+          noop
         );
         draft.displaySimulation =
           draft.simulation.present?.trains.length > 0 &&
