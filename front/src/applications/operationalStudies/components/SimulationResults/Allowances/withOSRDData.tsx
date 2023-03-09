@@ -8,6 +8,8 @@ import { trainscheduleURI } from 'applications/operationalStudies/components/Sim
 import { setFailure, setSuccess } from 'reducers/main';
 import Allowances from './Allowances';
 
+import { ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
+
 // Initialy try to implement https://react-typescript-cheatsheet.netlify.app/docs/hoc/, no success
 
 function withOSRDData<T>(Component: ComponentType<T>) {
@@ -37,6 +39,26 @@ function withOSRDData<T>(Component: ComponentType<T>) {
         );
       }
     };
+
+    const allowanceTypes = [
+      {
+        id: 'time',
+        label: t('allowanceTypes.time'),
+        unit: ALLOWANCE_UNITS_KEYS.time,
+      },
+      {
+        id: 'percentage',
+        label: t('allowanceTypes.percentage'),
+        unit: ALLOWANCE_UNITS_KEYS.percentage,
+      },
+      {
+        id: 'time_per_distance',
+        label: t('allowanceTypes.time_per_distance'),
+        unit: ALLOWANCE_UNITS_KEYS.time_per_distance,
+      },
+    ];
+
+    const getAllowanceTypes = () => allowanceTypes;
 
     // Alowance mutation in REST strat
     const mutateAllowances = async (newAllowances: any) => {
@@ -95,6 +117,7 @@ function withOSRDData<T>(Component: ComponentType<T>) {
         selectedTrain={selectedTrain} // To be removed
         trainDetail={trainDetail}
         persistentAllowances={trainDetail.allowances}
+        getAllowanceTypes={getAllowanceTypes}
       />
     );
   };
