@@ -50,6 +50,8 @@ export default function drawTrain(
   const applyTrainCurveTranslation = (offset) => {
     const translation = rotate ? `0,${offset}` : `${offset},0`;
     d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
+    const releventLine = rotate ? '#horizontal-line' : '#vertical-line';
+    d3.select(releventLine).attr('transform', `translate(${translation})`);
   };
 
   let debounceTimeoutId;

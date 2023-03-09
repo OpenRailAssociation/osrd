@@ -19,6 +19,7 @@ import {
   getIsPlaying,
 } from 'reducers/osrdsimulation/selectors';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
+import { time2sec, datetime2time, sec2datetime } from 'utils/timeManipulation';
 import SpaceTimeChart from './SpaceTimeChart';
 
 /**
@@ -40,8 +41,13 @@ const withOSRDData = (Component) =>
     const dispatch = useDispatch();
 
     // Consequence of direct actions by component
-    const onOffsetTimeByDragging = (trains) => {
+    const onOffsetTimeByDragging = (trains, offset) => {
       dispatch(persistentUpdateSimulation({ ...simulation, trains }));
+      if (timePosition && offset) {
+        const newTimePositionSec = time2sec(datetime2time(timePosition)) + offset;
+
+        dispatch(updateTimePositionValues(sec2datetime(newTimePositionSec)));
+      }
     };
 
     const dispatchUpdatePositionValues = (newPositionValues) => {
