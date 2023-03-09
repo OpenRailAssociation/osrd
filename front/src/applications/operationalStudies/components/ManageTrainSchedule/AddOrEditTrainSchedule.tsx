@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { post } from 'common/requests';
@@ -11,18 +10,18 @@ import { time2sec, sec2time } from 'utils/timeManipulation';
 import debounce from 'lodash/debounce';
 import { FaPlus } from 'react-icons/fa';
 
-import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/formatConf';
-import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
+import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/AddOrEditTrainSchedule/formatConf';
+import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddOrEditTrainSchedule/trainNameHelper';
 import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getConf, getTimetableID } from 'reducers/osrdconf/selectors';
 import getTimetable from '../Scenario/getTimetable';
 
-export default function AddTrainSchedule({
-  setDisplayTrainScheduleManagement,
-}: {
-  setDisplayTrainScheduleManagement: (type: string) => void;
-}) {
+type Props = {
+  setDisplayTrainScheduleManagement: (arg0: string) => void;
+};
+
+export default function AddOrEditTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
   const [name, setName] = useState('');
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
@@ -30,7 +29,6 @@ export default function AddTrainSchedule({
   const [trainDelta, setTrainDelta] = useState(15);
   const osrdconf = useSelector(getConf);
   const timetableID = useSelector(getTimetableID);
-
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
 
@@ -70,15 +68,16 @@ export default function AddTrainSchedule({
         setIsWorking(false);
         getTimetable(timetableID);
         setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (e: any) {
+      } catch (e: unknown) {
         setIsWorking(false);
-        dispatch(
-          setFailure({
-            name: e.name,
-            message: t(`errorMessages.${e.message}`),
-          })
-        );
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: t(`errorMessages.${e.message}`),
+            })
+          );
+        }
       }
     }
   };
@@ -105,7 +104,7 @@ export default function AddTrainSchedule({
             type="text"
             label={t('trainScheduleName')}
             id="osrdconf-name"
-            onChange={(e: { target: { value: string } }) => handleNameChange(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleNameChange(e.target.value)}
             value={name}
             noMargin
             sm
@@ -116,7 +115,7 @@ export default function AddTrainSchedule({
             type="number"
             label={t('trainScheduleStep')}
             id="osrdconf-traincount"
-            onChange={(e: { target: { value: string } }) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setTrainStep(parseInt(e.target.value, 10))
             }
             value={trainStep}
@@ -129,7 +128,7 @@ export default function AddTrainSchedule({
             type="number"
             label={t('trainScheduleCount')}
             id="osrdconf-traincount"
-            onChange={(e) => setTrainCount(+e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainCount(+e.target.value)}
             value={trainCount}
             noMargin
             sm
@@ -140,7 +139,7 @@ export default function AddTrainSchedule({
             type="number"
             label={t('trainScheduleDelta')}
             id="osrdconf-delta"
-            onChange={(e) => setTrainDelta(+e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainDelta(+e.target.value)}
             value={trainDelta}
             unit="min"
             noMargin
@@ -172,7 +171,3 @@ export default function AddTrainSchedule({
     </div>
   );
 }
-
-AddTrainSchedule.propTypes = {
-  setDisplayTrainScheduleManagement: PropTypes.func.isRequired,
-};
