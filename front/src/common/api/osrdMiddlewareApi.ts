@@ -862,6 +862,10 @@ export type LightRollingStock = {
       };
     };
   };
+  base_power_class?: string;
+  power_restrictions?: {
+    [key: string]: string;
+  };
   metadata?: object;
   liveries?: {
     id?: number;
@@ -875,7 +879,9 @@ export type EffortCurve = {
 };
 export type ConditionalEffortCurve = {
   cond?: {
-    comfort?: Comfort;
+    comfort?: Comfort | null;
+    electrical_profile_level?: string | null;
+    power_restriction_code?: string | null;
   } | null;
   curve?: EffortCurve;
 };
@@ -937,6 +943,11 @@ export type Allowance =
   | ({
       allowance_type: 'StandardAllowance';
     } & StandardAllowance);
+export type PowerRestrictionRange = {
+  begin_position?: number;
+  end_position?: number;
+  power_restriction_code?: string;
+};
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;
 };
@@ -952,6 +963,7 @@ export type StandaloneSimulationParameters = {
     allowances?: Allowance[];
     speed_limit_tags?: string;
     comfort?: Comfort;
+    power_restriction_ranges?: PowerRestrictionRange[] | null;
     options?: TrainScheduleOptions | null;
   }[];
 };
