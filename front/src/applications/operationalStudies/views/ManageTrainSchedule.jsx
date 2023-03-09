@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 
 import { updateViewport } from 'reducers/map';
 
-import AddTrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainLabels';
-import AddTrainSchedule from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule';
+import TrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/TrainLabels';
+import AddOrEditTrainSchedule from 'applications/operationalStudies/components/ManageTrainSchedule/AddOrEditTrainSchedule';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
@@ -60,8 +60,10 @@ export default function ManageTrainSchedule(props) {
       <div className="manage-train-schedule-title">
         3.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.configValidate')}
       </div>
-      <AddTrainLabels />
-      <AddTrainSchedule setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement} />
+      <TrainLabels />
+      <AddOrEditTrainSchedule
+        setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+      />
     </>
   );
 }
