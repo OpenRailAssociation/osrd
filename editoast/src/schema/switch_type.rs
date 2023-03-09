@@ -9,13 +9,13 @@ use crate::infra_cache::ObjectCache;
 
 use derivative::Derivative;
 
-use editoast_derive::Model;
+use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Model)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[model(table = "crate::tables::osrd_infra_switchtypemodel")]
+#[infra_model(table = "crate::tables::osrd_infra_switchtypemodel")]
 #[derivative(Default)]
 pub struct SwitchType {
     pub id: Identifier,

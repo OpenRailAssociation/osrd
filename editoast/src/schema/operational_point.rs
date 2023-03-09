@@ -9,12 +9,12 @@ use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
 
-use editoast_derive::Model;
+use editoast_derive::InfraModel;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[model(table = "crate::tables::osrd_infra_operationalpointmodel")]
+#[infra_model(table = "crate::tables::osrd_infra_operationalpointmodel")]
 #[derivative(Default)]
 pub struct OperationalPoint {
     pub id: Identifier,

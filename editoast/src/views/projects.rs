@@ -1,5 +1,5 @@
-use crate::documents::Document;
 use crate::error::Result;
+use crate::models::Document;
 use crate::projects::{Project, ProjectPatchForm};
 use crate::projects::{ProjectCreateForm, ProjectWithStudies};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
