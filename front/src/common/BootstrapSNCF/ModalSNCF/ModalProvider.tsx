@@ -72,7 +72,7 @@ export const ModalSNCF: FC = () => {
 
   return (
     <>
-      {isOpen && (
+      {content && (
         <div
           className={cx('modal fade', isOpen && 'show')}
           style={{ display: 'block' }}
@@ -101,25 +101,39 @@ export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const [modalContext, setModalContext] = useState<ModalContextType>(initialModalContext);
 
   const openModal: ModalContextType['openModal'] = useCallback((content, size, className) => {
+    document.body.classList.add('modal-open');
     setModalContext((prev) => ({
       ...prev,
-      isOpen: true,
+      isOpen: false,
       size,
       className,
       content,
     }));
-    document.body.classList.add('modal-open');
+    setTimeout(
+      () =>
+        setModalContext((prev) => ({
+          ...prev,
+          isOpen: true,
+        })),
+      0
+    );
   }, []);
 
   const closeModal = useCallback(() => {
     setModalContext((prev) => ({
       ...prev,
       isOpen: false,
-      size: undefined,
-      className: undefined,
-      content: null,
     }));
-    document.body.classList.remove('modal-open');
+    setTimeout(() => {
+      document.body.classList.remove('modal-open');
+      setModalContext((prev) => ({
+        ...prev,
+        isOpen: false,
+        size: undefined,
+        className: undefined,
+        content: null,
+      }));
+    }, 0);
   }, []);
 
   /**

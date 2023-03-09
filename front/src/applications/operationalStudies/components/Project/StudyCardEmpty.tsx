@@ -1,12 +1,12 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 import AddOrEditStudyModal from 'applications/operationalStudies/components/Study/AddOrEditStudyModal';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 export default function StudyCard() {
   const { t } = useTranslation(['operationalStudies/project', 'operationalStudies/study']);
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
 
   return (
     <div

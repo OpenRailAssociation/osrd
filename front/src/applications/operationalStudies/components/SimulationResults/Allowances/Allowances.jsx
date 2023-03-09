@@ -13,7 +13,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import StandardAllowanceDefault from 'applications/operationalStudies/components/SimulationResults/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
 function EmptyLine(props) {
@@ -28,7 +28,7 @@ function EmptyLine(props) {
     marecoEndPosition,
     defaultDistributionId,
   } = props;
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
 
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);

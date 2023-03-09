@@ -1,12 +1,12 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { GiRailway } from 'react-icons/gi';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { useSelector } from 'react-redux';
 
 export default function ButtonMapInfras() {
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const infraID = useSelector(getInfraID);
   return (
     <button

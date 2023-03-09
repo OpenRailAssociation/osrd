@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { OsrdConfState } from 'applications/operationalStudies/consts';
-import { Modal } from 'common/BootstrapSNCF/ModalSNCF/Modal';
+import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import InfraErrorsList from './InfraErrorsList';
 import { InfraError } from './types';
 

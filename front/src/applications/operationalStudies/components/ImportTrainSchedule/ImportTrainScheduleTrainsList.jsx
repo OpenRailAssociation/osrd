@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
@@ -6,7 +6,7 @@ import { get } from 'axios';
 import ImportTrainScheduleTrainDetail from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleTrainDetail';
 import ImportTrainScheduleModal from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleModal';
 import { GoRocket } from 'react-icons/go';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import nextId from 'react-id-generator';
@@ -24,7 +24,7 @@ function LoadingIfSearching(props) {
 
 export default function ImportTrainScheduleTrainsList(props) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const { config, rollingStockDB } = props;
   const [trainsList, setTrainList] = useState();
   const [isSearching, setIsSearching] = useState(false);

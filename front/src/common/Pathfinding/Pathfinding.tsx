@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useReducer, useContext } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
@@ -16,7 +16,7 @@ import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 
 import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
 import {
@@ -179,7 +179,7 @@ interface PathfindingProps {
 function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] = useState<any>();
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID, isEqual);
   const origin = useSelector(getOrigin, isEqual);
