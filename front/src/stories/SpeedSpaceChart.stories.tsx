@@ -1,4 +1,5 @@
 import React from 'react';
+import { noop } from 'lodash';
 import { ComponentStory } from '@storybook/react';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/SpeedSpaceChart';
 import 'styles/main.css';
@@ -24,9 +25,9 @@ export const Standard = Template.bind({});
 
 Standard.args = {
   heightOfSpeedSpaceChart: 250,
-  dispatch: () => {},
-  toggleSetting: () => {},
-  onSetSettings: () => {},
-  dispatchUpdateMustRedraw: () => {},
-  onSetBaseHeightOfSpeedSpaceChart: () => {},
+  dispatch: noop,
+  toggleSetting: noop,
+  onSetSettings: noop,
+  dispatchUpdateMustRedraw: noop,
+  onSetBaseHeightOfSpeedSpaceChart: noop,
 };

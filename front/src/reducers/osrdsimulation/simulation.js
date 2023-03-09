@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import {
   changeTrain,
   getTrainDetailsForAPI,
@@ -86,7 +87,7 @@ function simulationEquals(present, newPresent) {
   return JSON.stringify(present) === JSON.stringify(newPresent);
 }
 
-function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
+function apiSyncOnDiff(present, nextPresent, dispatch = noop) {
   // If there is not mod don't do anything
   if (simulationEquals(present, nextPresent)) return;
   // test missing trains and apply delete api

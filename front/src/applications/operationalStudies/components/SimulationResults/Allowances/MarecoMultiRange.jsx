@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-
+import { noop } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { select } from 'd3-selection';
@@ -11,7 +11,7 @@ const useD3 = (renderChartFn, dependencies) => {
 
   React.useEffect(() => {
     renderChartFn(d3.select(ref.current));
-    return () => {};
+    return noop;
   }, dependencies);
   return ref;
 };
@@ -53,7 +53,7 @@ const baseExtension = {
 export default function MarecoMultiRange({
   stops = [{}],
   extensions = [baseExtension],
-  setExtensions = () => {},
+  setExtensions = noop,
 }) {
   const brushesRef = useRef([]);
   const brushesContainer = useRef(null);

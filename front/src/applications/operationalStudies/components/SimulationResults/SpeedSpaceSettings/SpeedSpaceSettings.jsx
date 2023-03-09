@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
@@ -83,5 +84,5 @@ SpeedSpaceSettings.defaultProps = {
     slopes: false,
     electricalProfiles: false,
   },
-  onSetSettings: () => {},
+  onSetSettings: noop,
 };

@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import * as d3 from 'd3';
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
@@ -401,15 +402,15 @@ SpeedSpaceChart.defaultProps = {
   heightOfSpeedSpaceChart: 250,
   simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   chartXGEV: undefined,
-  dispatch: () => {},
+  dispatch: noop,
   mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
   speedSpaceSettings: ORSD_GEV_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
-  toggleSetting: () => {},
-  onSetSettings: () => {},
-  dispatchUpdateMustRedraw: () => {},
-  onSetBaseHeightOfSpeedSpaceChart: () => {},
+  toggleSetting: noop,
+  onSetSettings: noop,
+  dispatchUpdateMustRedraw: noop,
+  onSetBaseHeightOfSpeedSpaceChart: noop,
 };
