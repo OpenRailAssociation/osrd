@@ -1,6 +1,6 @@
 use diesel::sql_types::{Jsonb, Text};
 use mvt::{Feature, GeomData, GeomEncoder, MapGrid, Tile as MvtTile, TileId};
-use pointy::Transform64;
+use pointy::Transform;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
@@ -16,27 +16,27 @@ pub struct GeoJsonAndData {
 
 impl GeoJsonAndData {
     /// Converts GeoJsonAndData as mvt GeomData
-    pub fn as_geom_data(&self, transform: Transform64) -> GeomData {
+    pub fn as_geom_data(&self, transform: Transform<f64>) -> GeomData {
         let geo_json = serde_json::from_str::<GeoJson>(&self.geo_json).unwrap();
         let mut encoder = GeomEncoder::new(geo_json.get_geom_type(), transform);
         match geo_json {
             GeoJson::Point { coordinates } => {
-                encoder.add_point(coordinates.0, coordinates.1);
+                encoder.add_point(coordinates.0, coordinates.1).unwrap();
             }
             GeoJson::MultiPoint { coordinates } => {
                 for (x, y) in coordinates {
-                    encoder.add_point(x, y);
+                    encoder.add_point(x, y).unwrap();
                 }
             }
             GeoJson::LineString { coordinates } => {
                 for (x, y) in coordinates {
-                    encoder.add_point(x, y);
+                    encoder.add_point(x, y).unwrap();
                 }
             }
             GeoJson::MultiLineString { coordinates } => {
                 for line in coordinates {
                     for (x, y) in line.iter() {
-                        encoder.add_point(*x, *y);
+                        encoder.add_point(*x, *y).unwrap();
                     }
                     encoder.complete_geom().unwrap();
                 }
@@ -267,9 +267,9 @@ mod tests {
             tile.to_bytes().unwrap(),
             vec![
                 26, 226, 1, 120, 2, 10, 13, 115, 105, 103, 110, 97, 108, 95, 108, 97, 121, 101,
-                114, 115, 18, 21, 18, 6, 0, 0, 1, 1, 2, 2, 24, 2, 34, 9, 9, 218, 51, 70, 18, 1, 2,
-                0, 0, 18, 22, 18, 6, 0, 3, 3, 4, 2, 5, 24, 2, 34, 10, 9, 238, 52, 196, 1, 18, 0, 1,
-                0, 0, 26, 2, 105, 100, 26, 24, 115, 112, 101, 101, 100, 95, 108, 105, 109, 105,
+                114, 115, 18, 21, 18, 6, 0, 0, 1, 1, 2, 2, 24, 2, 34, 9, 9, 218, 51, 72, 18, 1, 0,
+                0, 0, 18, 22, 18, 6, 0, 3, 3, 4, 2, 5, 24, 2, 34, 10, 9, 240, 52, 196, 1, 18, 0, 0,
+                1, 1, 26, 2, 105, 100, 26, 24, 115, 112, 101, 101, 100, 95, 108, 105, 109, 105,
                 116, 95, 98, 121, 95, 116, 97, 103, 95, 116, 114, 97, 105, 110, 26, 12, 116, 114,
                 97, 99, 107, 95, 114, 97, 110, 103, 101, 115, 26, 28, 115, 112, 101, 101, 100, 95,
                 108, 105, 109, 105, 116, 95, 98, 121, 95, 116, 97, 103, 95, 110, 101, 119, 32, 116,
