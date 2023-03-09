@@ -58,11 +58,7 @@ public class StandaloneSim {
                 cacheModeAndProfiles.put(trainSchedule, ResultModeAndProfilePoint.from(
                         curvesAndConditions.conditions(), modeAndProfileMap));
                 var envelope = computeMaxEffortEnvelope(context, mrsp, trainSchedule);
-                var simResultTrain = ScheduleMetadataExtractor.run(
-                        envelope,
-                        trainPath,
-                        trainSchedule,
-                        infra);
+                var simResultTrain = ScheduleMetadataExtractor.run(envelope, trainPath, trainSchedule, infra);
                 cacheMaxEffort.put(trainSchedule, simResultTrain);
 
                 // Eco
