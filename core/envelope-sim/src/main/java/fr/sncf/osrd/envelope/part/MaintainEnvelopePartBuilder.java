@@ -48,7 +48,6 @@ public final class MaintainEnvelopePartBuilder implements InteractiveEnvelopePar
 
     @Override
     public boolean addStep(double position, double speed) {
-        //stepcheck verify we're still at the same speed else it return null
         for (var constraint : constraints)
             if (constraint.stepCheck(lastPos,lastSpeed,position,speed) != null)
                 return false;

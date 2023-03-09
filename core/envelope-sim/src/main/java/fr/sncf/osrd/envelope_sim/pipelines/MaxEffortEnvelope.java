@@ -9,6 +9,7 @@ import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.MaintainEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -31,142 +32,15 @@ public class MaxEffortEnvelope {
         return part.getBeginSpeed() == part.getEndSpeed();
     }
 
-    /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity */
-    public static Envelope addAccelerationCurves(
-            EnvelopeSimContext context,
+    /** Scan the maxSpeedProfile in order to find the beginning of the acceleration parts and constant speed parts */
+    private static TreeMap<EnvelopePoint,EnvelopeProfile> getAccelerationAndConstantSpeedPartsBeginnings(
             Envelope maxSpeedProfile,
             double initialSpeed
     ) {
-        var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
-        var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
-        if (initialSpeed < maxSpeed) {
-            var partBuilder = new EnvelopePartBuilder();
-            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
-            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    new SpeedConstraint(0, FLOOR),
-                    new EnvelopeConstraint(maxSpeedProfile, CEILING)
-            );
-            EnvelopeAcceleration.accelerate(context, 0, initialSpeed, overlayBuilder, 1);
-            cursor.findPosition(overlayBuilder.getLastPos());
-            builder.addPart(partBuilder.build());
-        }
-        while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
-            var partBuilder = new EnvelopePartBuilder();
-            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
-            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    new SpeedConstraint(0, FLOOR),
-                    new EnvelopeConstraint(maxSpeedProfile, CEILING)
-            );
-            var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(cursor.getPosition(), 1);
-            var startPosition = cursor.getPosition();
-            EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
-            cursor.findPosition(overlayBuilder.getLastPos());
-            builder.addPart(partBuilder.build());
-        }
-        return builder.build();
-    }
-
-    /** Generate overlays everywhere the train cannot physically maintain the target speed */
-    public static Envelope addMaintainSpeedCurves(
-            EnvelopeSimContext context,
-            Envelope maxSpeedProfile
-    ) {
-        var rollingStock = context.rollingStock;
-        var path = context.path;
-        var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
 
-        while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {//
-
-            double speed = cursor.getStepBeginSpeed();
-            var tractiveEffortCurve
-                    = context.tractiveEffortCurveMap.get(cursor.getPosition());
-            assert tractiveEffortCurve != null;
-            double maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
-            double rollingResistance = rollingStock.getRollingResistance(speed);
-            double inertia = rollingStock.getInertia();
-            double worstRamp = Math.asin((maxTractionForce - rollingResistance) / inertia / 9.81) * 1000;
-            var envelopePart = cursor.getPart();
-            while (!cursor.hasReachedEnd() && cursor.getPart() == envelopePart) {
-                //cursor.getPart() == envelopePart Pourquoi ? -> permet d'avancer le curseur ?
-                double highRampPosition = path.findHighGradePosition(
-                        cursor.getPosition(), envelopePart.getEndPos(), rollingStock.getLength(), worstRamp);
-                cursor.findPosition(highRampPosition);
-                if (cursor.getPosition() == envelopePart.getEndPos())
-                    break;
-
-                var partBuilder = new EnvelopePartBuilder(); // debut partie decrochage
-                partBuilder.setAttr(EnvelopeProfile.CATCHING_UP);
-                var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                        partBuilder,
-                        new SpeedConstraint(0, FLOOR),
-                        new EnvelopeConstraint(maxSpeedProfile, CEILING)
-                );
-                var startPosition = cursor.getPosition();
-                var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
-                EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
-                cursor.findPosition(overlayBuilder.getLastPos());
-
-                // Check that the high grade position can't be maintained
-                if (partBuilder.stepCount() > 1)
-                    builder.addPart(partBuilder.build());
-                else
-                    cursor.findPosition(cursor.getPosition()  + 1); // fin partie decrochage
-            }
-            cursor.nextPart();
-        }
-        return builder.build();
-    }
-
-    /** Generate a max effort envelope given a max speed envelope */
-    public static Envelope from(
-            EnvelopeSimContext context,
-            double initialSpeed,
-            Envelope maxSpeedProfile
-    ) {
-        var maxEffortEnvelope = addAccelerationCurves(context, maxSpeedProfile, initialSpeed);
-        maxEffortEnvelope = addMaintainSpeedCurves(context, maxEffortEnvelope);
-        if (!maxEffortEnvelope.continuous) {
-            // Discontinuity can happen when the train stops because of high slopes
-            throw new ImpossibleSimulationError();
-        }
-        assert maxEffortEnvelope.getBeginPos() == 0;
-        return maxEffortEnvelope;
-    }
-
-    // EN CHANTIER !!!!!!
-
-    public static Envelope causalAcc(
-            EnvelopeSimContext context,
-            Envelope maxSpeedProfile,
-            double initialSpeed
-    ) {
-        var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
-        var cursor = EnvelopeCursor.forward(maxSpeedProfile);
-        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
-
-
-
-        // Ordered map of the specific envelope points starting plateau
-        // Keep in mind this happens after Max Speed Envelope is computed so there's the
         TreeMap<EnvelopePoint,EnvelopeProfile> positionsMap = new TreeMap<>(new EnvelopePoint.EnvelopePointComparator());
-        //Use cursor to find and memorize the beginning of each MaxSpeedProfile plateau and speed discontinuity
-
-        //    ────────────────────Cursor────────────────────►
-        //
-        //   ▼                                 ▼
-        //   ┌───────────────
-        //   │               \                 ┌──────────
-        //   │                \                │          \
-        //   │                 ────────────────┘           \
-        //   │                                              \
-        //   │                                               \
-        //
-        //   ▲                                                ▲
-        // Start                                            Stop
 
         if (initialSpeed < maxSpeed) {
             positionsMap.put(new EnvelopePoint(0.0, initialSpeed), EnvelopeProfile.ACCELERATING);
@@ -183,12 +57,24 @@ public class MaxEffortEnvelope {
             );
             cursor.nextPart();
         }
+        return positionsMap;
+    }
 
+    /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity
+     * and compute the constant speed parts in case the train cannot physically maintain its speed */
+    public static Envelope addAccelerationAndConstantSpeedParts(
+            EnvelopeSimContext context,
+            Envelope maxSpeedProfile,
+            double initialSpeed
+    ) {
+        var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
+        var cursor = EnvelopeCursor.forward(maxSpeedProfile);
 
-        // Sort the map to reorder by position (rule on speeds when equal position points)
-        cursor.moveToBeginning();
-        for (var point : positionsMap.entrySet()){
-            //
+        var computationBeginPositions =
+                getAccelerationAndConstantSpeedPartsBeginnings(maxSpeedProfile, initialSpeed);
+
+        for (var point : computationBeginPositions.entrySet()){
+
             if (point.getValue() == EnvelopeProfile.ACCELERATING){
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
@@ -208,24 +94,34 @@ public class MaxEffortEnvelope {
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
 
-                var startSpeed = cursor.getSpeed();         // To be verified
+                var startSpeed = cursor.getStepBeginSpeed();
                 var startPosition = cursor.getPosition();
                 var overlayBuilder = new MaintainEnvelopePartBuilder(
                         partBuilder,
-                        new SpeedConstraint(startSpeed, MAINTAIN_SPEED)
+                        new SpeedConstraint(startSpeed, MAINTAIN_SPEED),
+                        new SpeedConstraint(0, FLOOR),
+                        new PositionConstraint(cursor.getPart().getBeginPos(), cursor.getPart().getEndPos())
                 );
-                //**************
-
                 EnvelopeMaintain.maintain(context, startPosition, startSpeed, overlayBuilder, 1);
                 cursor.findPosition(overlayBuilder.getLastPos());
                 builder.addPart(partBuilder.build());
             }
-
         }
-
-
         return builder.build();
     }
 
-
+    /** Generate a max effort envelope given a max speed envelope */
+    public static Envelope from(
+            EnvelopeSimContext context,
+            double initialSpeed,
+            Envelope maxSpeedProfile
+    ) {
+        var maxEffortEnvelope = addAccelerationAndConstantSpeedParts(context, maxSpeedProfile, initialSpeed);
+        if (!maxEffortEnvelope.continuous) {
+            // Discontinuity can happen when the train stops because of high slopes
+            throw new ImpossibleSimulationError();
+        }
+        assert maxEffortEnvelope.getBeginPos() == 0;
+        return maxEffortEnvelope;
+    }
 }
