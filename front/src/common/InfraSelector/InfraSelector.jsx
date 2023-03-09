@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,7 @@ import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/components/tracks.svg';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { FaLock } from 'react-icons/fa';
 import './InfraSelector.scss';
@@ -17,7 +17,7 @@ export default function InfraSelector(props) {
   const dispatch = useDispatch();
   const [selectedInfra, setSelectedInfra] = useState(undefined);
   const infraID = useSelector(getInfraID);
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
 
   const { t } = useTranslation(['infraManagement']);
 

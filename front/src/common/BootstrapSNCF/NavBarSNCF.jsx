@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import React, { useContext } from 'react';
+import React from 'react';
 // import englishFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/english.svg';
 // import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
 // import i18n from 'i18next';
@@ -11,10 +11,10 @@ import { logout } from 'reducers/user';
 import { useTranslation } from 'react-i18next';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
-import { ModalContext } from './ModalSNCF/ModalProvider';
+import { useModal } from './ModalSNCF';
 
 export default function LegacyNavBarSNCF(props) {
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const user = useSelector((state) => state.user);
   const { fullscreen } = useSelector((state) => state.main);
   const { appName, logo } = props;

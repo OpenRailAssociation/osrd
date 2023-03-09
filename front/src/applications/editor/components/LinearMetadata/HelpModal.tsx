@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Modal } from 'common/BootstrapSNCF/ModalSNCF/Modal';
+import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 
 const HelpModal: FC = () => {
   const { t } = useTranslation();
