@@ -1,13 +1,14 @@
-import React, { FC, LegacyRef, ReactNode, useEffect, useRef, useState } from 'react';
 import nextId from 'react-id-generator';
 import TetherComponent from 'react-tether';
+import React, { FC, LegacyRef, ReactNode, useEffect, useRef, useState } from 'react';
 
-/**
- * This component is a shameless clone of DropdownSNCF, but using Tether to
- * portal out of eventual overflown containers:
- */
-const TetherDropdown: FC<{
-  titleContent: string | JSX.Element;
+export const DROPDOWN_STYLE_TYPES = {
+  primary: 'btn-primary btn-sm',
+  transparent: 'btn-transparent',
+} as const;
+
+const DropdownSNCF: FC<{
+  titleContent: ReactNode;
   items?: ReactNode[];
   type: string;
 }> = ({ titleContent, items = [], type }) => {
@@ -77,4 +78,4 @@ const TetherDropdown: FC<{
   );
 };
 
-export default TetherDropdown;
+export default DropdownSNCF;
