@@ -23,8 +23,34 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: pip
-      - run: pip install geojson-pydantic requests
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        uses: actions/cache@v3
+        id: cached-poetry-integration-tests-dependencies
+        with:
+          path: tests/.venv
+          key: cached-poetry-integration-tests-dependencies-${{ hashFiles('tests/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-integration-tests-dependencies.outputs.cache-hit != 'true'
+        run: |
+          cd tests
+          poetry install --only dev
+
+      - name: Flake8
+        run: |
+          cd tests
+          poetry run pflake8 --config ./pyproject.toml
+      - name: Black
+        run: |
+          cd tests
+          poetry run black . --check
+      - name: Isort
+        run: |
+          cd tests
+          poetry run isort . --check
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -57,8 +83,10 @@ jobs:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
 
-      - name: Run tests
-        run: "python3 tests/run_integration_tests.py"
+      - name: Run pytest
+        run: |
+          cd tests
+          poetry run pytest
 
       - name: Run Playwright tests
         run: yarn --cwd front playwright test

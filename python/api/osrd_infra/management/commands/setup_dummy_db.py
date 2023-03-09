@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from geojson_pydantic import LineString, Point
 from osrd_schemas.infra import (
     ApplicableDirections,
@@ -11,7 +12,7 @@ from osrd_schemas.infra import (
     TrackSection,
 )
 
-from osrd_infra.models import Infra, RollingStock
+from osrd_infra.models import Infra, RollingStock, RouteModel
 
 
 class Command(BaseCommand):
@@ -69,5 +70,8 @@ class Command(BaseCommand):
             release_detectors=[],
             switches_directions={},
         )
-        route.into_model(infra).save()
+        with transaction.atomic():
+            # update_or_create
+            RouteModel.objects.filter(infra=infra).delete()
+            route.into_model(infra).save()
         print(infra.id)

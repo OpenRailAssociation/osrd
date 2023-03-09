@@ -1,12 +1,17 @@
 import json
 from pathlib import Path
 
+import pytest
 import requests
 
-from tests.get_rolling_stocks import get_rolling_stock
+from .services import API_URL
+from .utils.simulation import _get_rolling_stock_id
+
+REGRESSION_TESTS_DATA_FOLDER = Path(__file__).parent / "regression_tests_data"
+REGRESSION_TESTS_JSON_FILES = [json_file.name for json_file in REGRESSION_TESTS_DATA_FOLDER.resolve().glob("*.json")]
 
 
-def pathfinding_with_payload(base_url, payload, infra_id, accept_400):
+def _pathfinding_with_payload(base_url, payload, infra_id, accept_400):
     payload["infra"] = infra_id
     r = requests.post(base_url + "pathfinding/", json=payload)
     if r.status_code // 100 != 2:
@@ -16,7 +21,7 @@ def pathfinding_with_payload(base_url, payload, infra_id, accept_400):
     return r.json()["id"]
 
 
-def schedule_with_payload(base_url, payload, accept_400):
+def _schedule_with_payload(base_url, payload, accept_400):
     r = requests.post(base_url + "train_schedule/standalone_simulation/", json=payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4 and accept_400:
@@ -25,7 +30,7 @@ def schedule_with_payload(base_url, payload, accept_400):
     return r.json()["ids"][0]
 
 
-def stdcm_with_payload(base_url, payload):
+def _stdcm_with_payload(base_url, payload):
     r = requests.post(base_url + "stdcm/", json=payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4:
@@ -33,48 +38,36 @@ def stdcm_with_payload(base_url, payload):
         raise RuntimeError(f"stdcm error {r.status_code}: {r.content}")
 
 
-def reproduce_test(path_to_json, *args, **kwargs):
-    base_url = kwargs["url"]
-    all_scenarios = kwargs["all_scenarios"]
+def _reproduce_test(path_to_json, all_scenarios):
     fuzzer_output = json.loads(path_to_json.read_bytes())
 
     if fuzzer_output["error_type"] == "STDCM":
-        stdcm_with_payload(base_url, fuzzer_output["stdcm_payload"])
-        return True, ""
+        _stdcm_with_payload(API_URL, fuzzer_output["stdcm_payload"])
+        return
 
     stop_after_pathfinding = fuzzer_output["error_type"] == "PATHFINDING"
     stop_after_schedule = fuzzer_output["error_type"] == "SCHEDULE"
 
     scenario = all_scenarios[fuzzer_output["infra_name"]]
     timetable = scenario.timetable
-    path_id = pathfinding_with_payload(
-        base_url, fuzzer_output["path_payload"], scenario.infra, stop_after_pathfinding
-    )
+    path_id = _pathfinding_with_payload(API_URL, fuzzer_output["path_payload"], scenario.infra, stop_after_pathfinding)
     if stop_after_pathfinding:
-        return True, ""
-    rolling_stock_id = get_rolling_stock(base_url)
+        return
+    rolling_stock_id = _get_rolling_stock_id(API_URL, "fast_rolling_stock")
 
     payload = fuzzer_output["schedule_payload"]
     payload["path"] = path_id
     payload["timetable"] = timetable
     payload["schedules"][0]["rolling_stock"] = rolling_stock_id
-    schedule_id = schedule_with_payload(base_url, payload, stop_after_schedule)
+    schedule_id = _schedule_with_payload(API_URL, payload, stop_after_schedule)
     if stop_after_schedule:
-        return True, ""
+        return
 
-    r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/")
+    r = requests.get(f"{API_URL}train_schedule/{schedule_id}/result/")
     if r.status_code // 100 != 2:
-        raise RuntimeError(
-            f"Schedule error {r.status_code}: {r.content}, id={schedule_id}"
-        )
-    return True, ""
+        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}")
 
 
-def list_tests():
-    dir = Path(__file__).parent.resolve()
-    for f in dir.glob("*.json"):
-
-        def run_test(func=f, *args, **kwargs):
-            return reproduce_test(func, *args, **kwargs)
-
-        yield run_test, f.stem
+@pytest.mark.parametrize("file_name", REGRESSION_TESTS_JSON_FILES)
+def test_regressions(file_name: str, scenarios):
+    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, scenarios)
