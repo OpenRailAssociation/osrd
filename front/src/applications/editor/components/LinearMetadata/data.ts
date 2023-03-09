@@ -506,8 +506,7 @@ export function cropForDatavizViewbox(
   return (
     [...data]
       // we add the index so events are able to send the index
-      // eslint-disable-next-line prefer-object-spread
-      .map((segment, index) => Object.assign({}, segment, { index }))
+      .map((segment, index) => ({ ...segment, index }))
       // we filter elements that croos or are inside the viewbox
       .filter((e) => {
         if (!currentViewBox) return true;
@@ -608,22 +607,19 @@ export function getFieldJsonSchema(
   if (fieldSchema.items) {
     const itemsSchema = utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
     if (itemsSchema.properties?.begin && itemsSchema.properties?.end) {
-      /* eslint-disable prefer-object-spread */
       result = {
         ...result,
         items: {
           ...itemsSchema,
           properties: {
-            begin: Object.assign(
-              {},
-              itemsSchema.properties?.begin || {},
-              enhancement.begin ? enhancement.begin : {}
-            ),
-            end: Object.assign(
-              {},
-              itemsSchema.properties?.end || {},
-              enhancement.end ? enhancement.end : {}
-            ),
+            begin: {
+              ...(itemsSchema.properties?.begin as JSONSchema7),
+              ...(enhancement.begin as JSONSchema7),
+            },
+            end: {
+              ...(itemsSchema.properties?.end as JSONSchema7),
+              ...(enhancement.end as JSONSchema7),
+            },
             ...Object.keys(itemsSchema.properties || {})
               .filter((k) => !['begin', 'end'].includes(k))
               .map((k) => ({
@@ -631,18 +627,16 @@ export function getFieldJsonSchema(
                 schema: itemsSchema.properties ? itemsSchema.properties[k] : {},
               }))
               .reduce((acc, curr) => {
-                acc[curr.name] = Object.assign(
-                  {},
-                  curr.schema,
-                  enhancement[curr.name] ? enhancement[curr.name] : {}
-                );
+                acc[curr.name] = {
+                  ...(curr.schema as JSONSchema7),
+                  ...(enhancement[curr.name] as JSONSchema7),
+                };
                 return acc;
               }, {} as { [key: string]: JSONSchema7Definition }),
           },
         },
         definitions: rootSchema.definitions,
       } as JSONSchema7;
-      /* eslint-enable prefer-object-spread */
     }
   }
   return result;
