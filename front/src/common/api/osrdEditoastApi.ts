@@ -1,5 +1,4 @@
 import { baseEditoastApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -132,7 +131,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg.number },
+        params: { number: queryArg['number'] },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -154,6 +153,16 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: () => ({ url: `/electrical_profile_set/` }),
     }),
+    postElectricalProfileSet: build.mutation<
+      PostElectricalProfileSetApiResponse,
+      PostElectricalProfileSetApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/electrical_profile_set`,
+        method: 'POST',
+        params: { name: queryArg.name },
+      }),
+    }),
     getElectricalProfileSetById: build.query<
       GetElectricalProfileSetByIdApiResponse,
       GetElectricalProfileSetByIdApiArg
@@ -167,7 +176,19 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/level_order/` }),
     }),
     getDocumentsByKey: build.query<GetDocumentsByKeyApiResponse, GetDocumentsByKeyApiArg>({
-      query: (queryArg) => ({ url: `/documents/${queryArg.key}` }),
+      query: (queryArg) => ({ url: `/documents/${queryArg.key}/` }),
+    }),
+    deleteDocumentsByKey: build.mutation<
+      DeleteDocumentsByKeyApiResponse,
+      DeleteDocumentsByKeyApiArg
+    >({
+      query: (queryArg) => ({ url: `/documents/${queryArg.key}/`, method: 'DELETE' }),
+    }),
+    postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
+      query: () => ({ url: `/documents/`, method: 'POST' }),
+    }),
+    getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
+      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
     }),
   }),
   overrideExisting: false,
@@ -415,6 +436,11 @@ export type GetElectricalProfileSetApiResponse =
     name?: string;
   }[];
 export type GetElectricalProfileSetApiArg = void;
+export type PostElectricalProfileSetApiResponse =
+  /** status 200 The list of ids and names of electrical profile sets available */ ElectricalProfile;
+export type PostElectricalProfileSetApiArg = {
+  name: string;
+};
 export type GetElectricalProfileSetByIdApiResponse =
   /** status 200 The list of electrical profiles in the set */ ElectricalProfile[];
 export type GetElectricalProfileSetByIdApiArg = {
@@ -431,8 +457,23 @@ export type GetElectricalProfileSetByIdLevelOrderApiArg = {
 };
 export type GetDocumentsByKeyApiResponse = unknown;
 export type GetDocumentsByKeyApiArg = {
-  /** A key identifying the document, often given by another endpoint */
+  /** A key identifying the document */
   key: number;
+};
+export type DeleteDocumentsByKeyApiResponse = unknown;
+export type DeleteDocumentsByKeyApiArg = {
+  /** A key identifying the document */
+  key: number;
+};
+export type PostDocumentsApiResponse = /** status 201 The key of the added document */ {
+  document_key?: number;
+};
+export type PostDocumentsApiArg = void;
+export type GetRollingStockByIdApiResponse =
+  /** status 200 The rolling stock information */ RollingStock;
+export type GetRollingStockByIdApiArg = {
+  /** Rolling Stock ID */
+  id: number;
 };
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {
@@ -561,4 +602,70 @@ export type ElectricalProfile = {
   value?: string;
   power_class?: string;
   track_ranges?: TrackRange[];
+};
+export type LightRollingStock = {
+  id?: number;
+  version?: string;
+  name?: string;
+  length?: number;
+  max_speed?: number;
+  startup_time?: number;
+  startup_acceleration?: number;
+  comfort_acceleration?: number;
+  gamma?: {
+    type?: 'CONST' | 'MAX';
+    value?: number;
+  };
+  inertia_coefficient?: number;
+  features?: string[];
+  mass?: number;
+  rolling_resistance?: {
+    A?: number;
+    B?: number;
+    C?: number;
+    type?: 'davis';
+  };
+  loading_gauge?: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
+  effort_curves?: {
+    default_mode?: string;
+    modes?: {
+      [key: string]: {
+        is_electric?: boolean;
+      };
+    };
+  };
+  base_power_class?: string;
+  power_restrictions?: {
+    [key: string]: string;
+  };
+  metadata?: object;
+  liveries?: {
+    id?: number;
+    name?: string;
+  }[];
+};
+export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
+export type EffortCurve = {
+  speeds?: number[];
+  max_efforts?: number[];
+};
+export type ConditionalEffortCurve = {
+  cond?: {
+    comfort?: Comfort | null;
+    electrical_profile_level?: string | null;
+    power_restriction_code?: string | null;
+  } | null;
+  curve?: EffortCurve;
+};
+export type RollingStock = LightRollingStock & {
+  effort_curves?: {
+    default_mode?: string;
+    modes?: {
+      [key: string]: {
+        curves?: ConditionalEffortCurve[];
+        default_curve?: EffortCurve;
+        is_electric?: boolean;
+      };
+    };
+  };
 };
