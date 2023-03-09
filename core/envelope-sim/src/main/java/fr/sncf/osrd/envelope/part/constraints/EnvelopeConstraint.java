@@ -172,7 +172,7 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
     public EnvelopePoint stepCheck(double lastOverlayPos, double lastOverlaySpeed, double position, double speed) {
 
         if (type == MAINTAIN_SPEED && speed <= cursor.getSpeed())
-            return null
+            return null;
 
         while (cursor.comparePos(position, cursor.getStepBeginPos()) > 0) {
             // attempt to find an intersection

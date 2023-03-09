@@ -2,10 +2,7 @@ package fr.sncf.osrd.envelope.part;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
-import fr.sncf.osrd.envelope.EnvelopePhysics;
-import fr.sncf.osrd.envelope.EnvelopePoint;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
-import fr.sncf.osrd.utils.DoubleUtils;
 
 public final class MaintainEnvelopePartBuilder implements InteractiveEnvelopePartConsumer {
     public EnvelopePartConstraint[] constraints;

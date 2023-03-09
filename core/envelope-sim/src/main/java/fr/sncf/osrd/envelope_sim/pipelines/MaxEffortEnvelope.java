@@ -16,7 +16,6 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintain;
 import java.util.*;
