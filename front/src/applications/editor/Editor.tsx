@@ -1,22 +1,20 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router-dom';
 import cx from 'classnames';
-
+import { isNil, toInteger } from 'lodash';
 import 'common/Map/Map.scss';
 import './Editor.scss';
 
 import { useModal } from '../../common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from '../../common/Loader';
 import { loadDataModel, reset } from '../../reducers/editor';
-import { MainState, setFailure } from '../../reducers/main';
-import { updateViewport, Viewport } from '../../reducers/map';
 import { updateInfraID } from '../../reducers/osrdconf';
+import { MainState } from '../../reducers/main';
+import { updateViewport, Viewport } from '../../reducers/map';
 import Tipped from './components/Tipped';
-import { getInfrastructure, getInfrastructures } from './data/api';
 import Map from './Map';
 import NavButtons from './nav';
 import EditorContext from './context';
@@ -35,6 +33,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
+  const { urlInfra } = useParams();
   const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
@@ -70,21 +69,22 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     },
     [setToolAndState]
   );
+
   const resetState = useCallback(() => {
     switchTool(TOOLS[0]);
     dispatch(reset());
     forceRender();
   }, [dispatch, switchTool, forceRender]);
 
-  const { infra } = useParams<{ infra?: string }>();
   const { mapStyle, viewport } = useSelector(
     (state: { map: { mapStyle: string; viewport: Viewport } }) => state.map
   );
+
   const setViewport = useCallback(
     (value: Partial<Viewport>) => {
-      dispatch(updateViewport(value, `/editor/${osrdConf.infraID || '-1'}`, false));
+      dispatch(updateViewport(value));
     },
-    [dispatch, osrdConf.infraID]
+    [dispatch]
   );
 
   const context = useMemo<EditorContextType<CommonToolState>>(
@@ -134,46 +134,30 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     [toolAndState.tool]
   );
 
-  // Initial viewport:
+  /**
+   * When the component mount
+   * => we load the data model
+   * => we check if url has no infra and the store one => navigate to the good url
+   */
   useEffect(() => {
     // load the data model
     dispatch(loadDataModel());
+    if (isNil(urlInfra) && !isNil(osrdConf.infraID)) {
+      navigate(`/editor/${osrdConf.infraID}`);
+    }
   }, []);
 
-  // Update the infrastructure in state
-  // We take the one define in the url, and if it is absent or equals to '-1'
-  // we call the api to find the latest infrastructure modified
+  /**
+   * When infra change in the url
+   * => change the state
+   * => reset editor state
+   */
   useEffect(() => {
-    if (infra && parseInt(infra, 10) > 0) {
-      const infraID = parseInt(infra, 10);
-      getInfrastructure(infraID)
-        .then(() => {
-          resetState();
-        })
-        .catch(() => {
-          dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
-        })
-        .finally(() => {
-          dispatch(updateInfraID(infraID));
-        });
-    } else if (osrdConf.infraID) {
-      navigate(`/editor/${osrdConf.infraID}`);
-    } else {
-      getInfrastructures()
-        .then((infras) => {
-          if (infras && infras.length > 0) {
-            const infrastructure = infras[0];
-            dispatch(updateInfraID(infrastructure.id));
-            navigate(`/editor/${infrastructure.id}`);
-          } else {
-            dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
-          }
-        })
-        .catch((e) => {
-          dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
-        });
+    resetState();
+    if (!isNil(urlInfra)) {
+      dispatch(updateInfraID(toInteger(urlInfra)));
     }
-  }, [infra, osrdConf.infraID]);
+  }, [urlInfra]);
 
   // Lifecycle events on tools:
   useEffect(() => {
@@ -188,7 +172,11 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   return (
     <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
       <main
-        className={`editor-root mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}
+        className={cx(
+          'editor-root mastcontainer mastcontainer-map',
+          fullscreen && ' fullscreen',
+          osrdConf.infraID && 'infra-selected'
+        )}
       >
         <div className="layout">
           <div className="tool-box bg-primary">
@@ -288,6 +276,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                       labelTranslationKey,
                       isDisabled,
                       isActive,
+                      isBlink,
                       onClick,
                     } = navButton;
                     const label = t(labelTranslationKey);
@@ -300,12 +289,16 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                           className={cx(
                             'editor-btn',
                             'btn-rounded',
-                            isActive && isActive(editorState) ? 'active' : ''
+                            isActive && isActive(editorState) ? 'active' : '',
+                            isBlink && isBlink(editorState, osrdConf.infraID)
+                              ? 'btn-map-infras-blinking'
+                              : ''
                           )}
                           onClick={() => {
                             if (onClick) {
                               onClick(
                                 {
+                                  navigate,
                                   dispatch,
                                   setViewport,
                                   viewport,

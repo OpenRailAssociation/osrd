@@ -16,9 +16,10 @@ type InfraListType = { id: number; name: string }[];
 type InfraType = { name: string };
 type Props = {
   onlySelectionMode?: boolean;
+  onInfraChange?: (infraId: number) => void;
 };
 
-export default function InfraSelectorModal({ onlySelectionMode = false }: Props) {
+export default function InfraSelectorModal({ onInfraChange, onlySelectionMode = false }: Props) {
   const [infrasList, setInfrasList] = useState([]);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [filter, setFilter] = useState('');
@@ -114,6 +115,7 @@ export default function InfraSelectorModal({ onlySelectionMode = false }: Props)
             setFilter={setFilter}
             filter={filter}
             onlySelectionMode={onlySelectionMode}
+            onInfraChange={onInfraChange}
           />
         )}
       </ModalBodySNCF>

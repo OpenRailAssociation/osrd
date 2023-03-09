@@ -15,19 +15,20 @@ export function editoastUpToDateIndicator(v, genv) {
 }
 
 export default function InfraSelectorModalBodyStandard(props) {
-  const { infrasList, filter, setFilter, onlySelectionMode } = props;
+  const { infrasList, filter, setFilter, onlySelectionMode, onInfraChange } = props;
   const { t } = useTranslation(['translation', 'infraManagement']);
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID);
   const { closeModal } = useContext(ModalContext);
 
-  const setInfraID = (id) => {
+  function setInfraID(id) {
     dispatch(updateInfraID(id));
+    if (onInfraChange) onInfraChange(id);
     dispatch(deleteItinerary());
     if (!onlySelectionMode) {
       closeModal();
     }
-  };
+  }
 
   return (
     <>
@@ -85,6 +86,7 @@ export default function InfraSelectorModalBodyStandard(props) {
 InfraSelectorModalBodyStandard.defaultProps = {
   filter: '',
   onlySelectionMode: false,
+  onInfraChange: undefined,
 };
 
 InfraSelectorModalBodyStandard.propTypes = {
@@ -92,4 +94,5 @@ InfraSelectorModalBodyStandard.propTypes = {
   infrasList: PropTypes.array.isRequired,
   setFilter: PropTypes.func.isRequired,
   onlySelectionMode: PropTypes.bool,
+  onInfraChange: PropTypes.func,
 };
