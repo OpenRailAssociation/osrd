@@ -25,6 +25,6 @@ export const SIGNAL_BASE_DEFAULT = 'BAL3';
 
 export const LIST_VALUES_SIGNAL_BASE = ['BAL3'];
 
-export const timetableURI = '/timetable/';
+export const timetableURI = '/editoast/timetable/';
 export const trainscheduleURI = '/train_schedule/';
 export const scheduleURL = '/train_schedule/standalone_simulation/';
