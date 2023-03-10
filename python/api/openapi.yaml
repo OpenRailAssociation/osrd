@@ -460,6 +460,7 @@ paths:
                 $ref: "#/components/schemas/LightRollingStock"
   /timetable/{id}/:
     get:
+      deprecated: true
       tags:
         - timetable
       summary: Retrieve a timetable and its train schedules
@@ -873,7 +874,6 @@ paths:
           description: No content
 
   /projects/{project_id}/image/:
-    
     get:
       deprecated: true
       tags:
