@@ -39,6 +39,10 @@ public class DelayManager {
             Envelope envelope,
             double startOffset
     ) {
+        // This is the margin used for the binary search, we need to add
+        // this time before and after the train to avoid problems caused by the error margin
+        double margin = graph.timeStep;
+
         var res = new TreeSet<Double>();
         var endOffset = startOffset + envelope.getEndPos();
         var path = STDCMUtils.makeTrainPath(route, startOffset, endOffset);
@@ -52,10 +56,11 @@ public class DelayManager {
                     time
             );
             if (availability instanceof RouteAvailabilityInterface.Available available) {
-                res.add(time - startTime);
+                if (available.maximumDelay >= margin)
+                    res.add(time - startTime);
                 time += available.maximumDelay + 1;
             } else if (availability instanceof RouteAvailabilityInterface.Unavailable unavailable) {
-                time += unavailable.duration;
+                time += unavailable.duration + margin;
             } else
                 throw new RuntimeException("STDCM lookahead isn't supported yet");
         }
