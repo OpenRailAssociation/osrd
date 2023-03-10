@@ -27,6 +27,7 @@ use client::{
 use colored::*;
 use diesel::r2d2::{self, ConnectionManager, Pool};
 use diesel::{Connection, PgConnection};
+use diesel_json::Json as DieselJson;
 use infra::Infra;
 use infra_cache::InfraCache;
 use map::MapLayers;
@@ -247,16 +248,15 @@ async fn add_electrical_profile_set(
 
     let electrical_profile_set_data: ElectricalProfileSetData =
         serde_json::from_reader(BufReader::new(electrical_profile_set_file))?;
+    let ep_set = ElectricalProfileSet {
+        id: None,
+        name: Some(args.name),
+        data: Some(DieselJson(electrical_profile_set_data)),
+    };
 
-    let created_ep_set = ElectricalProfileSet::create_electrical_profile_set(
-        pool,
-        args.name,
-        electrical_profile_set_data,
-    )
-    .await
-    .unwrap();
-    println!("✅ Electrical profile set {} created", created_ep_set.id);
-
+    let created_ep_set = ep_set.create(pool).await.unwrap();
+    let ep_set_id = created_ep_set.id.unwrap();
+    println!("✅ Electrical profile set {ep_set_id} created");
     Ok(())
 }
 
