@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import React, { FC, useMemo } from 'react';
+import React, { FC, useEffect, useMemo, useState } from 'react';
 import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, keyBy, mapValues } from 'lodash';
@@ -243,18 +243,28 @@ const GeoJSONs: FC<{
   selection?: string[];
   prefix?: string;
   layers?: Set<LayerType>;
-}> = (props) => {
+  fingerprint?: string | number;
+}> = ({ colors, hidden, selection, layers, fingerprint, prefix = 'editor/' }) => {
   const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
-  const { colors, hidden, selection, layers, prefix = 'editor/' } = props;
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
     () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),
     [colors]
   );
 
+  // This flag is used to unmount sources before mounting the new ones, when
+  // fingerprint is updated;
+  const [skipSources, setSkipSources] = useState(false);
+  useEffect(() => {
+    setSkipSources(true);
+    const timeout = setTimeout(() => setSkipSources(false), 0);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [fingerprint]);
+
   const { mapStyle, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
 
-  // SIGNALS:
   const layerContext: LayerContext = useMemo(
     () => ({
       colors,
@@ -312,13 +322,14 @@ const GeoJSONs: FC<{
 
   return (
     <>
-      {sources.map((source) => (
-        <Source key={source.id} promoteId="id" type="vector" url={source.url}>
-          {source.layers.map((layer) => (
-            <Layer key={layer.id} {...layer} />
-          ))}
-        </Source>
-      ))}
+      {!skipSources &&
+        sources.map((source) => (
+          <Source key={source.id} promoteId="id" type="vector" url={source.url}>
+            {source.layers.map((layer) => (
+              <Layer key={layer.id} {...layer} />
+            ))}
+          </Source>
+        ))}
     </>
   );
 };

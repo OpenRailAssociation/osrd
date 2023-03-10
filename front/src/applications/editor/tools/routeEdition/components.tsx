@@ -27,6 +27,7 @@ export const RouteEditionLeftPanel: FC = () => {
 export const RouteEditionLayers: FC = () => {
   const {
     state,
+    renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
@@ -40,7 +41,12 @@ export const RouteEditionLayers: FC = () => {
        (a fake selection must be given to grey everything, else the component
        will consider nothing is selected and nothing must be greyed)
        */}
-      <GeoJSONs selection={['placeholder']} colors={colors[mapStyle]} layers={editorLayers} />
+      <GeoJSONs
+        selection={['placeholder']}
+        colors={colors[mapStyle]}
+        layers={editorLayers}
+        fingerprint={renderingFingerprint}
+      />
       {state.type === 'editRoutePath' ? (
         <EditRoutePathEditionLayers key="editRoutePath" state={state} />
       ) : (
