@@ -2,7 +2,6 @@ use crate::diesel::{QueryDsl, RunQueryDsl};
 use crate::error::Result;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::tables::osrd_infra_electricalprofileset;
-use crate::tables::osrd_infra_electricalprofileset::dsl;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, block, Data, Json, Path, Query};
@@ -27,10 +26,10 @@ pub fn routes() -> impl HttpServiceFactory {
 
 /// Return a list of electrical profile sets
 #[get("")]
-async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<ElectricalProfileSetMetaData>>> {
+async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     block::<_, Result<_>>(move || {
         let mut conn = db_pool.get().expect("Failed to get DB connection");
-        Ok(Json(ElectricalProfileSet::list(&mut conn)?))
+        Ok(Json(ElectricalProfileSet::list_light(&mut conn)?))
     })
     .await
     .unwrap()
@@ -45,17 +44,15 @@ async fn get(
     let electrical_profile_set = electrical_profile_set.into_inner();
     block(move || {
         let mut conn = db_pool.get().expect("Failed to get DB connection");
-        Ok(Json(ElectricalProfileSet::retrieve_data(
-            &mut conn,
-            electrical_profile_set,
-        )?))
+        let ep_set = ElectricalProfileSet::retrieve(&mut conn, electrical_profile_set)?;
+        Ok(Json(ep_set.data.unwrap().0))
     })
     .await
     .unwrap()
 }
 
 #[derive(Deserialize)]
-struct ImportElectricalProfileSetQuery {
+struct ElectricalProfileQueryArgs {
     name: String,
 }
 
@@ -63,17 +60,15 @@ struct ImportElectricalProfileSetQuery {
 #[post("")]
 async fn post_electrical_profile(
     db_pool: Data<DbPool>,
-    query: Query<ImportElectricalProfileSetQuery>,
+    ep_set_name: Query<ElectricalProfileQueryArgs>,
     data: Json<ElectricalProfileSetData>,
 ) -> Result<Json<ElectricalProfileSet>> {
-    let electrical_profile_set = ElectricalProfileSet::create_electrical_profile_set(
-        db_pool,
-        query.into_inner().name,
-        data.into_inner(),
-    )
-    .await
-    .unwrap();
-    Ok(Json(electrical_profile_set))
+    let ep_set = ElectricalProfileSet {
+        name: Some(ep_set_name.into_inner().name),
+        data: Some(DieselJson(data.into_inner())),
+        ..Default::default()
+    };
+    Ok(Json(ep_set.create(db_pool).await.unwrap()))
 }
 
 /// Return the electrical profile value order for this set
@@ -85,87 +80,62 @@ async fn get_level_order(
     let electrical_profile_set = electrical_profile_set.into_inner();
     block(move || {
         let mut conn = db_pool.get().expect("Failed to get DB connection");
-        Ok(Json(
-            ElectricalProfileSet::retrieve_data(&mut conn, electrical_profile_set)?.level_order,
-        ))
+        let ep_set = ElectricalProfileSet::retrieve(&mut conn, electrical_profile_set)?;
+        Ok(Json(ep_set.data.unwrap().0.level_order))
     })
     .await
     .unwrap()
 }
 
-#[derive(Debug, PartialEq, Queryable, Serialize)]
-pub struct ElectricalProfileSetMetaData {
-    pub id: i64,
-    pub name: String,
-}
-
-#[derive(Debug, PartialEq, Queryable, Insertable, Identifiable, Serialize, Deserialize)]
+#[derive(Debug, Default, Queryable, Insertable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = osrd_infra_electricalprofileset)]
 pub struct ElectricalProfileSet {
-    pub id: i64,
-    pub name: String,
-    pub data: DieselJson<ElectricalProfileSetData>,
+    #[diesel(deserialize_as = i64)]
+    pub id: Option<i64>,
+    #[diesel(deserialize_as = String)]
+    pub name: Option<String>,
+    #[diesel(deserialize_as = DieselJson<ElectricalProfileSetData>)]
+    pub data: Option<DieselJson<ElectricalProfileSetData>>,
 }
 
-#[derive(Debug, PartialEq, Insertable, Queryable)]
+#[derive(Debug, Default, Queryable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = osrd_infra_electricalprofileset)]
-struct NewElectricalProfileSet {
-    pub name: String,
-    pub data: DieselJson<ElectricalProfileSetData>,
+struct LightElectricalProfileSet {
+    #[diesel(deserialize_as = i64)]
+    pub id: Option<i64>,
+    #[diesel(deserialize_as = String)]
+    pub name: Option<String>,
 }
 
 impl ElectricalProfileSet {
-    fn retrieve(
-        conn: &mut PgConnection,
-        electical_profile_set_id: i64,
-    ) -> Result<ElectricalProfileSet> {
-        match dsl::osrd_infra_electricalprofileset
-            .find(electical_profile_set_id)
-            .first(conn)
-        {
+    fn retrieve(conn: &mut PgConnection, ep_set_id: i64) -> Result<ElectricalProfileSet> {
+        use crate::tables::osrd_infra_electricalprofileset::dsl::*;
+        match osrd_infra_electricalprofileset.find(ep_set_id).first(conn) {
             Ok(ep_set) => Ok(ep_set),
             Err(DieselError::NotFound) => Err(ElectricalProfilesError::NotFound {
-                electical_profile_set_id,
+                electical_profile_set_id: ep_set_id,
             }
             .into()),
             Err(err) => Err(err.into()),
         }
     }
 
-    pub async fn create_electrical_profile_set(
-        db_pool: Data<DbPool>,
-        name: String,
-        data: ElectricalProfileSetData,
-    ) -> Result<ElectricalProfileSet> {
-        let ep_set = NewElectricalProfileSet {
-            name,
-            data: DieselJson::new(data),
-        };
-        match block(move || {
+    pub async fn create(self, db_pool: Data<DbPool>) -> Result<ElectricalProfileSet> {
+        block(move || {
+            use crate::tables::osrd_infra_electricalprofileset::dsl::*;
             let mut conn = db_pool.get().expect("Failed to get DB connection");
-            diesel::insert_into(dsl::osrd_infra_electricalprofileset)
-                .values(&ep_set)
-                .get_result(&mut conn)
+            Ok(diesel::insert_into(osrd_infra_electricalprofileset)
+                .values(self)
+                .get_result(&mut conn)?)
         })
         .await
         .unwrap()
-        {
-            Ok(ep_set) => Ok(ep_set),
-            Err(e) => Err(e.into()),
-        }
     }
 
-    pub fn retrieve_data(
-        conn: &mut PgConnection,
-        ep_set_id: i64,
-    ) -> Result<ElectricalProfileSetData> {
-        let ep_set_wrapper = Self::retrieve(conn, ep_set_id)?;
-        Ok(ep_set_wrapper.data.0)
-    }
-
-    pub fn list(conn: &mut PgConnection) -> Result<Vec<ElectricalProfileSetMetaData>> {
-        Ok(dsl::osrd_infra_electricalprofileset
-            .select((dsl::id, dsl::name))
+    fn list_light(conn: &mut PgConnection) -> Result<Vec<LightElectricalProfileSet>> {
+        use crate::tables::osrd_infra_electricalprofileset::dsl::*;
+        Ok(osrd_infra_electricalprofileset
+            .select((id, name))
             .load(conn)?)
     }
 }
@@ -199,7 +169,7 @@ mod tests {
     use crate::schema::electrical_profiles::ElectricalProfileSetData;
     use crate::schema::TrackRange;
 
-    fn test_ep_set_transaction(fn_test: fn(&mut PgConnection, ElectricalProfileSet)) {
+    fn test_ep_set_transaction(fn_test: fn(&mut PgConnection)) {
         let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|conn| {
             diesel::delete(dsl::osrd_infra_electricalprofileset).execute(conn)?;
@@ -212,54 +182,54 @@ mod tests {
                 level_order: Default::default(),
             };
             let ep_set = ElectricalProfileSet {
-                id: 1,
-                name: "test".to_string(),
-                data: DieselJson::new(ep_set_data.clone()),
+                id: Some(1),
+                name: Some("test".to_string()),
+                data: Some(DieselJson::new(ep_set_data.clone())),
             };
-            diesel::insert_into(dsl::osrd_infra_electricalprofileset)
-                .values(&ep_set)
-                .execute(conn)
-                .unwrap();
-
             let ep_set_2 = ElectricalProfileSet {
-                id: 2,
-                name: "test_2".to_string(),
-                data: DieselJson::new(ep_set_data),
+                id: Some(2),
+                name: Some("test_2".to_string()),
+                data: Some(DieselJson::new(ep_set_data)),
             };
+
             diesel::insert_into(dsl::osrd_infra_electricalprofileset)
-                .values(&ep_set_2)
+                .values(&[ep_set, ep_set_2])
                 .execute(conn)
                 .unwrap();
 
-            fn_test(conn, ep_set);
+            fn_test(conn);
             Ok(())
         });
     }
 
     #[test]
     fn test_query_list() {
-        test_ep_set_transaction(|conn, _| {
-            let list = ElectricalProfileSet::list(conn).unwrap();
+        test_ep_set_transaction(|conn| {
+            let list = ElectricalProfileSet::list_light(conn).unwrap();
             assert_eq!(list.len(), 2);
-            assert_eq!(list[0].id, 1);
-            assert_eq!(list[0].name, "test");
-            assert_eq!(list[1].id, 2);
-            assert_eq!(list[1].name, "test_2");
+            let (ep_set_1, ep_set_2) = (&list[0], &list[1]);
+            assert_eq!(ep_set_1.id.unwrap(), 1);
+            assert_eq!(ep_set_1.name.as_ref().unwrap(), "test");
+            assert_eq!(ep_set_2.id.unwrap(), 2);
+            assert_eq!(ep_set_2.name.as_ref().unwrap(), "test_2");
         });
     }
 
     #[test]
     fn test_query_retrieve() {
-        test_ep_set_transaction(|conn, ep_set_wrapper| {
-            let ep_set_data = ElectricalProfileSet::retrieve_data(conn, ep_set_wrapper.id).unwrap();
-            assert_eq!(ep_set_data.levels.first().unwrap().value, "A");
+        test_ep_set_transaction(|conn| {
+            let ep_set_data = ElectricalProfileSet::retrieve(conn, 1).unwrap();
+            assert_eq!(
+                ep_set_data.data.unwrap().0.levels.first().unwrap().value,
+                "A"
+            );
         });
     }
 
     #[test]
     fn test_query_retrieve_not_found() {
-        test_ep_set_transaction(|conn, _| {
-            let ep_set = ElectricalProfileSet::retrieve_data(conn, 3);
+        test_ep_set_transaction(|conn| {
+            let ep_set = ElectricalProfileSet::retrieve(conn, 3);
             assert_eq!(ep_set.unwrap_err().get_status(), StatusCode::NOT_FOUND);
         });
     }
@@ -305,7 +275,7 @@ mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let created_ep_set: ElectricalProfileSet = read_body_json(response).await;
-        assert_eq!(created_ep_set.name, "elec");
+        assert_eq!(created_ep_set.name.unwrap(), "elec");
     }
 
     #[actix_test]
