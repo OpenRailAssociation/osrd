@@ -13,10 +13,10 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.reporting.exceptions.ErrorCause;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AllowanceRangesTests {
@@ -331,6 +331,36 @@ public class AllowanceRangesTests {
                 () -> allowance.apply(maxEffortEnvelope, testContext)
         );
         assertEquals(err.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
+    }
+
+    /** This tests ensure that, even with several ranges, the error doesn't build
+     * up to more than the tolerance for one binary search. */
+    @Test
+    public void errorBuildupOverRangeTest() {
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
+        var testPath = new FlatPath(10_000, 0);
+        var stops = new double[]{testPath.getLength()};
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var allowanceRanges = new ArrayList<AllowanceRange>();
+        for (int i = 0; i < 10; i++) {
+            allowanceRanges.add(new AllowanceRange(
+                    i * 1_000,
+                    (i + 1) * 1_000,
+                    new AllowanceValue.Percentage(50)
+            ));
+        }
+        var allowance = new LinearAllowance(
+                0,
+                testPath.getLength(),
+                1.5,
+                allowanceRanges
+        );
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 30, stops);
+        var res = allowance.apply(maxEffortEnvelope, testContext);
+        assert res != null;
+        var expectedTime = maxEffortEnvelope.getTotalTime() * 1.5;
+        assertEquals(expectedTime, res.getTotalTime(), testContext.timeStep);
     }
 
     /** Applies the allowance to the envelope. Any user error (impossible margin) is ignored */
