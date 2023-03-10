@@ -2,37 +2,23 @@ package fr.sncf.osrd.envelope_sim_infra;
 
 import com.google.common.collect.Range;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.train.RollingStock;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point */
 public class MRSP {
-    public enum LimitKind implements EnvelopeAttr {
-        SPEED_LIMIT,
-        TRAIN_LIMIT,
-        ;
-
-        @Override
-        public Class<? extends EnvelopeAttr> getAttrType() {
-            return LimitKind.class;
-        }
-    }
 
     /** Computes the most restricted speed profile from a path */
     public static Envelope from(
             TrainPath trainPath,
             RollingStock rollingStock,
             boolean addRollingStockLength,
-            String tag
-    ) {
+            String tag) {
         return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength, tag);
     }
 
@@ -41,8 +27,7 @@ public class MRSP {
             List<TrackRangeView> ranges,
             RollingStock rollingStock,
             boolean addRollingStockLength,
-            String tag
-    ) {
+            String tag) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = 0.;
         for (var r : ranges)
@@ -50,7 +35,7 @@ public class MRSP {
 
         // add a limit for the maximum speed the hardware is rated for
         builder.addPart(EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.TRAIN_LIMIT),
+                List.of(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT),
                 new double[] { 0, pathLength },
                 new double[] { rollingStock.maxSpeed, rollingStock.maxSpeed }
         ));
@@ -67,16 +52,14 @@ public class MRSP {
                 var end = offset + interval.upperEndpoint();
                 if (addRollingStockLength) {
                     end += rollingStock.length;
-                    if (end > pathLength)
-                        end = pathLength;
+                    end = Math.min(pathLength, end);
                 }
                 var speed = speedRange.getValue().getSpeedLimit(tag);
                 if (Double.isInfinite(speed) || speed == 0)
                     continue;
-
                 // Add the envelope part corresponding to the restricted speed section
                 builder.addPart(EnvelopePart.generateTimes(
-                        List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
+                        List.of(EnvelopeProfile.CONSTANT_SPEED, MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT),
                         new double[]{begin, end},
                         new double[]{speed, speed}
                 ));

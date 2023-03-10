@@ -6,13 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
-import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
+import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -44,7 +45,8 @@ public class STDCMHelpers {
                         RollingStock.Comfort.STANDARD,
                         null
                 )),
-                2.
+                2.,
+                new DriverBehaviour(0, 0)
         );
         var rawOccupancies = result.baseSimulations.get(0).routeOccupancies;
         var occupancies = new ArrayList<STDCMRequest.RouteOccupancy>();

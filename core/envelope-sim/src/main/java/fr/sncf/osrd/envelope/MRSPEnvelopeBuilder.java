@@ -34,6 +34,17 @@ public final class MRSPEnvelopeBuilder {
         }
     }
 
+    public enum LimitKind implements EnvelopeAttr {
+        SPEED_LIMIT,
+        TRAIN_LIMIT,
+        ;
+
+        @Override
+        public Class<? extends EnvelopeAttr> getAttrType() {
+            return LimitKind.class;
+        }
+    }
+
     @SuppressFBWarnings(
             value = {"EQ_COMPARETO_USE_OBJECT_EQUALS"},
             justification = "This class has a natural ordering that is inconsistent with equals")

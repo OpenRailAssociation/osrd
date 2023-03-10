@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import java.util.ArrayList;
