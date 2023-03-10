@@ -2,6 +2,8 @@ package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.RangeMap;
 
+import java.util.TreeMap;
+
 /**
  * An utility class to help simulate the train, using numerical integration.
  * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
@@ -77,6 +79,21 @@ public final class TrainPhysicsIntegrator {
         var tractiveEffortCurve = tractiveEffortCurveMap.get(position);
         assert tractiveEffortCurve != null;
         double maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
+
+        // Debut of shenanigans
+        // Those maps are a pain to use ...
+        TreeMap<Integer, RJSRollingStock.EnergySource> energySourceTreeMap = RJSRollingStock.getEnergySources();
+
+        // This should give
+        double availableElectricalPower = 0.0;
+
+        for(var rsEnergySource : energySourceTreeMap.entrySet() ){
+            availableElectricalPower += rsEnergySource.getValue().getPower(45.0);
+        }
+        double motorEfficiency = 0.643;
+        double availableMechanicalPower = availableElectricalPower*motorEfficiency;
+
+
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
 

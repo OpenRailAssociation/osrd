@@ -222,28 +222,64 @@ public class RJSRollingStock implements Identified {
             this.Converter = converter;
             this.speedCoef = speedCoef;
         }
+
+        // Methods :
+        public Double getPower(Double speed){ //return available power depending on context (speed for now)
+
+            return pMax*2;
+        }
     }
 
     // IDK if af an arrayList or a map is better to store EnergySource of the train
     // Instantiating a pantograph/catenary thingy and a test battery
-    EnergySource pantograph = new EnergySource(
-            400.,
-            500.,
-            new SpeedDependantPowerCoefficient()
-    );
-    EnergySource battery = new EnergySource(
-            400.,
-            500.,
-            new EnergyStorage(),
-            new PowerConverter(0.56)
-    );
 
-    //Trying to get those in a map
-    TreeMap<Integer, EnergySource> EnergySourceMap = new TreeMap<>(/*needs a sorting method ?*/);
-    public TreeMap<Integer, EnergySource> getEnergySources() {
+    public static TreeMap<Integer, EnergySource> getEnergySources() {
+        TreeMap<Integer, EnergySource> EnergySourceMap = new TreeMap<>(/*needs a sorting method ?*/);
+        EnergySource pantograph = new EnergySource(
+                400.,
+                500.,
+                new SpeedDependantPowerCoefficient()
+        );
+        EnergySource battery = new EnergySource(
+                400.,
+                500.,
+                new EnergyStorage(),
+                new PowerConverter(0.56)
+        );
+
         EnergySourceMap.put(0, pantograph);
         EnergySourceMap.put(1, battery);
         return EnergySourceMap;
     }
+/*
+    static double interpolateValue(double abscissaValue, CurvePoint[] Curve) {
+        // Finds the abscissaValue directly adjacent points on the x-axis
+        int index = 0; int leftX = 0; int rightX = Curve.length - 1;
+
+        int mid = (leftX + rightX)/2;
+        while (Math.abs(Curve[mid].y - Math.abs(abscissaValue)) < 0.000001) {
+            index = mid;
+            if (Curve[mid].y < Math.abs(abscissaValue)) {
+                leftX = mid + 1;
+                index = leftX;
+            }
+            else {
+                rightX = mid - 1;
+            }
+        }
+        // Deals with edges of the
+        if (index == 0) {
+            return tractiveEffortCurve[0].maxEffort();
+        }
+        if (index == tractiveEffortCurve.length) {
+            return tractiveEffortCurve[index - 1].maxEffort();
+        }
+        TractiveEffortPoint previousPoint = tractiveEffortCurve[index - 1];
+        TractiveEffortPoint nextPoint = tractiveEffortCurve[index];
+        double coeff =
+                (previousPoint.maxEffort() - nextPoint.maxEffort()) / (previousPoint.speed() - nextPoint.speed());
+        return previousPoint.maxEffort() + coeff * (Math.abs(abscissaValue) - previousPoint.speed());
+    }*/
+
     //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
 }
