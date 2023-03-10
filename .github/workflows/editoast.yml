@@ -61,7 +61,7 @@ jobs:
         with:
           command: test
           args: --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
-      
+
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
 
@@ -115,7 +115,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features --manifest-path=editoast/Cargo.toml -- -D warnings
+          args: --all-features --all-targets --manifest-path=editoast/Cargo.toml -- -D warnings
       - name: Documentation check
         run: cargo doc --manifest-path editoast/Cargo.toml
         env:
