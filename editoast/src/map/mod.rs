@@ -5,6 +5,7 @@ mod redis_utils;
 
 use std::collections::HashMap;
 
+use crate::client::MapLayersConfig;
 use crate::error::Result;
 pub use bounding_box::{BoundingBox, InvalidationZone};
 pub use layers::{Layer, MapLayers, View};
@@ -73,16 +74,18 @@ async fn invalidate_layer_zone(
     infra_id: i64,
     layer_name: &str,
     zone: &InvalidationZone,
-    max_tiles: u64,
+    map_config: &MapLayersConfig,
 ) -> Result<()> {
+    let max_zoom = map_config.max_zoom;
+    let max_tiles = map_config.max_tiles;
     let mut affected_tiles: HashMap<String, Vec<Tile>> = HashMap::new();
     for (view_name, bbox) in [("geo", &zone.geo), ("sch", &zone.sch)] {
-        if count_tiles(18, bbox) > max_tiles {
+        if count_tiles(max_zoom, bbox) > max_tiles {
             invalidate_full_layer_cache(redis, infra_id, layer_name, Some(view_name)).await?;
         } else {
             affected_tiles.insert(
                 get_view_cache_prefix(layer_name, infra_id, view_name),
-                get_tiles_to_invalidate(12, bbox),
+                get_tiles_to_invalidate(max_zoom, bbox),
             );
         }
     }
@@ -108,11 +111,11 @@ pub async fn invalidate_zone(
     layers: &Vec<String>,
     infra_id: i64,
     zone: &InvalidationZone,
-    max_tiles: u64,
+    map_config: &MapLayersConfig,
 ) -> Result<()> {
     if zone.is_valid() {
         for layer in layers {
-            invalidate_layer_zone(redis, infra_id, layer, zone, max_tiles).await?;
+            invalidate_layer_zone(redis, infra_id, layer, zone, map_config).await?;
         }
     }
     Ok(())
