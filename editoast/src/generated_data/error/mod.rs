@@ -7,6 +7,7 @@ pub mod speed_sections;
 pub mod switch_types;
 pub mod switches;
 pub mod track_section_links;
+pub mod track_sections;
 
 use std::collections::HashMap;
 
@@ -189,12 +190,19 @@ impl GeneratedData for ErrorLayer {
 
         // Generate the errors
         let mut infra_errors = generate_errors(
+            ObjectType::TrackSection,
+            infra_cache,
+            &graph,
+            &track_sections::OBJECT_GENERATORS,
+            &[],
+        );
+        infra_errors.extend(generate_errors(
             ObjectType::Signal,
             infra_cache,
             &graph,
             &signals::OBJECT_GENERATORS,
             &[],
-        );
+        ));
         infra_errors.extend(generate_errors(
             ObjectType::SpeedSection,
             infra_cache,
@@ -279,7 +287,7 @@ impl GeneratedData for ErrorLayer {
 mod test {
     use super::{
         buffer_stops, detectors, generate_errors, operational_points, routes, signals,
-        speed_sections, switch_types, switches, track_section_links, Graph,
+        speed_sections, switch_types, switches, track_section_links, track_sections, Graph,
     };
 
     use crate::infra_cache::tests::{create_buffer_stop_cache, create_small_infra_cache};
@@ -293,6 +301,14 @@ mod test {
         let graph = Graph::load(&small_infra_cache);
 
         // Generate the errors
+        assert!(generate_errors(
+            ObjectType::TrackSection,
+            &small_infra_cache,
+            &graph,
+            &track_sections::OBJECT_GENERATORS,
+            &[],
+        )
+        .is_empty());
         assert!(generate_errors(
             ObjectType::Signal,
             &small_infra_cache,
