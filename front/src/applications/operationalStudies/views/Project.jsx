@@ -83,7 +83,7 @@ export default function Project() {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
       setProject(result);
       if (result.image_url) {
-        getProjectImage(`${DOCUMENT_URI}${result.image_id}`);
+        getProjectImage(`${DOCUMENT_URI}${result.image}`);
       }
       if (withNotification) {
         dispatch(

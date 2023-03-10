@@ -10,8 +10,8 @@ export type projectTypes = {
   budget: number;
   image?: Blob | null | number;
   image_url?: string;
-  image_id?: number;
   studies?: number[];
+  currentImage?: Blob | null;
 };
 
 export type studyTypes = {

@@ -10,7 +10,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import DOCUMENT_URI from 'common/consts';
-import { deleteRequest, patch, patchMultipart, post } from 'common/requests';
+import { deleteRequest, patch, post } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
@@ -76,8 +76,8 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else {
       try {
-        if (currentProject.image) {
-          currentProject.image = await getDocKey(currentProject.image as Blob);
+        if (currentProject.currentImage) {
+          currentProject.image = await getDocKey(currentProject.currentImage as Blob);
         }
         const result = await post(PROJECTS_URI, currentProject);
         dispatch(updateProjectID(result.id));
@@ -94,9 +94,9 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else if (project) {
       try {
-        let imageId = currentProject.image_id;
-        if (currentProject.image) {
-          imageId = await getDocKey(currentProject.image as Blob);
+        let imageId = currentProject.image;
+        if (currentProject.currentImage) {
+          imageId = await getDocKey(currentProject.currentImage as Blob);
         }
 
         currentProject.image = imageId;

@@ -18,7 +18,7 @@ type Props = {
     name: string;
     description: string;
     image_url: string;
-    image_id: number;
+    image: number;
     last_modification: Date;
     studies: Array<1>;
     tags: string[];
@@ -42,7 +42,7 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
   // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
   // url is generated and stored in imageUrl (then used in <img />).
   const getProjectImage = async () => {
-    const image = await get(`${DOCUMENT_URI}${project.image_id}`, {
+    const image = await get(`${DOCUMENT_URI}${project.image}`, {
       responseType: 'blob',
     });
     setImageUrl(URL.createObjectURL(image));

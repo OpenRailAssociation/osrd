@@ -23,9 +23,9 @@ type Props = {
 
 function PicturePlaceholder({ currentProject, isValid }: PropsPlaceholder) {
   const { t } = useTranslation('operationalStudies/project');
-  if (currentProject.image && Number.isNaN(Number(currentProject.image))) {
+  if (currentProject.currentImage) {
     return (
-      <img src={URL.createObjectURL(currentProject.image as Blob)} alt="Project illustration" />
+      <img src={URL.createObjectURL(currentProject.currentImage)} alt="Project illustration" />
     );
   }
   if (currentProject.image_url) {
@@ -50,8 +50,8 @@ function PicturePlaceholder({ currentProject, isValid }: PropsPlaceholder) {
 function PicturePlaceholderButtons({ currentProject, setCurrentProject }: Props) {
   async function getRandomImage(url: string) {
     try {
-      const image = await fetch(url).then((res) => res.blob());
-      setCurrentProject({ ...currentProject, image });
+      const currentImage = await fetch(url).then((res) => res.blob());
+      setCurrentProject({ ...currentProject, currentImage });
     } catch (error) {
       console.error(error);
     }
@@ -130,7 +130,7 @@ function PicturePlaceholderButtons({ currentProject, setCurrentProject }: Props)
             ...currentProject,
             image: null,
             image_url: undefined,
-            image_id: undefined,
+            currentImage: null,
           })
         }
       >
@@ -145,10 +145,10 @@ export default function PictureUploader({ currentProject, setCurrentProject }: P
 
   const handleUpload = async (file?: File) => {
     if (file && file.type.startsWith('image/')) {
-      setCurrentProject({ ...currentProject, image: file });
+      setCurrentProject({ ...currentProject, currentImage: file });
       setIsValid(true);
     } else {
-      setCurrentProject({ ...currentProject, image: undefined });
+      setCurrentProject({ ...currentProject, currentImage: undefined });
       setIsValid(false);
     }
   };
