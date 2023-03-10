@@ -35,14 +35,13 @@ pub async fn edit<'a>(
     })
     .await
     .unwrap()?;
-
     let mut conn = redis_client.get_tokio_connection_manager().await.unwrap();
     map::invalidate_zone(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
         infra,
         &invalid_zone,
-        map_layers_config.max_tiles,
+        &map_layers_config,
     )
     .await?;
 
