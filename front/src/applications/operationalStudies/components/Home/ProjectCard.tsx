@@ -9,7 +9,7 @@ import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { get } from 'common/requests';
-import { PROJECTS_URI } from '../operationalStudiesConsts';
+import DOCUMENT_URI from 'common/consts';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -18,6 +18,7 @@ type Props = {
     name: string;
     description: string;
     image_url: string;
+    image: number;
     last_modification: Date;
     studies: Array<1>;
     tags: string[];
@@ -37,8 +38,13 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
     navigate('/operational-studies/project');
   };
 
+  // as the image is stored in the database and can be fetched only through api (authentication needed),
+  // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
+  // url is generated and stored in imageUrl (then used in <img />).
   const getProjectImage = async () => {
-    const image = await get(`${PROJECTS_URI}${project.id}/image/`, { responseType: 'blob' });
+    const image = await get(`${DOCUMENT_URI}${project.image}`, {
+      responseType: 'blob',
+    });
     setImageUrl(URL.createObjectURL(image));
   };
 

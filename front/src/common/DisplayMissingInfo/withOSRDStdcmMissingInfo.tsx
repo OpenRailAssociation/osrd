@@ -5,7 +5,7 @@ import { getDestination, getOrigin, getRollingStockID } from 'reducers/osrdconf/
 import DisplayMissingInfo from './DisplayMissingInfo';
 
 const withOSRDStdcmMissingInfo =
-  <T extends {}>(Component: ComponentType<T>) =>
+  <T extends object>(Component: ComponentType<T>) =>
   (hocProps: T) => {
     const { t } = useTranslation('missingInfo');
 
