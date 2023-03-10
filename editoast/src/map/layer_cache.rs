@@ -3,6 +3,7 @@ use core::f64::consts::PI;
 use super::BoundingBox;
 
 /// Web mercator coordinates
+#[derive(Debug, Clone, Copy)]
 pub struct Tile {
     pub x: u64,
     pub y: u64,
@@ -10,6 +11,7 @@ pub struct Tile {
 }
 
 /// North-West and South-East web mercator coordinates
+#[derive(Debug, Clone, Copy)]
 struct NwSeCoordinates {
     nw_x: u64,
     nw_y: u64,
