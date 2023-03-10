@@ -2218,9 +2218,7 @@ components:
           type: string
           maxLength: 1024
         funders:
-          type: array
-          items:
-            type: string
+          type: string
           maxLength: 255
         budget:
           type: integer
@@ -2244,9 +2242,8 @@ components:
         description:
           type: string
         funders:
-          type: array
-          items:
-            type: string
+          type: string
+          maxLength: 255
         budget:
           type: integer
         image_url:
