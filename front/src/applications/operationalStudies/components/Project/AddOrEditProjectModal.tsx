@@ -10,7 +10,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import DOCUMENT_URI from 'common/consts';
-import { deleteRequest, patch, post } from 'common/requests';
+import { deleteRequest, post } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
@@ -23,6 +23,11 @@ import { setSuccess } from 'reducers/main';
 import { updateProjectID } from 'reducers/osrdconf';
 import remarkGfm from 'remark-gfm';
 import { useDebounce } from 'utils/helpers';
+import {
+  ProjectCreateRequest,
+  ProjectPatchRequest,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
@@ -52,6 +57,9 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [postProject] = osrdEditoastApi.usePostProjectsMutation();
+  const [patchProject] = osrdEditoastApi.usePatchProjectsByProjectIdMutation();
+
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(currentProject.tags);
     newTags.splice(idx, 1);
@@ -79,10 +87,17 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
         if (currentProject.currentImage) {
           currentProject.image = await getDocKey(currentProject.currentImage as Blob);
         }
-        const result = await post(PROJECTS_URI, currentProject);
-        dispatch(updateProjectID(result.id));
-        navigate('/operational-studies/project');
-        closeModal();
+        const request = postProject({
+          projectCreateRequest: currentProject as ProjectCreateRequest,
+        });
+        request
+          .unwrap()
+          .then((projectCreated) => {
+            dispatch(updateProjectID(projectCreated.id));
+            navigate('/operational-studies/project');
+            closeModal();
+          })
+          .catch((error) => console.error(error));
       } catch (error) {
         console.error(error);
       }
@@ -98,11 +113,18 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
         if (currentProject.currentImage) {
           imageId = await getDocKey(currentProject.currentImage as Blob);
         }
-
         currentProject.image = imageId;
-        await patch(`${PROJECTS_URI}${project.id}/`, currentProject);
-        getProject(true);
-        closeModal();
+        const request = patchProject({
+          projectId: currentProject.id as number,
+          projectPatchRequest: currentProject as ProjectPatchRequest,
+        });
+        request
+          .unwrap()
+          .then(() => {
+            getProject(true);
+            closeModal();
+          })
+          .catch((error) => console.error(error));
       } catch (error) {
         console.error(error);
       }
