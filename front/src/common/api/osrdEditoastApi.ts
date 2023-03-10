@@ -190,6 +190,48 @@ const injectedRtkApi = api.injectEndpoints({
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
     }),
+    postProjects: build.mutation<PostProjectsApiResponse, PostProjectsApiArg>({
+      query: (queryArg) => ({
+        url: `/projects/`,
+        method: 'POST',
+        body: queryArg.projectCreateRequest,
+      }),
+    }),
+    getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
+      query: (queryArg) => ({
+        url: `/projects/`,
+        params: {
+          ordering: queryArg.ordering,
+          name: queryArg.name,
+          description: queryArg.description,
+          tags: queryArg.tags,
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+        },
+      }),
+    }),
+    getProjectsByProjectId: build.query<
+      GetProjectsByProjectIdApiResponse,
+      GetProjectsByProjectIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/` }),
+    }),
+    patchProjectsByProjectId: build.mutation<
+      PatchProjectsByProjectIdApiResponse,
+      PatchProjectsByProjectIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/`,
+        method: 'PATCH',
+        body: queryArg.projectPatchRequest,
+      }),
+    }),
+    deleteProjectsByProjectId: build.mutation<
+      DeleteProjectsByProjectIdApiResponse,
+      DeleteProjectsByProjectIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -475,6 +517,55 @@ export type GetRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
 };
+export type PostProjectsApiResponse = /** status 201 The created project */ ProjectResult;
+export type PostProjectsApiArg = {
+  projectCreateRequest: ProjectCreateRequest;
+};
+export type GetProjectsApiResponse = /** status 200 the project list */ {
+  count?: number;
+  next?: any;
+  previous?: any;
+  results?: {
+    schema?: ProjectResult;
+  }[];
+};
+export type GetProjectsApiArg = {
+  ordering?:
+    | 'name'
+    | '-name'
+    | 'creation_date'
+    | '-creation_date'
+    | 'last_modification'
+    | '-last_modification';
+  /** Filter projects by name */
+  name?: string;
+  /** Filter projects by description */
+  description?: string;
+  /** Filter projects by tags */
+  tags?: string;
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
+export type GetProjectsByProjectIdApiResponse = /** status 200 The project info */ ProjectResult;
+export type GetProjectsByProjectIdApiArg = {
+  /** project id you want to retrieve */
+  projectId: number;
+};
+export type PatchProjectsByProjectIdApiResponse =
+  /** status 200 The project updated */ ProjectResult;
+export type PatchProjectsByProjectIdApiArg = {
+  /** project id you want to update */
+  projectId: number;
+  /** The fields you want to update */
+  projectPatchRequest: ProjectPatchRequest;
+};
+export type DeleteProjectsByProjectIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdApiArg = {
+  /** project id you want to delete */
+  projectId: number;
+};
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {
   type?: string;
@@ -668,4 +759,36 @@ export type RollingStock = LightRollingStock & {
       };
     };
   };
+};
+export type ProjectResult = {
+  id?: number;
+  name?: string;
+  objectives?: string;
+  description?: string;
+  funders?: string[];
+  budget?: number;
+  image?: number;
+  image_url?: string;
+  creation_date?: string;
+  last_modification?: string;
+  studies?: number[];
+  tags?: string[];
+};
+export type ProjectCreateRequest = {
+  name: string;
+  objectives?: string;
+  description?: string;
+  funders?: string;
+  budget?: number;
+  image?: number;
+  tags?: string[];
+};
+export type ProjectPatchRequest = {
+  name?: string;
+  objectives?: string;
+  description?: string;
+  funders?: string;
+  budget?: number;
+  image?: number;
+  tags?: string[];
 };
