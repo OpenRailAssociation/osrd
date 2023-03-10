@@ -199,7 +199,7 @@ function EmptyLine(props) {
           type="button"
           onClick={() => addAllowance(values)}
           className={`btn btn-success btn-block btn-sm ${
-            values.begin_position >= values.end_position || values.value === 0 ? 'disabled' : null
+            values.begin_position >= values.end_position || values.value.seconds === 0 || values.value.seconds === "" ? 'disabled' : null
           }`}
         >
           <i className="icons-add" />
