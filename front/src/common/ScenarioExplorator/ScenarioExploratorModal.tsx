@@ -1,30 +1,31 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
-import projectsLogo from 'assets/pictures/views/projects.svg';
-import studiesLogo from 'assets/pictures/views/studies.svg';
-import scenariosLogo from 'assets/pictures/views/scenarios.svg';
 import {
+  LEGACY_PROJECTS_URI,
   PROJECTS_URI,
-  STUDIES_URI,
   SCENARIOS_URI,
+  STUDIES_URI,
 } from 'applications/operationalStudies/components/operationalStudiesConsts';
 import {
   projectTypes,
-  studyTypes,
   scenarioTypes,
+  studyTypes,
 } from 'applications/operationalStudies/components/operationalStudiesTypes';
+import projectsLogo from 'assets/pictures/views/projects.svg';
+import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
+import scenariosLogo from 'assets/pictures/views/scenarios.svg';
+import studiesLogo from 'assets/pictures/views/studies.svg';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
-import { get } from 'common/requests';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
-import { FilterParams } from './ScenarioExploratorTypes';
 import ProjectMiniCard from './ScenarioExploratorModalProjectMiniCard';
-import StudyMiniCard from './ScenarioExploratorModalStudyMiniCard';
 import ScenarioMiniCard from './ScenarioExploratorModalScenarioMiniCard';
+import StudyMiniCard from './ScenarioExploratorModalStudyMiniCard';
+import { FilterParams } from './ScenarioExploratorTypes';
 
 export default function ScenarioExploratorModal() {
   const { t } = useTranslation('common/scenarioExplorator');
@@ -60,7 +61,7 @@ export default function ScenarioExploratorModal() {
 
   useEffect(() => {
     if (projectID) {
-      grabItemsList(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, setStudiesList, {
+      grabItemsList(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}`, setStudiesList, {
         ordering: 'name',
       });
     }
@@ -73,7 +74,7 @@ export default function ScenarioExploratorModal() {
   useEffect(() => {
     if (projectID && studyID) {
       grabItemsList(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
+        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
         setScenariosList,
         {
           ordering: 'name',

@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/pictures/views/projects.svg';
+import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
 import ProjectCardEmpty from 'applications/operationalStudies/components/Home/ProjectCardEmpty';
-import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
-import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
 import osrdLogo from 'assets/pictures/osrd.png';
+import logo from 'assets/pictures/views/projects.svg';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import Loader from 'common/Loader';
 import { get } from 'common/requests';
-import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
-import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import { useTranslation } from 'react-i18next';
+import nextId from 'react-id-generator';
 
 function displayCards(projectsList, setFilterChips) {
   return projectsList ? (
