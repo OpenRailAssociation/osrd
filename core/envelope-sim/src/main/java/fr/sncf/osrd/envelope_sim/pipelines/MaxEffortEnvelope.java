@@ -4,7 +4,6 @@ import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
-import fr.sncf.osrd.envelope.EnvelopePoint;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -30,36 +29,8 @@ public class MaxEffortEnvelope {
         return part.getBeginSpeed() == part.getEndSpeed();
     }
 
-    /** Scan the maxSpeedProfile in order to find the beginning of the acceleration parts and constant speed parts */
-    private static TreeMap<EnvelopePoint,EnvelopeProfile> getAccelerationAndConstantSpeedPartsBeginnings(
-            Envelope maxSpeedProfile,
-            double initialSpeed
-    ) {
-        var cursor = EnvelopeCursor.forward(maxSpeedProfile);
-        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
-
-        TreeMap<EnvelopePoint,EnvelopeProfile> positionsMap = new TreeMap<>(new EnvelopePoint.EnvelopePointComparator());
-
-        if (initialSpeed < maxSpeed) {
-            positionsMap.put(new EnvelopePoint(0.0, initialSpeed), EnvelopeProfile.ACCELERATING);
-        }
-        while (cursor.findPartTransition(MaxSpeedEnvelope::increase)){
-            var cursorLeftSpeed = maxSpeedProfile.interpolateSpeedLeftDir(cursor.getPosition(), 1);
-            positionsMap.put(new EnvelopePoint(cursor.getPosition(), cursorLeftSpeed), EnvelopeProfile.ACCELERATING);
-            cursor.nextPart();
-        }
-        cursor.moveToBeginning();
-        while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)){
-            positionsMap.put(
-                    new EnvelopePoint(cursor.getPosition(), cursor.getStepBeginSpeed()), EnvelopeProfile.CONSTANT_SPEED
-            );
-            cursor.nextPart();
-        }
-        return positionsMap;
-    }
-
     /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity
-     * and compute the constant speed parts in case the train cannot physically maintain its speed */
+     * and compute the constant speed parts to check if the train can physically maintain its speed or not */
     public static Envelope addAccelerationAndConstantSpeedParts(
             EnvelopeSimContext context,
             Envelope maxSpeedProfile,
@@ -67,13 +38,39 @@ public class MaxEffortEnvelope {
     ) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
+        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
 
-        var computationBeginPositions =
-                getAccelerationAndConstantSpeedPartsBeginnings(maxSpeedProfile, initialSpeed);
+        if (initialSpeed < maxSpeed) {
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new SpeedConstraint(0, FLOOR),
+                    new EnvelopeConstraint(maxSpeedProfile, CEILING)
+            );
+            EnvelopeAcceleration.accelerate(context, 0, initialSpeed, overlayBuilder, 1);
+            cursor.findPosition(overlayBuilder.getLastPos());
+            builder.addPart(partBuilder.build());
+        }
 
-        for (var point : computationBeginPositions.entrySet()){
+        while (!cursor.hasReachedEnd()){
+            if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)){
+                var partBuilder = new EnvelopePartBuilder();
+                partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
 
-            if (point.getValue() == EnvelopeProfile.ACCELERATING){
+                var startSpeed = cursor.getStepBeginSpeed();
+                var startPosition = cursor.getPosition();
+                var overlayBuilder = new MaintainEnvelopePartBuilder(
+                        partBuilder,
+                        new SpeedConstraint(startSpeed, MAINTAIN_SPEED),
+                        new SpeedConstraint(0, FLOOR),
+                        new PositionConstraint(cursor.getPart().getBeginPos(), cursor.getPart().getEndPos())
+                );
+                EnvelopeMaintain.maintain(context, startPosition, startSpeed, overlayBuilder, 1);
+                builder.addPart(partBuilder.build());
+                cursor.findPosition(overlayBuilder.getLastPos());
+            }
+            else if (cursor.checkPartTransition(MaxSpeedEnvelope::increase)){
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
                 var overlayBuilder = new ConstrainedEnvelopePartBuilder(
@@ -87,23 +84,7 @@ public class MaxEffortEnvelope {
                 cursor.findPosition(overlayBuilder.getLastPos());
                 builder.addPart(partBuilder.build());
             }
-
-            if (point.getValue() == EnvelopeProfile.CONSTANT_SPEED){
-                var partBuilder = new EnvelopePartBuilder();
-                partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
-
-                var startSpeed = cursor.getStepBeginSpeed();
-                var startPosition = cursor.getPosition();
-                var overlayBuilder = new MaintainEnvelopePartBuilder(
-                        partBuilder,
-                        new SpeedConstraint(startSpeed, MAINTAIN_SPEED),
-                        new SpeedConstraint(0, FLOOR),
-                        new PositionConstraint(cursor.getPart().getBeginPos(), cursor.getPart().getEndPos())
-                );
-                EnvelopeMaintain.maintain(context, startPosition, startSpeed, overlayBuilder, 1);
-                cursor.findPosition(overlayBuilder.getLastPos());
-                builder.addPart(partBuilder.build());
-            }
+            else cursor.nextPart();
         }
         return builder.build();
     }
