@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useContext } from 'react';
+import React, { FC, PropsWithChildren, useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ModalContext } from './ModalProvider';
@@ -8,7 +8,7 @@ export interface ConfirmModalProps {
   title?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  onConfirm: () => void | Promise<void>;
+  onConfirm: (setDisabled: (disabled: boolean) => void) => void | Promise<void>;
   onCancel?: () => void | Promise<void>;
 }
 
@@ -22,6 +22,7 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
 }) => {
   const { t } = useTranslation();
   const { closeModal } = useContext(ModalContext);
+  const [disabled, setDisabled] = useState(false);
 
   return (
     <Modal title={title}>
@@ -32,10 +33,16 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
           type="button"
           className="btn btn-danger mr-2"
           onClick={() => (onCancel ? onCancel() : closeModal())}
+          disabled={disabled}
         >
           {cancelLabel || t('common.cancel')}
         </button>
-        <button type="button" className="btn btn-primary" onClick={() => onConfirm()}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => onConfirm(setDisabled)}
+          disabled={disabled}
+        >
           {confirmLabel || t('common.confirm')}
         </button>
       </div>
