@@ -43,6 +43,10 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     tool: TOOLS[0],
     state: TOOLS[0].getInitialState({ osrdConf }),
   });
+  const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
+  const forceRender = useCallback(() => {
+    setRenderingFingerprint(Date.now());
+  }, [setRenderingFingerprint]);
 
   const switchTool = useCallback(
     <S extends CommonToolState>(tool: Tool<S>, partialState?: Partial<S>) => {
@@ -69,7 +73,8 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const resetState = useCallback(() => {
     switchTool(TOOLS[0]);
     dispatch(reset());
-  }, [dispatch, switchTool]);
+    forceRender();
+  }, [dispatch, switchTool, forceRender]);
 
   const { infra } = useParams<{ infra?: string }>();
   const { mapStyle, viewport } = useSelector(
@@ -91,8 +96,19 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       state: toolAndState.state,
       setState: setToolState,
       switchTool,
+      forceRender,
+      renderingFingerprint,
     }),
-    [setToolState, toolAndState, openModal, closeModal, osrdConf, t]
+    [
+      setToolState,
+      toolAndState,
+      openModal,
+      closeModal,
+      osrdConf,
+      t,
+      forceRender,
+      renderingFingerprint,
+    ]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({

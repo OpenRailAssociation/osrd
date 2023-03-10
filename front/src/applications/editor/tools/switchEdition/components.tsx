@@ -310,6 +310,7 @@ export const SwitchEditionLayers: FC = () => {
   const [showPopup, setShowPopup] = useState(true);
   const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const {
+    renderingFingerprint,
     state: { entity, hovered, portEditionState, mousePosition },
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
@@ -417,6 +418,7 @@ export const SwitchEditionLayers: FC = () => {
         colors={colors[mapStyle]}
         hidden={entity?.properties?.id ? [entity.properties.id] : undefined}
         layers={editorLayers}
+        fingerprint={renderingFingerprint}
       />
 
       {/* Edited switch */}

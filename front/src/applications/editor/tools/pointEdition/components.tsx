@@ -305,6 +305,7 @@ export const BasePointEditionLayers: FC<{
   interactiveLayerIDRegex?: RegExp;
 }> = ({ mergeEntityWithNearestPoint, interactiveLayerIDRegex }) => {
   const {
+    renderingFingerprint,
     state: { nearestPoint, mousePosition, entity, objType },
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
@@ -370,6 +371,7 @@ export const BasePointEditionLayers: FC<{
         colors={colors[mapStyle]}
         hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
         layers={editorLayers}
+        fingerprint={renderingFingerprint}
       />
 
       {/* Edited entity */}
