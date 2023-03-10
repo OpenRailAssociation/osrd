@@ -1,11 +1,10 @@
 import React, { FC, PropsWithChildren, useContext, useMemo, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
+import ReactMapGL, { AttributionControl, MapRef, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import maplibregl from 'maplibre-gl';
 import { isEmpty, isEqual } from 'lodash';
-import mapboxgl from 'mapbox-gl';
 
 import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
@@ -66,7 +65,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   children,
 }) => {
   const dispatch = useDispatch();
-  const map = useRef(null);
+  const mapRef = useRef<MapRef>(null);
   const [mapState, setMapState] = useState<MapState>({
     isLoaded: true,
     isDragging: false,
@@ -112,7 +111,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
       >
         <ReactMapGL
           {...viewport}
-          ref={map}
+          ref={mapRef}
           key={activeTool.id}
           mapLib={maplibregl}
           style={{ width: '100%', height: '100%' }}
@@ -262,9 +261,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           />
 
           {/* Tool specific layers */}
-          {activeTool.layersComponent && map.current && (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            <activeTool.layersComponent map={(map.current as any).getMap() as mapboxgl.Map} />
+          {activeTool.layersComponent && mapRef.current && (
+            <activeTool.layersComponent map={mapRef.current.getMap()} />
           )}
         </ReactMapGL>
       </div>

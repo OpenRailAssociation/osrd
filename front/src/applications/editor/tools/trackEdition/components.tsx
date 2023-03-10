@@ -25,6 +25,7 @@ const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line
 export const TrackEditionLayers: FC = () => {
   const {
     state,
+    renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
@@ -75,6 +76,7 @@ export const TrackEditionLayers: FC = () => {
         colors={colors[mapStyle]}
         hidden={state.track.properties.id ? [state.track.properties.id] : undefined}
         layers={editorLayers}
+        fingerprint={renderingFingerprint}
       />
 
       {/* Track path */}

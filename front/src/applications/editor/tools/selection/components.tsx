@@ -37,6 +37,7 @@ export const SelectionLayers: FC = () => {
   const {
     state,
     editorState: { editorLayers },
+    renderingFingerprint,
   } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
@@ -67,6 +68,7 @@ export const SelectionLayers: FC = () => {
         colors={colors[mapStyle]}
         selection={state.selection.map((e) => e.properties.id)}
         layers={editorLayers}
+        fingerprint={renderingFingerprint}
       />
       <SelectionZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (

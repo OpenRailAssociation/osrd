@@ -78,6 +78,11 @@ export type EditorContextType<S = any> = {
     tool: Tool<NewToolState>,
     state?: Partial<NewToolState>
   ) => void;
+
+  // Listen to this number's updates to rerender on specific cases, such as data
+  // suppression:
+  forceRender: () => void;
+  renderingFingerprint: number;
 } & Pick<ModalContextType, 'openModal' | 'closeModal'>;
 
 export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
