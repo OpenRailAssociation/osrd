@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
@@ -212,6 +213,7 @@ public class STDCMEndpoint implements Take {
                 lastRange.edge().getInfraRoute().getTrackRanges(), lastRange.end());
 
         var path = TrainPathBuilder.from(routes, startLocation, lastLocation);
+        DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
         var standaloneResult = StandaloneSim.run(
                 infra,
                 path,
@@ -225,7 +227,8 @@ public class STDCMEndpoint implements Take {
                         comfort,
                         null
                 )),
-                timeStep
+                timeStep,
+                driverBehaviour
         );
         var headPositions = standaloneResult.baseSimulations.get(0).headPositions;
         var time = headPositions.get(headPositions.size() - 1).time;

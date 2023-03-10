@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
@@ -116,7 +117,9 @@ public class StandaloneSimulationCommand implements CliCommand {
                         signalingInfra, 2.0, rollingStocks::get, standSched, trainsPath, envelopePath));
 
                 // Calculate the result for the given train path and schedules
-                var result = StandaloneSim.run(signalingInfra, trainsPath, envelopePath, trainSchedules, 2.0);
+                DriverBehaviour driverBehaviour = new DriverBehaviour();
+                var result = StandaloneSim.run(signalingInfra, trainsPath, envelopePath, trainSchedules, 2.0,
+                        driverBehaviour);
                 result.warnings = recorder.warnings;
 
                 simulations.add(result);

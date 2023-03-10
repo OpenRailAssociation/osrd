@@ -7,8 +7,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
+import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeTestUtils;
+import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.infra.InfraHelpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
@@ -21,6 +23,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTra
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import java.util.EnumMap;
@@ -60,33 +63,33 @@ public class MRSPTest {
 
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 50),
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
-                        makeFlatPart(List.of(MRSP.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 50),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
                                 TestTrains.REALISTIC_FAST_TRAIN.maxSpeed)
                 ), mrspNoTags, 0.001);
 
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 75),
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
-                        makeFlatPart(List.of(MRSP.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 75),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
                                 TestTrains.REALISTIC_FAST_TRAIN.maxSpeed)
                 ), mrspFast, 0.001);
 
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 50),
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 10),
-                        makeFlatPart(List.of(MRSP.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 50),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 10),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
                                 TestTrains.REALISTIC_FAST_TRAIN.maxSpeed)
                 ), mrspShort, 0.001);
 
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 22),
-                        makeFlatPart(List.of(MRSP.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
-                        makeFlatPart(List.of(MRSP.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 22),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
+                        makeFlatPart(List.of(MRSPEnvelopeBuilder.LimitKind.TRAIN_LIMIT, CONSTANT_SPEED), 30, 80,
                                 TestTrains.REALISTIC_FAST_TRAIN.maxSpeed)
                 ), mrspLong, 0.001);
     }
@@ -125,7 +128,6 @@ public class MRSPTest {
                 new TrackRangeView(15, 80, infra.getEdge("track", Direction.FORWARD))
         );
         var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
-
         var mrsp = MRSP.from(path, testRollingStock, true, null);
         Assertions.assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
         Assertions.assertEquals(42, mrsp.interpolateSpeedRightDir(15, 1));
