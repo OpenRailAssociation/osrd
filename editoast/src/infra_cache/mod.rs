@@ -202,6 +202,10 @@ pub struct TrackQueryable {
     #[diesel(sql_type = Double)]
     pub length: f64,
     #[diesel(sql_type = Text)]
+    pub curves: String,
+    #[diesel(sql_type = Text)]
+    pub slopes: String,
+    #[diesel(sql_type = Text)]
     pub geo: String,
     #[diesel(sql_type = Text)]
     pub sch: String,
@@ -214,6 +218,8 @@ impl From<TrackQueryable> for TrackSectionCache {
         Self {
             obj_id: track.obj_id,
             length: track.length,
+            curves: serde_json::from_str(&track.curves).unwrap(),
+            slopes: serde_json::from_str(&track.slopes).unwrap(),
             bbox_geo: geo.get_bbox(),
             bbox_sch: sch.get_bbox(),
         }
@@ -339,11 +345,18 @@ impl InfraCache {
 
         // Load track sections list
         sql_query(
-            "SELECT obj_id, (data->>'length')::float as length, data->>'geo' as geo, data->>'sch' as sch FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
+            "SELECT 
+                obj_id, (data->>'length')::float as length, 
+                data->>'curves' as curves, 
+                data->>'slopes' as slopes, 
+                data->>'geo' as geo, 
+                data->>'sch' as sch 
+            FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
         )
         .bind::<BigInt, _>(infra_id)
         .load::<TrackQueryable>(conn)?
-        .into_iter().for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
+        .into_iter()
+        .for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
 
         // Load signal tracks references
         sql_query(
@@ -697,6 +710,7 @@ pub mod tests {
             length,
             bbox_geo: BoundingBox::default(),
             bbox_sch: BoundingBox::default(),
+            ..Default::default()
         }
     }
 
