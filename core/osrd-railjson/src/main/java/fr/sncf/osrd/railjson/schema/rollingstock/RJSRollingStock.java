@@ -7,6 +7,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import java.util.Map;
 
+import java.util.Arrays;
+import java.util.TreeMap;
+
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
             .Builder()
@@ -102,4 +105,145 @@ public class RJSRollingStock implements Identified {
     public String getID() {
         return name;
     }
+
+    //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
+    record CurvePoint(double x, double y) { }    // position of a point in a 2D space (x, y)
+    public static class SpeedDependantPowerCoefficient{
+        // x:speed values , y:associated dimensionless powerCoefficient which modulate output power
+        CurvePoint[] curve = {
+                new CurvePoint(0.0,0.0),
+                new CurvePoint(10.0,0.0),
+                new CurvePoint(20.0,1.0),
+                new CurvePoint(3000.0,1.0)
+        };
+        public SpeedDependantPowerCoefficient(){        //Constructor
+            System.out.printf(Arrays.toString(curve));  //So IntelliJ doesn't tell me curve's unused
+        }
+    }
+
+    public static class SocDependantPowerCoefficient{
+        // x:speed values , y:associated dimensionless powerCoefficient which modulate output power
+        CurvePoint[] curve = {
+                new CurvePoint(0.0,0.1),
+                new CurvePoint(10.0,0.1),
+                new CurvePoint(20.0,1.0),
+                new CurvePoint(110.0,1.0),
+                new CurvePoint(120.0,1.5),
+                new CurvePoint(3000.0,1.5)
+        };
+        public SocDependantPowerCoefficient(){          //Constructor
+            System.out.printf(Arrays.toString(curve));  //So IntelliJ doesn't tell me curve's unused
+        }
+    }
+
+    public static class PowerConverter {
+        Double efficiency = 0.001;
+
+        public PowerConverter(){}
+        public PowerConverter(Double efficiency){
+            this.efficiency = efficiency;
+        }
+    }
+
+    public static class RefillLaw {
+        Double tauRech = 0.45 ;     //Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant
+        //5 Tau => 99%·socRef
+        Double socRef = 0.85;   //Set-point of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)
+
+        public RefillLaw() {}
+        public RefillLaw(Double tauRech, Double socRef) {
+            this.tauRech = tauRech;
+            this.socRef = socRef;
+        }
+    }
+
+    public static class ManagementSystem{
+        Double overchargeThreshold;          //overcharge limit
+        Double underchargeThreshold;         //undercharge limit
+
+        public ManagementSystem(Double overchargeThreshold, Double underchargeThreshold) {
+            this.overchargeThreshold = overchargeThreshold;
+            this.underchargeThreshold = underchargeThreshold;
+        }
+    }
+
+    public static class EnergyStorage{
+        Double capacity = 0.5;//How much energy you can store (in Joules or Watts·Seconds)
+        Double soc = .5;//The State of Charge of your EnergyStorage, soc·capacity = actual stock of energy
+        RefillLaw refillLaw = new RefillLaw();
+        ManagementSystem management = new ManagementSystem(0.85, 0.2);
+        SocDependantPowerCoefficient socDependency = new SocDependantPowerCoefficient();
+
+        public EnergyStorage() {}
+        public EnergyStorage(
+                Double capacity, Double soc, RefillLaw refillLaw,
+                ManagementSystem management, SocDependantPowerCoefficient socDependency
+        ) {
+            this.capacity = capacity;
+            this.soc = soc;
+            this.refillLaw = refillLaw;
+            this.management = management;
+            this.socDependency = socDependency;
+        }
+    }
+
+    public static class EnergySource{
+        Double pMin;           // Negative power limit
+        Double pMax;           // Positive power limit
+        EnergyStorage Storage;          // If your EnergySource have a limited quantity of energy
+        PowerConverter Converter;  // If your EnergySource has power conversion and/or need to account for power losses
+        SpeedDependantPowerCoefficient speedCoef;
+        // If your EnergySource output power is dependent on speed of the train
+
+        public EnergySource(Double pMin, Double pMax) {
+            this.pMin = pMin;
+            this.pMax = pMax;
+        }
+        public EnergySource(Double pMin, Double pMax, SpeedDependantPowerCoefficient speedCoef) {
+            this.pMin = pMin;
+            this.pMax = pMax;
+            this.speedCoef = speedCoef;
+        }
+        public EnergySource(Double pMin, Double pMax, EnergyStorage storage, PowerConverter converter) {
+            this.pMin = pMin;
+            this.pMax = pMax;
+            this.Storage = storage;
+            this.Converter = converter;
+        }
+
+        public EnergySource(Double pMin, Double pMax,
+                            EnergyStorage storage,
+                            PowerConverter converter,
+                            SpeedDependantPowerCoefficient speedCoef
+        ) {
+            this.pMin = pMin;
+            this.pMax = pMax;
+            this.Storage = storage;
+            this.Converter = converter;
+            this.speedCoef = speedCoef;
+        }
+    }
+
+    // IDK if af an arrayList or a map is better to store EnergySource of the train
+    // Instantiating a pantograph/catenary thingy and a test battery
+    EnergySource pantograph = new EnergySource(
+            400.,
+            500.,
+            new SpeedDependantPowerCoefficient()
+    );
+    EnergySource battery = new EnergySource(
+            400.,
+            500.,
+            new EnergyStorage(),
+            new PowerConverter(0.56)
+    );
+
+    //Trying to get those in a map
+    TreeMap<Integer, EnergySource> EnergySourceMap = new TreeMap<>(/*needs a sorting method ?*/);
+    public TreeMap<Integer, EnergySource> getEnergySources() {
+        EnergySourceMap.put(0, pantograph);
+        EnergySourceMap.put(1, battery);
+        return EnergySourceMap;
+    }
+    //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
 }
