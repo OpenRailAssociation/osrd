@@ -1,23 +1,14 @@
 import subprocess
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
 
 import pytest
 import requests
 
+from tests.scenario import Scenario
 from tests.services import API_URL, EDITOAST_URL
 from tests.utils.timetable import create_op_study, create_project, create_scenario
-
-
-@dataclass(frozen=True)
-class Scenario:
-    project: int
-    op_study: int
-    scenario: int
-    infra: int
-    timetable: int
 
 
 def _load_generated_infra(name: str) -> int:
