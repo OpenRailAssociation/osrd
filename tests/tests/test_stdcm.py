@@ -7,12 +7,13 @@ from tests.utils.timetable import (
     delete_project,
 )
 
+from .scenario import Scenario
 from .services import API_URL
 from .utils.simulation import _get_rolling_stock_id
 from .utils.stdcm import add_train
 
 
-def test_empty_timetable(small_scenario):
+def test_empty_timetable(small_scenario: Scenario):
     infra_id = small_scenario.infra
     project = create_project(API_URL)
     op_study = create_op_study(API_URL, project)
@@ -32,7 +33,7 @@ def test_empty_timetable(small_scenario):
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
 
 
-def test_between_trains(small_scenario):
+def test_between_trains(small_scenario: Scenario):
     start = {"track_section": "TE1", "offset": 0}
     stop = {"track_section": "TE0", "offset": 0}
     add_train(API_URL, small_scenario, start, stop, 0)
