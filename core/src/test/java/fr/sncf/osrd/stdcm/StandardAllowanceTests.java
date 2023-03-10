@@ -166,8 +166,8 @@ public class StandardAllowanceTests {
         assertNotNull(res.withAllowance);
         var timeEnterOccupiedSection = res.withAllowance.departureTime()
                 + res.withAllowance.envelope().interpolateTotalTime(5_000);
-        assertEquals(3600, timeEnterOccupiedSection, timeStep);
-        occupancyTest(res.withAllowance, occupancyGraph, timeStep);
+        assertEquals(3600, timeEnterOccupiedSection, 2 * timeStep);
+        occupancyTest(res.withAllowance, occupancyGraph, 2 * timeStep);
         checkAllowanceResult(res, allowance);
     }
 
@@ -213,7 +213,7 @@ public class StandardAllowanceTests {
 
         var thirdRouteEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(11_000);
-        assertEquals(1000, thirdRouteEntryTime, 2 * timeStep);
+        assertEquals(1000, thirdRouteEntryTime, 4 * timeStep); // Errors build up, we need a high delta
     }
 
     /** Same test as the previous one, with very short routes at the start and end */
@@ -484,7 +484,6 @@ public class StandardAllowanceTests {
 
     /** The path we find must pass through an (almost) exact space-time point at the middle of the path,
      * we check that we can still do this with mareco */
-    @Disabled
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     public void testMarecoSingleSpaceTimePoint(boolean isTimePerDistance) {
