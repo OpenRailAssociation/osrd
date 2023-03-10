@@ -33,7 +33,7 @@ use strum_macros::Display;
 use strum_macros::EnumIter;
 pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
-pub use track_section::{LineString, TrackSection, TrackSectionCache};
+pub use track_section::{Curve, LineString, Slope, TrackSection, TrackSectionCache};
 pub use track_section_link::TrackSectionLink;
 
 use self::utils::{Identifier, NonBlankString};

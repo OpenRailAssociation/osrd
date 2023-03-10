@@ -48,3 +48,6 @@ editoast_derive = { path = "./editoast_derive" }
 mvt = "0.8.1"
 pointy = "0.4.0"
 futures = "0.3.26"
+
+[dev-dependencies]
+ntest = "0.9.0"

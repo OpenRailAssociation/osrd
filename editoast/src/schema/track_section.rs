@@ -131,12 +131,16 @@ impl LineString {
     }
 }
 
-#[derive(Debug, Clone, Derivative)]
+#[derive(Debug, Default, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
 pub struct TrackSectionCache {
     pub obj_id: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     pub length: f64,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub slopes: Vec<Slope>,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub curves: Vec<Curve>,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     pub bbox_geo: BoundingBox,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
@@ -176,6 +180,8 @@ impl From<TrackSection> for TrackSectionCache {
         TrackSectionCache {
             obj_id: track.id.0,
             length: track.length,
+            curves: track.curves,
+            slopes: track.slopes,
             bbox_geo: track.geo.get_bbox(),
             bbox_sch: track.sch.get_bbox(),
         }
