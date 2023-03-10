@@ -335,6 +335,7 @@ public class STDCMPathfindingTests {
         /*
         a --> b
          */
+        final double timeStep = 2;
         var infraBuilder = new DummyRouteGraphBuilder();
         var route = infraBuilder.addRoute("a", "b");
         var infra = infraBuilder.build();
@@ -345,8 +346,9 @@ public class STDCMPathfindingTests {
                 .setUnavailableTimes(ImmutableMultimap.of(
                         route, new OccupancyBlock(0, 1000, 0, 100)
                 ))
-                .setMaxDepartureDelay(1000)
+                .setMaxDepartureDelay(1000 + timeStep)
                 .setMaxRunTime(100)
+                .setTimeStep(timeStep)
                 .run();
         assertNotNull(res);
     }

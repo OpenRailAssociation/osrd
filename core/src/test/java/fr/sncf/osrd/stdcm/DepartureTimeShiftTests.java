@@ -444,12 +444,14 @@ public class DepartureTimeShiftTests {
         var occupancyGraph = ImmutableMultimap.of(
                 firstRoute, new OccupancyBlock(0, 1000, 0, 100)
         );
+        double timeStep = 2;
         var res1 = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0)))
                 .setUnavailableTimes(occupancyGraph)
-                .setMaxDepartureDelay(1001)
+                .setTimeStep(timeStep)
+                .setMaxDepartureDelay(1000 + timeStep)
                 .run();
         assertNotNull(res1);
 
@@ -458,7 +460,8 @@ public class DepartureTimeShiftTests {
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0)))
                 .setUnavailableTimes(occupancyGraph)
-                .setMaxDepartureDelay(999)
+                .setTimeStep(timeStep)
+                .setMaxDepartureDelay(1000 - timeStep)
                 .run();
         assertNull(res2);
     }
