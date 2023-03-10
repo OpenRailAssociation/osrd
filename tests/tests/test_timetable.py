@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Any, Iterable, Mapping, Optional
 
+import pytest
 import requests
 
 from .path import Path
 from .scenario import Scenario
-from .services import API_URL
+from .services import API_URL, EDITOAST_URL
 
 
 @dataclass(frozen=True)
@@ -53,12 +54,41 @@ def _two_train_simulation_payload(path_id: int, timetable_id: int, rolling_stock
     }
 
 
-def test_get_timetable(small_scenario: Scenario, fast_rolling_stock: int, west_to_south_east_path: Path):
-    # empty timetable
-    response = requests.get(f"{API_URL}timetable/{small_scenario.timetable}/")
-    assert response.status_code == 200
+@pytest.mark.parametrize(
+    ["service_url", "expected_error"],
+    [
+        (
+            EDITOAST_URL,
+            {
+                "type": "editoast:timetable:NotFound",
+                "context": {"timetable_id": -1},
+                "message": "Timetable '-1', could not be found",
+            },
+        ),
+        (API_URL, {"detail": "Not found."}),
+    ],
+)
+@pytest.mark.parametrize(["timetable_id", "status_code"], [(None, 200), (-1, 404)])
+def test_get_timetable(
+    small_scenario: Scenario,
+    fast_rolling_stock: int,
+    west_to_south_east_path: Path,
+    service_url: str,
+    timetable_id: Optional[int],
+    status_code: int,
+    expected_error: Mapping[str, Any],
+):
+    timetable_id = timetable_id or small_scenario.timetable
+
+    response = requests.get(f"{service_url}timetable/{timetable_id}/")
+    assert response.status_code == status_code
+    if status_code == 404:
+        assert expected_error == response.json()
+        return
+
     timetable = _TimetableResponse(**response.json())
     assert timetable.name == "timetable for foo"
+    assert len(timetable.train_schedules) == 0
 
     # add simulation
     simulation_response = requests.post(
@@ -69,9 +99,7 @@ def test_get_timetable(small_scenario: Scenario, fast_rolling_stock: int, west_t
     simulation = _SimulationResponse(**simulation_response.json())
     assert len(simulation.ids) == 2
 
-    # check two trains are added in timetable
-    response = requests.get(f"{API_URL}timetable/{small_scenario.timetable}/")
-    assert response.status_code == 200
+    response = requests.get(f"{service_url}timetable/{timetable_id}/")
     timetable = _TimetableResponse(**response.json())
     assert timetable.id == small_scenario.timetable
     assert timetable.name == "timetable for foo"

@@ -9,6 +9,8 @@ pub mod projects;
 pub mod rolling_stocks;
 pub mod search;
 pub mod study;
+pub mod timetable;
+pub mod train_schedule;
 
 use crate::client::get_app_version;
 use crate::error::Result;
@@ -30,6 +32,7 @@ pub fn routes() -> impl HttpServiceFactory {
         electrical_profiles::routes(),
         projects::routes(),
         study::routes(),
+        timetable::routes(),
         documents::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),

@@ -251,6 +251,9 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
     }),
+    getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
+      query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
+    }),
     postProjectsByProjectIdStudies: build.mutation<
       PostProjectsByProjectIdStudiesApiResponse,
       PostProjectsByProjectIdStudiesApiArg
@@ -668,6 +671,20 @@ export type DeleteProjectsByProjectIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdApiArg = {
   /** project id you want to delete */
   projectId: number;
+};
+export type GetTimetableByIdApiResponse = /** status 200 The timetable content */ {
+  id?: number;
+  name?: string;
+  train_schedules?: {
+    id?: number;
+    train_name?: string;
+    departure_time?: number;
+    train_path?: number;
+  }[];
+};
+export type GetTimetableByIdApiArg = {
+  /** Timetable ID */
+  id: number;
 };
 export type PostProjectsByProjectIdStudiesApiResponse =
   /** status 201 The created operational study */ StudyResult;
