@@ -180,8 +180,7 @@ public class DepartureTimeShiftTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2, new double[]{}, null,
-                new DriverBehaviour(0, 0));
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2, new double[]{}, null);
         assert firstRouteEnvelope != null;
         var occupancyGraph = ImmutableMultimap.of(
                 firstRoute, new OccupancyBlock(

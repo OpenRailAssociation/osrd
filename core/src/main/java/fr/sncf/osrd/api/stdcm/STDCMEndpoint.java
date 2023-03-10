@@ -109,7 +109,6 @@ public class STDCMEndpoint implements Take {
                     request.gridMarginAfterSTDCM,
                     request.gridMarginBeforeSTDCM
             );
-            DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
             double minRunTime = getMinRunTime(
                     infra,
                     rollingStock,
@@ -117,8 +116,7 @@ public class STDCMEndpoint implements Take {
                     startLocations,
                     endLocations,
                     request.timeStep,
-                    standardAllowance,
-                    driverBehaviour
+                    standardAllowance
             );
 
             // Run the STDCM pathfinding
@@ -194,8 +192,7 @@ public class STDCMEndpoint implements Take {
             Set<EdgeLocation<SignalingRoute>> startLocations,
             Set<EdgeLocation<SignalingRoute>> endLocations,
             double timeStep,
-            AllowanceValue standardAllowance,
-            DriverBehaviour driverBehaviour
+            AllowanceValue standardAllowance
     ) {
         var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations);
         var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
@@ -216,6 +213,7 @@ public class STDCMEndpoint implements Take {
                 lastRange.edge().getInfraRoute().getTrackRanges(), lastRange.end());
 
         var path = TrainPathBuilder.from(routes, startLocation, lastLocation);
+        DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
         var standaloneResult = StandaloneSim.run(
                 infra,
                 path,

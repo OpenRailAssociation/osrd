@@ -129,8 +129,7 @@ public class STDCMEdgeBuilder {
                     graph.comfort,
                     graph.timeStep,
                     STDCMUtils.getStopsOnRoute(graph, route, startOffset),
-                    graph.tag,
-                    new DriverBehaviour()
+                    graph.tag
             );
         if (envelope == null)
             return List.of();

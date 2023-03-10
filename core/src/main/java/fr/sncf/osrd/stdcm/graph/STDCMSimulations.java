@@ -66,8 +66,7 @@ public class STDCMSimulations {
             RollingStock.Comfort comfort,
             double timeStep,
             double[] stops,
-            String tag,
-            DriverBehaviour driverBehaviour
+            String tag
     ) {
         try {
             var context = makeSimContext(List.of(route), start, rollingStock, comfort, timeStep);
@@ -77,7 +76,6 @@ public class STDCMSimulations {
                     false,
                     tag
             );
-            mrsp = driverBehaviour.applyToMRSP(mrsp);
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
             return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
         } catch (ImpossibleSimulationError e) {
