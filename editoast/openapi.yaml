@@ -9,6 +9,8 @@ tags:
     description: Infra
   - name: routes
     description: Operations related to infra routes
+  - name: timetable
+    description: Timetable
   - name: pathfinding
     description: Pathfinding operations
   - name: layers
@@ -1190,6 +1192,44 @@ paths:
       responses:
         204:
           description: No content
+
+  /timetable/{id}/:
+    get:
+      tags:
+        - timetable
+      summary: Retrieve a timetable and its train schedules
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Timetable ID
+          required: true
+      responses:
+        200:
+          description: The timetable content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+                  train_schedules:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        train_name:
+                          type: string
+                        departure_time:
+                          type: number
+                        train_path:
+                          type: number
 
   /projects/{project_id}/studies/:
     post:
