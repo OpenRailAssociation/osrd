@@ -18,7 +18,7 @@ struct ProjectWithImageUrl {
 
 impl From<ProjectWithStudies> for ProjectWithImageUrl {
     fn from(project: ProjectWithStudies) -> Self {
-        let image_url = project.project.image_id.unwrap().map(Document::get_url);
+        let image_url = project.project.image.unwrap().map(Document::get_url);
         ProjectWithImageUrl { project, image_url }
     }
 }
