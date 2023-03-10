@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - front/**
+      - .github/workflows/front.yml
   push:
     branches:
       - dev

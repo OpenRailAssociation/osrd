@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - editoast/**
+      - .github/workflows/editoast.yml
   push:
     branches:
       - dev
