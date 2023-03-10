@@ -35,9 +35,7 @@ export interface ModalContextType {
 const initialModalContext: ModalContextType = {
   isOpen: false,
   content: null,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   openModal: noop,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   closeModal: noop,
 };
 

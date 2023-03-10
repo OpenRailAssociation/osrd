@@ -33,7 +33,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
   const { t } = useTranslation();
   const { initialRouteEntity, routeEntity } = state;
   const { entry_point, entry_point_direction, exit_point } = routeEntity.properties;
-  const { setState, openModal } = useContext(
+  const { setState, openModal, closeModal } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<RouteEditionState>;
   const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
@@ -93,15 +93,22 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
             openModal(
               <ConfirmModal
                 title={t('Editor.tools.routes-edition.delete-route')}
-                onConfirm={async () => {
+                onConfirm={async (setDisabled) => {
                   setIsLoading(true);
-                  await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
-                  setIsLoading(false);
-                  addNotification({
-                    type: 'success',
-                    text: t('Editor.tools.routes-edition.delete-route-success'),
-                  });
-                  setState(getEmptyCreateRouteState());
+                  setDisabled(true);
+
+                  try {
+                    await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
+                    setIsLoading(false);
+                    addNotification({
+                      type: 'success',
+                      text: t('Editor.tools.routes-edition.delete-route-success'),
+                    });
+                    setState(getEmptyCreateRouteState());
+                    closeModal();
+                  } catch (e: unknown) {
+                    setDisabled(false);
+                  }
                 }}
               >
                 <p>{t('Editor.tools.routes-edition.confirm-delete-route')}</p>
