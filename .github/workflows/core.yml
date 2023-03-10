@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - core/**
+      - .github/workflows/core.yml
   push:
     branches:
       - dev
