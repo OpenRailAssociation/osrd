@@ -1,31 +1,31 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useEffect, useState } from 'react';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import scenarioLogo from 'assets/pictures/views/studies.svg';
-import { useTranslation } from 'react-i18next';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
-import { MdDescription, MdTitle } from 'react-icons/md';
-import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
-import { useSelector, useDispatch } from 'react-redux';
-import { deleteRequest, get, patch, post } from 'common/requests';
-import { useNavigate } from 'react-router-dom';
-import { updateScenarioID } from 'reducers/osrdconf';
-import { setSuccess } from 'reducers/main';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { scenarioTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
-import { GiElectric } from 'react-icons/gi';
+import scenarioLogo from 'assets/pictures/views/studies.svg';
+import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
+import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
+import { deleteRequest, get, patch, post } from 'common/requests';
+import { useTranslation } from 'react-i18next';
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
+import { GiElectric } from 'react-icons/gi';
+import { MdDescription, MdTitle } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { setSuccess } from 'reducers/main';
+import { updateScenarioID } from 'reducers/osrdconf';
+import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import {
-  PROJECTS_URI,
+  ELECTRICAL_PROFILE_SET_URI,
+  LEGACY_PROJECTS_URI,
   SCENARIOS_URI,
   STUDIES_URI,
-  ELECTRICAL_PROFILE_SET_URI,
 } from '../operationalStudiesConsts';
 
 const scenarioTypesDefaults = {
@@ -86,7 +86,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
     }
   };
 
-  const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
+  const rootURI = `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(currentScenario.tags);

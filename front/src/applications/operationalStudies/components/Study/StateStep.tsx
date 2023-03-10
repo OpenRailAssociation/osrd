@@ -1,8 +1,7 @@
-import { patch } from 'common/requests';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import cx from 'classnames';
-import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { patch } from 'common/requests';
+import { useTranslation } from 'react-i18next';
+import { LEGACY_PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 type Props = {
   projectID: number;
@@ -17,7 +16,7 @@ export default function StateStep({ projectID, studyID, getStudy, number, state,
   const { t } = useTranslation('operationalStudies/study');
   const changeStudyState = async () => {
     try {
-      await patch(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, { state });
+      await patch(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, { state });
       getStudy(true);
     } catch (error) {
       console.error(error);

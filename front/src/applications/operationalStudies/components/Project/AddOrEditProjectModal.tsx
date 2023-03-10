@@ -1,27 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useContext, useState } from 'react';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import projectLogo from 'assets/pictures/views/projects.svg';
-import { useTranslation } from 'react-i18next';
+import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useDebounce } from 'utils/helpers';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+import DOCUMENT_URI from 'common/consts';
+import { deleteRequest, post } from 'common/requests';
+import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
-import remarkGfm from 'remark-gfm';
+import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
 import { RiMoneyEuroCircleLine } from 'react-icons/ri';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
-import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
-import { deleteRequest, patch, patchMultipart, post } from 'common/requests';
-import { updateProjectID } from 'reducers/osrdconf';
-import { useNavigate } from 'react-router-dom';
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { setSuccess } from 'reducers/main';
-import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
+import { updateProjectID } from 'reducers/osrdconf';
+import remarkGfm from 'remark-gfm';
+import { useDebounce } from 'utils/helpers';
+import {
+  ProjectCreateRequest,
+  ProjectPatchRequest,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
@@ -35,7 +41,7 @@ const currentProjectDefaults = {
   name: '',
   description: '',
   objectives: '',
-  funders: [],
+  funders: '',
   tags: [],
   budget: 0,
 };
@@ -46,9 +52,13 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   const [currentProject, setCurrentProject] = useState<projectTypes>(
     project || currentProjectDefaults
   );
+
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [postProject] = osrdEditoastApi.usePostProjectsMutation();
+  const [patchProject] = osrdEditoastApi.usePatchProjectsByProjectIdMutation();
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(currentProject.tags);
@@ -62,22 +72,32 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     setCurrentProject({ ...currentProject, tags: newTags });
   };
 
+  const getDocKey = async (image: Blob) => {
+    const { document_key: docKey } = await post(`${DOCUMENT_URI}`, image, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return docKey;
+  };
+
   const createProject = async () => {
     if (!currentProject.name) {
       setDisplayErrors(true);
     } else {
       try {
-        let result;
-        if (currentProject.image) {
-          const { image, ...currentProjectWithoutImage } = currentProject;
-          result = await post(PROJECTS_URI, currentProjectWithoutImage);
-          await patchMultipart(`${PROJECTS_URI}${result.id}/`, { image });
-        } else {
-          result = await post(PROJECTS_URI, currentProject);
+        if (currentProject.currentImage) {
+          currentProject.image = await getDocKey(currentProject.currentImage as Blob);
         }
-        dispatch(updateProjectID(result.id));
-        navigate('/operational-studies/project');
-        closeModal();
+        const request = postProject({
+          projectCreateRequest: currentProject as ProjectCreateRequest,
+        });
+        request
+          .unwrap()
+          .then((projectCreated) => {
+            dispatch(updateProjectID(projectCreated.id));
+            navigate('/operational-studies/project');
+            closeModal();
+          })
+          .catch((error) => console.error(error));
       } catch (error) {
         console.error(error);
       }
@@ -89,15 +109,22 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else if (project) {
       try {
-        if (currentProject.image) {
-          const { image, ...currentProjectWithoutImage } = currentProject;
-          await patchMultipart(`${PROJECTS_URI}${project.id}/`, { image });
-          await patch(`${PROJECTS_URI}${project.id}/`, currentProjectWithoutImage);
-        } else {
-          await patch(`${PROJECTS_URI}${project.id}/`, currentProject);
+        let imageId = currentProject.image;
+        if (currentProject.currentImage) {
+          imageId = await getDocKey(currentProject.currentImage as Blob);
         }
-        getProject(true);
-        closeModal();
+        currentProject.image = imageId;
+        const request = patchProject({
+          projectId: currentProject.id as number,
+          projectPatchRequest: currentProject as ProjectPatchRequest,
+        });
+        request
+          .unwrap()
+          .then(() => {
+            getProject(true);
+            closeModal();
+          })
+          .catch((error) => console.error(error));
       } catch (error) {
         console.error(error);
       }
@@ -235,11 +262,11 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectFunders')}
                 </div>
               }
-              value={currentProject.funders?.join()}
+              value={currentProject.funders}
               onChange={(e: any) =>
                 setCurrentProject({
                   ...currentProject,
-                  funders: e.target.value ? [e.target.value] : [],
+                  funders: e.target.value ? e.target.value : '',
                 })
               }
             />
