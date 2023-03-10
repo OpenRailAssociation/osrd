@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { FaPlus } from 'react-icons/fa';
+import { FaDownload, FaPlus } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 
 import nextId from 'react-id-generator';
@@ -30,7 +30,6 @@ import TimetableTrainCard from './TimetableTrainCard';
   }));
   const min = Math.min(...durationList.map((train) => train.duration));
   const max = Math.max(...durationList.map((train) => train.duration));
-  // console.log(durationList.map((train) => train.duration), min, max);
   return durationList;
 } */
 
@@ -98,7 +97,7 @@ export default function Timetable(props) {
         rolling_stock: trainDetail.rolling_stock,
         train_name: newTrainName,
         allowances: trainDetail.allowances,
-        speed_limit_composition: trainDetail.speed_limit_composition,
+        speed_limit_tags: trainDetail.speed_limit_tags,
       });
       actualTrainCount += trainStep;
     }
@@ -149,8 +148,32 @@ export default function Timetable(props) {
 
   return (
     <div className="scenario-timetable">
+      <div className="scenario-timetable-addtrains-buttons">
+        <button
+          className="btn btn-secondary btn-sm"
+          type="button"
+          data-testid="scenarios-import-train-schedule-button"
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.opendata)}
+        >
+          <span className="mr-2">
+            <FaDownload />
+          </span>
+          {t('timetable.importTrainSchedule')}
+        </button>
+        <button
+          className="btn btn-primary btn-sm"
+          type="button"
+          data-testid="scenarios-add-train-schedule-button"
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
+        >
+          <span className="mr-2">
+            <FaPlus />
+          </span>
+          {t('timetable.addTrainSchedule')}
+        </button>
+      </div>
       <div className="scenario-timetable-toolbar">
-        <div className="">
+        <div className="small">
           {t('trainCount', {
             count: trainsList ? trainsList.filter((train) => !train.isFiltered).length : 0,
           })}
@@ -170,14 +193,6 @@ export default function Timetable(props) {
             data-testid="scenarios-filter"
           />
         </div>
-        <button
-          className="btn btn-primary btn-sm"
-          type="button"
-          data-testid="scenarios-filter-button"
-          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
-        >
-          <FaPlus />
-        </button>
       </div>
       <div className="scenario-timetable-trains">
         {trainsList &&

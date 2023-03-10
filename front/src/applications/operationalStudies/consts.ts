@@ -68,6 +68,7 @@ export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   none: 'NONE',
   add: 'ADD',
   update: 'UPDATE',
+  opendata: 'OPENDATA',
 });
 
 export const MODES = Object.freeze({
@@ -220,7 +221,7 @@ export const createProfileSegment = (
   fullModesAndProfiles: ModesAndProfiles[],
   modeAndProfile: ModesAndProfiles
 ) => {
-  let segment: Segment = {
+  const segment: Segment = {
     position_start: 0,
     position_end: 0,
     position_middle: 0,

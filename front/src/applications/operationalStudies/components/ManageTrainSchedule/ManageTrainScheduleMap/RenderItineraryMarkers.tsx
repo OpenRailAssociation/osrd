@@ -9,6 +9,17 @@ import { RootState } from 'reducers';
 
 const RenderItineraryMarkers: FC = () => {
   const { origin, destination, vias } = useSelector((state: RootState) => state.osrdconf);
+
+  const formatPointWithNoName = (pointData: any) => (
+    <>
+      <div className="main-line">
+        <div className="track-name">{pointData.extensions_sncf_track_name}</div>
+        <div className="line-code">{pointData.extensions_sncf_line_code}</div>
+      </div>
+      <div className="second-line">{pointData.extensions_sncf_line_name}</div>
+    </>
+  );
+
   const markers = useMemo(() => {
     const result = [];
     if (origin !== undefined) {
@@ -20,6 +31,9 @@ const RenderItineraryMarkers: FC = () => {
           key={nextId()}
         >
           <img src={originSVG} alt="Origin" style={{ height: '1.5rem' }} />
+          <div className="map-pathfinding-marker origin-name">
+            {origin.name || formatPointWithNoName(origin)}
+          </div>
         </Marker>
       );
     }
@@ -28,10 +42,13 @@ const RenderItineraryMarkers: FC = () => {
         <Marker
           longitude={destination.clickLngLat[0]}
           latitude={destination.clickLngLat[1]}
-          offset={[0, -12]}
+          offset={[0, -24]}
           key={nextId()}
         >
-          <img src={destinationSVG} alt="Destination" style={{ height: '1.5rem' }} />
+          <img src={destinationSVG} alt="Destination" style={{ height: '3rem' }} />
+          <div className="map-pathfinding-marker destination-name">
+            {destination.name || formatPointWithNoName(destination)}
+          </div>
         </Marker>
       );
     }
@@ -45,7 +62,14 @@ const RenderItineraryMarkers: FC = () => {
             key={nextId()}
           >
             <img src={viaSVG} alt="Destination" style={{ height: '1.5rem' }} />
-            <span className="osrd-conf-map-via-number">{idx + 1}</span>
+            <span className="map-pathfinding-marker via-number">{idx + 1}</span>
+            <div
+              className={`map-pathfinding-marker via-name ${
+                via.duration === 0 ? '' : 'via-with-stop'
+              }`}
+            >
+              {via.name || (via.track && via.track.split('-')[0])}
+            </div>
           </Marker>
         );
       });

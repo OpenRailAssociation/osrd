@@ -1,0 +1,90 @@
+{
+  "version": "3.1",
+  "length": 400,
+  "max_speed": 80,
+  "startup_time": 10,
+  "startup_acceleration": 0.05,
+  "comfort_acceleration": 0.25,
+  "inertia_coefficient": 1.05,
+  "features": [
+    "TVM300",
+    "TVM430",
+    "ETCS1",
+    "ETCS2",
+    "KVB"
+  ],
+  "name": "fast_rolling_stock",
+  "mass": 900000,
+  "loading_gauge": "G1",
+  "gamma": {
+    "value": 0.5,
+    "type": "CONST"
+  },
+  "rolling_resistance": {
+    "type": "davis",
+    "A": 5400,
+    "B": 200,
+    "C": 12
+  },
+  "effort_curves": {
+    "default_mode": "thermal",
+    "modes": {
+      "thermal": {
+        "curves": [],
+        "default_curve": {
+          "speeds": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            22,
+            27,
+            32,
+            37,
+            42,
+            47,
+            52,
+            57,
+            62,
+            67,
+            72,
+            77
+          ],
+          "max_efforts": [
+            441666.6666666667,
+            439473.6842105263,
+            435714.28571428574,
+            427777.77777777775,
+            400000,
+            350971.5388299929,
+            347206.93642395496,
+            346938.7385068534,
+            344395.0325320009,
+            334314.2138640166,
+            313589.8108101956,
+            283584.5657113532,
+            250604.14937613969,
+            222698.71360301683,
+            204685.35097358702,
+            195984.55717992093,
+            192916.7642524637
+          ]
+        },
+        "is_electric": false
+      }
+    }
+  },
+  "base_power_class": "1",
+  "metadata": {
+    "detail": "",
+    "number": "1",
+    "reference": "",
+    "family": "",
+    "rolling_stock_type": "",
+    "grouping": "",
+    "series": "",
+    "subseries": "",
+    "unit": ""
+  }
+}

@@ -128,7 +128,6 @@ export default function StandardAllowanceDefault(props) {
       );
       updateTrain();
     } catch (e) {
-      console.log('ERROR', e);
       dispatch(
         setFailure({
           name: e.name,
@@ -165,7 +164,6 @@ export default function StandardAllowanceDefault(props) {
       );
       updateTrain();
     } catch (e) {
-      console.log('ERROR', e);
       dispatch(
         setFailure({
           name: e.name,
@@ -309,7 +307,7 @@ StandardAllowanceDefault.defaultProps = {
     setDistribution: true,
   },
   changeType: () => {
-    console.log('default changeType');
+    console.info('default changeType');
   },
   mutateSingleAllowance: undefined,
   title: '',

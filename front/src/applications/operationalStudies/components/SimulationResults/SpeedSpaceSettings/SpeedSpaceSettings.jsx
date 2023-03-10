@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
@@ -9,7 +10,7 @@ export default function SpeedSpaceSettings(props) {
   const [settings, setSettings] = useState(speedSpaceSettings);
 
   const toggleSetting = (settingName, settings) => {
-    const newSettings = Object.assign({}, settings);
+    const newSettings = { ...settings };
     newSettings[settingName] = !settings[settingName];
     setSettings(newSettings);
     onSetSettings(newSettings);
@@ -83,5 +84,5 @@ SpeedSpaceSettings.defaultProps = {
     slopes: false,
     electricalProfiles: false,
   },
-  onSetSettings: () => {},
+  onSetSettings: noop,
 };

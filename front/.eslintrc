@@ -1,4 +1,7 @@
 {
+  "env": {
+    "browser": true
+  },
   "extends": [
     "plugin:vitest/recommended",
     "airbnb",
@@ -6,32 +9,14 @@
     "plugin:import/typescript",
     "prettier"
   ],
-  "plugins": [
-    "prettier",
-    "react",
-    "react-hooks",
-    "only-warn",
-    "import",
-    "vitest"
-  ],
+  "plugins": ["import", "only-warn", "prettier", "react", "react-hooks", "vitest"],
   "parserOptions": {
     "ecmaVersion": "latest"
   },
   "rules": {
-    "react/prefer-stateless-function": "off",
-    "react/jsx-filename-extension": "off",
-    "no-param-reassign": "off",
-    "no-console": "off",
+    "@typescript-eslint/no-use-before-define": ["error"],
+    "arrow-body-style": ["error", "as-needed"],
     "global-require": "off",
-    "react/forbid-prop-types": "off",
-    "no-named-as-default": "off",
-    "react/jsx-props-no-spreading": 0,
-    "react/static-property-placement": 0,
-    "import/no-extraneous-dependencies": 0,
-    "linebreak-style": ["error", "unix"],
-    "jsx-a11y/click-events-have-key-events": "off",
-    "prettier/prettier": ["warn"],
-    "import/no-unresolved": [2, { "commonjs": true, "amd": true }],
     "import/extensions": [
       "error",
       "ignorePackages",
@@ -42,9 +27,23 @@
         "tsx": "never"
       }
     ],
+    "import/no-extraneous-dependencies": 0,
+    "import/no-unresolved": [2, { "commonjs": true, "amd": true }],
+    "jsx-a11y/click-events-have-key-events": "off",
+    "linebreak-style": ["error", "unix"],
+    "no-console": ["error", { "allow": ["info", "debug", "warn", "error"] }],
+    "no-named-as-default": "off",
+    "no-param-reassign": "off",
     "no-use-before-define": "off",
-    "@typescript-eslint/no-use-before-define": ["error"],
-    "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }]
+    "prettier/prettier": ["warn"],
+    "react/forbid-prop-types": "off",
+    "react/jsx-filename-extension": "off",
+    "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }],
+    "react/jsx-props-no-spreading": 0,
+    "react/prefer-stateless-function": "off",
+    "react/static-property-placement": 0,
+    // disable vitest/prefer-to-be because it does not authorize toEqual for the floats
+    "vitest/prefer-to-be": "off"
   },
   "settings": {
     "import/resolver": {

@@ -37,6 +37,7 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { MapLayerMouseEvent } from '../../types';
 
 import 'common/Map/Map.scss';
@@ -50,8 +51,8 @@ function Map() {
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => {
-      dispatch(updateViewport(value, '/map'));
+    (value, updateRouter = false) => {
+      dispatch(updateViewport(value, '/map', updateRouter));
     },
     [dispatch]
   );
@@ -69,8 +70,9 @@ function Map() {
     });
   };
 
-  const onFeatureClick = (e: MapLayerMouseEvent) => {
-    console.log(e);
+  // @TODO: implement behaviour or remove
+  const onFeatureClick = () => {
+    /* empty */
   };
 
   const onFeatureHover = (e: MapLayerMouseEvent) => {
@@ -112,6 +114,7 @@ function Map() {
         style={{ width: '100%', height: '100%' }}
         mapStyle={osmBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
+        onMoveEnd={(e) => updateViewportChange(e.viewState, true)}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onResize={(e) => {
@@ -125,7 +128,7 @@ function Map() {
         touchZoomRotate
       >
         <VirtualLayers />
-        <AttributionControl customAttribution="©SNCF Réseau" />
+        <AttributionControl customAttribution={CUSTOM_ATTRIBUTION} />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background

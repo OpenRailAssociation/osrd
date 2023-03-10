@@ -38,8 +38,6 @@ class RawErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.log({ error, errorInfo });
-
     Sentry.withScope((scope) => {
       scope.setExtras(errorInfo);
       const eventId = Sentry.captureException(error);

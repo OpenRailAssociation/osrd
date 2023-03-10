@@ -32,7 +32,14 @@ export const displayGuide = (chart, opacity) => {
   }
 };
 
-export const updatePointers = (chart, keyValues, listValues, positionValues, rotate) => {
+export const updatePointers = (
+  chart,
+  keyValues,
+  listValues,
+  positionValues,
+  rotate,
+  doGuideLines = false
+) => {
   listValues.forEach((name) => {
     if (positionValues[name]) {
       chart.svg
@@ -49,6 +56,16 @@ export const updatePointers = (chart, keyValues, listValues, positionValues, rot
             ? chart.y(positionValues[name][keyValues[0]])
             : chart.y(positionValues[name][keyValues[1]])
         );
+    }
+    if (doGuideLines) {
+      chart.svg
+        .selectAll('#vertical-line')
+        .attr('x1', pointer(event, event.currentTarget)[0])
+        .attr('x2', pointer(event, event.currentTarget)[0]);
+      chart.svg
+        .selectAll('#horizontal-line')
+        .attr('y1', pointer(event, event.currentTarget)[1])
+        .attr('y2', pointer(event, event.currentTarget)[1]);
     }
   });
 };
@@ -111,9 +128,6 @@ const updateChart = (chart, keyValues, rotate, event) => {
           ? newY(d[`${keyValues[0]}_end`]) - newY(d[`${keyValues[0]}_start`])
           : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) * -1
     );
-
-  // chart.drawZone.selectAll('rect.route-aspect')
-  // .attr('x', d => {console.log(d)})
 
   chart.drawZone.selectAll('.area').attr(
     'd',
@@ -234,7 +248,7 @@ function wheelDelta(event) {
 // /!\ NOT ISOLATED FUNCTION
 const enableInteractivity = (
   chart,
-  dataSimulation,
+  dataSimulation, // GevPreparedData
   dispatch,
   keyValues,
   listValues,
@@ -363,6 +377,7 @@ const enableInteractivity = (
   drawGuideLines(chart);
 };
 
+// keyValues ['time', 'position']
 export const isolatedEnableInteractivity = (
   chart,
   dataSimulation,
@@ -370,6 +385,9 @@ export const isolatedEnableInteractivity = (
   listValues,
   rotate,
   setChart,
+  setLocalTime,
+  setLocalPosition,
+  setMousePos,
   simulationIsPlaying,
   dispatchUpdateMustRedraw,
   dispatchUpdateTimePositionValues
@@ -416,6 +434,13 @@ export const isolatedEnableInteractivity = (
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
 
+        const positionLocal = rotate
+          ? chart.x.invert(pointer(event, event.currentTarget)[0])
+          : chart.y.invert(pointer(event, event.currentTarget)[1]);
+
+        setLocalTime(timePositionLocal);
+        setLocalPosition(positionLocal);
+
         debounceUpdateTimePositionValues(timePositionLocal, 15);
         const immediatePositionsValuesForPointer = interpolateOnTime(
           dataSimulation,
@@ -457,14 +482,12 @@ export const isolatedEnableInteractivity = (
       }
 
       // Update guideLines
-      chart.svg
-        .selectAll('#vertical-line')
-        .attr('x1', pointer(event, event.currentTarget)[0])
-        .attr('x2', pointer(event, event.currentTarget)[0]);
-      chart.svg
-        .selectAll('#horizontal-line')
-        .attr('y1', pointer(event, event.currentTarget)[1])
-        .attr('y2', pointer(event, event.currentTarget)[1]);
+
+      // USE THAT TO RESTORE THE STUFF ON REACREACTION on component via setMousePointers !
+      setMousePos({
+        x: pointer(event, event.currentTarget)[0],
+        y: pointer(event, event.currentTarget)[1],
+      });
     }
   };
 

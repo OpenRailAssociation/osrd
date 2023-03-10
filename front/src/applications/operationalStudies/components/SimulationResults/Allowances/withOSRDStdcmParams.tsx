@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import React, { ComponentType, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -55,9 +56,10 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
 
     const [trainDetail] = useState<any>({ allowances: [] });
 
+    // @TODO implement this behaviour or refacto
     // Alowance mutation in REST strat
-    const mutateSingleAllowances = (newAllowances: any) => {
-      console.log('mutateSingleAllowances', newAllowances);
+    const mutateSingleAllowances = () => {
+      /* empty */
     };
 
     const changeType = (type: any, typeKey: string) => {
@@ -99,7 +101,7 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
         trainDetail={trainDetail}
         getAllowanceTypes={getAllowanceTypes}
         distributionsTypes={distributionsTypes}
-        getAllowances={() => {}}
+        getAllowances={noop}
         changeType={changeType}
         getBaseValue={getBaseValue}
         options={{ immediateMutation: true, setDistribution: false }}

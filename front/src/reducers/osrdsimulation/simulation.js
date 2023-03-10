@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import {
   changeTrain,
   getTrainDetailsForAPI,
@@ -77,7 +78,6 @@ export async function progressiveDuplicateTrain(
         message: `${e.message} : ${e.response.data.detail}`,
       })
     );
-    console.log('ERROR', e);
   }
 }
 
@@ -87,7 +87,7 @@ function simulationEquals(present, newPresent) {
   return JSON.stringify(present) === JSON.stringify(newPresent);
 }
 
-function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
+function apiSyncOnDiff(present, nextPresent, dispatch = noop) {
   // If there is not mod don't do anything
   if (simulationEquals(present, nextPresent)) return;
   // test missing trains and apply delete api
@@ -108,7 +108,6 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
       try {
         deleteRequest(`${trainscheduleURI}${id}/`);
       } catch (e) {
-        console.log('ERROR', e);
         dispatch(
           setFailure({
             name: e.name,

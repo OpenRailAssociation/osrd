@@ -11,7 +11,7 @@ updates:
       - "dependencies"
       - "area:editoast"
   - package-ecosystem: "pip"
-    directory: "/api/"
+    directory: "/python/"
     schedule:
       interval: "daily"
     commit-message:

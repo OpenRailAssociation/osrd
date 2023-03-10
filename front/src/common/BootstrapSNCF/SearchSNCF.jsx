@@ -2,10 +2,12 @@ import React from 'react';
 import { withTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
+import { noop } from 'lodash';
 
 import Loader from 'common/Loader';
 import InputSNCF from './InputSNCF';
 
+// TODO: check if this component is still used, if not, remove it
 class SearchSNCF extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
@@ -21,7 +23,7 @@ class SearchSNCF extends React.Component {
   static defaultProps = {
     advancedSearch: false,
     searchResults: undefined,
-    onResultClick: () => {},
+    onResultClick: noop,
     isSearchLoading: false,
     value: undefined,
     noMargin: false,
@@ -59,7 +61,6 @@ class SearchSNCF extends React.Component {
     const {
       searchResults,
       onResultClick,
-      advancedSearch,
       value,
       isSearchLoading,
       noMargin,

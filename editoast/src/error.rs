@@ -2,7 +2,8 @@ use actix_web::{error::JsonPayloadError, http::StatusCode, HttpResponse, Respons
 use diesel::result::Error as DieselError;
 use redis::RedisError;
 use serde::Serialize;
-use serde_json::{json, Map, Value};
+use serde_json::{json, Value};
+use std::collections::HashMap;
 use std::result::Result as StdResult;
 use std::{
     error::Error,
@@ -17,7 +18,7 @@ pub trait EditoastError: Error + Send + Sync {
 
     fn get_type(&self) -> &'static str;
 
-    fn context(&self) -> Map<String, Value> {
+    fn context(&self) -> HashMap<String, Value> {
         Default::default()
     }
 }
@@ -27,7 +28,7 @@ pub struct InternalError {
     #[serde(skip)]
     status: StatusCode,
     error_type: &'static str,
-    context: Map<String, Value>,
+    context: HashMap<String, Value>,
     message: String,
 }
 
@@ -40,7 +41,7 @@ impl InternalError {
         self.status
     }
 
-    pub fn get_context(&self) -> &Map<String, Value> {
+    pub fn get_context(&self) -> &HashMap<String, Value> {
         &self.context
     }
 }
@@ -106,12 +107,7 @@ impl EditoastError for JsonPayloadError {
         "editoast:JsonError"
     }
 
-    fn context(&self) -> Map<String, Value> {
-        json!({
-            "cause": self.to_string(),
-        })
-        .as_object()
-        .cloned()
-        .unwrap()
+    fn context(&self) -> HashMap<String, Value> {
+        [("cause".into(), json!(self.to_string()))].into()
     }
 }

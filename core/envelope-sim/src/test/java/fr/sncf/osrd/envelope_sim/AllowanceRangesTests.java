@@ -5,8 +5,7 @@ import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxE
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
@@ -314,6 +313,34 @@ public class AllowanceRangesTests {
                 testContext, rangesTransitions[0], rangesTransitions[1], 0, ranges
         );
         applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope);
+    }
+
+    /** Regression test: reproduces <a href="https://github.com/DGEXSolutions/osrd/issues/3199">this bug</a>.
+     * This is an extreme corner case.
+     * The last section computed is the section between the stop at 300m and the transition at 301.
+     * Because it's after a stop, the speed is very low.
+     * The capacity speed limit sets a binary search bound that is higher than the max speed on that part, resulting
+     * in a linear allowance that goes faster. The transition can be weird. */
+    @Test
+    public void regressionTestCornerCase() {
+        var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
+        var testPath = new FlatPath(10_000, 0);
+        var stops = new double[]{300};
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var allowance = new LinearAllowance(
+                testContext,
+                0,
+                testPath.getLength(),
+                1.5,
+                List.of(
+                        new AllowanceRange(0, 301, new AllowanceValue.FixedTime(50)),
+                        new AllowanceRange(301, testPath.getLength(), new AllowanceValue.Percentage(50))
+                )
+        );
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 80, stops);
+        var err = assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, err.errorType);
     }
 
     /** Applies the allowance to the envelope. Any user error (impossible margin) is ignored */

@@ -24,6 +24,7 @@ pub enum Commands {
     Generate(GenerateArgs),
     Clear(ClearArgs),
     ImportRailjson(ImportRailjsonArgs),
+    ImportProfileSet(ImportProfileSetArgs),
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
@@ -86,4 +87,13 @@ pub struct ImportRailjsonArgs {
     /// Whether the import should refresh generated data
     #[clap(short = 'g', long)]
     pub generate: bool,
+}
+
+#[derive(Args, Debug)]
+#[clap(about, long_about = "Add a set of electrical profiles")]
+pub struct ImportProfileSetArgs {
+    /// Electrical profile set name
+    pub name: String,
+    /// Electrical profile set file path
+    pub electrical_profile_set_path: PathBuf,
 }

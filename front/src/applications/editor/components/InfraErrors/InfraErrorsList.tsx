@@ -1,14 +1,8 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import turfCenter from '@turf/center';
 
 import { LoaderFill, Spinner } from '../../../../common/Loader';
-import { updateViewport } from '../../../../reducers/map';
-import EditorContext from '../../context';
-import { getEntity, getMixedEntities } from '../../data/api';
-import SelectionTool from '../../tools/selection/tool';
 import useInfraErrors from './useInfraErrors';
 import InfraErrorComponent from './InfraError';
 import {
@@ -18,21 +12,18 @@ import {
   InfraErrorLevelList,
   InfraErrorTypeList,
 } from './types';
-import RouteEditionTool from '../../tools/routeEdition/tool';
-import { getEditRouteState } from '../../tools/routeEdition/utils';
-import { RouteEntity } from '../../../../types';
 
 interface InfraErrorsListProps {
   infraID: number;
+  onErrorClick: (infraId: number, item: InfraError) => void | Promise<void>;
 }
 
-const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
+const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick }) => {
   const { t } = useTranslation();
   const [errors, setErrors] = useState<Array<InfraError>>([]);
   const [filterErrorLevel, setFilterErrorLevel] = useState<InfraErrorLevel>('all');
   const [filterErrorType, setFilterErrorType] = useState<InfraErrorType | undefined>(undefined);
   const { loading, error, next, total, fetch } = useInfraErrors();
-  const [loadingEntity, setLoadingEntity] = useState(false);
 
   useEffect(() => {
     fetch(infraID, {
@@ -43,44 +34,6 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
       setErrors(result ?? []);
     });
   }, [infraID, fetch, filterErrorType, filterErrorLevel]);
-
-  const dispatch = useDispatch();
-  const { closeModal, switchTool } = useContext(EditorContext);
-
-  const gotoMap = useCallback(
-    async (item: InfraError) => {
-      try {
-        setLoadingEntity(true);
-        const entity = await getEntity(infraID, item.information.obj_id, item.information.obj_type);
-        if (entity) {
-          // select the item in the editor scope
-          if (entity.objType === 'Route') {
-            switchTool(RouteEditionTool, getEditRouteState(entity as RouteEntity));
-          } else {
-            switchTool(SelectionTool, { selection: [entity] });
-
-            // center the map on the object
-            if (item.geographic) {
-              const geoCenter = turfCenter(item.geographic);
-              dispatch(
-                updateViewport({
-                  longitude: geoCenter.geometry.coordinates[0],
-                  latitude: geoCenter.geometry.coordinates[1],
-                  zoom: 20,
-                })
-              );
-            }
-          }
-
-          // closing the modal
-          closeModal();
-        }
-      } finally {
-        setLoadingEntity(false);
-      }
-    },
-    [infraID, closeModal, switchTool, dispatch]
-  );
 
   return (
     <div>
@@ -159,7 +112,11 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
                 <InfraErrorComponent error={item} index={index + 1}>
                   <ul className="list-unstyled">
                     <li>
-                      <button className="dropdown-item" type="button" onClick={() => gotoMap(item)}>
+                      <button
+                        className="dropdown-item"
+                        type="button"
+                        onClick={() => onErrorClick(infraID, item)}
+                      >
                         Sélectionner sur la carte
                       </button>
                     </li>
@@ -171,7 +128,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
         )}
       </InfiniteScroll>
 
-      {(loading || loadingEntity) && <LoaderFill />}
+      {loading && <LoaderFill />}
     </div>
   );
 };

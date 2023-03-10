@@ -50,13 +50,13 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
   useEffect(() => {
     if (routesState.type === 'idle') {
       setRoutesState({ type: 'loading' });
-      getRoutesFromWaypoint(osrdConf.infraID + '', type, id)
+      getRoutesFromWaypoint(`${osrdConf.infraID}`, type, id)
         .then((res) => {
           const starting = res.starting || [];
           const ending = res.ending || [];
 
           if (starting.length || ending.length) {
-            getEntities<RouteEntity>(osrdConf.infraID + '', [...starting, ...ending], 'Route')
+            getEntities<RouteEntity>(`${osrdConf.infraID}`, [...starting, ...ending], 'Route')
               .then((entities) => {
                 setRoutesState({
                   type: 'ready',
@@ -290,9 +290,10 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
   );
 };
 
-export const getPointEditionLeftPanel = (type: EditoastType): ComponentType => {
-  return () => <PointEditionLeftPanel type={type} />;
-};
+export const getPointEditionLeftPanel =
+  (type: EditoastType): ComponentType =>
+  () =>
+    <PointEditionLeftPanel type={type} />;
 
 export const BasePointEditionLayers: FC<{
   // eslint-disable-next-line react/no-unused-prop-types

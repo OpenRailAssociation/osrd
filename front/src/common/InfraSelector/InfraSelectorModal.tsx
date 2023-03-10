@@ -46,7 +46,6 @@ export default function InfraSelectorModal({ onlySelectionMode = false }: Props)
       filterInfras(infrasListQuery);
       setIsFetching(false);
     } catch (e) {
-      console.log('ERROR', e);
       setIsFetching(false);
     }
   };
@@ -97,11 +96,11 @@ export default function InfraSelectorModal({ onlySelectionMode = false }: Props)
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        {isFetching ? (
+        {isFetching && (
           <div className="infra-loader-absolute">
             <Loader position="center" />
           </div>
-        ) : null}
+        )}
         {editionMode ? (
           <InfraSelectorModalBodyEdition
             infrasList={filteredInfrasList}

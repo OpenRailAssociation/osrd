@@ -1,4 +1,4 @@
-def make_payload_schedule(base_url, scenario, path, rolling_stock, departure_time=0):
+def make_payload_schedule(scenario, path, rolling_stock, departure_time=0):
     return {
         "timetable": scenario.timetable,
         "path": path,

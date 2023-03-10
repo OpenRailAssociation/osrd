@@ -419,7 +419,7 @@ public class StandaloneSimulationTest extends ApiTest {
         for (int i = 1; i <= 5; i++) {
             var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
             rollingStock.name += i;
-            rollingStock.powerClass = String.valueOf(i);
+            rollingStock.basePowerClass = String.valueOf(i);
             rollingStocks.add(rollingStock);
 
             var trainSchedule = new RJSStandaloneTrainSchedule("Test." + i, rollingStock.name,
@@ -464,7 +464,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // Duplicate fast rolling stock but with many power classes
         var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
-        rollingStock.powerClass = "5";
+        rollingStock.basePowerClass = "5";
 
         var trainSchedule = new RJSStandaloneTrainSchedule("Test", rollingStock.name,
                 0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null, RJSComfortType.AC, null);
@@ -519,7 +519,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // Duplicate fast rolling stock but with many power classes
         var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
-        rollingStock.powerClass = "5";
+        rollingStock.basePowerClass = "5";
 
         var trainSchedule1 = new RJSStandaloneTrainSchedule("Test", rollingStock.name,
                 0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null, RJSComfortType.AC, null);

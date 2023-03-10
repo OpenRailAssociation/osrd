@@ -40,8 +40,8 @@ services:
       postgres: {condition: service_healthy}
     restart: unless-stopped
     build:
-      context: api
-      dockerfile: Dockerfile
+      context: python
+      dockerfile: api/Dockerfile
       args:
         environment: test
     ports: ["8000:80"]
@@ -58,7 +58,7 @@ services:
         exec python3 manage.py runserver 0.0.0.0:80
     # bind the code inside the container
     volumes:
-      - ./api:/home/service
+      - ./python/api:/home/service
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health/"]
       start_period: 4s

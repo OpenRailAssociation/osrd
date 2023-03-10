@@ -10,7 +10,6 @@ import { attemptLoginOnLaunch } from 'reducers/user';
 import HomeCustomGET from 'applications/customget/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeMap from 'applications/referenceMap/Home';
-import HomeOpenData from 'applications/opendata/Home';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import HomeStdcm from 'applications/stdcm/Home';
 import { ModalProvider, ModalSNCF } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -60,7 +59,6 @@ export default function App() {
       {(user.isLogged || isLocalBackend) && (
         <HistoryRouter history={history}>
           <ModalProvider>
-            <ModalSNCF />
             <NotificationsState />
             <Routes>
               <Route path="/operational-studies">
@@ -72,7 +70,6 @@ export default function App() {
               <Route path="/map/*" element={<HomeMap />} />
               <Route path="/editor/*" element={<HomeEditor />} />
               <Route path="/stdcm/*" element={<HomeStdcm />} />
-              <Route path="/opendata/*" element={<HomeOpenData />} />
               <Route path="/customget/*" element={<HomeCustomGET />} />
               <Route path="/*" element={<Home />} />
             </Routes>

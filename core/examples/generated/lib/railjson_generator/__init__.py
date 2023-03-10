@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-api_schema_parent_path = Path(__file__).parents[5] / "api" / "osrd_infra" 
+api_schema_parent_path = Path(__file__).parents[5] / "python" / "osrd_schemas" 
 assert api_schema_parent_path.exists()
 sys.path.append(str(api_schema_parent_path))
 

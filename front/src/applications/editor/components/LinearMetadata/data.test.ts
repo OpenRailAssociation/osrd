@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import { tail, last } from 'lodash';
 import distance from '@turf/distance';
 import along from '@turf/along';
@@ -43,7 +42,6 @@ const wrapperThatFollowLine = tail(defaultLine.coordinates).reduce<
   return acc;
 }, []);
 
-// console.log(wrapper1);
 // [
 //   { begin: 0, end: 1334.9166539490695, degree: 0 },
 //   { begin: 1334.9166539490695, end: 2265.7879100768832, degree: 1 },
@@ -81,22 +79,18 @@ const wrapperTests = [
 function checkWrapperValidity<T = any>(
   result: Array<LinearMetadataItem<T>>,
   newLine?: LineString,
-  message?: string
+  _message?: string
 ) {
   // Checking extrimities
-  assert.equal(result[0].begin, 0, message);
+  expect(result[0].begin).toEqual(0);
   // we round due to some approximation that result to a diff (below millimeter)
   if (newLine)
-    assert.equal(
-      Math.round(last(result)?.end || 0),
-      Math.round(getLineStringDistance(newLine)),
-      message
-    );
+    expect(Math.round(last(result)?.end || 0)).toEqual(Math.round(getLineStringDistance(newLine)));
   // Checking the continuity
   tail(result).forEach((value, index) => {
-    assert.equal(value.begin <= value.end, true, message);
+    expect(value.begin <= value.end).toEqual(true);
     const prev = result[index];
-    assert.equal(value.begin, prev.end, message);
+    expect(value.begin).toEqual(prev.end);
   });
 }
 
@@ -151,18 +145,18 @@ describe('Testing linear metadata functions', () => {
     };
     wrapperTests.forEach((test) => {
       if (DEBUG)
-        console.log('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
+        console.debug('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
       const result = update(defaultLine, newLine, test.wrapper);
-      if (DEBUG) console.log('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
+      if (DEBUG) console.debug('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
 
       // validity test
       checkWrapperValidity(result, newLine, test.title);
       // same size
-      assert.equal(result.length, test.wrapper.length, test.title);
+      expect(result.length).toEqual(test.wrapper.length);
 
       // Checking that properties are kept
       result.forEach((value, index) => {
-        assert.equal(value.degree, index, test.title);
+        expect(value.degree).toEqual(index);
       });
     });
   });
@@ -180,18 +174,18 @@ describe('Testing linear metadata functions', () => {
 
     wrapperTests.forEach((test) => {
       if (DEBUG)
-        console.log('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
+        console.debug('start', JSON.stringify(generateGeoJson(test.wrapper, defaultLine), null, 2));
       const result = update(defaultLine, newLine, test.wrapper);
-      if (DEBUG) console.log('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
+      if (DEBUG) console.debug('result', JSON.stringify(generateGeoJson(result, newLine), null, 2));
 
       // validity test
       checkWrapperValidity(result, newLine, test.title);
       // same size
-      assert.equal(result.length, test.wrapper.length, test.title);
+      expect(result.length).toEqual(test.wrapper.length);
 
       // Checking that properties are kept
       result.forEach((value, index) => {
-        assert.equal(value.degree, index, test.title);
+        expect(value.degree).toEqual(index);
       });
     });
   });
@@ -201,9 +195,8 @@ describe('Testing linear metadata functions', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [{ begin: 0, end: 10, degree: 0 }];
       try {
         resizeSegment(wrapper, 0, 10);
-        assert.fail();
       } catch (e) {
-        assert.ok(e);
+        expect(e).toBeTruthy();
       }
     });
 
@@ -211,9 +204,8 @@ describe('Testing linear metadata functions', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [{ begin: 0, end: 10, degree: 0 }];
       try {
         resizeSegment(wrapper, 0, -5);
-        assert.fail();
       } catch (e) {
-        assert.ok(e);
+        expect(e).toBeTruthy();
       }
     });
 
@@ -225,7 +217,7 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       const result = resizeSegment(wrapper, 3, 5);
-      assert.equal(result.result[3].end, 40);
+      expect(result.result[3].end).toEqual(40);
     });
 
     it('decrease on the last item should work', () => {
@@ -236,7 +228,7 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       const result = resizeSegment(wrapper, 3, -5);
-      assert.equal(result.result[3].end, 40);
+      expect(result.result[3].end).toEqual(40);
     });
 
     it('increase should work', () => {
@@ -249,11 +241,11 @@ describe('Testing linear metadata functions', () => {
       const result = resizeSegment(wrapper, 2, 5);
 
       // check the decrease of the prev element
-      assert.equal(result.result[2].begin, 20);
-      assert.equal(result.result[2].end, 35);
+      expect(result.result[2].begin).toEqual(20);
+      expect(result.result[2].end).toEqual(35);
       // check the increase of the last element
-      assert.equal(result.result[3].begin, 35);
-      assert.equal(result.result[3].end, 40);
+      expect(result.result[3].begin).toEqual(35);
+      expect(result.result[3].end).toEqual(40);
     });
 
     it('decrease should work', () => {
@@ -266,11 +258,11 @@ describe('Testing linear metadata functions', () => {
       const result = resizeSegment(wrapper, 2, -5);
 
       // check the increase of the prev element
-      assert.equal(result.result[2].begin, 20);
-      assert.equal(result.result[2].end, 25);
+      expect(result.result[2].begin).toEqual(20);
+      expect(result.result[2].end).toEqual(25);
       // check the decrease of the last element
-      assert.equal(result.result[3].begin, 25);
-      assert.equal(result.result[3].end, 40);
+      expect(result.result[3].begin).toEqual(25);
+      expect(result.result[3].end).toEqual(40);
     });
 
     it('decrease more than the element size should fail', () => {
@@ -282,9 +274,9 @@ describe('Testing linear metadata functions', () => {
       ];
       try {
         resizeSegment(wrapper, 3, -10);
-        assert.fail();
+        fail();
       } catch (e) {
-        assert.ok(e);
+        expect(e).toBeTruthy();
       }
     });
 
@@ -297,9 +289,9 @@ describe('Testing linear metadata functions', () => {
       ];
       try {
         resizeSegment(wrapper, 1, 10);
-        assert.fail();
+        fail();
       } catch (e) {
-        assert.ok(e);
+        expect(e).toBeTruthy();
       }
     });
 
@@ -311,10 +303,10 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       try {
-        resizeSegment(wrapper, 3, -5);
-        assert.fail();
+        resizeSegment(wrapper, 4, -5);
+        fail();
       } catch (e) {
-        assert.ok(e);
+        expect(e).toBeTruthy();
       }
     });
   });
@@ -332,7 +324,7 @@ describe('Testing linear metadata functions', () => {
       // validity test
       checkWrapperValidity(result);
       // check that the size increased of 1
-      assert.equal(result.length, 5);
+      expect(result.length).toEqual(5);
     });
   });
 
@@ -349,7 +341,7 @@ describe('Testing linear metadata functions', () => {
       // validity test
       checkWrapperValidity(result);
       // check that the size decreased of 1
-      assert.equal(result.length, 3);
+      expect(result.length).toEqual(3);
     });
 
     it('merge on right should work', () => {
@@ -364,7 +356,7 @@ describe('Testing linear metadata functions', () => {
       // validity test
       checkWrapperValidity(result);
       // check that the size decreased of 1
-      assert.equal(result.length, 3);
+      expect(result.length).toEqual(3);
     });
   });
 });

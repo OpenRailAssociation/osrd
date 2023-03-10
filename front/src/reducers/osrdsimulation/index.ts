@@ -1,5 +1,6 @@
 import { AnyAction } from 'redux';
 import produce from 'immer';
+import { noop } from 'lodash';
 
 import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 import {
@@ -13,7 +14,7 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 
-import { SimulationSnapshot, Train, OsrdSimulationState } from './types';
+import { SimulationSnapshot, Train, OsrdSimulationState, SimulationTrain } from './types';
 
 import {
   UPDATE_CHART,
@@ -44,7 +45,7 @@ export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOf
     path: train.path,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
-    speed_limit_composition: train.speed_limit_composition,
+    speed_limit_tags: train.speed_limit_tags,
   }));
 
 // Reducer
@@ -97,6 +98,7 @@ export const initialState: OsrdSimulationState = {
 // eslint-disable-next-line default-param-last
 export default function reducer(inputState: OsrdSimulationState | undefined, action: AnyAction) {
   const state = inputState || initialState;
+  let currentTrainSimulation;
   return produce(state, (draft) => {
     if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action);
     switch (action.type) {
@@ -132,6 +134,16 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         break;
       case UPDATE_SELECTED_TRAIN:
         draft.selectedTrain = action.selectedTrain;
+        currentTrainSimulation = state.consolidatedSimulation.find(
+          (consolidatedSimulation: SimulationTrain) =>
+            consolidatedSimulation.trainNumber === draft.selectedTrain
+        );
+        draft.positionValues = interpolateOnTime(
+          currentTrainSimulation,
+          ['time'],
+          LIST_VALUES_NAME_SPACE_TIME,
+          state.timePosition
+        );
         break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:
         draft.departureArrivalTimes = action.departureArrivalTimes;
@@ -144,10 +156,10 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
 
         draft.consolidatedSimulation = createTrain(
-          () => {},
+          noop,
           KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
           draft.simulation.present.trains,
-          () => {}
+          noop
         );
         draft.displaySimulation =
           draft.simulation.present?.trains.length > 0 &&
@@ -169,18 +181,16 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_TIME_POSITION_VALUES: {
         draft.timePosition = action.timePosition;
         // position value will be computed depending on current data simulation
-        // eslint-disable-next-line no-case-declarations
-        const currentTrainSimulation = state.consolidatedSimulation.find(
-          (consolidatedSimulation: any) =>
+        currentTrainSimulation = state.consolidatedSimulation.find(
+          (consolidatedSimulation: SimulationTrain) =>
             consolidatedSimulation.trainNumber === state.selectedTrain
         );
-        const positionsValues = interpolateOnTime(
+        draft.positionValues = interpolateOnTime(
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
           action.timePosition
-        ) as any;
-        draft.positionValues = positionsValues;
+        );
         break;
       }
       default:

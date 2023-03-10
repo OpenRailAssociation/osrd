@@ -1,12 +1,6 @@
-import React, { FC } from 'react';
-import { useSelector } from 'react-redux';
 import { CircleLayer, LineLayer, SymbolLayer } from 'react-map-gl';
 
-import { RootState } from 'reducers';
 import { Theme } from 'types';
-import { MAP_URL } from 'common/Map/const';
-
-import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 export function getLineErrorsLayerProps(params: {
   colors: Theme;

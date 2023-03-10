@@ -145,14 +145,11 @@ export default function StdcmRequestModal(props) {
               message: e?.response?.data?.message, // axios error, def is ok
             })
           );
-
-          console.log('rejected Promise', e);
         });
     }
   }, [currentStdcmRequestStatus]);
 
   const cancelStdcmRequest = () => {
-    console.log('cancel request');
     // when http ready https://axios-http.com/docs/cancellation
 
     controller.abort();

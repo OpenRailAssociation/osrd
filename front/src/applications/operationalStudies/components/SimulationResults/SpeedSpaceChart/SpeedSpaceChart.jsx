@@ -1,3 +1,4 @@
+import { noop } from 'lodash';
 import * as d3 from 'd3';
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
@@ -15,7 +16,7 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
-import { ElectricalProfilesLegend } from './ElectricalProfilesLegend';
+import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -144,22 +145,44 @@ const CHART_MIN_HEIGHT = 250;
 
   // Reset Chart Handle (first button on right bottom)
   const resetChartToggle = () => {
-    d3.select(`#${CHART_ID}`).remove();
-    setRotate(false);
-    setChart(
-      createChart(
-        CHART_ID,
-        chart,
-        resetChart,
-        dataSimulation,
-        false,
-        keyValues,
-        heightOfSpeedSpaceChart,
-        ref,
-        dispatch,
-        setResetChart
-      )
+    const localChart = createChart(
+      CHART_ID,
+      chart,
+      resetChart,
+      dataSimulation,
+      false,
+      keyValues,
+      heightOfSpeedSpaceChart,
+      ref,
+      dispatch,
+      setResetChart
     );
+    setChart(localChart);
+    drawTrain(
+      LIST_VALUES_NAME_SPEED_SPACE,
+      simulation,
+      selectedTrain,
+      dataSimulation,
+      keyValues,
+      positionValues,
+      false,
+      localSettings,
+      mustRedraw,
+      setChart,
+      setYPosition,
+      setZoomLevel,
+      yPosition,
+      dispatch,
+      zoomLevel,
+      CHART_ID,
+      localChart,
+      resetChart,
+      heightOfSpeedSpaceChart,
+      ref,
+      setResetChart,
+      true
+    );
+    setRotate(false);
   };
 
   const debounceResize = (interval) => {
@@ -379,15 +402,15 @@ SpeedSpaceChart.defaultProps = {
   heightOfSpeedSpaceChart: 250,
   simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   chartXGEV: undefined,
-  dispatch: () => {},
+  dispatch: noop,
   mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
   speedSpaceSettings: ORSD_GEV_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
-  toggleSetting: () => {},
-  onSetSettings: () => {},
-  dispatchUpdateMustRedraw: () => {},
-  onSetBaseHeightOfSpeedSpaceChart: ({ ...args }) => {},
+  toggleSetting: noop,
+  onSetSettings: noop,
+  dispatchUpdateMustRedraw: noop,
+  onSetBaseHeightOfSpeedSpaceChart: noop,
 };

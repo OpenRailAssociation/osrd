@@ -1,9 +1,14 @@
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { isNil } from 'lodash';
+
 import { MAIN_API } from 'config/config';
 import { getAuthConfig } from 'common/requests';
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-function prepareHeaders(headers: any) {
-  headers.set('Authorization', getAuthConfig()?.headers?.Authorization);
+function prepareHeaders(headers: Headers) {
+  const authValue = getAuthConfig().headers?.Authorization;
+  if (!isNil(authValue)) {
+    headers.set('Authorization', `${authValue}`);
+  }
   return headers;
 }
 

@@ -12,7 +12,7 @@ type trainType = {
   departure: number;
   arrival: number;
   labels: Array<1>;
-  speed_limit_composition: string;
+  speed_limit_tags: string;
   isFiltered: boolean;
 };
 type Props = {
@@ -60,7 +60,7 @@ export default function TimetableTrainCard({
           <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
         </div>
         <div className="scenario-timetable-train-body">
-          <div className="scenario-timetable-train-duration">{train.speed_limit_composition}</div>
+          <div className="scenario-timetable-train-duration">{train.speed_limit_tags}</div>
           <div className="scenario-timetable-train-duration">
             {sec2time(train.arrival - train.departure)}
           </div>
@@ -91,7 +91,7 @@ export default function TimetableTrainCard({
         >
           <MdContentCopy />
         </button>
-        <button className="scenario-timetable-train-buttons-update" type="button">
+        <button className="scenario-timetable-train-buttons-update d-none" type="button">
           <FaPencilAlt />
         </button>
         <button

@@ -99,11 +99,70 @@
       opacity: 1;
     }
   }
-  .osrd-conf-map-via-number {
-    font-weight: bold;
-    color: white;
+  .map-pathfinding-marker {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     position: absolute;
+    font-weight: 500;
+    border-radius: 4px;
+    line-height: 0.7rem;
+    padding: 0.15rem 0.25rem;
     font-size: 0.7rem;
+    white-space: nowrap;
+    &.origin-name {
+      color: var(--green);
+      background-color: var(--coolgray13);
+      left: 1.5rem;
+      top: 0.1rem;
+    }
+    &.via-number {
+      padding: 0;
+      font-weight: bold;
+      color: white;
+    }
+    &.via-name {
+      color: var(--cyan);
+      background-color: var(--coolgray1);
+      border: 1px dashed var(--cyan);
+      left: 1.5rem;
+      top: 0.1rem;
+    }
+    &.via-with-stop {
+      color: var(--white);
+      background-color: var(--cyan);
+      border-color: var(--cyan);
+    }
+    &.destination-name {
+      color: var(--yellow);
+      background-color: var(--coolgray13);
+      right: 1.75rem;
+      top: 1rem;
+    }
+    .main-line {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      padding: 0.25rem 0;
+      gap: 0.25rem;
+      justify-content: space-between;
+      .track-name {
+        font-size: 1rem;
+        font-weight: bold;
+      }
+      .line-code {
+        font-size: 0.6rem;
+        font-weight: lighter;
+        line-height: 0.5rem;
+      }
+    }
+    .second-line {
+      color: var(--white);
+      font-weight: lighter;
+      font-size: 0.6rem;
+      white-space: normal;
+      min-width: 7rem;
+    }
   }
 }
 

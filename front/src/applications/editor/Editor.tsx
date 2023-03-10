@@ -9,6 +9,7 @@ import cx from 'classnames';
 import 'common/Map/Map.scss';
 import './Editor.scss';
 
+import { useModal } from '../../common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from '../../common/Loader';
 import { loadDataModel, reset } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
@@ -25,7 +26,6 @@ import {
   EditorState,
   ExtendedEditorContextType,
   FullTool,
-  ModalRequest,
   OSRDConf,
   Tool,
 } from './tools/types';
@@ -34,6 +34,7 @@ import TOOLS from './tools/list';
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { openModal, closeModal } = useModal();
   const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
@@ -42,16 +43,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     tool: TOOLS[0],
     state: TOOLS[0].getInitialState({ osrdConf }),
   });
-  const [modal, setModal] = useState<ModalRequest<any, any> | null>(null);
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-  const openModal = useCallback(
-    <ArgumentsType, SubmitArgumentsType>(
-      request: ModalRequest<ArgumentsType, SubmitArgumentsType>
-    ) => {
-      setModal(request as ModalRequest<unknown, unknown>);
-    },
-    [setModal]
-  );
+
   const switchTool = useCallback(
     <S extends CommonToolState>(tool: Tool<S>, partialState?: Partial<S>) => {
       const state = { ...tool.getInitialState({ osrdConf }), ...(partialState || {}) };
@@ -93,17 +85,14 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const context = useMemo<EditorContextType<CommonToolState>>(
     () => ({
       t,
-      modal,
       openModal,
-      closeModal: () => {
-        setModal(null);
-      },
+      closeModal,
       activeTool: toolAndState.tool,
       state: toolAndState.state,
       setState: setToolState,
       switchTool,
     }),
-    [setToolState, toolAndState, modal, osrdConf, t]
+    [setToolState, toolAndState, openModal, closeModal, osrdConf, t]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
@@ -300,11 +289,19 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                           onClick={() => {
                             if (onClick) {
                               onClick(
-                                { dispatch, setViewport, viewport, openModal, editorState },
+                                {
+                                  dispatch,
+                                  setViewport,
+                                  viewport,
+                                  openModal,
+                                  closeModal,
+                                  editorState,
+                                },
                                 {
                                   activeTool: toolAndState.tool,
                                   toolState: toolAndState.state,
                                   setToolState,
+                                  switchTool,
                                 }
                               );
                             }
@@ -334,21 +331,6 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         </div>
 
         <LoaderState />
-
-        {modal &&
-          React.createElement(modal.component, {
-            arguments: modal.arguments,
-            cancel: () => {
-              if (modal.beforeCancel) modal.beforeCancel();
-              setModal(null);
-              if (modal.afterCancel) modal.afterCancel();
-            },
-            submit: (args) => {
-              if (modal.beforeSubmit) modal.beforeSubmit(args);
-              setModal(null);
-              if (modal.afterSubmit) modal.afterSubmit(args);
-            },
-          })}
       </main>
     </EditorContext.Provider>
   );

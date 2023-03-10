@@ -12,6 +12,8 @@ export const MAP_MODES = {
   creation: 'creation',
 };
 
+export const CUSTOM_ATTRIBUTION = '© SNCF Réseau';
+
 // [jacomyal]
 // I'm not sure why this object remains here, but I need to refer to this
 // 'track_sections' value elsewhere, which explains the new MAP_TRACK_SOURCE:

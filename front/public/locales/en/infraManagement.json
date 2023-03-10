@@ -1,0 +1,35 @@
+{
+  "actions": {
+    "copy": "Clone",
+    "delete": "Delete",
+    "export": "Export to RailJSON",
+    "lock": "Lock",
+    "rename": "Rename",
+    "unlock": "Unlock",
+    "waiting": "Please wait"
+  },
+  "addInfra": "Create an infrastructure",
+  "addInfraJSON": "Create an infrastructure from a RailJSON file",
+  "addInfraJSONFile": "Add a RailJSON file",
+  "addInfraJSONFileRemove": "Cancel RailJSON import",
+  "chooseInfrastructure": "Pick an infrastructure",
+  "createInfra": "Create",
+  "deleteConfirm": "Do you wish to delete the infrastructure?",
+  "errorMessages": {
+    "noExistingInfra": "No infrastructure available",
+    "unableToRetrieveInfra": "Impossible to load infrastructure",
+    "unableToRetrieveInfraList": "Impossible to load infrastructure list",
+    "noEmptyName": "Please fill out a name"
+  },
+  "goToEditionMode": "Edit",
+  "goToStandardMode": "Back to the selection",
+  "infraChoice": "Infrastructures",
+  "infraManagement": "Infrastructures management",
+  "infraName": "Infrastructure name",
+  "infrasFound": "Infrastructure(s) founded",
+  "infrastructure": "Infrastructure",
+  "locked": "Locked",
+  "no": "No",
+  "noInfra": "Select an infrastructure",
+  "yes": "Yes"
+}

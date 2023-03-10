@@ -200,3 +200,34 @@ table! {
         data -> Jsonb,
     }
 }
+
+table! {
+    osrd_infra_document(id) {
+        id -> BigInt,
+        content_type -> Text,
+        data -> Binary,
+    }
+}
+
+table! {
+    osrd_infra_rollingstock(id) {
+        id -> BigInt,
+        name -> Text,
+        version -> Text,
+        effort_curves -> Jsonb,
+        base_power_class -> Text,
+        length -> Double,
+        max_speed -> Double,
+        startup_time -> Double,
+        startup_acceleration -> Double,
+        comfort_acceleration -> Double,
+        gamma -> Jsonb,
+        inertia_coefficient -> Double,
+        features -> Array<Text>,
+        mass -> Double,
+        rolling_resistance -> Jsonb,
+        loading_gauge -> Text,
+        metadata -> Jsonb,
+        power_restrictions -> Nullable<Jsonb>,
+    }
+}

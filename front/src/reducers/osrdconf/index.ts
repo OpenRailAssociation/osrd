@@ -320,11 +320,13 @@ export function updateInfraID(infraID: any) {
     });
     dispatch(updateSwitchTypes({}));
 
-    try {
-      const newSwitchTypes = await getSwitchTypes(infraID);
-      dispatch(updateSwitchTypes(newSwitchTypes));
-    } catch (e) {
-      console.log('error on switch type retrieval', e);
+    if (infraID) {
+      try {
+        const newSwitchTypes = await getSwitchTypes(infraID);
+        dispatch(updateSwitchTypes(newSwitchTypes));
+      } catch (e) {
+        /* empty */
+      }
     }
   };
 }

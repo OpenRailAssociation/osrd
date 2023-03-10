@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { get } from 'common/requests';
 import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
 import {
@@ -21,7 +21,7 @@ import ScenarioExploratorModal from './ScenarioExploratorModal';
 export default function ScenarioExplorator() {
   const { t } = useTranslation('common/scenarioExplorator');
   const dispatch = useDispatch();
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);

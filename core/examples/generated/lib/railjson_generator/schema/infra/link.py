@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from railjson_generator.schema.infra.direction import ApplicableDirection
 from railjson_generator.schema.infra.endpoint import TrackEndpoint
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 def _link_id():

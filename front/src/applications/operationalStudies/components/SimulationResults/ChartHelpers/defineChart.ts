@@ -8,6 +8,7 @@ import {
 import nextId from 'react-id-generator';
 import svgDefs from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/svgDefs';
 
+// keyValues ['position', 'gradient']
 const defineChart = (
   svgWidth: number,
   svgHeight: number,

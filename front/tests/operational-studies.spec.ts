@@ -38,7 +38,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       });
     });
     await playwrightHomePage.page.goto('/operational-studies/scenario');
-    await page.getByTestId('scenarios-filter-button').click();
+    await page.getByTestId('scenarios-add-train-schedule-button').click();
   });
 
   test('RollingStockSelector is displayed', async () => {

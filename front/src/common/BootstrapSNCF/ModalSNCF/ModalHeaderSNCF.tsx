@@ -1,18 +1,18 @@
-import React, { useContext } from 'react';
+import React, { FC, useContext, PropsWithChildren } from 'react';
 import { ModalContext } from './ModalProvider';
 
-type Props = {
-  children: JSX.Element;
+interface ModalHeaderSNCFProps {
   withCloseButton?: boolean;
   withBorderBottom?: boolean;
-};
+}
 
-export default function ModalHeaderSNCF({
+const ModalHeaderSNCF: FC<PropsWithChildren<ModalHeaderSNCFProps>> = ({
   children,
   withCloseButton = false,
   withBorderBottom = false,
-}: Props) {
+}) => {
   const { closeModal } = useContext(ModalContext);
+
   return (
     <>
       <div className="modal-header">
@@ -23,11 +23,13 @@ export default function ModalHeaderSNCF({
           </button>
         )}
       </div>
-      {withBorderBottom ? (
+      {withBorderBottom && (
         <div className="modal-header modal-header-border-bottom">
           <div />
         </div>
-      ) : null}
+      )}
     </>
   );
-}
+};
+
+export default ModalHeaderSNCF;

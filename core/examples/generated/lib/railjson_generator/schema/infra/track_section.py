@@ -11,7 +11,7 @@ from railjson_generator.schema.infra.range_elements import Curve, Slope
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 def _track_id():

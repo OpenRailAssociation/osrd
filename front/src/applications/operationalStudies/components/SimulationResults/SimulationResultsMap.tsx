@@ -60,6 +60,7 @@ import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
+import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import { MapLayerMouseEvent } from '../../../../types';
 import RenderBlockState from './SimulationResultsMap/RenderBlockState';
 
@@ -251,9 +252,10 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       const start = point(startCoordinates);
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
-      const timePositionLocal = interpolateOnPosition(
+      const keyValues = ['position', 'speed'] as const;
+      const timePositionLocal = interpolateOnPosition<(typeof keyValues)[number], PositionSpeed>(
         { speed: simulation.trains[selectedTrain][key].speeds },
-        ['position', 'speed'],
+        ['position', 'speed'] as const,
         positionLocal
       );
       dispatch(updateTimePositionValues(timePositionLocal));
@@ -345,7 +347,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         onLoad={handleLoadFinished}
       >
         <VirtualLayers />
-        <AttributionControl position="bottom-right" customAttribution="©SNCF Réseau" />
+        <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background

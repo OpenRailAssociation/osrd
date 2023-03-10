@@ -1,5 +1,6 @@
+import { noop } from 'lodash';
 import PropTypes from 'prop-types';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
 import { useSelector } from 'react-redux';
 
@@ -13,7 +14,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import StandardAllowanceDefault from 'applications/operationalStudies/components/SimulationResults/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
 function EmptyLine(props) {
@@ -28,7 +29,7 @@ function EmptyLine(props) {
     marecoEndPosition,
     defaultDistributionId,
   } = props;
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
 
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
@@ -66,7 +67,6 @@ function EmptyLine(props) {
   const { t } = useTranslation(['allowances']);
 
   const handleDistribution = (e) => {
-    console.log('handleDistribution', JSON.parse(e.target.value));
     setValues({
       ...values,
       distribution: JSON.parse(e.target.value).id,
@@ -499,7 +499,7 @@ EmptyLine.defaultProps = {
 
 Allowance.defaultProps = {
   t: (key) => key,
-  dispatch: () => {},
-  getAllowances: () => {},
-  mutateAllowances: () => {},
+  dispatch: noop,
+  getAllowances: noop,
+  mutateAllowances: noop,
 };

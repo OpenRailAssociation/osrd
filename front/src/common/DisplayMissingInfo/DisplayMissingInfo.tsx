@@ -27,7 +27,7 @@ const DisplayMissingInfo = (props: Props) => {
               <i
                 className={`icons-arrow-down ${isToggle ? 'icons-rotate-180' : ''} text-dark`}
                 aria-hidden="true"
-              ></i>
+              />
             </div>
           </div>
           {isToggle && (

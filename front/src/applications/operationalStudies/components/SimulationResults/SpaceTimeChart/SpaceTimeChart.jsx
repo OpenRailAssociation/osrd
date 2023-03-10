@@ -1,12 +1,16 @@
 import * as d3 from 'd3';
-
+import { noop } from 'lodash';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   isolatedEnableInteractivity,
-  traceVerticalLine,
+  updatePointers,
+  displayGuide,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
-import { timeShiftTrain } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import {
+  timeShiftTrain,
+  interpolateOnTime,
+} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import ORSD_GET_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
 import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal';
@@ -19,6 +23,7 @@ import PropTypes from 'prop-types';
 import { isolatedCreateTrain as createTrain } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 
 import { drawAllTrains } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/d3Helpers';
+import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 
 const CHART_ID = 'SpaceTimeChart';
 const CHART_MIN_HEIGHT = 250;
@@ -70,6 +75,9 @@ export default function SpaceTimeChart(props) {
   const [resetChart, setResetChart] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [selectedTrain, setSelectedTrain] = useState(inputSelectedTrain);
+  const [localTime, setLocalTime] = useState(new Date());
+  const [, setLocalPosition] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [showModal, setShowModal] = useState('');
   const [trainSimulations, setTrainSimulations] = useState(undefined);
 
@@ -80,12 +88,21 @@ export default function SpaceTimeChart(props) {
           ind === selectedTrain ? timeShiftTrain(train, offset) : train
         );
         setTrainSimulations(trains);
-        onOffsetTimeByDragging(trains);
+        onOffsetTimeByDragging(trains, offset);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [trainSimulations, selectedTrain, onOffsetTimeByDragging]
   );
+
+  const moveGridLinesOnMouseMove = useCallback(() => {
+    if (chart?.svg) {
+      const verticalMark = mousePos.x;
+      const horizontalMark = mousePos.y;
+      chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
+      chart.svg.selectAll('#horizontal-line').attr('y1', horizontalMark).attr('y2', horizontalMark);
+    }
+  }, [chart, rotate, mousePos]);
 
   /**
    * INPUT UPDATES
@@ -117,9 +134,21 @@ export default function SpaceTimeChart(props) {
 
   /*
    * shift the train after a drag and drop
+   * dragOffset is in Seconds !! (typecript is nice)
    */
   useEffect(() => {
     dragShiftTrain(dragOffset);
+    let offsetLocalTime = new Date(1900, localTime.getMonth(), localTime.getDay());
+    offsetLocalTime.setHours(localTime.getHours());
+    offsetLocalTime.setMinutes(localTime.getMinutes());
+    offsetLocalTime.setSeconds(localTime.getSeconds() + dragOffset);
+    if (chart)
+      setMousePos({
+        ...mousePos,
+        x: rotate ? mousePos.x : chart.x(offsetLocalTime),
+        y: rotate ? chart.y(offsetLocalTime) : mousePos.y,
+      });
+    setLocalTime(offsetLocalTime);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragOffset]);
 
@@ -164,39 +193,45 @@ export default function SpaceTimeChart(props) {
    */
   useEffect(() => {
     if (trainSimulations) {
+      const dataSimulation = createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, trainSimulations)[
+        selectedTrain
+      ];
       isolatedEnableInteractivity(
         chart,
-        createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, trainSimulations)[selectedTrain],
+        dataSimulation,
         KEY_VALUES_FOR_SPACE_TIME_CHART,
         LIST_VALUES_NAME_SPACE_TIME,
         rotate,
         setChart,
+        setLocalTime,
+        setLocalPosition,
+        setMousePos,
         simulationIsPlaying,
         dispatchUpdateMustRedraw,
         dispatchUpdateTimePositionValues
       );
+      const immediatePositionsValuesForPointer = interpolateOnTime(
+        dataSimulation,
+        KEY_VALUES_FOR_SPACE_TIME_CHART,
+        LIST_VALUES_NAME_SPACE_TIME,
+        localTime
+      );
+      displayGuide(chart, 1);
+      updatePointers(
+        chart,
+        KEY_VALUES_FOR_SPACE_TIME_CHART,
+        LIST_VALUES_NAME_SPACE_TIME,
+        immediatePositionsValuesForPointer,
+        rotate
+      );
+      moveGridLinesOnMouseMove();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart]);
 
-  /**
-   * coordinates the vertical cursors with other graphs (GEV for instance)
-   */
   useEffect(() => {
-    if (trainSimulations) {
-      traceVerticalLine(
-        chart,
-        trainSimulations?.[selectedTrain],
-        KEY_VALUES_FOR_SPACE_TIME_CHART,
-        LIST_VALUES_NAME_SPACE_TIME,
-        positionValues,
-        'headPosition',
-        rotate,
-        timePosition
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [positionValues, timePosition]);
+    moveGridLinesOnMouseMove();
+  }, [mousePos]);
 
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
@@ -303,15 +338,15 @@ SpaceTimeChart.propTypes = {
 
 SpaceTimeChart.defaultProps = {
   allowancesSettings: ORSD_GET_SAMPLE_DATA.allowancesSettings,
-  dispatchUpdateChart: () => {},
-  dispatchUpdateDepartureArrivalTimes: () => {},
-  dispatchUpdateMustRedraw: () => {},
-  dispatchUpdateSelectedTrain: () => {},
-  dispatchUpdateTimePositionValues: () => {},
+  dispatchUpdateChart: noop,
+  dispatchUpdateDepartureArrivalTimes: noop,
+  dispatchUpdateMustRedraw: noop,
+  dispatchUpdateSelectedTrain: noop,
+  dispatchUpdateTimePositionValues: noop,
   inputSelectedTrain: ORSD_GET_SAMPLE_DATA.selectedTrain,
   initialHeightOfSpaceTimeChart: 400,
-  onOffsetTimeByDragging: () => {},
-  onSetBaseHeightOfSpaceTimeChart: () => {},
+  onOffsetTimeByDragging: noop,
+  onSetBaseHeightOfSpaceTimeChart: noop,
   positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
   simulation: ORSD_GET_SAMPLE_DATA.simulation.present,
   simulationIsPlaying: false,

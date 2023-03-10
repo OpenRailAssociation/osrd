@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::error::Result;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
@@ -10,7 +8,7 @@ use actix_web::get;
 use actix_web::web::{block, Data, Json, Path};
 use chashmap::CHashMap;
 use editoast_derive::EditoastError;
-use serde_json::{json, Map, Value};
+use std::collections::HashMap;
 use thiserror::Error;
 
 /// Objects types that can be attached to a track
@@ -31,24 +29,11 @@ pub fn routes() -> impl HttpServiceFactory {
 }
 
 #[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "attached", context = "Self::context")]
+#[editoast_error(base_id = "attached")]
 enum AttachedError {
-    #[error("Track '{0}' not found")]
+    #[error("Track '{track_id}' not found")]
     #[editoast_error(status = 404)]
-    TrackNotFound(String),
-}
-
-impl AttachedError {
-    fn context(&self) -> Map<String, Value> {
-        match self {
-            Self::TrackNotFound(track_id) => json!({
-                "track_id": track_id,
-            })
-            .as_object()
-            .cloned()
-            .unwrap(),
-        }
-    }
+    TrackNotFound { track_id: String },
 }
 
 /// This endpoint returns attached objects of given track
@@ -66,7 +51,10 @@ async fn attached(
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         // Check track existence
         if !infra_cache.track_sections().contains_key(&track_id) {
-            return Err(AttachedError::TrackNotFound(track_id.clone()).into());
+            return Err(AttachedError::TrackNotFound {
+                track_id: track_id.clone(),
+            }
+            .into());
         }
         // Get attached objects
         let res: HashMap<_, Vec<_>> = ATTACHED_OBJECTS_TYPES

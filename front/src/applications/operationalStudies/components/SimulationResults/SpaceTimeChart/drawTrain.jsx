@@ -50,6 +50,8 @@ export default function drawTrain(
   const applyTrainCurveTranslation = (offset) => {
     const translation = rotate ? `0,${offset}` : `${offset},0`;
     d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
+    const releventLine = rotate ? '#horizontal-line' : '#vertical-line';
+    d3.select(releventLine).attr('transform', `translate(${translation})`);
   };
 
   let debounceTimeoutId;
@@ -75,7 +77,7 @@ export default function drawTrain(
         selectedTrainId !== undefined && selectedTrainId === train.id
           ? offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset)
           : train.base.stops[train.base.stops.length - 1].time,
-      speed_limit_composition: train.speed_limit_composition,
+      speed_limit_tags: train.speed_limit_tags,
     }));
 
   const drag = d3drag()

@@ -25,7 +25,8 @@ jobs:
     name: API
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
-      context: api
+      context: python
+      dockerfile: api/Dockerfile
       image_name: osrd/api
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}

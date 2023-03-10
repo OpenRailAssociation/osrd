@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "osrd"
+version = "0.1.0"
+description = ""
+authors = ["DGEX Solutions <contact@osrd.fr>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+django = "4.1.5"
+numpy = "1.24.1"
+intervaltree = "3.1.0"
+psycopg2-binary = "2.9.5"
+djangorestframework = "3.14.0"
+djangorestframework-gis = "1.0"
+django-redis = "5.2.0"
+drf-nested-routers = "0.93.4"
+requests = "2.28.1"
+pillow = "^9"
+pydantic = "1.10.4"
+geojson-pydantic = "0.5.0"
+osrd-schemas = { path = "../osrd_schemas/", develop = false }
+
+# production
+gunicorn = { version = "20.1.0", optional = true }
+sentry-sdk = { version = "^1.12.0", optional = true }
+uvloop = { version = "0.17.0", optional = true }
+httptools = { version = "0.5.0", optional = true }
+uvicorn = { version = "0.20.0", optional = true }
+
+[tool.poetry.extras]
+production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
+
+[tool.poetry.group.dev.dependencies]
+mock = "^5.0.1"
+black = "^22.12.0"
+isort = "^5.12.0"
+pyproject-flake8 = "^6.0.0.post1"
+django-debug-toolbar = "^3.8.1"
+django-cors-headers = "^3.13.0"
+flake8-formatter-junit-xml = "^0.0.6"
+
+[tool.flake8]
+ignore = "W503,E203"
+max-line-length = 120
+exclude = ["*/migrations/*", ".venv/", "config/"]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

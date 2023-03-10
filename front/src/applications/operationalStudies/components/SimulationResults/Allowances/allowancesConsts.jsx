@@ -9,3 +9,9 @@ export const TYPES_UNITS = {
   percentage: 'percentage',
   time_per_distance: 'minutes',
 };
+
+export const ALLOWANCE_UNIT_TYPES = {
+  TIME: 'time',
+  PERCENTAGE: 'percentage',
+  TIME_PER_DISTANCE: 'time_per_distance',
+};

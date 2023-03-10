@@ -131,9 +131,7 @@ export function updateNewUser(newUser) {
   };
 }
 
-export function updateError(error, errorMessage) {
-  console.log(errorMessage);
-  console.log(error.response.status, error.response.data);
+export function updateError(error) {
   return (dispatch) => {
     dispatch({
       type: UPDATE_ERROR,
@@ -150,7 +148,7 @@ export function createUser(user, profile) {
       await post(`/user/${createdUser.id}/add_to_group`, profile);
       dispatch(getUsers());
     } catch (err) {
-      dispatch(updateError(err, 'Create user Error'));
+      dispatch(updateError(err));
     }
     return createdUser;
   };
@@ -159,12 +157,11 @@ export function createUser(user, profile) {
 export function updateProfile(id, oldProfile, newProfile) {
   return async (dispatch) => {
     try {
-      console.log(newProfile);
       await post(`/user/${id}/add_to_group`, newProfile);
       await post(`/user/${id}/remove_from_group`, oldProfile);
       dispatch(getUsers());
     } catch (err) {
-      dispatch(updateError(err, 'Update profile Error'));
+      dispatch(updateError(err));
       return err;
     }
   };

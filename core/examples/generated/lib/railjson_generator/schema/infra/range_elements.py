@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from railjson_generator.schema.infra.direction import ApplicableDirection
 
-from schemas import infra
+from osrd_schemas import infra
 
 
 @dataclass

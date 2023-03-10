@@ -105,7 +105,6 @@ function RollingStockModal(props) {
             message: e.message,
           })
         );
-        console.log(e);
       }
     }
   };

@@ -1,26 +1,16 @@
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 
-import { TYPES_UNITS } from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
+import {
+  ALLOWANCE_UNIT_TYPES,
+  TYPES_UNITS,
+} from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
 import { STDCM_MODES, OsrdConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 
 import { ActionFailure } from 'reducers/main';
 import { ThunkAction } from 'types';
-
-type standardStdcmAllowanceForApi = {
-  value_type: number;
-  minutes?: number;
-  seconds?: number;
-  percentage?: number;
-};
-
-type typeUnitTranslation = {
-  time: string;
-  percentage: string;
-  time_per_distance: string;
-};
 
 export default function formatStdcmConf(
   dispatch: Dispatch,
@@ -108,7 +98,7 @@ export default function formatStdcmConf(
 
   if (!error) {
     const standardAllowanceType: string =
-      (osrdconf.standardStdcmAllowance?.type as string) || 'time';
+      (osrdconf.standardStdcmAllowance?.type as string) || ALLOWANCE_UNIT_TYPES.PERCENTAGE;
     const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
     const standardAllowance: { [index: string]: any } = {};
     const typeUnitTanslationIndex: { [index: string]: any } = TYPES_UNITS;
@@ -137,7 +127,7 @@ export default function formatStdcmConf(
       ],
       maximum_departure_delay: maximumDepartureDelay,
       maximum_relative_run_time: 2,
-      speed_limit_composition: osrdconf.speedLimitByTag,
+      speed_limit_tags: osrdconf.speedLimitByTag,
       margin_before: osrdconf.gridMarginBefore,
       margin_after: osrdconf.gridMarginAfter,
       standard_allowance: standardAllowance,

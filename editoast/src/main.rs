@@ -2,6 +2,7 @@
 extern crate diesel;
 
 mod client;
+mod documents;
 mod error;
 mod generated_data;
 mod infra;
@@ -11,6 +12,7 @@ mod schema;
 mod tables;
 mod views;
 
+use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
@@ -19,8 +21,8 @@ use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
-    ClearArgs, Client, Commands, GenerateArgs, ImportRailjsonArgs, PostgresConfig, RedisConfig,
-    RunserverArgs,
+    ClearArgs, Client, Commands, GenerateArgs, ImportProfileSetArgs, ImportRailjsonArgs,
+    PostgresConfig, RedisConfig, RunserverArgs,
 };
 use colored::*;
 use diesel::r2d2::{self, ConnectionManager, Pool};
@@ -34,6 +36,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
+use views::electrical_profiles::ElectricalProfileSet;
 use views::search::config::Config as SearchConfig;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
@@ -59,6 +62,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Generate(args) => generate(args, pg_config, redis_config).await,
         Commands::Clear(args) => clear(args, pg_config, redis_config).await,
         Commands::ImportRailjson(args) => import_railjson(args, pg_config),
+        Commands::ImportProfileSet(args) => add_electrical_profile_set(args, pg_config).await,
     }
 }
 
@@ -229,6 +233,29 @@ fn import_railjson(
             infra.id
         );
     }
+
+    Ok(())
+}
+
+async fn add_electrical_profile_set(
+    args: ImportProfileSetArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+    let electrical_profile_set_file = File::open(args.electrical_profile_set_path)?;
+
+    let electrical_profile_set_data: ElectricalProfileSetData =
+        serde_json::from_reader(BufReader::new(electrical_profile_set_file))?;
+
+    let created_ep_set = ElectricalProfileSet::create_electrical_profile_set(
+        pool,
+        args.name,
+        electrical_profile_set_data,
+    )
+    .await
+    .unwrap();
+    println!("✅ Electrical profile set {} created", created_ep_set.id);
 
     Ok(())
 }

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
@@ -12,12 +12,13 @@ import TimetableManageTrainSchedule from 'applications/operationalStudies/compon
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
-import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaPencilAlt } from 'react-icons/fa';
 import { setSuccess } from 'reducers/main';
 import { GiElectric } from 'react-icons/gi';
 import SimulationResults from './SimulationResults';
 import ManageTrainSchedule from './ManageTrainSchedule';
+import ImportTrainSchedule from './ImportTrainSchedule';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import getTimetable from '../components/Scenario/getTimetable';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
@@ -32,7 +33,7 @@ export default function Scenario() {
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
-  const { openModal } = useContext(ModalContext);
+  const { openModal } = useModal();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
@@ -45,6 +46,7 @@ export default function Scenario() {
       console.error(error);
     }
   };
+
   const getStudy = async () => {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
@@ -53,6 +55,7 @@ export default function Scenario() {
       console.error(error);
     }
   };
+
   const getScenario = async (withNotification = false) => {
     try {
       const result = await get(
@@ -86,6 +89,7 @@ export default function Scenario() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   return scenario ? (
     <>
       <NavBarSNCF
@@ -158,12 +162,17 @@ export default function Scenario() {
               </div>
             </div>
             <div className="col-lg-8">
-              {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+              {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
                 <div className="scenario-managetrainschedule">
                   <ManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   />
+                </div>
+              )}
+              {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.opendata && (
+                <div className="scenario-managetrainschedule">
+                  <ImportTrainSchedule />
                 </div>
               )}
               <div className="scenario-results">

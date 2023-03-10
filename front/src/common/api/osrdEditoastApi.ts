@@ -7,8 +7,8 @@ const injectedRtkApi = api.injectEndpoints({
     getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
       query: () => ({ url: `/version/` }),
     }),
-    getLayersInfo: build.query<GetLayersInfoApiResponse, GetLayersInfoApiArg>({
-      query: () => ({ url: `/layers/info/` }),
+    postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
+      query: (queryArg) => ({ url: `/search/`, method: 'POST', body: queryArg.body }),
     }),
     getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
       GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
@@ -19,9 +19,9 @@ const injectedRtkApi = api.injectEndpoints({
         params: { infra: queryArg.infra },
       }),
     }),
-    mvtViewTileTileLayerSlugViewSlugZXYGet: build.query<
-      MvtViewTileTileLayerSlugViewSlugZXYGetApiResponse,
-      MvtViewTileTileLayerSlugViewSlugZXYGetApiArg
+    getLayersTileByLayerSlugAndViewSlugZXY: build.query<
+      GetLayersTileByLayerSlugAndViewSlugZXYApiResponse,
+      GetLayersTileByLayerSlugAndViewSlugZXYApiArg
     >({
       query: (queryArg) => ({
         url: `/layers/tile/${queryArg.layerSlug}/${queryArg.viewSlug}/${queryArg.z}/${queryArg.x}/${queryArg.y}/`,
@@ -29,13 +29,13 @@ const injectedRtkApi = api.injectEndpoints({
       }),
     }),
     getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
-      query: () => ({ url: `/editoast/infra/` }),
+      query: () => ({ url: `/infra/` }),
     }),
     postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
       query: (queryArg) => ({ url: `/infra/`, method: 'POST', body: queryArg.body }),
     }),
     getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
     }),
     deleteInfraById: build.mutation<DeleteInfraByIdApiResponse, DeleteInfraByIdApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
@@ -48,13 +48,13 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/editoast/infra/${queryArg.id}/railjson/`,
+        url: `/infra/${queryArg.id}/railjson/`,
         params: { exclude_extensions: queryArg.excludeExtensions },
       }),
     }),
     postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
       query: (queryArg) => ({
-        url: `/editoast/infra/railjson/`,
+        url: `/infra/railjson/`,
         method: 'POST',
         body: queryArg.railjsonFile,
         params: { name: queryArg.name, generate_data: queryArg.generateData },
@@ -95,10 +95,16 @@ const injectedRtkApi = api.injectEndpoints({
       GetInfraByIdSpeedLimitTagsApiResponse,
       GetInfraByIdSpeedLimitTagsApiArg
     >({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/speed_limit_tags/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
     }),
     getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({ url: `/editoast/infra/${queryArg.id}/voltages/` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/voltages/` }),
+    }),
+    getInfraByIdAttachedAndTrackId: build.query<
+      GetInfraByIdAttachedAndTrackIdApiResponse,
+      GetInfraByIdAttachedAndTrackIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
     }),
     getInfraByIdRoutesAndWaypointTypeWaypointId: build.query<
       GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
@@ -138,6 +144,52 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.body,
       }),
     }),
+    postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/clone/`, method: 'POST' }),
+    }),
+    getElectricalProfileSet: build.query<
+      GetElectricalProfileSetApiResponse,
+      GetElectricalProfileSetApiArg
+    >({
+      query: () => ({ url: `/electrical_profile_set/` }),
+    }),
+    postElectricalProfileSet: build.mutation<
+      PostElectricalProfileSetApiResponse,
+      PostElectricalProfileSetApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/electrical_profile_set`,
+        method: 'POST',
+        params: { name: queryArg.name },
+      }),
+    }),
+    getElectricalProfileSetById: build.query<
+      GetElectricalProfileSetByIdApiResponse,
+      GetElectricalProfileSetByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/` }),
+    }),
+    getElectricalProfileSetByIdLevelOrder: build.query<
+      GetElectricalProfileSetByIdLevelOrderApiResponse,
+      GetElectricalProfileSetByIdLevelOrderApiArg
+    >({
+      query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/level_order/` }),
+    }),
+    getDocumentsByKey: build.query<GetDocumentsByKeyApiResponse, GetDocumentsByKeyApiArg>({
+      query: (queryArg) => ({ url: `/documents/${queryArg.key}/` }),
+    }),
+    deleteDocumentsByKey: build.mutation<
+      DeleteDocumentsByKeyApiResponse,
+      DeleteDocumentsByKeyApiArg
+    >({
+      query: (queryArg) => ({ url: `/documents/${queryArg.key}/`, method: 'DELETE' }),
+    }),
+    postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
+      query: () => ({ url: `/documents/`, method: 'POST' }),
+    }),
+    getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
+      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -147,24 +199,32 @@ export type GetHealthApiArg = void;
 export type GetVersionApiResponse = /** status 200 Return the service version */ {
   git_describe: string | null;
 };
-export type MvtViewTileTileLayerSlugViewSlugZXYGetApiResponse =
-  /** status 200 Successful Response */ Blob;
-export type MvtViewTileTileLayerSlugViewSlugZXYGetApiArg = {
-  layerSlug: string;
-  viewSlug: string;
-  z: number;
-  x: number;
-  y: number;
-  infra: number;
-};
 export type GetVersionApiArg = void;
-export type GetLayersInfoApiResponse = /** status 200 Successful Response */ Layer[];
-export type GetLayersInfoApiArg = void;
+export type PostSearchApiResponse =
+  /** status 200 Search results, the structure of the returned objects depend on their type */ object[];
+export type PostSearchApiArg = {
+  /** Search query */
+  body: {
+    object?: string;
+    query?: SearchQuery;
+    page?: number;
+    page_size?: number;
+  };
+};
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse =
   /** status 200 Successful Response */ ViewMetadata;
 export type GetLayersLayerByLayerSlugMvtAndViewSlugApiArg = {
   layerSlug: string;
   viewSlug: string;
+  infra: number;
+};
+export type GetLayersTileByLayerSlugAndViewSlugZXYApiResponse = unknown;
+export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
+  layerSlug: string;
+  viewSlug: string;
+  z: number;
+  x: number;
+  y: number;
   infra: number;
 };
 export type GetInfraApiResponse = /** status 200 The infra list */ Infra[];
@@ -236,21 +296,21 @@ export type GetInfraByIdErrorsApiArg = {
   pageSize?: number;
   /** The type of error to filter on */
   errorType?:
-  | 'invalid_reference'
-  | 'out_of_range'
-  | 'empty_path'
-  | 'path_does_not_match_endpoints'
-  | 'unknown_port_name'
-  | 'invalid_switch_ports'
-  | 'empty_object'
-  | 'object_out_of_path'
-  | 'missing_route'
-  | 'unused_port'
-  | 'duplicated_group'
-  | 'no_buffer_stop'
-  | 'path_is_not_continuous'
-  | 'overlapping_switches'
-  | 'overlapping_track_links';
+    | 'invalid_reference'
+    | 'out_of_range'
+    | 'empty_path'
+    | 'path_does_not_match_endpoints'
+    | 'unknown_port_name'
+    | 'invalid_switch_ports'
+    | 'empty_object'
+    | 'object_out_of_path'
+    | 'missing_route'
+    | 'unused_port'
+    | 'duplicated_group'
+    | 'no_buffer_stop'
+    | 'path_is_not_continuous'
+    | 'overlapping_switches'
+    | 'overlapping_track_links';
   /** errors and warnings that only part of a given object */
   objectId?: string;
   /** Whether the response should include errors or warnings */
@@ -289,11 +349,21 @@ export type GetInfraByIdVoltagesApiArg = {
   /** Infra ID */
   id: number;
 };
+export type GetInfraByIdAttachedAndTrackIdApiResponse =
+  /** status 200 All objects attached to the given track (arranged by types) */ {
+    [key: string]: string[];
+  };
+export type GetInfraByIdAttachedAndTrackIdApiArg = {
+  /** Infra ID */
+  id: number;
+  /** Track ID */
+  trackId: string;
+};
 export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse =
   /** status 200 All routes that starting and ending by the given waypoint */ {
-  starting?: string[];
-  ending?: string[];
-};
+    starting?: string[];
+    ending?: string[];
+  };
 export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
   /** Infra ID */
   id: number;
@@ -305,14 +375,14 @@ export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
 export type GetInfraByIdRoutesTrackRangesApiResponse =
   /** status 200 Foreach route, the track ranges through which it passes or an error */ (
     | ({
-      type: 'RouteTrackRangesNotFoundError';
-    } & RouteTrackRangesNotFoundError)
+        type: 'RouteTrackRangesNotFoundError';
+      } & RouteTrackRangesNotFoundError)
     | ({
-      type: 'RouteTrackRangesCantComputePathError';
-    } & RouteTrackRangesCantComputePathError)
+        type: 'RouteTrackRangesCantComputePathError';
+      } & RouteTrackRangesCantComputePathError)
     | ({
-      type: 'RouteTrackRangesComputed';
-    } & RouteTrackRangesComputed)
+        type: 'RouteTrackRangesComputed';
+      } & RouteTrackRangesComputed)
   )[];
 export type GetInfraByIdRoutesTrackRangesApiArg = {
   /** Infra ID */
@@ -321,12 +391,12 @@ export type GetInfraByIdRoutesTrackRangesApiArg = {
 };
 export type PostInfraByIdPathfindingApiResponse =
   /** status 200 Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned. */ {
-  track_ranges?: DirectionalTrackRange[];
-  detectors?: string[];
-  switches_directions?: {
-    [key: string]: string;
-  };
-}[];
+    track_ranges?: DirectionalTrackRange[];
+    detectors?: string[];
+    switches_directions?: {
+      [key: string]: string;
+    };
+  }[];
 export type PostInfraByIdPathfindingApiArg = {
   /** Infra ID */
   id: number;
@@ -353,22 +423,59 @@ export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   /** List of object id's */
   body: string[];
 };
-export type MapLayerView = {
-  name?: string;
-  on_field?: string;
-  data_expr?: string[];
-  exclude_fields?: string[];
-  joins?: string[];
-  cache_duration?: number;
-  where?: string[];
+export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra id */ {
+  id?: number;
 };
-export type Layer = {
-  name?: string;
-  table_name?: string;
-  views?: MapLayerView[];
-  id_field?: string;
-  attribution?: string;
+export type PostInfraByIdCloneApiArg = {
+  /** Infra id */
+  id: number;
 };
+export type GetElectricalProfileSetApiResponse =
+  /** status 200 The list of ids and names of electrical profile sets available */ {
+    id?: number;
+    name?: string;
+  }[];
+export type GetElectricalProfileSetApiArg = void;
+export type PostElectricalProfileSetApiResponse =
+  /** status 200 The list of ids and names of electrical profile sets available */ ElectricalProfile;
+export type PostElectricalProfileSetApiArg = {
+  name: string;
+};
+export type GetElectricalProfileSetByIdApiResponse =
+  /** status 200 The list of electrical profiles in the set */ ElectricalProfile[];
+export type GetElectricalProfileSetByIdApiArg = {
+  /** Electrical profile set ID */
+  id: number;
+};
+export type GetElectricalProfileSetByIdLevelOrderApiResponse =
+  /** status 200 A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength */ {
+    [key: string]: string[];
+  };
+export type GetElectricalProfileSetByIdLevelOrderApiArg = {
+  /** Electrical profile set ID */
+  id: number;
+};
+export type GetDocumentsByKeyApiResponse = unknown;
+export type GetDocumentsByKeyApiArg = {
+  /** A key identifying the document */
+  key: number;
+};
+export type DeleteDocumentsByKeyApiResponse = unknown;
+export type DeleteDocumentsByKeyApiArg = {
+  /** A key identifying the document */
+  key: number;
+};
+export type PostDocumentsApiResponse = /** status 201 The key of the added document */ {
+  document_key?: number;
+};
+export type PostDocumentsApiArg = void;
+export type GetRollingStockByIdApiResponse =
+  /** status 200 The rolling stock information */ RollingStock;
+export type GetRollingStockByIdApiArg = {
+  /** Rolling Stock ID */
+  id: number;
+};
+export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {
   type?: string;
   name?: string;
@@ -413,11 +520,11 @@ export type OperationObject = {
 };
 export type OperationResult =
   | ({
-    operation_type: 'DeleteOperation';
-  } & DeleteOperation)
+      operation_type: 'DeleteOperation';
+    } & DeleteOperation)
   | ({
-    operation_type: 'OperationObject';
-  } & OperationObject);
+      operation_type: 'OperationObject';
+    } & OperationObject);
 export type RailjsonObject = {
   operation_type?: 'CREATE';
   obj_type?: ObjectType;
@@ -438,14 +545,14 @@ export type UpdateOperation = {
 };
 export type Operation =
   | ({
-    operation_type: 'RailjsonObject';
-  } & RailjsonObject)
+      operation_type: 'RailjsonObject';
+    } & RailjsonObject)
   | ({
-    operation_type: 'DeleteOperation';
-  } & DeleteOperation)
+      operation_type: 'DeleteOperation';
+    } & DeleteOperation)
   | ({
-    operation_type: 'UpdateOperation';
-  } & UpdateOperation);
+      operation_type: 'UpdateOperation';
+    } & UpdateOperation);
 export type RailjsonFile = {
   version?: string;
   operational_points?: any;
@@ -485,4 +592,80 @@ export type RouteTrackRangesComputed = {
 export type TrackLocation = {
   track?: string;
   offset?: number;
+};
+export type TrackRange = {
+  track?: string;
+  begin?: number;
+  end?: number;
+};
+export type ElectricalProfile = {
+  value?: string;
+  power_class?: string;
+  track_ranges?: TrackRange[];
+};
+export type LightRollingStock = {
+  id?: number;
+  version?: string;
+  name?: string;
+  length?: number;
+  max_speed?: number;
+  startup_time?: number;
+  startup_acceleration?: number;
+  comfort_acceleration?: number;
+  gamma?: {
+    type?: 'CONST' | 'MAX';
+    value?: number;
+  };
+  inertia_coefficient?: number;
+  features?: string[];
+  mass?: number;
+  rolling_resistance?: {
+    A?: number;
+    B?: number;
+    C?: number;
+    type?: 'davis';
+  };
+  loading_gauge?: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
+  effort_curves?: {
+    default_mode?: string;
+    modes?: {
+      [key: string]: {
+        is_electric?: boolean;
+      };
+    };
+  };
+  base_power_class?: string;
+  power_restrictions?: {
+    [key: string]: string;
+  };
+  metadata?: object;
+  liveries?: {
+    id?: number;
+    name?: string;
+  }[];
+};
+export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
+export type EffortCurve = {
+  speeds?: number[];
+  max_efforts?: number[];
+};
+export type ConditionalEffortCurve = {
+  cond?: {
+    comfort?: Comfort | null;
+    electrical_profile_level?: string | null;
+    power_restriction_code?: string | null;
+  } | null;
+  curve?: EffortCurve;
+};
+export type RollingStock = LightRollingStock & {
+  effort_curves?: {
+    default_mode?: string;
+    modes?: {
+      [key: string]: {
+        curves?: ConditionalEffortCurve[];
+        default_curve?: EffortCurve;
+        is_electric?: boolean;
+      };
+    };
+  };
 };
