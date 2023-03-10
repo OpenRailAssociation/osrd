@@ -1088,7 +1088,7 @@ export type ProjectResult = {
   name?: string;
   objectives?: string;
   description?: string;
-  funders?: string[];
+  funders?: string;
   budget?: number;
   image_url?: string;
   creation_date?: string;
@@ -1100,7 +1100,7 @@ export type ProjectRequest = {
   name: string;
   objectives?: string;
   description?: string;
-  funders?: string[];
+  funders?: string;
   budget?: number;
   image?: object;
   tags?: string[];
