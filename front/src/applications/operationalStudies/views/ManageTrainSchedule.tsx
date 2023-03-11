@@ -1,22 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 
-import { updateViewport } from 'reducers/map';
+import { updateViewport, Viewport } from 'reducers/map';
 
 import TrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/TrainLabels';
-import AddOrEditTrainSchedule from 'applications/operationalStudies/components/ManageTrainSchedule/AddOrEditTrainSchedule';
+import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
+import submitConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConf';
+import { FaPlus } from 'react-icons/fa';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 
-export default function ManageTrainSchedule(props) {
-  const { setDisplayTrainScheduleManagement } = props;
+type Props = {
+  setDisplayTrainScheduleManagement: (arg0: string) => void;
+};
+
+export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
-  const [extViewport, setExtViewport] = useState(undefined);
+  const [extViewport, setExtViewport] = useState<Viewport>();
+  const [isWorking, setIsWorking] = useState(false);
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -47,7 +54,7 @@ export default function ManageTrainSchedule(props) {
       </div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
-          <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
+          <Itinerary updateExtViewport={setExtViewport} />
         </div>
         <div className="col-xl-6">
           <div className="osrd-config-item mb-2">
@@ -61,13 +68,34 @@ export default function ManageTrainSchedule(props) {
         3.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.configValidate')}
       </div>
       <TrainLabels />
-      <AddOrEditTrainSchedule
-        setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-      />
+      <TrainSettings />
+      <div className="osrd-config-item" data-testid="add-train-schedules">
+        <div className="d-flex justify-content-end">
+          <button
+            className="btn btn-secondary mr-2"
+            type="button"
+            onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
+          >
+            {t('cancelAddTrainSchedule')}
+          </button>
+          {isWorking ? (
+            <button className="btn btn-primary disabled" type="button">
+              <DotsLoader />
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={() => submitConf(dispatch, t, setIsWorking)}
+            >
+              <span className="mr-2">
+                <FaPlus />
+              </span>
+              {t('addTrainSchedule')}
+            </button>
+          )}
+        </div>
+      </div>
     </>
   );
 }
-
-ManageTrainSchedule.propTypes = {
-  setDisplayTrainScheduleManagement: PropTypes.func.isRequired,
-};
