@@ -21,6 +21,9 @@ import { getSwitchTypes } from 'applications/editor/data/api';
 export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
 export const UPDATE_STDCM_MODE = 'osrdconf/UPDATE_STDCM_MODE';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
+export const UPDATE_TRAINCOUNT = 'osrdconf/UPDATE_TRAINCOUNT';
+export const UPDATE_TRAINDELTA = 'osrdconf/UPDATE_TRAINDELTA';
+export const UPDATE_TRAINSTEP = 'osrdconf/UPDATE_TRAINSTEP';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_PROJECT_ID = 'osrdconf/UPDATE_PROJECT_ID';
 export const UPDATE_STUDY_ID = 'osrdconf/UPDATE_STUDY_ID';
@@ -59,6 +62,10 @@ export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_A
 // Reducer
 const defaultCommonConf = {
   name: '',
+  trainCount: 1,
+  trainDelta: 15,
+  trainStep: 2,
+  mode: DEFAULT_MODE,
   labels: [],
   projectID: undefined,
   studyID: undefined,
@@ -125,6 +132,15 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_NAME:
         draft[section].name = action.name;
+        break;
+      case UPDATE_TRAINCOUNT:
+        draft[section].trainCount = action.trainCount;
+        break;
+      case UPDATE_TRAINDELTA:
+        draft[section].trainDelta = action.trainDelta;
+        break;
+      case UPDATE_TRAINSTEP:
+        draft[section].trainStep = action.trainStep;
         break;
       case UPDATE_LABELS:
         draft[section].labels = action.labels;
@@ -270,11 +286,35 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
 }
 
 // Functions
-export function updateName(name: any) {
+export function updateName(name: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_NAME,
       name,
+    });
+  };
+}
+export function updateTrainCount(trainCount: number) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_TRAINCOUNT,
+      trainCount,
+    });
+  };
+}
+export function updateTrainDelta(trainDelta: number) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_TRAINDELTA,
+      trainDelta,
+    });
+  };
+}
+export function updateTrainStep(trainStep: number) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_TRAINSTEP,
+      trainStep,
     });
   };
 }
@@ -310,7 +350,7 @@ export function updateSwitchTypes(switchTypes: any) {
     });
   };
 }
-export function updateProjectID(projectID: any) {
+export function updateProjectID(projectID: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_PROJECT_ID,
@@ -318,7 +358,7 @@ export function updateProjectID(projectID: any) {
     });
   };
 }
-export function updateStudyID(studyID: any) {
+export function updateStudyID(studyID: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_STUDY_ID,
@@ -326,7 +366,7 @@ export function updateStudyID(studyID: any) {
     });
   };
 }
-export function updateScenarioID(scenarioID: any) {
+export function updateScenarioID(scenarioID: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SCENARIO_ID,
@@ -334,7 +374,7 @@ export function updateScenarioID(scenarioID: any) {
     });
   };
 }
-export function updateInfraID(infraID: any) {
+export function updateInfraID(infraID: number) {
   return async (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_INFRA_ID,
@@ -352,7 +392,7 @@ export function updateInfraID(infraID: any) {
     }
   };
 }
-export function updatePathfindingID(pathfindingID: any) {
+export function updatePathfindingID(pathfindingID: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_PATHFINDING_ID,
@@ -360,7 +400,7 @@ export function updatePathfindingID(pathfindingID: any) {
     });
   };
 }
-export function updateTimetableID(timetableID: any) {
+export function updateTimetableID(timetableID: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TIMETABLE_ID,
@@ -384,7 +424,7 @@ export function updateRollingStockComfort(rollingStockComfort: string) {
     });
   };
 }
-export function updateSpeedLimitByTag(speedLimitByTag: any) {
+export function updateSpeedLimitByTag(speedLimitByTag: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SPEED_LIMIT_BY_TAG,
@@ -392,7 +432,7 @@ export function updateSpeedLimitByTag(speedLimitByTag: any) {
     });
   };
 }
-export function updateOrigin(origin: any) {
+export function updateOrigin(origin: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ORIGIN,
@@ -400,7 +440,7 @@ export function updateOrigin(origin: any) {
     });
   };
 }
-export function updateOriginSpeed(originSpeed: any) {
+export function updateOriginSpeed(originSpeed: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ORIGIN_SPEED,
@@ -496,7 +536,7 @@ export function deleteVias(index: any) {
     });
   };
 }
-export function updateDestination(destination: any) {
+export function updateDestination(destination: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DESTINATION,
@@ -504,7 +544,7 @@ export function updateDestination(destination: any) {
     });
   };
 }
-export function updateDestinationTime(destinationTime: any) {
+export function updateDestinationTime(destinationTime: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DESTINATION_TIME,
@@ -512,7 +552,7 @@ export function updateDestinationTime(destinationTime: any) {
     });
   };
 }
-export function updateDestinationDate(destinationDate: any) {
+export function updateDestinationDate(destinationDate: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DESTINATION_DATE,
