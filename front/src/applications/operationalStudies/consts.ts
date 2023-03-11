@@ -118,6 +118,11 @@ export interface PointOnMap {
 export interface OsrdConfState {
   rollingStockComfort: any;
   name: string;
+  trainCount: number;
+  trainStep: number;
+  trainDelta: number;
+  mode: ValueOf<typeof MODES>;
+  stdcmMode: ValueOf<typeof STDCM_MODES>;
   labels: string[];
   projectID?: number;
   studyID?: number;

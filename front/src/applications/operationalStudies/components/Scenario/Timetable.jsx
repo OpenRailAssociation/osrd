@@ -15,7 +15,7 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
-import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddOrEditTrainSchedule/trainNameHelper';
+import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import getTimetable from './getTimetable';
