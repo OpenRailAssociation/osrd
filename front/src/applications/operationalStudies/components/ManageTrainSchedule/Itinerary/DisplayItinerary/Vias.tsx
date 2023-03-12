@@ -11,7 +11,7 @@ import { getGeojson, getVias } from 'reducers/osrdconf/selectors';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
-  viaModalContent: string;
+  viaModalContent: JSX.Element;
 }
 
 function Vias(props: ViasProps) {

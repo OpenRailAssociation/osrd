@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-
-import { updateViewport, Viewport } from 'reducers/map';
 
 import TrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/TrainLabels';
 import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
@@ -22,19 +20,7 @@ type Props = {
 export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
-  const [extViewport, setExtViewport] = useState<Viewport>();
   const [isWorking, setIsWorking] = useState(false);
-
-  useEffect(() => {
-    if (extViewport !== undefined) {
-      dispatch(
-        updateViewport({
-          ...extViewport,
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [extViewport]);
 
   return (
     <>
@@ -54,7 +40,7 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
       </div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
-          <Itinerary updateExtViewport={setExtViewport} />
+          <Itinerary />
         </div>
         <div className="col-xl-6">
           <div className="osrd-config-item mb-2">

@@ -1,24 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 
 import { replaceVias, updateDestination, updateOrigin } from 'reducers/osrdconf';
-import { getVias, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
-import { updateFeatureInfoClick } from 'reducers/map';
+import { updateFeatureInfoClick, updateViewport, Viewport } from 'reducers/map';
+import { Position } from 'geojson';
 
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
+import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
+import { getMap } from 'reducers/map/selectors';
 
-function Itinerary(props) {
-  const vias = useSelector(getVias);
+function Itinerary() {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
-  const { updateExtViewport } = props;
+  const vias = useSelector(getVias);
+  const [extViewport, setExtViewport] = useState<Viewport>();
   const dispatch = useDispatch();
-  const map = useSelector((state) => state.map);
+  const map = useSelector(getMap);
 
-  const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
+  const zoomToFeature = (boundingBox: Position, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
 
     const viewport = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
@@ -38,13 +39,13 @@ function Itinerary(props) {
       latitude,
       zoom,
     };
-    updateExtViewport(newViewport);
+    setExtViewport(newViewport);
     if (id !== undefined && source !== undefined) {
       updateFeatureInfoClick(Number(id), source);
     }
   };
 
-  const zoomToFeaturePoint = (lngLat, id = undefined, source = undefined) => {
+  const zoomToFeaturePoint = (lngLat?: Position, id?: string, source?: string) => {
     if (lngLat) {
       const newViewport = {
         ...map.viewport,
@@ -52,14 +53,15 @@ function Itinerary(props) {
         latitude: lngLat[1],
         zoom: 16,
       };
-      updateExtViewport(newViewport);
+      setExtViewport(newViewport);
       if (id !== undefined && source !== undefined) {
         updateFeatureInfoClick(Number(id), source);
       }
     }
   };
 
-  const removeViaFromPath = (step) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const removeViaFromPath = (step: any) => {
     dispatch(replaceVias(vias.filter((via) => via.track !== step.track)));
   };
 
@@ -87,6 +89,17 @@ function Itinerary(props) {
     />
   );
 
+  useEffect(() => {
+    if (extViewport !== undefined) {
+      dispatch(
+        updateViewport({
+          ...extViewport,
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extViewport]);
+
   return (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container" data-testid="itinerary">
@@ -100,9 +113,5 @@ function Itinerary(props) {
     </div>
   );
 }
-
-Itinerary.propTypes = {
-  updateExtViewport: PropTypes.func.isRequired,
-};
 
 export default Itinerary;

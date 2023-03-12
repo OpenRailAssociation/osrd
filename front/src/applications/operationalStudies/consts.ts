@@ -110,7 +110,7 @@ export interface PointOnMap {
   extensions_sncf_track_number: number;
   loading_gauge_limits: string;
   source: string;
-  clickLngLat: Position;
+  clickLngLat: Position | number[];
   duration?: number;
   track?: string;
 }

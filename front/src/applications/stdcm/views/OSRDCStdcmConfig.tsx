@@ -1,10 +1,9 @@
 import { noop } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
-import { updateViewport } from 'reducers/map';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
@@ -32,31 +31,11 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
   const timetableID = useSelector(getTimetableID);
   const infraID = useSelector(getInfraID);
 
-  const dispatch = useDispatch();
   const { t } = useTranslation([
     'translation',
     'operationalStudies/manageTrainSchedule',
     'allowances',
   ]);
-  const [extViewport, setExtViewport] = useState({});
-
-  useEffect(() => {
-    if (extViewport !== undefined) {
-      dispatch(
-        updateViewport({
-          ...extViewport,
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [extViewport]);
-
-  const commonItinerary: string = t('translation:common.itinerary');
-
-  const itineraryProps = {
-    title: commonItinerary,
-    updateExtViewport: setExtViewport,
-  };
 
   return (
     <main
@@ -71,7 +50,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
             <>
               <RollingStockSelector />
               <SpeedLimitByTagSelector />
-              <Itinerary {...itineraryProps} />
+              <Itinerary />
               <div className="row">
                 <div className="col-xl-6">
                   <div className="osrd-config-item mb-2 osrd-config-item-container">

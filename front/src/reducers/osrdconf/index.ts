@@ -350,7 +350,7 @@ export function updateSwitchTypes(switchTypes: any) {
     });
   };
 }
-export function updateProjectID(projectID: number) {
+export function updateProjectID(projectID?: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_PROJECT_ID,
@@ -358,7 +358,7 @@ export function updateProjectID(projectID: number) {
     });
   };
 }
-export function updateStudyID(studyID: number) {
+export function updateStudyID(studyID?: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_STUDY_ID,
@@ -366,7 +366,7 @@ export function updateStudyID(studyID: number) {
     });
   };
 }
-export function updateScenarioID(scenarioID: number) {
+export function updateScenarioID(scenarioID?: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SCENARIO_ID,
@@ -374,7 +374,7 @@ export function updateScenarioID(scenarioID: number) {
     });
   };
 }
-export function updateInfraID(infraID: number) {
+export function updateInfraID(infraID?: number) {
   return async (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_INFRA_ID,
@@ -392,7 +392,7 @@ export function updateInfraID(infraID: number) {
     }
   };
 }
-export function updatePathfindingID(pathfindingID: number) {
+export function updatePathfindingID(pathfindingID?: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_PATHFINDING_ID,
@@ -400,7 +400,7 @@ export function updatePathfindingID(pathfindingID: number) {
     });
   };
 }
-export function updateTimetableID(timetableID: number) {
+export function updateTimetableID(timetableID?: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TIMETABLE_ID,
@@ -408,7 +408,7 @@ export function updateTimetableID(timetableID: number) {
     });
   };
 }
-export function updateRollingStockID(rollingStockID: number) {
+export function updateRollingStockID(rollingStockID?: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ROLLINGSTOCK_ID,
@@ -432,7 +432,7 @@ export function updateSpeedLimitByTag(speedLimitByTag: string) {
     });
   };
 }
-export function updateOrigin(origin: string) {
+export function updateOrigin(origin: PointOnMap | undefined) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ORIGIN,
@@ -536,7 +536,7 @@ export function deleteVias(index: any) {
     });
   };
 }
-export function updateDestination(destination: string) {
+export function updateDestination(destination: PointOnMap | undefined) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DESTINATION,
