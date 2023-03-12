@@ -831,7 +831,6 @@ paths:
                       type: string
                       example: "France 2023"
 
-  /electrical_profile_set:
     post:
       tags:
         - electrical_profiles

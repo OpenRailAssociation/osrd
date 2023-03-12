@@ -158,7 +158,7 @@ const injectedRtkApi = api.injectEndpoints({
       PostElectricalProfileSetApiArg
     >({
       query: (queryArg) => ({
-        url: `/electrical_profile_set`,
+        url: `/electrical_profile_set/`,
         method: 'POST',
         params: { name: queryArg.name },
       }),
