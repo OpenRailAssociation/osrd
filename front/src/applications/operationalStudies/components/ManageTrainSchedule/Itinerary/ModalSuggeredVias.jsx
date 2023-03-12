@@ -118,9 +118,13 @@ export default function ModalSugerredVias(props) {
   );
 }
 
+ModalSugerredVias.defaultProps = {
+  pathfindingInProgress: false,
+};
+
 ModalSugerredVias.propTypes = {
   inverseOD: PropTypes.func.isRequired,
   removeAllVias: PropTypes.func.isRequired,
   removeViaFromPath: PropTypes.func.isRequired,
-  pathfindingInProgress: PropTypes.bool.isRequired,
+  pathfindingInProgress: PropTypes.bool,
 };

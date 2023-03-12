@@ -167,7 +167,7 @@ function Origin(props: OriginProps) {
                     type="number"
                     id="osrd-config-speed-origin"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      dispatch(updateOriginSpeed(e.target.value));
+                      dispatch(updateOriginSpeed(+e.target.value));
                     }}
                     value={originSpeed}
                     unit="km/h"
