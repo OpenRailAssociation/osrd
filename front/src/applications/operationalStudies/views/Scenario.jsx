@@ -21,6 +21,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
+import { useNavigate } from 'react-router-dom';
 import {
   LEGACY_PROJECTS_URI,
   PROJECTS_URI,
@@ -44,6 +45,7 @@ export default function Scenario() {
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const { openModal } = useModal();
+  const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
@@ -93,10 +95,14 @@ export default function Scenario() {
   };
 
   useEffect(() => {
-    getProject();
-    getStudy();
-    getScenario();
-    dispatch(updateMode(MODES.simulation));
+    if (!scenarioID || !studyID || !projectID) {
+      navigate('/operational-studies/study');
+    } else {
+      getProject();
+      getStudy();
+      getScenario();
+      dispatch(updateMode(MODES.simulation));
+    }
     return () => {
       dispatch(updateTimetableID(undefined));
       dispatch(updateInfraID(undefined));
