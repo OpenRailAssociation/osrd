@@ -178,6 +178,7 @@ interface PathfindingProps {
 
 function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [pathfindingRequest, setPathfindingRequest] = useState<any>();
   const { openModal } = useModal();
   const dispatch = useDispatch();
@@ -205,19 +206,29 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   };
 
   // Way to ensure marker position on track
-  const correctWaypointsGPS = ({ steps = [] }: Path) => {
-    dispatch(updateOrigin(adjustPointOnTrack(origin, steps[0], mapTrackSources)));
-    if (vias.length > 0 || steps.length > 2) {
-      const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
-        if (!step.suggestion) {
-          return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
-        }
-        return [];
-      });
-      dispatch(replaceVias(newVias));
-      dispatch(updateSuggeredVias(steps));
+  const correctWaypointsGPS = ({ steps }: Path) => {
+    if (steps && steps.length >= 2) {
+      const type = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
+      const originCoordinates = steps[0][type]?.coordinates;
+      const destinationCoordinates = last(steps)?.[type]?.coordinates;
+      // const etTaSoeur = adjustPointOnTrack(origin, steps[0], mapTrackSources);
+      if (origin && originCoordinates)
+        dispatch(updateOrigin({ ...origin, clickLngLat: originCoordinates }));
+      if (vias.length > 0 || steps.length > 2) {
+        const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
+          if (!step.suggestion) {
+            return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
+          }
+          return [];
+        });
+        dispatch(replaceVias(newVias));
+        dispatch(updateSuggeredVias(steps));
+      }
+      // const etTaSoeur = adjustPointOnTrack(destination, last(steps), mapTrackSources);
+      if (destination && destinationCoordinates) {
+        dispatch(updateDestination({ ...destination, clickLngLat: destinationCoordinates }));
+      }
     }
-    dispatch(updateDestination(adjustPointOnTrack(destination, last(steps), mapTrackSources)));
   };
 
   const generatePathfindingParams = (): PathQuery => {
@@ -268,13 +279,14 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       setPathfindingRequest(request);
       request
         .unwrap()
-        .then((itineraryCreated) => {
-          correctWaypointsGPS(itineraryCreated);
+        .then((itineraryCreated: Path) => {
+          // correctWaypointsGPS(itineraryCreated);
           dispatch(updateItinerary(itineraryCreated));
           dispatch(updatePathfindingID(itineraryCreated.id));
           if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
           pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .catch((e: any) => {
           if (e.error) {
             dispatch(

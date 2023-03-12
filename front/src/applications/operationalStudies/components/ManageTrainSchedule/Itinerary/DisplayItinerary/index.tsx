@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
 import { Position } from 'geojson';
 import cx from 'classnames';
 
@@ -14,7 +13,7 @@ import Destination from './Destination';
 interface DisplayItineraryProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
-  viaModalContent: string;
+  viaModalContent: JSX.Element;
 }
 
 export default function DisplayItinerary(props: DisplayItineraryProps) {
@@ -42,7 +41,3 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
     </div>
   );
 }
-
-DisplayItinerary.propTypes = {
-  zoomToFeaturePoint: PropTypes.func.isRequired,
-};
