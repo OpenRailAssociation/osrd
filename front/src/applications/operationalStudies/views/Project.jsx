@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/studies.svg';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +57,7 @@ export default function Project() {
   const [sortOption, setSortOption] = useState('-last_modification');
   const [imageUrl, setImageUrl] = useState();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
 
   const sortOptions = [
@@ -118,12 +120,16 @@ export default function Project() {
   };
 
   useEffect(() => {
-    getProject();
+    if (!projectID) {
+      navigate('/operational-studies');
+    } else {
+      getProject();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    getStudiesList();
+    if (projectID) getStudiesList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 

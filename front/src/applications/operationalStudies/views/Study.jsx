@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/study.svg';
 import { useTranslation } from 'react-i18next';
@@ -57,6 +58,7 @@ export default function Study() {
   const [sortOption, setSortOption] = useState('-last_modification');
   const [studyStates, setStudyStates] = useState([]);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
 
@@ -129,13 +131,17 @@ export default function Study() {
   };
 
   useEffect(() => {
-    getProject();
-    getStudy();
+    if (!studyID || !projectID) {
+      navigate('/operational-studies/project');
+    } else {
+      getProject();
+      getStudy();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    getScenarioList();
+    if (studyID) getScenarioList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 
