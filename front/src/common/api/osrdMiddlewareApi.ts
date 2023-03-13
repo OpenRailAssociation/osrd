@@ -90,27 +90,8 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
     }),
-    getTimetable: build.query<GetTimetableApiResponse, GetTimetableApiArg>({
-      query: (queryArg) => ({
-        url: `/timetable/`,
-        params: { infra: queryArg.infra, page: queryArg.page, page_size: queryArg.pageSize },
-      }),
-    }),
-    postTimetable: build.mutation<PostTimetableApiResponse, PostTimetableApiArg>({
-      query: (queryArg) => ({ url: `/timetable/`, method: 'POST', body: queryArg.body }),
-    }),
     getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
       query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
-    }),
-    deleteTimetableById: build.mutation<DeleteTimetableByIdApiResponse, DeleteTimetableByIdApiArg>({
-      query: (queryArg) => ({ url: `/timetable/${queryArg.id}/`, method: 'DELETE' }),
-    }),
-    putTimetableById: build.mutation<PutTimetableByIdApiResponse, PutTimetableByIdApiArg>({
-      query: (queryArg) => ({
-        url: `/timetable/${queryArg.id}/`,
-        method: 'PUT',
-        body: queryArg.body,
-      }),
     }),
     postTrainScheduleStandaloneSimulation: build.mutation<
       PostTrainScheduleStandaloneSimulationApiResponse,
@@ -454,44 +435,10 @@ export type GetLightRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
 };
-export type GetTimetableApiResponse = /** status 200 The timetable list */ {
-  count?: number;
-  next?: any;
-  previous?: any;
-  results?: {
-    id?: number;
-    name?: string;
-    infra?: number;
-  }[];
-};
-export type GetTimetableApiArg = {
-  /** Filter timetable by infra */
-  infra?: number;
-  /** Page number */
-  page?: number;
-  /** Number of elements by page */
-  pageSize?: number;
-};
-export type PostTimetableApiResponse = /** status 201 The timetable created */ {
-  id?: number;
-  name?: string;
-  infra?: number;
-  electrical_profile_set?: number | null;
-};
-export type PostTimetableApiArg = {
-  /** Infrastructure id and waypoints */
-  body: {
-    infra: number;
-    electrical_profile_set?: number | null;
-    name: string;
-  };
-};
 export type GetTimetableByIdApiResponse = /** status 200 The timetable content */ {
   id?: number;
   name?: string;
-  infra?: number;
-  electrical_profile_set?: number | null;
-  train_schedule?: {
+  train_schedules?: {
     id?: number;
     train_name?: string;
     departure_time?: number;
@@ -501,26 +448,6 @@ export type GetTimetableByIdApiResponse = /** status 200 The timetable content *
 export type GetTimetableByIdApiArg = {
   /** Timetable ID */
   id: number;
-};
-export type DeleteTimetableByIdApiResponse = unknown;
-export type DeleteTimetableByIdApiArg = {
-  /** Timetable ID */
-  id: number;
-};
-export type PutTimetableByIdApiResponse = /** status 200 The timetable updated */ {
-  id?: number;
-  name?: string;
-  infra?: number;
-};
-export type PutTimetableByIdApiArg = {
-  /** Timetable ID */
-  id: number;
-  /** Infrastructure id and waypoints */
-  body: {
-    infra: number;
-    name: string;
-    electrical_profile_set?: number | null;
-  };
 };
 export type PostTrainScheduleStandaloneSimulationApiResponse =
   /** status 201 The ids of the train_schedules created */ {

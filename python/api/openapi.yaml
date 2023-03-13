@@ -457,93 +457,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LightRollingStock"
-  /timetable/:
-    get:
-      tags:
-        - timetable
-      summary: Paginated list of timetable
-      parameters:
-        - in: query
-          name: infra
-          schema:
-            type: integer
-          description: Filter timetable by infra
-        - in: query
-          name: page
-          schema:
-            type: integer
-            minimum: 0
-          description: Page number
-        - in: query
-          name: page_size
-          schema:
-            type: integer
-            maximum: 10000
-            minimum: 1
-            default: 100
-          description: Number of elements by page
-      responses:
-        200:
-          description: The timetable list
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  count:
-                    type: number
-                  next: {}
-                  previous: {}
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        name:
-                          type: string
-                        infra:
-                          type: number
-    post:
-      tags:
-        - timetable
-      summary: Create a timetable
-      requestBody:
-        description: Infrastructure id and waypoints
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                infra:
-                  type: number
-                electrical_profile_set:
-                  type: number
-                  nullable: true
-                  description: Electrical profile set id (if any)
-                name:
-                  type: string
-              required:
-                - infra
-                - name
-      responses:
-        201:
-          description: The timetable created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: number
-                  name:
-                    type: string
-                  infra:
-                    type: number
-                  electrical_profile_set:
-                    type: number
-                    nullable: true
   /timetable/{id}/:
     get:
       tags:
@@ -568,12 +481,7 @@ paths:
                     type: number
                   name:
                     type: string
-                  infra:
-                    type: number
-                  electrical_profile_set:
-                    type: number
-                    nullable: true
-                  train_schedule:
+                  train_schedules:
                     type: array
                     items:
                       type: object
@@ -586,62 +494,6 @@ paths:
                           type: number
                         train_path:
                           type: number
-    delete:
-      tags:
-        - timetable
-      summary: Delete a timetable and its train schedules
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Timetable ID
-          required: true
-      responses:
-        204:
-          description: No content
-    put:
-      tags:
-        - timetable
-      summary: Update a timetable
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Timetable ID
-          required: true
-      requestBody:
-        description: Infrastructure id and waypoints
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                infra:
-                  type: number
-                name:
-                  type: string
-                electrical_profile_set:
-                  type: number
-                  nullable: true
-              required:
-                - infra
-                - name
-      responses:
-        200:
-          description: The timetable updated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: number
-                  name:
-                    type: string
-                  infra:
-                    type: number
   /train_schedule/standalone_simulation/:
     post:
       tags:
