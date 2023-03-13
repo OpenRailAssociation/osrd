@@ -258,7 +258,7 @@ def run(
                 print(e)
                 log_folder.mkdir(exist_ok=True)
                 with open(str(log_folder / f"{i}.json"), "w") as f:
-                    print(json.dumps(e.args[0]), file=f)
+                    print(json.dumps(e.args[0], indent=4), file=f)
 
 
 def get_random_rolling_stock(base_url: str) -> int:

@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+
 import com.google.common.primitives.Doubles;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -60,6 +62,14 @@ public class STDCMUtils {
 
     /** Builds a train path from a route, and offset from its start, and an envelope. */
     static TrainPath makeTrainPath(SignalingRoute route, double startOffset, double endOffset) {
+        var routeLength = route.getInfraRoute().getLength();
+        if (endOffset > routeLength) {
+            assert Math.abs(endOffset - routeLength) < POSITION_EPSILON;
+            endOffset = routeLength;
+        }
+        assert 0 <= startOffset && startOffset <= routeLength;
+        assert 0 <= endOffset && endOffset <= routeLength;
+        assert startOffset <= endOffset;
         var infraRoute = route.getInfraRoute();
         var start = TrackRangeView.getLocationFromList(infraRoute.getTrackRanges(), startOffset);
         var end = TrackRangeView.getLocationFromList(infraRoute.getTrackRanges(), endOffset);
