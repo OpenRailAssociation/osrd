@@ -4,68 +4,79 @@ import { useSelector, useDispatch } from 'react-redux';
 import { updateMapSearchMarker } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { post } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
+import nextId from 'react-id-generator';
 import turfCenter from '@turf/center';
 import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import nextId from 'react-id-generator';
-import { SEARCH_URL } from '../const';
+import { getMap } from 'reducers/map/selectors';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
-  const map = useSelector((state) => state.map);
-
+  const map = useSelector(getMap);
   const [searchState, setSearch] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState(undefined);
+  const [trigramResults, setTrigramResults] = useState([]);
+  const [nameResults, setNameResults] = useState([]);
   const infraID = useSelector(getInfraID);
 
+  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const dispatch = useDispatch();
 
   const { t } = useTranslation(['map-search']);
 
-  const updateSearch = async (params) => {
-    try {
-      const data = await post(SEARCH_URL, params);
-      setSearchResults(data);
-    } catch (e) {
-      /* empty */
-    }
+  const updateSearch = async (params, setResults) => {
+    const { data, error } = await postSearch({
+      body: { object: params.object, query: params.query },
+    });
+    if (error) console.error(error);
+    setResults(data);
   };
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
-  const getPayload = () => {
-    let trigram = null;
-    let name = null;
-    if (!dontSearch && debouncedSearchTerm) {
-      if (searchState.length < 3) {
-        trigram = searchState;
-        name = null;
-      } else if (searchState.length === 3) {
-        trigram = searchState;
-        name = searchState;
-      } else if (searchState.length > 3) {
-        name = searchState;
-        trigram = null;
-      }
-    }
+  // Create playload based on the type of search "name" or "trigram"
+
+  const createPlayload = (queryType) => {
+    const searchQuery =
+      queryType === 'name' ? ['search', ['name'], searchState] : ['=i', ['trigram'], searchState];
     const payload = {
       object: 'operationalpoint',
-      query: [
-        'and',
-        ['or', ['search', ['name'], name], ['search', ['trigram'], trigram]],
-        ['=', ['infra_id'], infraID],
-      ],
+      query: ['and', searchQuery, ['=', ['infra_id'], infraID]],
     };
     return payload;
   };
 
+  // Sort on name, and on yardname
+  const orderResults = (results) =>
+    [...results].sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+  const getResult = async () => {
+    if (!dontSearch && debouncedSearchTerm) {
+      if (searchState.length < 3) {
+        const searchTrigramQuery = createPlayload('trigram');
+        updateSearch(searchTrigramQuery, setTrigramResults);
+      } else if (searchState.length === 3) {
+        const searchTrigramQuery = createPlayload('trigram');
+        updateSearch(searchTrigramQuery, setTrigramResults);
+        const searchNameQuery = createPlayload('name');
+        updateSearch(searchNameQuery, setNameResults);
+      } else if (searchState.length > 3) {
+        const searchNameQuery = createPlayload('name');
+        updateSearch(searchNameQuery, setNameResults);
+      }
+    }
+  };
+
   useEffect(() => {
-    if (searchState) updateSearch(getPayload());
+    getResult();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    setSearchResults([...trigramResults, ...orderResults(nameResults)]);
+  }, [trigramResults, nameResults]);
 
   const onResultClick = (result) => {
     setSearch(result.name);
@@ -97,10 +108,6 @@ export default function MapSearchStation(props) {
     dispatch(updateMapSearchMarker(undefined));
   };
 
-  // Sort on name, and on yardname
-  const orderResults = (results) =>
-    results.sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
-
   return (
     <>
       <div className="d-flex mb-2">
@@ -127,7 +134,7 @@ export default function MapSearchStation(props) {
       </h2>
       <div className="search-results">
         {searchResults &&
-          orderResults(searchResults).map((result) => (
+          searchResults.map((result) => (
             <div
               className="mb-1"
               key={`mapSearchStation-${nextId()}-${result.trigram}${result.yardname}${result.uic}`}
