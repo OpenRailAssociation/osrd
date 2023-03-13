@@ -78,21 +78,78 @@ public final class TrainPhysicsIntegrator {
         double brakingForce = 0;
         var tractiveEffortCurve = tractiveEffortCurveMap.get(position);
         assert tractiveEffortCurve != null;
-        double maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
 
-        // Debut of shenanigans
-        // Those maps are a pain to use ...
+        // CHANTIER PRISE EN COMPTE ENERGY SOURCE ******************************************
         TreeMap<Integer, RJSRollingStock.EnergySource> energySourceTreeMap = RJSRollingStock.getEnergySources();
 
-        // This should give
-        double availableElectricalPower = 0.0;
 
+        double availableElectricalPower = 0.0;
         for(var rsEnergySource : energySourceTreeMap.entrySet() ){
-            availableElectricalPower += rsEnergySource.getValue().getPower(45.0);
+            availableElectricalPower += rsEnergySource.getValue().getPower(speed);
         }
         double motorEfficiency = 0.643;
         double availableMechanicalPower = availableElectricalPower*motorEfficiency;
+        // Motor output power once conversion efficiency's accounted for
+        double maxTractionForceFromEnergySources = availableMechanicalPower/speed;
 
+        //                                      /!\ Vitesse = french("speed") /!\
+        //     ▲ Force
+        //     │
+        //     │....................       │
+        //     │         X        ....     │
+        //     │          X         ...    │               .....   classic F(V) <=> Fixed power func(Electrification)
+        //     │           X          ..   │                                        *or nearly fixed power
+        //     │            X          ... │
+        //     │             X           ..│
+        //     │              X           .│.              XXXXX   F(Pmax(V)) = maxMecaPower·motorEfficiency/V
+        //     │               XX          │...
+        //     │                XX         │  ..
+        //     │                  X        │   ...
+        //     │                    X      │      ..
+        //     │                      X    │        ....
+        //     │                        X  │          ....
+        //     │                          X│             .....
+        //     │                           │X                ......
+        //     │                           │   X                 ................
+        //     │                           │      X  X XXXXXXXX                 .....................
+        // ────┼───────────────────────────┼───────────────────────────────────────────────────────────►
+        //     │                           │                                                            Speed
+        //     │                         Speed
+        //
+        // I imagine 2 options to account for variable available power :
+        // Each point of the F(V) correspond to à given power (Power = Force x Vitesse)
+        // then we could multpiply F by a coefficient, using K x F(V), we would get a variable power
+        // But it wouldn't account for wheel slip, we'd have to add complexity to avoid uncanny behaviors
+        //
+        // We prefer to use the min between an existing measured "best case, best power" curve and a computed curve:
+        // the power each energy source can provide at a given time and speed, adds up and we can then compute
+        // (Force = Power/Vitesse )
+        // it guarantee us the train can't have unexpectedly high torque, or misrepresent its movement behavior
+
+        double maxTractionForce = Math.min(
+                PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve),
+                maxTractionForceFromEnergySources
+        );
+
+        var EnergyVariationOnTimeStep = timeStep*maxTractionForce*speed; // Re-evaluate consumed energy
+
+        // Now we have to apply rules on what to take the energy of
+        //              "Coupling"
+        // ┌─────┐         ┌───┐
+        // │     │         │   │
+        // │ E.S ├────────►│   │
+        // │  0  │         │   │
+        // └─────┘         │   │
+        //    ·            │   │────────►TractionForce*speed
+        // ┌─────┐         │   │
+        // │     │         │   │
+        // │ E.S ├────────►│   │
+        // │  1  │         │   │
+        // └─────┘         └───┘
+        //
+        // Still have work on this  YYYYYYYYYYYYY
+
+        // CHANTIER PRISE EN COMPTE ENERGY SOURCE
 
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
