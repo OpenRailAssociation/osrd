@@ -5,7 +5,7 @@ import {
   ALLOWANCE_UNIT_TYPES,
   TYPES_UNITS,
 } from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
-import { STDCM_MODES, OsrdConfState } from 'applications/operationalStudies/consts';
+import { STDCM_MODES, OsrdMultiConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 
@@ -16,12 +16,15 @@ export default function formatStdcmConf(
   dispatch: Dispatch,
   setFailure: (e: Error) => ThunkAction<ActionFailure>,
   t: TFunction,
-  osrdconf: OsrdConfState
+  osrdconf: OsrdMultiConfState
 ) {
-  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
+
+  const specificSection = osrdconf.stdcmConf
+
+  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, specificSection.stdcmMode);
 
   let error = false;
-  if (!osrdconf.origin && isByOrigin) {
+  if (!specificSection.origin && isByOrigin) {
     error = true;
     dispatch(
       setFailure({
@@ -30,7 +33,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.originTime && isByOrigin) {
+  if (!specificSection.originTime && isByOrigin) {
     error = true;
     dispatch(
       setFailure({
@@ -39,7 +42,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.destination && isByDestination) {
+  if (!specificSection.destination && isByDestination) {
     error = true;
     dispatch(
       setFailure({
@@ -48,7 +51,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.destinationTime && isByDestination) {
+  if (!specificSection.destinationTime && isByDestination) {
     error = true;
     dispatch(
       setFailure({
@@ -57,7 +60,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.rollingStockID) {
+  if (!specificSection.rollingStockID) {
     error = true;
     dispatch(
       setFailure({
@@ -66,7 +69,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.infraID) {
+  if (!specificSection.infraID) {
     error = true;
     dispatch(
       setFailure({
@@ -75,7 +78,7 @@ export default function formatStdcmConf(
       })
     );
   }
-  if (!osrdconf.timetableID) {
+  if (!specificSection.timetableID) {
     error = true;
     dispatch(
       setFailure({
@@ -89,17 +92,17 @@ export default function formatStdcmConf(
   // Demander: format de date
   // Demander: pourquoi tableaux
 
-  const originDate = osrdconf.originTime ? time2sec(osrdconf.originTime) : null;
-  const destinationDate = osrdconf.destinationTime ? time2sec(osrdconf.destinationTime) : null;
+  const originDate = specificSection.originTime ? time2sec(specificSection.originTime) : null;
+  const destinationDate = specificSection.destinationTime ? time2sec(specificSection.destinationTime) : null;
   const maximumDepartureDelay =
-    osrdconf.originTime && osrdconf.originUpperBoundTime
-      ? time2sec(osrdconf.originUpperBoundTime) - time2sec(osrdconf.originTime)
+  specificSection.originTime && specificSection.originUpperBoundTime
+      ? time2sec(specificSection.originUpperBoundTime) - time2sec(specificSection.originTime)
       : null;
 
   if (!error) {
     const standardAllowanceType: string =
-      (osrdconf.standardStdcmAllowance?.type as string) || ALLOWANCE_UNIT_TYPES.PERCENTAGE;
-    const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
+      (specificSection.standardStdcmAllowance?.type as string) || ALLOWANCE_UNIT_TYPES.PERCENTAGE;
+    const standardAllowanceValue: number = specificSection.standardStdcmAllowance?.value || 0;
     const standardAllowance: { [index: string]: any } = {};
     const typeUnitTanslationIndex: { [index: string]: any } = TYPES_UNITS;
     const correspondantTypesForApi: string = typeUnitTanslationIndex[standardAllowanceType];
@@ -107,29 +110,29 @@ export default function formatStdcmConf(
     standardAllowance.value_type = standardAllowanceType;
 
     const osrdConfStdcm = {
-      infra: osrdconf.infraID,
-      rolling_stock: osrdconf.rollingStockID,
-      comfort: osrdconf.rollingStockComfort,
-      timetable: osrdconf.timetableID,
+      infra: specificSection.infraID,
+      rolling_stock: specificSection.rollingStockID,
+      comfort: specificSection.rollingStockComfort,
+      timetable: specificSection.timetableID,
       start_time: originDate, // Build a date
       end_time: destinationDate, // Build a date
       start_points: [
         {
-          track_section: osrdconf?.origin?.id,
-          geo_coordinate: osrdconf?.origin?.clickLngLat,
+          track_section: specificSection?.origin?.id,
+          geo_coordinate: specificSection?.origin?.clickLngLat,
         },
       ],
       end_points: [
         {
-          track_section: osrdconf?.destination?.id,
-          geo_coordinate: osrdconf?.destination?.clickLngLat,
+          track_section: specificSection?.destination?.id,
+          geo_coordinate: specificSection?.destination?.clickLngLat,
         },
       ],
       maximum_departure_delay: maximumDepartureDelay,
       maximum_relative_run_time: 2,
-      speed_limit_tags: osrdconf.speedLimitByTag,
-      margin_before: osrdconf.gridMarginBefore,
-      margin_after: osrdconf.gridMarginAfter,
+      speed_limit_tags: specificSection.speedLimitByTag,
+      margin_before: specificSection.gridMarginBefore,
+      margin_after: specificSection.gridMarginAfter,
       standard_allowance: standardAllowance,
     };
 

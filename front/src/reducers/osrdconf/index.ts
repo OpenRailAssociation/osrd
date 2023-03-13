@@ -3,9 +3,12 @@ import { AnyAction, Dispatch } from 'redux';
 import { omit } from 'lodash';
 
 import {
+  MODES,
   DEFAULT_MODE,
   DEFAULT_STDCM_MODE,
   OsrdConfState,
+  OsrdMultiConfState,
+  OsrdStdcmConfState,
   PointOnMap,
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
@@ -54,194 +57,237 @@ export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
 export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
 
 // Reducer
-export const initialState: OsrdConfState = {
-  name: '',
+export const initialState: OsrdMultiConfState = {
   mode: DEFAULT_MODE,
-  stdcmMode: DEFAULT_STDCM_MODE,
-  labels: [],
-  projectID: undefined,
-  studyID: undefined,
-  scenarioID: undefined,
-  infraID: undefined,
-  switchTypes: undefined,
-  pathfindingID: undefined,
-  timetableID: undefined,
-  rollingStockID: undefined,
-  rollingStockComfort: 'STANDARD',
-  speedLimitByTag: undefined,
-  origin: undefined,
-  originSpeed: 0,
-  originDate: formatIsoDate(new Date()),
-  originTime: undefined,
-  originUpperBoundDate: formatIsoDate(new Date()),
-  originUpperBoundTime: undefined,
-  originLinkedBounds: true,
-  destination: undefined,
-  destinationDate: formatIsoDate(new Date()),
-  destinationTime: undefined,
-  vias: [],
-  suggeredVias: [],
-  trainCompo: undefined,
-  geojson: undefined,
-  featureInfoClick: { displayPopup: false },
-  gridMarginBefore: 0,
-  gridMarginAfter: 0,
-  standardStdcmAllowance: undefined,
+  simulationConf: {
+    name: '',
+    labels: [],
+    projectID: undefined,
+    studyID: undefined,
+    scenarioID: undefined,
+    infraID: undefined,
+    switchTypes: undefined,
+    pathfindingID: undefined,
+    timetableID: undefined,
+    rollingStockID: undefined,
+    rollingStockComfort: 'STANDARD',
+    speedLimitByTag: undefined,
+    origin: undefined,
+    originSpeed: 0,
+    originDate: formatIsoDate(new Date()),
+    originTime: undefined,
+    originUpperBoundDate: formatIsoDate(new Date()),
+    originUpperBoundTime: undefined,
+    originLinkedBounds: true,
+    destination: undefined,
+    destinationDate: formatIsoDate(new Date()),
+    destinationTime: undefined,
+    vias: [],
+    suggeredVias: [],
+    trainCompo: undefined,
+    geojson: undefined,
+    featureInfoClick: { displayPopup: false },
+    gridMarginBefore: 0,
+    gridMarginAfter: 0,
+  },
+  stdcmConf: {
+    name: '',
+    stdcmMode: DEFAULT_STDCM_MODE,
+    labels: [],
+    projectID: undefined,
+    studyID: undefined,
+    scenarioID: undefined,
+    infraID: undefined,
+    switchTypes: undefined,
+    pathfindingID: undefined,
+    timetableID: undefined,
+    rollingStockID: undefined,
+    rollingStockComfort: 'STANDARD',
+    speedLimitByTag: undefined,
+    origin: undefined,
+    originSpeed: 0,
+    originDate: formatIsoDate(new Date()),
+    originTime: undefined,
+    originUpperBoundDate: formatIsoDate(new Date()),
+    originUpperBoundTime: undefined,
+    originLinkedBounds: true,
+    destination: undefined,
+    destinationDate: formatIsoDate(new Date()),
+    destinationTime: undefined,
+    vias: [],
+    suggeredVias: [],
+    trainCompo: undefined,
+    geojson: undefined,
+    featureInfoClick: { displayPopup: false },
+    gridMarginBefore: 0,
+    gridMarginAfter: 0,
+    standardStdcmAllowance: undefined,
+  },
 };
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
 
-export default function reducer(inputState: OsrdConfState | undefined, action: AnyAction) {
+export default function reducer(inputState: OsrdMultiConfState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
+    type confSections = Omit<OsrdMultiConfState, 'mode'>;
+    type SectionKey = keyof confSections;
+
+    const sectionMap: Record<string, SectionKey> = {
+      [MODES.simulation]: 'simulationConf',
+      [MODES.stdcm]: 'stdcmConf',
+    };
+
+    const section: SectionKey = sectionMap[state.mode];
+
     switch (action.type) {
       case UPDATE_MODE:
         draft.mode = action.mode;
         break;
       case UPDATE_STDCM_MODE:
-        draft.stdcmMode = action.stdcmMode;
+        draft.stdcmConf.stdcmMode = action.stdcmMode;
         break;
       case UPDATE_NAME:
-        draft.name = action.name;
+        draft[section].name = action.name;
         break;
       case UPDATE_LABELS:
-        draft.labels = action.labels;
+        draft[section].labels = action.labels;
         break;
       case UPDATE_PROJECT_ID:
-        draft.projectID = action.projectID;
+        draft[section].projectID = action.projectID;
         break;
       case UPDATE_STUDY_ID:
-        draft.studyID = action.studyID;
+        draft[section].studyID = action.studyID;
         break;
       case UPDATE_SCENARIO_ID:
-        draft.scenarioID = action.scenarioID;
+        draft[section].scenarioID = action.scenarioID;
         break;
       case UPDATE_INFRA_ID:
-        draft.infraID = action.infraID;
+        draft[section].infraID = action.infraID;
         break;
       case UPDATE_SWITCH_TYPES:
-        draft.switchTypes = action.switchTypes;
+        draft[section].switchTypes = action.switchTypes;
         break;
       case UPDATE_PATHFINDING_ID:
-        draft.pathfindingID = action.pathfindingID;
+        draft[section].pathfindingID = action.pathfindingID;
         break;
       case UPDATE_TIMETABLE_ID:
-        draft.timetableID = action.timetableID;
+        draft[section].timetableID = action.timetableID;
         break;
       case UPDATE_ROLLINGSTOCK_ID:
-        draft.rollingStockID = action.rollingStockID;
+        draft[section].rollingStockID = action.rollingStockID;
         break;
       case UPDATE_ROLLINGSTOCK_COMFORT:
-        draft.rollingStockComfort = action.rollingStockComfort;
+        draft[section].rollingStockComfort = action.rollingStockComfort;
         break;
       case UPDATE_SPEED_LIMIT_BY_TAG:
-        draft.speedLimitByTag = action.speedLimitByTag;
+        draft[section].speedLimitByTag = action.speedLimitByTag;
         break;
       case UPDATE_ORIGIN:
-        draft.origin = action.origin;
+        draft[section].origin = action.origin;
         break;
       case UPDATE_ORIGIN_SPEED:
-        draft.originSpeed = action.originSpeed;
+        draft[section].originSpeed = action.originSpeed;
         break;
       case UPDATE_ORIGIN_TIME: {
         const newOriginTimeSeconds = time2sec(action.originTime);
-        if (draft.originLinkedBounds) {
+        if (draft[section].originLinkedBounds) {
           const difference =
-            draft.originTime && draft.originUpperBoundTime
-              ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
+            draft[section].originTime && draft[section].originUpperBoundTime
+              ? time2sec(draft[section].originUpperBoundTime) - time2sec(draft[section].originTime)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
+          draft[section].originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
         }
         if (
-          draft.originUpperBoundTime &&
-          time2sec(action.originTime) > time2sec(draft.originUpperBoundTime)
+          draft[section].originUpperBoundTime &&
+          time2sec(action.originTime) > time2sec(draft[section].originUpperBoundTime)
         ) {
-          draft.originTime = draft.originUpperBoundTime;
+          draft[section].originTime = draft[section].originUpperBoundTime;
         } else {
-          draft.originTime = action.originTime;
+          draft[section].originTime = action.originTime;
         }
         break;
       }
       case UPDATE_ORIGIN_UPPER_BOUND_TIME: {
         const newOriginUpperBoundTimeSeconds = time2sec(action.originUpperBoundTime);
-        if (draft.originLinkedBounds) {
+        if (draft[section].originLinkedBounds) {
           const difference =
-            draft.originTime && draft.originUpperBoundTime
-              ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
+            draft[section].originTime && draft[section].originUpperBoundTime
+              ? time2sec(draft[section].originUpperBoundTime) - time2sec(draft[section].originTime)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          draft.originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
+          draft[section].originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
         }
         if (
-          draft.originTime &&
-          time2sec(action.originUpperBoundTime) < time2sec(draft.originTime)
+          draft[section].originTime &&
+          time2sec(action.originUpperBoundTime) < time2sec(draft[section].originTime)
         ) {
-          draft.originUpperBoundTime = draft.originTime;
+          draft[section].originUpperBoundTime = draft[section].originTime;
         } else {
-          draft.originUpperBoundTime = action.originUpperBoundTime;
+          draft[section].originUpperBoundTime = action.originUpperBoundTime;
         }
         break;
       }
       case TOGGLE_ORIGIN_LINKED_BOUNDS:
-        draft.originLinkedBounds = !draft.originLinkedBounds;
+        draft[section].originLinkedBounds = !draft[section].originLinkedBounds;
         break;
       case UPDATE_ORIGIN_DATE:
-        draft.originDate = action.originDate;
+        draft[section].originDate = action.originDate;
         break;
       case UPDATE_ORIGIN_UPPER_BOUND_DATE:
-        draft.originUpperBoundDate = action.originUpperBoundDate;
+        draft[section].originUpperBoundDate = action.originUpperBoundDate;
         break;
       case REPLACE_VIAS:
-        draft.vias = action.vias;
+        draft[section].vias = action.vias;
         break;
       case UPDATE_VIAS:
-        draft.vias.push(action.vias);
+        draft[section].vias.push(action.vias);
         break;
       case UPDATE_VIA_STOPTIME:
-        draft.vias = action.vias;
+        draft[section].vias = action.vias;
         break;
       case PERMUTE_VIAS:
-        draft.vias = action.vias;
+        draft[section].vias = action.vias;
         break;
       case UPDATE_SUGGERED_VIAS:
-        draft.suggeredVias = action.suggeredVias;
+        draft[section].suggeredVias = action.suggeredVias;
         break;
       case DELETE_VIAS:
-        draft.vias.splice(action.index, 1);
+        draft[section].vias.splice(action.index, 1);
         break;
       case DELETE_ITINERARY:
-        draft.origin = undefined;
-        draft.vias = [];
-        draft.destination = undefined;
-        draft.geojson = undefined;
-        draft.originTime = undefined;
-        draft.pathfindingID = undefined;
+        draft[section].origin = undefined;
+        draft[section].vias = [];
+        draft[section].destination = undefined;
+        draft[section].geojson = undefined;
+        draft[section].originTime = undefined;
+        draft[section].pathfindingID = undefined;
         break;
       case UPDATE_DESTINATION:
-        draft.destination = action.destination;
+        draft[section].destination = action.destination;
         break;
       case UPDATE_DESTINATION_DATE:
-        draft.destinationDate = action.destinationDate;
+        draft[section].destinationDate = action.destinationDate;
         break;
       case UPDATE_DESTINATION_TIME:
-        draft.destinationTime = action.destinationTime;
+        draft[section].destinationTime = action.destinationTime;
         break;
       case UPDATE_TRAINCOMPO:
-        draft.trainCompo = action.trainCompo;
+        draft[section].trainCompo = action.trainCompo;
         break;
       case UPDATE_ITINERARY:
-        draft.geojson = action.geojson;
+        draft[section].geojson = action.geojson;
         break;
       case UPDATE_FEATURE_INFO_CLICK_OSRD:
-        draft.featureInfoClick = action.featureInfoClick;
+        draft[section].featureInfoClick = action.featureInfoClick;
         break;
       case UPDATE_GRID_MARGIN_BEFORE:
-        draft.gridMarginBefore = action.gridMarginBefore;
+        draft[section].gridMarginBefore = action.gridMarginBefore;
         break;
       case UPDATE_GRID_MARGIN_AFTER:
-        draft.gridMarginAfter = action.gridMarginAfter;
+        draft[section].gridMarginAfter = action.gridMarginAfter;
         break;
       case UPDATE_STANDARD_STDCM_ALLOWANCE:
-        draft.standardStdcmAllowance = action.standardStdcmAllowance;
+        draft.stdcmConf.standardStdcmAllowance = action.standardStdcmAllowance;
         break;
     }
   });
@@ -542,7 +588,7 @@ export function updateGridMarginAfter(gridMarginAfter: OsrdConfState['gridMargin
   };
 }
 export function updateStdcmStandardAllowance(
-  standardStdcmAllowance: OsrdConfState['standardStdcmAllowance']
+  standardStdcmAllowance: OsrdStdcmConfState['standardStdcmAllowance']
 ) {
   return (dispatch: Dispatch) => {
     dispatch({

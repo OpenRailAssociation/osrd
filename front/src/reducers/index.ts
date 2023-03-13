@@ -4,7 +4,7 @@ import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
-import { OsrdConfState } from 'applications/operationalStudies/consts';
+import { OsrdConfState, OsrdMultiConfState } from 'applications/operationalStudies/consts';
 
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -72,7 +72,7 @@ export interface RootState {
   map: MapState;
   editor: EditorState;
   main: MainState;
-  osrdconf: OsrdConfState;
+  osrdconf: OsrdMultiConfState;
   osrdsimulation: OsrdSimulationState;
   [osrdMiddlewareApi.reducerPath]: any;
   [osrdEditoastApi.reducerPath]: any;
