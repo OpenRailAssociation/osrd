@@ -56,10 +56,11 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
 
   // Get the distance of the geometry
   const distance = useMemo(() => {
+    if (!isNil(formContext.length)) {
+      return formContext.length;
+    }
     if (formContext.geometry?.type === 'LineString') {
-      const geoLineLength = getLineStringDistance(formContext.geometry);
-      const inputLength = formContext.length;
-      return fnMax([geoLineLength, inputLength]) as number;
+      return getLineStringDistance(formContext.geometry);
     }
     return 0;
   }, [formContext]);
