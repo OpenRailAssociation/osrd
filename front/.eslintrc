@@ -2,6 +2,7 @@
   "env": {
     "browser": true
   },
+  "ignorePatterns": ["src/common/api/*Api.ts"],
   "extends": [
     "plugin:vitest/recommended",
     "airbnb",
