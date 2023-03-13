@@ -271,14 +271,18 @@ export default function StandardAllowanceDefault(props) {
           <button
             type="button"
             onClick={mutateSingleAllowance || addStandard}
-            className={`btn btn-success btn-sm mr-1 ${value.value === 0 || value.value === "" ? 'disabled' : null}`}
+            className={`btn btn-success btn-sm mr-1 ${
+              value.value === 0 || value.value === '' ? 'disabled' : null
+            }`}
           >
             {t('apply')}
           </button>
           <button
             type="button"
             onClick={() => delStandard(value)}
-            className={`btn btn-danger btn-sm ${value.value === 0 || value.value === "" ? 'disabled' : null}`}
+            className={`btn btn-danger btn-sm ${
+              value.value === 0 || value.value === '' ? 'disabled' : null
+            }`}
           >
             <FaTrash />
           </button>

@@ -20,7 +20,7 @@ export default defineConfig({
         buildMode: true,
       },
       eslint: {
-        lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 246',
+        lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 203',
       },
     }),
   ],
