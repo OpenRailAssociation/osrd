@@ -138,7 +138,7 @@ export default function SpaceTimeChart(props) {
    */
   useEffect(() => {
     dragShiftTrain(dragOffset);
-    let offsetLocalTime = new Date(1900, localTime.getMonth(), localTime.getDay());
+    const offsetLocalTime = new Date(1900, localTime.getMonth(), localTime.getDay());
     offsetLocalTime.setHours(localTime.getHours());
     offsetLocalTime.setMinutes(localTime.getMinutes());
     offsetLocalTime.setSeconds(localTime.getSeconds() + dragOffset);

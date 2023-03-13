@@ -199,7 +199,11 @@ function EmptyLine(props) {
           type="button"
           onClick={() => addAllowance(values)}
           className={`btn btn-success btn-block btn-sm ${
-            values.begin_position >= values.end_position || values.value.seconds === 0 || values.value.seconds === "" ? 'disabled' : null
+            values.begin_position >= values.end_position ||
+            values.value.seconds === 0 ||
+            values.value.seconds === ''
+              ? 'disabled'
+              : null
           }`}
         >
           <i className="icons-add" />
@@ -210,7 +214,7 @@ function EmptyLine(props) {
 }
 
 function Allowance(props) {
-  const { data, delAllowance, idx, selectedTrain, simulation, t} = props;
+  const { data, delAllowance, idx, selectedTrain, simulation, t } = props;
 
   const position2name = (position) => {
     const place = simulation.trains[selectedTrain].base.stops.find(
@@ -265,7 +269,7 @@ export default function Allowances(props) {
     mutateAllowances,
     getAllowances,
     trainDetail,
-    getAllowanceTypes
+    getAllowanceTypes,
   } = props;
 
   const [allowances, setAllowances] = useState([]);
