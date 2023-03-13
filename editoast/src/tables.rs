@@ -260,7 +260,7 @@ table! {
         id -> BigInt,
         name -> Text,
         rolling_stock_id -> BigInt,
-        compound_image_id -> BigInt,
+        compound_image_id -> Nullable<BigInt>,
     }
 }
 
