@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { LoaderFill, Spinner } from '../../../../common/Loader';
-import useInfraErrors from './useInfraErrors';
+import { osrdEditoastApi } from '../../../../common/api/osrdEditoastApi';
+// import useInfraErrors from './useInfraErrors';
 import InfraErrorComponent from './InfraError';
 import {
   InfraError,
@@ -20,19 +21,38 @@ interface InfraErrorsListProps {
 
 const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick }) => {
   const { t } = useTranslation();
+  const [total, setTotal] = useState<number | null>(null);
+  const [next, setNext] = useState<number | null>(null);
   const [errors, setErrors] = useState<Array<InfraError>>([]);
   const [filterErrorLevel, setFilterErrorLevel] = useState<InfraErrorLevel>('all');
   const [filterErrorType, setFilterErrorType] = useState<InfraErrorType | undefined>(undefined);
-  const { loading, error, next, total, fetch } = useInfraErrors();
+  const [getInfraErrors, { isLoading, error }] =
+    osrdEditoastApi.endpoints.getInfraByIdErrors.useLazyQuery({});
 
+  const fetch = useCallback(
+    async (id, page, errorType, level) => {
+      const response = await getInfraErrors({
+        id,
+        page,
+        errorType,
+        level,
+      });
+      setErrors((prev) => {
+        const apiErrors = response.data ? response.data.result || [] : [];
+        return page === 1 ? apiErrors : [...prev, ...apiErrors];
+      });
+      setTotal(response.data ? response.data.count || 0 : null);
+      setNext(response.data ? response.data.next ?? null : null);
+    },
+    [getInfraErrors]
+  );
+
+  /**
+   * When the infra or type or level changed
+   * => fetch data of the first page
+   */
   useEffect(() => {
-    fetch(infraID, {
-      page: 1,
-      error_type: filterErrorType,
-      level: filterErrorLevel,
-    }).then((result) => {
-      setErrors(result ?? []);
-    });
+    fetch(infraID, 1, filterErrorType, filterErrorLevel);
   }, [infraID, fetch, filterErrorType, filterErrorLevel]);
 
   return (
@@ -47,7 +67,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
               id="filterLevel"
               className="form-control"
               value={filterErrorLevel}
-              onChange={(e) => setFilterErrorLevel(e.target.value)}
+              onChange={(e) => setFilterErrorLevel(e.target.value as InfraErrorLevel)}
             >
               {InfraErrorLevelList.map((item) => (
                 <option key={item} value={item}>
@@ -67,7 +87,9 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
               className="form-control"
               value={filterErrorType}
               onChange={(e) =>
-                setFilterErrorType(e.target.value !== 'all' ? e.target.value : undefined)
+                setFilterErrorType(
+                  e.target.value !== 'all' ? (e.target.value as InfraErrorType) : undefined
+                )
               }
             >
               <option value="all">{t(`Editor.infra-errors.error-type.all`)}</option>
@@ -81,7 +103,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
         </div>
       </div>
 
-      {!loading && (
+      {!isLoading && (
         <p className="text-center text-info my-3">
           {t('Editor.infra-errors.list.total-error', { count: total || 0 })}
         </p>
@@ -89,21 +111,13 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
       {error && (
         <p className="text-danger text-center my-3">{t('Editor.infra-errors.list.error')}</p>
       )}
-
       <InfiniteScroll
         loader={<Spinner className="text-center p-3" />}
         style={{ overflow: 'hidden' }}
         dataLength={errors.length}
         hasMore={next !== null}
         scrollableTarget="modal-body"
-        next={async () => {
-          const result = await fetch(infraID, {
-            page: next ?? 1,
-            error_type: filterErrorType,
-            level: filterErrorLevel,
-          });
-          setErrors((prev) => [...prev, ...(result ?? [])]);
-        }}
+        next={() => fetch(infraID, next ?? 1, filterErrorType, filterErrorLevel)}
       >
         {errors && (
           <ul className="list-group">
@@ -128,7 +142,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
         )}
       </InfiniteScroll>
 
-      {loading && <LoaderFill />}
+      {isLoading && <LoaderFill />}
     </div>
   );
 };

@@ -1,10 +1,15 @@
-import { Geometry } from '@turf/helpers';
-import { EditoastType } from '../../tools/types';
+import {
+  GetInfraByIdErrorsApiArg,
+  InfraError as InfraErrorApiType,
+} from '../../../../common/api/osrdEditoastApi';
 
-export const InfraErrorLevelList = ['all', 'errors', 'warnings'];
-export type InfraErrorLevel = (typeof InfraErrorLevelList)[number];
+// Error level
+export type InfraErrorLevel = GetInfraByIdErrorsApiArg['level'];
+export const InfraErrorLevelList: Array<InfraErrorLevel> = ['all', 'errors', 'warnings'];
 
-export const InfraErrorTypeList = [
+// Error type
+export type InfraErrorType = GetInfraByIdErrorsApiArg['errorType'];
+export const InfraErrorTypeList: Array<InfraErrorType> = [
   'invalid_reference',
   'out_of_range',
   'empty_path',
@@ -21,15 +26,7 @@ export const InfraErrorTypeList = [
   'overlapping_switches',
   'overlapping_track_links',
 ];
-export type InfraErrorType = (typeof InfraErrorTypeList)[number];
 
-export interface InfraError {
-  information: {
-    error_type: InfraErrorType;
-    field: string;
-    is_warning: boolean;
-    obj_id: string;
-    obj_type: EditoastType;
-  };
-  geographic?: Geometry;
-}
+// Type of an error
+// We replace the geographic prop type by geojson
+export type InfraError = InfraErrorApiType;

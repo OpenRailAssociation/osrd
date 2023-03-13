@@ -4,5 +4,6 @@ import { ConfirmModal } from './ConfirmModal';
 import ModalHeaderSNCF from './ModalHeaderSNCF';
 import ModalFooterSNCF from './ModalFooterSNCF';
 import ModalBodySNCF from './ModalBodySNCF';
+import './style.scss';
 
 export { useModal, Modal, ConfirmModal, ModalHeaderSNCF, ModalFooterSNCF, ModalBodySNCF };
