@@ -250,6 +250,12 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
     }),
+    getRollingStockByIdLiveryAndLiveryId: build.query<
+      GetRollingStockByIdLiveryAndLiveryIdApiResponse,
+      GetRollingStockByIdLiveryAndLiveryIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/livery/${queryArg.liveryId}` }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -609,6 +615,13 @@ export type DeleteProjectsByProjectIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdApiArg = {
   /** project id you want to delete */
   projectId: number;
+};
+export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
+export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {
+  /** Rolling Stock ID */
+  id: number;
+  /** Rolling Stock Livery ID */
+  liveryId: number;
 };
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {

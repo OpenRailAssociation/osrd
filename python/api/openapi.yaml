@@ -345,6 +345,7 @@ paths:
                 $ref: "#/components/schemas/RollingStock"
   /rolling_stock/{id}/livery/:
     get:
+      deprecated: true
       tags:
         - rolling_stock
         - livery
