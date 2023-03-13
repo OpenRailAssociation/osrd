@@ -420,7 +420,7 @@ paths:
                     nullable: true
                     example: null
                     description: The index of the previous page (null if requesting the first page)
-                  results:
+                  result:
                     type: array
                     items:
                       $ref: "#/components/schemas/InfraError"
@@ -1414,11 +1414,12 @@ components:
     InfraError:
       type: object
       description: An infra error or warning
+      required: [information]
       properties:
         geographic:
           nullable: true
-          type: object
           description: Geojson of the geographic geometry of the error
+          $ref: "#/components/schemas/Geometry"
         schematic:
           nullable: true
           type: object
@@ -1426,12 +1427,41 @@ components:
         information:
           type: object
           description: Information about the error (check schema documentation for more details)
-          example:
-            error_type: invalid_reference
-            field: track
-            is_warning: false
-            obj_id: 61205924-6667-11e3-81ff-01f464e0362d
-            obj_type: TrackSection
+          required: [obj_id, obj_type, error_type, is_warning]
+          properties:
+            obj_id:
+              type: string
+            obj_type:
+              type: string
+              enum:
+                - TrackSection
+                - Signal
+                - BufferStop
+                - Detector
+                - Switch
+                - Route
+            error_type:
+              type: string
+              enum:
+                - invalid_reference
+                - out_of_range
+                - empty_path
+                - path_does_not_match_endpoints
+                - unknown_port_name
+                - invalid_switch_ports
+                - empty_object
+                - object_out_of_path
+                - missing_route
+                - unused_port
+                - duplicated_group
+                - no_buffer_stop
+                - path_is_not_continuous
+                - overlapping_switches
+                - overlapping_track_links
+            field:
+              type: string
+            is_warning:
+              type: boolean
 
     TrackLocation:
       type: object
@@ -1464,7 +1494,7 @@ components:
         end:
           type: number
           format: float
-          example: 100.
+          example: 100
 
     DirectionalTrackRange:
       type: object
@@ -1766,3 +1796,24 @@ components:
           type: array
           items:
             type: string
+    Geometry:
+      type: object
+      description: Simple definition of a GeoJSon geometry
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          description: the geometry type
+          enum:
+            - Point
+            - LineString
+            - Polygon
+            - MultiPoint
+            - MultiLineString
+            - MultiPolygon
+        coordinates:
+          type: array
+          items:
+            type: number

@@ -70,11 +70,6 @@ function Map() {
     });
   };
 
-  // @TODO: implement behaviour or remove
-  const onFeatureClick = () => {
-    /* empty */
-  };
-
   const onFeatureHover = (e: MapLayerMouseEvent) => {
     if (e.features && e.features[0] !== undefined && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);
@@ -121,7 +116,6 @@ function Map() {
         onMove={(e) => updateViewportChange(e.viewState)}
         onMoveEnd={(e) => updateViewportChange(e.viewState, true)}
         attributionControl={false} // Defined below
-        onClick={onFeatureClick}
         onResize={(e) => {
           updateViewportChange({
             width: e.target.getContainer().offsetWidth,
