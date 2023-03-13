@@ -131,16 +131,18 @@ public final class TrainPhysicsIntegrator {
                 maxTractionForceFromEnergySources
         );
 
-        var EnergyVariationOnTimeStep = timeStep*maxTractionForce*speed; // Re-evaluate consumed energy
+        var EnergyVariationOnTimeStep = timeStep*(maxTractionForce*speed); // Re-evaluate real consumed energy value
 
         // Now we have to apply rules on what to take the energy of
+        // We now know how much power we consume :
+        //
         //              "Coupling"
         // ┌─────┐         ┌───┐
         // │     │         │   │
         // │ E.S ├────────►│   │
         // │  0  │         │   │
         // └─────┘         │   │
-        //    ·            │   │────────►TractionForce*speed
+        //    ·            │   │────────►TractionForce*speed/Efficiency = "UpstreamOfTheMotor"Power
         // ┌─────┐         │   │
         // │     │         │   │
         // │ E.S ├────────►│   │
@@ -148,6 +150,31 @@ public final class TrainPhysicsIntegrator {
         // └─────┘         └───┘
         //
         // Still have work on this  YYYYYYYYYYYYY
+        // /!\ power allocation STEP
+        // To allocate power we need to know is there a (Catenary ? Powerpack H2|Diesel ? Battery ?)
+        // How much power battery is asking for to recharge
+        // How much power the battery is asked
+        // Cat power = min(Ptrac + Precharge, PcatMax)
+        //
+        //               ─┬─── Cat+Bat max pow
+        //                │
+        //     ▲         ─┼─── Cat max power
+        //     ▼          │
+        // Train Pow ─►   │
+        //                │
+        //             ───┴───────── 0 power consumed
+
+        //
+        // /!\ Energy calculation STEP
+        // from allocation step we know each E.S power at this timeStep
+        // We can then compute the energy variation and account for that variation either in SoC variation
+        // or fuel in fuel quantity variation
+        //
+        //for(var rsEnergySource : energySourceTreeMap.entrySet() ){
+        //    rsEnergySource.accountForStepEnergy(Energy);
+        //}
+        // The Energy Source with an energyStorage should update their SoC from this
+        // accountForStepEnergy(Double EnergyVariationOnTimeStep) method
 
         // CHANTIER PRISE EN COMPTE ENERGY SOURCE
 
