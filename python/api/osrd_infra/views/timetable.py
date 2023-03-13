@@ -8,22 +8,12 @@ from osrd_infra.views.pagination import CustomPageNumberPagination
 
 
 class TimetableView(
-    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
     GenericViewSet,
 ):
     serializer_class = TimetableSerializer
     pagination_class = CustomPageNumberPagination
-
-    def get_queryset(self):
-        queryset = Timetable.objects.order_by("-pk")
-        infra = self.request.query_params.get("infra")
-        if infra is not None:
-            queryset = queryset.filter(infra__pk=infra)
-        return queryset
+    queryset = Timetable.objects.order_by("-pk")
 
     def retrieve(self, request, pk):
         timetable = self.get_object()
