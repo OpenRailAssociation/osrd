@@ -85,6 +85,7 @@ public final class TrainPhysicsIntegrator {
 
 
         double availableElectricalPower = 0.0;
+
         for(var rsEnergySource : energySourceTreeMap.entrySet() ){
             availableElectricalPower += rsEnergySource.getValue().getPower(speed);
         }
