@@ -57,7 +57,7 @@ mod tests {
     async fn get_light_rolling_stock() {
         let app = create_test_service().await;
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(2).build(manager).unwrap());
+        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
         let mut rolling_stock_form: RollingStockForm =
             serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))

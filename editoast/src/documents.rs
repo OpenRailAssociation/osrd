@@ -40,7 +40,7 @@ pub struct Document {
 }
 
 impl Document {
-    /// Return the primary key of the document
+    /// Return the primary key of the document.
     /// Can be useful for foreign key relations with a document
     pub fn get_key(&self) -> i64 {
         self.id

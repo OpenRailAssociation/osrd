@@ -68,6 +68,7 @@ pub struct RollingStockWithLiveries {
 }
 
 impl RollingStock {
+    /// Retrieve a rolling stock with its curves and liveries
     pub async fn retrieve(
         db_pool: Data<DbPool>,
         rolling_stock_id: i64,
@@ -99,6 +100,7 @@ impl RollingStock {
         .unwrap()
     }
 
+    /// Create a rolling stock
     pub async fn create(
         db_pool: Data<DbPool>,
         rolling_stock_data: RollingStockForm,
@@ -113,6 +115,7 @@ impl RollingStock {
         .unwrap()
     }
 
+    /// Delete a rolling stock
     pub async fn delete(db_pool: Data<DbPool>, rolling_stock_id: i64) -> Result<()> {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_rollingstock::dsl::*;
@@ -160,6 +163,7 @@ pub struct LightRollingStockWithLiveries {
 }
 
 impl LightRollingStock {
+    /// List the rolling stocks without their effort curves
     pub async fn list(
         db_pool: Data<DbPool>,
         page: i64,
@@ -181,6 +185,7 @@ impl LightRollingStock {
         .await
     }
 
+    /// Retrieve a rolling stock without its effort curves
     pub async fn retrieve(
         db_pool: Data<DbPool>,
         rolling_stock_id: i64,

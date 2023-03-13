@@ -131,7 +131,7 @@ class RollingStockCompoundImage(RollingStockImage):
 class RollingStockLivery(models.Model):
     name = models.CharField(max_length=255, help_text=_("Name of the livery"), default="default")
     rolling_stock = models.ForeignKey(RollingStock, related_name="liveries", on_delete=models.CASCADE)
-    compound_image = models.OneToOneField(RollingStockCompoundImage, null=True, on_delete=models.CASCADE)
+    compound_image = models.OneToOneField(RollingStockCompoundImage, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name_plural = "rolling stocks liveries"
