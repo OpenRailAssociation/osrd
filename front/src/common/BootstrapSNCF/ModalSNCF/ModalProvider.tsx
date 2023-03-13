@@ -84,7 +84,9 @@ export const ModalSNCF: FC = () => {
             className={cx('modal-dialog modal-dialog-centered', className, size && `modal-${size}`)}
             role="document"
           >
-            <div className="modal-content">{content}</div>
+            <div id="modal-content" className="modal-content">
+              {content}
+            </div>
           </div>
         </div>
       )}

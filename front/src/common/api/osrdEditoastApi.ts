@@ -327,7 +327,7 @@ export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of e
   count?: number;
   next?: number | null;
   previous?: number | null;
-  results?: InfraError[];
+  result?: InfraError[];
 };
 export type GetInfraByIdErrorsApiArg = {
   /** infra id */
@@ -658,10 +658,35 @@ export type RailjsonFile = {
   catenaries?: any;
   detectors?: any;
 };
+export type Geometry = {
+  type: 'Point' | 'LineString' | 'Polygon' | 'MultiPoint' | 'MultiLineString' | 'MultiPolygon';
+  coordinates: number[];
+};
 export type InfraError = {
-  geographic?: object | null;
+  geographic?: Geometry | null;
   schematic?: object | null;
-  information?: object;
+  information: {
+    obj_id: string;
+    obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
+    error_type:
+      | 'invalid_reference'
+      | 'out_of_range'
+      | 'empty_path'
+      | 'path_does_not_match_endpoints'
+      | 'unknown_port_name'
+      | 'invalid_switch_ports'
+      | 'empty_object'
+      | 'object_out_of_path'
+      | 'missing_route'
+      | 'unused_port'
+      | 'duplicated_group'
+      | 'no_buffer_stop'
+      | 'path_is_not_continuous'
+      | 'overlapping_switches'
+      | 'overlapping_track_links';
+    field?: string;
+    is_warning: boolean;
+  };
 };
 export type RouteTrackRangesNotFoundError = {
   type?: 'NotFound';

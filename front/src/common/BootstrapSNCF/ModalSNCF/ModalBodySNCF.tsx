@@ -1,7 +1,9 @@
 import React, { FC, PropsWithChildren } from 'react';
 
 const ModalBodySNCF: FC<PropsWithChildren<unknown>> = ({ children }) => (
-  <div className="modal-body">{children}</div>
+  <div id="modal-body" className="modal-body">
+    {children}
+  </div>
 );
 
 export default ModalBodySNCF;
