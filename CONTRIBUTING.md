@@ -12,44 +12,41 @@ Commit style is detailed in the [osrd.fr/docs](https://osrd.fr/en/docs/guides/co
 
 ### Pull request / code review
 
-- Every PR, good or bad, is an act of generosity.
-  Opening with a positive comment will help the author feel rewarded, and your subsequent remarks may be heard more clearly.
-  You may feel good also.
-- Add a description to PRs to explain what they do and why.
-- Each PR must be linked to at least one github issue to simplify tracking.
-- Pay attention to all the comments made by reviewers and either answer/challenge them or address them before asking for another review.
-- Assign one maintainer and one developer using github assignment when opening the PR to get reviews.
-- Help the reviewer by following advice given in [mtlynch article](https://mtlynch.io/code-review-love/).
-- Review code following advice given in [osrd.fr/docs](https://osrd.fr/en/docs/guides/contribute/code-reviews/) and [mtlynch article](https://mtlynch.io/human-code-reviews-1/).
-- Make commits of logical and atomic units.
-- If possible, make PR of logical and atomic units too (avoid mixing refactoring, new features and bug fix at the same time).
 - Keep your branch up-to-date :
 ```
 git checkout <your_branch>
 git fetch
 git rebase origin/dev
 ```
+- Make commits of logical and atomic units.
+- If possible, make PR of logical and atomic units too (avoid mixing refactoring, new features and bug fix at the same time).
+- Add a description to PRs to explain what they do and why.
+- Each PR must be linked to at least one issue to simplify tracking.
+- Assign one maintainer and one developer when opening the PR to get reviews, if you don't know who to assign then consider automatic assignment is enough.
+- Pay attention to all the comments made by reviewers and either answer/challenge them or address them before asking for another review.
+- Help the reviewer by following advice given in [mtlynch article](https://mtlynch.io/code-review-love/).
+- Review code following advice given in [osrd.fr/docs](https://osrd.fr/en/docs/guides/contribute/code-reviews/) and [mtlynch article](https://mtlynch.io/human-code-reviews-1/).
 
 ### Bugs
-
-The way support is delivered greatly impacts how users perceive the product and the team.
-Handling the incoming support requests efficiently is thus a top priority.
 
 - Bug must have a correct description and the bug's issue template must be filled carefully.
 - Bug must be tagged with:
   - `kind:bug`
   - one or several `area:<affected_area>` if possible, if the affected area is not known leave it blank it will be added later by another team member`.
-  - one `severity:<bug_severity>` if possible, if severity is not known leave it blank it will be added later by another team member
-- Contributors can change issues' tags (severity, area, kind, ...) if necessary. 
-  Keep in mind that explaining why you are editing an issue is the best way to avoid misunderstanding.
+  - one `severity:<bug_severity>` if possible, if severity is not known leave it blank it will be added later by another team member.
+      - `severity:minor`: User can still use the feature.
+      - `severity:major`: User sometimes can't use the feature.
+      - `severity:critical`: User can't use the feature.
+- Contributors can change issues' tags (severity, area, kind, ...). 
+  You may leave a comment to explain changes.
 - If you are working on a bug or plan to work on a bug, assign yourself to the bug.
-  If a bug is assigned, consider that they are already working on the resolution.
 - PRs solving bugs should add a regression tests to ensure that bug will not be back in the future.
 
 ### General code recommendations
 
 - Take the time to pick good names.
   Avoid non well-known abbreviations.
+- Test as much code as possible to avoid future regression and show that added code is bullet proof.
 
 ### Python
 
@@ -60,7 +57,7 @@ Handling the incoming support requests efficiently is thus a top priority.
 - Code is formatted with [Black](https://github.com/psf/black).
 - Imports are sorted with [Isort](https://github.com/PyCQA/isort).
 
-### Test
+#### Test
 
 - Python tests are written using [pytest](https://docs.pytest.org/).
 
@@ -72,9 +69,8 @@ Handling the incoming support requests efficiently is thus a top priority.
 - Code is linted with [clippy](https://github.com/rust-lang/rust-clippy).
 - Code is formatted with [fmt](https://github.com/rust-lang/rustfmt).
 
-### Test
+#### Test
 
-- Test as much code as possible to avoid future regression and show that added code is bullet proof.
 - Rust code is tested files per files following these [recommendations](https://doc.rust-lang.org/book/ch11-01-writing-tests.html).
 
 ### Java
@@ -83,10 +79,6 @@ Handling the incoming support requests efficiently is thus a top priority.
 - All public methods must be documented.
   Avoid paraphrasing doc.
 - Code is formatted with [checkstyle](https://checkstyle.sourceforge.io/).
-
-#### Tests
-
-- TODO
 
 ### Javascript / Typescript / Front
 
