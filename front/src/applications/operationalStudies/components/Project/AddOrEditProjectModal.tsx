@@ -10,7 +10,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import DOCUMENT_URI from 'common/consts';
-import { deleteRequest, post } from 'common/requests';
+import { deleteRequest, getAuthConfig, post } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
@@ -74,7 +74,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
 
   const getDocKey = async (image: Blob) => {
     const { document_key: docKey } = await post(`${DOCUMENT_URI}`, image, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': 'multipart/form-data', ...getAuthConfig().headers },
     });
     return docKey;
   };
