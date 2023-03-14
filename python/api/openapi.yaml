@@ -873,7 +873,9 @@ paths:
           description: No content
 
   /projects/{project_id}/image/:
+    
     get:
+      deprecated: true
       tags:
         - projects
       summary: Retrieve a project image
@@ -895,6 +897,7 @@ paths:
 
   /projects/{project_id}/studies/:
     post:
+      deprecated: true
       tags:
         - studies
       summary: Create a new operational study
@@ -917,6 +920,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/StudyResult"
     get:
+      deprecated: true
       tags:
         - studies
       summary: Paginated list of operational studies
@@ -977,6 +981,7 @@ paths:
 
   /projects/{project_id}/studies/{study_id}/:
     get:
+      deprecated: true
       tags:
         - studies
       summary: Retrieve an operational study
@@ -1001,6 +1006,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/StudyResult"
     patch:
+      deprecated: true
       tags:
         - studies
       summary: update an operational study
@@ -1031,6 +1037,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/StudyResult"
     delete:
+      deprecated: true
       tags:
         - studies
       summary: delete an operational study
