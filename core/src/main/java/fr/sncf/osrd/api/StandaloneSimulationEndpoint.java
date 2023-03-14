@@ -96,7 +96,7 @@ public class StandaloneSimulationEndpoint implements Take {
             var trainSchedules = new ArrayList<StandaloneTrainSchedule>();
             for (var rjsTrainSchedule : request.trainSchedules)
                 trainSchedules.add(RJSStandaloneTrainScheduleParser.parse(
-                        infra, request.timeStep, rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
+                        infra, rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
 
             // Compute envelopes and extract metadata
             DriverBehaviour driverBehaviour = new DriverBehaviour();

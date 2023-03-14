@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope_sim.allowances;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.BrakingPhaseCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingOpportunity;
@@ -13,13 +14,12 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
 
     /** Constructor */
     public MarecoAllowance(
-            EnvelopeSimContext context,
             double beginPos,
             double endPos,
             double capacitySpeedLimit,
             List<AllowanceRange> ranges
     ) {
-        super(context, beginPos, endPos, capacitySpeedLimit, ranges);
+        super(beginPos, endPos, capacitySpeedLimit, ranges);
     }
 
     public static final class MarecoSpeedLimit implements EnvelopeAttr {
@@ -33,10 +33,10 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
     }
 
     /** Given a ceiling speed v1 compute vf, the speed at which the train should end coasting and start braking */
-    private double computeVf(double v1) {
+    private double computeVf(double v1, PhysicsRollingStock rollingStock) {
         // formulas given by MARECO
-        var wle = v1 * v1 * context.rollingStock.getRollingResistanceDeriv(v1);
-        return wle * v1 / (wle + context.rollingStock.getRollingResistance(v1) * v1);
+        var wle = v1 * v1 * rollingStock.getRollingResistanceDeriv(v1);
+        return wle * v1 / (wle + rollingStock.getRollingResistance(v1) * v1);
     }
 
     /** Compute the initial low bound for the binary search */
@@ -49,13 +49,13 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
      *  The high bound ensures that the speed vf will be higher than the max speed of the envelope */
     @Override
     @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
-    protected double computeInitialHighBound(Envelope envelopeSection) {
+    protected double computeInitialHighBound(Envelope envelopeSection, PhysicsRollingStock rollingStock) {
         var sectionMaxSpeed = envelopeSection.getMaxSpeed();
         var maxSpeed = sectionMaxSpeed;
-        var vf = computeVf(maxSpeed);
+        var vf = computeVf(maxSpeed, rollingStock);
         while (vf < sectionMaxSpeed) {
             maxSpeed = maxSpeed * 2;
-            vf = computeVf(maxSpeed);
+            vf = computeVf(maxSpeed, rollingStock);
         }
         return maxSpeed;
     }
@@ -65,8 +65,8 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
      *  This algorithm consists of a speed cap at v1 and several coasting opportunities
      *  before braking or before accelerating slopes for example. */
     @Override
-    protected Envelope computeCore(Envelope coreBase, double v1) {
-        double vf = computeVf(v1);
+    protected Envelope computeCore(Envelope coreBase, EnvelopeSimContext context, double v1) {
+        double vf = computeVf(v1, context.rollingStock);
 
         // 1) cap the core base envelope at v1
         var cappedEnvelope = EnvelopeSpeedCap.from(coreBase, List.of(new MarecoSpeedLimit()), v1);

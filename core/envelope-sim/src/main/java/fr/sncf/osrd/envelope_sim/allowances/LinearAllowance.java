@@ -4,6 +4,7 @@ import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import java.util.*;
 
@@ -11,13 +12,12 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
 
     /** Constructor */
     public LinearAllowance(
-            EnvelopeSimContext context,
             double beginPos,
             double endPos,
             double capacitySpeedLimit,
             List<AllowanceRange> ranges
     ) {
-        super(context, beginPos, endPos, capacitySpeedLimit, ranges);
+        super(beginPos, endPos, capacitySpeedLimit, ranges);
     }
 
     /** Compute the initial low bound for the binary search */
@@ -28,14 +28,14 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
 
     /** Compute the initial high bound for the binary search */
     @Override
-    protected double computeInitialHighBound(Envelope envelopeSection) {
+    protected double computeInitialHighBound(Envelope envelopeSection, PhysicsRollingStock rollingStock) {
         return envelopeSection.getMaxSpeed();
     }
 
     /** Compute the core of linear allowance algorithm.
      *  This algorithm consists of a ratio that scales speeds */
     @Override
-    protected Envelope computeCore(Envelope coreBase, double maxSpeed) {
+    protected Envelope computeCore(Envelope coreBase, EnvelopeSimContext context, double maxSpeed) {
         var ratio = maxSpeed / coreBase.getMaxSpeed();
         return scaleEnvelope(coreBase, ratio);
     }

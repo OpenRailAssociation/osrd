@@ -100,13 +100,7 @@ class EnvelopePartTest {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, 4, testEffortCurveMap);
         var allowanceValue = new AllowanceValue.Percentage(10);
 
-        var marecoAllowance = AllowanceTests.makeStandardMarecoAllowance(
-                testContext,
-                0,
-                length,
-                0,
-                allowanceValue
-        );
+        var marecoAllowance = AllowanceTests.makeStandardMarecoAllowance(0, length, 0, allowanceValue);
         var envelopeAllowance = AllowanceTests.makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, false);
 
         for (var i = 0; i < envelopeAllowance.size(); i++) {
