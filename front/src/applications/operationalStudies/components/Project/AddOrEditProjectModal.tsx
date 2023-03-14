@@ -288,7 +288,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
               }
               value={currentProject.budget}
               onChange={(e: any) =>
-                setCurrentProject({ ...currentProject, budget: e.target.value })
+                setCurrentProject({ ...currentProject, budget: parseInt(e.target.value, 10) })
               }
             />
           </div>
