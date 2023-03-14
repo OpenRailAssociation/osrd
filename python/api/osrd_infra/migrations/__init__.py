@@ -28,7 +28,7 @@ def run_sql_complex_add_foreign_key(
         sql=[
             (
                 f"""ALTER TABLE osrd_infra_{table_name}
-                ADD {field_name}_id INTEGER {"NULL" if nullable else ""},
+                ADD {field_name}_id BIGINT {"NULL" if nullable else ""},
                 ADD CONSTRAINT osrd_{link_model}_{model_name}_fkey FOREIGN KEY ({field_name}_id)
                    REFERENCES osrd_infra_{link_table}(id) ON DELETE CASCADE
             """
@@ -69,7 +69,7 @@ def run_sql_add_foreign_key_infra(model_name: str):
 def run_sql_add_one_to_one_key(model_name: str, field_name: str, link_model: str, related_name: str):
     return migrations.RunSQL(
         f"""ALTER TABLE osrd_infra_{model_name}
-                ADD {field_name}_id INTEGER,
+                ADD {field_name}_id BIGINT,
                 ADD CONSTRAINT osrd_{link_model}_{model_name}_fkey FOREIGN KEY ({field_name}_id)
                         REFERENCES osrd_infra_{link_model}(id) ON DELETE CASCADE,
                 ADD CONSTRAINT osrd_infra_{field_name}_id_uniq UNIQUE ({field_name}_id)
