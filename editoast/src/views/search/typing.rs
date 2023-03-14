@@ -1,9 +1,13 @@
 //! Defines the low-level structures used by typecheking operations
-use std::{fmt::Display, ops::Shr};
+use std::{
+    collections::{hash_map::DefaultHasher, VecDeque},
+    fmt::Display,
+    hash::{self, Hash, Hasher},
+    ops::Shr,
+};
 
 use crate::error::Result;
 use editoast_derive::EditoastError;
-use serde::Deserialize;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Error, EditoastError)]
@@ -32,8 +36,9 @@ enum TypeCheckError {
 /// Defines all the atomic types that are expressible by the search query language
 ///
 /// See [TypeSpec].
-#[derive(Debug, PartialEq, Clone, Copy, Deserialize, strum_macros::Display)]
-#[serde(rename_all = "lowercase")]
+#[derive(
+    Debug, PartialEq, Eq, Clone, Copy, strum_macros::Display, Hash, strum_macros::EnumIter,
+)]
 pub enum AstType {
     Null,
     Boolean,
@@ -43,10 +48,12 @@ pub enum AstType {
 }
 
 /// Allows combining [AstType]s in order to express more complex types
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub enum TypeSpec {
+    Any,
     Type(AstType),
     Union(Box<TypeSpec>, Box<TypeSpec>),
+    Sequence(Box<TypeSpec>),
     Variadic(Box<TypeSpec>),
     Function {
         args: Vec<TypeSpec>,
@@ -115,6 +122,8 @@ impl Display for TypeSpec {
                         .join(" -> ")
                 )
             }
+            TypeSpec::Sequence(item) => write!(f, "[{item}]"),
+            TypeSpec::Any => write!(f, "Any"),
         }
     }
 }
@@ -140,19 +149,37 @@ impl TypeSpec {
         TypeSpec::Union(Box::new(left.into()), Box::new(right.into()))
     }
 
+    pub fn union_from_iter<T: Into<TypeSpec>, I: IntoIterator<Item = T>>(
+        alts: I,
+    ) -> Option<TypeSpec> {
+        alts.into_iter()
+            .map(|alt| Into::<TypeSpec>::into(alt))
+            .reduce(TypeSpec::or)
+    }
+
+    pub fn seq<T: Into<TypeSpec>>(item: T) -> TypeSpec {
+        TypeSpec::Sequence(Box::new(item.into()))
+    }
+
     /// Returns whether `self` ⊇ `type_`
     pub fn is_supertype(&self, type_: &AstType) -> bool {
         match self {
+            TypeSpec::Any => true,
             TypeSpec::Type(t) => t.is_supertype(type_),
             TypeSpec::Union(left, right) => left.is_supertype(type_) || right.is_supertype(type_),
             TypeSpec::Variadic(t) => t.is_supertype(type_),
             TypeSpec::Function { args, .. } => args.is_empty(),
+            TypeSpec::Sequence(_) => false,
         }
     }
 
     /// Returns whether `self` ⊇ `spec`
     pub fn is_supertype_spec(&self, spec: &TypeSpec) -> bool {
+        if self == &TypeSpec::Any {
+            return true;
+        };
         match spec {
+            TypeSpec::Any => false,
             TypeSpec::Type(t) => self.is_supertype(t),
             TypeSpec::Union(left, right) => {
                 self.is_supertype_spec(left) && self.is_supertype_spec(right)
@@ -162,6 +189,13 @@ impl TypeSpec {
             }
             TypeSpec::Function { .. } => {
                 panic!("cannot use TypeSpec::typecheck_spec with RHS function signature: {spec:?}")
+            }
+            TypeSpec::Sequence(other_item_spec) => {
+                if let TypeSpec::Sequence(item_spec) = self {
+                    item_spec.is_supertype_spec(other_item_spec)
+                } else {
+                    false
+                }
             }
         }
     }
@@ -217,12 +251,88 @@ impl TypeSpec {
             None => Ok(()),
         }
     }
+
+    /// Returns an iterator over tha flattened alternatives of a union
+    pub fn iter_union_alternatives(&self) -> Alternatives {
+        if matches!(self, Self::Union(_, _)) {
+            Alternatives {
+                stack: VecDeque::from([self]),
+            }
+        } else {
+            Alternatives {
+                stack: Default::default(),
+            }
+        }
+    }
 }
+
+pub struct Alternatives<'a> {
+    stack: VecDeque<&'a TypeSpec>,
+}
+
+impl<'a> Iterator for Alternatives<'a> {
+    type Item = &'a TypeSpec;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let spec = self.stack.pop_front()?;
+        if let TypeSpec::Union(left, right) = spec {
+            self.stack.push_back(left);
+            self.stack.push_back(right);
+            self.next()
+        } else {
+            Some(spec)
+        }
+    }
+}
+
+impl Hash for TypeSpec {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
+        if matches!(self, Self::Union(_, _)) {
+            for alternative in self.iter_union_alternatives() {
+                alternative.hash(state);
+            }
+        }
+    }
+}
+
+fn hash_eq<T: hash::Hash>(a: &T, b: &T) -> bool {
+    let mut ha = DefaultHasher::new();
+    let mut hb = DefaultHasher::new();
+    a.hash(&mut ha);
+    b.hash(&mut hb);
+    ha.finish() == hb.finish()
+}
+
+impl PartialEq for TypeSpec {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Any, Self::Any) => true,
+            (Self::Type(lts), Self::Type(rts)) => lts == rts,
+            (Self::Union(_, _), Self::Union(_, _)) => hash_eq(self, other),
+            (Self::Sequence(lts), Self::Sequence(rts)) => lts == rts,
+            (Self::Variadic(lts), Self::Variadic(rts)) => lts == rts,
+            (
+                Self::Function {
+                    args: l_args,
+                    result: l_result,
+                },
+                Self::Function {
+                    args: r_args,
+                    result: r_result,
+                },
+            ) => l_args == r_args && l_result == r_result,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for TypeSpec {}
 
 #[cfg(test)]
 mod tests {
 
-    use crate::views::search::typing::TypeSpec;
+    use crate::views::search::typing::{hash_eq, TypeSpec};
 
     use super::AstType;
 
@@ -294,6 +404,23 @@ mod tests {
         )
         .is_supertype(&AstType::Null));
         assert!(TypeSpec::or(AstType::String, AstType::String).is_supertype(&AstType::String));
+    }
+
+    #[test]
+    fn test_typecheck_any() {
+        assert!(TypeSpec::Any.is_supertype_spec(&AstType::Null.into()));
+        assert!(TypeSpec::Any.is_supertype_spec(&AstType::Boolean.into()));
+        assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::or(AstType::Integer, AstType::Float)));
+        assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::seq(AstType::String)));
+        assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::or(
+            AstType::Integer,
+            TypeSpec::seq(AstType::Float)
+        )));
+        assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::seq(TypeSpec::or(
+            AstType::Integer,
+            TypeSpec::seq(AstType::Float)
+        ))));
+        assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::Any));
     }
 
     #[test]
@@ -411,6 +538,93 @@ mod tests {
                     AstType::String.into()
                 ])
                 .is_ok()
+        );
+    }
+
+    #[test]
+    fn test_typecheck_sequence() {
+        assert!(!TypeSpec::seq(AstType::String).is_supertype(&AstType::String));
+        assert!(TypeSpec::seq(AstType::String).is_supertype_spec(&TypeSpec::seq(AstType::String)));
+        assert!(TypeSpec::seq(TypeSpec::or(AstType::String, AstType::Null))
+            .is_supertype_spec(&TypeSpec::seq(AstType::String)));
+        assert!(!TypeSpec::seq(AstType::String)
+            .is_supertype_spec(&TypeSpec::seq(TypeSpec::or(AstType::String, AstType::Null))));
+        assert!(!TypeSpec::seq(TypeSpec::seq(AstType::String))
+            .is_supertype_spec(&TypeSpec::seq(AstType::String)));
+        assert!(!TypeSpec::seq(AstType::String)
+            .is_supertype_spec(&TypeSpec::seq(TypeSpec::seq(AstType::String))));
+        assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::seq(AstType::String)));
+        assert!(TypeSpec::Any.is_supertype_spec(&TypeSpec::seq(TypeSpec::Any)));
+        assert!(TypeSpec::seq(TypeSpec::Any).is_supertype_spec(&TypeSpec::seq(TypeSpec::Any)));
+        assert!(TypeSpec::seq(TypeSpec::Any).is_supertype_spec(&TypeSpec::seq(AstType::String)));
+        assert!(!TypeSpec::seq(TypeSpec::Any).is_supertype_spec(&TypeSpec::Any));
+        assert!(TypeSpec::seq(TypeSpec::or(AstType::String, TypeSpec::Any))
+            .is_supertype_spec(&TypeSpec::seq(AstType::String)));
+        assert!(TypeSpec::seq(TypeSpec::or(AstType::String, TypeSpec::Any))
+            .is_supertype_spec(&TypeSpec::seq(AstType::Float)));
+    }
+
+    #[test]
+    fn test_hash_typespec() {
+        assert!(hash_eq(
+            &TypeSpec::or(AstType::String, AstType::Integer),
+            &TypeSpec::or(AstType::Integer, AstType::String)
+        ));
+        assert!(hash_eq(
+            &TypeSpec::or(AstType::String, AstType::String),
+            &TypeSpec::or(AstType::String, AstType::String)
+        ));
+        assert!(hash_eq(
+            &TypeSpec::or(
+                AstType::String,
+                TypeSpec::or(AstType::Integer, AstType::Float)
+            ),
+            &TypeSpec::or(
+                TypeSpec::or(AstType::Integer, AstType::Float),
+                AstType::String
+            )
+        ));
+        assert!(hash_eq(
+            &TypeSpec::or(
+                AstType::String,
+                TypeSpec::or(AstType::Integer, AstType::Float)
+            ),
+            &TypeSpec::or(
+                TypeSpec::or(AstType::String, AstType::Float),
+                AstType::Integer
+            )
+        ));
+    }
+
+    #[test]
+    fn test_union_alternative_irrelevant_order() {
+        assert_eq!(
+            TypeSpec::or(AstType::String, AstType::Integer),
+            TypeSpec::or(AstType::Integer, AstType::String)
+        );
+        assert_eq!(
+            TypeSpec::or(AstType::String, AstType::String),
+            TypeSpec::or(AstType::String, AstType::String)
+        );
+        assert_eq!(
+            TypeSpec::or(
+                AstType::String,
+                TypeSpec::or(AstType::Integer, AstType::Float)
+            ),
+            TypeSpec::or(
+                TypeSpec::or(AstType::Integer, AstType::Float),
+                AstType::String
+            )
+        );
+        assert_eq!(
+            TypeSpec::or(
+                AstType::String,
+                TypeSpec::or(AstType::Integer, AstType::Float)
+            ),
+            TypeSpec::or(
+                TypeSpec::or(AstType::String, AstType::Float),
+                AstType::Integer
+            )
         );
     }
 }

@@ -2,7 +2,10 @@
 
 use std::{collections::VecDeque, fmt::Display};
 
-use super::{context::TypedAst, typing::TypeSpec};
+use super::{
+    context::TypedAst,
+    typing::{AstType, TypeSpec},
+};
 
 /// A small wrapper around SQL expression syntax that is more convenient
 /// and reliable to use (as opposed to multiple string interpolations)
@@ -82,11 +85,7 @@ impl SqlQuery {
     /// Builds the SQL code represented by self
     pub fn to_sql(&self, bind_pos: &mut u64) -> String {
         match self {
-            SqlQuery::Value(TypedAst::String(_)) => {
-                *bind_pos += 1;
-                format!("${0}", *bind_pos - 1)
-            }
-            SqlQuery::Value(value) => value_to_sql(value),
+            SqlQuery::Value(value) => value_to_sql(value, bind_pos),
             SqlQuery::Call { function, args } => {
                 format!(
                     "{function}({0})",
@@ -114,13 +113,27 @@ impl Display for SqlQuery {
     }
 }
 
-fn value_to_sql(value: &TypedAst) -> String {
+fn sql_type(spec: &TypeSpec) -> Option<String> {
+    match spec {
+        TypeSpec::Type(AstType::Boolean) => Some("BOOLEAN".to_owned()),
+        TypeSpec::Type(AstType::Integer) => Some("INTEGER".to_owned()),
+        TypeSpec::Type(AstType::Float) => Some("NUMERIC".to_owned()),
+        TypeSpec::Type(AstType::String) => Some("TEXT".to_owned()),
+        _ => None,
+    }
+}
+
+fn value_to_sql(value: &TypedAst, bind_pos: &mut u64) -> String {
     match value {
         TypedAst::Null => "NULL".to_owned(),
         TypedAst::Boolean(true) => "TRUE".to_owned(),
         TypedAst::Boolean(false) => "FALSE".to_owned(),
         TypedAst::Integer(i) => i.to_string(),
         TypedAst::Float(n) => format!("{n:?}"), // HACK: keeps .0 if n is an integer, otherwise displays all decimals
+        TypedAst::String(_) => {
+            *bind_pos += 1;
+            format!("${0}", *bind_pos - 1)
+        }
         TypedAst::Column {
             name: column,
             table: None,
@@ -132,7 +145,15 @@ fn value_to_sql(value: &TypedAst) -> String {
             ..
         } => format!("\"{table}\".\"{column}\""),
         TypedAst::Sql(expr, _) => expr.to_string(),
-        TypedAst::String(_) => unreachable!(),
+        TypedAst::Sequence(items, item_type) => {
+            let cast = sql_type(item_type).expect("could not convert into sql type");
+            let items = items
+                .iter()
+                .map(|val| format!("({0})", value_to_sql(val, bind_pos)))
+                .collect::<Vec<_>>()
+                .join(",");
+            format!("ARRAY[{items}]::{cast}[]")
+        }
     }
 }
 
@@ -142,6 +163,7 @@ impl SqlQuery {
     pub fn unsafe_strings(&self) -> UnsafeStrings {
         UnsafeStrings {
             stack: VecDeque::from([self]),
+            ast_values: Default::default(),
         }
     }
 }
@@ -149,31 +171,45 @@ impl SqlQuery {
 /// See [SqlQuery::unsafe_strings()]
 pub struct UnsafeStrings<'a> {
     stack: VecDeque<&'a SqlQuery>,
+    ast_values: VecDeque<&'a TypedAst>,
 }
 
 impl<'a> Iterator for UnsafeStrings<'a> {
     type Item = &'a String;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let sql = self.stack.pop_front()?;
-        match sql {
-            SqlQuery::Value(TypedAst::String(string)) => Some(string),
-            SqlQuery::Call {
-                args: sub_expressions,
-                ..
+        if let Some(value) = self.ast_values.pop_front() {
+            match value {
+                TypedAst::String(string) => Some(string),
+                TypedAst::Sequence(items, _) => {
+                    self.ast_values.extend(items.iter());
+                    self.next()
+                }
+                _ => self.next(),
             }
-            | SqlQuery::InfixOp {
-                operands: sub_expressions,
-                ..
-            } => {
-                self.stack.extend(sub_expressions.iter());
-                self.next()
+        } else {
+            let sql = self.stack.pop_front()?;
+            match sql {
+                SqlQuery::Value(value) => {
+                    self.ast_values.push_back(value);
+                    self.next()
+                }
+                SqlQuery::Call {
+                    args: sub_expressions,
+                    ..
+                }
+                | SqlQuery::InfixOp {
+                    operands: sub_expressions,
+                    ..
+                } => {
+                    self.stack.extend(sub_expressions.iter());
+                    self.next()
+                }
+                SqlQuery::PrefixOp { operand, .. } => {
+                    self.stack.push_back(operand);
+                    self.next()
+                }
             }
-            SqlQuery::PrefixOp { operand, .. } => {
-                self.stack.push_back(operand);
-                self.next()
-            }
-            _ => self.next(),
         }
     }
 }
@@ -310,6 +346,30 @@ mod test {
         assert_eq!(
             &SqlQuery::join("AND", vec![TypedAst::Boolean(true), TypedAst::Null],).to_string(),
             "(TRUE) AND (NULL)"
+        );
+    }
+
+    #[test]
+    fn render_arrays() {
+        assert_eq!(
+            &SqlQuery::Value(TypedAst::Sequence(
+                vec![TypedAst::Integer(1)],
+                AstType::Integer.into()
+            ))
+            .to_string(),
+            "ARRAY[(1)]::INTEGER[]"
+        );
+        assert_eq!(
+            &SqlQuery::Value(TypedAst::Sequence(
+                vec![TypedAst::Integer(1), TypedAst::Integer(2)],
+                AstType::Integer.into()
+            ))
+            .to_string(),
+            "ARRAY[(1),(2)]::INTEGER[]"
+        );
+        assert_eq!(
+            &SqlQuery::Value(TypedAst::Sequence(vec![], AstType::Integer.into())).to_string(),
+            "ARRAY[]::INTEGER[]"
         );
     }
 }
