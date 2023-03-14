@@ -112,7 +112,6 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
         <ReactMapGL
           {...viewport}
           ref={mapRef}
-          key={activeTool.id}
           mapLib={maplibregl}
           style={{ width: '100%', height: '100%' }}
           mapStyle={osmBlankStyle}
