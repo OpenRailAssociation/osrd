@@ -1213,6 +1213,110 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StudyResult"
+    get:
+      tags:
+        - studies
+      summary: Paginated list of operational studies
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          required: true
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter operational studies by name
+        - in: query
+          name: description
+          schema:
+            type: string
+          description: Filter operational studies by description
+        - in: query
+          name: tags
+          schema:
+            type: string
+          description: Filter operational studies by tags
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
+      responses:
+        200:
+          description: the studies list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        schema:
+                          $ref: "#/components/schemas/StudyResult"
+
+  /projects/{project_id}/studies/{study_id}/:
+    get:
+      tags:
+        - studies
+      summary: Retrieve an operational study
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the operational study
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+          description: study id you want to retrieve
+      responses:
+        200:
+          description: The operational study info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyResult"
+    delete:
+      tags:
+        - studies
+      summary: delete an operational study
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the operational study
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+          description: study id you want to delete
+      responses:
+        204:
+          description: No content
 
   /projects/{project_id}/studies/{study_id}/:
     delete:
