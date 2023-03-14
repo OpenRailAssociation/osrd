@@ -12,6 +12,7 @@ export const UPDATE_TRANSFORM_REQUEST = 'map/UPDATE_TRANSFORM_REQUEST';
 export const UPDATE_MAPSTYLE = 'map/UPDATE_MAPSTYLE';
 export const UPDATE_MAP_TRACK_SOURCES = 'map/UPDATE_MAP_TRACK_SOURCES';
 export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
+export const UPDATE_LINE_SEARCH_CODE = 'map/UPDATE_LINE_SEARCH_CODE';
 export const UPDATE_SHOW_IGN_BD_ORTHO = 'map/UPDATE_SHOW_IGN_BD_ORTHO';
 export const UPDATE_SHOW_IGN_SCAN25 = 'map/UPDATE_SHOW_IGN_SCAN25';
 export const UPDATE_SHOW_IGN_CADASTRE = 'map/UPDATE_SHOW_IGN_CADASTRE';
@@ -71,6 +72,7 @@ export interface MapState {
     errors: boolean;
   };
   mapSearchMarker?: MapSearchMarker;
+  lineSearchCode?: number;
 }
 
 export const initialState: MapState = {
@@ -118,6 +120,7 @@ export const initialState: MapState = {
     errors: false,
   },
   mapSearchMarker: undefined,
+  lineSearchCode: undefined,
 };
 
 // Reducer
@@ -139,6 +142,9 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
         break;
       case UPDATE_MAP_SEARCH_MARKER:
         draft.mapSearchMarker = action.mapSearchMarker;
+        break;
+      case UPDATE_LINE_SEARCH_CODE:
+        draft.lineSearchCode = action.lineSearchCode;
         break;
       case UPDATE_SHOW_IGN_BD_ORTHO:
         draft.showIGNBDORTHO = action.showIGNBDORTHO;
@@ -305,6 +311,15 @@ export function updateSignalsSettings(signalsSettings: MapState['signalsSettings
     dispatch({
       type: UPDATE_SIGNALS_SETTINGS,
       signalsSettings,
+    });
+  };
+}
+
+export function updateLineSearchCode(lineSearchCode: MapState['lineSearchCode']) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_LINE_SEARCH_CODE,
+      lineSearchCode,
     });
   };
 }
