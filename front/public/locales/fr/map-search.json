@@ -14,5 +14,6 @@
   "station": "Gare",
   "trackname": "Voie",
   "type": "Type",
-  "line": "Ligne"
+  "line": "Ligne",
+  "reset": "Réinitialiser"
 }

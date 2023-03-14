@@ -5,7 +5,7 @@ import { useDebounce } from 'utils/helpers';
 import { post, get } from 'common/requests';
 import { useSelector, useDispatch } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { Viewport, updateMapSearchMarker } from 'reducers/map';
+import { Viewport, updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import nextId from 'react-id-generator';
 import { BBox, LineString } from '@turf/helpers';
 import bbox from '@turf/bbox';
@@ -94,6 +94,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
     const trackBox = await getTrackBbox(searchResultItem);
     const tempBbox = bbox(trackBox);
     zoomToFeature(tempBbox);
+    dispatch(updateLineSearchCode(searchResultItem.line_code));
   };
 
   useEffect(() => {
