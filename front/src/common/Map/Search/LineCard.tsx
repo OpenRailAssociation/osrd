@@ -1,8 +1,9 @@
 import React from 'react';
+import { ILineSearchResult } from './searchTypes';
 
 type LineCardProps = {
-  resultSearchItem: { [key: string]: string };
-  onResultClick: (result: { [key: string]: string }) => void;
+  resultSearchItem: ILineSearchResult;
+  onResultClick: (result: ILineSearchResult) => void;
 };
 
 const LineCard: React.FC<LineCardProps> = ({ resultSearchItem, onResultClick }) => (
