@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 #[derivative(Default)]
 #[diesel(belongs_to(Project))]
 #[model(table = "osrd_infra_study")]
-#[model(create)]
+#[model(create, delete)]
 #[diesel(table_name = osrd_infra_study)]
 pub struct Study {
     #[diesel(deserialize_as = i64)]
@@ -74,6 +74,7 @@ pub struct StudyWithScenarios {
 }
 
 impl Study {
+    /// This function adds the list of scenarios ID that are linked to the study
     pub async fn with_scenarios(self, db_pool: Data<DbPool>) -> Result<StudyWithScenarios> {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;

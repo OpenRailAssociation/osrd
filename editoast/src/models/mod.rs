@@ -1,7 +1,5 @@
 mod documents;
-
 mod projects;
-
 mod study;
 
 use crate::error::Result;
