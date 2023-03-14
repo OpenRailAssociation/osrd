@@ -207,7 +207,7 @@ async fn patch(
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use crate::models::Project;
     use crate::views::tests::create_test_service;
     use actix_http::Request;
