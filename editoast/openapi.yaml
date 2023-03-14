@@ -1297,6 +1297,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StudyResult"
+    patch:
+      tags:
+        - studies
+      summary: update an operational study
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the study
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+          description: study id you want to retrieve
+      requestBody:
+        description: The fields you want to update
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyPatchRequest"
+      responses:
+        200:
+          description: The operational study updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyResult"
     delete:
       tags:
         - studies

@@ -9,9 +9,11 @@ use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt};
+use diesel::update;
 use diesel::Associations;
 use diesel::ExpressionMethods;
-use diesel::{QueryDsl, RunQueryDsl};
+use diesel::QueryDsl;
+use diesel::RunQueryDsl;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -110,6 +112,24 @@ impl Study {
         .per_page(per_page)
         .load_and_count(db_pool)
         .await
+    }
+    /// Update a study.
+    /// If the study id is `None` this functions panic.
+    pub async fn update(self, db_pool: Data<DbPool>) -> Result<Option<Study>> {
+        block::<_, Result<_>>(move || {
+            use crate::tables::osrd_infra_study::dsl::*;
+            let mut conn = db_pool.get()?;
+            match update(osrd_infra_study.find(self.id.unwrap()))
+                .set(&self)
+                .get_result::<Study>(&mut conn)
+            {
+                Ok(study) => Ok(Some(study)),
+                Err(DieselError::NotFound) => Ok(None),
+                Err(e) => Err(e.into()),
+            }
+        })
+        .await
+        .unwrap()
     }
 }
 
