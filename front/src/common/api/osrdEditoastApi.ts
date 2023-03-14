@@ -1,4 +1,5 @@
 import { baseEditoastApi as api } from './emptyApi';
+
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -137,7 +138,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg['number'] },
+        params: { number: queryArg.number },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -258,6 +259,15 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/projects/${queryArg.projectId}/studies/`,
         method: 'POST',
         body: queryArg.studyCreateRequest,
+      }),
+    }),
+    deleteProjectsByProjectIdStudiesAndStudyId: build.mutation<
+      DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse,
+      DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+        method: 'DELETE',
       }),
     }),
     getRollingStockByIdLiveryAndLiveryId: build.query<
@@ -631,6 +641,13 @@ export type PostProjectsByProjectIdStudiesApiResponse =
 export type PostProjectsByProjectIdStudiesApiArg = {
   projectId: number;
   studyCreateRequest: StudyCreateRequest;
+};
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
+  /** project id refered to the operational study */
+  projectId: number;
+  /** study id you want to delete */
+  studyId: number;
 };
 export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
 export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {

@@ -1189,6 +1189,7 @@ paths:
       responses:
         204:
           description: No content
+
   /projects/{project_id}/studies/:
     post:
       tags:
@@ -1212,6 +1213,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StudyResult"
+
+  /projects/{project_id}/studies/{study_id}/:
+    delete:
+      tags:
+        - studies
+      summary: delete an operational study
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the operational study
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+          description: study id you want to delete
+      responses:
+        204:
+          description: No content
 
   /rolling_stock/{id}/livery/{livery_id}:
     get:
@@ -1240,7 +1263,6 @@ paths:
               schema:
                 type: string
                 format: binary
- 
 
 components:
   schemas:
@@ -1955,6 +1977,7 @@ components:
             ]
       required:
         - "name"
+
     StudyPatchRequest:
       properties:
         name:
@@ -2002,6 +2025,7 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
+
     StudyResult:
       properties:
         id:

@@ -1,13 +1,17 @@
 use crate::error::Result;
 use crate::models::Create;
+use crate::models::Delete;
 use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Study;
 use crate::models::StudyWithScenarios;
 use crate::DbPool;
+use actix_web::delete;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::post;
+use actix_web::web;
 use actix_web::web::{Data, Json, Path};
+use actix_web::HttpResponse;
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
@@ -17,7 +21,9 @@ use thiserror::Error;
 
 /// Returns `/projects/{project}/studies` routes
 pub fn routes() -> impl HttpServiceFactory {
-    create
+    web::scope("/studies")
+        .service(create)
+        .service(web::scope("/{study}").service(delete))
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -27,6 +33,10 @@ enum StudyError {
     #[error("Project '{project_id}', could not be found")]
     #[editoast_error(status = 404)]
     ProjectNotFound { project_id: i64 },
+    /// Couldn't found the project with the given project_id
+    #[error("Study '{study_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { study_id: i64 },
 }
 
 /// This structure is used by the post endpoint to create a study
@@ -74,7 +84,7 @@ impl StudyCreateForm {
     }
 }
 
-#[post("/studies")]
+#[post("")]
 async fn create(
     db_pool: Data<DbPool>,
     data: Json<StudyCreateForm>,
@@ -102,4 +112,73 @@ async fn create(
     };
 
     Ok(Json(study_with_scenarios))
+}
+
+/// Delete a study
+#[delete("")]
+async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
+    let (project_id, study_id) = path.into_inner();
+    // Check if project exists
+    let project = match Project::retrieve(db_pool.clone(), project_id).await? {
+        None => return Err(StudyError::ProjectNotFound { project_id }.into()),
+        Some(project) => project,
+    };
+
+    // Delete study
+    if !Study::delete(db_pool.clone(), study_id).await? {
+        return Err(StudyError::NotFound { study_id }.into());
+    }
+
+    // Update project last_modification field
+    let project = project.update_last_modified(db_pool).await?;
+    project.expect("Project should exist");
+
+    Ok(HttpResponse::NoContent().finish())
+}
+
+#[cfg(test)]
+mod test {
+    use crate::models::Project;
+    use crate::models::Study;
+    use crate::views::projects::test::{create_project_request, delete_project_request};
+    use crate::views::tests::create_test_service;
+    use actix_http::Request;
+    use actix_web::http::StatusCode;
+    use actix_web::test as actix_test;
+    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use serde_json::json;
+
+    pub async fn create_study_request() -> Request {
+        let app = create_test_service().await;
+        let response = call_service(&app, create_project_request()).await;
+        let project: Project = read_body_json(response).await;
+        let project_id = project.id.unwrap();
+        TestRequest::post()
+            .uri(format!("/projects/{project_id}/studies").as_str())
+            .set_json(json!({ "name": "study_test" }))
+            .to_request()
+    }
+
+    pub fn delete_study_request(project_id: i64, study_id: i64) -> Request {
+        TestRequest::delete()
+            .uri(format!("/projects/{project_id}/studies/{study_id}").as_str())
+            .to_request()
+    }
+
+    #[actix_test]
+    async fn study_create_delete() {
+        let app = create_test_service().await;
+        let response = call_service(&app, create_study_request().await).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let study: Study = read_body_json(response).await;
+        assert_eq!(study.name.unwrap(), "study_test");
+        let response = call_service(
+            &app,
+            delete_study_request(study.project_id.unwrap(), study.id.unwrap()),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let response = call_service(&app, delete_project_request(study.project_id.unwrap())).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
 }
