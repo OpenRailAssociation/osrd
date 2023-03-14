@@ -8,8 +8,8 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noOrigin'),
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noOrigin'),
       })
     );
   }
@@ -17,8 +17,8 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noOriginTime'),
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noOriginTime'),
       })
     );
   }
@@ -26,8 +26,8 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noDestination'),
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noDestination'),
       })
     );
   }
@@ -35,8 +35,8 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noRollingStock'),
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noRollingStock'),
       })
     );
   }
@@ -44,8 +44,8 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noName'),
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noName'),
       })
     );
   }
@@ -53,8 +53,26 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
     error = true;
     dispatch(
       setFailure({
-        name: t('osrdconf:errorMessages.trainScheduleTitle'),
-        message: t('osrdconf:errorMessages.noTimetable'),
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noTimetable'),
+      })
+    );
+  }
+  if (osrdconf.trainCount < 1) {
+    error = true;
+    dispatch(
+      setFailure({
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noTrainCount'),
+      })
+    );
+  }
+  if (osrdconf.trainDelta < 1) {
+    error = true;
+    dispatch(
+      setFailure({
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noDelta'),
       })
     );
   }
