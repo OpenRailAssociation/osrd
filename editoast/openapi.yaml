@@ -420,7 +420,7 @@ paths:
                     nullable: true
                     example: null
                     description: The index of the previous page (null if requesting the first page)
-                  result:
+                  results:
                     type: array
                     items:
                       $ref: "#/components/schemas/InfraError"
