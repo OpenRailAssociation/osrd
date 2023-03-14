@@ -19,7 +19,7 @@ type Props = {
 
 export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
   const dispatch = useDispatch();
-  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
 
   return (
@@ -35,9 +35,7 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
           <SpeedLimitByTagSelector />
         </div>
       </div>
-      <div className="manage-train-schedule-title">
-        2.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.choosePath')}
-      </div>
+      <div className="manage-train-schedule-title">2.&nbsp;{t('indications.choosePath')}</div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
           <Itinerary />
@@ -50,9 +48,7 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
           </div>
         </div>
       </div>
-      <div className="manage-train-schedule-title">
-        3.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.configValidate')}
-      </div>
+      <div className="manage-train-schedule-title">3.&nbsp;{t('indications.configValidate')}</div>
       <TrainLabels />
       <TrainSettings />
       <div className="osrd-config-item" data-testid="add-train-schedules">
