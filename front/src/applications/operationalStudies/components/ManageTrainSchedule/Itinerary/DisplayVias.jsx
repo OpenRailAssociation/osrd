@@ -5,10 +5,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { deleteVias, permuteVias, updateViaStopTime } from 'reducers/osrdconf';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
+import { getConf } from 'reducers/osrdconf/selectors';
 
 function InputStopTime(props) {
   const { index } = props;
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
   const [stopTime, setStopTime] = useState(
     osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0
@@ -38,7 +39,7 @@ function InputStopTime(props) {
 }
 
 export default function DisplayVias(props) {
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
   const [indexSelected, setIndexSelected] = useState(undefined);
   const { zoomToFeaturePoint } = props;

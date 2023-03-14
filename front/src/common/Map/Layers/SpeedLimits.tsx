@@ -7,6 +7,7 @@ import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface SpeedLimitsProps {
   geomType: string;
@@ -16,7 +17,7 @@ interface SpeedLimitsProps {
 
 export default function SpeedLimits(props: SpeedLimitsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { geomType, colors, layerOrder } = props;
 
   const tag = `speed_limit_by_tag_${layersSettings.speedlimittag}`;

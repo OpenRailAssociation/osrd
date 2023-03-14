@@ -9,6 +9,7 @@ import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { geoMainLayer } from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface TracksGeographicProps {
   colors: Theme;
@@ -17,7 +18,7 @@ interface TracksGeographicProps {
 
 function TracksGeographic(props: TracksGeographicProps) {
   const { colors, layerOrder } = props;
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { showIGNBDORTHO, showIGNSCAN25 } = useSelector((state: RootState) => state.map);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 

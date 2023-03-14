@@ -16,9 +16,11 @@ function getSection(state: RootState): OsrdConfState | OsrdStdcmConfState {
   };
 
   const section: SectionKey = sectionMap[state.osrdconf.mode];
+  console.log("section", section)
   return state.osrdconf[section];
 }
 
+export const getConf = (state: RootState) => getSection(state)
 export const getName = (state: RootState) => getSection(state).name;
 export const getMode = (state: RootState) => state.osrdconf.mode;
 export const getStdcmMode = (state: RootState) => state.osrdconf.stdcmConf.stdcmMode;
@@ -48,3 +50,6 @@ export const getSuggeredVias = (state: RootState) => getSection(state).suggeredV
 export const getTrainCompo = (state: RootState) => getSection(state).trainCompo;
 export const getGeojson = (state: RootState) => getSection(state).geojson;
 export const getFeatureInfoClick = (state: RootState) => getSection(state).featureInfoClick;
+export const getGridMarginBefore = (state: RootState) => getSection(state).gridMarginBefore;
+export const getGridMarginAfter = (state: RootState) => getSection(state).gridMarginAfter;
+export const getStandardStdcmAllowance = (state: RootState) => state.osrdconf.stdcmConf.standardStdcmAllowance;

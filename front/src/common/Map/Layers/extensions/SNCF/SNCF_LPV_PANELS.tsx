@@ -3,6 +3,7 @@ import React from 'react';
 import { LayerProps, Source } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 import { RootState } from 'reducers';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import OrderedLayer from '../../OrderedLayer';
 
 interface SNCF_LPV_PanelsProps {
@@ -12,7 +13,7 @@ interface SNCF_LPV_PanelsProps {
 
 export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
   const { mapStyle } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { geomType, layerOrder } = props;
 
   const angleName = geomType === 'sch' ? 'angle_sch' : 'angle_geo';

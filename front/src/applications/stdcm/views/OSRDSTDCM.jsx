@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getMode } from 'reducers/osrdconf/selectors';
 
-import { useDispatch } from 'react-redux';
 import { MODES, STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
+import { updateMode } from 'reducers/osrdconf';
 import OSRDStdcmConfig from './OSRDCStdcmConfig';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import StdcmRequestModal from './StdcmRequestModal';
-import { updateMode } from '../../../reducers/osrdconf';
+
 
 const keylog = [];
 document.onkeydown = (e) => {
@@ -25,12 +27,14 @@ document.onkeydown = (e) => {
 
 export default function OSRDSTDCM() {
   const dispatch = useDispatch();
+  const mode = useSelector(getMode);
+
   const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState(
     STDCM_REQUEST_STATUS.idle
   );
   const [, setCurrentStdcmRequestResults] = useState(null);
   useEffect(() => {
-    dispatch(updateMode(MODES.stdcm));
+    if(mode !== MODES.stdcm) dispatch(updateMode(MODES.stdcm));
   }, []);
 
   return (

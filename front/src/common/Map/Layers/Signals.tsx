@@ -21,6 +21,7 @@ import {
   getSignalMatLayerProps,
   SignalContext,
 } from './geoSignalsLayers';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface PlatformProps {
   colors: Theme;
@@ -38,7 +39,7 @@ function Signals(props: PlatformProps) {
   const consolidatedSimulation = useSelector(
     (state: RootState) => state.osrdsimulation.consolidatedSimulation
   );
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { colors, sourceTable, sourceLayer, hovered, mapRef, layerOrder } = props;
 
   let prefix;

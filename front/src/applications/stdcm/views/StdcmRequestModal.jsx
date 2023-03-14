@@ -15,7 +15,7 @@ import {
   KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
   trainscheduleURI,
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-
+import { getConf } from 'reducers/osrdconf/selectors';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -36,7 +36,7 @@ const timetableURI = '/timetable/';
 
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdconf = useSelector(getConf);
 
   const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();

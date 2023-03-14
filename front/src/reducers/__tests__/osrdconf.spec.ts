@@ -23,8 +23,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('08:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('15:30:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('08:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('15:30:00');
     });
     it('should update originUpperBoundTime if linked, and keep the difference between the two', () => {
       const store = createStore({
@@ -37,8 +37,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('08:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('12:30:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('08:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('12:30:00');
     });
     it('should use the default difference when originTime is not defined', () => {
       const store = createStore({
@@ -50,8 +50,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('08:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('10:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('08:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('10:00:00');
     });
     it('should use the default difference when originUpperBoundTime is not defined', () => {
       const store = createStore({
@@ -63,8 +63,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('08:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('10:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('08:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('10:00:00');
     });
     test('lower bound should not go above upper bound when unlinked', () => {
       const store = createStore({
@@ -77,8 +77,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('12:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('12:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('12:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('12:00:00');
     });
   });
   describe('updateOriginUpperBoundTime', () => {
@@ -93,8 +93,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('11:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('20:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('11:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('20:00:00');
     });
     it('should update originTime if linked, keeping the current difference between the two', () => {
       const store = createStore({
@@ -107,8 +107,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('17:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('20:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('17:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('20:00:00');
     });
     it('should use default difference if originTime not defined', () => {
       const store = createStore({
@@ -120,8 +120,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('18:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('20:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('18:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('20:00:00');
     });
     it('should use default difference if originUpperBoundTime not defined', () => {
       const store = createStore({
@@ -133,8 +133,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('18:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('20:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('18:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('20:00:00');
     });
     test('upper bound should not go below lower bonud when unlinked', () => {
       const store = createStore({
@@ -147,8 +147,8 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toBe('14:00:00');
-      expect(state.osrdconf.originUpperBoundTime).toBe('14:00:00');
+      expect(state.osrdconf.simulationConf.originTime).toBe('14:00:00');
+      expect(state.osrdconf.simulationConf.originUpperBoundTime).toBe('14:00:00');
     });
   });
   describe('toggleOriginLinkedBounds', () => {
@@ -158,7 +158,7 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originLinkedBounds).toBe(false);
+      expect(state.osrdconf.simulationConf.originLinkedBounds).toBe(false);
     });
     it('should set to true if false', () => {
       const store = createStore({ originLinkedBounds: false });
@@ -166,7 +166,7 @@ describe('osrdconfReducer', () => {
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originLinkedBounds).toBe(true);
+      expect(state.osrdconf.simulationConf.originLinkedBounds).toBe(true);
     });
   });
 });

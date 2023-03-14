@@ -4,7 +4,7 @@ import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, keyBy, mapValues } from 'lodash';
 import { Layer, Source } from 'react-map-gl';
-
+import { getConf } from 'reducers/osrdconf/selectors';
 import { SymbolPaint } from 'mapbox-gl';
 
 import { AnyLayer, Theme } from '../../../types';
@@ -245,7 +245,7 @@ const GeoJSONs: FC<{
   layers?: Set<LayerType>;
   fingerprint?: string | number;
 }> = ({ colors, hidden, selection, layers, fingerprint, prefix = 'editor/' }) => {
-  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
+  const osrdConf = useSelector(getConf);
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
     () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),

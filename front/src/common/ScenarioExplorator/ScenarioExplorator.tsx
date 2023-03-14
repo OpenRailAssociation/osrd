@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
-import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
+import { getProjectID, getScenarioID, getStudyID, getMode } from 'reducers/osrdconf/selectors';
 import ScenarioExploratorModal from './ScenarioExploratorModal';
 
 export default function ScenarioExplorator() {
@@ -26,6 +26,7 @@ export default function ScenarioExplorator() {
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
+  const mode = useSelector(getMode);
   const [projectDetails, setProjectDetails] = useState<any>();
   const [studyDetails, setStudyDetails] = useState<any>();
   const [scenarioDetails, setScenarioDetails] = useState<any>();
@@ -49,7 +50,12 @@ export default function ScenarioExplorator() {
     }
   };
 
+  // NOT ISOLATED? FORCE reset stuff to undefined
+
   useEffect(() => {
+    console.log('projectID', projectID);
+    console.log('scenarioID', scenarioID);
+    console.log('studyID', studyID);
     if (projectID && studyID && scenarioID) {
       getDetails(`${PROJECTS_URI}${projectID}/`, setProjectDetails);
       getDetails(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
@@ -59,7 +65,7 @@ export default function ScenarioExplorator() {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioID]);
+  }, [scenarioID, mode]);
 
   useEffect(() => {
     if (scenarioDetails?.timetable) {
