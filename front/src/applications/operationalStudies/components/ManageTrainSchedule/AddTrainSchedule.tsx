@@ -15,8 +15,8 @@ import formatConf from 'applications/operationalStudies/components/ManageTrainSc
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
 import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import getTimetable from '../Scenario/getTimetable';
 import { getConf, getTimetableID } from 'reducers/osrdconf/selectors';
+import getTimetable from '../Scenario/getTimetable';
 
 type Props = {
   setDisplayTrainScheduleManagement: (type: string) => void;
