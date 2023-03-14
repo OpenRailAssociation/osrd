@@ -111,6 +111,16 @@ export default function RollingStockCardDetail(props) {
                 <td className="text-primary">{t('loadingGauge')}</td>
                 <td>{data.loading_gauge}</td>
               </tr>
+              <tr>
+                <td className="text-primary">
+                  {Object.keys(data.power_restrictions).length !== 0 ? t('powerNotch') : null}
+                </td>
+                <td>
+                  {data.power_restrictions !== null
+                    ? Object.keys(data.power_restrictions).join(' ')
+                    : null}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
