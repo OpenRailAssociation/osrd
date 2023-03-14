@@ -254,7 +254,7 @@ const GeoJSONs: FC<{
 
   // This flag is used to unmount sources before mounting the new ones, when
   // fingerprint is updated;
-  const [skipSources, setSkipSources] = useState(false);
+  const [skipSources, setSkipSources] = useState(true);
   useEffect(() => {
     setSkipSources(true);
     const timeout = setTimeout(() => setSkipSources(false), 0);
