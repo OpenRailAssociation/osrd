@@ -1796,24 +1796,124 @@ components:
           type: array
           items:
             type: string
+
     Geometry:
       type: object
-      description: Simple definition of a GeoJSon geometry
+      description: Definition of a GeoJSON geometry
+      oneOf:
+        - $ref: "#/components/schemas/Point"
+        - $ref: "#/components/schemas/LineString"
+        - $ref: "#/components/schemas/Polygon"
+        - $ref: "#/components/schemas/MultiPoint"
+        - $ref: "#/components/schemas/MultiLineString"
+        - $ref: "#/components/schemas/MultiPolygon"
+
+    Point3D:
+      type: array
+      description: Point in 3D space
+      minItems: 2
+      maxItems: 3
+      items:
+        type: number
+
+    Point:
+      type: object
+      description: GeoJSon geometry
       required:
         - type
         - coordinates
       properties:
         type:
           type: string
-          description: the geometry type
           enum:
             - Point
+        coordinates:
+          $ref: "#/components/schemas/Point3D"
+
+    LineString:
+      type: object
+      description: GeoJSon geometry
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum:
             - LineString
+        coordinates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Point3D"
+
+    Polygon:
+      type: object
+      description: GeoJSon geometry
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum:
             - Polygon
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/Point3D"
+
+    MultiPoint:
+      type: object
+      description: GeoJSon geometry
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum:
             - MultiPoint
+        coordinates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Point3D"
+
+    MultiLineString:
+      type: object
+      description: GeoJSon geometry
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum:
             - MultiLineString
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/Point3D"
+
+    MultiPolygon:
+      type: object
+      description: GeoJSon geometry
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum:
             - MultiPolygon
         coordinates:
           type: array
           items:
-            type: number
+            type: array
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Point3D"
