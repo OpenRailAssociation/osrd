@@ -9,22 +9,6 @@ import OSRDStdcmResults from './OSRDStdcmResults';
 import StdcmRequestModal from './StdcmRequestModal';
 
 
-const keylog = [];
-document.onkeydown = (e) => {
-  const keypressed = e.key;
-  keylog.push(keypressed);
-  if (keylog.join('') === 'boum') {
-    const ascii = [
-      '',
-      ' ___________________    . , ',
-      '(___________________|~~~~~X.;',
-      '                     ` `"  ;',
-      '            TNT',
-    ].join('\n');
-    throw ascii;
-  }
-};
-
 export default function OSRDSTDCM() {
   const dispatch = useDispatch();
   const mode = useSelector(getMode);
@@ -35,6 +19,9 @@ export default function OSRDSTDCM() {
   const [, setCurrentStdcmRequestResults] = useState(null);
   useEffect(() => {
     if(mode !== MODES.stdcm) dispatch(updateMode(MODES.stdcm));
+    return () => {
+      dispatch(updateMode(MODES.simulation));
+    }
   }, []);
 
   return (

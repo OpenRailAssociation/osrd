@@ -16,7 +16,6 @@ function getSection(state: RootState): OsrdConfState | OsrdStdcmConfState {
   };
 
   const section: SectionKey = sectionMap[state.osrdconf.mode];
-  console.log("section", section)
   return state.osrdconf[section];
 }
 

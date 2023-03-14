@@ -53,9 +53,6 @@ export default function ScenarioExplorator() {
   // NOT ISOLATED? FORCE reset stuff to undefined
 
   useEffect(() => {
-    console.log('projectID', projectID);
-    console.log('scenarioID', scenarioID);
-    console.log('studyID', studyID);
     if (projectID && studyID && scenarioID) {
       getDetails(`${PROJECTS_URI}${projectID}/`, setProjectDetails);
       getDetails(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
@@ -63,9 +60,21 @@ export default function ScenarioExplorator() {
         `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
         setScenarioDetails
       );
+    } 
+    if(!projectID) {
+      setProjectDetails({})
+      setStudyDetails({})
+      setScenarioDetails({})
+    }
+    if(!studyID) {
+      setStudyDetails({})
+      setScenarioDetails({})
+    }
+    if(!scenarioID){
+      setScenarioDetails({})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioID, mode]);
+  }, [scenarioID, studyID, scenarioID, mode]);
 
   useEffect(() => {
     if (scenarioDetails?.timetable) {
@@ -94,7 +103,7 @@ export default function ScenarioExplorator() {
       role="button"
       tabIndex={0}
     >
-      {projectDetails && studyDetails && scenarioDetails ? (
+      {projectID && projectDetails && studyID && studyDetails && scenarioID && scenarioDetails ? (
         <div className="scenario-explorator-card-head">
           {imageUrl && (
             <div className="scenario-explorator-card-head-img">
