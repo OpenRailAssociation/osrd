@@ -10,23 +10,11 @@ public class EnvelopeSimContextBuilder {
             RollingStock rollingStock,
             EnvelopeSimPath path,
             double timeStep,
-            RollingStock.Comfort comfort,
-            boolean ignoreElectricalProfiles
-    ) {
-        var powerClass = ignoreElectricalProfiles ? null : rollingStock.powerClass;
-        var modeAndProfileMap = path.getModeAndProfileMap(powerClass);
-        var curvesAndConditions = rollingStock.mapTractiveEffortCurves(modeAndProfileMap, comfort, path.getLength());
-        return new EnvelopeSimContext(rollingStock, path, timeStep, curvesAndConditions.curves());
-    }
-
-    /** Computes the rolling stock effort curves that will be used and creates a context */
-    public static EnvelopeSimContext build(
-            RollingStock rollingStock,
-            EnvelopeSimPath path,
-            double timeStep,
             RollingStock.Comfort comfort
     ) {
-        return build(rollingStock, path, timeStep, comfort, false);
+        var modeAndProfileMap = path.getModeAndProfileMap(null); // Only modes
+        var curvesAndConditions = rollingStock.mapTractiveEffortCurves(modeAndProfileMap, comfort, path.getLength());
+        return new EnvelopeSimContext(rollingStock, path, timeStep, curvesAndConditions.curves());
     }
 
 }
