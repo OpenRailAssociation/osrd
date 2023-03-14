@@ -47,12 +47,13 @@ git rebase origin/dev
 - Take the time to pick good names.
   Avoid non well-known abbreviations.
 - Test as much code as possible to avoid future regression and show that added code is bullet proof.
+- To keep our API surface minimal, only make public what is necessary.
+- Documentation should only be there to explain things that aren't self evident.
+  Exception for `Java` where all public methods must be documented.
 
 ### Python
 
 - Follow [the Zen of Python](https://www.python.org/dev/peps/pep-0020/).
-- To keep our API surface minimal, only make public what is necessary.
-- Documentation should only be there to explain things that aren't self evident.
 - Code is linted with [flake8](https://github.com/csachs/pyproject-flake8).
 - Code is formatted with [Black](https://github.com/psf/black).
 - Imports are sorted with [Isort](https://github.com/PyCQA/isort).
@@ -63,8 +64,6 @@ git rebase origin/dev
 
 ### Rust
 
-- To keep our API surface minimal, only make public what is necessary.
-- Documentation should only be there to explain things that aren't self evident.
 - Use the [documentation example](https://doc.rust-lang.org/rust-by-example/meta/doc.html) to know how to phrase and format your documentation.
 - Code is linted with [clippy](https://github.com/rust-lang/rust-clippy).
 - Code is formatted with [fmt](https://github.com/rust-lang/rustfmt).
@@ -75,15 +74,10 @@ git rebase origin/dev
 
 ### Java
 
-- To keep our API surface minimal, only make public what is necessary.
-- All public methods must be documented.
-  Avoid paraphrasing doc.
 - Code is formatted with [checkstyle](https://checkstyle.sourceforge.io/).
 
 ### Javascript / Typescript / Front
 
-- To keep our API surface minimal, only make public what is necessary.
-- Documentation should only be there to explain things that aren't self evident.
 - When adding new files, write them in TypeScript as there is a goal to move to TypeScript.
 - Code is linted with [eslint](https://eslint.org/).
 - Code is formatted with [prettier](https://prettier.io/).
