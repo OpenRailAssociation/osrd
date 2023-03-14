@@ -255,7 +255,7 @@ impl config::SearchEntry {
         for (column, col_type) in self.columns.iter() {
             context
                 .columns_type
-                .insert(column.clone(), (*col_type).into());
+                .insert(column.clone(), col_type.clone());
         }
         context
     }

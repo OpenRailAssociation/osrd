@@ -23,6 +23,7 @@ pub enum TypedAst {
     Integer(i64),
     Float(f64),
     String(String),
+    Sequence(Vec<TypedAst>, TypeSpec),
     Column {
         name: String,
         table: Option<String>,
@@ -40,6 +41,7 @@ impl TypedAst {
             TypedAst::Float(_) => AstType::Float.into(),
             TypedAst::String(_) => AstType::String.into(),
             TypedAst::Column { spec, .. } | TypedAst::Sql(_, spec) => spec.clone(),
+            TypedAst::Sequence(_, item_spec) => TypeSpec::seq(item_spec.clone()),
         }
     }
     pub fn is_ersatz(&self) -> bool {
@@ -82,6 +84,12 @@ where
         }
     }
 }
+
+// impl<T: Into<TypedAst>> From<Vec<T>> for TypedAst {
+//     fn from(value: Vec<T>) -> Self {
+//         Self::Sequence(value.into_iter().map(Into::<Self>::into).collect())
+//     }
+// }
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "search")]
