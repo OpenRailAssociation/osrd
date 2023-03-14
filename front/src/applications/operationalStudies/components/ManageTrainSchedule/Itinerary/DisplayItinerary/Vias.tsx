@@ -5,12 +5,9 @@ import { RiMapPin3Fill } from 'react-icons/ri';
 import { GiPathDistance } from 'react-icons/gi';
 import { useTranslation } from 'react-i18next';
 
-import { getVias } from 'reducers/osrdconf/selectors';
-
 import DisplayVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayVias';
-import { RootState } from 'reducers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { getGeojson } from 'reducers/osrdconf/selectors';
+import { getGeojson, getVias } from 'reducers/osrdconf/selectors';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;

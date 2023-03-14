@@ -136,7 +136,7 @@ export default function StdcmRequestModal(props) {
         })
         .catch((e) => {
           // Update simu in redux with data;
-
+console.log(e)
           setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
 
           dispatch(
