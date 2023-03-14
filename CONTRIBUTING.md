@@ -91,4 +91,3 @@ git rebase origin/dev
 ### Integration tests
 
 - Integration tests are written using [pytest](https://docs.pytest.org/) under the `/tests` folder.
-- Test as much as you can when adding a new api.
