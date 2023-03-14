@@ -327,7 +327,7 @@ export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of e
   count?: number;
   next?: number | null;
   previous?: number | null;
-  result?: InfraError[];
+  results?: InfraError[];
 };
 export type GetInfraByIdErrorsApiArg = {
   /** infra id */

@@ -38,7 +38,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
         level,
       });
       setErrors((prev) => {
-        const apiErrors = response.data ? response.data.result || [] : [];
+        const apiErrors = response.data ? response.data.results || [] : [];
         return page === 1 ? apiErrors : [...prev, ...apiErrors];
       });
       setTotal(response.data ? response.data.count || 0 : null);
