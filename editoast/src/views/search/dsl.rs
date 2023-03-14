@@ -131,6 +131,7 @@ pub struct Ersatz<T: Type>(PhantomData<T>);
 /// Represents a nullable `T` which is either [TypedAst::Null] or `T`.
 /// Maps to `Option<T::ArgType>` and `Option<T::ReturnType>`
 pub struct Nullable<T: Type>(PhantomData<T>);
+pub struct Array<T: Type>(PhantomData<T>);
 
 impl Type for Null {
     type ArgType = ();
@@ -307,6 +308,31 @@ impl<T: Type> Type for Nullable<T> {
             Some(value) => T::from_return(value)?,
             None => TypedAst::Null,
         })
+    }
+}
+
+impl<T: Type> Type for Array<T> {
+    type ArgType = Vec<T::ArgType>;
+    type ReturnType = Vec<T::ReturnType>;
+
+    fn type_spec() -> TypeSpec {
+        TypeSpec::seq(T::type_spec())
+    }
+
+    fn into_arg(value: TypedAst) -> Result<Self::ArgType> {
+        Self::typecheck(&value)?;
+        let TypedAst::Sequence(items, _) = value else { unreachable!() };
+        items.into_iter().map(T::into_arg).collect()
+    }
+
+    fn from_return(value: Self::ReturnType) -> Result<TypedAst> {
+        Ok(TypedAst::Sequence(
+            value
+                .into_iter()
+                .map(T::from_return)
+                .collect::<Result<Vec<_>>>()?,
+            T::type_spec(),
+        ))
     }
 }
 

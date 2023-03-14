@@ -32,3 +32,22 @@ track:
       infra_id: osrd_search_track.infra_id
       line_code: osrd_search_track.line_code
       line_name: osrd_search_track.unprocessed_line_name
+
+signal:
+  table: osrd_search_signal
+  columns:
+    infra_id: integer
+    line_name: string
+    line_code: integer
+    label: string
+    aspects: ["array", "string"]
+  result:
+    joins: |
+      INNER JOIN osrd_infra_signalmodel AS sig ON sig.id = osrd_search_signal.id
+      INNER JOIN osrd_infra_tracksectionmodel AS ts ON ts.obj_id = sig.data->>'track' AND ts.infra_id = sig.infra_id
+    columns:
+      infra_id: sig.infra_id
+      label: sig.data->'extensions'->'sncf'->>'label'
+      aspects: osrd_search_signal.aspects
+      line_code: osrd_search_signal.line_code
+      line_name: ts.data->'extensions'->'sncf'->>'line_name'
