@@ -17,6 +17,7 @@ interface TracksGeographicProps {
 function LineSearchLayer(props: TracksGeographicProps) {
   const { colors, geomType, layerOrder } = props;
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const { lineSearchCode } = useSelector((state: RootState) => state.map);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
   return (
@@ -26,17 +27,19 @@ function LineSearchLayer(props: TracksGeographicProps) {
       url={`${MAP_URL}/layer/track_sections/mvt/${geomType}/${infraVersion}`}
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
-      <OrderedLayer
-        source-layer={MAP_TRACK_SOURCES.geographic}
-        layerOrder={layerOrder}
-        id={`lineSearchLayer-${geomType}`}
-        type="line"
-        paint={{
-          'line-color': '#ffb612',
-          'line-width': 4,
-        }}
-        filter={['==', 'extensions_sncf_line_code', 70000]}
-      />
+      {lineSearchCode && (
+        <OrderedLayer
+          source-layer={MAP_TRACK_SOURCES.geographic}
+          layerOrder={layerOrder}
+          id={`lineSearchLayer-${geomType}`}
+          type="line"
+          paint={{
+            'line-color': '#ffb612',
+            'line-width': 4,
+          }}
+          filter={['==', 'extensions_sncf_line_code', lineSearchCode]}
+        />
+      )}
     </Source>
   );
 }
