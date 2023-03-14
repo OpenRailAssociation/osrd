@@ -9,7 +9,7 @@ use thiserror::Error;
 use crate::client::MapLayersConfig;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
-use crate::map::{self, InvalidationZone, MapLayers};
+use crate::map::{self, MapLayers, Zone};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::{generated_data, DbPool};
 use editoast_derive::EditoastError;
@@ -53,7 +53,7 @@ fn apply_edit(
     infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
-) -> Result<(Vec<OperationResult>, InvalidationZone)> {
+) -> Result<(Vec<OperationResult>, Zone)> {
     // Check if the infra is locked
     if infra.locked {
         return Err(EditionError::InfraIsLocked(infra.id).into());
@@ -69,7 +69,7 @@ fn apply_edit(
     let infra = infra.bump_version(conn)?;
 
     // Compute cache invalidation zone
-    let invalid_zone = InvalidationZone::compute(infra_cache, &operation_results);
+    let invalid_zone = Zone::compute(infra_cache, &operation_results);
 
     // Apply operations to infra cache
     infra_cache.apply_operations(&operation_results);
