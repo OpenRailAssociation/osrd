@@ -59,7 +59,7 @@ function Destination(props: DestinationProps) {
             <div className="pl-1 hover w-100 d-flex align-items-center">
               <div
                 onClick={() =>
-                  zoomToFeaturePoint(destination?.clickLngLat, destination?.id, destination?.source)
+                  zoomToFeaturePoint(destination?.coordinates, destination?.id, destination?.source)
                 }
                 role="button"
                 tabIndex={0}

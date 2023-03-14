@@ -51,7 +51,7 @@ export default function DisplayVias(props) {
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {osrdconf.vias.map((place, index) => (
               <Draggable
-                key={`drag-key-${place.id}`}
+                key={`drag-key-${place.position}`}
                 draggableId={`drag-vias-${index}`}
                 index={index}
               >
@@ -67,7 +67,7 @@ export default function DisplayVias(props) {
                       <div
                         className="flex-grow-1"
                         onClick={() =>
-                          zoomToFeaturePoint(place.clickLngLat, place.id, place.source)
+                          zoomToFeaturePoint(place.coordinates, place.id, place.source)
                         }
                         role="button"
                         tabIndex={0}

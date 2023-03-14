@@ -1,62 +1,81 @@
 import React, { useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
 
-import { adjustPointOnTrack } from 'utils/pathfinding';
-
 import { replaceVias } from 'reducers/osrdconf';
-import { getMapTrackSources } from 'reducers/map/selectors';
 import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
+import { getMapTrackSources } from 'reducers/map/selectors';
 
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
+import { ArrayElement } from 'utils/types';
+import { Path } from 'common/api/osrdMiddlewareApi';
+
+type Props = {
+  inverseOD: () => void;
+  removeAllVias: () => void;
+  pathfindingInProgress?: boolean;
+};
 
 function LoaderPathfindingInProgress() {
   return <Spinner className="loaderPathfindingInProgress" />;
 }
 
-export default function ModalSugerredVias(props) {
+export default function ModalSugerredVias({
+  inverseOD,
+  removeAllVias,
+  pathfindingInProgress,
+}: Props) {
   const dispatch = useDispatch();
   const suggeredVias = useSelector(getSuggeredVias);
   const vias = useSelector(getVias);
   const mapTrackSources = useSelector(getMapTrackSources);
 
-  const { inverseOD, removeAllVias, removeViaFromPath, pathfindingInProgress } = props;
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
-  const nbVias = suggeredVias.length - 1;
+  const nbVias = suggeredVias ? suggeredVias.length - 1 : 0;
   const selectedViasTracks = vias.map((via) => via.position);
   const { closeModal } = useContext(ModalContext);
 
-  const convertPathfindingVias = (steps, idxToAdd) => {
-    const newVias = steps.slice(1, -1).flatMap((step, idx) => {
-      if (!step.suggestion || idxToAdd === idx) {
-        return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
-      }
-      return [];
-    });
-
-    dispatch(replaceVias(newVias));
+  const removeViaFromPath = (step: ArrayElement<Path['steps']>) => {
+    dispatch(
+      replaceVias(vias.filter((via) => via.track !== step.track || via.position !== step.position))
+    );
   };
 
-  const formatVia = (via, idx, idxTrueVia) => (
+  const convertPathfindingVias = (steps: Path['steps'], idxToAdd: number) => {
+    const type = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
+    if (steps) {
+      const newVias = steps.slice(1, -1).flatMap((step, idx) => {
+        if (!step.suggestion || idxToAdd === idx) {
+          const viaCoordinates = step[type]?.coordinates;
+          return [{ ...step, coordinates: viaCoordinates }];
+        }
+        return [];
+      });
+
+      dispatch(replaceVias(newVias));
+    }
+  };
+
+  const formatVia = (via: ArrayElement<Path['steps']>, idx: number, idxTrueVia: number) => (
     <div
       key={nextId()}
       className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
     >
       {!via.suggestion && <small className="pr-2">{idxTrueVia}</small>}
       <i className={`${via.suggestion ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
-      {via.name || `KM ${Math.round(via.position) / 1000}`}
+      {via.name || ''}
+      <small className="ml-2">{via.position && `KM ${Math.round(via.position) / 1000}`}</small>
       {via.suggestion && !selectedViasTracks.includes(via.position) ? (
         <button
           className="btn btn-sm btn-only-icon ml-auto"
           type="button"
-          onClick={() => convertPathfindingVias(suggeredVias, idx)}
+          onClick={() => convertPathfindingVias(suggeredVias, idx - 1)}
         >
           <i className="icons-add" />
         </button>
@@ -84,13 +103,14 @@ export default function ModalSugerredVias(props) {
       <ModalBodySNCF>
         <div className="suggered-vias">
           {pathfindingInProgress && <LoaderPathfindingInProgress />}
-          {suggeredVias.map((via, idx) => {
-            if (idx !== 0 && idx !== nbVias) {
-              if (!via.suggestion) idxTrueVia += 1;
-              return formatVia(via, idx, idxTrueVia);
-            }
-            return null;
-          })}
+          {suggeredVias &&
+            suggeredVias.map((via, idx) => {
+              if (idx !== 0 && idx !== nbVias) {
+                if (!via.suggestion) idxTrueVia += 1;
+                return formatVia(via, idx, idxTrueVia);
+              }
+              return null;
+            })}
         </div>
       </ModalBodySNCF>
       <ModalFooterSNCF>
@@ -117,14 +137,3 @@ export default function ModalSugerredVias(props) {
     </>
   );
 }
-
-ModalSugerredVias.defaultProps = {
-  pathfindingInProgress: false,
-};
-
-ModalSugerredVias.propTypes = {
-  inverseOD: PropTypes.func.isRequired,
-  removeAllVias: PropTypes.func.isRequired,
-  removeViaFromPath: PropTypes.func.isRequired,
-  pathfindingInProgress: PropTypes.bool,
-};

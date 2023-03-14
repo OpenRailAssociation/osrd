@@ -116,13 +116,13 @@ export default function formatStdcmConf(
       start_points: [
         {
           track_section: osrdconf?.origin?.id,
-          geo_coordinate: osrdconf?.origin?.clickLngLat,
+          geo_coordinate: osrdconf?.origin?.coordinates,
         },
       ],
       end_points: [
         {
           track_section: osrdconf?.destination?.id,
-          geo_coordinate: osrdconf?.destination?.clickLngLat,
+          geo_coordinate: osrdconf?.destination?.coordinates,
         },
       ],
       maximum_departure_delay: maximumDepartureDelay,
