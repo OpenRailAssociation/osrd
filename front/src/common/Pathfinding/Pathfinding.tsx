@@ -4,14 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
-import { last, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
 
 import { getMapTrackSources } from 'reducers/map/selectors';
 import { setFailure } from 'reducers/main';
 
 import { ArrayElement } from 'utils/types';
-import { adjustPointOnTrack } from 'utils/pathfinding';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 
@@ -21,9 +20,7 @@ import { PointOnMap } from 'applications/operationalStudies/consts';
 
 import {
   replaceVias,
-  updateDestination,
   updateItinerary,
-  updateOrigin,
   updatePathfindingID,
   updateSuggeredVias,
 } from 'reducers/osrdconf';
@@ -205,29 +202,18 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     openModal(<ModalPathJSONDetail />, 'lg');
   };
 
-  // Way to ensure marker position on track
-  const correctWaypointsGPS = ({ steps }: Path) => {
+  const transformVias = ({ steps }: Path) => {
     if (steps && steps.length >= 2) {
       const type = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
-      const originCoordinates = steps[0][type]?.coordinates;
-      const destinationCoordinates = last(steps)?.[type]?.coordinates;
-      // const etTaSoeur = adjustPointOnTrack(origin, steps[0], mapTrackSources);
-      if (origin && originCoordinates)
-        dispatch(updateOrigin({ ...origin, clickLngLat: originCoordinates }));
-      if (vias.length > 0 || steps.length > 2) {
-        const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
-          if (!step.suggestion) {
-            return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
-          }
-          return [];
-        });
-        dispatch(replaceVias(newVias));
-        dispatch(updateSuggeredVias(steps));
-      }
-      // const etTaSoeur = adjustPointOnTrack(destination, last(steps), mapTrackSources);
-      if (destination && destinationCoordinates) {
-        dispatch(updateDestination({ ...destination, clickLngLat: destinationCoordinates }));
-      }
+      const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
+        const viaCoordinates = step[type]?.coordinates;
+        if (!step.suggestion && viaCoordinates) {
+          return [{ ...step, coordinates: viaCoordinates }];
+        }
+        return [];
+      });
+      dispatch(replaceVias(newVias));
+      dispatch(updateSuggeredVias(steps));
     }
   };
 
@@ -242,7 +228,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
             waypoints: [
               {
                 track_section: origin.id,
-                geo_coordinate: origin.clickLngLat,
+                geo_coordinate: origin.coordinates,
               },
             ],
           },
@@ -251,7 +237,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
             waypoints: [
               {
                 track_section: via.track || via.id,
-                geo_coordinate: via.clickLngLat,
+                geo_coordinate: via.coordinates,
               },
             ],
           })),
@@ -260,7 +246,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
             waypoints: [
               {
                 track_section: destination.id,
-                geo_coordinate: destination.clickLngLat,
+                geo_coordinate: destination.coordinates,
               },
             ],
           },
@@ -280,7 +266,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       request
         .unwrap()
         .then((itineraryCreated: Path) => {
-          // correctWaypointsGPS(itineraryCreated);
+          transformVias(itineraryCreated);
           dispatch(updateItinerary(itineraryCreated));
           dispatch(updatePathfindingID(itineraryCreated.id));
           if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));

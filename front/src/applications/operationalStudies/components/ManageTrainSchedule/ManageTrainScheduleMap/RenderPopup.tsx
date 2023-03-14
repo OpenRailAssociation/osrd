@@ -27,7 +27,7 @@ function RenderPopup() {
   ) {
     const properties = {
       ...featureInfoClick.feature.properties,
-      clickLngLat: featureInfoClick.coordinates.slice(0, 2),
+      coordinates: featureInfoClick.coordinates.slice(0, 2),
     };
 
     return (

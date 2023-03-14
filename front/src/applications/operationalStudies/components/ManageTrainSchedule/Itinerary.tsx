@@ -60,11 +60,6 @@ function Itinerary() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const removeViaFromPath = (step: any) => {
-    dispatch(replaceVias(vias.filter((via) => via.track !== step.track)));
-  };
-
   const inverseOD = () => {
     if (origin && destination) {
       const neworigin = { ...origin };
@@ -81,13 +76,7 @@ function Itinerary() {
     dispatch(replaceVias([]));
   };
 
-  const viaModalContent = (
-    <ModalSugerredVias
-      inverseOD={inverseOD}
-      removeAllVias={removeAllVias}
-      removeViaFromPath={removeViaFromPath}
-    />
-  );
+  const viaModalContent = <ModalSugerredVias inverseOD={inverseOD} removeAllVias={removeAllVias} />;
 
   useEffect(() => {
     if (extViewport !== undefined) {

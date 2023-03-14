@@ -5,15 +5,15 @@ import nextId from 'react-id-generator';
 import originSVG from 'assets/pictures/origin.svg';
 import destinationSVG from 'assets/pictures/destination.svg';
 import viaSVG from 'assets/pictures/via.svg';
-import { RootState } from 'reducers';
 import { getVias, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
+import { PointOnMap } from 'applications/operationalStudies/consts';
 
 const RenderItineraryMarkers: FC = () => {
   const vias = useSelector(getVias);
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
 
-  const formatPointWithNoName = (pointData: any) => (
+  const formatPointWithNoName = (pointData: PointOnMap) => (
     <>
       <div className="main-line">
         <div className="track-name">{pointData.extensions_sncf_track_name}</div>
@@ -28,8 +28,8 @@ const RenderItineraryMarkers: FC = () => {
     if (origin !== undefined) {
       result.push(
         <Marker
-          longitude={origin.clickLngLat[0]}
-          latitude={origin.clickLngLat[1]}
+          longitude={origin.coordinates[0]}
+          latitude={origin.coordinates[1]}
           offset={[0, -12]}
           key={nextId()}
         >
@@ -43,8 +43,8 @@ const RenderItineraryMarkers: FC = () => {
     if (destination !== undefined) {
       result.push(
         <Marker
-          longitude={destination.clickLngLat[0]}
-          latitude={destination.clickLngLat[1]}
+          longitude={destination.coordinates[0]}
+          latitude={destination.coordinates[1]}
           offset={[0, -24]}
           key={nextId()}
         >
@@ -59,8 +59,8 @@ const RenderItineraryMarkers: FC = () => {
       vias.forEach((via, idx) => {
         result.push(
           <Marker
-            longitude={via.clickLngLat[0]}
-            latitude={via.clickLngLat[1]}
+            longitude={via.coordinates[0]}
+            latitude={via.coordinates[1]}
             offset={[0, -12]}
             key={nextId()}
           >
