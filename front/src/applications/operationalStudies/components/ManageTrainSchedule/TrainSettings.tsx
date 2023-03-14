@@ -1,36 +1,40 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateName } from 'reducers/osrdconf';
+import { updateName, updateTrainStep, updateTrainCount, updateTrainDelta } from 'reducers/osrdconf';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import debounce from 'lodash/debounce';
 
 import { getOSRDConf } from 'reducers/osrdconf/selectors';
+import { useDebounce } from 'utils/helpers';
 
 export default function TrainSettings() {
-  const [trainCount, setTrainCount] = useState(1);
-  const [trainStep, setTrainStep] = useState(2);
-  const [trainDelta, setTrainDelta] = useState(15);
-  const [name, setName] = useState('');
   const osrdconf = useSelector(getOSRDConf);
+  const [name, setName] = useState(osrdconf.name);
+  const [trainStep, setTrainStep] = useState(osrdconf.trainStep);
+  const [trainCount, setTrainCount] = useState(osrdconf.trainCount);
+  const [trainDelta, setTrainDelta] = useState(osrdconf.trainDelta);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
-
-  const debouncedUpdateName = debounce((newName) => {
-    dispatch(updateName(newName));
-  }, 300);
-
-  const handleNameChange = useCallback((newName) => {
-    setName(newName);
-    debouncedUpdateName(newName);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const debouncedName = useDebounce(name, 500);
+  const debouncedTrainStep = useDebounce(trainStep, 500);
+  const debouncedTrainCount = useDebounce(trainCount, 500);
+  const debouncedTrainDelta = useDebounce(trainDelta, 500);
 
   useEffect(() => {
-    if (osrdconf && osrdconf.name) {
-      setName(osrdconf.name);
-    }
-  }, [osrdconf]);
+    dispatch(updateName(debouncedName));
+  }, [debouncedName]);
+
+  useEffect(() => {
+    dispatch(updateTrainStep(debouncedTrainStep));
+  }, [debouncedTrainStep]);
+
+  useEffect(() => {
+    dispatch(updateTrainCount(debouncedTrainCount));
+  }, [debouncedTrainCount]);
+
+  useEffect(() => {
+    dispatch(updateTrainDelta(debouncedTrainDelta));
+  }, [debouncedTrainDelta]);
 
   return (
     osrdconf && (
@@ -40,7 +44,7 @@ export default function TrainSettings() {
             type="text"
             label={t('trainScheduleName')}
             id="osrdconf-name"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleNameChange(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             value={name}
             noMargin
             sm
@@ -51,9 +55,7 @@ export default function TrainSettings() {
             type="number"
             label={t('trainScheduleStep')}
             id="osrdconf-traincount"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setTrainStep(parseInt(e.target.value, 10))
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainStep(+e.target.value)}
             value={trainStep}
             noMargin
             sm
