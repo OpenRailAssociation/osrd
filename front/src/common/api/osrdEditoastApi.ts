@@ -658,10 +658,32 @@ export type RailjsonFile = {
   catenaries?: any;
   detectors?: any;
 };
-export type Geometry = {
-  type: 'Point' | 'LineString' | 'Polygon' | 'MultiPoint' | 'MultiLineString' | 'MultiPolygon';
-  coordinates: number[];
+export type Point3D = number[];
+export type Point = {
+  type: 'Point';
+  coordinates: Point3D;
 };
+export type LineString = {
+  type: 'LineString';
+  coordinates: Point3D[];
+};
+export type Polygon = {
+  type: 'Polygon';
+  coordinates: Point3D[][];
+};
+export type MultiPoint = {
+  type: 'MultiPoint';
+  coordinates: Point3D[];
+};
+export type MultiLineString = {
+  type: 'MultiLineString';
+  coordinates: Point3D[][];
+};
+export type MultiPolygon = {
+  type: 'MultiPolygon';
+  coordinates: Point3D[][][];
+};
+export type Geometry = Point | LineString | Polygon | MultiPoint | MultiLineString | MultiPolygon;
 export type InfraError = {
   geographic?: Geometry | null;
   schematic?: object | null;
