@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use crate::client::MapLayersConfig;
 use crate::error::Result;
-pub use bounding_box::{BoundingBox, InvalidationZone};
+pub use bounding_box::{BoundingBox, Zone};
 pub use layers::{Layer, MapLayers, View};
 use redis::aio::ConnectionManager;
 
@@ -73,7 +73,7 @@ async fn invalidate_layer_zone(
     redis: &mut ConnectionManager,
     infra_id: i64,
     layer_name: &str,
-    zone: &InvalidationZone,
+    zone: &Zone,
     map_config: &MapLayersConfig,
 ) -> Result<()> {
     let max_zoom = map_config.max_zoom;
@@ -110,7 +110,7 @@ pub async fn invalidate_zone(
     redis: &mut ConnectionManager,
     layers: &Vec<String>,
     infra_id: i64,
-    zone: &InvalidationZone,
+    zone: &Zone,
     map_config: &MapLayersConfig,
 ) -> Result<()> {
     if zone.is_valid() {

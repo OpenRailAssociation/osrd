@@ -507,7 +507,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InvalidationZone"
+                $ref: "#/components/schemas/Zone"
 
   /infra/{id}/lock/:
     post:
@@ -1212,7 +1212,7 @@ components:
         locked:
           type: boolean
 
-    InvalidationZone:
+    Zone:
       type: object
       properties:
         geo:

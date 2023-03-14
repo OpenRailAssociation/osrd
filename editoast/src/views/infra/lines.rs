@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::infra::Infra;
 use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::map::InvalidationZone;
+use crate::map::Zone;
 
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -28,14 +28,14 @@ async fn get_line_bbox(
     path: Path<(i64, i64)>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbPool>,
-) -> Result<Json<InvalidationZone>> {
+) -> Result<Json<Zone>> {
     let (infra_id, line_code) = path.into_inner();
     let line_code: i32 = line_code.try_into().unwrap();
     let zone = block::<_, Result<_>>(move || {
         let conn = &mut db_pool.get().expect("Failed to get DB connection");
         let infra = Infra::retrieve(conn, infra_id)?;
         let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra)?;
-        let mut zone = InvalidationZone::default();
+        let mut zone = Zone::default();
         let mut tracksections = infra_cache
             .track_sections()
             .values()
@@ -46,7 +46,7 @@ async fn get_line_bbox(
             return Err(LinesErrors::LineNotFound { line_code }.into());
         }
         tracksections.for_each(|track| {
-            zone.union(&InvalidationZone {
+            zone.union(&Zone {
                 geo: track.bbox_geo.clone(),
                 sch: track.bbox_sch.clone(),
             });

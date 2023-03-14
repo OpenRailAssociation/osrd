@@ -30,19 +30,19 @@ impl Default for BoundingBox {
 
 /// Geographic and Schematic bounding box zone impacted by a list of operations
 #[derive(Debug, Clone, Default, Serialize)]
-pub struct InvalidationZone {
+pub struct Zone {
     pub geo: BoundingBox,
     pub sch: BoundingBox,
 }
 
-impl InvalidationZone {
+impl Zone {
     /// Whether zones are valid
     pub fn is_valid(&self) -> bool {
         self.geo.is_valid()
     }
 }
 
-impl InvalidationZone {
+impl Zone {
     fn merge_bbox(
         geo: &mut BoundingBox,
         sch: &mut BoundingBox,

@@ -1,4 +1,4 @@
-pub use super::bounding_box::{BoundingBox, InvalidationZone};
+pub use super::bounding_box::{BoundingBox, Zone};
 pub use super::layers::{Layer, MapLayers};
 use crate::error::Result;
 use redis::aio::ConnectionManager;
