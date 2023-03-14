@@ -5,13 +5,11 @@ use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Study;
 use crate::models::StudyWithScenarios;
+use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
-use actix_web::delete;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::post;
-use actix_web::web;
-use actix_web::web::{Data, Json, Path};
-use actix_web::HttpResponse;
+use actix_web::web::{self, Data, Json, Path, Query};
+use actix_web::{delete, get, post, HttpResponse};
 use chrono::NaiveDateTime;
 use chrono::Utc;
 use derivative::Derivative;
@@ -22,8 +20,8 @@ use thiserror::Error;
 /// Returns `/projects/{project}/studies` routes
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/studies")
-        .service(create)
-        .service(web::scope("/{study}").service(delete))
+        .service((create, list))
+        .service(web::scope("/{study}").service((delete, get)))
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -136,6 +134,29 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpRes
     Ok(HttpResponse::NoContent().finish())
 }
 
+/// Return a list of studies
+#[get("")]
+async fn list(
+    db_pool: Data<DbPool>,
+    pagination_params: Query<PaginationQueryParam>,
+    project: Path<i64>,
+) -> Result<Json<PaginatedResponse<StudyWithScenarios>>> {
+    let project = project.into_inner();
+    let page = pagination_params.page;
+    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
+    let studies = Study::list(db_pool, page, per_page, project).await?;
+
+    Ok(Json(studies))
+}
+
+/// Return a specific studies
+#[get("")]
+async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<StudyWithScenarios>> {
+    let (project, study) = path.into_inner();
+    let study = Study::retrieve(db_pool.clone(), project, study).await?;
+    Ok(Json(study))
+}
+
 #[cfg(test)]
 mod test {
     use crate::models::Project;
@@ -145,6 +166,7 @@ mod test {
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
+    use actix_web::test::call_and_read_body_json;
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use serde_json::json;
 
@@ -179,6 +201,59 @@ mod test {
         .await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
         let response = call_service(&app, delete_project_request(study.project_id.unwrap())).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[actix_test]
+    async fn study_list() {
+        let app = create_test_service().await;
+        let response = call_service(&app, create_study_request().await).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let study: Study = read_body_json(response).await;
+        let project_id = study.project_id.unwrap();
+        let req = TestRequest::get()
+            .uri(format!("/projects/{project_id}/studies").as_str())
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[actix_test]
+    async fn project_get() {
+        let app = create_test_service().await;
+        let study: Study = call_and_read_body_json(&app, create_study_request().await).await;
+
+        let req = TestRequest::get()
+            .uri(
+                format!(
+                    "/projects/{}/studies/{}/",
+                    study.project_id.unwrap(),
+                    study.id.unwrap()
+                )
+                .as_str(),
+            )
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let req = TestRequest::delete()
+            .uri(
+                format!(
+                    "/projects/{}/studies/{}/",
+                    study.project_id.unwrap(),
+                    study.id.unwrap()
+                )
+                .as_str(),
+            )
+            .to_request();
+        let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let response = call_service(
+            &app,
+            delete_study_request(study.project_id.unwrap(), study.id.unwrap()),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 }
