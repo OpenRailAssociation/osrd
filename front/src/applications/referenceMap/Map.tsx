@@ -42,6 +42,7 @@ import { useSearchContext } from 'common/Map/Search/SearchContext';
 import { MapLayerMouseEvent } from '../../types';
 
 import 'common/Map/Map.scss';
+import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -220,6 +221,11 @@ function Map() {
               sourceLayer="geo"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
+            <LineSearchLayer
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+            />
           </>
         ) : (
           <>
@@ -277,19 +283,16 @@ function Map() {
               sourceLayer="sch"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
+            <LineSearchLayer
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+            />
           </>
         )}
 
         {mapSearchMarker !== undefined && (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
-        )}
-
-        {searchContext?.isSearchLine && searchContext?.lineSearch && (
-          <RenderItinerary
-            geojsonPath={searchContext?.lineSearch}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-            isSearchLine
-          />
         )}
       </ReactMapGL>
     </main>
