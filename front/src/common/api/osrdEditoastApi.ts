@@ -642,6 +642,35 @@ export type PostProjectsByProjectIdStudiesApiArg = {
   projectId: number;
   studyCreateRequest: StudyCreateRequest;
 };
+export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studies list */ {
+  count?: number;
+  next?: any;
+  previous?: any;
+  results?: {
+    schema?: StudyResult;
+  }[];
+};
+export type GetProjectsByProjectIdStudiesApiArg = {
+  projectId: number;
+  /** Filter operational studies by name */
+  name?: string;
+  /** Filter operational studies by description */
+  description?: string;
+  /** Filter operational studies by tags */
+  tags?: string;
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdApiResponse =
+  /** status 200 The operational study info */ StudyResult;
+export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
+  /** project id refered to the operational study */
+  projectId: number;
+  /** study id you want to retrieve */
+  studyId: number;
+};
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** project id refered to the operational study */
