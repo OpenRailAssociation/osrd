@@ -250,6 +250,16 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
     }),
+    postProjectsByProjectIdStudies: build.mutation<
+      PostProjectsByProjectIdStudiesApiResponse,
+      PostProjectsByProjectIdStudiesApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/`,
+        method: 'POST',
+        body: queryArg.studyCreateRequest,
+      }),
+    }),
     getRollingStockByIdLiveryAndLiveryId: build.query<
       GetRollingStockByIdLiveryAndLiveryIdApiResponse,
       GetRollingStockByIdLiveryAndLiveryIdApiArg
@@ -616,6 +626,12 @@ export type DeleteProjectsByProjectIdApiArg = {
   /** project id you want to delete */
   projectId: number;
 };
+export type PostProjectsByProjectIdStudiesApiResponse =
+  /** status 201 The created operational study */ StudyResult;
+export type PostProjectsByProjectIdStudiesApiArg = {
+  projectId: number;
+  studyCreateRequest: StudyCreateRequest;
+};
 export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
 export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {
   /** Rolling Stock ID */
@@ -900,4 +916,51 @@ export type ProjectPatchRequest = {
   budget?: number;
   image?: number;
   tags?: string[];
+};
+export type StudyResult = {
+  id?: number;
+  name?: string;
+  description?: string;
+  budget?: number;
+  service_code?: string;
+  business_code?: string;
+  creation_date?: string;
+  last_modification?: string;
+  scenarios?: number[];
+  start_date_study?: string;
+  expected_end_date_study?: string;
+  actual_end_date_study?: string;
+  state?: 'started' | 'inProgress' | 'finish';
+  study_type?:
+    | 'timeTables'
+    | 'flowRate'
+    | 'parkSizing'
+    | 'garageRequirement'
+    | 'operationOrSizing'
+    | 'operability'
+    | 'strategicPlanning'
+    | 'chartStability'
+    | 'disturbanceTests';
+};
+export type StudyCreateRequest = {
+  name: string;
+  service_code?: string;
+  business_code?: string;
+  description?: string;
+  budget?: number;
+  tags?: string[];
+  start_date?: string;
+  expected_end_date?: string;
+  actual_end_date?: string;
+  state?: 'started' | 'inProgress' | 'finish';
+  study_type?:
+    | 'timeTables'
+    | 'flowRate'
+    | 'parkSizing'
+    | 'garageRequirement'
+    | 'operationOrSizing'
+    | 'operability'
+    | 'strategicPlanning'
+    | 'chartStability'
+    | 'disturbanceTests';
 };

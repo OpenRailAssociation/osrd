@@ -9,6 +9,7 @@ mod infra_cache;
 mod map;
 mod models;
 mod schema;
+mod study;
 mod tables;
 mod views;
 
