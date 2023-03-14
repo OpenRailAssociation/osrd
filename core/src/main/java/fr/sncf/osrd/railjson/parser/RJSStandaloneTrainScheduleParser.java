@@ -25,7 +25,6 @@ public class RJSStandaloneTrainScheduleParser {
     /** Parses a RailJSON standalone train schedule */
     public static StandaloneTrainSchedule parse(
             SignalingInfra infra,
-            double timeStep,
             Function<String, RollingStock> rollingStockGetter,
             RJSStandaloneTrainSchedule rjsTrainSchedule,
             TrainPath trainPath,
@@ -51,10 +50,7 @@ public class RJSStandaloneTrainScheduleParser {
         if (rjsTrainSchedule.allowances != null)
             for (int i = 0; i < rjsTrainSchedule.allowances.length; i++) {
                 var rjsAllowance = rjsTrainSchedule.allowances[i];
-                allowances.add(
-                        parseAllowance(timeStep, rollingStock, envelopeSimPath, rjsAllowance, comfort,
-                                options.ignoreElectricalProfiles)
-                );
+                allowances.add(parseAllowance(envelopeSimPath, rjsAllowance));
             }
 
         var tag = rjsTrainSchedule.tag;
@@ -70,12 +66,8 @@ public class RJSStandaloneTrainScheduleParser {
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     private static Allowance parseAllowance(
-            double timeStep,
-            RollingStock rollingStock,
             EnvelopeSimPath envelopeSimPath,
-            RJSAllowance rjsAllowance,
-            RollingStock.Comfort comfort,
-            boolean ignoreElectricalProfiles
+            RJSAllowance rjsAllowance
     ) throws InvalidSchedule {
 
         var allowanceDistribution = rjsAllowance.distribution;
@@ -94,19 +86,15 @@ public class RJSStandaloneTrainScheduleParser {
         } else {
             throw new RuntimeException("unknown allowance type");
         }
-        var context = EnvelopeSimContextBuilder.build(rollingStock, envelopeSimPath, timeStep, comfort,
-                ignoreElectricalProfiles);
         // parse allowance distribution
         return switch (allowanceDistribution) {
             case MARECO -> new MarecoAllowance(
-                    context,
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
                     ranges
             );
             case LINEAR -> new LinearAllowance(
-                    context,
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),

@@ -36,10 +36,8 @@ public class AllowanceRangesTests {
                 new AllowanceRange(0, 0.3 * path.getLength(), value1),
                 new AllowanceRange(0.3 * path.getLength(), path.getLength(), value2)
         );
-        var allowance = new MarecoAllowance(
-                context,
-                0, path.getLength(), 0, ranges);
-        return allowance.apply(maxEffortEnvelope);
+        var allowance = new MarecoAllowance(0, path.getLength(), 0, ranges);
+        return allowance.apply(maxEffortEnvelope, context);
     }
 
     public static double getDistance(MarecoAllowance allowance) {
@@ -74,10 +72,8 @@ public class AllowanceRangesTests {
                 new AllowanceRange(0, rangesTransition, value1),
                 new AllowanceRange(rangesTransition, length, value2)
         );
-        var allowance = new MarecoAllowance(
-                testContext, 0, length, 30 / 3.6, ranges
-        );
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+        var allowance = new MarecoAllowance(0, length, 30 / 3.6, ranges);
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(0, rangesTransition);
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransition, length);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
@@ -107,10 +103,8 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
-        var allowance = new MarecoAllowance(
-                testContext, 0, length, 30 / 3.6, ranges
-        );
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+        var allowance = new MarecoAllowance(0, length, 30 / 3.6, ranges);
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
@@ -143,10 +137,8 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
-        var allowance = new MarecoAllowance(
-                testContext, 0, length, 30 / 3.6, ranges
-        );
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+        var allowance = new MarecoAllowance(0, length, 30 / 3.6, ranges);
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
@@ -179,10 +171,8 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
-        var allowance = new MarecoAllowance(
-                testContext, 0, length, 1, ranges
-        );
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+        var allowance = new MarecoAllowance(0, length, 1, ranges);
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext);
 
         // Check that we lose as much time as specified
         assertEquals(
@@ -222,10 +212,8 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
                 new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2)
         );
-        var allowance = new MarecoAllowance(
-                testContext, 0, length, 30 / 3.6, ranges
-        );
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+        var allowance = new MarecoAllowance(0, length, 30 / 3.6, ranges);
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var totalBaseTime = maxEffortEnvelope.getTotalTime();
@@ -254,10 +242,8 @@ public class AllowanceRangesTests {
                 new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
                 new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
         );
-        var allowance = new MarecoAllowance(
-                testContext, 0, length, 30 / 3.6, ranges
-        );
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+        var allowance = new MarecoAllowance(0, length, 30 / 3.6, ranges);
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext);
         var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
         var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
         var baseTime3 = maxEffortEnvelope.getTimeBetween(rangesTransitions[2], rangesTransitions[3]);
@@ -288,10 +274,9 @@ public class AllowanceRangesTests {
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1)
         );
-        var allowance = new LinearAllowance(
-                testContext, rangesTransitions[0], rangesTransitions[1], 0, ranges
+        var allowance = new LinearAllowance(rangesTransitions[0], rangesTransitions[1], 0, ranges
         );
-        applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope);
+        applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope, testContext);
     }
 
     /** Test with an allowance range that starts very slightly after the path start, and ends around the end
@@ -309,10 +294,8 @@ public class AllowanceRangesTests {
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1)
         );
-        var allowance = new LinearAllowance(
-                testContext, rangesTransitions[0], rangesTransitions[1], 0, ranges
-        );
-        applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope);
+        var allowance = new LinearAllowance(rangesTransitions[0], rangesTransitions[1], 0, ranges);
+        applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope, testContext);
     }
 
     /** Regression test: reproduces <a href="https://github.com/DGEXSolutions/osrd/issues/3199">this bug</a>.
@@ -328,9 +311,7 @@ public class AllowanceRangesTests {
         var stops = new double[]{300};
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
-        var allowance = new LinearAllowance(
-                testContext,
-                0,
+        var allowance = new LinearAllowance(0,
                 testPath.getLength(),
                 1.5,
                 List.of(
@@ -339,14 +320,15 @@ public class AllowanceRangesTests {
                 )
         );
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 80, stops);
-        var err = assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+        var err = assertThrows(AllowanceConvergenceException.class,
+                () -> allowance.apply(maxEffortEnvelope, testContext));
         assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, err.errorType);
     }
 
     /** Applies the allowance to the envelope. Any user error (impossible margin) is ignored */
-    private void applyAllowanceIgnoringUserError(Allowance allowance, Envelope envelope) {
+    private void applyAllowanceIgnoringUserError(Allowance allowance, Envelope envelope, EnvelopeSimContext context) {
         try {
-            allowance.apply(envelope);
+            allowance.apply(envelope, context);
         } catch (AllowanceConvergenceException e) {
             assertEquals(OSRDError.ErrorCause.USER, e.cause);
         }

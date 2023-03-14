@@ -114,7 +114,7 @@ public class StandaloneSimulationCommand implements CliCommand {
                 // Parse train schedules (from RJSStandaloneTrainSchedule to StandaloneTrainSchedule)
                 var trainSchedules = new ArrayList<StandaloneTrainSchedule>();
                 trainSchedules.add(RJSStandaloneTrainScheduleParser.parse(
-                        signalingInfra, 2.0, rollingStocks::get, standSched, trainsPath, envelopePath));
+                        signalingInfra, rollingStocks::get, standSched, trainsPath, envelopePath));
 
                 // Calculate the result for the given train path and schedules
                 DriverBehaviour driverBehaviour = new DriverBehaviour();

@@ -91,13 +91,13 @@ public class STDCMStandardAllowance {
     ) {
 
         var allowance = new MarecoAllowance(
-                EnvelopeSimContextBuilder.build(rollingStock, envelopeSimPath, timeStep, comfort),
                 0,
                 envelope.getEndPos(),
                 1,
                 makeAllowanceRanges(standardAllowance, envelope.getEndPos(), rangeTransitions)
         );
-        return allowance.apply(envelope);
+        return allowance.apply(envelope,
+                EnvelopeSimContextBuilder.build(rollingStock, envelopeSimPath, timeStep, comfort));
     }
 
     /** Create the list of `AllowanceRange`, with the given transitions */

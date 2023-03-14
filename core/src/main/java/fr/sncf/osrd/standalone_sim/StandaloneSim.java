@@ -67,7 +67,7 @@ public class StandaloneSim {
 
                 // Eco
                 if (!trainSchedule.allowances.isEmpty()) {
-                    var ecoEnvelope = applyAllowances(envelope, trainSchedule.allowances);
+                    var ecoEnvelope = applyAllowances(context, envelope, trainSchedule.allowances);
                     var simEcoResultTrain = ScheduleMetadataExtractor.run(
                             ecoEnvelope,
                             trainPath,
@@ -102,13 +102,14 @@ public class StandaloneSim {
      * Apply a list of allowances, in order
      */
     public static Envelope applyAllowances(
+            EnvelopeSimContext context,
             Envelope maxEffortEnvelope,
             List<? extends Allowance> allowances
     ) {
         var result = maxEffortEnvelope;
         for (int i = 0; i < allowances.size(); i++) {
             try {
-                result = allowances.get(i).apply(result);
+                result = allowances.get(i).apply(result, context);
             } catch (OSRDError e) {
                 throw e.withContext(new ErrorContext.Allowance(i));
             }

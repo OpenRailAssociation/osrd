@@ -41,10 +41,10 @@ public class MarecoDecelerationTests {
         EnvelopeDeceleration.decelerate(context, 100_000, 0, overlayBuilder, -1);
         var envelope = builder.build();
 
-        var allowance = new MarecoAllowance(context, startOffset, endOffset, 0,
+        var allowance = new MarecoAllowance(startOffset, endOffset, 0,
                 List.of(new AllowanceRange(startOffset, endOffset, new AllowanceValue.Percentage(50))));
         try {
-            allowance.apply(envelope);
+            allowance.apply(envelope, context);
         } catch (AllowanceConvergenceException err) {
             assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, err.errorType);
         }
