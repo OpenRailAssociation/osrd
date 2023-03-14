@@ -85,6 +85,12 @@ const injectedRtkApi = api.injectEndpoints({
         params: { infras: queryArg.infras, force: queryArg.force },
       }),
     }),
+    getInfraByIdLinesAndLineCodeBbox: build.query<
+      GetInfraByIdLinesAndLineCodeBboxApiResponse,
+      GetInfraByIdLinesAndLineCodeBboxApiArg
+    >({
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/lines/${queryArg.lineCode}/bbox` }),
+    }),
     postInfraByIdLock: build.mutation<PostInfraByIdLockApiResponse, PostInfraByIdLockApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/lock/`, method: 'POST' }),
     }),
@@ -370,6 +376,14 @@ export type PostInfraRefreshApiArg = {
   infras?: number[];
   /** Force the refresh of the layers */
   force?: boolean;
+};
+export type GetInfraByIdLinesAndLineCodeBboxApiResponse =
+  /** status 200 The BBox of the line */ Zone;
+export type GetInfraByIdLinesAndLineCodeBboxApiArg = {
+  /** infra id */
+  id: number;
+  /** a line code */
+  lineCode: number;
 };
 export type PostInfraByIdLockApiResponse = unknown;
 export type PostInfraByIdLockApiArg = {
@@ -662,6 +676,11 @@ export type InfraError = {
   geographic?: object | null;
   schematic?: object | null;
   information?: object;
+};
+export type BoundingBox = number[][];
+export type Zone = {
+  geo?: BoundingBox;
+  sch?: BoundingBox;
 };
 export type RouteTrackRangesNotFoundError = {
   type?: 'NotFound';
