@@ -8,6 +8,7 @@ pub mod params;
 pub mod projects;
 pub mod rolling_stocks;
 pub mod search;
+pub mod study;
 
 use crate::error::Result;
 use crate::DbPool;
@@ -28,6 +29,7 @@ pub fn routes() -> impl HttpServiceFactory {
         layers::routes(),
         electrical_profiles::routes(),
         projects::routes(),
+        study::routes(),
         documents::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),

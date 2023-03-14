@@ -1007,7 +1007,7 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/LightRollingStock"
-  
+
   /light_rolling_stock/{id}/:
     get:
       tags:
@@ -1189,6 +1189,29 @@ paths:
       responses:
         204:
           description: No content
+  /projects/{project_id}/studies/:
+    post:
+      tags:
+        - studies
+      summary: Create a new operational study
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyCreateRequest"
+      responses:
+        201:
+          description: The created operational study
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyResult"
 
   /rolling_stock/{id}/livery/{livery_id}:
     get:
@@ -1883,6 +1906,152 @@ components:
           type: array
           items:
             type: string
+    StudyCreateRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        service_code:
+          type: string
+          maxLength: 128
+        business_code:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 1024
+        budget:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+        start_date:
+          type: string
+          format: date-time
+        expected_end_date:
+          type: string
+          format: date-time
+        actual_end_date:
+          type: string
+          format: date-time
+        state:
+          type: string
+          enum: ["started", "inProgress", "finish"]
+        study_type:
+          type: string
+          enum:
+            [
+              "timeTables",
+              "flowRate",
+              "parkSizing",
+              "garageRequirement",
+              "operationOrSizing",
+              "operability",
+              "strategicPlanning",
+              "chartStability",
+              "disturbanceTests",
+            ]
+      required:
+        - "name"
+    StudyPatchRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        service_code:
+          type: string
+          maxLength: 128
+        business_code:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 1024
+        budget:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+        start_date:
+          type: string
+          format: date-time
+        expected_end_date:
+          type: string
+          format: date-time
+        actual_end_date:
+          type: string
+          format: date-time
+        state:
+          type: string
+          enum: ["started", "inProgress", "finish"]
+        study_type:
+          type: string
+          enum:
+            [
+              "timeTables",
+              "flowRate",
+              "parkSizing",
+              "garageRequirement",
+              "operationOrSizing",
+              "operability",
+              "strategicPlanning",
+              "chartStability",
+              "disturbanceTests",
+            ]
+    StudyResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        budget:
+          type: integer
+        service_code:
+          type: string
+        business_code:
+          type: string
+        creation_date:
+          type: string
+          format: date-time
+        last_modification:
+          type: string
+          format: date-time
+        scenarios:
+          type: array
+          items:
+            type: integer
+        start_date_study:
+          type: string
+          format: date-time
+        expected_end_date_study:
+          type: string
+          format: date-time
+        actual_end_date_study:
+          type: string
+          format: date-time
+        state:
+          type: string
+          enum: ["started", "inProgress", "finish"]
+        study_type:
+          type: string
+          enum:
+            [
+              "timeTables",
+              "flowRate",
+              "parkSizing",
+              "garageRequirement",
+              "operationOrSizing",
+              "operability",
+              "strategicPlanning",
+              "chartStability",
+              "disturbanceTests",
+            ]
 
     Geometry:
       type: object

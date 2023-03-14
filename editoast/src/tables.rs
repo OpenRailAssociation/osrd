@@ -220,7 +220,29 @@ table! {
     osrd_infra_study {
         id -> BigInt,
         project_id -> BigInt,
-        // TODO: add other fields fields
+        name -> Text,
+        description -> Text,
+        business_code -> Text,
+        service_code -> Text,
+        creation_date -> Timestamp,
+        last_modification -> Timestamp,
+        start_date -> Nullable<Timestamp>,
+        expected_end_date -> Nullable<Timestamp>,
+        actual_end_date -> Nullable<Timestamp>,
+        budget -> Integer,
+        tags -> Array<Text>,
+        state -> Text,
+        study_type -> Text,
+    }
+}
+
+joinable!(osrd_infra_study -> osrd_infra_project (project_id));
+
+table! {
+    osrd_infra_scenario {
+        id -> BigInt,
+        study_id -> BigInt,
+        // TODO : add other fields
     }
 }
 
