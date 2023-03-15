@@ -4,7 +4,7 @@ import requests
 from .services import API_URL
 
 
-@pytest.mark.usefixtures("scenarios")
+@pytest.mark.usefixtures("tiny_scenario")
 def test_get_rolling_stock():
     r = requests.get(API_URL + "rolling_stock/?page_size=1000")
     if r.status_code // 100 != 2:

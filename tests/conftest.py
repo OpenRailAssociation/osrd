@@ -1,14 +1,13 @@
 import subprocess
 import sys
 from pathlib import Path
-from typing import Mapping
 
 import pytest
 import requests
 
 from tests.scenario import Scenario
 from tests.services import API_URL, EDITOAST_URL
-from tests.utils.timetable import create_op_study, create_project, create_scenario
+from tests.utils.timetable import create_scenario
 
 
 def _load_generated_infra(name: str) -> int:
@@ -34,45 +33,57 @@ def _load_generated_infra(name: str) -> int:
 
 
 @pytest.fixture(scope="session")
-def scenarios():
-    # Setup project and operational study
-    project_id = create_project(API_URL)
-    op_study_id = create_op_study(API_URL, project_id)
-
-    # Setup dummy infra with scenario
+def dummy_infra_id() -> int:
     result = subprocess.check_output(
         ["docker", "exec", "osrd-api", "python", "manage.py", "setup_dummy_db"],
     )
     infra_id = int(result)
-    scenario_id, timetable_id = create_scenario(API_URL, infra_id, project_id, op_study_id)
-
-    # Setup dummy, small and tiny infra with their scenarios
-    scenarios = {}
-    scenarios["dummy"] = Scenario(project_id, op_study_id, scenario_id, infra_id, timetable_id)
-    for infra in ["small_infra", "tiny_infra"]:
-        infra_id = _load_generated_infra(infra)
-        scenario_id, timetable_id = create_scenario(API_URL, infra_id, project_id, op_study_id)
-        scenarios[infra] = Scenario(project_id, op_study_id, scenario_id, infra_id, timetable_id)
-    yield scenarios
-    project = scenarios["dummy"].project
-    response = requests.delete(API_URL + f"projects/{project}/")
-    for scenario in scenarios.values():
-        infra_id = scenario.infra
-        response = requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
-        if response.status_code // 100 != 2:
-            raise RuntimeError(f"Cleanup failed, code {response.status_code}: {response.content}")
+    yield infra_id
+    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
-@pytest.fixture
-def dummy_scenario(scenarios: Mapping[str, Scenario]) -> Scenario:
-    yield scenarios["dummy"]
+@pytest.fixture(scope="session")
+def tiny_infra_id() -> int:
+    infra_id = _load_generated_infra("tiny_infra")
+    yield infra_id
+    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
+
+
+@pytest.fixture(scope="session")
+def small_infra_id() -> int:
+    infra_id = _load_generated_infra("small_infra")
+    yield infra_id
+    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
 @pytest.fixture
-def small_scenario(scenarios: Mapping[str, Scenario]) -> Scenario:
-    yield scenarios["small_infra"]
+def foo_project_id() -> int:
+    response = requests.post(API_URL + "projects/", json={"name": "foo"})
+    project_id = response.json()["id"]
+    yield project_id
+    requests.delete(API_URL + f"projects/{project_id}/")
 
 
 @pytest.fixture
-def tiny_infra(scenarios: Mapping[str, Scenario]) -> Scenario:
-    yield scenarios["tiny_infra"]
+def foo_study_id(foo_project_id: int) -> int:
+    payload = {"name": "foo", "service_code": "AAA", "business_code": "BBB"}
+    res = requests.post(API_URL + f"projects/{foo_project_id}/studies/", json=payload)
+    yield res.json()["id"]
+
+
+@pytest.fixture
+def dummy_scenario(dummy_infra_id: int, foo_project_id: int, foo_study_id: int) -> Scenario:
+    scenario_id, timetable_id = create_scenario(API_URL, dummy_infra_id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, dummy_infra_id, timetable_id)
+
+
+@pytest.fixture
+def tiny_scenario(tiny_infra_id: int, foo_project_id: int, foo_study_id: int) -> Scenario:
+    scenario_id, timetable_id = create_scenario(API_URL, tiny_infra_id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra_id, timetable_id)
+
+
+@pytest.fixture
+def small_scenario(small_infra_id: int, foo_project_id: int, foo_study_id: int) -> Scenario:
+    scenario_id, timetable_id = create_scenario(API_URL, small_infra_id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra_id, timetable_id)

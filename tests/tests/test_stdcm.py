@@ -1,11 +1,6 @@
 import requests
 
-from tests.utils.timetable import (
-    create_op_study,
-    create_project,
-    create_scenario,
-    delete_project,
-)
+from tests.utils.timetable import create_op_study, create_scenario
 
 from .scenario import Scenario
 from .services import API_URL
@@ -13,13 +8,11 @@ from .utils.simulation import _get_rolling_stock_id
 from .utils.stdcm import add_train
 
 
-def test_empty_timetable(small_scenario: Scenario):
-    infra_id = small_scenario.infra
-    project = create_project(API_URL)
-    op_study = create_op_study(API_URL, project)
-    _, timetable = create_scenario(API_URL, infra_id, project, op_study)
+def test_empty_timetable(small_infra_id: int, foo_project_id: int):
+    op_study = create_op_study(API_URL, foo_project_id)
+    _, timetable = create_scenario(API_URL, small_infra_id, foo_project_id, op_study)
     payload = {
-        "infra": infra_id,
+        "infra": small_infra_id,
         "rolling_stock": _get_rolling_stock_id(API_URL, "fast_rolling_stock"),
         "timetable": timetable,
         "start_time": 0,
@@ -28,7 +21,6 @@ def test_empty_timetable(small_scenario: Scenario):
         "end_points": [{"track_section": "TE0", "offset": 0}],
     }
     r = requests.post(API_URL + "stdcm/", json=payload)
-    delete_project(API_URL, project)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
 
