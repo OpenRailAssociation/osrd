@@ -9,6 +9,7 @@ import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
 import { Layer, Popup, Source } from 'react-map-gl';
 import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';
+import { Position } from 'geojson';
 
 import EditorContext from '../../context';
 import Tipped from '../../components/Tipped';
@@ -16,7 +17,6 @@ import { ExtendedEditorContextType, OSRDConf } from '../types';
 import {
   CreateEntityOperation,
   DEFAULT_ENDPOINT,
-  EditorEntity,
   ENDPOINTS,
   ENDPOINTS_SET,
   SwitchEntity,
@@ -25,7 +25,7 @@ import {
 } from '../../../../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
-import { SwitchEditionState } from './types';
+import { PortEndPointCandidate, SwitchEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import {
@@ -41,7 +41,7 @@ import {
   getSwitchesLayerProps,
   getSwitchesNameLayerProps,
 } from '../../../../common/Map/Layers/Switches';
-import { flattenEntity, nestEntity, NEW_ENTITY_ID } from '../../data/utils';
+import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntity } from '../../data/api';
 
@@ -87,18 +87,11 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
           type: 'selection',
           portId,
           hoveredPoint: null,
-          onSelect: (track: TrackSectionEntity, position: [number, number]) => {
-            const closest = nearestPoint(
-              position,
-              featureCollection([
-                point(first(track.geometry.coordinates) as [number, number]),
-                point(last(track.geometry.coordinates) as [number, number]),
-              ])
-            );
+          onSelect: (hoveredPoint: PortEndPointCandidate) => {
             setState({ ...state, portEditionState: { type: 'idle' } });
             onChange({
-              endpoint: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
-              track: track.properties.id as string,
+              endpoint: hoveredPoint.endPoint,
+              track: hoveredPoint.trackSectionId,
             });
           },
         },
@@ -307,14 +300,14 @@ export const SwitchEditionLeftPanel: FC = () => {
 
 export const SwitchEditionLayers: FC = () => {
   const { t } = useTranslation();
-  const [showPopup, setShowPopup] = useState(true);
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const { switchTypes, infraID } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const {
     renderingFingerprint,
-    state: { entity, hovered, portEditionState, mousePosition },
+    state,
+    setState,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
-  const { switchTypes } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const { entity, hovered, portEditionState, mousePosition } = state;
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchType = useMemo(
     () => (entity.properties?.switch_type ? switchTypesDict[entity.properties.switch_type] : null),
@@ -337,42 +330,71 @@ export const SwitchEditionLayers: FC = () => {
       }),
     [mapStyle]
   );
-  const hoveredTrack = useMemo(
-    () =>
-      hovered?.type === 'TrackSection'
-        ? (nestEntity(hovered.renderedEntity as EditorEntity, 'TrackSection') as TrackSectionEntity)
-        : null,
-    [hovered?.renderedEntity, hovered?.type]
-  );
+  const hoveredTrackId = useMemo(() => hovered?.type === 'TrackSection' && hovered.id, [hovered]);
+  const [trackStatus, setTrackStatus] = useState<
+    | { type: 'idle' }
+    | { type: 'loading'; trackSectionID: string }
+    | { type: 'error'; trackSectionID: string; message?: string }
+    | { type: 'loaded'; trackSection: TrackSectionEntity }
+  >({ type: 'idle' });
 
-  const closest =
-    portEditionState.type === 'selection' &&
-    hovered?.renderedEntity &&
-    hovered.type === 'TrackSection' &&
-    mousePosition
-      ? nearestPoint(
-          mousePosition,
-          featureCollection([
-            point(
-              first((hovered.renderedEntity as TrackSectionEntity).geometry.coordinates) as [
-                number,
-                number
-              ]
-            ),
-            point(
-              last((hovered.renderedEntity as TrackSectionEntity).geometry.coordinates) as [
-                number,
-                number
-              ]
-            ),
-          ])
-        )
-      : null;
-  const closestPoint = closest
-    ? point(closest.geometry.coordinates, {
-        name: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
-      })
-    : null;
+  // Load the accurate TrackSection to search for the proper endpoint:
+  useEffect(() => {
+    if (!hoveredTrackId) {
+      setTrackStatus({ type: 'idle' });
+    } else if (
+      trackStatus.type === 'idle' ||
+      (trackStatus.type === 'loading' && trackStatus.trackSectionID !== hoveredTrackId) ||
+      (trackStatus.type === 'loaded' && trackStatus.trackSection.properties.id !== hoveredTrackId)
+    ) {
+      setTrackStatus({ type: 'loading', trackSectionID: hoveredTrackId });
+      getEntity<TrackSectionEntity>(infraID as string, hoveredTrackId, 'TrackSection')
+        .then((trackSection) => {
+          setTrackStatus({ type: 'loaded', trackSection });
+        })
+        .catch((e: unknown) => {
+          setTrackStatus({
+            type: 'error',
+            trackSectionID: hoveredTrackId,
+            message: e instanceof Error ? e.message : undefined,
+          });
+        });
+    }
+  }, [hoveredTrackId]);
+
+  // Update the hoveredPoint value in the state:
+  useEffect(() => {
+    if (portEditionState.type !== 'selection') return;
+    if (trackStatus.type !== 'loaded' || !mousePosition) {
+      setState({ ...state, portEditionState: { ...portEditionState, hoveredPoint: null } });
+      return;
+    }
+
+    const hoveredTrack = trackStatus.trackSection;
+    const trackSectionPoints = hoveredTrack.geometry.coordinates;
+    const closest = nearestPoint(
+      mousePosition,
+      featureCollection([
+        point(first(trackSectionPoints) as Position),
+        point(last(trackSectionPoints) as Position),
+      ])
+    );
+
+    setState({
+      ...state,
+      portEditionState: {
+        ...portEditionState,
+        hoveredPoint: {
+          endPoint: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
+          position: closest.geometry.coordinates,
+          trackSectionId: hoveredTrack.properties.id,
+          trackSectionName:
+            hoveredTrack.properties?.extensions?.sncf?.track_name ||
+            t('Editor.tools.switch-edition.untitled-track'),
+        },
+      },
+    });
+  }, [trackStatus, mousePosition, t]);
   const [geometryState, setGeometryState] = useState<
     { type: 'loading'; entity?: undefined } | { type: 'ready'; entity?: SwitchEntity }
   >({ type: 'ready' });
@@ -387,29 +409,27 @@ export const SwitchEditionLayers: FC = () => {
       setGeometryState({ type: 'ready' });
     } else {
       setGeometryState({ type: 'loading' });
-      getEntity<TrackSectionEntity>(osrdConf.infraID as string, port.track, 'TrackSection').then(
-        (track) => {
-          if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
+      getEntity<TrackSectionEntity>(infraID as string, port.track, 'TrackSection').then((track) => {
+        if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
 
-          const coordinates =
-            port.endpoint === 'BEGIN'
-              ? first(track.geometry.coordinates)
-              : last(track.geometry.coordinates);
-          setGeometryState({
-            type: 'ready',
-            entity: {
-              ...(entity as SwitchEntity),
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: coordinates as [number, number],
-              },
+        const coordinates =
+          port.endpoint === 'BEGIN'
+            ? first(track.geometry.coordinates)
+            : last(track.geometry.coordinates);
+        setGeometryState({
+          type: 'ready',
+          entity: {
+            ...(entity as SwitchEntity),
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: coordinates as [number, number],
             },
-          });
-        }
-      );
+          },
+        });
+      });
     }
-  }, [entity?.properties?.ports, osrdConf.infraID]);
+  }, [entity?.properties?.ports, infraID]);
 
   return (
     <>
@@ -429,20 +449,19 @@ export const SwitchEditionLayers: FC = () => {
         <Layer {...layerProps} />
         <Layer {...nameLayerProps} />
       </Source>
-      {showPopup && geometryState.entity && (
+      {geometryState.entity && (
         <Popup
           className="popup py-2"
           anchor="bottom"
           longitude={geometryState.entity.geometry.coordinates[0]}
           latitude={geometryState.entity.geometry.coordinates[1]}
-          onClose={() => setShowPopup(false)}
         >
           <EntitySumUp entity={entity as SwitchEntity} status="edited" />
         </Popup>
       )}
 
       {/* Hovered track section */}
-      {portEditionState.type === 'selection' && hoveredTrack && mousePosition && closestPoint && (
+      {portEditionState.type === 'selection' && portEditionState.hoveredPoint && mousePosition && (
         <>
           <Popup
             className="popup"
@@ -451,14 +470,11 @@ export const SwitchEditionLayers: FC = () => {
             latitude={mousePosition[1]}
             closeButton={false}
           >
-            {`${
-              hoveredTrack.properties?.extensions?.sncf?.line_name ||
-              t('Editor.tools.switch-edition.untitled-track')
-            } (${closestPoint.properties.name})`}
-            <div className="text-muted small">{hoveredTrack.properties.id}</div>
+            {`${portEditionState.hoveredPoint.trackSectionName} (${portEditionState.hoveredPoint.endPoint})`}
+            <div className="text-muted small">{portEditionState.hoveredPoint.trackSectionId}</div>
           </Popup>
 
-          <Source type="geojson" data={closestPoint}>
+          <Source type="geojson" data={point(portEditionState.hoveredPoint.position)}>
             <Layer {...layerProps} />
           </Source>
         </>
