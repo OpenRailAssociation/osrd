@@ -53,13 +53,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
       .colors(candidates.length)
       .map((str) => chroma(str).css());
 
-    const features = await getRouteGeometries(
-      infraId,
-      entryPoint,
-      entryPointDirection,
-      exitPoint,
-      candidates
-    );
+    const features = await getRouteGeometries(infraId, entryPoint, exitPoint, candidates);
 
     setState({
       optionsState: {

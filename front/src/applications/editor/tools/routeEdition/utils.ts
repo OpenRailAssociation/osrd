@@ -7,6 +7,7 @@ import { RouteCandidate, RouteEditionState } from './types';
 import { DEFAULT_COMMON_TOOL_STATE } from '../types';
 import {
   Direction,
+  PartialButFor,
   RouteEntity,
   TrackRange,
   TrackSectionEntity,
@@ -38,11 +39,89 @@ export function getEditRouteState(route: RouteEntity): RouteEditionState {
   };
 }
 
+/**
+ * This helper deletes consecutive repeted coordinates in an array of
+ * coordinates:
+ */
+export function removeDuplicatePoints(coordinates: Position[]): Position[] {
+  const res: Position[] = [];
+  let lastPoint: Position | null = null;
+
+  coordinates.forEach((coordinate) => {
+    if (!isEqual(coordinate, lastPoint)) res.push(coordinate);
+    lastPoint = coordinate;
+  });
+
+  return res;
+}
+
+export function computeRouteGeometry(
+  tracks: Record<string, TrackSectionEntity>,
+  entryPoint: WayPointEntity,
+  exitPoint: WayPointEntity,
+  trackRanges: PartialButFor<TrackRange, 'track' | 'direction'>[]
+): Feature<LineString, { id: string }> {
+  return lineString(
+    removeDuplicatePoints(
+      trackRanges.flatMap((range, i) => {
+        const track = tracks[range.track];
+        const direction = range.direction;
+
+        if (!track) throw new Error(`Track ${range.track} not found`);
+
+        const isFirst = !i;
+        const isLast = i === trackRanges.length - 1;
+
+        const p1 = first(track.geometry.coordinates) as Position;
+        const p2 = last(track.geometry.coordinates) as Position;
+
+        // Weird case of only range:
+        if (isFirst && isLast) {
+          return direction === 'START_TO_STOP'
+            ? lineSlice(entryPoint.geometry, exitPoint.geometry, track.geometry).geometry
+                .coordinates
+            : lineSlice(exitPoint.geometry, entryPoint.geometry, track.geometry)
+                .geometry.coordinates.slice(0)
+                .reverse();
+        }
+
+        // First:
+        if (isFirst) {
+          if (direction === 'START_TO_STOP') {
+            return lineSlice(entryPoint.geometry, point(p2), track.geometry).geometry.coordinates;
+          }
+
+          return lineSlice(point(p1), entryPoint.geometry, track.geometry)
+            .geometry.coordinates.slice(0)
+            .reverse();
+        }
+
+        // Last (we don't know the direction, we must guess from previous point):
+        if (isLast) {
+          if (direction === 'START_TO_STOP') {
+            return lineSlice(point(p1), exitPoint.geometry, track.geometry).geometry.coordinates;
+          }
+
+          return lineSlice(exitPoint.geometry, point(p2), track.geometry)
+            .geometry.coordinates.slice(0)
+            .reverse();
+        }
+
+        // All ranges inbetween:
+        if (direction === 'START_TO_STOP') {
+          return track.geometry.coordinates;
+        }
+
+        return track.geometry.coordinates.slice(0).reverse();
+      })
+    )
+  );
+}
+
 export async function getRouteGeometry(
   infra: string | number,
   entryPoint: WayPointEntity,
   exitPoint: WayPointEntity,
-  entryDirection: Direction,
   trackRanges: TrackRange[]
 ): Promise<Feature<LineString, { id: string }>> {
   if (!trackRanges.length) return lineString([]);
@@ -53,63 +132,7 @@ export async function getRouteGeometry(
     'TrackSection'
   );
 
-  let lastPoint: Position | null = null;
-  return lineString(
-    trackRanges.flatMap((range, i) => {
-      const track = tracks[range.track];
-      if (!track) throw new Error(`Track ${range.track} not found`);
-
-      const isFirst = !i;
-      const isLast = i === trackRanges.length - 1;
-
-      const p1 = first(track.geometry.coordinates) as Position;
-      const p2 = last(track.geometry.coordinates) as Position;
-
-      // Weird case of only range:
-      if (isFirst && isLast) {
-        return entryDirection === 'START_TO_STOP'
-          ? lineSlice(entryPoint.geometry, exitPoint.geometry, track.geometry).geometry.coordinates
-          : lineSlice(exitPoint.geometry, entryPoint.geometry, track.geometry).geometry.coordinates;
-      }
-
-      // First:
-      if (isFirst) {
-        if (entryDirection === 'START_TO_STOP') {
-          lastPoint = p2;
-          return lineSlice(entryPoint.geometry, point(p2), track.geometry).geometry.coordinates;
-        }
-
-        lastPoint = p1;
-        return lineSlice(point(p1), entryPoint.geometry, track.geometry)
-          .geometry.coordinates.slice(0)
-          .reverse();
-      }
-
-      // Last (we don't know the direction, we must guess from previous point):
-      if (isLast) {
-        const secondToLastTrack = tracks[trackRanges[i - 1].track];
-        const pp1 = first(secondToLastTrack.geometry.coordinates) as Position;
-        const pp2 = last(secondToLastTrack.geometry.coordinates) as Position;
-
-        if (isEqual(p1, pp1) || isEqual(p1, pp2)) {
-          return lineSlice(point(p1), exitPoint.geometry, track.geometry).geometry.coordinates;
-        }
-
-        return lineSlice(exitPoint.geometry, point(p2), track.geometry)
-          .geometry.coordinates.slice(0)
-          .reverse();
-      }
-
-      // All ranges inbetween:
-      if (isEqual(p1, lastPoint)) {
-        lastPoint = p2;
-        return track.geometry.coordinates;
-      }
-
-      lastPoint = p1;
-      return track.geometry.coordinates.slice(0).reverse();
-    })
-  );
+  return computeRouteGeometry(tracks, entryPoint, exitPoint, trackRanges);
 }
 
 export async function getRouteGeometryByRoute(
@@ -136,13 +159,7 @@ export async function getRouteGeometryByRoute(
       `Exit point ${route.properties.exit_point.id} (${route.properties.exit_point.type}) for route ${route.properties.id} not found`
     );
 
-  return getRouteGeometry(
-    infra,
-    entryPoint,
-    exitPoint,
-    route.properties.entry_point_direction,
-    trackRanges
-  );
+  return getRouteGeometry(infra, entryPoint, exitPoint, trackRanges);
 }
 
 export async function getRouteGeometryByRouteId(
@@ -157,7 +174,6 @@ export async function getRouteGeometryByRouteId(
 export async function getRouteGeometries(
   infra: string | number,
   entryPoint: WayPoint,
-  entryDirection: Direction,
   exitPoint: WayPoint,
   candidates: RouteCandidate[]
 ): Promise<Feature<LineString, { id: string }>[]> {
@@ -175,7 +191,6 @@ export async function getRouteGeometries(
         infra,
         entryPointEntity,
         exitPointEntity,
-        entryDirection,
         candidate.track_ranges as TrackRange[]
       )
     )
