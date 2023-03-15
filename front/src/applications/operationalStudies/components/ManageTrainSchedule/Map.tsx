@@ -285,7 +285,6 @@ function Map() {
             />
             <LineSearchLayer
               geomType="geo"
-              colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
             />
           </>
@@ -347,7 +346,6 @@ function Map() {
             />
             <LineSearchLayer
               geomType="sch"
-              colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
             />
           </>
