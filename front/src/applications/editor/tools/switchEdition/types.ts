@@ -1,5 +1,14 @@
+import { Position } from 'geojson';
+
 import { CommonToolState } from '../types';
-import { SwitchEntity, TrackEndpoint, TrackSectionEntity } from '../../../../types';
+import { EndPoint, SwitchEntity } from '../../../../types';
+
+export type PortEndPointCandidate = {
+  endPoint: EndPoint;
+  position: Position;
+  trackSectionId: string;
+  trackSectionName: string;
+};
 
 export type SwitchEditionState = CommonToolState & {
   initialEntity: Partial<SwitchEntity>;
@@ -10,7 +19,7 @@ export type SwitchEditionState = CommonToolState & {
     | {
         type: 'selection';
         portId: string;
-        onSelect: (track: TrackSectionEntity, position: [number, number]) => void;
-        hoveredPoint: TrackEndpoint | null;
+        onSelect: (candidate: PortEndPointCandidate) => void;
+        hoveredPoint: PortEndPointCandidate | null;
       };
 };
