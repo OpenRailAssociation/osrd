@@ -45,6 +45,11 @@ impl InternalError {
     pub fn get_context(&self) -> &HashMap<String, Value> {
         &self.context
     }
+
+    pub fn with_context<S: AsRef<str>, V: Into<Value>>(mut self, key: S, value: V) -> Self {
+        self.context.insert(key.as_ref().into(), value.into());
+        self
+    }
 }
 
 impl Error for InternalError {}

@@ -2,7 +2,7 @@
 
 use std::{collections::HashMap, rc::Rc};
 
-use crate::error::{InternalError, Result};
+use crate::error::Result;
 use editoast_derive::EditoastError;
 
 use super::{
@@ -102,8 +102,6 @@ pub enum ProcessingError {
     #[error("expected value of type {expected}, but got ersatz '{value}'")]
     #[editoast_error(no_context)]
     UnexpectedErsatz { value: String, expected: TypeSpec },
-    #[error("in function '{0}': {1}")]
-    InFunction(String, InternalError),
 }
 
 pub type QueryFunctionFn = Rc<dyn Fn(Vec<TypedAst>) -> Result<TypedAst>>;
@@ -166,7 +164,7 @@ impl QueryContext {
                 function
                     .signature
                     .typecheck_args(arglist_types)
-                    .map_err(|err| ProcessingError::InFunction(function_name.to_owned(), err))?;
+                    .map_err(|err| err.with_context("in function", function_name.to_owned()))?;
                 Ok(function)
             }
             _ => 'find_overload: {
@@ -200,6 +198,7 @@ impl QueryContext {
             .map(|val| val.type_spec())
             .collect::<Vec<TypeSpec>>();
         let function = self.find_function(&function_name, &values_types)?;
-        (function.fun)(args).map_err(|err| ProcessingError::InFunction(function_name, err).into())
+        (function.fun)(args)
+            .map_err(|err| err.with_context("in function", function_name.to_owned()))
     }
 }
