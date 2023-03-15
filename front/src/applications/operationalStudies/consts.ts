@@ -71,11 +71,11 @@ export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   opendata: 'OPENDATA',
 });
 
-interface MODESTypes {
-  [n: string] : string
+interface MODES_Types {
+  [n: string]: string
 }
 
-export const MODES: MODESTypes = Object.freeze({
+export const MODES: MODES_Types = Object.freeze({
   simulation: 'SIMULATION',
   stdcm: 'STDCM',
 });

@@ -61,16 +61,16 @@ export default function ScenarioExplorator() {
         setScenarioDetails
       );
     } 
-    if(!projectID) {
+    else if(!projectID) {
       setProjectDetails({})
       setStudyDetails({})
       setScenarioDetails({})
     }
-    if(!studyID) {
+    else if(!studyID) {
       setStudyDetails({})
       setScenarioDetails({})
     }
-    if(!scenarioID){
+    else if(!scenarioID){
       setScenarioDetails({})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
