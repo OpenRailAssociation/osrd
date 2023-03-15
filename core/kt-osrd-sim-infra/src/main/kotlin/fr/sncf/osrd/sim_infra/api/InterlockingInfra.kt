@@ -67,6 +67,7 @@ interface LocationInfra : MovableElementsInfra {
     val detectors: StaticIdxSpace<Detector>
     fun getNextZone(dirDet: DirDetectorId): ZoneId?
     fun getPreviousZone(dirDet: DirDetectorId): ZoneId?
+    fun getDetectorName(det: DetectorId): String?
 }
 
 fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
@@ -103,6 +104,7 @@ typealias RouteId = StaticIdx<Route>
 interface RoutingInfra : ReservationInfra {
     val routes: StaticIdxSpace<Route>
     fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
+    fun getRouteName(route: RouteId): String?
 
     /** Returns a list of indices of zones in the train path at which the reservations shall be released. */
     fun getRouteReleaseZones(route: RouteId): IntArray

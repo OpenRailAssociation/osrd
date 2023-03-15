@@ -17,6 +17,7 @@ class MovableElementDescriptor(
 value class ZoneDescriptor(val movableElements: StaticIdxSortedSet<MovableElement>)
 
 interface RouteDescriptor {
+    val name: String?
     val path: StaticIdxList<ZonePath>
     val releaseZones: IntArray
     val speedLimits: StaticIdxList<SpeedLimit>
@@ -24,10 +25,15 @@ interface RouteDescriptor {
     val speedLimitEnds: DistanceList
 }
 
-class RawSignalDescriptor(
+class LogicalSignalDescriptor(
     val signalingSystemId: String,
     val nextSignalingSystemIds: List<String>,
     val rawSettings: Map<String, String>,
+)
+
+class PhysicalSignalDescriptor(
+    val name: String?,
+    val logicalSignals: StaticIdxList<LogicalSignal>,
 )
 
 open class ZonePathSpec(
@@ -68,11 +74,11 @@ class ZonePathDescriptor(
 class RawInfraImpl(
     val movableElementPool: StaticPool<MovableElement, MovableElementDescriptor>,
     val zonePool: StaticPool<Zone, ZoneDescriptor>,
-    val detectorPool: VirtualStaticPool<Detector>,
+    val detectorPool: StaticPool<Detector, String?>,
     val nextZones: IdxMap<DirDetectorId, ZoneId>,
     val routeDescriptors: StaticPool<Route, RouteDescriptor>,
-    val logicalSignalPool: StaticPool<LogicalSignal, RawSignalDescriptor>,
-    val physicalSignalPool: StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>,
+    val logicalSignalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
+    val physicalSignalPool: StaticPool<PhysicalSignal, PhysicalSignalDescriptor>,
     val zonePathPool: StaticPool<ZonePath, ZonePathDescriptor>,
     val zonePathMap: Map<ZonePathSpec, ZonePathId>
 ) : RawInfra {
@@ -97,7 +103,7 @@ class RawInfraImpl(
 
         // initialize the physical signal to logical signal map
         for (physicalSignal in physicalSignalPool)
-            for (child in physicalSignalPool[physicalSignal])
+            for (child in physicalSignalPool[physicalSignal].logicalSignals)
                 parentSignalMap[child] = physicalSignal
     }
 
@@ -138,6 +144,10 @@ class RawInfraImpl(
         return nextZones[dirDet.opposite]
     }
 
+    override fun getDetectorName(det: DetectorId): String? {
+        return detectorPool[det]
+    }
+
     override fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal> {
         return zonePathPool[zonePath].signals
     }
@@ -164,11 +174,15 @@ class RawInfraImpl(
         get() = logicalSignalPool.space()
 
     override fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal> {
-        return physicalSignalPool[signal]
+        return physicalSignalPool[signal].logicalSignals
     }
 
     override fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId {
         return parentSignalMap[signal]!!
+    }
+
+    override fun getPhysicalSignalName(signal: PhysicalSignalId): String? {
+        return physicalSignalPool[signal].name
     }
 
     override fun getSignalingSystemId(signal: LogicalSignalId): String {
@@ -225,6 +239,10 @@ class RawInfraImpl(
 
     override fun getRoutePath(route: RouteId): StaticIdxList<ZonePath> {
         return routeDescriptors[route].path
+    }
+
+    override fun getRouteName(route: RouteId): String? {
+        return routeDescriptors[route].name
     }
 
     override fun getRouteReleaseZones(route: RouteId): IntArray {
