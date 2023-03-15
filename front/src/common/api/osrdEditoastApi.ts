@@ -1,5 +1,4 @@
 import { baseEditoastApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -138,7 +137,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg.number },
+        params: { number: queryArg['number'] },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
