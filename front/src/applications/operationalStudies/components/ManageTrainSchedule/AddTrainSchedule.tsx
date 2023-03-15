@@ -17,12 +17,11 @@ import { scheduleURL } from 'applications/operationalStudies/components/Simulati
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getConf, getTimetableID } from 'reducers/osrdconf/selectors';
 import getTimetable from '../Scenario/getTimetable';
-
-type Props = {
+export default function AddTrainSchedule({
+  setDisplayTrainScheduleManagement,
+}: {
   setDisplayTrainScheduleManagement: (type: string) => void;
-};
-
-export default function AddTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
+}) {
   const [name, setName] = useState('');
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);

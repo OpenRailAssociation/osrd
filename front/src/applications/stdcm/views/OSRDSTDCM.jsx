@@ -16,7 +16,7 @@ export default function OSRDSTDCM() {
   );
   const [, setCurrentStdcmRequestResults] = useState(null);
   useEffect(() => {
-    if(mode !== MODES.stdcm) dispatch(updateMode(MODES.stdcm));
+    if (mode !== MODES.stdcm) dispatch(updateMode(MODES.stdcm));
     return () => {
       dispatch(updateMode(MODES.simulation));
       dispatch(updateSelectedTrain(0));

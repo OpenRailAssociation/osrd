@@ -10,7 +10,12 @@ import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStud
 import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import { getProjectID, getScenarioID, getStudyID, getTimetableID } from 'reducers/osrdconf/selectors';
+import {
+  getProjectID,
+  getScenarioID,
+  getStudyID,
+  getTimetableID,
+} from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaPencilAlt } from 'react-icons/fa';
@@ -70,7 +75,10 @@ export default function Scenario() {
       setScenario(result);
       dispatch(updateTimetableID(result.timetable));
       dispatch(updateInfraID(result.infra));
-      getTimetable(timetableID, result.timetable);
+
+      const preferedTimetableID = result.timetable || timetableID;
+
+      getTimetable(preferedTimetableID);
       if (withNotification) {
         dispatch(
           setSuccess({

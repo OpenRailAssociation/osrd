@@ -1,4 +1,4 @@
-import { OsrdConfState } from 'applications/operationalStudies/consts';
+import { MODES, OsrdConfState } from 'applications/operationalStudies/consts';
 import { createStoreWithoutMiddleware } from 'Store';
 import {
   initialState,
@@ -15,7 +15,7 @@ const createStore = (initialStateExtra?: any) =>
   createStoreWithoutMiddleware({
     osrdconf: {
       stdcmConf: stdcmConfInitialState,
-      mode: 'SIMULATION',
+      mode: MODES.simulation,
       simulationConf: {
         ...simulationConfInitialState,
         ...initialStateExtra.osrdconf.simulationConf,
