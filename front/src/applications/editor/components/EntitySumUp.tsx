@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { flatMap, map, uniq } from 'lodash';
+import { flatMap, uniq } from 'lodash';
 import { useSelector } from 'react-redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
@@ -59,7 +59,9 @@ async function getAdditionalEntities(
       return {};
     }
     case 'Switch': {
-      const trackIDs = map((entity as SwitchEntity).properties.ports, (port) => port.track);
+      const trackIDs = flatMap((entity as SwitchEntity).properties.ports, (port) =>
+        port.track ? [port.track] : []
+      );
       return getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
     }
     case 'Route': {
