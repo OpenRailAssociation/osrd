@@ -19,7 +19,7 @@ public class RJSInfra {
     public static final JsonAdapter<RJSInfra> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
-            .add(new LineString.Adapter())
+            .add(LineString.adapter)
             .build()
             .adapter(RJSInfra.class);
 

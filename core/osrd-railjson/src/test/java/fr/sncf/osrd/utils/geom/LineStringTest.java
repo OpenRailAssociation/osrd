@@ -20,8 +20,7 @@ class LineStringTest {
                 + "[4.04296875, 47.27922900257082], "
                 + "[2.7685546874999996, 46.164614496897094], "
                 + "[1.669921875, 44.213709909702054]]}";
-        var adapter = new LineString.Adapter();
-        var linestring = adapter.fromJson(geoJson);
+        var linestring = LineString.adapter.fromJson(geoJson);
         assertNotNull(linestring);
         assertEquals(6.248, linestring.getLength(), 0.001);
     }
@@ -29,16 +28,14 @@ class LineStringTest {
     @Test
     public void testInvalidDeserialize() {
         var geoJson = "{\"type\": \"LineString\",\"type\": \"LineString\"}";
-        var adapter = new LineString.Adapter();
-        var thrown = assertThrows(JsonDataException.class, () -> assertNotNull(adapter.fromJson(geoJson)));
+        var thrown = assertThrows(JsonDataException.class, () -> assertNotNull(LineString.adapter.fromJson(geoJson)));
         assertEquals("Missing coordinates property", thrown.getMessage());
     }
 
     @Test
     public void testSerialize() {
         var linestring = LineString.make(new double[]{2., 3., 1., 1., 2.}, new double[]{44., 49., 44., 46., 47.});
-        var adapter = new LineString.Adapter();
-        var geoJson = adapter.toJson(linestring);
+        var geoJson = LineString.adapter.toJson(linestring);
         var expectedGeoJson = "{\"type\":\"LineString\","
                 + "\"coordinates\":[[2.0,44.0],[3.0,49.0],[1.0,44.0],[1.0,46.0],[2.0,47.0]]}";
         assertEquals(expectedGeoJson, geoJson);
@@ -46,8 +43,7 @@ class LineStringTest {
 
     @Test
     public void testSerializeNull() {
-        var adapter = new LineString.Adapter();
-        var geoJson = adapter.toJson(null);
+        var geoJson = LineString.adapter.toJson(null);
         assertEquals("null", geoJson);
     }
 

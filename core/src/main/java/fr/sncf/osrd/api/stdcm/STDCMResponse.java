@@ -13,8 +13,8 @@ public final class STDCMResponse {
     public static final JsonAdapter<STDCMResponse> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
-            .add(new LineString.Adapter())
-            .add(new Point.Adapter())
+            .add(LineString.adapter)
+            .add(Point.adapter)
             .build()
             .adapter(STDCMResponse.class);
 

@@ -10,6 +10,7 @@ public record Point (
         // Latitude
         double y
 ) {
+    public static final JsonAdapter<Point> adapter = new Adapter();
 
     public static class Adapter extends JsonAdapter<Point> {
 
@@ -79,5 +80,10 @@ public record Point (
         GlobalPosition thisPosition = new GlobalPosition(y, x, 0.0);
         GlobalPosition otherPosition = new GlobalPosition(other.y, other.x, 0.0);
         return geoCalc.calculateGeodeticCurve(reference, thisPosition, otherPosition).getEllipsoidalDistance();
+    }
+
+    @Override
+    public String toString() {
+        return adapter.toJson(this);
     }
 }
