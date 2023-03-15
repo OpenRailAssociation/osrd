@@ -7,6 +7,8 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Map;
 
 public class EnvelopeSimPathTest {
@@ -39,61 +41,77 @@ public class EnvelopeSimPathTest {
         modes.put(Range.closed(3.0, 7.0), "1500");
         modes.put(Range.closed(7.1, 10.0), "25000");
         var path = new EnvelopeSimPath(10, new double[] { 0, 10 }, new double[] { 0 }, modes);
-        var modeAndProfileMap = path.getModeAndProfileMap(null);
+        var modeAndProfileMap = path.getElecCondMap(null, null, null, true);
 
-        var modeAndProfile = modeAndProfileMap.get(0.);
-        assertNull(modeAndProfile);
+        assertNull(modeAndProfileMap.get(0.));
+        assertEquals(modeAndProfileMap.get(4.), new EnvelopeSimPath.ElectrificationConditions("1500", null, null));
+        assertNull(modeAndProfileMap.get(7.05));
+        assertEquals(modeAndProfileMap.get(7.2), new EnvelopeSimPath.ElectrificationConditions("25000", null, null));
+    }
 
-        modeAndProfile = modeAndProfileMap.get(4.);
-        assertNotNull(modeAndProfile);
-        assertEquals("1500", modeAndProfile.mode());
-        assertNull(modeAndProfile.profile());
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void getCatenaryModeAndProfile(boolean withEmptyPowerRestrictionMap) {
+        var path = EnvelopeSimPathBuilder.withElectricalProfiles1500();
 
-        modeAndProfile = modeAndProfileMap.get(7.05);
-        assertNull(modeAndProfile);
+        RangeMap<Double, EnvelopeSimPath.ElectrificationConditions> modeAndProfileMap;
+        if (withEmptyPowerRestrictionMap)
+            modeAndProfileMap = path.getElecCondMap("2", ImmutableRangeMap.of(), Map.of("Restrict1", "1"));
+        else
+            modeAndProfileMap = path.getElecCondMap("2", null, Map.of("Restrict1", "1"));
 
-        modeAndProfile = modeAndProfileMap.get(7.2);
-        assertNotNull(modeAndProfile);
-        assertEquals("25000", modeAndProfile.mode());
-        assertNull(modeAndProfile.profile());
+        assertEquals(7, modeAndProfileMap.asMapOfRanges().size());
+
+        assertEquals(modeAndProfileMap.get(2.0), new EnvelopeSimPath.ElectrificationConditions("1500", null, null));
+        assertEquals(modeAndProfileMap.get(3.5), new EnvelopeSimPath.ElectrificationConditions("1500", "A", null));
+        assertEquals(modeAndProfileMap.get(5.5), new EnvelopeSimPath.ElectrificationConditions("1500", "C", null));
+        assertEquals(modeAndProfileMap.get(6.5), new EnvelopeSimPath.ElectrificationConditions("1500", "B", null));
     }
 
     @Test
-    void getCatenaryModeAndProfile() {
-        TreeRangeMap<Double, String> modes = TreeRangeMap.create();
-        modes.put(Range.closed(3.0, 7.0), "1500");
-        modes.put(Range.closed(7.1, 10.0), "25000");
+    void getCatenaryModeAndProfileWithPowerRestrictions() {
+        var path = EnvelopeSimPathBuilder.withElectricalProfiles1500();
 
-        RangeMap<Double, String> profiles1 = TreeRangeMap.create();
-        profiles1.put(Range.closed(3.0, 7.0), "A");
-        profiles1.put(Range.closed(7.1, 10.5), "25000");
+        RangeMap<Double, EnvelopeSimPath.ElectrificationConditions> modeAndProfileMap;
+        var powerRestrictionMap = TreeRangeMap.<Double, String>create();
+        powerRestrictionMap.put(Range.closed(2.5, 6.5), "Restrict2");
 
-        RangeMap<Double, String> profiles2 = TreeRangeMap.create();
-        profiles2.put(Range.closedOpen(3.0, 4.0), "A");
-        profiles2.put(Range.closedOpen(4.0, 6.0), "B");
-        profiles2.put(Range.closed(6.0, 7.0), "A");
-        profiles2.put(Range.closed(7.1, 10.5), "25000");
+        modeAndProfileMap = path.getElecCondMap("1", powerRestrictionMap, Map.of("Restrict2", "2"));
 
-        var path = new EnvelopeSimPath(10, new double[] { 0, 10 }, new double[] { 0 }, modes);
-        path.setElectricalProfiles(Map.of("1", profiles1, "2", profiles2));
+        assertEquals(8, modeAndProfileMap.asMapOfRanges().size());
 
-        var modeAndProfileMap = path.getModeAndProfileMap("2");
+        assertNull(modeAndProfileMap.get(0.5));
+        assertEquals(modeAndProfileMap.get(2.75),
+                new EnvelopeSimPath.ElectrificationConditions("1500", null, "Restrict2"));
+        assertEquals(modeAndProfileMap.get(3.25),
+                new EnvelopeSimPath.ElectrificationConditions("1500", "A", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(4.5),
+                new EnvelopeSimPath.ElectrificationConditions("1500", "B", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(5.5),
+                new EnvelopeSimPath.ElectrificationConditions("1500", "C", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(6.25),
+                new EnvelopeSimPath.ElectrificationConditions("1500", "B", "Restrict2"));
+        assertEquals(modeAndProfileMap.get(6.75), new EnvelopeSimPath.ElectrificationConditions("1500", "A", null));
+    }
 
-        assertEquals(6, modeAndProfileMap.asMapOfRanges().size());
+    @Test
+    void getCatenaryModeAndProfileWithPowerRestrictionsWithoutElectricalProfiles() {
+        var path = EnvelopeSimPathBuilder.withElectricalProfiles1500();
 
-        var modeAndProfile = modeAndProfileMap.get(3.5);
-        assertNotNull(modeAndProfile);
-        assertEquals("1500", modeAndProfile.mode());
-        assertEquals("A", modeAndProfile.profile());
+        RangeMap<Double, EnvelopeSimPath.ElectrificationConditions> modeAndProfileMap;
+        var powerRestrictionMap = TreeRangeMap.<Double, String>create();
+        powerRestrictionMap.put(Range.closed(2.5, 6.5), "Restrict2");
 
-        modeAndProfile = modeAndProfileMap.get(5.);
-        assertNotNull(modeAndProfile);
-        assertEquals("1500", modeAndProfile.mode());
-        assertEquals("B", modeAndProfile.profile());
+        modeAndProfileMap = path.getElecCondMap("1", powerRestrictionMap, Map.of("Restrict2", "2"), true);
 
-        modeAndProfile = modeAndProfileMap.get(6.5);
-        assertNotNull(modeAndProfile);
-        assertEquals("1500", modeAndProfile.mode());
-        assertEquals("A", modeAndProfile.profile());
+        assertEquals(4, modeAndProfileMap.asMapOfRanges().size());
+
+        assertEquals(modeAndProfileMap.get(2.0), new EnvelopeSimPath.ElectrificationConditions("1500", null, null));
+        assertEquals(modeAndProfileMap.get(4.5),
+                new EnvelopeSimPath.ElectrificationConditions("1500", null, "Restrict2"));
+        assertSame(modeAndProfileMap.get(4.5), modeAndProfileMap.get(5.5));
+        assertSame(modeAndProfileMap.get(5.5), modeAndProfileMap.get(6.25));
+        assertEquals(modeAndProfileMap.get(6.75), new EnvelopeSimPath.ElectrificationConditions("1500", null, null));
+        assertEquals(modeAndProfileMap.get(9.0), new EnvelopeSimPath.ElectrificationConditions("25000", null, null));
     }
 }

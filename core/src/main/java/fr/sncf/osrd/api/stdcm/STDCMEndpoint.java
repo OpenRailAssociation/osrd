@@ -151,7 +151,7 @@ public class STDCMEndpoint implements Take {
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
-                    makeTrainSchedule(res.envelope(), rollingStock, comfort),
+                    makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort),
                     fullInfra
             ));
             simResult.ecoSimulations.add(null);
@@ -222,15 +222,7 @@ public class STDCMEndpoint implements Take {
                 fullInfra,
                 path,
                 EnvelopeTrainPath.from(path),
-                List.of(new StandaloneTrainSchedule(
-                        rollingStock,
-                        0,
-                        List.of(new TrainStop(path.length(), 0.1)),
-                        List.of(),
-                        null,
-                        comfort,
-                        null
-                )),
+                List.of(makeTrainSchedule(path.length(), rollingStock, comfort)),
                 timeStep,
                 driverBehaviour
         );
@@ -243,13 +235,13 @@ public class STDCMEndpoint implements Take {
 
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
     private static StandaloneTrainSchedule makeTrainSchedule(
-            Envelope envelope,
+            double endPos,
             RollingStock rollingStock,
             RollingStock.Comfort comfort
     ) {
         List<TrainStop> trainStops = new ArrayList<>();
-        trainStops.add(new TrainStop(envelope.getEndPos(), 0.1));
-        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort, null);
+        trainStops.add(new TrainStop(endPos, 0.1));
+        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort, null, null);
     }
 }
 

@@ -1,84 +1,128 @@
 package fr.sncf.osrd.train;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ElectrificationConditions;
 
-import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
+import com.google.common.collect.*;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Stream;
 
 public class TestRollingStock {
-    @Test
-    void testMapTractiveEffortCurve() {
-        var builder = new ImmutableRangeMap.Builder<Double, String>();
-        builder.put(Range.closedOpen(0., 10.), "1500");
-        builder.put(Range.closed(10., 20.), "25000");
-        builder.put(Range.closed(30., 50.), "unhandled");
 
-        var path1 = new EnvelopeSimPath(40, new double[]{0, 40}, new double[]{0}, builder.build());
-        var path2 = new EnvelopeSimPath(60, new double[]{0, 60}, new double[]{0}, builder.build());
-        var path3 = new EnvelopeSimPath(50, new double[]{0, 50}, new double[]{0}, ImmutableRangeMap.of());
+    static double maxSpeed(PhysicsRollingStock.TractiveEffortPoint[] curve) {
+        return curve[curve.length - 1].speed();
+    }
 
+    static Stream<Arguments> mapTractiveEffortCurveArgs() {
+        var powerRestrictionMap = ImmutableRangeMap.<Double, String>builder()
+                .put(Range.closedOpen(0., 10.), "Restrict1")
+                .put(Range.closed(10., 20.), "Restrict2")
+                .build();
+        var emptyPowerRestrictionMap = ImmutableRangeMap.<Double, String>builder().build();
+        return Lists.cartesianProduct(
+                List.of(
+                        EnvelopeSimPathBuilder.withElectricalProfiles25000(40),
+                        EnvelopeSimPathBuilder.withElectricalProfiles25000(60),
+                        EnvelopeSimPathBuilder.withModes(50)
+                ),
+                List.of(RollingStock.Comfort.STANDARD, RollingStock.Comfort.AC, RollingStock.Comfort.HEATING),
+                Arrays.asList(powerRestrictionMap, emptyPowerRestrictionMap)
+        ).stream().map(args -> Arguments.of(args.get(0), args.get(1), args.get(2)));
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("mapTractiveEffortCurveArgs")
+    void testMapTractiveEffortCurveCoherent(EnvelopeSimPath path, RollingStock.Comfort comfort,
+            RangeMap<Double, String> powerRestrictionMap) {
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
-        RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> res = null;
-        for (var path : List.of(path1, path2, path3)) {
-            var tractiveEffortCurveMap =
-                    rollingStock.mapTractiveEffortCurves(path.getModeAndProfileMap(rollingStock.powerClass),
-                            RollingStock.Comfort.STANDARD, path.getLength()).curves();
-            if (res == null)
-                res = tractiveEffortCurveMap;
-            testRangeCoverage(tractiveEffortCurveMap, path.getLength());
-            var size = tractiveEffortCurveMap.asMapOfRanges().size();
-            var expectedSize = path != path3 ? 6 : 1;
-            assertEquals(expectedSize, size, "wrong number of ranges");
-        }
-
-        assertEquals(res.get(5.), rollingStock.modes.get("1500").defaultCurve());
-        assertEquals(res.get(15.), rollingStock.modes.get("25000").defaultCurve());
-        assertEquals(res.get(25.), rollingStock.modes.get("thermal").defaultCurve());
-        assertEquals(res.get(40.), rollingStock.modes.get("thermal").defaultCurve());
+        var elecCondMap = path.getElecCondMap(rollingStock.basePowerClass, powerRestrictionMap,
+                rollingStock.powerRestrictions);
+        var tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort, path.getLength());
+        testRangeCoverage(tractiveEffortCurveMap.conditions(), path.getLength());
+        testRangeCoverage(tractiveEffortCurveMap.curves(), path.getLength());
+        var nCurves = tractiveEffortCurveMap.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges()
+                .size();
+        var nConditionsSeen = elecCondMap.subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().size();
+        var nConditionsUsed = tractiveEffortCurveMap.conditions().subRangeMap(Range.closed(0., path.getLength()))
+                .asMapOfRanges().size();
+        assertEquals(nCurves, nConditionsUsed, "wrong number of curves");
+        assertTrue(nConditionsSeen <= nConditionsUsed, "wrong number of conditions");
     }
 
     @Test
     void testMapTractiveEffortCurveWithProfiles() {
-        TreeRangeMap<Double, String> catenaryModes = TreeRangeMap.create();
-        catenaryModes.put(Range.closedOpen(0., 10.), "1500");
-        catenaryModes.put(Range.closed(10., 20.), "25000");
-        catenaryModes.put(Range.closed(30., 50.), "unhandled");
-
-        TreeRangeMap<Double, String> electricalProfiles = TreeRangeMap.create();
-        electricalProfiles.put(Range.closedOpen(10., 12.), "25000");
-        electricalProfiles.put(Range.closedOpen(12., 14.), "22500");
-        electricalProfiles.put(Range.closedOpen(14., 16.), "20000");
-        electricalProfiles.put(Range.closedOpen(16., 18.), "22500");
-        electricalProfiles.put(Range.closed(18., 20.), "25000");
+        var powerRestrictionMap = ImmutableRangeMap.<Double, String>builder()
+                .put(Range.closedOpen(5., 11.), "Restrict2")
+                .put(Range.closedOpen(15., 18.), "Restrict1")
+                .put(Range.closed(18., 20.), "UnknownRestrict")
+                .build();
+        var path = EnvelopeSimPathBuilder.withElectricalProfiles25000(50);
 
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
-        var path = new EnvelopeSimPath(50, new double[]{0, 50}, new double[]{0}, catenaryModes);
-        path.setElectricalProfiles(Map.of(rollingStock.powerClass, electricalProfiles));
-
         var comfort = RollingStock.Comfort.STANDARD;
-        var res = rollingStock.mapTractiveEffortCurves(path.getModeAndProfileMap(rollingStock.powerClass), comfort,
-                path.getLength()).curves();
+        var elecCondMap = path.getElecCondMap(rollingStock.basePowerClass, powerRestrictionMap,
+                rollingStock.powerRestrictions);
+        var res = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort, path.getLength());
 
-        testRangeCoverage(res, path.getLength());
-        assertEquals(10, res.asMapOfRanges().size(), "wrong number of ranges");
+        testRangeCoverage(res.curves(), path.getLength());
+        assertEquals(14, res.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().size(),
+                "wrong number of ranges");
 
-        assertEquals(res.get(5.), rollingStock.findTractiveEffortCurve("1500", null, comfort).curve());
-        assertEquals(res.get(11.), rollingStock.findTractiveEffortCurve("25000", "25000", comfort).curve());
-        assertEquals(res.get(13.), rollingStock.findTractiveEffortCurve("25000", "22500", comfort).curve());
-        assertEquals(res.get(15.), rollingStock.findTractiveEffortCurve("25000", "20000", comfort).curve());
-        assertEquals(res.get(17.), rollingStock.findTractiveEffortCurve("25000", "22500", comfort).curve());
-        assertEquals(res.get(19.), rollingStock.findTractiveEffortCurve("25000", "25000", comfort).curve());
-        assertEquals(res.get(25.), rollingStock.findTractiveEffortCurve("thermal", null, comfort).curve());
-        assertEquals(res.get(40.), rollingStock.findTractiveEffortCurve("thermal", null, comfort).curve());
+        // Check that the ranges are correct
+        assertArrayEquals(new Double[] { 0., 1., 5., 8.0, 8.1, 10., 11., 12., 14., 15., 17., 18., 20., 30. },
+                res.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().keySet().stream()
+                        .map(Range::lowerEndpoint).toArray());
+
+        // Check that the conditions are correct
+        assertArrayEquals(new ElectrificationConditions[] {
+                new ElectrificationConditions("thermal", null, null), // 0
+                new ElectrificationConditions("1500", null, null),    // 1
+                new ElectrificationConditions("1500", null, null),    // 5 "Restrict1" invalid for 1500
+                new ElectrificationConditions("thermal", null, null), // 8
+                new ElectrificationConditions("25000", null, "Restrict2"),  // 8.1
+                new ElectrificationConditions("25000", "25000", "Restrict2"), // 10
+                new ElectrificationConditions("25000", "25000", null), // 11
+                new ElectrificationConditions("25000", "22500", null), // 12
+                new ElectrificationConditions("25000", "20000", null), // 14
+                new ElectrificationConditions("25000", "22500", "Restrict1"), // 15
+                new ElectrificationConditions("25000", "25000", "Restrict1"), // 17
+                new ElectrificationConditions("25000", "25000", null), // 18 "UnknownRestrict" invalid for 25000
+                new ElectrificationConditions("thermal", null, null), // 20 No mode given
+                new ElectrificationConditions("thermal", null, null)  // 30 Invalid mode
+        },
+                res.conditions().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().values().stream()
+                    .toArray());
+
+        // Check that the curves are correct
+        assertArrayEquals(new double[] {
+                TestTrains.MAX_SPEED * 0.92, // 0
+                TestTrains.MAX_SPEED * 0.82, // 1
+                TestTrains.MAX_SPEED * 0.82, // 5
+                TestTrains.MAX_SPEED * 0.92, // 8
+                TestTrains.MAX_SPEED * 0.79, // 8.1
+                TestTrains.MAX_SPEED * 0.79, // 10
+                TestTrains.MAX_SPEED, // 11
+                TestTrains.MAX_SPEED * 0.9, // 12
+                TestTrains.MAX_SPEED * 0.8, // 14
+                TestTrains.MAX_SPEED * 0.9 * 0.89, // 15
+                TestTrains.MAX_SPEED * 0.89, // 17
+                TestTrains.MAX_SPEED, // 18
+                TestTrains.MAX_SPEED * 0.92, // 20
+                TestTrains.MAX_SPEED * 0.92 // 30
+        },
+                res.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().values().stream()
+                    .map(TestRollingStock::maxSpeed).mapToDouble(Double::doubleValue).toArray(), 0.001);
     }
 
     static <T> void testRangeCoverage(RangeMap<Double, T> map, double length) {

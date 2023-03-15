@@ -49,14 +49,15 @@ public class StandaloneSim {
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base
-                var modeAndProfileMap = envelopeSimPath.getModeAndProfileMap(
-                        trainSchedule.options.ignoreElectricalProfiles ? null : rollingStock.powerClass);
-                var curvesAndConditions = rollingStock.mapTractiveEffortCurves(modeAndProfileMap,
+                var elecCondMap = envelopeSimPath.getElecCondMap(rollingStock.basePowerClass,
+                        trainSchedule.powerRestrictionMap, rollingStock.powerRestrictions,
+                        trainSchedule.options.ignoreElectricalProfiles);
+                var curvesAndConditions = rollingStock.mapTractiveEffortCurves(elecCondMap,
                         trainSchedule.comfort, envelopeSimPath.getLength());
                 var context = new EnvelopeSimContext(rollingStock, envelopeSimPath, timeStep,
                         curvesAndConditions.curves());
                 cacheModeAndProfiles.put(trainSchedule, ResultModeAndProfilePoint.from(
-                        curvesAndConditions.conditions(), modeAndProfileMap));
+                        curvesAndConditions.conditions(), elecCondMap));
                 var envelope = computeMaxEffortEnvelope(context, mrsp, trainSchedule);
                 var simResultTrain = ScheduleMetadataExtractor.run(
                         envelope,

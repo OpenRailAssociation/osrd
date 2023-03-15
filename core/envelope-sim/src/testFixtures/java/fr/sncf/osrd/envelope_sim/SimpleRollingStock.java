@@ -151,6 +151,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
             double effort = getEffort(curveShape, speed, maxSpeed);
             newEffortCurve.add(new TractiveEffortPoint(speed, effort));
         }
+        newEffortCurve.add(new TractiveEffortPoint(maxSpeed, getEffort(curveShape, maxSpeed, maxSpeed)));
         return newEffortCurve.toArray(new TractiveEffortPoint[0]);
     }
 
