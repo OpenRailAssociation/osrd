@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import Tabs from 'common/Tabs';
+import { getMap } from 'reducers/map/selectors';
 import MapSearchLine from './MapSearchLine';
 import HearderPopUp from '../HeaderPopUp';
 
@@ -15,7 +16,7 @@ export default function MapSearch(props) {
     (value) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
-  const { lineSearchCode, mapSearchMarker } = useSelector((state) => state.map);
+  const { lineSearchCode, mapSearchMarker } = useSelector(getMap);
 
   const { t } = useTranslation(['translation', 'map-search']);
 

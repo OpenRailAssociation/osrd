@@ -37,12 +37,10 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import RenderItinerary from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/RenderItinerary';
-import { useSearchContext } from 'common/Map/Search/SearchContext';
+import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import { MapLayerMouseEvent } from '../../types';
 
 import 'common/Map/Map.scss';
-import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -52,7 +50,6 @@ function Map() {
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
-  const searchContext = useSearchContext();
   const updateViewportChange = useCallback(
     (value, updateRouter = false) => {
       dispatch(updateViewport(value, `/map`, updateRouter));
@@ -103,10 +100,6 @@ function Map() {
     if (!isNil(urlPitch)) newViewport.pitch = parseFloat(urlPitch);
     if (Object.keys(newViewport).length > 0) updateViewportChange(newViewport);
     // we only do it at mount time
-    return () => {
-      searchContext?.setLineSearch(undefined);
-      searchContext?.setIsSearchLine(false);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

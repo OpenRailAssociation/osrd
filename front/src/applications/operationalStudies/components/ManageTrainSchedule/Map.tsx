@@ -1,17 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
-import { BBox, lineString, point as turfPoint } from '@turf/helpers';
+import { point as turfPoint } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
 import { Position, LineString } from 'geojson';
 import { useParams } from 'react-router-dom';
-import bbox from '@turf/bbox';
 import { RootState } from 'reducers';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
 import { updateViewport, Viewport } from 'reducers/map';
-import RenderItinerarySearch from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/RenderItinerary';
-import WebMercatorViewport from 'viewport-mercator-project';
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
@@ -47,7 +44,7 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import { useSearchContext } from 'common/Map/Search/SearchContext';
+import LineSearchLayer from 'common/Map/Layers/LineSearchLayer';
 import { MapLayerMouseEvent } from '../../../../types';
 import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
 
@@ -128,8 +125,6 @@ function Map() {
       setSnappedPoint(undefined);
     }
   };
-
-  const searchContext = useSearchContext();
 
   const defineInteractiveLayers = () => {
     const interactiveLayersLocal: Array<string> = [];
@@ -288,6 +283,11 @@ function Map() {
               sourceLayer="geo"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
+            <LineSearchLayer
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+            />
           </>
         ) : (
           <>
@@ -345,17 +345,15 @@ function Map() {
               sourceLayer="sch"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
+            <LineSearchLayer
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}
+            />
           </>
         )}
 
         <RenderPopup />
-        {searchContext?.isSearchLine && searchContext?.lineSearch && (
-          <RenderItinerarySearch
-            geojsonPath={searchContext?.lineSearch}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-            isSearchLine
-          />
-        )}
         <RenderItinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
         <RenderItineraryMarkers />
         {mapSearchMarker !== undefined && (
