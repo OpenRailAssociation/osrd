@@ -1,6 +1,4 @@
-import PropTypes from 'prop-types';
-/* eslint-disable max-classes-per-file */
-import React from 'react';
+import React, { InputHTMLAttributes, ReactNode } from 'react';
 
 /**
  * The InputSNCF component can be used for basic inputs as well as for advanced search inputs
@@ -23,44 +21,44 @@ import React from 'react';
  * )
  */
 
-class InputSNCF extends React.Component {
-  static propTypes = {
-    // Basic input props
-    id: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    label: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-    placeholder: PropTypes.string,
-    onChange: PropTypes.func,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    readonly: PropTypes.bool,
-    inputProps: PropTypes.object,
-    min: PropTypes.number,
-    max: PropTypes.number,
-    // Error handling
-    isInvalid: PropTypes.bool,
-    errorMsg: PropTypes.string,
-    // Clear button
-    /** If a clear button must be displayed or not */
-    clearButton: PropTypes.bool,
-    /** The function called by the clear button */
-    onClear: PropTypes.func,
-    // Options for the appened icon
-    appendOptions: PropTypes.shape({
-      iconName: PropTypes.string.isRequired,
-      onClick: PropTypes.func.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-    // Styling props
-    unit: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-    sm: PropTypes.bool,
-    whiteBG: PropTypes.bool,
-    noMargin: PropTypes.bool,
-    focus: PropTypes.bool,
-    selectAllOnFocus: PropTypes.bool,
-    step: PropTypes.number,
-    isFlex: PropTypes.bool,
+export type InputSNCFProps = {
+  id: string;
+  type: string;
+  name?: string;
+  label?: JSX.Element | string;
+  placeholder?: string;
+  onChange?: InputHTMLAttributes<HTMLInputElement>['onChange'];
+  value?: string | number;
+  readonly?: boolean;
+  inputProps?: Partial<InputHTMLAttributes<HTMLInputElement>>;
+  min?: number;
+  max?: number;
+  // Error handling
+  isInvalid?: boolean;
+  errorMsg?: string;
+  // Clear button
+  /** If a clear button must be displayed or not */
+  clearButton?: boolean;
+  /** The function called by the clear button */
+  onClear?: () => void;
+  // Options for the append icon
+  appendOptions?: {
+    iconName: string;
+    onClick: () => void;
+    name: string;
   };
+  // Styling props
+  unit?: ReactNode;
+  sm?: boolean;
+  whiteBG?: boolean;
+  noMargin?: boolean;
+  focus?: boolean;
+  selectAllOnFocus?: boolean;
+  step?: number;
+  isFlex?: boolean;
+};
 
+class InputSNCF extends React.Component<InputSNCFProps> {
   static defaultProps = {
     // Basic input props
     label: undefined,
@@ -116,7 +114,7 @@ class InputSNCF extends React.Component {
   renderClearButton = () => {
     const { value, clearButton, onClear } = this.props;
 
-    const displayClearButton = clearButton && value && value.length !== 0;
+    const displayClearButton = clearButton && value;
 
     // Returns null if the clear button is not used
     if (!displayClearButton) return null;
@@ -138,6 +136,7 @@ class InputSNCF extends React.Component {
       focus,
       label,
       id,
+      name,
       type,
       onChange,
       unit,
@@ -193,11 +192,12 @@ class InputSNCF extends React.Component {
               onChange={onChange}
               className={`form-control ${backgroundColor} ${formSize} ${readOnlyFlag} ${clearOption}`}
               id={id}
+              name={name}
               value={value}
               placeholder={placeholder}
               ref={(input) => (focus ? input && input.focus() : null)}
-              min={min || null}
-              max={max || null}
+              min={min}
+              max={max}
               {...inputProps}
               step={step}
               onFocus={(e) => selectAllOnFocus && e.target.select()}

@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import projectLogo from 'assets/pictures/views/projects.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
@@ -34,7 +33,7 @@ import PictureUploader from './PictureUploader';
 export type Props = {
   editionMode?: false;
   project?: projectTypes;
-  getProject?: any;
+  getProject?: (v: boolean) => void;
 };
 
 const currentProjectDefaults = {
@@ -121,7 +120,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
         request
           .unwrap()
           .then(() => {
-            getProject(true);
+            if (getProject) getProject(true);
             closeModal();
           })
           .catch((error) => console.error(error));
@@ -185,9 +184,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   </div>
                 }
                 value={currentProject.name}
-                onChange={(e: any) =>
-                  setCurrentProject({ ...currentProject, name: e.target.value })
-                }
+                onChange={(e) => setCurrentProject({ ...currentProject, name: e.target.value })}
                 isInvalid={displayErrors && !currentProject.name}
                 errorMsg={
                   displayErrors && !currentProject.name ? t('projectNameMissing') : undefined
@@ -206,7 +203,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   </div>
                 }
                 value={currentProject.description}
-                onChange={(e: any) =>
+                onChange={(e) =>
                   setCurrentProject({ ...currentProject, description: e.target.value })
                 }
                 rows={3}
@@ -228,7 +225,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   </div>
                 }
                 value={currentProject.objectives}
-                onChange={(e: any) =>
+                onChange={(e) =>
                   setCurrentProject({ ...currentProject, objectives: e.target.value })
                 }
               />
@@ -263,7 +260,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                 </div>
               }
               value={currentProject.funders}
-              onChange={(e: any) =>
+              onChange={(e) =>
                 setCurrentProject({
                   ...currentProject,
                   funders: e.target.value ? e.target.value : '',
@@ -287,7 +284,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                 </div>
               }
               value={currentProject.budget}
-              onChange={(e: any) =>
+              onChange={(e) =>
                 setCurrentProject({ ...currentProject, budget: parseInt(e.target.value, 10) })
               }
             />

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -33,7 +32,7 @@ export default function FilterTextField({ id, setFilter, sm = false, filterChips
       id={id}
       name={id}
       value={value}
-      onChange={(e: any) => setValue(e.target.value)}
+      onChange={(e) => setValue(e.target.value)}
       placeholder={t('filterPlaceholder')}
       whiteBG
       noMargin

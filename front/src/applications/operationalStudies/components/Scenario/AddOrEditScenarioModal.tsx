@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { scenarioTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import scenarioLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
@@ -38,7 +37,7 @@ const scenarioTypesDefaults = {
 type Props = {
   editionMode?: false;
   scenario?: scenarioTypes;
-  getScenario?: any;
+  getScenario?: (v: boolean) => void;
 };
 
 export default function AddOrEditScenarioModal({ editionMode, scenario, getScenario }: Props) {
@@ -121,7 +120,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
     } else if (scenario) {
       try {
         await patch(`${rootURI}${scenario.id}/`, currentScenario);
-        getScenario(true);
+        if (getScenario) getScenario(true);
         closeModal();
       } catch (error) {
         console.error(error);
@@ -183,9 +182,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
                   </div>
                 }
                 value={currentScenario.name}
-                onChange={(e: any) =>
-                  setCurrentScenario({ ...currentScenario, name: e.target.value })
-                }
+                onChange={(e) => setCurrentScenario({ ...currentScenario, name: e.target.value })}
                 isInvalid={displayErrors && !currentScenario.name}
                 errorMsg={
                   displayErrors && !currentScenario.name ? t('scenarioNameMissing') : undefined
@@ -204,7 +201,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
                   </div>
                 }
                 value={currentScenario.description}
-                onChange={(e: any) =>
+                onChange={(e) =>
                   setCurrentScenario({ ...currentScenario, description: e.target.value })
                 }
               />

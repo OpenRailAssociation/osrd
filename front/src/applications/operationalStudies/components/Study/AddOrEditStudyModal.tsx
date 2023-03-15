@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { studyTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import studyLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
@@ -40,7 +39,7 @@ const currentStudyDefaults = {
 type Props = {
   editionMode?: false;
   study?: studyTypes;
-  getStudy?: any;
+  getStudy?: (v: boolean) => void;
 };
 
 type SelectOptions = { key: string | null; value: string }[];
@@ -113,7 +112,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
     } else if (study) {
       try {
         await patch(`${rootURI}${study.id}/`, currentStudy);
-        getStudy(true);
+        if (getStudy) getStudy(true);
         closeModal();
       } catch (error) {
         console.error(error);
@@ -177,7 +176,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
               </div>
             }
             value={currentStudy.name}
-            onChange={(e: any) => setCurrentStudy({ ...currentStudy, name: e.target.value })}
+            onChange={(e) => setCurrentStudy({ ...currentStudy, name: e.target.value })}
             isInvalid={displayErrors && !currentStudy.name}
             errorMsg={displayErrors && !currentStudy.name ? t('studyNameMissing') : undefined}
           />
@@ -201,7 +200,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       value: t(`studyCategories.${currentStudy.study_type || 'nothingSelected'}`),
                     }}
                     options={studyCategories}
-                    onChange={(e: any) => setCurrentStudy({ ...currentStudy, study_type: e.key })}
+                    onChange={(e) => setCurrentStudy({ ...currentStudy, study_type: e.key })}
                   />
                 </div>
               </div>
@@ -221,7 +220,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       value: t(`studyStates.${currentStudy.state || 'nothingSelected'}`),
                     }}
                     options={studyStates}
-                    onChange={(e: any) => setCurrentStudy({ ...currentStudy, state: e.key })}
+                    onChange={(e) => setCurrentStudy({ ...currentStudy, state: e.key })}
                   />
                 </div>
               </div>
@@ -238,9 +237,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   </div>
                 }
                 value={currentStudy.description}
-                onChange={(e: any) =>
-                  setCurrentStudy({ ...currentStudy, description: e.target.value })
-                }
+                onChange={(e) => setCurrentStudy({ ...currentStudy, description: e.target.value })}
               />
             </div>
           </div>
@@ -258,9 +255,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 </div>
               }
               value={formatDateForInput(currentStudy.start_date)}
-              onChange={(e: any) =>
-                setCurrentStudy({ ...currentStudy, start_date: e.target.value })
-              }
+              onChange={(e) => setCurrentStudy({ ...currentStudy, start_date: e.target.value })}
             />
             <InputSNCF
               id="studyInputEstimatedEndingDate"
@@ -275,7 +270,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 </div>
               }
               value={formatDateForInput(currentStudy.expected_end_date)}
-              onChange={(e: any) =>
+              onChange={(e) =>
                 setCurrentStudy({ ...currentStudy, expected_end_date: e.target.value })
               }
             />
@@ -292,7 +287,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 </div>
               }
               value={formatDateForInput(currentStudy.actual_end_date)}
-              onChange={(e: any) =>
+              onChange={(e) =>
                 setCurrentStudy({ ...currentStudy, actual_end_date: e.target.value })
               }
             />
@@ -313,9 +308,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 </div>
               }
               value={currentStudy.service_code}
-              onChange={(e: any) =>
-                setCurrentStudy({ ...currentStudy, service_code: e.target.value })
-              }
+              onChange={(e) => setCurrentStudy({ ...currentStudy, service_code: e.target.value })}
             />
           </div>
           <div className="col-lg-4">
@@ -332,9 +325,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 </div>
               }
               value={currentStudy.business_code}
-              onChange={(e: any) =>
-                setCurrentStudy({ ...currentStudy, business_code: e.target.value })
-              }
+              onChange={(e) => setCurrentStudy({ ...currentStudy, business_code: e.target.value })}
             />
           </div>
           <div className="col-lg-4">
@@ -352,7 +343,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 </div>
               }
               value={currentStudy.budget}
-              onChange={(e: any) => setCurrentStudy({ ...currentStudy, budget: e.target.value })}
+              onChange={(e) => setCurrentStudy({ ...currentStudy, budget: +e.target.value })}
             />
           </div>
         </div>
