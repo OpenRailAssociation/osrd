@@ -86,12 +86,12 @@ async fn get_objects(
 
     // Execute query
     let obj_ids_dup = obj_ids.clone();
-    let objects: Vec<ObjectQueryable> = block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
-        sql_query(query)
+    let objects: Vec<ObjectQueryable> = block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get()?;
+        Ok(sql_query(query)
             .bind::<BigInt, _>(infra)
             .bind::<Array<Text>, _>(obj_ids_dup)
-            .load(&mut conn)
+            .load(&mut conn)?)
     })
     .await
     .unwrap()?;

@@ -76,7 +76,7 @@ impl RollingStock {
         block::<_, Result<RollingStockWithLiveries>>(move || {
             use crate::tables::osrd_infra_rollingstock::dsl as rolling_stock_dsl;
             use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             let rolling_stock = match rolling_stock_dsl::osrd_infra_rollingstock
                 .find(rolling_stock_id)
                 .first(&mut conn)
@@ -106,7 +106,7 @@ impl RollingStock {
         rolling_stock_data: RollingStockForm,
     ) -> Result<RollingStock> {
         block::<_, Result<_>>(move || {
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             Ok(diesel::insert_into(dsl::osrd_infra_rollingstock)
                 .values(&rolling_stock_data)
                 .get_result::<RollingStock>(&mut conn)?)
@@ -119,7 +119,7 @@ impl RollingStock {
     pub async fn delete(db_pool: Data<DbPool>, rolling_stock_id: i64) -> Result<()> {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_rollingstock::dsl::*;
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             match diesel::delete(osrd_infra_rollingstock.filter(id.eq(rolling_stock_id)))
                 .execute(&mut conn)
             {
@@ -193,7 +193,7 @@ impl LightRollingStock {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_rollingstock::dsl as rolling_stock_dsl;
             use crate::tables::osrd_infra_rollingstocklivery::dsl as livery_dsl;
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             let rolling_stock = match rolling_stock_dsl::osrd_infra_rollingstock
                 .find(rolling_stock_id)
                 .select(LightRollingStock::as_select())

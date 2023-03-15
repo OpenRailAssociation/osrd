@@ -131,7 +131,7 @@ async fn cache_and_get_mvt_tile(
 
     let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
     let records = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Fail to get DB connection");
+        let mut conn = db_pool.get()?;
         match sql_query(geo_json_query)
             .bind::<Integer, _>(z as i32)
             .bind::<Integer, _>(x as i32)

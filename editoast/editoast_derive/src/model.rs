@@ -90,7 +90,7 @@ fn create_functions(config: &Config) -> TokenStream {
                 use actix_web::web::block;
 
                 block::<_, crate::error::Result<_>>(move || {
-                    let mut conn = db_pool.get().expect("Failed to get DB connection");
+                    let mut conn = db_pool.get()?;
                     self.create_conn(&mut conn)
                 })
                 .await
@@ -146,7 +146,7 @@ fn retrieve_functions(config: &Config) -> TokenStream {
                 use actix_web::web::block;
 
                 block::<_, crate::error::Result<_>>(move || {
-                    let mut conn = db_pool.get().expect("Failed to get DB connection");
+                    let mut conn = db_pool.get()?;
                     Self::retrieve_conn(&mut conn, id)
                 })
                 .await
@@ -198,7 +198,7 @@ fn delete_functions(config: &Config) -> TokenStream {
                 use actix_web::web::block;
 
                 block::<_, crate::error::Result<_>>(move || {
-                    let mut conn = db_pool.get().expect("Failed to get DB connection");
+                    let mut conn = db_pool.get()?;
                     Self::delete_conn(&mut conn, id)
                 })
                 .await

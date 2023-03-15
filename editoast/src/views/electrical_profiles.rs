@@ -28,7 +28,7 @@ pub fn routes() -> impl HttpServiceFactory {
 #[get("")]
 async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         Ok(Json(ElectricalProfileSet::list_light(&mut conn)?))
     })
     .await
@@ -43,7 +43,7 @@ async fn get(
 ) -> Result<Json<ElectricalProfileSetData>> {
     let electrical_profile_set = electrical_profile_set.into_inner();
     block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let ep_set = ElectricalProfileSet::retrieve(&mut conn, electrical_profile_set)?;
         Ok(Json(ep_set.data.unwrap().0))
     })
@@ -79,7 +79,7 @@ async fn get_level_order(
 ) -> Result<Json<HashMap<String, Vec<String>>>> {
     let electrical_profile_set = electrical_profile_set.into_inner();
     block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let ep_set = ElectricalProfileSet::retrieve(&mut conn, electrical_profile_set)?;
         Ok(Json(ep_set.data.unwrap().0.level_order))
     })
@@ -123,7 +123,7 @@ impl ElectricalProfileSet {
     pub async fn create(self, db_pool: Data<DbPool>) -> Result<ElectricalProfileSet> {
         block(move || {
             use crate::tables::osrd_infra_electricalprofileset::dsl::*;
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             Ok(diesel::insert_into(osrd_infra_electricalprofileset)
                 .values(self)
                 .get_result(&mut conn)?)

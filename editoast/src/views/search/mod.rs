@@ -367,9 +367,9 @@ pub async fn search(
     let offset = (page - 1) * per_page;
     let sql = create_sql_query(query, search, per_page, offset)?;
 
-    let objects: Vec<SearchDBResult> = block(move || {
-        let mut conn = db_pool.get().expect("couldn't get DB connection from pool");
-        sql.load(&mut conn)
+    let objects: Vec<SearchDBResult> = block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get()?;
+        Ok(sql.load(&mut conn)?)
     })
     .await
     .unwrap()?;

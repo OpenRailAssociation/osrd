@@ -41,13 +41,13 @@ async fn get_routes_from_waypoint(
     db_pool: Data<DbPool>,
 ) -> Result<Json<JsonValue>> {
     let (infra, waypoint_type, waypoint) = path.into_inner();
-    let routes: Vec<RouteFromWaypointResult> = block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
-        sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
+    let routes: Vec<RouteFromWaypointResult> = block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get()?;
+        Ok(sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
             .bind::<BigInt, _>(infra)
             .bind::<Text, _>(waypoint)
             .bind::<Text, _>(waypoint_type.to_string())
-            .load(&mut conn)
+            .load(&mut conn)?)
     })
     .await
     .unwrap()?;
@@ -90,7 +90,7 @@ async fn get_routes_track_ranges<'a>(
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
     let infra = infra.into_inner();
     let result = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let infra = Infra::retrieve(&mut conn, infra)?;
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         let graph = Graph::load(&infra_cache);
