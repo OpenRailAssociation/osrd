@@ -297,6 +297,24 @@ files = [
 ]
 
 [[package]]
+name = "osrd-schemas"
+version = "0.1.0"
+description = ""
+category = "dev"
+optional = false
+python-versions = ">=3.9,<3.11"
+files = []
+develop = false
+
+[package.dependencies]
+geojson-pydantic = "0.5.0"
+pydantic = "1.10.4"
+
+[package.source]
+type = "directory"
+url = "../python/osrd_schemas"
+
+[[package]]
 name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
@@ -535,4 +553,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "1ac4ae878fe127a153c4ede528f3b752ff1d3c2dddaaba7aee8c1cc39d8c5065"
+content-hash = "68c14a9c0c254144012f4cf41131a7f7b0e8ecab3b1460b1eea738757809f732"

@@ -19,6 +19,12 @@ Available fixtures are defined in `conftest.py`.
 
 ![small infra](assets/small_infra.png)
 
+### `west_to_south_east_path`
+
+`west_to_south_east_path` is a path on small infra from _west parking_ to _south east parking_
+
+![West to south east path](assets/west_to_south_east_parking.png)
+
 # Fuzzer
 
 The fuzzer is a script that generates random tests and logs any error that occurred.
