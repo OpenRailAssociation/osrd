@@ -65,7 +65,7 @@ export const FIELDS_LABEL = {
 
 // mapKey
 export interface MapKeyProps {
-  active: boolean;
+  active?: boolean;
   closeMapKeyPopUp: () => void;
 }
 

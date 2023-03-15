@@ -24,7 +24,6 @@ export const trainscheduleURI = '/train_schedule/';
 
 function CustomGET() {
   const { t } = useTranslation(['translation', 'simulation']);
-  const { fullscreen } = useSelector((state) => state.main);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
@@ -58,7 +57,7 @@ function CustomGET() {
   }, [simulation]);
 
   return (
-    <main className={`mastcontainer customget ${fullscreen ? ' fullscreen' : ''}`}>
+    <main className="mastcontainer customget">
       {!simulation || simulation.trains.length === 0 ? (
         <div className="pt-5 mt-5">
           <h1 className="text-center">{t('customget:noData')}</h1>
