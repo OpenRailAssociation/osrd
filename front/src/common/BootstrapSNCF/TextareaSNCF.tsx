@@ -1,20 +1,38 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { FC, InputHTMLAttributes, ReactNode } from 'react';
 
-export default function TextareaSNCF(props) {
+const TextareaSNCF: FC<{
+  // Basic input props
+  id: string;
+  label?: ReactNode;
+  placeholder?: string;
+  onChange?: InputHTMLAttributes<HTMLTextAreaElement>['onChange'];
+  value?: string;
+  readonly?: boolean;
+  // Error handling
+  isInvalid?: boolean;
+  errorMsg?: string;
+  // Styling props
+  whiteBG?: boolean;
+  focus?: boolean;
+  selectAllOnFocus?: boolean;
+  rows?: number;
+}> = (props) => {
   const {
+    id,
+    // Basic input props
+    label = '',
+    placeholder,
+    onChange,
+    value,
+    readonly,
+    // Error handling
     isInvalid,
     errorMsg,
-    focus,
-    label,
-    id,
-    onChange,
-    readonly,
+    // Clear button
     whiteBG,
-    value,
-    placeholder,
+    focus,
     selectAllOnFocus,
-    rows,
+    rows = 5,
   } = props;
 
   // Build custom classes
@@ -56,39 +74,6 @@ export default function TextareaSNCF(props) {
       {invalidMsg}
     </div>
   );
-}
-
-TextareaSNCF.defaultProps = {
-  // Basic input props
-  label: '',
-  placeholder: undefined,
-  onChange: undefined,
-  value: undefined,
-  readonly: false,
-  // Error handling
-  isInvalid: false,
-  errorMsg: undefined,
-  // Clear button
-  whiteBG: false,
-  focus: false,
-  selectAllOnFocus: false,
-  rows: 5,
 };
 
-TextareaSNCF.propTypes = {
-  // Basic input props
-  id: PropTypes.string.isRequired,
-  label: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  placeholder: PropTypes.string,
-  onChange: PropTypes.func,
-  value: PropTypes.string,
-  readonly: PropTypes.bool,
-  // Error handling
-  isInvalid: PropTypes.bool,
-  errorMsg: PropTypes.string,
-  // Styling props
-  whiteBG: PropTypes.bool,
-  focus: PropTypes.bool,
-  selectAllOnFocus: PropTypes.bool,
-  rows: PropTypes.number,
-};
+export default TextareaSNCF;
