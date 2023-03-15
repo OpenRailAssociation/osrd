@@ -10,7 +10,7 @@ import nextId from 'react-id-generator';
 import { BBox, LineString } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
-import { RootState } from 'reducers';
+import { getMap } from 'reducers/map/selectors';
 import { SEARCH_URL, searchPayloadType } from '../const';
 import LineCard from './LineCard';
 import { ILineSearchResult } from './searchTypes';
@@ -21,8 +21,8 @@ type MapSearchLineProps = {
 
 const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const infraID = useSelector(getInfraID);
+  const map = useSelector(getMap);
   const { t } = useTranslation(['map-search']);
-  const map = useSelector((state: RootState) => state.map);
   const dispatch = useDispatch();
 
   const [searchState, setSearchState] = useState<string>('');

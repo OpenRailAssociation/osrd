@@ -61,7 +61,6 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import { useSearchContext } from 'common/Map/Search/SearchContext';
 import { MapLayerMouseEvent } from '../../../../types';
 import RenderBlockState from './SimulationResultsMap/RenderBlockState';
 
@@ -290,7 +289,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     setInteractiveLayerIds(defineInteractiveLayers());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geojsonPath, otherTrainsHoverPosition.length]);
-  const searchContext = useSearchContext();
   useEffect(() => {
     if (mapRef.current) {
       if (urlLat) {
@@ -305,10 +303,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       }
     }
 
-    return () => {
-      // searchContext?.setLineSearch(undefined);
-      searchContext?.setIsSearchLine(false);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -505,13 +499,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
-
-        {searchContext?.isSearchLine && searchContext?.lineSearch && (
-          <RenderItinerary
-            geojsonPath={searchContext.lineSearch}
-            layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
-          />
-        )}
 
         {geojsonPath && (
           <RenderItinerary

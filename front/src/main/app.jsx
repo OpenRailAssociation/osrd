@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 
 import 'i18n';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { attemptLoginOnLaunch } from 'reducers/user';
 
 import HomeCustomGET from 'applications/customget/Home';
@@ -19,8 +18,6 @@ import { NotificationsState } from 'common/Notifications';
 import Project from 'applications/operationalStudies/views/Project';
 import Study from 'applications/operationalStudies/views/Study';
 import Scenario from 'applications/operationalStudies/views/Scenario';
-
-import { SearchProvider } from 'common/Map/Search/SearchContext';
 
 export default function App() {
   const user = useSelector((state) => state.user);
@@ -52,24 +49,22 @@ export default function App() {
     <Suspense fallback={<Loader />}>
       {(user.isLogged || isLocalBackend) && (
         <HistoryRouter history={history}>
-          <SearchProvider>
-            <ModalProvider>
-              <NotificationsState />
-              <Routes>
-                <Route path="/operational-studies">
-                  <Route path="/operational-studies" element={<HomeOperationalStudies />} />
-                  <Route path="/operational-studies/project" element={<Project />} />
-                  <Route path="/operational-studies/study" element={<Study />} />
-                  <Route path="/operational-studies/scenario" element={<Scenario />} />
-                </Route>
-                <Route path="/map/*" element={<HomeMap />} />
-                <Route path="/editor/*" element={<HomeEditor />} />
-                <Route path="/stdcm/*" element={<HomeStdcm />} />
-                <Route path="/customget/*" element={<HomeCustomGET />} />
-                <Route path="/*" element={<Home />} />
-              </Routes>
-            </ModalProvider>
-          </SearchProvider>
+          <ModalProvider>
+            <NotificationsState />
+            <Routes>
+              <Route path="/operational-studies">
+                <Route path="/operational-studies" element={<HomeOperationalStudies />} />
+                <Route path="/operational-studies/project" element={<Project />} />
+                <Route path="/operational-studies/study" element={<Study />} />
+                <Route path="/operational-studies/scenario" element={<Scenario />} />
+              </Route>
+              <Route path="/map/*" element={<HomeMap />} />
+              <Route path="/editor/*" element={<HomeEditor />} />
+              <Route path="/stdcm/*" element={<HomeStdcm />} />
+              <Route path="/customget/*" element={<HomeCustomGET />} />
+              <Route path="/*" element={<Home />} />
+            </Routes>
+          </ModalProvider>
         </HistoryRouter>
       )}
       {!user.isLogged && !isLocalBackend && <Loader />}
