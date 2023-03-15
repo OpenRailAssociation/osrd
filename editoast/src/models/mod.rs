@@ -1,12 +1,14 @@
 mod documents;
+mod projects;
 
 use crate::error::Result;
+use crate::DbPool;
 use actix_web::web::{block, Data};
 use async_trait::async_trait;
 use diesel::PgConnection;
-pub use documents::Document;
 
-use crate::DbPool;
+pub use documents::Document;
+pub use projects::{Project, ProjectWithStudies};
 
 /// Trait to implement the `create` and `create_conn` methods.
 /// This trait is automatically implemented by the `#[derive(Model)]` macro.
