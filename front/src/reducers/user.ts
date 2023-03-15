@@ -146,8 +146,8 @@ export function login() {
       dispatch(updateAccount(account));
       dispatch(loginSuccess(accessToken, username));
       console.info('Connecté');
-    } catch (e: any) {
-      console.error('Login ERROR', e.response);
+    } catch (e: unknown) {
+      console.error('Login ERROR', (e as { response?: unknown }).response);
       dispatch(loginError());
     }
   };
@@ -157,13 +157,13 @@ export function attemptLoginOnLaunch() {
   return async (dispatch: Dispatch) => {
     try {
       await keycloak.initKeycloak(() => login()(dispatch));
-    } catch (e: any) {
-      if (!e.response) {
-        // When server error and unreachable no code is send, e.response/status/code are empty
+    } catch (e: unknown) {
+      if (!(e as { response?: unknown }).response) {
+        // When server error and unreachable no code is sent, e.response/status/code are empty
         console.error('Erreur serveur');
         dispatch(serverError());
       } else {
-        console.error('Non authentifié :', e.message);
+        console.error('Non authentifié :', (e as Error).message);
         dispatch(loginError(false));
       }
     }
