@@ -13,8 +13,8 @@ public class PathfindingResult {
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
-            .add(new LineString.Adapter())
-            .add(new Point.Adapter())
+            .add(LineString.adapter)
+            .add(Point.adapter)
             .build()
             .adapter(PathfindingResult.class)
             .failOnUnknown();
@@ -28,4 +28,3 @@ public class PathfindingResult {
 
     public List<Warning> warnings = null;
 }
-
