@@ -62,9 +62,9 @@ function Itinerary() {
 
   const inverseOD = () => {
     if (origin && destination) {
-      const neworigin = { ...origin };
+      const newOrigin = { ...origin };
       dispatch(updateOrigin(destination));
-      dispatch(updateDestination(neworigin));
+      dispatch(updateDestination(newOrigin));
       if (vias && vias.length > 1) {
         const newVias = Array.from(vias);
         dispatch(replaceVias(newVias.reverse()));
