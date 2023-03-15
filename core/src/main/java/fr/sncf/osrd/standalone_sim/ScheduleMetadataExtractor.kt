@@ -8,9 +8,7 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra
 import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.signaling.ZoneStatus
-import fr.sncf.osrd.signaling.bal.BAL
-import fr.sncf.osrd.signaling.bal.BALtoBAL
-import fr.sncf.osrd.signaling.bal.BALtoBAPR
+import fr.sncf.osrd.signaling.bal.*
 import fr.sncf.osrd.signaling.bapr.BAPR
 import fr.sncf.osrd.signaling.bapr.BAPRtoBAL
 import fr.sncf.osrd.signaling.bapr.BAPRtoBAPR
@@ -38,10 +36,16 @@ fun run(
     val sigSystemManager = SigSystemManagerImpl()
     val bal = sigSystemManager.addSignalingSystem(BAL)
     val bapr = sigSystemManager.addSignalingSystem(BAPR)
+    val tvm = sigSystemManager.addSignalingSystem(TVM)
+
     sigSystemManager.addSignalDriver(BALtoBAL)
     sigSystemManager.addSignalDriver(BALtoBAPR)
     sigSystemManager.addSignalDriver(BAPRtoBAPR)
     sigSystemManager.addSignalDriver(BAPRtoBAL)
+    sigSystemManager.addSignalDriver(TVMtoTVM)
+    sigSystemManager.addSignalDriver(TVMtoBAL)
+    sigSystemManager.addSignalDriver(BALtoTVM)
+
     val rawInfra = adaptRawInfra(infra)
     val simulator = SignalingSimulatorImpl(sigSystemManager)
     val loadedSignalInfra = simulator.loadSignals(rawInfra)
@@ -55,7 +59,7 @@ fun run(
         routes.add(route)
     }
     val blockPaths = getRouteBlocks(
-        rawInfra, blockInfra, routes, mutableStaticIdxArrayListOf(bal, bapr)
+        rawInfra, blockInfra, routes, mutableStaticIdxArrayListOf(bal, bapr, tvm)
     )
     assert(blockPaths.isNotEmpty())
     val blockPath = blockPaths[0] // TODO: have a better way to choose the block path
