@@ -11,7 +11,6 @@ import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import nextId from 'react-id-generator';
 import { SEARCH_URL } from '../const';
-import { useSearchContext } from './SearchContext';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -23,7 +22,6 @@ export default function MapSearchStation(props) {
   const infraID = useSelector(getInfraID);
 
   const dispatch = useDispatch();
-  const searchContext = useSearchContext();
 
   const { t } = useTranslation(['map-search']);
 
@@ -70,7 +68,6 @@ export default function MapSearchStation(props) {
   }, [debouncedSearchTerm]);
 
   const onResultClick = (result) => {
-    searchContext.clearLineSearch();
     setSearch(result.name);
 
     const coordinates = map.mapTrackSources === 'schematic' ? result.schematic : result.geographic;
