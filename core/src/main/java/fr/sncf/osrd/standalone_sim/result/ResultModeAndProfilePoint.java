@@ -1,6 +1,6 @@
 package fr.sncf.osrd.standalone_sim.result;
 
-import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ModeAndProfile;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ElectrificationConditions;
 
 import com.google.common.collect.RangeMap;
 import com.squareup.moshi.Json;
@@ -36,25 +36,24 @@ public class ResultModeAndProfilePoint {
      * Builds a list of ResultModeAndProfilePoint from two range maps
      */
     public static List<ResultModeAndProfilePoint> from(
-            RangeMap<Double, ModeAndProfile> modesAndProfilesUsed,
-            RangeMap<Double, ModeAndProfile> modesAndProfilesSeen) {
+            RangeMap<Double, ElectrificationConditions> elecCondsUsed,
+            RangeMap<Double, ElectrificationConditions> elecCondsSeen) {
         var res = new ArrayList<ResultModeAndProfilePoint>();
-        var modesAndProfilesSeenMap = modesAndProfilesSeen.asMapOfRanges();
-        for (var entry : modesAndProfilesUsed.asMapOfRanges().entrySet()) {
+        var elecCondsSeenMap = elecCondsSeen.asMapOfRanges();
+        for (var entry : elecCondsUsed.asMapOfRanges().entrySet()) {
             if (!entry.getKey().hasLowerBound() || !entry.getKey().hasUpperBound()
                     || entry.getKey().upperEndpoint().equals(entry.getKey().lowerEndpoint()))
                 continue;
-            assert modesAndProfilesSeenMap.containsKey(entry.getKey())
-                    || modesAndProfilesSeen.subRangeMap(entry.getKey()).asMapOfRanges().isEmpty();
-            var modeAndProfileUsed = entry.getValue();
-            var modeAndProfileSeen = modesAndProfilesSeenMap.get(entry.getKey());
-            if (modeAndProfileSeen == null || modeAndProfileSeen.equals(modeAndProfileUsed))
+            assert elecCondsSeenMap.containsKey(entry.getKey())
+                    || elecCondsSeen.subRangeMap(entry.getKey()).asMapOfRanges().isEmpty();
+            var elecCondUsed = entry.getValue();
+            var elecCondSeen = elecCondsSeenMap.get(entry.getKey());
+            if (elecCondSeen == null || elecCondSeen.equals(elecCondUsed))
                 res.add(new ResultModeAndProfilePoint(entry.getKey().lowerEndpoint(), entry.getKey().upperEndpoint(),
-                        modeAndProfileUsed.mode(), modeAndProfileUsed.profile(), null, null));
+                        elecCondUsed.mode(), elecCondUsed.profile(), null, null));
             else
                 res.add(new ResultModeAndProfilePoint(entry.getKey().lowerEndpoint(), entry.getKey().upperEndpoint(),
-                        modeAndProfileUsed.mode(), modeAndProfileUsed.profile(), modeAndProfileSeen.mode(),
-                        modeAndProfileSeen.profile()));
+                        elecCondUsed.mode(), elecCondUsed.profile(), elecCondSeen.mode(), elecCondSeen.profile()));
         }
         return res;
     }
