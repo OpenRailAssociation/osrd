@@ -17,7 +17,7 @@ export type projectTypes = {
 export type studyTypes = {
   id?: number;
   name: string;
-  type: string;
+  study_type: string;
   description: string;
   service_code: string;
   business_code: string;
