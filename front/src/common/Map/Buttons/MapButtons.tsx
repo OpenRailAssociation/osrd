@@ -1,5 +1,4 @@
 import React, { useRef, useState, useContext, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 // Buttons
@@ -20,26 +19,29 @@ import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 import ButtonMapInfras from './ButtonMapInfras';
 
+type Props = {
+  resetPitchBearing: () => void;
+  withFullscreenButton?: boolean;
+  withInfraButton?: boolean;
+};
+
 const MAP_POPOVERS = { SEARCH: 'SEARCH', SETTINGS: 'SETTINGS', KEY: 'KEY' };
-export default function MapButtons(props) {
-  const { resetPitchBearing, withInfraButton } = props;
+export default function MapButtons({
+  resetPitchBearing,
+  withFullscreenButton,
+  withInfraButton,
+}: Props) {
   const featureInfoClick = useSelector(getFeatureInfoClick);
   const dispatch = useDispatch();
-  const { isModalOpen } = useContext(ModalContext);
+  const { isOpen } = useContext(ModalContext);
 
-  const [openedPopover, setOpenedPopover] = useState(undefined);
+  const [openedPopover, setOpenedPopover] = useState<string | undefined>(undefined);
 
-  const toggleMapModal = (keyModal) => {
+  const toggleMapModal = (keyModal: string) => {
     setOpenedPopover(keyModal !== openedPopover ? keyModal : undefined);
   };
 
-  const mapButtonsRef = useRef(null);
-
-  const handleClickOutside = (e) => {
-    if (openedPopover && !mapButtonsRef.current.contains(e.target)) {
-      setOpenedPopover(undefined);
-    }
-  };
+  const mapButtonsRef = useRef<HTMLDivElement | null>(null);
 
   // Close the pop up of the map
   useEffect(() => {
@@ -52,14 +54,14 @@ export default function MapButtons(props) {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openedPopover, isModalOpen]);
+  }, [openedPopover, isOpen]);
 
   // Close the Popover when opening modal
   useEffect(() => {
     setOpenedPopover(undefined);
-  }, [isModalOpen]);
+  }, [isOpen]);
 
-  useOutsideClick(mapButtonsRef, handleClickOutside);
+  useOutsideClick(mapButtonsRef, () => setOpenedPopover(undefined));
 
   return (
     <div ref={mapButtonsRef}>
@@ -68,7 +70,7 @@ export default function MapButtons(props) {
         <ButtonMapSettings toggleMapSettings={() => toggleMapModal('SETTINGS')} />
         <ButtonMapKey toggleMapKey={() => toggleMapModal('KEY')} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
-        <ButtonFullscreen />
+        {withFullscreenButton && <ButtonFullscreen />}
         {withInfraButton && <ButtonMapInfras />}
       </div>
       {openedPopover === MAP_POPOVERS.SEARCH && (
@@ -83,12 +85,3 @@ export default function MapButtons(props) {
     </div>
   );
 }
-
-MapButtons.defaultProps = {
-  withInfraButton: false,
-};
-
-MapButtons.propTypes = {
-  resetPitchBearing: PropTypes.func.isRequired,
-  withInfraButton: PropTypes.bool,
-};
