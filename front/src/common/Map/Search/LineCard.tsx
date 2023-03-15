@@ -6,7 +6,7 @@ type LineCardProps = {
   onResultClick: (result: ILineSearchResult) => void;
 };
 
-const LineCard: React.FC<LineCardProps> = ({ resultSearchItem, onResultClick }) => (
+const LineCard = ({ resultSearchItem, onResultClick }: LineCardProps) => (
   <div className="mb-1">
     <div
       className="station-card fixed-height"

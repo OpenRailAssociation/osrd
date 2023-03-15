@@ -2,17 +2,16 @@ import React, { useEffect, useState } from 'react';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from 'utils/helpers';
-import { post, get } from 'common/requests';
 import { useSelector, useDispatch } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { Viewport, updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
 import nextId from 'react-id-generator';
-import { BBox, LineString } from '@turf/helpers';
+import { BBox } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { getMap } from 'reducers/map/selectors';
 import { Zone, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { SEARCH_URL, searchPayloadType } from '../const';
+import { searchPayloadType } from '../const';
 import LineCard from './LineCard';
 import { ILineSearchResult } from './searchTypes';
 
@@ -27,15 +26,18 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const dispatch = useDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [searchState, setSearchState] = useState<string>('');
-  const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState<ILineSearchResult[] | undefined>(undefined);
-  const [dataTranckZone, setDataTrackZone] = useState<{ id?: number; lineCode?: number }>({
+  const [dataTrackZone, setDataTrackZone] = useState<{ id: number; lineCode: number }>({
     id: 0,
     lineCode: 0,
   });
+  const [skip, setSkip] = useState<boolean>(true);
 
-  const { data: trackZones1 } =
-    osrdEditoastApi.useGetInfraByIdLinesAndLineCodeBboxQuery(dataTranckZone);
+  const { data: trackZones } = osrdEditoastApi.useGetInfraByIdLinesAndLineCodeBboxQuery(
+    dataTrackZone,
+    { skip }
+  );
+
   const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
     const viewportTemp = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
@@ -47,9 +49,8 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
       { padding: 40 }
     );
 
-    const tempMap = { ...map };
     const newViewport = {
-      ...tempMap.viewport,
+      ...map.viewport,
       longitude,
       latitude,
       zoom,
@@ -62,7 +63,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const updateSearch = async (params: searchPayloadType) => {
     try {
       const results = await postSearch({
-        body: { object: params?.object, query: params?.query },
+        body: { object: params.object, query: params.query },
       }).unwrap();
       setSearchResults(results as ILineSearchResult[]);
     } catch (e) {
@@ -71,51 +72,48 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   };
 
   const getPayload = (lineSearch: string) => {
-    let payload = {
-      object: 'track',
-      query: ['and', ['=', ['infra_id'], infraID], ['search', ['line_name'], lineSearch]],
-    };
+    const playloadQuery: (string | number | string[])[] = !Number.isNaN(Number(lineSearch))
+      ? ['=', ['line_code'], Number(lineSearch)]
+      : ['search', ['line_name'], lineSearch];
 
-    if (!Number.isNaN(Number(lineSearch))) {
-      payload = {
-        object: 'track',
-        query: ['and', ['=', ['infra_id'], infraID], ['=', ['line_code'], Number(lineSearch)]],
-      };
-    }
+    const payload = {
+      object: 'track',
+      query: ['and', ['=', ['infra_id'], infraID], playloadQuery],
+    };
 
     return payload;
   };
+
   const coordinates = (search: Zone) =>
     map.mapTrackSources === 'schematic' ? search.sch : search.geo;
-
-  const getTrackBbox = async (searchItem: ILineSearchResult) => {
-    const trackZones = await get(`/editoast/infra/${infraID}/lines/${searchItem.line_code}/bbox`);
-    console.log('trackZones1:', trackZones1);
-    return {
-      type: 'LineString',
-      coordinates: coordinates(trackZones1 as Zone),
-    };
-  };
 
   const onResultClick = async (searchResultItem: ILineSearchResult) => {
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }
-    setDataTrackZone({ id: infraID, lineCode: searchResultItem.line_code });
-    const trackBox = await getTrackBbox(searchResultItem);
-    console.log('trackBox:', trackBox);
-    const tempBbox = bbox(trackBox);
-    zoomToFeature(tempBbox);
+    setSkip(false);
+    setDataTrackZone({ id: infraID as number, lineCode: searchResultItem.line_code });
+
     dispatch(updateLineSearchCode(searchResultItem.line_code));
   };
 
   useEffect(() => {
-    if (!dontSearch && debouncedSearchTerm) {
+    if (debouncedSearchTerm) {
       updateSearch(getPayload(searchState));
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
+
+  useEffect(() => {
+    if (trackZones) {
+      const tempBbox = bbox({
+        type: 'LineString',
+        coordinates: coordinates(trackZones),
+      });
+      zoomToFeature(tempBbox);
+    }
+  }, [trackZones]);
 
   const clearSearchResult = () => {
     setSearchState('');
@@ -132,7 +130,6 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
             id="map-search-line"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearchState(e.target.value);
-              setDontSearch(false);
             }}
             onClear={clearSearchResult}
             value={searchState}
