@@ -37,29 +37,29 @@ class TestBAPRtoBAL {
         val zoneB = builder.zone(listOf())
         val zoneC = builder.zone(listOf())
 
-        val detectorW = builder.detector()
+        val detectorW = builder.detector("w")
         builder.setNextZone(detectorW.normal, zoneA)
-        val detectorX = builder.detector()
+        val detectorX = builder.detector("X")
         builder.setNextZone(detectorX.normal, zoneB)
         builder.setNextZone(detectorX.reverse, zoneA)
-        val detectorY = builder.detector()
+        val detectorY = builder.detector("Y")
         builder.setNextZone(detectorY.normal, zoneC)
         builder.setNextZone(detectorY.reverse, zoneB)
-        val detectorZ = builder.detector()
+        val detectorZ = builder.detector("Z")
         builder.setNextZone(detectorZ.reverse, zoneC)
         // endregion
 
         // region signals
-        val signalm = builder.physicalSignal {
+        val signalm = builder.physicalSignal("m") {
             logicalSignal("BAPR", listOf("BAPR"), mapOf(Pair("distant", "true"),Pair("Nf", "false")))
         }
-        val signalM = builder.physicalSignal {
+        val signalM = builder.physicalSignal("M") {
             logicalSignal("BAPR", listOf("BAPR"), mapOf(Pair("distant", "false"),Pair("Nf", "true")))
         }
-        val signaln = builder.physicalSignal {
+        val signaln = builder.physicalSignal("n") {
             logicalSignal("BAPR", listOf("BAL"), mapOf(Pair("distant", "true"),Pair("Nf", "false")))
         }
-        val signalN = builder.physicalSignal {
+        val signalN = builder.physicalSignal("N") {
             logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
         }
 
@@ -80,7 +80,7 @@ class TestBAPRtoBAL {
 
         // region routes
         // create a route from W to Z
-        builder.route {
+        builder.route("W-Z") {
             zonePath(zonePathWX) // zone B
             zonePath(zonePathXY) // zone C
             zonePath(zonePathYZ) // zone D
