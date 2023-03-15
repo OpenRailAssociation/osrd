@@ -7,8 +7,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import java.util.Map;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.TreeMap;
 
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
@@ -106,77 +106,109 @@ public class RJSRollingStock implements Identified {
         return name;
     }
 
-    //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
+    //********************** 2D point and generic interpolation function ****************************
     record CurvePoint(double x, double y) { }    // position of a point in a 2D space (x, y)
+
+    /** Get interpolated Y=f(X) from a given real X*/
+    static double getInterpolatedY(double realX, CurvePoint[] curvePointArray) {
+        int index = 0;
+        int left = 0;
+        int right = curvePointArray.length - 1;
+        while (left <= right) {
+            // this line is to calculate the mean of the two values
+            int mid = (left + right) >>> 1;
+            if (Math.abs(curvePointArray[mid].x - Math.abs(realX)) < 0.000001) {
+                index = mid;
+                break;
+            } else if (curvePointArray[mid].x < Math.abs(realX)) {
+                left = mid + 1;
+                index = left;
+            } else {
+                right = mid - 1;
+            }
+        }
+        if (index == 0) {
+            return curvePointArray[0].y();
+        }
+        if (index == curvePointArray.length) {
+            return curvePointArray[index - 1].y();
+        }
+        CurvePoint previousPoint = curvePointArray[index - 1];
+        CurvePoint nextPoint = curvePointArray[index];
+        double coeff =
+                (previousPoint.y() - nextPoint.y()) / (previousPoint.x() - nextPoint.x());
+        return previousPoint.y() + coeff * (Math.abs(realX) - previousPoint.x());
+    }
+    //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
     public static class SpeedDependantPowerCoefficient{
         // x:speed values , y:associated dimensionless powerCoefficient which modulate output power
-        CurvePoint[] curve = {
-                new CurvePoint(0.0,0.0),
-                new CurvePoint(10.0,0.0),
-                new CurvePoint(20.0,1.0),
-                new CurvePoint(3000.0,1.0)
-        };
-        public SpeedDependantPowerCoefficient(){        //Constructor
-            System.out.printf(Arrays.toString(curve));  //So IntelliJ doesn't tell me curve's unused
+        CurvePoint[] curve;
+
+        public SpeedDependantPowerCoefficient(CurvePoint[] curve) {
+            this.curve = curve;
+        }
+
+        double getPowerCoefficientFromSpeed(double speed){
+            return getInterpolatedY(speed,this.curve);
         }
     }
 
     public static class SocDependantPowerCoefficient{
         // x:speed values , y:associated dimensionless powerCoefficient which modulate output power
-        CurvePoint[] curve = {
-                new CurvePoint(0.0,0.1),
-                new CurvePoint(10.0,0.1),
-                new CurvePoint(20.0,1.0),
-                new CurvePoint(110.0,1.0),
-                new CurvePoint(120.0,1.5),
-                new CurvePoint(3000.0,1.5)
-        };
-        public SocDependantPowerCoefficient(){          //Constructor
-            System.out.printf(Arrays.toString(curve));  //So IntelliJ doesn't tell me curve's unused
+        CurvePoint[] curve;
+
+        public SocDependantPowerCoefficient(CurvePoint[] curve) {
+            this.curve = curve;
+        }
+
+        double getPowerCoefficientFromSoc(double soc){
+            return getInterpolatedY(soc,this.curve);
         }
     }
 
     public static class PowerConverter {
-        Double efficiency = 0.001;
-
-        public PowerConverter(){}
-        public PowerConverter(Double efficiency){
+        double efficiency;
+        public PowerConverter(double efficiency){
             this.efficiency = efficiency;
         }
     }
 
     public static class RefillLaw {
-        Double tauRech = 0.45 ;     //Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant
+        double tauRech = 0.45 ;     //Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant
         //5 Tau => 99%·socRef
-        Double socRef = 0.85;   //Set-point of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)
+        double socRef = 0.85;   //Set-point of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)
+        double Kp = 1000/tauRech;   //Kp = capacity/tauRech  <=> = Joule·Second^-1 = Watt
 
         public RefillLaw() {}
-        public RefillLaw(Double tauRech, Double socRef) {
+        public RefillLaw(double tauRech, double socRef, double EnergyStorageCapacity) {
             this.tauRech = tauRech;
             this.socRef = socRef;
+            this.Kp = EnergyStorageCapacity/tauRech;    // Kp = Joule·Second^-1 = Watt
+        }
+        public double getRefillPower(double soc){
+            return (socRef-soc)*Kp; //refill power >0 when soc<=socRef
         }
     }
 
     public static class ManagementSystem{
-        Double overchargeThreshold;          //overcharge limit
-        Double underchargeThreshold;         //undercharge limit
+        double overchargeThreshold;          //overcharge limit
+        double underchargeThreshold;         //undercharge limit
 
-        public ManagementSystem(Double overchargeThreshold, Double underchargeThreshold) {
+        public ManagementSystem(double overchargeThreshold, double underchargeThreshold) {
             this.overchargeThreshold = overchargeThreshold;
             this.underchargeThreshold = underchargeThreshold;
         }
     }
 
     public static class EnergyStorage{
-        Double capacity = 0.5;//How much energy you can store (in Joules or Watts·Seconds)
-        Double soc = .5;//The State of Charge of your EnergyStorage, soc·capacity = actual stock of energy
-        RefillLaw refillLaw = new RefillLaw();
-        ManagementSystem management = new ManagementSystem(0.85, 0.2);
-        SocDependantPowerCoefficient socDependency = new SocDependantPowerCoefficient();
+        double capacity;//How much energy you can store (in Joules or Watts·Seconds)
+        double soc;//The State of Charge of your EnergyStorage, soc·capacity = actual stock of energy
+        RefillLaw refillLaw;
+        ManagementSystem management;
+        SocDependantPowerCoefficient socDependency;
 
-        public EnergyStorage() {}
         public EnergyStorage(
-                Double capacity, Double soc, RefillLaw refillLaw,
+                double capacity, double soc, RefillLaw refillLaw,
                 ManagementSystem management, SocDependantPowerCoefficient socDependency
         ) {
             this.capacity = capacity;
@@ -185,33 +217,32 @@ public class RJSRollingStock implements Identified {
             this.management = management;
             this.socDependency = socDependency;
         }
+        public void updateStateOfCharge(double energy){
+            soc += energy/capacity;
+        }
     }
 
     public static class EnergySource{
-        Double pMin;           // Negative power limit
-        Double pMax;           // Positive power limit
+        double pMin;           // Negative power limit
+        double pMax;           // Positive power limit
         EnergyStorage Storage;          // If your EnergySource have a limited quantity of energy
         PowerConverter Converter;  // If your EnergySource has power conversion and/or need to account for power losses
         SpeedDependantPowerCoefficient speedCoef;
         // If your EnergySource output power is dependent on speed of the train
 
-        public EnergySource(Double pMin, Double pMax) {
-            this.pMin = pMin;
-            this.pMax = pMax;
-        }
-        public EnergySource(Double pMin, Double pMax, SpeedDependantPowerCoefficient speedCoef) {
+        public EnergySource(double pMin, double pMax, SpeedDependantPowerCoefficient speedCoef) {
             this.pMin = pMin;
             this.pMax = pMax;
             this.speedCoef = speedCoef;
         }
-        public EnergySource(Double pMin, Double pMax, EnergyStorage storage, PowerConverter converter) {
+        public EnergySource(double pMin, double pMax, EnergyStorage storage, PowerConverter converter) {
             this.pMin = pMin;
             this.pMax = pMax;
             this.Storage = storage;
             this.Converter = converter;
         }
 
-        public EnergySource(Double pMin, Double pMax,
+        public EnergySource(double pMin, double pMax,
                             EnergyStorage storage,
                             PowerConverter converter,
                             SpeedDependantPowerCoefficient speedCoef
@@ -224,62 +255,62 @@ public class RJSRollingStock implements Identified {
         }
 
         // Methods :
-        public Double getPower(Double speed){ //return available power depending on context (speed for now)
-
-            return pMax*2;
+        public double getPower(double speed){ //return available power depending on context (speed for now)
+            double availablePower = pMax;
+            if(Storage!=null && Storage.socDependency!=null)
+                availablePower *= Storage.socDependency.getPowerCoefficientFromSoc(.45/**/);
+            if(Converter!=null) availablePower *= Converter.efficiency;
+            if(speedCoef!=null) availablePower *= speedCoef.getPowerCoefficientFromSpeed(speed);
+            return availablePower;
         }
     }
 
-    // IDK if af an arrayList or a map is better to store EnergySource of the train
-    // Instantiating a pantograph/catenary thingy and a test battery
 
-    public static TreeMap<Integer, EnergySource> getEnergySources() {
-        TreeMap<Integer, EnergySource> EnergySourceMap = new TreeMap<>(/*needs a sorting method ?*/);
+    // INSTANTIATING PANTOGRAPH AND BATTERY ENERGY SOURCE -------------------------------------------------------------
+    public static ArrayList<EnergySource> getEnergySources() {
+        ArrayList<EnergySource> EnergySourceArray = new ArrayList<>(); // Create an ArrayList object
+
+        // PANTOGRAPH
+        CurvePoint[] curveLowValueOnLowSpeed = {
+                new CurvePoint(0.0,0.0),
+                new CurvePoint(10.0,0.0),
+                new CurvePoint(20.0,1.0),
+                new CurvePoint(3000.0,1.0)
+        };
+
         EnergySource pantograph = new EnergySource(
                 400.,
                 500.,
-                new SpeedDependantPowerCoefficient()
+                new SpeedDependantPowerCoefficient(curveLowValueOnLowSpeed)
         );
+
+
+        // BATTERY
+        CurvePoint[] curveHigherValueOnHighSpeed = {
+                new CurvePoint(0.0,0.1),
+                new CurvePoint(10.0,0.1),
+                new CurvePoint(20.0,1.0),
+                new CurvePoint(110.0,1.0),
+                new CurvePoint(120.0,1.5),
+                new CurvePoint(3000.0,1.5)
+        };
+
         EnergySource battery = new EnergySource(
                 400.,
                 500.,
-                new EnergyStorage(),
+                new EnergyStorage(
+                        150*3.6E6, 0.8,         // kWh to J : x3.6E6
+                        new RefillLaw(),
+                        new ManagementSystem(0.9,0.2),  // to be used later
+                        new SocDependantPowerCoefficient(curveHigherValueOnHighSpeed)
+                        ),
                 new PowerConverter(0.56)
         );
 
-        EnergySourceMap.put(0, pantograph);
-        EnergySourceMap.put(1, battery);
-        return EnergySourceMap;
+        EnergySourceArray.add(pantograph);
+        EnergySourceArray.add(battery);
+        return EnergySourceArray;
     }
-/*
-    static double interpolateValue(double abscissaValue, CurvePoint[] Curve) {
-        // Finds the abscissaValue directly adjacent points on the x-axis
-        int index = 0; int leftX = 0; int rightX = Curve.length - 1;
-
-        int mid = (leftX + rightX)/2;
-        while (Math.abs(Curve[mid].y - Math.abs(abscissaValue)) < 0.000001) {
-            index = mid;
-            if (Curve[mid].y < Math.abs(abscissaValue)) {
-                leftX = mid + 1;
-                index = leftX;
-            }
-            else {
-                rightX = mid - 1;
-            }
-        }
-        // Deals with edges of the
-        if (index == 0) {
-            return tractiveEffortCurve[0].maxEffort();
-        }
-        if (index == tractiveEffortCurve.length) {
-            return tractiveEffortCurve[index - 1].maxEffort();
-        }
-        TractiveEffortPoint previousPoint = tractiveEffortCurve[index - 1];
-        TractiveEffortPoint nextPoint = tractiveEffortCurve[index];
-        double coeff =
-                (previousPoint.maxEffort() - nextPoint.maxEffort()) / (previousPoint.speed() - nextPoint.speed());
-        return previousPoint.maxEffort() + coeff * (Math.abs(abscissaValue) - previousPoint.speed());
-    }*/
 
     //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
 }
