@@ -273,7 +273,12 @@ private fun buildZonePath(
                 trackSignal.position - rangeBegin
             else
                 rangeEnd - trackSignal.position
-            zonePathSignals.add(ZonePathSignal(zonePathPosition + sigRangeStartDistance, trackSignal.signal))
+
+            val position = zonePathPosition + sigRangeStartDistance
+            if (position == Distance.ZERO)
+                continue
+
+            zonePathSignals.add(ZonePathSignal(position, trackSignal.signal))
         }
         zonePathPosition += (rangeEnd - rangeBegin)
     }
