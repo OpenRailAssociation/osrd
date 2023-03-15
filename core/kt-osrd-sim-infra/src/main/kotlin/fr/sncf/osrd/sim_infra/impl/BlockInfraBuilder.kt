@@ -27,6 +27,7 @@ class BlockInfraBuilderImpl : BlockInfraBuilder {
         signals: StaticIdxList<LogicalSignal>,
         signalsDistances: DistanceList,
     ): BlockId {
+        assert(path.size != 0)
         val newBlock = BlockDescriptor(startAtBufferStop, stopsAtBufferStop, path, signals, signalsDistances)
         return blockSet.getOrPut(newBlock) { blockPool.add(newBlock) }
     }

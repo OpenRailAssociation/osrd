@@ -28,7 +28,7 @@ internal fun internalBuildBlocks(
             val routeEntryDet = rawSignalingInfra.getRouteEntry(route)
             val routeExitDet = rawSignalingInfra.getRouteExit(route)
             val entrySignals = detectorEntrySignals[routeEntryDet]
-            var currentBlocks = getInitPartialBlocks(sigModuleManager, loadedSignalInfra, entrySignals)
+            var currentBlocks = getInitPartialBlocks(sigModuleManager, rawSignalingInfra, loadedSignalInfra, entrySignals, routeEntryDet)
             // while inside the route, we maintain a list of currently active blocks.
             // each block either expect any signaling system (when starting from a buffer stop or wildcard signal),
             // or expects a given signaling system. blocks can therefore tell whether a signal belongs there.
@@ -66,6 +66,9 @@ internal fun internalBuildBlocks(
             for (curBlock in currentBlocks) {
                 if (curBlock.zonePaths.size == 0)
                     continue
+                if (curBlock.signals.size == 0)
+                    continue
+
                 val lastZonePath = curBlock.zonePaths[curBlock.zonePaths.size - 1]
                 assert(routeExitDet == rawSignalingInfra.getZonePathExit(lastZonePath))
                 if (!routeEndsAtBufferStop)
@@ -167,11 +170,16 @@ class PartialBlock(
 
 private fun getInitPartialBlocks(
     sigModuleManager: InfraSigSystemManager,
+    rawSignalingInfra: RawSignalingInfra,
     loadedSignalInfra: LoadedSignalInfra,
     entrySignals: IdxMap<SignalingSystemId, LogicalSignalId>?,
+    entryDet: DirDetectorId,
 ): MutableList<PartialBlock> {
     val initialBlocks = mutableListOf<PartialBlock>()
+    val isBufferStop = rawSignalingInfra.isBufferStop(entryDet.detector)
     if (entrySignals == null) {
+        if (!isBufferStop)
+            logger.debug { "no signal at non buffer stop" }
         initialBlocks.add(
             PartialBlock(
                 true,
@@ -183,6 +191,8 @@ private fun getInitPartialBlocks(
             )
         )
     } else {
+        if (isBufferStop)
+            logger.debug { "signal at buffer stop" }
         for (entrySignal in entrySignals.values()) {
             val drivers = loadedSignalInfra.getDrivers(entrySignal)
             if (drivers.size == 0) {
