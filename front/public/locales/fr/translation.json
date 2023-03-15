@@ -304,8 +304,9 @@
     "traincompo": "Matériel"
   },
   "NavBar": {
+    "about": "A propos",
     "disconnect": "Déconnexion",
-    "informations": "Informations"
+    "attributions": "Attributions"
   },
   "osrd": {
     "nav": {
