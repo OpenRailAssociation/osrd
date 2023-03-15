@@ -2,9 +2,9 @@ import {
   OsrdMultiConfState,
   OsrdConfState,
   OsrdStdcmConfState,
+  MODES,
 } from 'applications/operationalStudies/consts';
 import { RootState } from 'reducers';
-import { MODES } from 'applications/operationalStudies/consts';
 
 function getSection(state: RootState): OsrdConfState | OsrdStdcmConfState {
   type confSections = Omit<OsrdMultiConfState, 'mode'>;
@@ -19,7 +19,7 @@ function getSection(state: RootState): OsrdConfState | OsrdStdcmConfState {
   return state.osrdconf[section];
 }
 
-export const getConf = (state: RootState) => getSection(state)
+export const getConf = (state: RootState) => getSection(state);
 export const getName = (state: RootState) => getSection(state).name;
 export const getMode = (state: RootState) => state.osrdconf.mode;
 export const getStdcmMode = (state: RootState) => state.osrdconf.stdcmConf.stdcmMode;
@@ -51,4 +51,5 @@ export const getGeojson = (state: RootState) => getSection(state).geojson;
 export const getFeatureInfoClick = (state: RootState) => getSection(state).featureInfoClick;
 export const getGridMarginBefore = (state: RootState) => getSection(state).gridMarginBefore;
 export const getGridMarginAfter = (state: RootState) => getSection(state).gridMarginAfter;
-export const getStandardStdcmAllowance = (state: RootState) => state.osrdconf.stdcmConf.standardStdcmAllowance;
+export const getStandardStdcmAllowance = (state: RootState) =>
+  state.osrdconf.stdcmConf.standardStdcmAllowance;

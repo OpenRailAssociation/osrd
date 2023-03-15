@@ -1,7 +1,5 @@
-import { OsrdConfState, OsrdMultiConfState } from 'applications/operationalStudies/consts';
-import { RootState } from 'reducers';
+import { OsrdConfState } from 'applications/operationalStudies/consts';
 import { createStoreWithoutMiddleware } from 'Store';
-import simulationTrain from '../../../tests/assets/operationStudies/simulationTrain';
 import {
   initialState,
   updateOriginTime,
@@ -9,15 +7,10 @@ import {
   toggleOriginLinkedBounds,
 } from '../osrdconf';
 
-type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
-
 const simulationConfInitialState: Partial<OsrdConfState> = initialState.simulationConf;
 const stdcmConfInitialState = initialState.stdcmConf;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const createStore = (initialStateExtra?: any) =>
   createStoreWithoutMiddleware({
     osrdconf: {

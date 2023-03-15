@@ -20,8 +20,8 @@ export default function OSRDSTDCM() {
     return () => {
       dispatch(updateMode(MODES.simulation));
       dispatch(updateSelectedTrain(0));
-      dispatch(updateSelectedProjection(undefined))
-    }
+      dispatch(updateSelectedProjection(undefined));
+    };
   }, []);
 
   return (
