@@ -32,7 +32,7 @@ async fn get_line_bbox(
     let (infra_id, line_code) = path.into_inner();
     let line_code: i32 = line_code.try_into().unwrap();
     let zone = block::<_, Result<_>>(move || {
-        let conn = &mut db_pool.get().expect("Failed to get DB connection");
+        let conn = &mut db_pool.get()?;
         let infra = Infra::retrieve(conn, infra_id)?;
         let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra)?;
         let mut zone = Zone::default();

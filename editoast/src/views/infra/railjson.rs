@@ -52,7 +52,7 @@ async fn get_railjson(
         include_str!("sql/get_infra_with_ext.sql")
     };
     let railjson: RailJsonData = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         sql_query(query)
             .bind::<BigInt, _>(infra)
             .get_result(&mut conn)
@@ -88,7 +88,7 @@ async fn post_railjson(
     }
 
     block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let infra = railjson.persist(&params.name, &mut conn)?;
         let infra = infra.bump_version(&mut conn)?;
         if params.generate_data {

@@ -161,7 +161,7 @@ impl Project {
         let project_payload: Project = data.into();
         let project = block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_project::dsl::*;
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             match insert_into(osrd_infra_project)
                 .values(&project_payload)
                 .get_result::<Project>(&mut conn)
@@ -198,7 +198,7 @@ impl Project {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_project::dsl as project_dsl;
             use crate::tables::osrd_infra_study::dsl as study_dsl;
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             let project = match project_dsl::osrd_infra_project
                 .find(project_id)
                 .first(&mut conn)
@@ -226,7 +226,7 @@ impl Project {
 
         let project = block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_project::dsl::*;
-            let mut conn = db_pool_ref.get().expect("Failed to get DB connection");
+            let mut conn = db_pool_ref.get()?;
             match delete(osrd_infra_project.filter(id.eq(project_id)))
                 .get_result::<Project>(&mut conn)
             {
@@ -265,7 +265,7 @@ impl Project {
         let db_pool_ref = db_pool.clone();
         let project = block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_project::dsl::*;
-            let mut conn = db_pool_ref.get().expect("Failed to get DB connection");
+            let mut conn = db_pool_ref.get()?;
             match update(osrd_infra_project.find(project_id))
                 .set(&project_payload)
                 .get_result::<Project>(&mut conn)

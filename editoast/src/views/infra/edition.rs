@@ -27,7 +27,7 @@ pub async fn edit<'a>(
 ) -> Result<Json<Vec<OperationResult>>> {
     let infra = infra.into_inner();
     let (operation_results, invalid_zone) = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let infra = Infra::retrieve_for_update(&mut conn, infra)?;
         let mut infra_cache =
             InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).unwrap();

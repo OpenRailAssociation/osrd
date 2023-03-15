@@ -89,7 +89,7 @@ async fn pathfinding_view(
     }
 
     block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let infra = Infra::retrieve_for_update(&mut conn, infra)?;
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
 

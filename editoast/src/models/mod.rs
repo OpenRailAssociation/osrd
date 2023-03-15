@@ -30,7 +30,7 @@ pub trait Create: Sized + 'static {
     /// ```
     async fn create(self, db_pool: Data<DbPool>) -> Result<Self> {
         block::<_, crate::error::Result<Self>>(move || {
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             Self::create_conn(self, &mut conn)
         })
         .await
@@ -58,7 +58,7 @@ pub trait Delete {
     /// ```
     async fn delete(db_pool: Data<DbPool>, id: i64) -> Result<bool> {
         block::<_, crate::error::Result<_>>(move || {
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             Self::delete_conn(&mut conn, id)
         })
         .await
@@ -89,7 +89,7 @@ pub trait Retrieve: Sized + 'static {
     /// ```
     async fn retrieve(db_pool: Data<DbPool>, id: i64) -> Result<Option<Self>> {
         block::<_, crate::error::Result<_>>(move || {
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             Self::retrieve_conn(&mut conn, id)
         })
         .await

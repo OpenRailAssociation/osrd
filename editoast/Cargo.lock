@@ -821,6 +821,7 @@ dependencies = [
  "ntest",
  "pathfinding",
  "pointy",
+ "r2d2",
  "rand 0.8.5",
  "redis",
  "sentry",
