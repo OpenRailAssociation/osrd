@@ -28,7 +28,7 @@ class _InfraResponse:
     results: Iterable[Mapping[str, Any]]
 
 
-@pytest.mark.usefixtures("tiny_infra_id")
+@pytest.mark.usefixtures("tiny_infra")
 def test_get_infra():
     response = requests.get(API_URL + "infra/")
     assert response.status_code == 200

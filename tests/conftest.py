@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 import requests
 
+from tests.infra import Infra
 from tests.scenario import Scenario
 from tests.services import API_URL, EDITOAST_URL
 from tests.utils.timetable import create_scenario
@@ -33,26 +34,26 @@ def _load_generated_infra(name: str) -> int:
 
 
 @pytest.fixture(scope="session")
-def dummy_infra_id() -> int:
+def dummy_infra() -> Infra:
     result = subprocess.check_output(
         ["docker", "exec", "osrd-api", "python", "manage.py", "setup_dummy_db"],
     )
     infra_id = int(result)
-    yield infra_id
+    yield Infra(infra_id, "dummy_infra")
     requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
 @pytest.fixture(scope="session")
-def tiny_infra_id() -> int:
+def tiny_infra() -> Infra:
     infra_id = _load_generated_infra("tiny_infra")
-    yield infra_id
+    yield Infra(infra_id, "tiny_infra")
     requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
 @pytest.fixture(scope="session")
-def small_infra_id() -> int:
+def small_infra() -> Infra:
     infra_id = _load_generated_infra("small_infra")
-    yield infra_id
+    yield Infra(infra_id, "small_infra")
     requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
 
 
@@ -72,18 +73,29 @@ def foo_study_id(foo_project_id: int) -> int:
 
 
 @pytest.fixture
-def dummy_scenario(dummy_infra_id: int, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, dummy_infra_id, foo_project_id, foo_study_id)
-    yield Scenario(foo_project_id, foo_study_id, scenario_id, dummy_infra_id, timetable_id)
+def dummy_scenario(dummy_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
+    scenario_id, timetable_id = create_scenario(API_URL, dummy_infra.id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, dummy_infra.id, timetable_id)
 
 
 @pytest.fixture
-def tiny_scenario(tiny_infra_id: int, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, tiny_infra_id, foo_project_id, foo_study_id)
-    yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra_id, timetable_id)
+def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
+    scenario_id, timetable_id = create_scenario(API_URL, tiny_infra.id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id)
 
 
 @pytest.fixture
-def small_scenario(small_infra_id: int, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, small_infra_id, foo_project_id, foo_study_id)
-    yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra_id, timetable_id)
+def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
+    scenario_id, timetable_id = create_scenario(API_URL, small_infra.id, foo_project_id, foo_study_id)
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
+
+
+@pytest.mark.usefixtures("small_infra")
+@pytest.fixture
+def fast_rolling_stock() -> int:
+    """Return fast_rolling_stock loaded with small infra."""
+    r = requests.get(f"{API_URL}rolling_stock/?page_size=1000")
+    rolling_stocks = r.json()["results"]
+    yield next(
+        iter([rolling_stock["id"] for rolling_stock in rolling_stocks if rolling_stock["name"] == "fast_rolling_stock"])
+    )

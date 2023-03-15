@@ -5,7 +5,6 @@ import requests
 
 from .scenario import Scenario
 from .services import API_URL
-from .utils.simulation import _get_rolling_stock_id
 
 
 @dataclass(frozen=True)
@@ -76,7 +75,7 @@ def _two_train_simulation_payload(path_id: int, timetable_id: int, rolling_stock
     }
 
 
-def test_get_timetable(small_scenario: Scenario):
+def test_get_timetable(small_scenario: Scenario, fast_rolling_stock: int):
     # empty timetable
     response = requests.get(f"{API_URL}timetable/{small_scenario.timetable}/")
     assert response.status_code == 200
@@ -84,16 +83,15 @@ def test_get_timetable(small_scenario: Scenario):
     assert timetable.name == "timetable for foo"
 
     # add simulation
-    rolling_stock_id = _get_rolling_stock_id(API_URL, "fast_rolling_stock")
     path_finding_response = requests.post(
-        f"{API_URL}pathfinding/", json=_west_to_south_east_payload(small_scenario.infra, rolling_stock_id)
+        f"{API_URL}pathfinding/", json=_west_to_south_east_payload(small_scenario.infra, fast_rolling_stock)
     )
     assert path_finding_response.status_code == 201
     path_finding = _PathfindingResponse(**path_finding_response.json())
 
     simulation_response = requests.post(
         f"{API_URL}train_schedule/standalone_simulation/",
-        json=_two_train_simulation_payload(path_finding.id, small_scenario.timetable, rolling_stock_id),
+        json=_two_train_simulation_payload(path_finding.id, small_scenario.timetable, fast_rolling_stock),
     )
     assert simulation_response.status_code == 201
     simulation = _SimulationResponse(**simulation_response.json())

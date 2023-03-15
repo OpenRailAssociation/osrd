@@ -6,7 +6,6 @@ import requests
 
 from .scenario import Scenario
 from .services import API_URL
-from .utils.simulation import _get_rolling_stock_id
 
 REGRESSION_TESTS_DATA_FOLDER = Path(__file__).parent / "regression_tests_data"
 REGRESSION_TESTS_JSON_FILES = [json_file.name for json_file in REGRESSION_TESTS_DATA_FOLDER.resolve().glob("*.json")]
@@ -39,7 +38,7 @@ def _stdcm_with_payload(base_url: str, payload):
         raise RuntimeError(f"stdcm error {r.status_code}: {r.content}")
 
 
-def _reproduce_test(path_to_json: Path, scenario: Scenario):
+def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: int):
     fuzzer_output = json.loads(path_to_json.read_bytes())
 
     if fuzzer_output["error_type"] == "STDCM":
@@ -54,7 +53,6 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario):
     path_id = _pathfinding_with_payload(API_URL, fuzzer_output["path_payload"], scenario.infra, stop_after_pathfinding)
     if stop_after_pathfinding:
         return
-    rolling_stock_id = _get_rolling_stock_id(API_URL, "fast_rolling_stock")
 
     payload = fuzzer_output["schedule_payload"]
     payload["path"] = path_id
@@ -70,5 +68,5 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario):
 
 
 @pytest.mark.parametrize("file_name", REGRESSION_TESTS_JSON_FILES)
-def test_regressions(file_name: str, small_scenario: Scenario):
-    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, small_scenario)
+def test_regressions(file_name: str, small_scenario: Scenario, fast_rolling_stock: int):
+    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, small_scenario, fast_rolling_stock)
