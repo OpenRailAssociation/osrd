@@ -12,7 +12,6 @@ import { useModal } from '../../common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from '../../common/Loader';
 import { loadDataModel, reset } from '../../reducers/editor';
 import { updateInfraID } from '../../reducers/osrdconf';
-import { MainState } from '../../reducers/main';
 import { updateViewport, Viewport } from '../../reducers/map';
 import Tipped from './components/Tipped';
 import Map from './Map';
@@ -37,7 +36,6 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const infraID = useSelector(getInfraID);
   const switchTypes = useSelector(getSwitchTypes);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
-  const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[0],
@@ -174,11 +172,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   return (
     <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
       <main
-        className={cx(
-          'editor-root mastcontainer mastcontainer-map',
-          fullscreen && ' fullscreen',
-          infraID && 'infra-selected'
-        )}
+        className={cx('editor-root mastcontainer mastcontainer-map', infraID && 'infra-selected')}
       >
         <div className="layout">
           <div className="tool-box bg-primary">
