@@ -29,6 +29,10 @@ public class RJSStandaloneTrainSchedule implements Identified {
     /** The type of comfort the train using */
     public RJSComfortType comfort;
 
+    /** Ranges on the path where power restrictions are to be applied */
+    @Json(name = "power_restriction_ranges")
+    public RJSPowerRestrictionRange[] powerRestrictionRanges;
+
     /** Options for the standalone simulation */
     public RJSTrainScheduleOptions options;
 
@@ -41,7 +45,8 @@ public class RJSStandaloneTrainSchedule implements Identified {
             RJSTrainStop[] stops,
             String tag,
             RJSComfortType comfort,
-            RJSTrainScheduleOptions options
+            RJSTrainScheduleOptions options,
+            RJSPowerRestrictionRange[] powerRestrictionRanges
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -51,6 +56,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
         this.tag = tag;
         this.comfort = comfort;
         this.options = options;
+        this.powerRestrictionRanges = powerRestrictionRanges;
     }
 
     public RJSStandaloneTrainSchedule(
@@ -61,7 +67,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
             RJSTrainStop[] stops,
             String tag
     ) {
-        this(id, rollingStock, initialSpeed, allowances, stops, tag, RJSComfortType.STANDARD, null);
+        this(id, rollingStock, initialSpeed, allowances, stops, tag, RJSComfortType.STANDARD, null, null);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;

@@ -2,14 +2,12 @@ package fr.sncf.osrd.standalone_sim;
 
 import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
-import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.infra.InfraHelpers.getSignalingRoute;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -39,9 +37,8 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(barA, 200),
                 new TrackLocation(fooA, 0)
         );
+        var testContext = SimpleContextBuilder.makeSimpleContext(path.length(), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = EnvelopeSimContextBuilder.build(
-                testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, RollingStock.Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -65,9 +62,8 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(barA, 100),
                 new TrackLocation(fooA, 100)
         );
+        var testContext = SimpleContextBuilder.makeSimpleContext(path.length(), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = EnvelopeSimContextBuilder.build(
-                testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, RollingStock.Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -92,9 +88,8 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(barA, 100),
                 new TrackLocation(fooA, 100)
         );
+        var testContext = SimpleContextBuilder.makeSimpleContext(path.length(), 0);
         var testRollingStock = TestTrains.VERY_LONG_FAST_TRAIN;
-        var testContext = EnvelopeSimContextBuilder.build(
-                testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, RollingStock.Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -118,9 +113,8 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(infra.getTrackSection("track.0"), 0),
                 new TrackLocation(infra.getTrackSection("track.9"), 0)
         );
+        var testContext = SimpleContextBuilder.makeSimpleContext(path.length(), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = EnvelopeSimContextBuilder.build(
-                testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, RollingStock.Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -140,9 +134,8 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(infra.getTrackSection("track.0"), 0),
                 new TrackLocation(infra.getTrackSection("track.0"), 10)
         );
+        var testContext = SimpleContextBuilder.makeSimpleContext(path.length(), 0);
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = EnvelopeSimContextBuilder.build(
-                testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, RollingStock.Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -158,7 +151,7 @@ public class ScheduleMetadataExtractorTests {
     ) {
         var schedule = new StandaloneTrainSchedule(
                 testRollingStock, 0, List.of(), List.of(),
-                "test", RollingStock.Comfort.STANDARD, null
+                "test", RollingStock.Comfort.STANDARD, null, null
         );
         ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra);
     }
