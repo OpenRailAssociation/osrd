@@ -24,6 +24,8 @@ export const getName = (state: RootState) => getSection(state).name;
 export const getTrainCount = (state: RootState) => getSection(state).trainCount;
 export const getTrainDelta = (state: RootState) => getSection(state).trainDelta;
 export const getTrainStep = (state: RootState) => getSection(state).trainStep;
+export const getUsingElectricalProfiles = (state: RootState) =>
+  getSection(state).usingElectricalProfiles;
 export const getMode = (state: RootState) => state.osrdconf.mode;
 export const getStdcmMode = (state: RootState) => state.osrdconf.stdcmConf.stdcmMode;
 export const getLabels = (state: RootState) => getSection(state).labels;

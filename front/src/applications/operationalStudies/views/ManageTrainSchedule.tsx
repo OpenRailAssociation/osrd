@@ -11,6 +11,7 @@ import SpeedLimitByTagSelector from 'applications/operationalStudies/components/
 import submitConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConf';
 import { FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 
 type Props = {
@@ -33,6 +34,7 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
         </div>
         <div className="col-xl-6">
           <SpeedLimitByTagSelector />
+          <ElectricalProfiles />
         </div>
       </div>
       <div className="manage-train-schedule-title">2.&nbsp;{t('indications.choosePath')}</div>
