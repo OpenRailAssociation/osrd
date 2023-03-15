@@ -1,93 +1,88 @@
 # Contributing to OSRD
 
-## Where to start ?
-
 All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
 
-If you are brand new to OSRD or open-source development, we recommend chatting with us on [libera chat](https://web.libera.chat/#osrd) or going through the [GitHub issues](https://github.com/DGEXSolutions/osrd/issues) tab to find issues that interest you. There are number of issues listed under `good first issue` where you could start out.
+Check out our community's [Code of Conduct](https://github.com/DGEXSolutions/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on [libera chat](https://web.libera.chat/#osrd) if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting. If you are not sure about what to do have a look at currently open [good first issues](https://github.com/DGEXSolutions/osrd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+
+## Getting oriented
+
+The OSRD project has 2 primary repos:
+
+1. [`osrd`](https://github.com/DGEXSolutions/osrd): This is where the simulator is developed.
+2. [`osrd-website`](https://github.com/DGEXSolutions/osrd-website): Where the [`official website`](https://osrd.fr), blog, documentation, ... are hosted.
+
+The `osrd` repo itself contains many smaller packages.
+
+Some packages of interest (more details in packages' `README.md`):
+
+- [`core`](https://github.com/DGEXSolutions/osrd/tree/dev/core): The core engine of the simulation where physics, pathfinding and conflict detection are computed.
+- [`editoast`](https://github.com/DGEXSolutions/osrd/tree/dev/editoast): Service to retrieve data from the databases and make data available through http endpoints.
+  It is also the place where edition of the infrastructure is computed.
+- [`front`](https://github.com/DGEXSolutions/osrd/tree/dev/front): GUI of OSRD.
+- [`tests`](https://github.com/DGEXSolutions/osrd/tree/dev/tests): Package to run integration tests on services.
+- [`python/osrd_schemas`](https://github.com/DGEXSolutions/osrd/tree/dev/python/osrd_schemas): Definition of the railjson format.
+
+## What we are trying to build
+
+OSRD is an open source web application for railway infrastructure design, capacity analysis, timetabling and simulation.
+Check out details on the [website specific page](https://osrd.fr/en/about/).
+
+OSRD also currently has the following "development process" goals:
+
+- **User-facing API ergonomics come first**: Solid user experience should receive significant focus and investment.
+  It should rarely be compromised in the interest of internal implementation details.
+- **Don't merge everything ... don't merge too early**: Every feature we add increases maintenance burden and compile times.
+  Only merge features that are "generally" useful.
+  Don't merge major changes or new features unless we have relative consensus that the design is correct and that we have the developer capacity to support it.
+- **Control and consistency over 3rd party code reuse**: Only add a dependency if it is absolutely necessary.
+  Every dependency we add decreases our autonomy and consistency.
+  Dependencies also have the potential to increase compile times and risk pulling in sub-dependencies we don't want / need.
+- **Don't re-invent every wheel**: As a counter to the previous point, don't re-invent everything at all costs.
+  If there is a dependency in the ecosystem that is the "de-facto" standard, we should heavily consider using it.
+- **Thoughtful public interfaces over maximal configurability**: Symbols and apis should be private by default.
+  Every public API should be thoughtfully and consistently designed.
+  Don't expose unnecessary internal implementation details.
+  Don't allow users to "shoot themselves in the foot".
+  Favor one "happy path" api over multiple apis for different use cases.
+- **Welcome new contributors**: Invest in new contributors.
+  Help them fill knowledge and skill gaps.
+- **Civil discourse**: We need to collectively discuss ideas and the best ideas should win.
+  But conversations need to remain respectful at all times.
+  Remember that we're all in this together.
+  Always follow our [Code of Conduct](https://github.com/DGEXSolutions/osrd/blob/dev/CODE_OF_CONDUCT.md).
+- **Test what you need to**: Write useful tests.
+  Don't write tests that aren't useful.
+  We generally aren't strict about unit testing every line of code.
+  We don't want you to waste your time.
+  But at the same time:
+
+  - Most new features should have at least one minimal integration test.
+  - The more complex or "core" a feature is, the more strict we are about unit tests.
+    Use your best judgement here.
+    We will let you know if your pull request needs more tests.
+
+## The OSRD Team
+
+The OSRD Team is the group of people responsible for stewarding the OSRD project.
+It handles things like merging pull requests, choosing project direction, managing bugs / issues / feature requests, running the OSRD website, controlling access to secrets, defining and enforcing best practices, etc.
+
+Note that you do not need to be a member of the OSRD Team to contribute to OSRD.
+Community contributors (this means you) can freely open issues, submit pull requests, and review pull requests.
+
+Check out our dedicated [Governance document](https://osrd.fr/en/about/governance/) to learn more about how we are organized.
 
 ## Contribute code
 
-Commit style is detailed in the [osrd.fr/docs](https://osrd.fr/en/docs/guides/contribute/code/#git-commit-style).
+[osrd.fr/docs/contribute/code](https://osrd.fr/en/docs/guides/contribute/code).
 
 ### Pull request / code review
 
-- Keep your branch up-to-date :
-```
-git checkout <your_branch>
-git fetch
-git rebase origin/dev
-```
-- Make commits of logical and atomic units.
-- If possible, make PR of logical and atomic units too (avoid mixing refactoring, new features and bug fix at the same time).
-- Add a description to PRs to explain what they do and why.
-- Each PR must be linked to at least one issue to simplify tracking.
-- Assign one maintainer and one developer when opening the PR to get reviews, if you don't know who to assign then consider automatic assignment is enough.
-- Pay attention to all the comments made by reviewers and either answer/challenge them or address them before asking for another review.
-- Help the reviewer by following advice given in [mtlynch article](https://mtlynch.io/code-review-love/).
-- Review code following advice given in [osrd.fr/docs](https://osrd.fr/en/docs/guides/contribute/code-reviews/) and [mtlynch article](https://mtlynch.io/human-code-reviews-1/).
+[osrd.fr/docs/contribute/code/#share-your-changes](https://osrd.fr/en/docs/guides/contribute/code/#share-your-changes).
 
-### Bugs
+### Report and solve bugs
 
-- Bug must have a correct description and the bug's issue template must be filled carefully.
-- Bug must be tagged with:
-  - `kind:bug`
-  - one or several `area:<affected_area>` if possible, if the affected area is not known leave it blank it will be added later by another team member`.
-  - one `severity:<bug_severity>` if possible, if severity is not known leave it blank it will be added later by another team member.
-      - `severity:minor`: User can still use the feature.
-      - `severity:major`: User sometimes can't use the feature.
-      - `severity:critical`: User can't use the feature.
-- Contributors can change issues' tags (severity, area, kind, ...). 
-  You may leave a comment to explain changes.
-- If you are working on a bug or plan to work on a bug, assign yourself to the bug.
-- PRs solving bugs should add a regression tests to ensure that bug will not be back in the future.
+[osrd.fr/docs/contribute/bug-reports](https://osrd.fr/en/docs/guides/contribute/bug-reports)
 
-### General code recommendations
+### Style guide
 
-- Take the time to pick good names.
-  Avoid non well-known abbreviations.
-- Test as much code as possible to avoid future regression and show that added code is bullet proof.
-- To keep our API surface minimal, only make public what is necessary.
-- Documentation should only be there to explain things that aren't self evident.
-  Exception for `Java` where all public methods must be documented.
-
-### Python
-
-- Follow [the Zen of Python](https://www.python.org/dev/peps/pep-0020/).
-- Code is linted with [flake8](https://github.com/csachs/pyproject-flake8).
-- Code is formatted with [Black](https://github.com/psf/black).
-- Imports are sorted with [Isort](https://github.com/PyCQA/isort).
-
-#### Test
-
-- Python tests are written using [pytest](https://docs.pytest.org/).
-
-### Rust
-
-- Use the [documentation example](https://doc.rust-lang.org/rust-by-example/meta/doc.html) to know how to phrase and format your documentation.
-- Code is linted with [clippy](https://github.com/rust-lang/rust-clippy).
-- Code is formatted with [fmt](https://github.com/rust-lang/rustfmt).
-
-#### Test
-
-- Rust code is tested files per files following these [recommendations](https://doc.rust-lang.org/book/ch11-01-writing-tests.html).
-
-### Java
-
-- Code is formatted with [checkstyle](https://checkstyle.sourceforge.io/).
-
-### Javascript / Typescript / Front
-
-- When adding new files, write them in TypeScript as there is a goal to move to TypeScript.
-- Code is linted with [eslint](https://eslint.org/).
-- Code is formatted with [prettier](https://prettier.io/).
-
-#### Tests
-
-- End-to-end tests are required for stable and critical features.
-  [Playwright](https://playwright.dev/) is used to write these tests.
-- To write unit test use [vitest](https://vitest.dev/).
-
-### Integration tests
-
-- Integration tests are written using [pytest](https://docs.pytest.org/) under the `/tests` folder.
+[osrd.fr/docs/contribute/conventions](https://osrd.fr/en/docs/guides/contribute/conventions)
