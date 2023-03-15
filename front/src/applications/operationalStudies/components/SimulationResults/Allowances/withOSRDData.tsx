@@ -30,11 +30,11 @@ function withOSRDData<T>(Component: ComponentType<T>) {
         const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
         setTrainDetail(result);
         setSyncInProgress(false);
-      } catch (e: any) {
+      } catch (e: unknown) {
         dispatch(
           setFailure({
-            name: e.name,
-            message: e.message,
+            name: (e as Error).name,
+            message: (e as Error).message,
           })
         );
       }
@@ -89,11 +89,11 @@ function withOSRDData<T>(Component: ComponentType<T>) {
           })
         );
         setSyncInProgress(false);
-      } catch (e: any) {
+      } catch (e: unknown) {
         setSyncInProgress(false);
         dispatch(
           setFailure({
-            name: e.name,
+            name: (e as Error).name,
             message: t('allowanceModified.anyAllowanceModificationError'),
           })
         );
