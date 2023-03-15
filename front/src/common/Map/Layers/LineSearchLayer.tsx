@@ -2,25 +2,23 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Source } from 'react-map-gl';
 
-import { RootState } from 'reducers';
-import { Theme } from 'types';
-
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
+import { getMap } from 'reducers/map/selectors';
 
 interface TracksGeographicProps {
-  colors: Theme;
   geomType: string;
   layerOrder?: number;
 }
 
 function LineSearchLayer(props: TracksGeographicProps) {
-  const { colors, geomType, layerOrder } = props;
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
-  const { lineSearchCode } = useSelector((state: RootState) => state.map);
+  const { geomType, layerOrder } = props;
+  const infraID = useSelector(getInfraID);
+  const { lineSearchCode } = useSelector(getMap);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
-  return (
+  return infraVersion ? (
     <Source
       id={`searchTrack-${geomType}`}
       type="vector"
@@ -41,7 +39,7 @@ function LineSearchLayer(props: TracksGeographicProps) {
         />
       )}
     </Source>
-  );
+  ) : null;
 }
 
 export default LineSearchLayer;

@@ -53,6 +53,16 @@ export default function MapSearch(props) {
             label: t('map-search:line'),
             content: <MapSearchLine updateExtViewport={updateViewportChange} />,
           },
+          /* For future implementation
+          {
+            label: t('map-search:signalbox'),
+            content: <MapSearchSignalBox updateExtViewport={updateViewportChange} />,
+          },
+          {
+            label: t('map-search:signal'),
+            content: <MapSearchSignal updateExtViewport={updateViewportChange} />,
+          }, 
+          */
         ]}
       />
     </div>
