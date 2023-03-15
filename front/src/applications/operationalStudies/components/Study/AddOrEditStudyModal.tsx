@@ -25,7 +25,7 @@ import { LEGACY_PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const currentStudyDefaults = {
   name: '',
-  type: '',
+  study_type: '',
   description: '',
   service_code: '',
   business_code: '',
@@ -197,11 +197,11 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       </div>
                     }
                     selectedValue={{
-                      key: currentStudy.type,
-                      value: t(`studyCategories.${currentStudy.type || 'nothingSelected'}`),
+                      key: currentStudy.study_type,
+                      value: t(`studyCategories.${currentStudy.study_type || 'nothingSelected'}`),
                     }}
                     options={studyCategories}
-                    onChange={(e: any) => setCurrentStudy({ ...currentStudy, type: e.key })}
+                    onChange={(e: any) => setCurrentStudy({ ...currentStudy, study_type: e.key })}
                   />
                 </div>
               </div>

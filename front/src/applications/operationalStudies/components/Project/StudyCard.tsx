@@ -26,7 +26,7 @@ type Props = {
     last_modification: Date;
     step: string;
     budget: bigint;
-    type: string;
+    study_type: string;
     scenarios: Array<1>;
     tags: string[];
   };
@@ -56,7 +56,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
         </button>
       </div>
       <div className="studies-list-card-type">
-        {study.type ? t(`operationalStudies/study:studyCategories.${study.type}`) : ''}
+        {study.study_type ? t(`operationalStudies/study:studyCategories.${study.study_type}`) : ''}
       </div>
       <div className="studies-list-card-description">{study.description}</div>
 

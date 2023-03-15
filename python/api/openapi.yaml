@@ -2151,7 +2151,7 @@ components:
         state:
           type: string
           enum: ["started", "inProgress", "finish"]
-        type:
+        study_type:
           type: string
           enum:
             [
@@ -2203,7 +2203,7 @@ components:
         state:
           type: string
           enum: ["started", "inProgress", "finish"]
-        type:
+        study_type:
           type: string
           enum:
             [

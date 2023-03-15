@@ -1044,7 +1044,7 @@ export type StudyResult = {
   expected_end_date_study?: string;
   actual_end_date_study?: string;
   state?: 'started' | 'inProgress' | 'finish';
-  type?:
+  study_type?:
     | 'timeTables'
     | 'flowRate'
     | 'parkSizing'
@@ -1066,7 +1066,7 @@ export type StudyRequest = {
   expected_end_date?: string;
   actual_end_date?: string;
   state?: 'started' | 'inProgress' | 'finish';
-  type?:
+  study_type?:
     | 'timeTables'
     | 'flowRate'
     | 'parkSizing'

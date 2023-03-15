@@ -21,7 +21,7 @@ class Project(models.Model):
 
 
 class Study(models.Model):
-    project = models.ForeignKey(Project, related_name="studies", on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, related_name="studies", on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=1024, blank=True, default="")
     business_code = models.CharField(max_length=128, blank=True, default="")
@@ -34,7 +34,9 @@ class Study(models.Model):
     budget = models.IntegerField(blank=True, null=True)
     tags = ArrayField(models.CharField(max_length=255), blank=True, null=True)
     state = models.CharField(max_length=16, choices=[(x.value, x.name) for x in StudyState], blank=True, default="")
-    type = models.CharField(max_length=100, choices=[(x.value, x.name) for x in StudyType], blank=True, default="")
+    study_type = models.CharField(
+        max_length=100, choices=[(x.value, x.name) for x in StudyType], blank=True, default=""
+    )
 
 
 class Scenario(models.Model):
