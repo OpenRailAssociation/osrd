@@ -1,5 +1,8 @@
 mod documents;
+
 mod projects;
+
+mod study;
 
 use crate::error::Result;
 use crate::DbPool;
@@ -9,6 +12,7 @@ use diesel::PgConnection;
 
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
+pub use study::{Study, StudyWithScenarios};
 
 /// Trait to implement the `create` and `create_conn` methods.
 /// This trait is automatically implemented by the `#[derive(Model)]` macro.
