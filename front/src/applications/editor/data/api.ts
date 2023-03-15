@@ -110,7 +110,7 @@ type EditoastEntity<T extends EditorEntity = EditorEntity> = {
   schematic: T['geometry'];
 };
 
-function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
+export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
   entity: EditoastEntity,
   type: T['objType']
 ): T {
