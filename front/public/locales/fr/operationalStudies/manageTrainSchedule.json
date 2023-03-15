@@ -76,6 +76,7 @@
   "trainScheduleDelta": "Intervalle",
   "trainScheduleName": "Nom",
   "trainScheduleStep": "Pas d'incrément",
+  "usingElectricalProfiles": "Utiliser les profils électriques",
   "via": "Étape",
   "vias": "Points de passage, arrêts"
 }
