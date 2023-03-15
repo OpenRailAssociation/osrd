@@ -11,6 +11,7 @@ import { BBox, LineString } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { getMap } from 'reducers/map/selectors';
+import { Zone, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SEARCH_URL, searchPayloadType } from '../const';
 import LineCard from './LineCard';
 import { ILineSearchResult } from './searchTypes';
@@ -24,11 +25,17 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const map = useSelector(getMap);
   const { t } = useTranslation(['map-search']);
   const dispatch = useDispatch();
-
+  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [searchState, setSearchState] = useState<string>('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState<ILineSearchResult[] | undefined>(undefined);
+  const [dataTranckZone, setDataTrackZone] = useState<{ id?: number; lineCode?: number }>({
+    id: 0,
+    lineCode: 0,
+  });
 
+  const { data: trackZones1 } =
+    osrdEditoastApi.useGetInfraByIdLinesAndLineCodeBboxQuery(dataTranckZone);
   const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
     const viewportTemp = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
@@ -52,10 +59,12 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
-  const updateSearch = async (params: searchPayloadType | null) => {
+  const updateSearch = async (params: searchPayloadType) => {
     try {
-      const data = await post(SEARCH_URL, params);
-      setSearchResults(data);
+      const results = await postSearch({
+        body: { object: params?.object, query: params?.query },
+      }).unwrap();
+      setSearchResults(results as ILineSearchResult[]);
     } catch (e) {
       console.error(e);
     }
@@ -76,14 +85,15 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
 
     return payload;
   };
-  const coordinates = (search: { [key: string]: LineString }) =>
+  const coordinates = (search: Zone) =>
     map.mapTrackSources === 'schematic' ? search.sch : search.geo;
 
   const getTrackBbox = async (searchItem: ILineSearchResult) => {
     const trackZones = await get(`/editoast/infra/${infraID}/lines/${searchItem.line_code}/bbox`);
+    console.log('trackZones1:', trackZones1);
     return {
       type: 'LineString',
-      coordinates: coordinates(trackZones),
+      coordinates: coordinates(trackZones1 as Zone),
     };
   };
 
@@ -91,7 +101,9 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }
+    setDataTrackZone({ id: infraID, lineCode: searchResultItem.line_code });
     const trackBox = await getTrackBbox(searchResultItem);
+    console.log('trackBox:', trackBox);
     const tempBbox = bbox(trackBox);
     zoomToFeature(tempBbox);
     dispatch(updateLineSearchCode(searchResultItem.line_code));
