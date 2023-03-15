@@ -31,7 +31,8 @@ interface PhysicalSignalBuilder {
 }
 
 class PhysicalSignalBuilderImpl(
-    private val globalPool: StaticPool<LogicalSignal, RawSignalDescriptor>,
+    private val name: String?,
+    private val globalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
 ) : PhysicalSignalBuilder {
     private val children: MutableStaticIdxList<LogicalSignal> = MutableStaticIdxArrayList()
 
@@ -40,13 +41,13 @@ class PhysicalSignalBuilderImpl(
         nextSignalingSystems: List<String>,
         settings: Map<String, String>
     ): LogicalSignalId {
-        val logicalSignalId = globalPool.add(RawSignalDescriptor(signalingSystem, nextSignalingSystems, settings))
+        val logicalSignalId = globalPool.add(LogicalSignalDescriptor(signalingSystem, nextSignalingSystems, settings))
         children.add(logicalSignalId)
         return logicalSignalId
     }
 
-    fun build(): StaticIdxList<LogicalSignal> {
-        return children
+    fun build(): PhysicalSignalDescriptor {
+        return PhysicalSignalDescriptor(name, children)
     }
 }
 
@@ -97,7 +98,7 @@ interface RouteBuilder {
     fun speedLimit(limit: SpeedLimitId, start: Distance, end: Distance)
 }
 
-class RouteBuilderImpl : RouteBuilder {
+class RouteBuilderImpl(private val name: String?) : RouteBuilder {
     private val path: MutableStaticIdxList<ZonePath> = mutableStaticIdxArrayListOf()
     private val releaseZones: MutableList<Int> = mutableListOf()
     private val speedLimits: MutableStaticIdxList<SpeedLimit> = mutableStaticIdxArrayListOf()
@@ -121,6 +122,7 @@ class RouteBuilderImpl : RouteBuilder {
 
     fun build(): RouteDescriptorImpl {
         return RouteDescriptorImpl(
+            name,
             path,
             releaseZones.toIntArray(),
             speedLimits,
@@ -131,6 +133,7 @@ class RouteBuilderImpl : RouteBuilder {
 }
 
 class RouteDescriptorImpl(
+    override val name: String?,
     override val path: StaticIdxList<ZonePath>,
     override val releaseZones: IntArray,
     override val speedLimits: StaticIdxList<SpeedLimit>,
@@ -140,7 +143,7 @@ class RouteDescriptorImpl(
 
 interface RestrictedRawInfraBuilder {
     fun movableElement(delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): MovableElementId
-    fun detector(): DetectorId
+    fun detector(name: String?): DetectorId
     fun linkZones(zoneA: ZoneId, zoneB: ZoneId): DetectorId
     fun linkZones(detector: DetectorId, zoneA: ZoneId, zoneB: ZoneId)
     fun setNextZone(detector: DirDetectorId, zone: ZoneId)
@@ -158,8 +161,8 @@ interface RestrictedRawInfraBuilder {
         signalPositions: DistanceList,
     ): ZonePathId
     fun zonePath(entry: DirDetectorId, exit: DirDetectorId, length: Distance): ZonePathId
-    fun route(init: RouteBuilder.() -> Unit): RouteId
-    fun physicalSignal(init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId
+    fun route(name: String?, init: RouteBuilder.() -> Unit): RouteId
+    fun physicalSignal(name: String?, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId
 }
 
 interface RawInfraBuilder : RestrictedRawInfraBuilder {
@@ -169,11 +172,11 @@ interface RawInfraBuilder : RestrictedRawInfraBuilder {
 class RawInfraBuilderImpl : RawInfraBuilder {
     private val movableElementPool = StaticPool<MovableElement, MovableElementDescriptor>()
     private val zonePool = StaticPool<Zone, ZoneDescriptor>()
-    private val detectorPool = VirtualStaticPool<Detector>()
+    private val detectorPool = StaticPool<Detector, String?>()
     private val nextZones = IdxMap<DirDetectorId, ZoneId>()
     private val routePool = StaticPool<Route, RouteDescriptor>()
-    private val logicalSignalPool = StaticPool<LogicalSignal, RawSignalDescriptor>()
-    private val physicalSignalPool = StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>()
+    private val logicalSignalPool = StaticPool<LogicalSignal, LogicalSignalDescriptor>()
+    private val physicalSignalPool = StaticPool<PhysicalSignal, PhysicalSignalDescriptor>()
     private val zonePathPool = StaticPool<ZonePath, ZonePathDescriptor>()
     private val zonePathMap = mutableMapOf<ZonePathSpec, ZonePathId>()
 
@@ -184,12 +187,12 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         return movableElementPool.add(movableElement)
     }
 
-    override fun detector(): DetectorId {
-        return detectorPool.next()
+    override fun detector(name: String?): DetectorId {
+        return detectorPool.add(name)
     }
 
     override fun linkZones(zoneA: ZoneId, zoneB: ZoneId): DetectorId {
-        val det = detector()
+        val det = detector(null)
         linkZones(det, zoneA, zoneB)
         return det
     }
@@ -252,14 +255,14 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
     }
 
-    override fun route(init: RouteBuilder.() -> Unit): RouteId {
-        val builder = RouteBuilderImpl()
+    override fun route(name: String?, init: RouteBuilder.() -> Unit): RouteId {
+        val builder = RouteBuilderImpl(name)
         builder.init()
         return routePool.add(builder.build())
     }
 
-    override fun physicalSignal(init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId {
-        val builder = PhysicalSignalBuilderImpl(logicalSignalPool)
+    override fun physicalSignal(name: String?, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId {
+        val builder = PhysicalSignalBuilderImpl(name, logicalSignalPool)
         builder.init()
         return physicalSignalPool.add(builder.build())
     }

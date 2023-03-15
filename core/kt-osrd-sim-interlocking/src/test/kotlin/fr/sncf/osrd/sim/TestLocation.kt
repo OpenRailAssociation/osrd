@@ -26,9 +26,9 @@ class TestLocation {
 
             val zoneA = zone(listOf(switchA))
 
-            val detectorA = detector()
+            val detectorA = detector("A")
             setNextZone(detectorA.normal, zoneA)
-            val detectorB = detector()
+            val detectorB = detector("B")
             setNextZone(detectorB.reverse, zoneA)
         }
 
