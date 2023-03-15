@@ -61,6 +61,7 @@
     "json-schema": "^0.4.0",
     "jwt-decode": "^3.1.2",
     "keycloak-js": "^20.0.3",
+    "license-checker-rseidelsohn": "~3.3.0",
     "lodash": "^4.17.15",
     "maplibre-gl": "^2.4.0",
     "prop-types": "^15.8.1",
@@ -170,7 +171,8 @@
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json"
   },
   "browserslist": {
     "production": [
