@@ -72,7 +72,7 @@ async function getAdditionalEntities(
       const exitPoint = await getEntity(
         infra,
         route.properties.exit_point.id,
-        route.properties.entry_point.type
+        route.properties.exit_point.type
       );
       return { entryPoint, exitPoint };
     }
