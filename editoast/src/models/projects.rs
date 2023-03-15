@@ -64,6 +64,12 @@ pub struct ProjectWithStudies {
 }
 
 impl Project {
+    /// This function takes a filled project and update to now the last_modification field
+    pub async fn update_last_modified(mut self, db_pool: Data<DbPool>) -> Result<Option<Project>> {
+        self.last_modification = Utc::now().naive_utc();
+        self.update(db_pool).await
+    }
+
     pub async fn with_studies(self, db_pool: Data<DbPool>) -> Result<ProjectWithStudies> {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_study::dsl as study_dsl;
