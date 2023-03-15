@@ -72,7 +72,7 @@ export default function LegacyNavBarSNCF(props) {
                 <span className="mr-2">
                   <FaInfoCircle />
                 </span>
-                {t('NavBar.informations')}
+                {t('NavBar.about')}
               </button>,
               <button type="button" className="btn-link text-reset" onClick={toLogout} key="logout">
                 <span className="mr-2">

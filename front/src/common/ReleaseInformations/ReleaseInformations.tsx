@@ -1,4 +1,4 @@
-// React Component displaying different applications versions
+// React Component displaying different applications versions and license attributions
 // List of applications : Editoast, Core, Api
 
 import React, { useContext } from 'react';
@@ -11,6 +11,8 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import osrdLogo from 'assets/pictures/osrd.png';
+import './ReleaseInformations.scss';
+import LicenseAttributions from './LicenseAttributions';
 
 function ReleaseInformations() {
   const { t } = useTranslation();
@@ -34,7 +36,7 @@ function ReleaseInformations() {
     );
   }
   return (
-    <>
+    <div className="informations">
       <ModalHeaderSNCF>
         <button type="button" className="close ml-auto" aria-label="Close" onClick={closeModal}>
           <span aria-hidden="true">&times;</span>
@@ -67,8 +69,9 @@ function ReleaseInformations() {
             {serviceRow('Front', import.meta.env.OSRD_GIT_DESCRIBE)}
           </tbody>
         </table>
+        <LicenseAttributions />
       </ModalBodySNCF>
-    </>
+    </div>
   );
 }
 
