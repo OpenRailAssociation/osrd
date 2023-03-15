@@ -90,7 +90,7 @@ async fn refresh(
     map_layers: Data<MapLayers>,
 ) -> Result<Json<JsonValue>> {
     let refreshed_infra = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         // Use a transaction to give scope to infra list lock
         let mut infras_list = vec![];
         let infras = &query_params.infras.0;
@@ -137,7 +137,7 @@ async fn refresh(
 #[get("")]
 async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<Infra>>> {
     block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         Ok(Json(Infra::list(&mut conn)))
     })
     .await
@@ -149,7 +149,7 @@ async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<Infra>>> {
 async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
     let infra = infra.into_inner();
     block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         Ok(Json(Infra::retrieve(&mut conn, infra)?))
     })
     .await
@@ -160,7 +160,7 @@ async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
 #[post("")]
 async fn create(db_pool: Data<DbPool>, data: Json<InfraName>) -> Result<impl Responder> {
     let infra = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         Infra::create(&data.name, &mut conn)
     })
     .await
@@ -175,14 +175,13 @@ async fn clone(
     db_pool: Data<DbPool>,
     new_name: Query<InfraName>,
 ) -> Result<Json<i64>> {
-    let db_pool_ref = db_pool.get_ref();
-    let db_pool_clone = db_pool_ref.clone();
+    let db_pool_ref = db_pool.clone();
     let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
 
     let infra = infra.into_inner();
     let cloned_infra = block::<_, Result<_>>(move || {
         let name = new_name.name.clone();
-        let mut conn = db_pool_clone.get().expect("Failed to get DB connection");
+        let mut conn = db_pool_ref.get()?;
         Infra::clone(infra, &mut conn, name)
     })
     .await
@@ -190,9 +189,9 @@ async fn clone(
 
     for object in ObjectType::iter() {
         let model_table = object.get_table();
-        let db_pool_clone = db_pool_ref.clone();
+        let db_pool_ref = db_pool.clone();
         let model = block::<_, Result<_>>(move || {
-            let mut conn = db_pool_clone.get().expect("Failed to get DB connection");
+            let mut conn = db_pool_ref.get()?;
             sql_query(format!(
                 "INSERT INTO {model_table}(id, obj_id,data,infra_id) SELECT nextval('{model_table}_id_seq'), obj_id,data,$1 FROM {model_table} WHERE infra_id=$2"
             ))
@@ -204,9 +203,9 @@ async fn clone(
 
         if object != ObjectType::SwitchType && object != ObjectType::Route {
             let layer_table = object.get_geometry_layer_table().unwrap().to_string();
-            let db_pool_clone = db_pool_ref.clone();
+            let db_pool_ref = db_pool.clone();
             let layer = block::<_, Result<_>>(move || {
-                let mut conn = db_pool_clone.get().expect("Failed to get DB connection");
+                let mut conn = db_pool_ref.get()?;
                 sql_query(format!(
                     "INSERT INTO {layer_table}(id, obj_id,geographic,schematic,infra_id) SELECT nextval('{layer_table}_id_seq'), obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2"
                 ))
@@ -234,7 +233,7 @@ async fn delete(
 ) -> Result<HttpResponse> {
     let infra = infra.into_inner();
     block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         Infra::delete(infra, &mut conn)?;
         infra_caches.remove(&infra);
         Ok(())
@@ -253,7 +252,7 @@ async fn rename(
 ) -> Result<Json<Infra>> {
     let infra = infra.into_inner();
     block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let name = new_name.name.clone();
         Ok(Json(Infra::rename(&mut conn, infra, name)?))
     })
@@ -270,7 +269,7 @@ async fn get_switch_types(
 ) -> Result<Json<Vec<SwitchType>>> {
     let infra = infra.into_inner();
     block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let infra = Infra::retrieve(&mut conn, infra)?;
         let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         Ok(Json(
@@ -293,16 +292,16 @@ async fn get_speed_limit_tags(
     db_pool: Data<DbPool>,
 ) -> Result<Json<Vec<String>>> {
     let infra = infra.into_inner();
-    let speed_limits_tags: Vec<SpeedLimitTags> = block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
-        sql_query(
+    let speed_limits_tags: Vec<SpeedLimitTags> = block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get()?;
+        Ok(sql_query(
             "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS tag
         FROM osrd_infra_speedsectionmodel
         WHERE infra_id = $1
         ORDER BY tag",
         )
         .bind::<BigInt, _>(infra)
-        .load(&mut conn)
+        .load(&mut conn)?)
     })
     .await
     .unwrap()?;
@@ -316,7 +315,7 @@ async fn get_speed_limit_tags(
 async fn get_voltages(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<Json<Vec<f64>>> {
     let infra = infra.into_inner();
     let voltages: Vec<Voltage> = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         match sql_query(
             "SELECT DISTINCT ((data->'voltage')->>0)::float AS voltage
                 FROM osrd_infra_catenarymodel
@@ -340,7 +339,7 @@ async fn get_voltages(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<Json<Ve
 async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let infra = infra.into_inner();
     block::<_, Result<()>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let infra = Infra::retrieve_for_update(&mut conn, infra)?;
         infra.set_locked(true, &mut conn)?;
         Ok(())
@@ -355,7 +354,7 @@ async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
 async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let infra = infra.into_inner();
     block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
+        let mut conn = db_pool.get()?;
         let infra = Infra::retrieve_for_update(&mut conn, infra)?;
         infra.set_locked(false, &mut conn)?;
         Ok(())

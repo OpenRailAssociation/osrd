@@ -9,6 +9,7 @@ pub mod projects;
 pub mod rolling_stocks;
 pub mod search;
 
+use crate::error::Result;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, Data, Json};
@@ -34,17 +35,18 @@ pub fn routes() -> impl HttpServiceFactory {
 }
 
 #[get("/health")]
-async fn health(db_pool: Data<DbPool>, redis_client: Data<Client>) -> &'static str {
-    block(move || {
-        let mut conn = db_pool.get().expect("Failed to get DB connection");
-        sql_query("SELECT 1").execute(&mut conn).unwrap();
+async fn health(db_pool: Data<DbPool>, redis_client: Data<Client>) -> Result<&'static str> {
+    block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get()?;
+        sql_query("SELECT 1").execute(&mut conn)?;
+        Ok(())
     })
     .await
-    .unwrap();
+    .unwrap()?;
 
-    let mut conn = redis_client.get_tokio_connection_manager().await.unwrap();
+    let mut conn = redis_client.get_tokio_connection_manager().await?;
     cmd("PING").query_async::<_, ()>(&mut conn).await.unwrap();
-    "ok"
+    Ok("ok")
 }
 
 #[get("/version")]

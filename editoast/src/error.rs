@@ -111,3 +111,14 @@ impl EditoastError for JsonPayloadError {
         [("cause".into(), json!(self.to_string()))].into()
     }
 }
+
+/// Handle r2d2 errors
+impl EditoastError for r2d2::Error {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &'static str {
+        "editoast:R2d2Error"
+    }
+}

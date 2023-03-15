@@ -110,7 +110,7 @@ impl<T> Paginated<T> {
         let per_page = self.per_page;
         let page = self.page;
         let results = block::<_, Result<_>>(move || {
-            let mut conn = db_pool.get().expect("Failed to get DB connection");
+            let mut conn = db_pool.get()?;
             match self.load::<InternalPaginatedResult<R>>(&mut conn) {
                 Ok(results) => Ok(results),
                 Err(error) => Err(error.into()),
