@@ -8,7 +8,6 @@ import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.MaintainEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
@@ -17,16 +16,13 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintain;
-import java.util.*;
 
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
  * It is the max physical speed at any given point, ignoring allowances */
 public class MaxEffortEnvelope {
     /** Detects if an envelope parts is a plateau */
     public static boolean maxEffortPlateau(EnvelopePart part) {
-        if (part.stepCount() != 1)
-            return false;
-        return part.getBeginSpeed() == part.getEndSpeed();
+        return part.getMinSpeed() == part.getMaxSpeed();
     }
 
     /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity
@@ -54,21 +50,47 @@ public class MaxEffortEnvelope {
         }
 
         while (!cursor.hasReachedEnd()){
+            // if the cursor is at the end of the envelopePart, that means it has already been processed
             if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)){
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
 
                 var startSpeed = cursor.getStepBeginSpeed();
                 var startPosition = cursor.getPosition();
-                var overlayBuilder = new MaintainEnvelopePartBuilder(
+                var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                         partBuilder,
                         new SpeedConstraint(startSpeed, MAINTAIN_SPEED),
                         new SpeedConstraint(0, FLOOR),
                         new PositionConstraint(cursor.getPart().getBeginPos(), cursor.getPart().getEndPos())
                 );
                 EnvelopeMaintain.maintain(context, startPosition, startSpeed, overlayBuilder, 1);
-                builder.addPart(partBuilder.build());
-                cursor.findPosition(overlayBuilder.getLastPos());
+                // Check if the speed can be maintained
+                if (partBuilder.stepCount() > 1) {
+                    builder.addPart(partBuilder.build());
+                    cursor.findPosition(overlayBuilder.getLastPos());
+                }
+
+                // if the cursor didn't reach the end of the constant speed part,
+                // that means the train was slowed down by a steep ramp
+                if (cursor.getPosition() < cursor.getPart().getEndPos()) {
+                    partBuilder = new EnvelopePartBuilder();
+                    partBuilder.setAttr(EnvelopeProfile.CATCHING_UP);
+                    overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                            partBuilder,
+                            new SpeedConstraint(0, FLOOR),
+                            new EnvelopeConstraint(maxSpeedProfile, CEILING)
+                    );
+                    startPosition = cursor.getPosition();
+                    startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
+                    EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
+                    cursor.findPosition(overlayBuilder.getLastPos());
+
+                    // Check that the high grade position can't be maintained
+                    if (partBuilder.stepCount() > 1)
+                        builder.addPart(partBuilder.build());
+                    else
+                        cursor.findPosition(cursor.getPosition()  + 1);
+                }
             }
             else if (cursor.checkPartTransition(MaxSpeedEnvelope::increase)){
                 var partBuilder = new EnvelopePartBuilder();

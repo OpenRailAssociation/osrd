@@ -318,8 +318,10 @@ public final class EnvelopeCursor {
 
     /** Attempts to find a part which matches a predicate */
     public boolean findPart(Predicate<EnvelopePart> predicate) {
+        if (hasReachedEnd())
+            return false;
         do {
-            if (checkPart(predicate))
+            if (predicate.test(part))
                 return true;
         } while (nextPart());
         return false;
@@ -401,7 +403,7 @@ public final class EnvelopeCursor {
 
     /** Check if the current part matches the given predicate */
     public boolean checkPart(Predicate<EnvelopePart> predicate) {
-        if (getStepEndPos() < getPartEndPos())
+        if (getPosition() < getPartEndPos())
             return predicate.test(part);
         return false;
     }

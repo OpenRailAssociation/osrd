@@ -32,7 +32,7 @@ public class SpeedConstraint implements EnvelopePartConstraint {
             return null;
         if (type == FLOOR && endSpeed > speedConstraint)
             return null;
-        if (type == MAINTAIN_SPEED && endSpeed <= speedConstraint)
+        if (type == MAINTAIN_SPEED && endSpeed == speedConstraint)
             return null;
 
         var interPosition = intersectStepWithSpeed(startPos, startSpeed, endPos, endSpeed, speedConstraint);

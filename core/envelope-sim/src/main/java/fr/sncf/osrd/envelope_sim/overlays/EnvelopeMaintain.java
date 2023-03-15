@@ -19,7 +19,10 @@ public class EnvelopeMaintain {
         double position = startPosition;
         double speed = startSpeed;
         while (true) {
-            var step = TrainPhysicsIntegrator.step(context, position, speed, Action.MAINTAIN, direction);
+            var action = Action.MAINTAIN;
+            if (speed < startSpeed)
+                action = Action.ACCELERATE;
+            var step = TrainPhysicsIntegrator.step(context, position, speed, action, direction);
             position += step.positionDelta;
             speed = step.endSpeed;
             if (!consumer.addStep(position, speed, step.timeDelta))
