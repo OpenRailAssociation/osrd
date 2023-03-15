@@ -86,6 +86,9 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,
+      options: {
+        ignore_electrical_profiles: !osrdconf.usingElectricalProfiles,
+      },
     };
     return osrdConfSchedule;
   }

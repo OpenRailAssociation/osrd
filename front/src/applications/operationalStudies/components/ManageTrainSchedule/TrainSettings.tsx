@@ -70,7 +70,7 @@ export default function TrainSettings() {
           sm
         />
       </span>
-      <span className="mr-2">
+      <span className="">
         <InputSNCF
           type="number"
           label={t('trainScheduleDelta')}

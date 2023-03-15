@@ -21,9 +21,10 @@ import { getSwitchTypes } from 'applications/editor/data/api';
 export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
 export const UPDATE_STDCM_MODE = 'osrdconf/UPDATE_STDCM_MODE';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
-export const UPDATE_TRAINCOUNT = 'osrdconf/UPDATE_TRAINCOUNT';
-export const UPDATE_TRAINDELTA = 'osrdconf/UPDATE_TRAINDELTA';
-export const UPDATE_TRAINSTEP = 'osrdconf/UPDATE_TRAINSTEP';
+export const UPDATE_TRAIN_COUNT = 'osrdconf/UPDATE_TRAIN_COUNT';
+export const UPDATE_TRAIN_DELTA = 'osrdconf/UPDATE_TRAIN_DELTA';
+export const UPDATE_TRAIN_STEP = 'osrdconf/UPDATE_TRAIN_STEP';
+export const TOGGLE_USING_ELECTRICAL_PROFILES = 'osrdconf/TOGGLE_USING_ELECTRICAL_PROFILES';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_PROJECT_ID = 'osrdconf/UPDATE_PROJECT_ID';
 export const UPDATE_STUDY_ID = 'osrdconf/UPDATE_STUDY_ID';
@@ -65,6 +66,7 @@ const defaultCommonConf = {
   trainCount: 1,
   trainDelta: 15,
   trainStep: 2,
+  usingElectricalProfiles: true,
   mode: DEFAULT_MODE,
   labels: [],
   projectID: undefined,
@@ -133,14 +135,17 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
       case UPDATE_NAME:
         draft[section].name = action.name;
         break;
-      case UPDATE_TRAINCOUNT:
+      case UPDATE_TRAIN_COUNT:
         draft[section].trainCount = action.trainCount;
         break;
-      case UPDATE_TRAINDELTA:
+      case UPDATE_TRAIN_DELTA:
         draft[section].trainDelta = action.trainDelta;
         break;
-      case UPDATE_TRAINSTEP:
+      case UPDATE_TRAIN_STEP:
         draft[section].trainStep = action.trainStep;
+        break;
+      case TOGGLE_USING_ELECTRICAL_PROFILES:
+        draft[section].usingElectricalProfiles = !draft[section].usingElectricalProfiles;
         break;
       case UPDATE_LABELS:
         draft[section].labels = action.labels;
@@ -297,7 +302,7 @@ export function updateName(name: string) {
 export function updateTrainCount(trainCount: number) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_TRAINCOUNT,
+      type: UPDATE_TRAIN_COUNT,
       trainCount,
     });
   };
@@ -305,7 +310,7 @@ export function updateTrainCount(trainCount: number) {
 export function updateTrainDelta(trainDelta: number) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_TRAINDELTA,
+      type: UPDATE_TRAIN_DELTA,
       trainDelta,
     });
   };
@@ -313,9 +318,14 @@ export function updateTrainDelta(trainDelta: number) {
 export function updateTrainStep(trainStep: number) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_TRAINSTEP,
+      type: UPDATE_TRAIN_STEP,
       trainStep,
     });
+  };
+}
+export function toggleUsingElectricalProfiles() {
+  return {
+    type: TOGGLE_USING_ELECTRICAL_PROFILES,
   };
 }
 export function updateMode(mode: any) {
