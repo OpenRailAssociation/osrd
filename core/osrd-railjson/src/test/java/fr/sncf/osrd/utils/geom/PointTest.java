@@ -10,8 +10,7 @@ class PointTest {
     @Test
     public void testDeserialize() throws IOException {
         var geoJson = "{\"type\": \"Point\", \"coordinates\": [6.3281, 46.6192]}";
-        var adapter = new Point.Adapter();
-        var point = adapter.fromJson(geoJson);
+        var point = Point.adapter.fromJson(geoJson);
         assertEquals(point.x(), 6.3281);
         assertEquals(point.y(), 46.6192);
     }
@@ -19,8 +18,7 @@ class PointTest {
     @Test
     public void testSerialize() throws IOException {
         var point = new Point(1.21, 4.9865);
-        var adapter = new Point.Adapter();
-        var geoJson = adapter.toJson(point);
+        var geoJson = Point.adapter.toJson(point);
         var expectedGeoJson = "{\"type\":\"Point\",\"coordinates\":[1.21,4.9865]}";
         assertEquals(expectedGeoJson, geoJson);
     }

@@ -237,6 +237,10 @@ public class LineString {
         return LineString.make(newBufferX.toArray(), newBufferY.toArray());
     }
 
+
+    public static final Adapter adapter = new Adapter();
+
+
     public static class Adapter extends JsonAdapter<LineString> {
 
         /**
@@ -307,5 +311,10 @@ public class LineString {
             writer.endArray();
             writer.endObject();
         }
+    }
+
+    @Override
+    public String toString() {
+        return adapter.toJson(this);
     }
 }
