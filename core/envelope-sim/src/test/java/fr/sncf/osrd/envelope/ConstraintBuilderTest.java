@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
@@ -76,6 +75,31 @@ public class ConstraintBuilderTest {
         assertTrue(builder.addStep(5, 3));
         assertFalse(builder.addStep(5.5, 6));
         assertEquals(1, builder.lastIntersection);
+    }
+
+    @Test
+    void testSpeedMaintainConstraint() {
+        var partBuilder = new EnvelopePartBuilder();
+        var constraint = new SpeedConstraint(2, MAINTAIN_SPEED);
+        var builder = new ConstrainedEnvelopePartBuilder(
+                partBuilder,
+                constraint
+        );
+        assertTrue(constraint.initCheck(1, 2, 2));
+        assertTrue(builder.initEnvelopePart(2, 2, 1));
+        assertTrue(builder.addStep(2.5, 2));
+        assertFalse(builder.addStep(3, 1));
+        assertEquals(0, builder.lastIntersection);
+    }
+
+    @Test
+    void testNoConstraint() {
+        var partBuilder = new EnvelopePartBuilder();
+        var builder = new ConstrainedEnvelopePartBuilder(
+                partBuilder
+        );
+        assertTrue(builder.initEnvelopePart(2, 2, 1));
+        assertTrue(builder.addStep(2.5, 2));
     }
 
     @Test

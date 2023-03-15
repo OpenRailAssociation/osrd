@@ -35,9 +35,7 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
             return envelopeSpeed >= speed;
         if (type == FLOOR)
             return envelopeSpeed <= speed;
-        if (type == MAINTAIN_SPEED)
-            return envelopeSpeed == speed;
-        return false;
+        return true;
     }
 
     // region INTERSECTION
@@ -170,10 +168,6 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
 
     @Override
     public EnvelopePoint stepCheck(double lastOverlayPos, double lastOverlaySpeed, double position, double speed) {
-
-        if (type == MAINTAIN_SPEED && speed <= cursor.getSpeed())
-            return null;
-
         while (cursor.comparePos(position, cursor.getStepBeginPos()) > 0) {
             // attempt to find an intersection
             var inter = intersect(lastOverlayPos, lastOverlaySpeed, position, speed);

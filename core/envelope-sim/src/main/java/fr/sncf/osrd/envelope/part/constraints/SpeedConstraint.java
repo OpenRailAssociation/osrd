@@ -23,7 +23,7 @@ public class SpeedConstraint implements EnvelopePartConstraint {
             return speed >= speedConstraint;
         if (type == MAINTAIN_SPEED)
             return speed == speedConstraint;
-        return false;   // default return
+        return true;   // default return
     }
 
     @Override

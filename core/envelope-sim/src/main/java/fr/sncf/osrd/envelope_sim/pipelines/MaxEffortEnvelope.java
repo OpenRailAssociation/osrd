@@ -35,7 +35,6 @@ public class MaxEffortEnvelope {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
-
         if (initialSpeed < maxSpeed) {
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
@@ -50,11 +49,9 @@ public class MaxEffortEnvelope {
         }
 
         while (!cursor.hasReachedEnd()){
-            // if the cursor is at the end of the envelopePart, that means it has already been processed
             if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)){
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
-
                 var startSpeed = cursor.getStepBeginSpeed();
                 var startPosition = cursor.getPosition();
                 var overlayBuilder = new ConstrainedEnvelopePartBuilder(
@@ -100,8 +97,8 @@ public class MaxEffortEnvelope {
                         new SpeedConstraint(0, FLOOR),
                         new EnvelopeConstraint(maxSpeedProfile, CEILING)
                 );
-                var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(cursor.getPosition(), 1);
                 var startPosition = cursor.getPosition();
+                var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
                 EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
                 cursor.findPosition(overlayBuilder.getLastPos());
                 builder.addPart(partBuilder.build());
