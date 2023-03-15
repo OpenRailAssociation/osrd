@@ -282,7 +282,6 @@ class ScenarioSerializer(NestedHyperlinkedModelSerializer):
 
 
 class StudySerializer(NestedHyperlinkedModelSerializer):
-
     scenarios = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     parent_lookup_kwargs = {
         "project_pk": "project__pk",
@@ -304,13 +303,12 @@ class StudySerializer(NestedHyperlinkedModelSerializer):
             "budget",
             "tags",
             "state",
-            "type",
+            "study_type",
             "scenarios",
         )
 
 
 class ProjectSerializer(HyperlinkedModelSerializer):
-
     studies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     image_url = serializers.SerializerMethodField("get_image_url")
 

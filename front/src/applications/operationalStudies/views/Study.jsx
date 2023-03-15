@@ -187,8 +187,8 @@ export default function Study() {
                       <FaPencilAlt />
                     </button>
                   </div>
-                  {study.type && (
-                    <div className="study-details-type">{t(`studyCategories.${study.type}`)}</div>
+                  {study.study_type && (
+                    <div className="study-details-type">{t(`studyCategories.${study.study_type}`)}</div>
                   )}
                   <div className="study-details-description">{study.description}</div>
                   {study.state && (
