@@ -66,7 +66,7 @@ fun adaptRawInfra(infra: SignalingInfra): RawInfra {
 
     fun getOrCreateDet(oldDiDetector: DiDetector): DirDetectorId {
         val oldDetector = oldDiDetector.detector
-        val detector = detectorMap.getOrPut(oldDetector!!) { builder.detector() }
+        val detector = detectorMap.getOrPut(oldDetector!!) { builder.detector(oldDetector.id) }
         return when (oldDiDetector.direction!!) {
             Direction.FORWARD -> detector.normal
             Direction.BACKWARD -> detector.reverse
@@ -102,7 +102,7 @@ fun adaptRawInfra(infra: SignalingInfra): RawInfra {
     // parse signals
     for (rjsSignal in infra.signalMap.keys()) {
         val trackSignals = signalsPerTrack.getOrPut(rjsSignal.track!!) { mutableListOf() }
-        val signalId = builder.physicalSignal {
+        val signalId = builder.physicalSignal(rjsSignal.id) {
             if (rjsSignal.logicalSignals == null)
                 return@physicalSignal
             for (rjsLogicalSignal in rjsSignal.logicalSignals) {
@@ -132,7 +132,7 @@ fun adaptRawInfra(infra: SignalingInfra): RawInfra {
 
     // translate routes
     for (route in infra.reservationRouteMap.values) {
-        routeMap[route] = builder.route {
+        routeMap[route] = builder.route(route.id) {
             val oldPath = route.detectorPath!!
             val oldReleasePoints = route.releasePoints!!
             val viewIterator = TrackRangeViewIterator(route!!.trackRanges)

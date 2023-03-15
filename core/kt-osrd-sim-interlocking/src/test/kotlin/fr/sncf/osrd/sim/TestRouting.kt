@@ -54,26 +54,26 @@ class TestRouting {
         val zoneC = builder.zone(listOf(switch))
         val zoneD = builder.zone(listOf())
 
-        val detectorU = builder.detector()
+        val detectorU = builder.detector("U")
         builder.setNextZone(detectorU.normal, zoneA)
-        val detectorV = builder.detector()
+        val detectorV = builder.detector("V")
         builder.setNextZone(detectorV.normal, zoneC)
         builder.setNextZone(detectorV.reverse, zoneA)
-        val detectorW = builder.detector()
+        val detectorW = builder.detector("W")
         builder.setNextZone(detectorW.normal, zoneB)
-        val detectorX = builder.detector()
+        val detectorX = builder.detector("X")
         builder.setNextZone(detectorX.normal, zoneC)
         builder.setNextZone(detectorX.reverse, zoneB)
-        val detectorY = builder.detector()
+        val detectorY = builder.detector("Y")
         builder.setNextZone(detectorY.normal, zoneD)
         builder.setNextZone(detectorY.reverse, zoneC)
-        val detectorZ = builder.detector()
+        val detectorZ = builder.detector("Z")
         builder.setNextZone(detectorZ.reverse, zoneD)
         // endregion
 
         // region routes
         // create a route from W to Z, releasing at Y and Z
-        val routeWZ = builder.route {
+        val routeWZ = builder.route("W-Z") {
             zonePath(builder.zonePath(detectorW.normal, detectorX.normal, 10.meters)) // zone B
             zonePath(builder.zonePath(detectorX.normal, detectorY.normal, 10.meters) {
                 movableElement(switch, StaticIdx(0u), 5.meters)
@@ -84,7 +84,7 @@ class TestRouting {
             releaseZone(2)
         }
 
-        val routeUZ = builder.route {
+        val routeUZ = builder.route("U-Z") {
             zonePath(builder.zonePath(detectorU.normal, detectorV.normal, 10.meters)) // zone A
             zonePath(builder.zonePath(detectorV.normal, detectorY.normal, 10.meters) {
                 movableElement(switch, StaticIdx(1u), 5.meters)

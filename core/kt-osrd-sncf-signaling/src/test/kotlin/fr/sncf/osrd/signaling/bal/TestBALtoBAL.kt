@@ -44,28 +44,28 @@ class TestBALtoBAL {
         val zoneC = builder.zone(listOf(switch))
         val zoneD = builder.zone(listOf())
 
-        val detectorU = builder.detector()
+        val detectorU = builder.detector("U")
         builder.setNextZone(detectorU.normal, zoneA)
-        val detectorV = builder.detector()
+        val detectorV = builder.detector("V")
         builder.setNextZone(detectorV.normal, zoneC)
         builder.setNextZone(detectorV.reverse, zoneA)
-        val detectorW = builder.detector()
+        val detectorW = builder.detector("W")
         builder.setNextZone(detectorW.normal, zoneB)
-        val detectorX = builder.detector()
+        val detectorX = builder.detector("X")
         builder.setNextZone(detectorX.normal, zoneC)
         builder.setNextZone(detectorX.reverse, zoneB)
-        val detectorY = builder.detector()
+        val detectorY = builder.detector("Y")
         builder.setNextZone(detectorY.normal, zoneD)
         builder.setNextZone(detectorY.reverse, zoneC)
-        val detectorZ = builder.detector()
+        val detectorZ = builder.detector("Z")
         builder.setNextZone(detectorZ.reverse, zoneD)
         // endregion
 
         // region signals
-        val signalX = builder.physicalSignal {
+        val signalX = builder.physicalSignal("X") {
             logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
         }
-        val signalV = builder.physicalSignal {
+        val signalV = builder.physicalSignal("V") {
             logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
         }
         // endregion
@@ -88,7 +88,7 @@ class TestBALtoBAL {
 
         // region routes
         // create a route from W to Z, releasing at Y and Z
-         builder.route {
+         builder.route("W-Z") {
             zonePath(zonePathWX) // zone B
             zonePath(zonePathXY) // zone C
             zonePath(zonePathYZ) // zone D
@@ -98,7 +98,7 @@ class TestBALtoBAL {
         }
 
         // create a route from U to Z, releasing at Z
-        builder.route {
+        builder.route("U-Z") {
             zonePath(zonePathUV) // zone A
             zonePath(zonePathVY) // zone C
             zonePath(zonePathYZ) // zone D
