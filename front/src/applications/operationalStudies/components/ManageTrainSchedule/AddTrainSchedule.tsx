@@ -128,7 +128,7 @@ export default function AddTrainSchedule({
             type="number"
             label={t('trainScheduleCount')}
             id="osrdconf-traincount"
-            onChange={(e: { target: { value: number } }) => setTrainCount(e.target.value)}
+            onChange={(e) => setTrainCount(+e.target.value)}
             value={trainCount}
             noMargin
             sm
@@ -139,7 +139,7 @@ export default function AddTrainSchedule({
             type="number"
             label={t('trainScheduleDelta')}
             id="osrdconf-delta"
-            onChange={(e: { target: { value: number } }) => setTrainDelta(e.target.value)}
+            onChange={(e) => setTrainDelta(+e.target.value)}
             value={trainDelta}
             unit="min"
             noMargin
