@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 
 import 'i18n';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 import { attemptLoginOnLaunch } from 'reducers/user';
 
 import HomeCustomGET from 'applications/customget/Home';

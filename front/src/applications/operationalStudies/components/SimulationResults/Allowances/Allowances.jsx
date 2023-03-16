@@ -5,7 +5,7 @@ import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
 import { useSelector } from 'react-redux';
 
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { FaTrash } from 'react-icons/fa';
+import { FaLaptopHouse, FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -16,6 +16,7 @@ import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
+import { NoOptionsMessage } from 'react-select/dist/declarations/src/components/Menu';
 
 function EmptyLine(props) {
   const {
@@ -475,14 +476,45 @@ export default function Allowances(props) {
   );
 }
 
+Allowances.propTypes = {
+  toggleAllowancesDisplay: PropTypes.func,
+  t: PropTypes.func,
+  dispatch: PropTypes.func,
+  simulation: PropTypes.object,
+  allowancesSettings: PropTypes.object,
+  selectedProjection: PropTypes.object,
+  selectedTrain: PropTypes.number,
+  persistentAllowances: PropTypes.array,
+  syncInProgress: PropTypes.bool,
+  mutateAllowances: PropTypes.func,
+  getAllowances: PropTypes.func,
+  trainDetail: PropTypes.object,
+  getAllowanceTypes: PropTypes.func,
+};
+
+Allowances.defaultProps = {
+  toggleAllowancesDisplay: noop,
+  t: noop,
+  dispatch: noop,
+  simulation: {},
+  allowancesSettings: {},
+  selectedProjection: {},
+  selectedTrain: 0,
+  persistentAllowances: [],
+  syncInProgress: false,
+  mutateAllowances: noop,
+  getAllowances: noop,
+  trainDetail: noop,
+  getAllowanceTypes: noop,
+};
+
 Allowance.propTypes = {
   data: PropTypes.object.isRequired,
   delAllowance: PropTypes.func.isRequired,
   idx: PropTypes.number.isRequired,
+  selectedTrain: PropTypes.number.isRequired,
+  simulation: PropTypes.object.isRequired,
   t: PropTypes.func,
-  dispatch: PropTypes.func,
-  mutateAllowances: PropTypes.func,
-  getAllowances: PropTypes.func,
 };
 
 EmptyLine.propTypes = {
@@ -505,7 +537,4 @@ EmptyLine.defaultProps = {
 
 Allowance.defaultProps = {
   t: (key) => key,
-  dispatch: noop,
-  getAllowances: noop,
-  mutateAllowances: noop,
 };
