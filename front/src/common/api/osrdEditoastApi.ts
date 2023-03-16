@@ -1,4 +1,5 @@
 import { baseEditoastApi as api } from './emptyApi';
+
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -137,7 +138,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg['number'] },
+        params: { number: queryArg.number },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -879,19 +880,14 @@ export type DeleteOperation = {
 };
 export type Railjson = {
   id: string;
+  [key: string]: any;
 };
 export type OperationObject = {
   operation_type: 'CREATE' | 'UPDATE';
   obj_type: ObjectType;
   railjson: Railjson;
 };
-export type OperationResult =
-  | ({
-      operation_type: 'DeleteOperation';
-    } & DeleteOperation)
-  | ({
-      operation_type: 'OperationObject';
-    } & OperationObject);
+export type OperationResult = DeleteOperation | OperationObject;
 export type RailjsonObject = {
   operation_type: 'CREATE';
   obj_type: ObjectType;
@@ -910,16 +906,7 @@ export type UpdateOperation = {
   obj_id?: string;
   railjson_patch: Patches;
 };
-export type Operation =
-  | ({
-      operation_type: 'RailjsonObject';
-    } & RailjsonObject)
-  | ({
-      operation_type: 'DeleteOperation';
-    } & DeleteOperation)
-  | ({
-      operation_type: 'UpdateOperation';
-    } & UpdateOperation);
+export type Operation = RailjsonObject | DeleteOperation | UpdateOperation;
 export type RailjsonFile = {
   version?: string;
   operational_points?: any;
