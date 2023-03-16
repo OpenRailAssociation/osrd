@@ -152,9 +152,23 @@ async fn list(
 /// Return a specific studies
 #[get("")]
 async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<StudyWithScenarios>> {
-    let (project, study) = path.into_inner();
-    let study = Study::retrieve(db_pool.clone(), project, study).await?;
-    Ok(Json(study))
+    let (project_id, study_id) = path.into_inner();
+
+    // Check if project exists
+    if Project::retrieve(db_pool.clone(), project_id)
+        .await?
+        .is_none()
+    {
+        return Err(StudyError::ProjectNotFound { project_id }.into());
+    };
+
+    // Return the studies
+    let study = match Study::retrieve(db_pool.clone(), study_id).await? {
+        Some(study) => study,
+        None => return Err(StudyError::NotFound { study_id }.into()),
+    };
+    let study_scenarios = study.with_scenarios(db_pool).await?;
+    Ok(Json(study_scenarios))
 }
 
 #[cfg(test)]
@@ -201,7 +215,7 @@ mod test {
         .await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
         let response = call_service(&app, delete_project_request(study.project_id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[actix_test]
