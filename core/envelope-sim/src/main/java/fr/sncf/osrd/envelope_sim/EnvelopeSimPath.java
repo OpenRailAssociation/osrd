@@ -113,20 +113,6 @@ public class EnvelopeSimPath implements PhysicsPath {
         return (getCumGrade(end) - getCumGrade(begin)) / (end - begin);
     }
 
-    @Override
-    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
-    public double findHighGradePosition(double position, double endPos, double length, double gradeThreshold) {
-        // TODO: skip sections which don't have high enough slopes
-        while (position <= endPos) {
-            var tailPosition = Math.max(0., position - length);
-            var grade = getAverageGrade(tailPosition, position);
-            if (grade >= gradeThreshold)
-                return position;
-            position += 10.0;
-        }
-        return endPos;
-    }
-
     /**
      * Add electrical profile data to the path
      */
