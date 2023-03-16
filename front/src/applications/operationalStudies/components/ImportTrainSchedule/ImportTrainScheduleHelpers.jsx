@@ -18,25 +18,29 @@ export function refactorUniquePaths(
   const pointsList = {};
   trains.forEach((train) => {
     const pathString =
-      train.etapes
+      train.steps
         .map((step, idx) =>
           idx === 0 || idx === step.length - 1
-            ? `${step.duree}${step.lat}${step.lon}`
-            : `0${step.lat}${step.lon}`
+            ? `${step.latitude}${step.longitude}`
+            : `0${step.latitude}${step.longitude}`
         )
-        .join() + rollingstockOpenData2OSRD[train.type_em];
+        .join() + rollingstockOpenData2OSRD[train.rollingStock];
     const pathRef = pathsDictionnary.find((entry) => entry.pathString === pathString);
     if (pathRef === undefined) {
       pathsDictionnary.push({
-        num: train.num,
+        trainNumber: train.trainNumber,
         pathString,
       });
-      trainsWithPathRef.push({ ...train, pathRef: train.num });
+      trainsWithPathRef.push({ ...train, pathRef: train.trainNumber });
     } else {
-      trainsWithPathRef.push({ ...train, pathRef: pathRef.num });
+      trainsWithPathRef.push({ ...train, pathRef: pathRef.trainNumber });
     }
-    train.etapes.forEach((step) => {
-      pointsList[step.uic] = { lng: step.lon, lat: step.lat, name: step.gare };
+    train.steps.forEach((step) => {
+      pointsList[step.uic] = {
+        longitude: step.longitude,
+        latitude: step.latitude,
+        name: step.gare,
+      };
     });
   });
   setTrainsWithPathRef(trainsWithPathRef);

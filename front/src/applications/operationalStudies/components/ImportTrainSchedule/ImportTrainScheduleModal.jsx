@@ -98,8 +98,8 @@ export default function ImportTrainScheduleModal(props) {
     if (uicNumberToCompleteLocal < uic2complete.length) {
       setUicNumberToComplete(uicNumberToCompleteLocal);
       getTrackSectionID(
-        pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].lat,
-        pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].lng
+        pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].latitude,
+        pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].longitude
       );
       setImportStatus(
         `${uicNumberToCompleteLocal}/${uic2complete.length} ${t(
@@ -162,7 +162,6 @@ export default function ImportTrainScheduleModal(props) {
       rollingStockDB,
       autoComplete
     );
-
     const path2complete = Object.keys(pathfindingPayloads);
     if (pathNumberToComplete < path2complete.length) {
       setImportStatus(
