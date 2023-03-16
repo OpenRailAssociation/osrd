@@ -11,7 +11,7 @@ import {
   timeShiftTrain,
   interpolateOnTime,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
-import ORSD_GET_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
+import ORSD_GRAPH_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import { CgLoadbar } from 'react-icons/cg';
 import ChartModal from 'applications/operationalStudies/components/SimulationResults/ChartModal';
 import { GiResize } from 'react-icons/gi';
@@ -337,18 +337,18 @@ SpaceTimeChart.propTypes = {
 };
 
 SpaceTimeChart.defaultProps = {
-  allowancesSettings: ORSD_GET_SAMPLE_DATA.allowancesSettings,
+  allowancesSettings: ORSD_GRAPH_SAMPLE_DATA.allowancesSettings,
   dispatchUpdateChart: noop,
   dispatchUpdateDepartureArrivalTimes: noop,
   dispatchUpdateMustRedraw: noop,
   dispatchUpdateSelectedTrain: noop,
   dispatchUpdateTimePositionValues: noop,
-  inputSelectedTrain: ORSD_GET_SAMPLE_DATA.selectedTrain,
+  inputSelectedTrain: ORSD_GRAPH_SAMPLE_DATA.selectedTrain,
   initialHeightOfSpaceTimeChart: 400,
   onOffsetTimeByDragging: noop,
   onSetBaseHeightOfSpaceTimeChart: noop,
-  positionValues: ORSD_GET_SAMPLE_DATA.positionValues,
-  simulation: ORSD_GET_SAMPLE_DATA.simulation.present,
+  positionValues: ORSD_GRAPH_SAMPLE_DATA.positionValues,
+  simulation: ORSD_GRAPH_SAMPLE_DATA.simulation.present,
   simulationIsPlaying: false,
-  timePosition: ORSD_GET_SAMPLE_DATA.timePosition,
+  timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
 };
