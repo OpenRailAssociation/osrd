@@ -15,10 +15,10 @@ const fields = {
   ArrayField: FormComponent,
 };
 
-interface EditorFormProps {
-  data: EditorEntity;
-  onSubmit: (data: EditorEntity) => Promise<void>;
-  onChange?: (data: EditorEntity) => void;
+interface EditorFormProps<T> {
+  data: T;
+  onSubmit: (data: T) => Promise<void>;
+  onChange?: (data: T) => void;
 
   // Overrides:
   overrideSchema?: JSONSchema7;
@@ -29,7 +29,7 @@ interface EditorFormProps {
 /**
  * Display a form to create/update a new entity.
  */
-const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
+function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string }>({
   data,
   onSubmit,
   onChange,
@@ -37,7 +37,7 @@ const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
   overrideUiSchema,
   overrideFields,
   children,
-}) => {
+}: PropsWithChildren<EditorFormProps<T>>) {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
   const [submited, setSubmited] = useState<boolean>(false);
@@ -120,6 +120,6 @@ const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
       </Form>
     </div>
   );
-};
+}
 
 export default EditorForm;
