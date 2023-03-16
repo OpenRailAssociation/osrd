@@ -3,8 +3,8 @@
 
 # --- FRONT ---
 /front                                                   @DGEXSolutions/front-maintainers
-/front/src/config/openapi-editoast-config.ts
-/front/src/config/openapi-middleware-config.ts
+/front/src/common/api/osrdEditoastApi.ts
+/front/src/common/api/osrdMiddlewareApi.ts
 
 # --- EDITOAST ---
 /editoast                                                @DGEXSolutions/editoast-maintainers
