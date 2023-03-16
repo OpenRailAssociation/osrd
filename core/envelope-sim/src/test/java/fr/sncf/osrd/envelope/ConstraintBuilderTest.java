@@ -110,6 +110,9 @@ public class ConstraintBuilderTest {
         assertTrue(builder.addStep(3, 1));
         assertFalse(builder.addStep(5, 1));
         assertEquals(2, builder.lastIntersection);
+        builder.lastIntersection = -1;
+        assertFalse(builder.initEnvelopePart(-1, 0, 1));
+        assertFalse(builder.initEnvelopePart(11, 0, 1));
     }
 
     @Test
@@ -119,6 +122,8 @@ public class ConstraintBuilderTest {
         assertTrue(builder.addStep(3, 1));
         assertFalse(builder.addStep(8, 5));
         assertEquals(3, builder.lastIntersection);
+        assertFalse(builder.initEnvelopePart(-1, 0, 1));
+        assertFalse(builder.initEnvelopePart(11, 0, 1));
     }
 
     @Test
