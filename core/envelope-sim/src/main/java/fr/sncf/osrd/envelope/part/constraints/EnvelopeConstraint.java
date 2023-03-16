@@ -20,7 +20,7 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
     }
 
     @Override
-    public boolean initCheck(double direction, double position, double speed) {
+    public boolean initCheck(double position, double speed, double direction) {
         var partIndex = envelope.findRightDir(position, direction);
 
         // if the position is off the envelope, fail
@@ -31,11 +31,11 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
         var stepIndex = part.findRightDir(position, direction);
         var envelopeSpeed = part.interpolateSpeed(stepIndex, position);
         cursor = new EnvelopeCursor(envelope, direction < 0, partIndex, stepIndex, position);
-        if (type == CEILING)
-            return envelopeSpeed >= speed;
-        if (type == FLOOR)
-            return envelopeSpeed <= speed;
-        return true;
+        return switch (type) {
+            case CEILING -> envelopeSpeed >= speed;
+            case FLOOR -> envelopeSpeed <= speed;
+            case EQUAL -> envelopeSpeed == speed;
+        };
     }
 
     // region INTERSECTION

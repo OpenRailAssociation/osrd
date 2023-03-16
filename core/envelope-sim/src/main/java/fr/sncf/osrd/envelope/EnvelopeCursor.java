@@ -344,6 +344,12 @@ public final class EnvelopeCursor {
                 getPartBound(part, operator),
                 operator, speed);
 
+        // look for the next envelope part which contains a speed which matches the
+        // search requirement. The current envelope part may contain such a point,
+        // but it may be **before the cursor**.
+        if (!findPart(partPredicate))
+            return false;
+
         // scan until a step matching the requirement is found
         while (!CmpOperator.compare(getSpeed(), operator, speed)
                 && !CmpOperator.compare(getStepEndSpeed(), operator, speed)) {
@@ -352,8 +358,6 @@ public final class EnvelopeCursor {
                 return false;
             // if the current part was scanned and contains no matching step,
             // scan for another matching envelope part.
-            // this should only ever happen once, if the findSpeed call starts in a part
-            // which has a matching point, but after this point.
             if (nextStepRes == NEXT_PART) {
                 if (!findPart(partPredicate))
                     return false;

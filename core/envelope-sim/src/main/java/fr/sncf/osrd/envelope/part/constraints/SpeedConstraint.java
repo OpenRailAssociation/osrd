@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope.part.constraints;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
 
 import fr.sncf.osrd.envelope.EnvelopePoint;
 
@@ -16,25 +15,30 @@ public class SpeedConstraint implements EnvelopePartConstraint {
     }
 
     @Override
-    public boolean initCheck(double direction, double position, double speed) {
-        if (type == CEILING)
-            return speed <= speedConstraint;
-        if (type == FLOOR)
-            return speed >= speedConstraint;
-        if (type == MAINTAIN_SPEED)
-            return speed == speedConstraint;
-        return true;   // default return
+    public boolean initCheck(double position, double speed, double direction) {
+        return switch (type) {
+            case CEILING -> speed <= speedConstraint;
+            case FLOOR -> speed >= speedConstraint;
+            case EQUAL -> speed == speedConstraint;
+        };
     }
 
     @Override
     public EnvelopePoint stepCheck(double startPos, double startSpeed, double endPos, double endSpeed) {
-        if (type == CEILING && endSpeed < speedConstraint)
-            return null;
-        if (type == FLOOR && endSpeed > speedConstraint)
-            return null;
-        if (type == MAINTAIN_SPEED && endSpeed == speedConstraint)
-            return null;
-
+        switch (type) {
+            case CEILING:
+                if (endSpeed < speedConstraint)
+                    return null;
+                break;
+            case FLOOR:
+                if (endSpeed > speedConstraint)
+                    return null;
+                break;
+            case EQUAL:
+                if (endSpeed == speedConstraint)
+                    return null;
+                break;
+        }
         var interPosition = intersectStepWithSpeed(startPos, startSpeed, endPos, endSpeed, speedConstraint);
         return new EnvelopePoint(interPosition, speedConstraint);
     }

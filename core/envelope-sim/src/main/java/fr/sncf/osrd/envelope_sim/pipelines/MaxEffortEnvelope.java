@@ -26,7 +26,7 @@ public class MaxEffortEnvelope {
     }
 
     /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity
-     * and compute the constant speed parts to check if the train can physically maintain its speed or not */
+     * and compute the constant speed parts to check whether the train can physically maintain its speed */
     public static Envelope addAccelerationAndConstantSpeedParts(
             EnvelopeSimContext context,
             Envelope maxSpeedProfile,
@@ -48,7 +48,7 @@ public class MaxEffortEnvelope {
             builder.addPart(partBuilder.build());
         }
 
-        while (!cursor.hasReachedEnd()){
+        while (!cursor.hasReachedEnd()) {
             if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)){
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
@@ -56,12 +56,13 @@ public class MaxEffortEnvelope {
                 var startPosition = cursor.getPosition();
                 var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                         partBuilder,
-                        new SpeedConstraint(startSpeed, MAINTAIN_SPEED),
-                        new SpeedConstraint(0, FLOOR),
+                        new SpeedConstraint(startSpeed, EQUAL),
                         new PositionConstraint(cursor.getPart().getBeginPos(), cursor.getPart().getEndPos())
                 );
                 EnvelopeMaintain.maintain(context, startPosition, startSpeed, overlayBuilder, 1);
-                // Check if the speed can be maintained
+
+                // check if the speed can be maintained from the first position before adding the part,
+                // otherwise it would only be a single point
                 if (partBuilder.stepCount() > 1) {
                     builder.addPart(partBuilder.build());
                     cursor.findPosition(overlayBuilder.getLastPos());
@@ -82,11 +83,14 @@ public class MaxEffortEnvelope {
                     EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
                     cursor.findPosition(overlayBuilder.getLastPos());
 
-                    // Check that the high grade position can't be maintained
+                    // check that the train was actually slowed down by the ramp
                     if (partBuilder.stepCount() > 1)
+                        // if the part has more than one point, add it
                         builder.addPart(partBuilder.build());
                     else
-                        cursor.findPosition(cursor.getPosition()  + 1);
+                        // otherwise skip this position as the train isn't really being slowed down
+                        // and step 1m further
+                        cursor.findPosition(cursor.getPosition() + 1);
                 }
             }
             else if (cursor.checkPartTransition(MaxSpeedEnvelope::increase)){
@@ -103,7 +107,8 @@ public class MaxEffortEnvelope {
                 cursor.findPosition(overlayBuilder.getLastPos());
                 builder.addPart(partBuilder.build());
             }
-            else cursor.nextPart();
+            else
+                cursor.nextPart();
         }
         return builder.build();
     }
