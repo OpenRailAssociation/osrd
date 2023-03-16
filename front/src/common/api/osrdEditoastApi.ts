@@ -90,7 +90,7 @@ const injectedRtkApi = api.injectEndpoints({
       GetInfraByIdLinesAndLineCodeBboxApiResponse,
       GetInfraByIdLinesAndLineCodeBboxApiArg
     >({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/lines/${queryArg.lineCode}/bbox` }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/lines/${queryArg.lineCode}/bbox/` }),
     }),
     postInfraByIdLock: build.mutation<PostInfraByIdLockApiResponse, PostInfraByIdLockApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/lock/`, method: 'POST' }),
@@ -261,6 +261,39 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.studyCreateRequest,
       }),
     }),
+    getProjectsByProjectIdStudies: build.query<
+      GetProjectsByProjectIdStudiesApiResponse,
+      GetProjectsByProjectIdStudiesApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/`,
+        params: {
+          name: queryArg.name,
+          description: queryArg.description,
+          tags: queryArg.tags,
+          page: queryArg.page,
+          page_size: queryArg.pageSize,
+        },
+      }),
+    }),
+    getProjectsByProjectIdStudiesAndStudyId: build.query<
+      GetProjectsByProjectIdStudiesAndStudyIdApiResponse,
+      GetProjectsByProjectIdStudiesAndStudyIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+      }),
+    }),
+    patchProjectsByProjectIdStudiesAndStudyId: build.mutation<
+      PatchProjectsByProjectIdStudiesAndStudyIdApiResponse,
+      PatchProjectsByProjectIdStudiesAndStudyIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+        method: 'PATCH',
+        body: queryArg.studyPatchRequest,
+      }),
+    }),
     deleteProjectsByProjectIdStudiesAndStudyId: build.mutation<
       DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse,
       DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
@@ -274,7 +307,7 @@ const injectedRtkApi = api.injectEndpoints({
       GetRollingStockByIdLiveryAndLiveryIdApiResponse,
       GetRollingStockByIdLiveryAndLiveryIdApiArg
     >({
-      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/livery/${queryArg.liveryId}` }),
+      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/livery/${queryArg.liveryId}/` }),
     }),
   }),
   overrideExisting: false,
@@ -671,6 +704,16 @@ export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** study id you want to retrieve */
   studyId: number;
 };
+export type PatchProjectsByProjectIdStudiesAndStudyIdApiResponse =
+  /** status 200 The operational study updated */ StudyResult;
+export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
+  /** project id refered to the study */
+  projectId: number;
+  /** study id you want to retrieve */
+  studyId: number;
+  /** The fields you want to update */
+  studyPatchRequest: StudyPatchRequest;
+};
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** project id refered to the operational study */
@@ -990,6 +1033,28 @@ export type StudyResult = {
 };
 export type StudyCreateRequest = {
   name: string;
+  service_code?: string;
+  business_code?: string;
+  description?: string;
+  budget?: number;
+  tags?: string[];
+  start_date?: string;
+  expected_end_date?: string;
+  actual_end_date?: string;
+  state?: 'started' | 'inProgress' | 'finish';
+  study_type?:
+    | 'timeTables'
+    | 'flowRate'
+    | 'parkSizing'
+    | 'garageRequirement'
+    | 'operationOrSizing'
+    | 'operability'
+    | 'strategicPlanning'
+    | 'chartStability'
+    | 'disturbanceTests';
+};
+export type StudyPatchRequest = {
+  name?: string;
   service_code?: string;
   business_code?: string;
   description?: string;
