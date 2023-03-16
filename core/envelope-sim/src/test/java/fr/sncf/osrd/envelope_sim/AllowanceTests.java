@@ -5,6 +5,7 @@ import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxE
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.carrotsearch.hppc.DoubleArrayList;
@@ -74,14 +75,19 @@ public class AllowanceTests {
                                             EnvelopeSimContext context,
                                             double lowSpeed,
                                             double highSpeed) {
-        var iteration = allowance.computeIteration(maxEffortEnvelope, context, lowSpeed);
+        // We check that when the speed parameter goes up, the speed goes up at every point of the envelope
+        var previousEnvelope = allowance.computeIteration(maxEffortEnvelope, context, lowSpeed);
         var speedFactor = 1.001;
-        var previousTime = iteration.getTotalTime();
         for (double speed = lowSpeed; speed < highSpeed; speed *= speedFactor) {
-            iteration = allowance.computeIteration(maxEffortEnvelope, context, speed);
-            var iterationTime = iteration.getTotalTime();
-            assertEquals(iterationTime, previousTime, previousTime * speedFactor);
-            previousTime = iterationTime;
+            var envelope = allowance.computeIteration(maxEffortEnvelope, context, speed);
+            for (var part : envelope) {
+                for (int i = 0; i < part.stepCount(); i++) {
+                    var position = part.getPointSpeed(i);
+                    var newSpeed = envelope.interpolateSpeed(position);
+                    var prevSpeed = previousEnvelope.interpolateSpeed(position);
+                    assertTrue(newSpeed + SPEED_EPSILON >= prevSpeed);
+                }
+            }
         }
     }
 
@@ -100,6 +106,26 @@ public class AllowanceTests {
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(0, length, 0, allowanceValue);
         testBinarySearchContinuity(maxEffortEnvelope, linearAllowance, testContext, 8, 70);
+    }
+
+    @Test
+    public void complexTestBinarySearchContinuity() {
+        var length = 50_000;
+        var trainPath = new EnvelopeSimPath(
+                length,
+                new double[]{0, 800, 35_000, length},
+                new double[]{0, 50, -10},
+                ImmutableRangeMap.of()
+        );
+        var testContext = new EnvelopeSimContext(SimpleRollingStock.STANDARD_TRAIN, trainPath,
+                2., SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var stops = new double[] {};
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44, stops);
+        var allowanceValue = new AllowanceValue.Percentage(50);
+
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(0, 50_000, 0, allowanceValue);
+        testBinarySearchContinuity(maxEffortEnvelope, marecoAllowance, testContext, 10, 80);
     }
 
     private void testAllowanceShapeFlat(EnvelopeSimContext context, Allowance allowance) {
