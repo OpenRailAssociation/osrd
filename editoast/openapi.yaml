@@ -484,9 +484,10 @@ paths:
                 items:
                   type: integer
 
-  /infra/{id}/lines/{line_code}/bbox:
+  /infra/{id}/lines/{line_code}/bbox/:
     get:
-      tags: ["infra"]
+      tags:
+        - infra
       summary: Returns the BBoxes (geo and schematic) of a line
       parameters:
         - in: path
