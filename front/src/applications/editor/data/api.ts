@@ -1,32 +1,20 @@
-import { groupBy, omit, uniq, toPairs } from 'lodash';
-import { v4 as uuid } from 'uuid';
-import { compare } from 'fast-json-patch';
+import { groupBy, uniq, toPairs } from 'lodash';
 import { FeatureCollection } from 'geojson';
 
 import { get, post } from '../../../common/requests';
-import { osrdMiddlewareApi } from '../../../common/api/osrdMiddlewareApi';
 import {
-  GetInfraByIdSwitchTypesApiResponse,
   PostInfraByIdObjectsAndObjectTypeApiResponse,
   PostInfraByIdObjectsAndObjectTypeApiArg,
   GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
   GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg,
-  PostInfraByIdPathfindingApiArg,
-  PostInfraByIdPathfindingApiResponse,
   GetInfraByIdRoutesTrackRangesApiResponse,
 } from '../../../common/api/osrdEditoastApi';
 import {
-  CreateEntityOperation,
-  DeleteEntityOperation,
   Direction,
   EditorEntity,
   EditorEntityType,
   EditorSchema,
-  EntityOperation,
-  EntityOperationResult,
-  SwitchType,
   TrackRange,
-  UpdateEntityOperation,
   WayPoint,
   WayPointEntity,
   Zone,
@@ -35,13 +23,6 @@ import { zoneToBBox } from '../../../utils/mapboxHelper';
 import { getObjectTypeForLayer } from './utils';
 import { EditoastType } from '../tools/types';
 import { RouteCandidate } from '../tools/routeEdition/types';
-
-/**
- * Call the API for the list of switch types in a given infra.
- */
-export async function getSwitchTypes(infra: number): Promise<SwitchType[]> {
-  return get(`/editoast/infra/${infra}/switch_types`);
-}
 
 /**
  * Call the API for geojson.
@@ -74,7 +55,7 @@ export async function getEditorData(
   );
 }
 
-function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
+export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
   entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
   type: T['objType']
 ): T {
@@ -138,52 +119,6 @@ export async function getMixedEntities<T extends EditorEntity = EditorEntity>(
   );
 
   return entities.reduce((acc, curr) => ({ ...acc, ...curr }), {} as Record<string, T>);
-}
-
-/**
- * Call the API to update the database.
- */
-export async function editorSave(
-  infra: number,
-  operations: {
-    create?: Array<EditorEntity>;
-    update?: Array<{ source: EditorEntity; target: EditorEntity }>;
-    delete?: Array<EditorEntity>;
-  }
-): Promise<Array<EntityOperationResult>> {
-  const payload: EntityOperation[] = [
-    ...(operations.create || []).map(
-      (feature): CreateEntityOperation => ({
-        operation_type: 'CREATE',
-        obj_type: feature.objType,
-        railjson: {
-          ...feature.properties,
-          id: uuid(),
-        },
-      })
-    ),
-    ...(operations.update || []).map(
-      (features): UpdateEntityOperation => ({
-        operation_type: 'UPDATE',
-        obj_id: features.source.properties.id,
-        obj_type: features.source.objType,
-        railjson_patch: compare(
-          features.source.properties || {},
-          features.target.properties || {}
-          // the "as" is mandatory due to the json patch lib that has the not standard "_get" operation
-        ) as UpdateEntityOperation['railjson_patch'],
-      })
-    ),
-    ...(operations.delete || []).map(
-      (feature): DeleteEntityOperation => ({
-        operation_type: 'DELETE',
-        obj_id: feature.properties.id,
-        obj_type: feature.objType,
-      })
-    ),
-  ];
-
-  return post<EntityOperation[], EntityOperationResult[]>(`/editoast/infra/${infra}`, payload, {});
 }
 
 /**

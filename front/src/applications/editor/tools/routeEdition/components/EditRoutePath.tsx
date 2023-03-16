@@ -13,12 +13,13 @@ import { FiSearch } from 'react-icons/fi';
 import { EditRoutePathState, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
 import { ExtendedEditorContextType, OSRDConf } from '../../types';
-import { editorSave, getCompatibleRoutes, getEntity } from '../../../data/api';
+import { getCompatibleRoutes, getEntity } from '../../../data/api';
 import { EditorEntity, RouteEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
 import { getRoutesLineLayerProps } from '../../../../../common/Map/Layers/Routes';
 import colors from '../../../../../common/Map/Consts/colors';
-import { nestEntity } from '../../../data/utils';
+import { osrdEditoastApi } from '../../../../../common/api/osrdEditoastApi';
+import { nestEntity, entityToCreateOperation } from '../../../data/utils';
 import { getEditRouteState, getRouteGeometries } from '../utils';
 import EntitySumUp from '../../../components/EntitySumUp';
 import { EditEndpoints } from './Endpoints';
@@ -27,6 +28,7 @@ import { getMapStyle } from '../../../../../reducers/map/selectors';
 
 export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
   const { t } = useTranslation();
+  const [editorSave] = osrdEditoastApi.endpoints.postInfraById.useMutation({});
   const { setState } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const infraID = useSelector(getInfraID);
   const [isSaving, setIsSaving] = useState(false);
@@ -182,7 +184,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                 type="button"
                 className="btn btn-sm btn-primary mt-4 d-block w-100"
                 disabled={typeof state.optionsState.focusedOptionIndex !== 'number'}
-                onClick={() => {
+                onClick={async () => {
                   if (state.optionsState.type !== 'options') return;
 
                   const candidate =
@@ -190,12 +192,14 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                   if (!candidate) throw new Error('No valid candidate to save.');
 
                   setIsSaving(true);
-                  editorSave(infraID as number, {
-                    create: [
-                      {
+                  const result = await editorSave({
+                    id: infraID as number,
+                    body: [
+                      entityToCreateOperation({
                         type: 'Feature',
                         objType: 'Route',
                         properties: {
+                          id: '', // will be replaced by entityToCreateOperation
                           entry_point: omit(entryPoint, 'position'),
                           exit_point: omit(exitPoint, 'position'),
                           entry_point_direction: entryPointDirection,
@@ -204,18 +208,20 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                             ? candidate.data.detectors
                             : [],
                         },
-                      } as RouteEntity,
+                      } as RouteEntity),
                     ],
-                  }).then((entities: any[]) => {
-                    const newRouteId = entities[0].railjson.id;
-
-                    if (typeof newRouteId !== 'string')
-                      throw new Error('Cannot find ID of newly created route.');
-
-                    getEntity<RouteEntity>(infraID as number, newRouteId, 'Route').then((route) =>
-                      setState(getEditRouteState(route))
-                    );
                   });
+                  if ('error' in result) throw new Error(JSON.stringify(result.error));
+
+                  if (!result.data || result.data.length !== 1 || !('railjson' in result.data[0]))
+                    throw new Error('Cannot find ID of newly created route.');
+                  const newRouteId = result.data[0].railjson.id;
+                  if (typeof newRouteId !== 'string')
+                    throw new Error('Cannot find ID of newly created route.');
+
+                  getEntity<RouteEntity>(`${infraID}`, newRouteId, 'Route').then((route) =>
+                    setState(getEditRouteState(route))
+                  );
                 }}
               >
                 {t('Editor.tools.routes-edition.save-new-route')}
