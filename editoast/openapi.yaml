@@ -340,7 +340,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  id: { type: string }
+                  id:
+                    type: string
 
   /infra/{id}/errors/:
     get:
@@ -683,8 +684,6 @@ paths:
               schema:
                 type: array
                 items:
-                  discriminator:
-                    propertyName: type
                   oneOf:
                     - $ref: "#/components/schemas/RouteTrackRangesNotFoundError"
                     - $ref: "#/components/schemas/RouteTrackRangesCantComputePathError"
@@ -790,16 +789,20 @@ paths:
                 type: array
                 items:
                   type: object
+                  required:
+                    - railjson
+                    - geographic
+                    - schematic
                   properties:
                     railjson:
-                      type: object
                       description: Object properties in railjson format
+                      $ref: "#/components/schemas/Railjson"
                     geographic:
-                      type: object
                       description: object's geographic in geojson format
+                      $ref: "#/components/schemas/Geometry"
                     schematic:
-                      type: object
                       description: object's schematic in geojson format
+                      $ref: "#/components/schemas/Geometry"
   /infra/{id}/clone/:
     post:
       tags:
@@ -1741,6 +1744,10 @@ components:
         propertyName: operation_type
 
     RailjsonObject:
+      required:
+        - operation_type
+        - obj_type
+        - railjson
       properties:
         operation_type:
           type: string
@@ -1751,6 +1758,10 @@ components:
           $ref: "#/components/schemas/Railjson"
 
     DeleteOperation:
+      required:
+        - operation_type
+        - obj_type
+        - obj_id
       properties:
         operation_type:
           type: string
@@ -1762,6 +1773,10 @@ components:
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
 
     UpdateOperation:
+      required:
+        - operation_type
+        - obj_type
+        - railjson_patch
       properties:
         operation_type:
           type: string
@@ -1775,6 +1790,10 @@ components:
           $ref: "#/components/schemas/Patches"
 
     OperationObject:
+      required:
+        - operation_type
+        - obj_type
+        - railjson
       properties:
         operation_type:
           type: string
@@ -1819,6 +1838,11 @@ components:
     Railjson:
       type: object
       description: This field follows railjson format
+      required:
+        - id
+      properties:
+        id:
+          type: string
       example:
         id: bd840b06-84ba-4566-98c1-ccf0196c5f16
         geo:
@@ -1967,6 +1991,11 @@ components:
     DirectionalTrackRange:
       type: object
       description: Track range associated with a direction
+      required:
+        - track
+        - begin
+        - end
+        - direction
       properties:
         track:
           type: string
@@ -2184,8 +2213,14 @@ components:
     RouteTrackRangesComputed:
       type: object
       description: Route track ranges successfully computed
+      required:
+        - type
+        - track_ranges
       properties:
-        type: { type: string, enum: ["Computed"] }
+        type:
+          type: string
+          enum:
+            - Computed
         track_ranges:
           type: array
           items:
@@ -2194,14 +2229,24 @@ components:
     RouteTrackRangesNotFoundError:
       type: object
       description: Error when the route id couldn't be found
+      required:
+        - type
       properties:
-        type: { type: string, enum: ["NotFound"] }
+        type:
+          type: string
+          enum:
+            - NotFound
 
     RouteTrackRangesCantComputePathError:
       type: object
       description: Error when the route path couldn't be computed
+      required:
+        - type
       properties:
-        type: { type: string, enum: ["CantComputePath"] }
+        type:
+          type: string
+          enum:
+            - CantComputePath
 
     ElectricalProfile:
       type: object

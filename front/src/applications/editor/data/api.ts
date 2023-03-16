@@ -4,14 +4,26 @@ import { compare } from 'fast-json-patch';
 import { FeatureCollection } from 'geojson';
 
 import { get, post } from '../../../common/requests';
+import { osrdMiddlewareApi } from '../../../common/api/osrdMiddlewareApi';
 import {
-  ApiInfrastructure,
+  GetInfraByIdSwitchTypesApiResponse,
+  PostInfraByIdObjectsAndObjectTypeApiResponse,
+  PostInfraByIdObjectsAndObjectTypeApiArg,
+  GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
+  GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg,
+  PostInfraByIdPathfindingApiArg,
+  PostInfraByIdPathfindingApiResponse,
+  GetInfraByIdRoutesTrackRangesApiResponse,
+} from '../../../common/api/osrdEditoastApi';
+import {
   CreateEntityOperation,
   DeleteEntityOperation,
   Direction,
   EditorEntity,
+  EditorEntityType,
   EditorSchema,
   EntityOperation,
+  EntityOperationResult,
   SwitchType,
   TrackRange,
   UpdateEntityOperation,
@@ -23,20 +35,6 @@ import { zoneToBBox } from '../../../utils/mapboxHelper';
 import { getObjectTypeForLayer } from './utils';
 import { EditoastType } from '../tools/types';
 import { RouteCandidate } from '../tools/routeEdition/types';
-
-/**
- * Call the API to get an infra
- */
-export async function getInfrastructure(id: number): Promise<ApiInfrastructure> {
-  return get(`/editoast/infra/${id}/`);
-}
-
-/**
- * Call the API to get the list of infra
- */
-export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
-  return get(`/editoast/infra/`);
-}
 
 /**
  * Call the API to get the definition of entities by layer.
@@ -104,14 +102,8 @@ export async function getEditorData(
   );
 }
 
-type EditoastEntity<T extends EditorEntity = EditorEntity> = {
-  railjson: T['properties'];
-  geographic: T['geometry'];
-  schematic: T['geometry'];
-};
-
-export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
-  entity: EditoastEntity,
+function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
+  entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
   type: T['objType']
 ): T {
   return {
@@ -123,32 +115,18 @@ export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
 }
 
 /**
- * Returns an entity from editoast:
+ * Returns a list of entities from editoast
  */
-export async function getEntity<T extends EditorEntity = EditorEntity>(
-  infra: number | string,
-  id: string,
-  type: EditoastType
-): Promise<T> {
-  const res = await post<string[], EditoastEntity<T>[]>(
-    `/editoast/infra/${infra}/objects/${type}/`,
-    [id]
-  );
-
-  if (res.length < 1) throw new Error(`getEntity: No entity found for type ${type} and id ${id}`);
-
-  return editoastToEditorEntity<T>(res[0], type);
-}
 export async function getEntities<T extends EditorEntity = EditorEntity>(
   infra: number | string,
   ids: string[],
   type: T['objType']
 ): Promise<Record<string, T>> {
   const uniqIDs = uniq(ids);
-  const res = await post<string[], EditoastEntity[]>(
-    `/editoast/infra/${infra}/objects/${type}/`,
-    uniqIDs
-  );
+  const res = await post<
+    PostInfraByIdObjectsAndObjectTypeApiArg['body'],
+    PostInfraByIdObjectsAndObjectTypeApiResponse
+  >(`/editoast/infra/${infra}/objects/${type}/`, uniqIDs);
 
   return res.reduce(
     (iter, entry, i) => ({
@@ -158,6 +136,22 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
     {}
   );
 }
+
+/**
+ * Returns an entity from editoast:
+ */
+export async function getEntity<T extends EditorEntity = EditorEntity>(
+  infra: number | string,
+  id: string,
+  type: T['objType']
+): Promise<T> {
+  const result = await getEntities<T>(infra, [id], type);
+  if (result && result[id])
+    throw new Error(`getEntity: No entity found for type ${type} and id ${id}`);
+
+  return result[id];
+}
+
 export async function getMixedEntities<T extends EditorEntity = EditorEntity>(
   infra: number | string,
   defs: { id: string; type: EditoastType }[]
@@ -184,7 +178,7 @@ export async function editorSave(
     update?: Array<{ source: EditorEntity; target: EditorEntity }>;
     delete?: Array<EditorEntity>;
   }
-): Promise<Array<EditorEntity>> {
+): Promise<Array<EntityOperationResult>> {
   const payload: EntityOperation[] = [
     ...(operations.create || []).map(
       (feature): CreateEntityOperation => ({
@@ -201,7 +195,11 @@ export async function editorSave(
         operation_type: 'UPDATE',
         obj_id: features.source.properties.id,
         obj_type: features.source.objType,
-        railjson_patch: compare(features.source.properties || {}, features.target.properties || {}),
+        railjson_patch: compare(
+          features.source.properties || {},
+          features.target.properties || {}
+          // the "as" is mandatory due to the json patch lib that has the not standard "_get" operation
+        ) as UpdateEntityOperation['railjson_patch'],
       })
     ),
     ...(operations.delete || []).map(
@@ -213,7 +211,7 @@ export async function editorSave(
     ),
   ];
 
-  return post<EntityOperation[], EditorEntity[]>(`/editoast/infra/${infra}`, payload, {});
+  return post<EntityOperation[], EntityOperationResult[]>(`/editoast/infra/${infra}`, payload, {});
 }
 
 /**
@@ -221,12 +219,12 @@ export async function editorSave(
  */
 export async function getRoutesFromWaypoint(
   infra: number | string,
-  type: EditoastType,
-  id: string
-): Promise<{ starting?: string[]; ending?: string[] }> {
+  type: EditorEntityType,
+  id: GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg['waypointId']
+): Promise<GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse> {
   if (type !== 'BufferStop' && type !== 'Detector')
     throw new Error(`${type} elements are not valid waypoints.`);
-  return get<{ starting: string[]; ending: string[] }>(
+  return get<GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse>(
     `/editoast/infra/${infra}/routes/${type}/${id}`
   );
 }
@@ -235,16 +233,17 @@ export async function getRouteTrackRanges(
   infra: number | string,
   ids: string[]
 ): Promise<Record<string, TrackRange[] | null>> {
-  const res = await get<
-    ({ type: 'CantComputePath' } | { type: 'Computed'; track_ranges: TrackRange[] })[]
-  >(`/editoast/infra/${infra}/routes/track_ranges/?routes=${encodeURIComponent(ids.join(','))}`);
+  const res = await get<GetInfraByIdRoutesTrackRangesApiResponse>(
+    `/editoast/infra/${infra}/routes/track_ranges/?routes=${encodeURIComponent(ids.join(','))}`
+  );
+  console.log(res.map((e) => e.type));
 
   return res.reduce(
     (iter, o, i) => ({
       ...iter,
       [ids[i]]: o.type === 'Computed' ? o.track_ranges : null,
     }),
-    {}
+    {} as Record<string, TrackRange[] | null>
   );
 }
 

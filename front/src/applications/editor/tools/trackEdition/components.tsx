@@ -11,7 +11,7 @@ import colors from '../../../../common/Map/Consts/colors';
 import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { CreateEntityOperation, TrackSectionEntity } from '../../../../types';
+import { EntityObjectOperationResult, TrackSectionEntity } from '../../../../types';
 import { ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
@@ -211,7 +211,7 @@ export const TrackEditionLeftPanel: FC = () => {
           )
         );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const operation = res[0] as CreateEntityOperation;
+        const operation = res[0] as EntityObjectOperationResult;
         const { id } = operation.railjson;
 
         if (id && id !== savedEntity.properties.id)
