@@ -13,9 +13,9 @@ import {
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
-
-import { getSwitchTypes } from 'applications/editor/data/api';
 import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
+import { osrdEditoastApi } from '../../common/api/osrdEditoastApi';
+import { ThunkAction } from '../../types';
 /* eslint-disable default-case */
 
 // Action Types
@@ -389,8 +389,13 @@ export function updateScenarioID(scenarioID?: number) {
     });
   };
 }
-export function updateInfraID(infraID?: number) {
-  return async (dispatch: Dispatch) => {
+
+type ActionUpdateInfraID = {
+  type: typeof UPDATE_INFRA_ID;
+  infraID: number | undefined;
+};
+export function updateInfraID(infraID: number | undefined): ThunkAction<ActionUpdateInfraID> {
+  return async (dispatch) => {
     dispatch({
       type: UPDATE_INFRA_ID,
       infraID,
@@ -399,7 +404,10 @@ export function updateInfraID(infraID?: number) {
 
     if (infraID) {
       try {
-        const newSwitchTypes = await getSwitchTypes(infraID);
+        // get switch types  with rtk query
+        const { data: newSwitchTypes } = await dispatch(
+          osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.initiate({ id: infraID })
+        );
         dispatch(updateSwitchTypes(newSwitchTypes));
       } catch (e) {
         /* empty */

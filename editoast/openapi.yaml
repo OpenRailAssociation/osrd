@@ -1733,15 +1733,11 @@ components:
         - $ref: "#/components/schemas/RailjsonObject"
         - $ref: "#/components/schemas/DeleteOperation"
         - $ref: "#/components/schemas/UpdateOperation"
-      discriminator:
-        propertyName: operation_type
 
     OperationResult:
       oneOf:
         - $ref: "#/components/schemas/DeleteOperation"
         - $ref: "#/components/schemas/OperationObject"
-      discriminator:
-        propertyName: operation_type
 
     RailjsonObject:
       required:
@@ -1751,7 +1747,8 @@ components:
       properties:
         operation_type:
           type: string
-          enum: ["CREATE"]
+          enum:
+            - CREATE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         railjson:
@@ -1765,7 +1762,8 @@ components:
       properties:
         operation_type:
           type: string
-          enum: ["DELETE"]
+          enum:
+            - DELETE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         obj_id:
@@ -1780,7 +1778,8 @@ components:
       properties:
         operation_type:
           type: string
-          enum: ["UPDATE"]
+          enum:
+            - UPDATE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         obj_id:
@@ -1797,7 +1796,9 @@ components:
       properties:
         operation_type:
           type: string
-          enum: ["CREATE", "UPDATE"]
+          enum:
+            - CREATE
+            - UPDATE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         railjson:
@@ -1838,6 +1839,7 @@ components:
     Railjson:
       type: object
       description: This field follows railjson format
+      additionalProperties: true
       required:
         - id
       properties:
