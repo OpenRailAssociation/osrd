@@ -12,30 +12,34 @@ import getTimetable from 'applications/operationalStudies/components/Scenario/ge
 const submitConf = async (dispatch: any, t: any, setIsWorking: (isWorking: boolean) => void) => {
   const { osrdconf } = store.getState();
   // First train tested, and next we put the other trains
-  const osrdConfig = formatConf(dispatch, t, osrdconf);
+  const osrdConfig = formatConf(dispatch, t, osrdconf.simulationConf);
   if (osrdConfig) {
     setIsWorking(true);
-    const originTime = time2sec(osrdconf.originTime);
+    const originTime = time2sec(osrdconf.simulationConf.originTime);
     const schedules = [];
     let actualTrainCount = 1;
-    for (let nb = 1; nb <= osrdconf.trainCount; nb += 1) {
-      const newOriginTime = originTime + 60 * osrdconf.trainDelta * (nb - 1);
-      const trainName = trainNameWithNum(osrdconf.name, actualTrainCount, osrdconf.trainCount);
+    for (let nb = 1; nb <= osrdconf.simulationConf.trainCount; nb += 1) {
+      const newOriginTime = originTime + 60 * osrdconf.simulationConf.trainDelta * (nb - 1);
+      const trainName = trainNameWithNum(
+        osrdconf.simulationConf.name,
+        actualTrainCount,
+        osrdconf.simulationConf.trainCount
+      );
       schedules.push(
         formatConf(dispatch, t, {
-          ...osrdconf,
+          ...osrdconf.simulationConf,
           name: trainName,
           originTime: newOriginTime.toString(),
         })
       );
-      actualTrainCount += osrdconf.trainStep;
+      actualTrainCount += osrdconf.simulationConf.trainStep;
     }
     try {
       await post(
         scheduleURL,
         {
-          timetable: osrdconf.timetableID,
-          path: osrdconf.pathfindingID,
+          timetable: osrdconf.simulationConf.timetableID,
+          path: osrdconf.simulationConf.pathfindingID,
           schedules,
         },
         {}
@@ -43,11 +47,11 @@ const submitConf = async (dispatch: any, t: any, setIsWorking: (isWorking: boole
       dispatch(
         setSuccess({
           title: t('trainAdded'),
-          text: `${osrdconf.name}: ${sec2time(originTime)}`,
+          text: `${osrdconf.simulationConf.name}: ${sec2time(originTime)}`,
         })
       );
       setIsWorking(false);
-      getTimetable();
+      getTimetable(osrdconf.simulationConf.timetableID);
     } catch (e: unknown) {
       setIsWorking(false);
       if (e instanceof Error) {

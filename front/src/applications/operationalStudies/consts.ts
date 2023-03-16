@@ -123,8 +123,6 @@ export interface OsrdConfState {
   trainStep: number;
   trainDelta: number;
   usingElectricalProfiles: boolean;
-  mode: ValueOf<typeof MODES>;
-  stdcmMode: ValueOf<typeof STDCM_MODES>;
   labels: string[];
   projectID?: number;
   studyID?: number;
