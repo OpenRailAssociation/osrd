@@ -204,9 +204,9 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
 
   const transformVias = ({ steps }: Path) => {
     if (steps && steps.length >= 2) {
-      const type = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
+      const mapTrackSourcesType = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
       const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
-        const viaCoordinates = step[type]?.coordinates;
+        const viaCoordinates = step[mapTrackSourcesType]?.coordinates;
         if (!step.suggestion && viaCoordinates) {
           return [{ ...step, coordinates: viaCoordinates }];
         }

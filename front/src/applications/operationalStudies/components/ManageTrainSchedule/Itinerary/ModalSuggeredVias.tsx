@@ -48,11 +48,11 @@ export default function ModalSugerredVias({
   };
 
   const convertPathfindingVias = (steps: Path['steps'], idxToAdd: number) => {
-    const type = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
+    const mapTrackSourcesType = mapTrackSources.substring(0, 3) as 'geo' | 'sch';
     if (steps) {
       const newVias = steps.slice(1, -1).flatMap((step, idx) => {
         if (!step.suggestion || idxToAdd === idx) {
-          const viaCoordinates = step[type]?.coordinates;
+          const viaCoordinates = step[mapTrackSourcesType]?.coordinates;
           return [{ ...step, coordinates: viaCoordinates }];
         }
         return [];
