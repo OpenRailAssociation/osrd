@@ -37,34 +37,6 @@ import { EditoastType } from '../tools/types';
 import { RouteCandidate } from '../tools/routeEdition/types';
 
 /**
- * Call the API to get the definition of entities by layer.
- */
-export async function getEditorSchema(): Promise<EditorSchema> {
-  const schemaResponse = await get('/infra/schema/');
-  const fieldToOmit = ['id', 'geo', 'sch'];
-  return Object.keys(schemaResponse.properties || {})
-    .filter((e: string) => schemaResponse.properties[e].type === 'array')
-    .map((e: string) => {
-      // we assume here, that the definition of the object is ref and not inline
-      const ref = schemaResponse.properties[e].items.$ref.split('/');
-      const refTarget = schemaResponse[ref[1]][ref[2]];
-      refTarget.properties = omit(refTarget.properties, fieldToOmit);
-      refTarget.required = (refTarget.required || []).filter(
-        (field: string) => !fieldToOmit.includes(field)
-      );
-
-      return {
-        layer: e,
-        objType: ref[2],
-        schema: {
-          ...refTarget,
-          [ref[1]]: schemaResponse[ref[1]],
-        },
-      } as EditorSchema[0];
-    });
-}
-
-/**
  * Call the API for the list of switch types in a given infra.
  */
 export async function getSwitchTypes(infra: number): Promise<SwitchType[]> {
@@ -146,7 +118,7 @@ export async function getEntity<T extends EditorEntity = EditorEntity>(
   type: T['objType']
 ): Promise<T> {
   const result = await getEntities<T>(infra, [id], type);
-  if (result && result[id])
+  if (!result || !result[id])
     throw new Error(`getEntity: No entity found for type ${type} and id ${id}`);
 
   return result[id];
@@ -236,7 +208,6 @@ export async function getRouteTrackRanges(
   const res = await get<GetInfraByIdRoutesTrackRangesApiResponse>(
     `/editoast/infra/${infra}/routes/track_ranges/?routes=${encodeURIComponent(ids.join(','))}`
   );
-  console.log(res.map((e) => e.type));
 
   return res.reduce(
     (iter, o, i) => ({
