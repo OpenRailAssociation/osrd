@@ -9,10 +9,9 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # Check sha1 is matching
-echo Checking backup integrity...
+echo "Checking backup integrity..."
 BACKUP_PATH="$1"
 BACKUP_FILENAME=$(basename -s ".backup" "$BACKUP_PATH")
-echo "$BACKUP_FILENAME"
 EXPECTED_SHA1=$(echo "$BACKUP_FILENAME" | grep -o -E '[0-9a-f]{40}' || echo "renamed")
 CURRENT_SHA1=$(sha1sum "$BACKUP_PATH" | cut -d' ' -f1)
 if [ "$EXPECTED_SHA1" = "$CURRENT_SHA1" ]; then
@@ -55,11 +54,11 @@ if [ $DB_EXISTS = 't' ]; then
   fi
 
   # Drop database
-  echo Deleting osrd database...
+  echo "Deleting osrd database..."
   docker exec osrd-postgres psql -c 'DROP DATABASE osrd;' > /dev/null
 fi
 
-echo Initialize new database...
+echo "Initialize new database..."
 # Here I remove the first line of the script cause the user already exists
 docker exec osrd-postgres sh -c 'cat /docker-entrypoint-initdb.d/init.sql | tail -n 1 > /tmp/init.sql'
 docker exec osrd-postgres psql -f /tmp/init.sql > /dev/null
@@ -68,7 +67,11 @@ docker exec osrd-postgres psql -f /tmp/init.sql > /dev/null
 docker cp "$BACKUP_PATH" osrd-postgres:/tmp/backup-osrd
 
 # restoring the backend can partialy fail, and that's sometimes ok
-echo Restore backup...
+echo "Restore backup..."
 docker exec osrd-postgres pg_restore --if-exists -c -d osrd -x /tmp/backup-osrd > /dev/null
+
+# analyze db for performances
+echo "Analyze for performances..."
+docker exec osrd-postgres psql -d osrd -c 'ANALYZE;' > /dev/null
 
 echo Done !
