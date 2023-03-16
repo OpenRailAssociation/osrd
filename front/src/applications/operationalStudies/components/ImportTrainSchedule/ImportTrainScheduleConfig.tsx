@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import PropTypes from 'prop-types';
@@ -8,9 +8,17 @@ import { setFailure } from 'reducers/main';
 import { useDispatch } from 'react-redux';
 import StationCard from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
+import UploadFileModal from 'applications/customget/components/uploadFileModal';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { TrainSchedule, TrainScheduleImportConfig } from 'applications/operationalStudies/types';
 
-export default function ImportTrainScheduleConfig(props) {
-  const { setConfig } = props;
+interface ImportTrainScheduleConfigProps {
+  setConfig: (config: TrainScheduleImportConfig) => void;
+  setTrainsList: (trainsList: TrainSchedule[]) => void;
+}
+
+export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConfigProps) {
+  const { setConfig, setTrainsList } = props;
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [from, setFrom] = useState();
   const [fromSearchString, setFromSearchString] = useState('');
@@ -20,6 +28,7 @@ export default function ImportTrainScheduleConfig(props) {
   const [startTime, setStartTime] = useState('00:00');
   const [endTime, setEndTime] = useState('23:59');
   const dispatch = useDispatch();
+  const { openModal, closeModal } = useContext(ModalContext);
 
   function defineConfig() {
     let error = false;
@@ -59,9 +68,32 @@ export default function ImportTrainScheduleConfig(props) {
     }
   }
 
-  function importFile() {
-    return null;
-  }
+  const importFile = async (file: File) => {
+    closeModal();
+    if (file) {
+      const text = await file.text();
+      const trainsSchedulesTemp: TrainSchedule[] = JSON.parse(text);
+      // For each train schedule, we add the duration of each step
+      const trainsSchedules = trainsSchedulesTemp.map((trainSchedule) => {
+        const stepsWithDuration = trainSchedule.steps.map((step) => {
+          // calcul duration in seconds between step arrival and departure
+          const duration = Math.round(
+            (new Date(step.arrivalTime).getTime() - new Date(step.departureTime).getTime()) / 1000
+          );
+          return {
+            ...step,
+            duration,
+          };
+        });
+        return {
+          ...trainSchedule,
+          steps: stepsWithDuration,
+        };
+      });
+
+      setTrainsList(trainsSchedules);
+    }
+  };
 
   return (
     <>
@@ -129,7 +161,7 @@ export default function ImportTrainScheduleConfig(props) {
                   id="date"
                   type="date"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDate(e.target.value)}
                   sm
                   noMargin
                   step={0}
@@ -142,7 +174,9 @@ export default function ImportTrainScheduleConfig(props) {
                     id="startTime"
                     type="time"
                     value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setStartTime(e.target.value)
+                    }
                     sm
                     noMargin
                     step={0}
@@ -154,7 +188,9 @@ export default function ImportTrainScheduleConfig(props) {
                     id="endTime"
                     type="time"
                     value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setEndTime(e.target.value)
+                    }
                     sm
                     noMargin
                     step={0}
@@ -176,7 +212,7 @@ export default function ImportTrainScheduleConfig(props) {
           <button
             type="button"
             className="btn btn-sm btn-secondary btn-block h-100"
-            onClick={importFile}
+            onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
           >
             <i className="icons-download" />
           </button>
@@ -188,4 +224,5 @@ export default function ImportTrainScheduleConfig(props) {
 
 ImportTrainScheduleConfig.propTypes = {
   setConfig: PropTypes.func.isRequired,
+  setTrainsList: PropTypes.func.isRequired,
 };

@@ -11,9 +11,9 @@ export default function generateTrainSchedulesPayload(trainsWithPathRef, infraID
       };
     }
     trainSchedulesByPathID[train.pathId].schedules.push({
-      train_name: train.num,
+      train_name: train.trainNumber,
       rolling_stock: train.rollingStockId,
-      departure_time: time2sec(train.debut),
+      departure_time: time2sec(train.departureTime.slice(-8)),
       initial_speed: 0,
     });
   });

@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
-import { get } from 'axios';
+import { get } from 'common/requests';
 import ImportTrainScheduleTrainDetail from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleTrainDetail';
 import ImportTrainScheduleModal from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleModal';
 import { GoRocket } from 'react-icons/go';
@@ -10,11 +9,16 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import nextId from 'react-id-generator';
+import { TrainSchedule, TrainScheduleImportConfig } from 'applications/operationalStudies/types';
+import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 import { GRAOU_URL } from './consts';
 
-function LoadingIfSearching(props) {
+type LoadingProps = {
+  isSearching: boolean;
+};
+
+function LoadingIfSearching({ isSearching }: LoadingProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
-  const { isSearching } = props;
   return (
     <h1 className="text-center text-muted my-5">
       {isSearching ? <Loader position="center" /> : t('noResults')}
@@ -22,11 +26,21 @@ function LoadingIfSearching(props) {
   );
 }
 
-export default function ImportTrainScheduleTrainsList(props) {
+type ImportTrainScheduleTrainsListProps = {
+  config?: TrainScheduleImportConfig;
+  trainsList?: TrainSchedule[];
+  rollingStockDB: RollingStock[] | LightRollingStock[];
+  setTrainList: (trainsSchedules?: TrainSchedule[]) => void;
+};
+
+export default function ImportTrainScheduleTrainsList({
+  config,
+  trainsList,
+  rollingStockDB,
+  setTrainList,
+}: ImportTrainScheduleTrainsListProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const { openModal } = useModal();
-  const { config, rollingStockDB } = props;
-  const [trainsList, setTrainList] = useState();
   const [isSearching, setIsSearching] = useState(false);
 
   const rollingStockDict = useMemo(
@@ -46,6 +60,7 @@ export default function ImportTrainScheduleTrainsList(props) {
       setTrainList(result.data);
       setIsSearching(false);
     } catch (error) {
+      console.error(error);
       setIsSearching(false);
     }
   }
@@ -56,10 +71,9 @@ export default function ImportTrainScheduleTrainsList(props) {
     } else {
       setTrainList(undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config]);
 
-  if (!config) return null;
+  // if (!config) return null;
 
   return trainsList && trainsList.length > 0 ? (
     <div className="osrd-config-item mb-2">
@@ -87,7 +101,13 @@ export default function ImportTrainScheduleTrainsList(props) {
               trainData={train}
               idx={idx}
               key={nextId()}
-              rollingStock={rollingStockDict[rollingstockOpenData2OSRD[train.type_em]]}
+              rollingStock={
+                rollingStockDict[
+                  rollingstockOpenData2OSRD[
+                    train.rollingStock as keyof typeof rollingstockOpenData2OSRD
+                  ]
+                ]
+              }
             />
           ))}
         </div>
@@ -101,16 +121,3 @@ export default function ImportTrainScheduleTrainsList(props) {
     </div>
   );
 }
-
-ImportTrainScheduleTrainsList.defaultProps = {
-  config: undefined,
-};
-
-LoadingIfSearching.propTypes = {
-  isSearching: PropTypes.bool.isRequired,
-};
-
-ImportTrainScheduleTrainsList.propTypes = {
-  config: PropTypes.object,
-  rollingStockDB: PropTypes.array.isRequired,
-};
