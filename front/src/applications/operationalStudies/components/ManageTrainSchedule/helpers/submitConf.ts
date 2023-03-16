@@ -9,7 +9,7 @@ import { post } from 'common/requests';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const submitConf = async (dispatch: any, t: any, setIsWorking: (arg0: boolean) => void) => {
+const submitConf = async (dispatch: any, t: any, setIsWorking: (isWorking: boolean) => void) => {
   const { osrdconf } = store.getState();
   // First train tested, and next we put the other trains
   const osrdConfig = formatConf(dispatch, t, osrdconf);
@@ -21,7 +21,6 @@ const submitConf = async (dispatch: any, t: any, setIsWorking: (arg0: boolean) =
     for (let nb = 1; nb <= osrdconf.trainCount; nb += 1) {
       const newOriginTime = originTime + 60 * osrdconf.trainDelta * (nb - 1);
       const trainName = trainNameWithNum(osrdconf.name, actualTrainCount, osrdconf.trainCount);
-      /* eslint no-await-in-loop: 0 */
       schedules.push(
         formatConf(dispatch, t, {
           ...osrdconf,
