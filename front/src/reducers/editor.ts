@@ -1,13 +1,17 @@
 import produce from 'immer';
 import { Feature } from 'geojson';
-import { without, omit } from 'lodash';
-import { JSONSchema7 } from 'json-schema';
+import { without, omit, clone } from 'lodash';
 
 import { osrdMiddlewareApi } from '../common/api/osrdMiddlewareApi';
+import { osrdEditoastApi } from '../common/api/osrdEditoastApi';
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
-import { editorSave } from '../applications/editor/data/api';
 import { EditorState, LAYERS, LayerType } from '../applications/editor/tools/types';
+import {
+  entityToCreateOperation,
+  entityToUpdateOperation,
+  entityToDeleteOperation,
+} from '../applications/editor/data/utils';
 
 //
 // Actions
@@ -60,11 +64,8 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
       dispatch(setLoading());
       try {
         // get the json schema  with rtk query
-        await dispatch(osrdMiddlewareApi.endpoints.getInfraSchema.initiate());
-        const selector = osrdMiddlewareApi.endpoints.getInfraSchema.select();
-        const { data } = selector(getState());
+        const { data } = await dispatch(osrdMiddlewareApi.endpoints.getInfraSchema.initiate());
         const schemaResponse = data as any;
-
         // parse the schema
         const fieldToOmit = ['id', 'geo', 'sch'];
         const schema = Object.keys(schemaResponse.properties || {})
@@ -77,7 +78,7 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
           .map((e: string) => {
             // we assume here, that the definition of the object is ref and not inline
             const ref = schemaResponse.properties[e].items.$ref.split('/');
-            const refTarget = schemaResponse[ref[1]][ref[2]];
+            const refTarget = clone(schemaResponse[ref[1]][ref[2]]);
             refTarget.properties = omit(refTarget.properties, fieldToOmit);
             refTarget.required = (refTarget.required || []).filter(
               (field: string) => !fieldToOmit.includes(field)
@@ -92,13 +93,13 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
               },
             } as EditorSchema[0];
           });
-
         dispatch(setSuccess());
         dispatch({
           type: LOAD_DATA_MODEL,
           schema,
         });
       } catch (e) {
+        console.error(e);
         dispatch(setFailure(e as Error));
       }
     }
@@ -126,17 +127,29 @@ export function save(operations: {
     const state = getState();
     dispatch(setLoading());
     try {
-      // saving the data
-      const savedFeatures = await editorSave(state.osrdconf.simulationConf.infraID, operations);
-      // success message
-      dispatch(
-        setSuccess({
-          title: 'Modifications enregistrées',
-          text: `Vos modifications ont été publiées`,
+      const payload = [
+        ...(operations.create || []).map((e) => entityToCreateOperation(e)),
+        ...(operations.update || []).map((e) => entityToUpdateOperation(e.target, e.source)),
+        ...(operations.delete || []).map((e) => entityToDeleteOperation(e)),
+      ];
+
+      const response = await dispatch(
+        osrdEditoastApi.endpoints.postInfraById.initiate({
+          id: state.osrdconf.simulationConf.infraID,
+          body: payload,
         })
       );
-
-      return savedFeatures;
+      if ('data' in response) {
+        // success message
+        dispatch(
+          setSuccess({
+            title: 'Modifications enregistrées',
+            text: `Vos modifications ont été publiées`,
+          })
+        );
+        return response.data;
+      }
+      throw new Error(JSON.stringify(response.error));
     } catch (e) {
       dispatch(setFailure(e as Error));
       throw e;
