@@ -68,6 +68,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
       setSearchResults(results as ILineSearchResult[]);
     } catch (e) {
       console.error(e);
+      setSearchResults(undefined);
     }
   };
 
@@ -98,7 +99,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   };
 
   useEffect(() => {
-    if (debouncedSearchTerm) {
+    if (searchState) {
       updateSearch(getPayload(searchState));
     }
 
