@@ -27,6 +27,7 @@ pub trait EditoastError: Error + Send + Sync {
 pub struct InternalError {
     #[serde(skip)]
     status: StatusCode,
+    #[serde(rename = "type")]
     error_type: &'static str,
     context: HashMap<String, Value>,
     message: String,
