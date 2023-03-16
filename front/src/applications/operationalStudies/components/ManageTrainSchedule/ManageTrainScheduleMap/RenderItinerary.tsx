@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'reducers';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getGeojson, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
 
 interface RenderItineraryProps {
   layerOrder: number;
@@ -12,7 +13,9 @@ interface RenderItineraryProps {
 
 export default function RenderItinerary(props: RenderItineraryProps) {
   const { layerOrder } = props;
-  const { geojson, origin, destination } = useSelector((state: RootState) => state.osrdconf);
+  const geojson = useSelector(getGeojson);
+  const origin = useSelector(getOrigin);
+  const destination = useSelector(getDestination);
   const { mapTrackSources } = useSelector((state: RootState) => state.map);
   if (geojson && geojson[mapTrackSources] && origin !== undefined && destination !== undefined) {
     return (

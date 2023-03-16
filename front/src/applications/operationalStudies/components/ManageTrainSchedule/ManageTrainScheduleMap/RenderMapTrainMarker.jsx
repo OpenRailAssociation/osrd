@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MapTrainMarker from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/MapTrainMarker';
 import { useSelector } from 'react-redux';
+import { getConf } from 'reducers/osrdconf/selectors';
 
 export default function RenderMapTrainMarker(props) {
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdconf = useSelector(getConf);
   const { mapRef, mapTrainMarker } = props;
   if (
     osrdconf.trainCompo !== undefined &&

@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateLabels } from 'reducers/osrdconf';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
+import { getLabels } from 'reducers/osrdconf/selectors';
 
 export default function AddTrainLabels() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const { labels } = useSelector((state) => state.osrdconf);
+  const labels = useSelector(getLabels);
   const dispatch = useDispatch();
 
   const removeTag = (idx) => {

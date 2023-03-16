@@ -9,6 +9,7 @@ import { Theme } from 'types';
 import { RootState } from 'reducers';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface TracksSchematicProps {
   colors: Theme;
@@ -18,7 +19,7 @@ interface TracksSchematicProps {
 
 function TracksSchematic(props: TracksSchematicProps) {
   const { colors, idHover, layerOrder } = props;
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
   return (
     <Source

@@ -7,6 +7,7 @@ import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface PlatformProps {
   colors: Theme;
@@ -16,7 +17,7 @@ interface PlatformProps {
 
 export default function OperationalPoints(props: PlatformProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { geomType, colors, layerOrder } = props;
   const layerPoint: LayerProps = {
     type: 'circle',

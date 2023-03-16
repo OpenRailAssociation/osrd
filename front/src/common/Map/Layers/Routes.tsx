@@ -5,7 +5,7 @@ import { CircleLayer, LineLayer, Source, SymbolLayer } from 'react-map-gl';
 import { RootState } from 'reducers';
 import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
-
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface RoutesProps {
@@ -91,7 +91,7 @@ export function getRoutesTextLayerProps(params: {
 export default function Routes(props: RoutesProps) {
   const { geomType, colors, layerOrder } = props;
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
 
   const lineProps = getRoutesLineLayerProps({ colors, sourceTable: 'routes' });
   const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes' });

@@ -6,9 +6,12 @@ import originSVG from 'assets/pictures/origin.svg';
 import destinationSVG from 'assets/pictures/destination.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import { RootState } from 'reducers';
+import { getVias, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
 
 const RenderItineraryMarkers: FC = () => {
-  const { origin, destination, vias } = useSelector((state: RootState) => state.osrdconf);
+  const vias = useSelector(getVias);
+  const origin = useSelector(getOrigin);
+  const destination = useSelector(getDestination);
 
   const formatPointWithNoName = (pointData: any) => (
     <>

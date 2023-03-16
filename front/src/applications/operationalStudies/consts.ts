@@ -71,7 +71,11 @@ export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   opendata: 'OPENDATA',
 });
 
-export const MODES = Object.freeze({
+interface MODES_Types {
+  [n: string]: string
+}
+
+export const MODES: MODES_Types = Object.freeze({
   simulation: 'SIMULATION',
   stdcm: 'STDCM',
 });
@@ -114,8 +118,6 @@ export interface PointOnMap {
 export interface OsrdConfState {
   rollingStockComfort: any;
   name: string;
-  mode: ValueOf<typeof MODES>;
-  stdcmMode: ValueOf<typeof STDCM_MODES>;
   labels: string[];
   projectID?: number;
   studyID?: number;
@@ -143,7 +145,17 @@ export interface OsrdConfState {
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   gridMarginBefore: number;
   gridMarginAfter: number;
+}
+
+export interface OsrdStdcmConfState extends OsrdConfState {
+  stdcmMode: ValueOf<typeof STDCM_MODES>;
   standardStdcmAllowance: any; // We wait for auto generated types
+}
+
+export interface OsrdMultiConfState {
+  mode: ValueOf<typeof MODES>;
+  simulationConf: OsrdConfState;
+  stdcmConf: OsrdStdcmConfState;
 }
 
 // electrical profiles

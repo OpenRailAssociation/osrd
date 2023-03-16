@@ -92,7 +92,7 @@ export function save(operations: {
     dispatch(setLoading());
     try {
       // saving the data
-      const savedFeatures = await editorSave(state.osrdconf.infraID, operations);
+      const savedFeatures = await editorSave(state.osrdconf.simulationConf.infraID, operations);
       // success message
       dispatch(
         setSuccess({

@@ -198,7 +198,7 @@ export default function ImportTrainScheduleModal(props) {
   async function launchTrainSchedules(params) {
     try {
       await post(scheduleURL, params, {});
-      getTimetable();
+      getTimetable(timetableID);
       return `${t(
         'operationalStudies/importTrainSchedule:status.calculatingTrainScheduleComplete'
       )} (${params.path})`;

@@ -4,6 +4,7 @@ import { Source, SymbolLayer, CircleLayer } from 'react-map-gl';
 import { MAP_URL } from 'common/Map/const';
 import { RootState } from 'reducers';
 import { Theme } from 'types';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
@@ -61,7 +62,7 @@ interface SwitchesProps {
 
 const Switches: FC<SwitchesProps> = (props) => {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { geomType, colors, layerOrder } = props;
 
   const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });

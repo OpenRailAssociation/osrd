@@ -15,16 +15,21 @@ import formatConf from 'applications/operationalStudies/components/ManageTrainSc
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
 import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { getConf, getTimetableID } from 'reducers/osrdconf/selectors';
 import getTimetable from '../Scenario/getTimetable';
-
-export default function AddTrainSchedule(props) {
-  const { setDisplayTrainScheduleManagement } = props;
-  const [name, setName] = useState(undefined);
+export default function AddTrainSchedule({
+  setDisplayTrainScheduleManagement,
+}: {
+  setDisplayTrainScheduleManagement: (type: string) => void;
+}) {
+  const [name, setName] = useState('');
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
   const [trainStep, setTrainStep] = useState(2);
   const [trainDelta, setTrainDelta] = useState(15);
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdconf = useSelector(getConf);
+  const timetableID = useSelector(getTimetableID);
+
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
 
@@ -62,9 +67,10 @@ export default function AddTrainSchedule(props) {
           })
         );
         setIsWorking(false);
-        getTimetable();
+        getTimetable(timetableID);
         setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
         setIsWorking(false);
         dispatch(
           setFailure({
@@ -98,7 +104,7 @@ export default function AddTrainSchedule(props) {
             type="text"
             label={t('trainScheduleName')}
             id="osrdconf-name"
-            onChange={(e) => handleNameChange(e.target.value)}
+            onChange={(e: { target: { value: string } }) => handleNameChange(e.target.value)}
             value={name}
             noMargin
             sm
@@ -109,7 +115,9 @@ export default function AddTrainSchedule(props) {
             type="number"
             label={t('trainScheduleStep')}
             id="osrdconf-traincount"
-            onChange={(e) => setTrainStep(parseInt(e.target.value, 10))}
+            onChange={(e: { target: { value: string } }) =>
+              setTrainStep(parseInt(e.target.value, 10))
+            }
             value={trainStep}
             noMargin
             sm
@@ -120,7 +128,7 @@ export default function AddTrainSchedule(props) {
             type="number"
             label={t('trainScheduleCount')}
             id="osrdconf-traincount"
-            onChange={(e) => setTrainCount(e.target.value)}
+            onChange={(e: { target: { value: number } }) => setTrainCount(e.target.value)}
             value={trainCount}
             noMargin
             sm
@@ -131,7 +139,7 @@ export default function AddTrainSchedule(props) {
             type="number"
             label={t('trainScheduleDelta')}
             id="osrdconf-delta"
-            onChange={(e) => setTrainDelta(e.target.value)}
+            onChange={(e: { target: { value: number } }) => setTrainDelta(e.target.value)}
             value={trainDelta}
             unit="min"
             noMargin
