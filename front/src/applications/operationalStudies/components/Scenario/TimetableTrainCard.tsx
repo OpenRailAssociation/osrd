@@ -92,7 +92,7 @@ export default function TimetableTrainCard({
           <MdContentCopy />
         </button>
         <button
-          className="scenario-timetable-train-buttons-update"
+          className="scenario-timetable-train-buttons-update d-none"
           type="button"
           title={t('timetable.update')}
         >
