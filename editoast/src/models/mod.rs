@@ -48,7 +48,7 @@ pub trait Delete {
     /// Useful when you are in a transaction.
     fn delete_conn(conn: &mut PgConnection, id: i64) -> Result<bool>;
 
-    /// Delete an given its ID (primary key).
+    /// Delete an object given its ID (primary key).
     /// Return `false` if not found.
     ///
     /// ### Example
@@ -76,16 +76,15 @@ pub trait Retrieve: Sized + 'static {
     /// Useful when you are in a transaction.
     fn retrieve_conn(conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
 
-    /// Create a new object in the database.
-    /// Returns the created object with its default values filled (like the id).
-    /// Return `None` if not found.
+    /// Retrieve an object given its ID (primary key).
+    /// Return 'None' if not found.
     ///
     /// ### Example
     ///
     /// ```
-    /// let obj = ...;
-    /// let created_obj = obj.create(db_pool).await?;
-    /// let obj_id = created_obj.id.unwrap();
+    /// if let Some(obj) = Document::retrieve(db_pool, 42).await? {
+    ///     // do something with obj
+    /// }
     /// ```
     async fn retrieve(db_pool: Data<DbPool>, id: i64) -> Result<Option<Self>> {
         block::<_, crate::error::Result<_>>(move || {
