@@ -67,7 +67,6 @@ const defaultCommonConf = {
   trainDelta: 15,
   trainStep: 2,
   usingElectricalProfiles: true,
-  mode: DEFAULT_MODE,
   labels: [],
   projectID: undefined,
   studyID: undefined,
