@@ -2,17 +2,17 @@ import rollingstockOpenData2OSRD from 'applications/operationalStudies/component
 
 function formatSteps(pointsDictionnary, trainFromPathRef, autoComplete) {
   if (autoComplete) {
-    return trainFromPathRef.etapes.map((step, idx) => ({
-      duration: idx === 0 || idx === trainFromPathRef.etapes.length - 1 ? 0 : step.duree,
-      op_trigram: step.code,
+    return trainFromPathRef.steps.map((step, idx) => ({
+      duration: idx === 0 || idx === trainFromPathRef.steps.length - 1 ? 0 : step.duration,
+      op_trigram: step.trigram,
     }));
   }
-  return trainFromPathRef.etapes.map((step, idx) => ({
-    duration: idx === 0 || idx === trainFromPathRef.etapes.length - 1 ? 0 : step.duree,
+  return trainFromPathRef.steps.map((step, idx) => ({
+    duration: idx === 0 || idx === trainFromPathRef.steps.length - 1 ? 0 : step.duration,
     waypoints: [
       {
         track_section: pointsDictionnary[step.uic].trackSectionId,
-        geo_coordinate: [Number(step.lon), Number(step.lat)],
+        geo_coordinate: [Number(step.longitude), Number(step.latitude)],
       },
     ],
   }));
@@ -29,11 +29,14 @@ export default function generatePathfindingPayload(
 ) {
   const pathsToGenerate = {};
   pathsDictionnary.forEach((pathRef) => {
-    const trainFromPathRef = trainsWithPathRef.find((train) => train.num === pathRef.num);
-    const rollingStockFound = rollingStockDB.find(
-      (rollingstock) => rollingstock.name === rollingstockOpenData2OSRD[trainFromPathRef.type_em]
+    const trainFromPathRef = trainsWithPathRef.find(
+      (train) => train.trainNumber === pathRef.trainNumber
     );
-    pathsToGenerate[pathRef.num] = {
+    const rollingStockFound = rollingStockDB.find(
+      (rollingstock) =>
+        rollingstock.name === rollingstockOpenData2OSRD[trainFromPathRef.rollingStock]
+    );
+    pathsToGenerate[pathRef.trainNumber] = {
       infra: infraID,
       rolling_stocks: [rollingStockFound ? rollingStockFound.id : rollingStockID],
       steps: formatSteps(pointsDictionnary, trainFromPathRef, autoComplete),

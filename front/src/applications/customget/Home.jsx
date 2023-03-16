@@ -26,7 +26,7 @@ function HomeCustomGET() {
     if (file) {
       dispatch(
         updateSimulation({
-          trains: convertData(JSON.parse(await file.text())),
+          trains: convertData(JSON.parse(file)),
         })
       );
     }
