@@ -1,10 +1,12 @@
 import produce from 'immer';
 import { Feature } from 'geojson';
-import { without } from 'lodash';
+import { without, omit } from 'lodash';
+import { JSONSchema7 } from 'json-schema';
 
+import { osrdMiddlewareApi } from '../common/api/osrdMiddlewareApi';
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
-import { getEditorSchema, editorSave } from '../applications/editor/data/api';
+import { editorSave } from '../applications/editor/data/api';
 import { EditorState, LAYERS, LayerType } from '../applications/editor/tools/types';
 
 //
@@ -57,7 +59,40 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
     if (!Object.keys(getState().editor.editorSchema).length) {
       dispatch(setLoading());
       try {
-        const schema = await getEditorSchema();
+        // get the json schema  with rtk query
+        await dispatch(osrdMiddlewareApi.endpoints.getInfraSchema.initiate());
+        const selector = osrdMiddlewareApi.endpoints.getInfraSchema.select();
+        const { data } = selector(getState());
+        const schemaResponse = data as any;
+
+        // parse the schema
+        const fieldToOmit = ['id', 'geo', 'sch'];
+        const schema = Object.keys(schemaResponse.properties || {})
+          .filter(
+            (e: string) =>
+              schemaResponse.properties &&
+              schemaResponse.properties[e] &&
+              schemaResponse.properties[e].type === 'array'
+          )
+          .map((e: string) => {
+            // we assume here, that the definition of the object is ref and not inline
+            const ref = schemaResponse.properties[e].items.$ref.split('/');
+            const refTarget = schemaResponse[ref[1]][ref[2]];
+            refTarget.properties = omit(refTarget.properties, fieldToOmit);
+            refTarget.required = (refTarget.required || []).filter(
+              (field: string) => !fieldToOmit.includes(field)
+            );
+
+            return {
+              layer: e,
+              objType: ref[2],
+              schema: {
+                ...refTarget,
+                [ref[1]]: schemaResponse[ref[1]],
+              },
+            } as EditorSchema[0];
+          });
+
         dispatch(setSuccess());
         dispatch({
           type: LOAD_DATA_MODEL,
