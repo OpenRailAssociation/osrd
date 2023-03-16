@@ -11,12 +11,13 @@ import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
 import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 function FormatSwitch(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector((state) => state.map);
-  const { infraID } = useSelector((state) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
   const { name, icon, color, disabled = false } = props;
 

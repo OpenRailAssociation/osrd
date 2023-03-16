@@ -8,6 +8,7 @@ import { post } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import turfCenter from '@turf/center';
 import StationCard from 'common/StationCard';
+import { getConf } from 'reducers/osrdconf/selectors';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -16,7 +17,7 @@ export default function MapSearchStation(props) {
   const [searchState, setSearch] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState(undefined);
-  const osrdconf = useSelector((state) => state.osrdconf);
+  const osrdconf = useSelector(getConf);
 
   const dispatch = useDispatch();
   const searchURI = `/editoast/search`;

@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
 import ProjectCardEmpty from 'applications/operationalStudies/components/Home/ProjectCardEmpty';
 import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
+import { MODES } from 'applications/operationalStudies/consts';
 import osrdLogo from 'assets/pictures/osrd.png';
 import logo from 'assets/pictures/views/projects.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
@@ -11,6 +13,7 @@ import Loader from 'common/Loader';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
+import { updateMode } from 'reducers/osrdconf';
 
 function displayCards(projectsList, setFilterChips) {
   return projectsList ? (
@@ -39,6 +42,7 @@ export default function Home() {
   const [sortOption, setSortOption] = useState('-last_modification');
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
+  const dispatch = useDispatch();
 
   const sortOptions = [
     {
@@ -74,6 +78,10 @@ export default function Home() {
     getProjectList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
+
+  useEffect(() => {
+    dispatch(updateMode(MODES.simulation));
+  }, []);
 
   return (
     <>

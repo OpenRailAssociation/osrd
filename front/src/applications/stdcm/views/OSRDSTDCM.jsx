@@ -1,36 +1,27 @@
 import React, { useEffect, useState } from 'react';
-
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { getMode } from 'reducers/osrdconf/selectors';
+import { updateSelectedTrain, updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 import { MODES, STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
+import { updateMode } from 'reducers/osrdconf';
 import OSRDStdcmConfig from './OSRDCStdcmConfig';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import StdcmRequestModal from './StdcmRequestModal';
-import { updateMode } from '../../../reducers/osrdconf';
-
-const keylog = [];
-document.onkeydown = (e) => {
-  const keypressed = e.key;
-  keylog.push(keypressed);
-  if (keylog.join('') === 'boum') {
-    const ascii = [
-      '',
-      ' ___________________    . , ',
-      '(___________________|~~~~~X.;',
-      '                     ` `"  ;',
-      '            TNT',
-    ].join('\n');
-    throw ascii;
-  }
-};
 
 export default function OSRDSTDCM() {
   const dispatch = useDispatch();
+  const mode = useSelector(getMode);
   const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState(
     STDCM_REQUEST_STATUS.idle
   );
   const [, setCurrentStdcmRequestResults] = useState(null);
   useEffect(() => {
-    dispatch(updateMode(MODES.stdcm));
+    if (mode !== MODES.stdcm) dispatch(updateMode(MODES.stdcm));
+    return () => {
+      dispatch(updateMode(MODES.simulation));
+      dispatch(updateSelectedTrain(0));
+      dispatch(updateSelectedProjection(undefined));
+    };
   }, []);
 
   return (

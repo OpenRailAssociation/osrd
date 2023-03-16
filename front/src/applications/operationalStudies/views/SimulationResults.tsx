@@ -26,6 +26,7 @@ import { RootState } from 'reducers';
 import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -54,7 +55,7 @@ export default function SimulationResults() {
   const displaySimulation = useSelector(
     (state: RootState) => state.osrdsimulation.displaySimulation
   );
-  const timetableID = useSelector((state: RootState) => state.osrdconf.timetableID);
+  const timetableID = useSelector(getTimetableID);
   const dispatch = useDispatch();
 
   const toggleAllowancesDisplay = () => {
@@ -82,7 +83,7 @@ export default function SimulationResults() {
 
   useEffect(() => {
     if (timetableID && selectedProjection) {
-      getTimetable();
+      getTimetable(timetableID);
     }
     return function cleanup() {
       dispatch(updateSimulation({ trains: [] }));

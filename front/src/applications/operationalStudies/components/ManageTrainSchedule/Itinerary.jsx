@@ -4,17 +4,19 @@ import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 
 import { replaceVias, updateDestination, updateOrigin } from 'reducers/osrdconf';
+import { getVias, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
 import { updateFeatureInfoClick } from 'reducers/map';
 
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
 
 function Itinerary(props) {
-  const { vias } = useSelector((state) => state.osrdconf);
+  const vias = useSelector(getVias);
+  const origin = useSelector(getOrigin);
+  const destination = useSelector(getDestination);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
-  const osrdconf = useSelector((state) => state.osrdconf);
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -62,12 +64,12 @@ function Itinerary(props) {
   };
 
   const inverseOD = () => {
-    if (osrdconf.origin && osrdconf.destination) {
-      const origin = { ...osrdconf.origin };
-      dispatch(updateOrigin(osrdconf.destination));
-      dispatch(updateDestination(origin));
-      if (osrdconf.vias && osrdconf.vias.length > 1) {
-        const newVias = Array.from(osrdconf.vias);
+    if (origin && destination) {
+      const neworigin = { ...origin };
+      dispatch(updateOrigin(destination));
+      dispatch(updateDestination(neworigin));
+      if (vias && vias.length > 1) {
+        const newVias = Array.from(vias);
         dispatch(replaceVias(newVias.reverse()));
       }
     }

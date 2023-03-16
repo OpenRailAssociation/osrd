@@ -5,7 +5,7 @@ import {
   ALLOWANCE_UNIT_TYPES,
   TYPES_UNITS,
 } from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
-import { STDCM_MODES, OsrdConfState } from 'applications/operationalStudies/consts';
+import { STDCM_MODES, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 
@@ -16,7 +16,7 @@ export default function formatStdcmConf(
   dispatch: Dispatch,
   setFailure: (e: Error) => ThunkAction<ActionFailure>,
   t: TFunction,
-  osrdconf: OsrdConfState
+  osrdconf: OsrdStdcmConfState
 ) {
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
 

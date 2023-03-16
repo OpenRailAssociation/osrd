@@ -7,10 +7,11 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { getPathfindingID } from 'reducers/osrdconf/selectors';
 
 export default function ModalPathJSONDetail() {
   const dispatch = useDispatch();
-  const { pathfindingID } = useSelector((state) => state.osrdconf);
+  const pathfindingID  = useSelector(getPathfindingID);
   const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
   const textareaRef = useRef(null);
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');

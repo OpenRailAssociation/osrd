@@ -18,9 +18,7 @@ import i18n from 'i18next';
  * Recover the time table for all the trains
  */
 
-export default async function getTimetable(givenTimetableID) {
-  const timetableID = givenTimetableID || store.getState().osrdconf.timetableID;
-
+export default async function getTimetable(timetableID) {
   const { selectedProjection, allowancesSettings, displaySimulation } =
     store.getState().osrdsimulation;
   try {

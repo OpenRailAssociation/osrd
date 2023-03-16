@@ -17,6 +17,7 @@ import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 
@@ -38,6 +39,7 @@ export default function Timetable(props) {
   const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
   const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
+  const timetableID = useSelector(getTimetableID);
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState();
   const dispatch = useDispatch();
@@ -53,7 +55,7 @@ export default function Timetable(props) {
   const deleteTrain = async (train) => {
     try {
       await deleteRequest(`${trainscheduleURI}${train.id}/`);
-      getTimetable();
+      getTimetable(timetableID);
       dispatch(
         setSuccess({
           title: t('timetable:trainDeleted', { name: train.name }),
@@ -103,7 +105,7 @@ export default function Timetable(props) {
     }
     try {
       await post(`${trainscheduleURI}standalone_simulation/`, params);
-      getTimetable();
+      getTimetable(timetableID);
       dispatch(
         setSuccess({
           title: t('osrdconf:trainAdded'),

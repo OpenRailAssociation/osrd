@@ -9,6 +9,7 @@ import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 import SNCF_LPV_Panels from './SNCF_LPV_PANELS';
 
@@ -21,7 +22,7 @@ interface SNCF_LPVProps {
 export default function SNCF_LPV(props: SNCF_LPVProps) {
   const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { geomType, colors, layerOrder } = props;
 
   const tag = `speed_limit_by_tag_${layersSettings.speedlimittag}`;

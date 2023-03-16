@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
 import { Source, SymbolLayer } from 'react-map-gl';
-
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import { RootState } from 'reducers';
 import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
@@ -47,7 +47,7 @@ interface BufferStopsProps {
 }
 
 const BufferStops: FC<BufferStopsProps> = ({ geomType, layerOrder }) => {
-  const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
   return layersSettings.bufferstops ? (

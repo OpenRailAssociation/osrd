@@ -5,6 +5,7 @@ import { Source, LayerProps } from 'react-map-gl';
 import { RootState } from 'reducers';
 import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
@@ -16,7 +17,7 @@ interface CatenariesProps {
 
 export default function Catenaries(props: CatenariesProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { geomType, colors, layerOrder } = props;
   const catenariesParams: LayerProps = {
     type: 'line',
