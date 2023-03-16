@@ -1,5 +1,4 @@
 import { baseEditoastApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -138,7 +137,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg.number },
+        params: { number: queryArg['number'] },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -546,15 +545,9 @@ export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
 };
 export type GetInfraByIdRoutesTrackRangesApiResponse =
   /** status 200 Foreach route, the track ranges through which it passes or an error */ (
-    | ({
-        type: 'RouteTrackRangesNotFoundError';
-      } & RouteTrackRangesNotFoundError)
-    | ({
-        type: 'RouteTrackRangesCantComputePathError';
-      } & RouteTrackRangesCantComputePathError)
-    | ({
-        type: 'RouteTrackRangesComputed';
-      } & RouteTrackRangesComputed)
+    | RouteTrackRangesNotFoundError
+    | RouteTrackRangesCantComputePathError
+    | RouteTrackRangesComputed
   )[];
 export type GetInfraByIdRoutesTrackRangesApiArg = {
   /** Infra ID */
@@ -583,9 +576,9 @@ export type PostInfraByIdPathfindingApiArg = {
   };
 };
 export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
-  railjson?: object;
-  geographic?: object;
-  schematic?: object;
+  railjson: Railjson;
+  geographic: Geometry;
+  schematic: Geometry;
 }[];
 export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   /** Infra id */
@@ -880,15 +873,17 @@ export type ObjectType =
   | 'OperationalPoint'
   | 'Catenary';
 export type DeleteOperation = {
-  operation_type?: 'DELETE';
-  obj_type?: ObjectType;
-  obj_id?: string;
+  operation_type: 'DELETE';
+  obj_type: ObjectType;
+  obj_id: string;
 };
-export type Railjson = object;
+export type Railjson = {
+  id: string;
+};
 export type OperationObject = {
-  operation_type?: 'CREATE' | 'UPDATE';
-  obj_type?: ObjectType;
-  railjson?: Railjson;
+  operation_type: 'CREATE' | 'UPDATE';
+  obj_type: ObjectType;
+  railjson: Railjson;
 };
 export type OperationResult =
   | ({
@@ -898,9 +893,9 @@ export type OperationResult =
       operation_type: 'OperationObject';
     } & OperationObject);
 export type RailjsonObject = {
-  operation_type?: 'CREATE';
-  obj_type?: ObjectType;
-  railjson?: Railjson;
+  operation_type: 'CREATE';
+  obj_type: ObjectType;
+  railjson: Railjson;
 };
 export type Patch = {
   op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
@@ -910,10 +905,10 @@ export type Patch = {
 };
 export type Patches = Patch[];
 export type UpdateOperation = {
-  operation_type?: 'UPDATE';
-  obj_type?: ObjectType;
+  operation_type: 'UPDATE';
+  obj_type: ObjectType;
   obj_id?: string;
-  railjson_patch?: Patches;
+  railjson_patch: Patches;
 };
 export type Operation =
   | ({
@@ -999,21 +994,21 @@ export type Zone = {
   sch?: BoundingBox;
 };
 export type RouteTrackRangesNotFoundError = {
-  type?: 'NotFound';
+  type: 'NotFound';
 };
 export type RouteTrackRangesCantComputePathError = {
-  type?: 'CantComputePath';
+  type: 'CantComputePath';
 };
 export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type DirectionalTrackRange = {
-  track?: string;
-  begin?: number;
-  end?: number;
-  direction?: Direction;
+  track: string;
+  begin: number;
+  end: number;
+  direction: Direction;
 };
 export type RouteTrackRangesComputed = {
-  type?: 'Computed';
-  track_ranges?: DirectionalTrackRange[];
+  type: 'Computed';
+  track_ranges: DirectionalTrackRange[];
 };
 export type TrackLocation = {
   track?: string;

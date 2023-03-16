@@ -15,7 +15,7 @@ import EditorContext from '../../context';
 import Tipped from '../../components/Tipped';
 import { ExtendedEditorContextType } from '../types';
 import {
-  CreateEntityOperation,
+  EntityObjectOperationResult,
   DEFAULT_ENDPOINT,
   ENDPOINTS,
   ENDPOINTS_SET,
@@ -260,7 +260,7 @@ export const SwitchEditionLeftPanel: FC = () => {
                 : { create: [entityToSave] }
             )
           );
-          const operation = res[0] as CreateEntityOperation;
+          const operation = res[0] as EntityObjectOperationResult;
           const { id } = operation.railjson;
 
           if (id && id !== entityToSave.properties.id)
