@@ -2,6 +2,7 @@ import { mergeDatasAreaConstant } from 'applications/operationalStudies/componen
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
 import { ModesAndProfiles, SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { SPEED_SPACE_CHART_KEY_VALUES } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 export interface GevPreparedata {
   speed: Record<string, number>[];
@@ -16,13 +17,8 @@ export interface GevPreparedata {
   modesAndProfiles: ModesAndProfiles[];
 }
 
-// called with keyValues
-// ['position', 'speed']
-function prepareData(
-  simulation: SimulationSnapshot,
-  selectedTrain: number,
-  keyValues: string[]
-): GevPreparedata {
+/// SpeedSpaceChart only
+function prepareData(simulation: SimulationSnapshot, selectedTrain: number): GevPreparedata {
   const dataSimulation: GevPreparedata = {
     speed: [],
     margins_speed: [],
@@ -39,9 +35,11 @@ function prepareData(
     ...step,
     speed: step.speed * 3.6,
   }));
+
   if (simulation.trains[selectedTrain].modes_and_profiles) {
     dataSimulation.modesAndProfiles = simulation.trains[selectedTrain].modes_and_profiles;
   }
+
   if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
     dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
       (step: any) => ({
@@ -50,13 +48,19 @@ function prepareData(
       })
     );
   }
+
   if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
     dataSimulation.eco_speed = simulation.trains[selectedTrain].eco.speeds.map((step) => ({
       ...step,
       speed: step.speed * 3.6,
     }));
   }
-  dataSimulation.areaBlock = mergeDatasAreaConstant(dataSimulation.speed, [0], keyValues);
+
+  dataSimulation.areaBlock = mergeDatasAreaConstant(
+    dataSimulation.speed,
+    [0],
+    SPEED_SPACE_CHART_KEY_VALUES
+  );
   dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map((step) => ({
     speed: step.speed * 3.6,
     position: step.position,
