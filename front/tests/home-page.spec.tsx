@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 
 // Describe the test suite for the home page of OSDR
-test.describe('Home page OSDR', () => {
+test.describe('Home page OSRD', () => {
   // Declare the necessary variable for the test
   let playwrightHomePage: PlaywrightHomePage;
 
@@ -27,7 +27,7 @@ test.describe('Home page OSDR', () => {
 
   test('should be correctly redirected to the  "Operational Studies" page after clicking on the link', async () => {
     // Navigate to the "Operational Studies" page
-    await playwrightHomePage.goToStudiesPage();
+    await playwrightHomePage.goToOperationalStudiesPage();
 
     // Check that the URL of the page matches the expected pattern
     await expect(playwrightHomePage.page).toHaveURL(/.*\/operational-studies/);
