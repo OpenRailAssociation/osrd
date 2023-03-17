@@ -20,6 +20,8 @@ capacity analysis, timetabling and simulation.
 
 It's free and open-source forever!
 
+Learn more about the project on [osrd.fr](https://osrd.fr/en/).
+
 ## WARNING
 
 OSRD it not yet production ready.
