@@ -22,11 +22,13 @@ import { nestEntity } from '../../../data/utils';
 import { getEditRouteState, getRouteGeometries } from '../utils';
 import EntitySumUp from '../../../components/EntitySumUp';
 import { EditEndpoints } from './Endpoints';
+import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
+import { getMapStyle } from '../../../../../reducers/map/selectors';
 
 export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
   const { t } = useTranslation();
   const { setState } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const infraID = useSelector(getInfraID);
   const [isSaving, setIsSaving] = useState(false);
   const [includeReleaseDetectors, setIncludeReleaseDetectors] = useState(true);
   const { entryPoint, exitPoint, entryPointDirection } = state.routeState;
@@ -39,10 +41,8 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
       optionsState: { type: 'loading' },
     });
 
-    const infraId = osrdConf.infraID as string;
-
     const candidates = await getCompatibleRoutes(
-      infraId,
+      infraID as number,
       entryPoint,
       entryPointDirection,
       exitPoint
@@ -53,7 +53,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
       .colors(candidates.length)
       .map((str) => chroma(str).css());
 
-    const features = await getRouteGeometries(infraId, entryPoint, exitPoint, candidates);
+    const features = await getRouteGeometries(infraID as number, entryPoint, exitPoint, candidates);
 
     setState({
       optionsState: {
@@ -65,14 +65,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
         })),
       },
     });
-  }, [
-    entryPoint,
-    entryPointDirection,
-    exitPoint,
-    osrdConf.infraID,
-    setState,
-    state.optionsState.type,
-  ]);
+  }, [entryPoint, entryPointDirection, exitPoint, infraID, setState, state.optionsState.type]);
 
   const focusedOptionIndex =
     state.optionsState.type === 'options' ? state.optionsState.focusedOptionIndex : null;
@@ -197,7 +190,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                   if (!candidate) throw new Error('No valid candidate to save.');
 
                   setIsSaving(true);
-                  editorSave(osrdConf.infraID as number, {
+                  editorSave(infraID as number, {
                     create: [
                       {
                         type: 'Feature',
@@ -219,8 +212,8 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                     if (typeof newRouteId !== 'string')
                       throw new Error('Cannot find ID of newly created route.');
 
-                    getEntity<RouteEntity>(osrdConf.infraID as string, newRouteId, 'Route').then(
-                      (route) => setState(getEditRouteState(route))
+                    getEntity<RouteEntity>(infraID as number, newRouteId, 'Route').then((route) =>
+                      setState(getEditRouteState(route))
                     );
                   });
                 }}
@@ -245,9 +238,7 @@ export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
     routeState: { entryPoint, exitPoint },
   },
 }) => {
-  const {
-    map: { mapStyle },
-  } = useSelector((s: { osrdconf: OSRDConf; map: { mapStyle: string } }) => s);
+  const mapStyle = useSelector(getMapStyle);
   const { t } = useTranslation();
   const lineProps = useMemo(() => {
     const layer = getRoutesLineLayerProps({ colors: colors[mapStyle] });

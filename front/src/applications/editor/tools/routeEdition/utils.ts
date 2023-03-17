@@ -6,7 +6,6 @@ import lineSlice from '@turf/line-slice';
 import { RouteCandidate, RouteEditionState } from './types';
 import { DEFAULT_COMMON_TOOL_STATE } from '../types';
 import {
-  Direction,
   PartialButFor,
   RouteEntity,
   TrackRange,
@@ -65,7 +64,7 @@ export function computeRouteGeometry(
     removeDuplicatePoints(
       trackRanges.flatMap((range, i) => {
         const track = tracks[range.track];
-        const direction = range.direction;
+        const { direction } = range;
 
         if (!track) throw new Error(`Track ${range.track} not found`);
 

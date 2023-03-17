@@ -4,8 +4,9 @@ import { BsArrowBarRight, BsBoxArrowInRight } from 'react-icons/bs';
 import { HiSwitchVertical } from 'react-icons/hi';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-
 import { useSelector } from 'react-redux';
+
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import WayPointInput from './WayPointInput';
 import {
   BufferStopEntity,
@@ -15,7 +16,6 @@ import {
   WayPointEntity,
 } from '../../../../../types';
 import { RouteState } from '../types';
-import { OSRDConf } from '../../types';
 import EditorContext from '../../../context';
 import { getEntity } from '../../../data/api';
 import { BufferStopEditionTool, DetectorEditionTool } from '../../pointEdition/tools';
@@ -98,7 +98,7 @@ export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteSt
 const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
   const { t } = useTranslation();
   const { switchTool } = useContext(EditorContext);
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const infraID = useSelector(getInfraID);
 
   return (
     <div className="d-flex align-items-center">
@@ -108,7 +108,7 @@ const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
           className="btn btn-primary btn-sm"
           title={t('common.open')}
           onClick={() => {
-            getEntity<WayPointEntity>(osrdConf.infraID as string, id, type).then((entity) => {
+            getEntity<WayPointEntity>(infraID as number, id, type).then((entity) => {
               if (type === 'Detector') {
                 switchTool(DetectorEditionTool, {
                   initialEntity: entity as DetectorEntity,

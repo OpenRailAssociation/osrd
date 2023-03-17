@@ -12,6 +12,7 @@ import { BsBoxArrowInRight } from 'react-icons/bs';
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import { save } from 'reducers/editor';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
   NULL_GEOMETRY,
   CreateEntityOperation,
@@ -23,13 +24,14 @@ import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
-import { EditoastType, EditorContextType, ExtendedEditorContextType, OSRDConf } from '../types';
+import { EditoastType, EditorContextType, ExtendedEditorContextType } from '../types';
 import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntities, getEntity, getRoutesFromWaypoint } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import RouteEditionTool from '../routeEdition/tool';
 import { getEditRouteState } from '../routeEdition/utils';
+import { getMapStyle } from '../../../../reducers/map/selectors';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -38,7 +40,7 @@ export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
  */
 export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id }) => {
   const { t } = useTranslation();
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const infraID = useSelector(getInfraID);
   const [routesState, setRoutesState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }
@@ -50,13 +52,13 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
   useEffect(() => {
     if (routesState.type === 'idle') {
       setRoutesState({ type: 'loading' });
-      getRoutesFromWaypoint(`${osrdConf.infraID}`, type, id)
+      getRoutesFromWaypoint(`${infraID}`, type, id)
         .then((res) => {
           const starting = res.starting || [];
           const ending = res.ending || [];
 
           if (starting.length || ending.length) {
-            getEntities<RouteEntity>(`${osrdConf.infraID}`, [...starting, ...ending], 'Route')
+            getEntities<RouteEntity>(`${infraID}`, [...starting, ...ending], 'Route')
               .then((entities) => {
                 setRoutesState({
                   type: 'ready',
@@ -170,7 +172,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
 }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const infraID = useSelector(getInfraID);
   const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
   >;
@@ -190,27 +192,18 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
 
     if (trackId && trackState.id !== trackId) {
       setTrackState({ type: 'isLoading', id: trackId });
-      getEntity<TrackSectionEntity>(osrdConf.infraID as string, trackId, 'TrackSection').then(
-        (track) => {
-          setTrackState({ type: 'ready', id: trackId, track });
+      getEntity<TrackSectionEntity>(infraID as number, trackId, 'TrackSection').then((track) => {
+        setTrackState({ type: 'ready', id: trackId, track });
 
-          if (!firstLoading) {
-            const { position } = state.entity.properties;
-            const point = along(track, position, { units: 'meters' });
+        if (!firstLoading) {
+          const { position } = state.entity.properties;
+          const point = along(track, position, { units: 'meters' });
 
-            setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
-          }
+          setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
         }
-      );
+      });
     }
-  }, [
-    osrdConf.infraID,
-    setState,
-    state,
-    state.entity.properties.track,
-    trackState.id,
-    trackState.type,
-  ]);
+  }, [infraID, setState, state, state.entity.properties.track, trackState.id, trackState.type]);
 
   return (
     <>
@@ -309,9 +302,7 @@ export const BasePointEditionLayers: FC<{
     state: { nearestPoint, mousePosition, entity, objType },
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
+  const mapStyle = useSelector(getMapStyle);
 
   const [showPopup, setShowPopup] = useState(true);
 
