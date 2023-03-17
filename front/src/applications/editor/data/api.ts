@@ -1,5 +1,4 @@
 import { groupBy, uniq, toPairs } from 'lodash';
-import { FeatureCollection } from 'geojson';
 
 import { get, post } from '../../../common/requests';
 import {
@@ -13,47 +12,12 @@ import {
   Direction,
   EditorEntity,
   EditorEntityType,
-  EditorSchema,
   TrackRange,
   WayPoint,
   WayPointEntity,
-  Zone,
 } from '../../../types';
-import { zoneToBBox } from '../../../utils/mapboxHelper';
-import { getObjectTypeForLayer } from './utils';
 import { EditoastType } from '../tools/types';
 import { RouteCandidate } from '../tools/routeEdition/types';
-
-/**
- * Call the API for geojson.
- */
-export async function getEditorData(
-  schema: EditorSchema,
-  infra: number,
-  layers: Set<string>,
-  zone: Zone
-): Promise<Record<string, EditorEntity[]>> {
-  const bbox = zoneToBBox(zone);
-  const layersArray = Array.from(layers);
-  const responses = await Promise.all(
-    layersArray.map(async (layer) => {
-      const objType = getObjectTypeForLayer(schema, layer);
-      const result = await get<FeatureCollection>(
-        `/layer/${layer}/objects/geo/${bbox[0]}/${bbox[1]}/${bbox[2]}/${bbox[3]}/?infra=${infra}`,
-        {}
-      );
-      return result.features.map((f) => ({ ...f, objType }));
-    })
-  );
-
-  return layersArray.reduce(
-    (iter, layer, i) => ({
-      ...iter,
-      [layer]: responses[i],
-    }),
-    {}
-  );
-}
 
 export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
   entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
