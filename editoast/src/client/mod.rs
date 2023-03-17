@@ -99,3 +99,8 @@ pub struct ImportProfileSetArgs {
 pub fn get_root_url() -> String {
     env::var("ROOT_URL").unwrap_or(String::from("http://localhost:8090"))
 }
+
+/// Retrieve the app version (git describe)
+pub fn get_app_version() -> Option<String> {
+    env::var("OSRD_GIT_DESCRIBE").ok()
+}
