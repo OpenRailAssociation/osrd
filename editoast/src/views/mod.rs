@@ -10,6 +10,7 @@ pub mod rolling_stocks;
 pub mod search;
 pub mod study;
 
+use crate::client::get_app_version;
 use crate::error::Result;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -18,7 +19,6 @@ use actix_web::{get, services};
 use diesel::{sql_query, RunQueryDsl};
 use redis::{cmd, Client};
 use serde_json::{json, Value as JsonValue};
-use std::env;
 
 pub fn routes() -> impl HttpServiceFactory {
     services![
@@ -53,8 +53,7 @@ async fn health(db_pool: Data<DbPool>, redis_client: Data<Client>) -> Result<&'s
 
 #[get("/version")]
 async fn version() -> Json<JsonValue> {
-    let describe = env::var("OSRD_GIT_DESCRIBE").ok();
-    Json(json!({ "git_describe": describe }))
+    Json(json!({ "git_describe": get_app_version() }))
 }
 
 #[cfg(test)]
