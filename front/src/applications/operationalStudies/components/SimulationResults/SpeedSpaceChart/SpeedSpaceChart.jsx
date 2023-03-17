@@ -148,7 +148,7 @@ export default function SpeedSpaceChart(props) {
   // redraw the train if necessary
   useEffect(() => {
     createChartAndTrain();
-  }, [rotate, localSettings]);
+  }, [rotate, localSettings, heightOfSpeedSpaceChart]);
 
   // draw or redraw the position line indictator when usefull
   useEffect(() => {
