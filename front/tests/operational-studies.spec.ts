@@ -14,16 +14,34 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     playwrightHomePage = new PlaywrightHomePage(page);
     await playwrightHomePage.goToHomePage();
+    await playwrightHomePage.page.route('**/projects/*', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({ results: [projectJSON] }),
+      });
+    });
     await playwrightHomePage.page.route('**/projects/*/', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(projectJSON),
       });
     });
+    await playwrightHomePage.page.route('**/projects/*/studies/*', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({ results: [studyJSON] }),
+      });
+    });
     await playwrightHomePage.page.route('**/projects/*/studies/*/', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(studyJSON),
+      });
+    });
+    await playwrightHomePage.page.route('**/projects/*/studies/*/scenarios/*', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({ results: [scenarioJSON] }),
       });
     });
     await playwrightHomePage.page.route('**/projects/*/studies/*/scenarios/*/', async (route) => {

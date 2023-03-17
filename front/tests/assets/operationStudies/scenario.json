@@ -2,9 +2,7 @@
   "id": 0,
   "name": "string",
   "description": "string",
-  "tags": [
-    "string"
-  ],
+  "tags": ["string"],
   "infra": 0,
   "creation_date": "2023-02-02T23:31:08.218Z",
   "last_modification": "2023-02-02T23:31:08.218Z",
