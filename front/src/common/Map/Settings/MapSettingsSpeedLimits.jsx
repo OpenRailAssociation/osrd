@@ -10,8 +10,8 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
-import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
 
 function FormatSwitch(props) {
   const dispatch = useDispatch();
