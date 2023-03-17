@@ -22,10 +22,6 @@ test.describe('STDCM page', () => {
     // Go to the home page of OSDR
     await playwrightHomePage.goToHomePage();
 
-    if (await playwrightHomePage.getViteButton.isVisible()) {
-      await playwrightHomePage.closeViteModal();
-    }
-
     await playwrightHomePage.goToSTDCMPage();
 
     // Intercept the project request and return data test results

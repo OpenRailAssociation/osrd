@@ -7,7 +7,7 @@ export class PlaywrightHomePage {
   readonly page: Page;
 
   // Locators for links
-  readonly getStudiesLink: Locator;
+  readonly getOperationalStudiesLink: Locator;
 
   readonly getCartoLink: Locator;
 
@@ -26,12 +26,12 @@ export class PlaywrightHomePage {
 
   readonly translation: typeof home;
 
-  readonly getViteButton: Locator;
+  readonly getViteOverlay: Locator;
 
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
-    this.getStudiesLink = page.getByRole('link', { name: /Études d'exploitation/ });
+    this.getOperationalStudiesLink = page.getByRole('link', { name: /Études d'exploitation/ });
     this.getCartoLink = page.getByRole('link', { name: /Cartographie/ });
     this.getEditorLink = page.getByRole('link', { name: /Éditeur d'infrastructure/ });
     this.getSTDCMLink = page.getByRole('link', { name: /Sillons de dernière minute/ });
@@ -39,12 +39,20 @@ export class PlaywrightHomePage {
     this.getBackHomeLogo = page.locator('.mastheader-logo');
     this.getBody = page.locator('body');
     this.translation = home;
-    this.getViteButton = page.locator('.badge-base');
+    this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
+  }
+
+  // Completly remove VITE button & panel
+  async removeViteOverlay() {
+    if ((await this.getViteOverlay.count()) > 0) {
+      await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
+    }
   }
 
   // Navigate to the Home page
   async goToHomePage() {
     await this.page.goto('/');
+    await this.removeViteOverlay();
   }
 
   // Click on the logo to navigate back to the home page
@@ -63,8 +71,8 @@ export class PlaywrightHomePage {
   }
 
   // Navigate to the different pages
-  async goToStudiesPage() {
-    await this.getStudiesLink.click();
+  async goToOperationalStudiesPage() {
+    await this.getOperationalStudiesLink.click();
   }
 
   async goToCartoPage() {
@@ -81,9 +89,5 @@ export class PlaywrightHomePage {
 
   getTranslations(key: keyof typeof home) {
     return this.translation[key];
-  }
-
-  async closeViteModal() {
-    await this.getViteButton.click();
   }
 }

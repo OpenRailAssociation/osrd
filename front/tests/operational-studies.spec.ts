@@ -11,6 +11,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
+
     playwrightHomePage = new PlaywrightHomePage(page);
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.page.route('**/projects/*/', async (route) => {
@@ -37,7 +38,25 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
         body: JSON.stringify(timetableJSON),
       });
     });
-    await playwrightHomePage.page.goto('/operational-studies/scenario');
+
+    // Real click on project, study, scenario
+    await playwrightHomePage.goToOperationalStudiesPage();
+    await playwrightHomePage.page
+      .locator('.projects-list-project-card-img')
+      .first()
+      .getByRole('button')
+      .click();
+    await playwrightHomePage.page
+      .locator('.studies-list-card-name')
+      .first()
+      .getByRole('button')
+      .click();
+    await playwrightHomePage.page
+      .locator('.scenarios-list-card-name')
+      .first()
+      .getByRole('button')
+      .click();
+
     await page.getByTestId('scenarios-add-train-schedule-button').click();
   });
 
