@@ -1,22 +1,26 @@
 import { noop } from 'lodash';
 import * as d3 from 'd3';
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
 import { Rnd } from 'react-rnd';
-import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
-import enableInteractivity, {
+import ORSD_GRAPH_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
+import {
+  isolatedEnableInteractivity,
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
-import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import prepareData from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/prepareData';
+import {
+  LIST_VALUES_NAME_SPEED_SPACE,
+  SPEED_SPACE_CHART_KEY_VALUES,
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/SpeedSpaceSettings';
 import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
+import prepareData from './prepareData';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -27,52 +31,42 @@ const CHART_MIN_HEIGHT = 250;
  * - Vertical line to the current position
  * - 2 marchs displayed: base and alternative
  *
- */ export default function SpeedSpaceChart(props) {
+ */
+export default function SpeedSpaceChart(props) {
   const {
-    simulation,
     chartXGEV,
-    dispatch,
+    dispatchUpdateMustRedraw,
+    dispatchUpdateTimePositionValues,
+    initialHeightOfSpeedSpaceChart,
     mustRedraw,
     positionValues,
-    selectedTrain,
+    trainSimulation,
+    simulationIsPlaying,
     speedSpaceSettings,
-    timePosition,
-    consolidatedSimulation,
-    initialHeightOfSpeedSpaceChart,
     onSetSettings,
     onSetBaseHeightOfSpeedSpaceChart,
-    dispatchUpdateMustRedraw,
+    timePosition,
   } = props;
 
-  const [showSettings, setShowSettings] = useState(false);
-  const [rotate, setRotate] = useState(false);
-  const [resetChart, setResetChart] = useState(false);
+  const [baseHeightOfSpeedSpaceChart, setBaseHeightOfSpeedSpaceChart] = useState(
+    initialHeightOfSpeedSpaceChart
+  );
   const [chart, setChart] = useState(undefined);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [yPosition, setYPosition] = useState(0);
-  const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
   const [isActive, setIsActive] = useState(false);
-
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(
     initialHeightOfSpeedSpaceChart
   );
-
-  const [baseHeightOfSpeedSpaceChart, setBaseHeightOfSpeedSpaceChart] =
-    useState(heightOfSpeedSpaceChart);
+  const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
+  const [resetChart, setResetChart] = useState(false);
+  const [rotate, setRotate] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const ref = useRef();
-  const keyValues = ['position', 'speed'];
 
   const onLocalSetSettings = (settings) => {
     setLocalSettings(settings);
     onSetSettings(settings);
   };
-
-  // Prepare data
-  const dataSimulation = useMemo(
-    () => prepareData(simulation, selectedTrain, keyValues),
-    [simulation, selectedTrain, keyValues]
-  );
 
   // draw the train
   const createChartAndTrain = useCallback(() => {
@@ -80,58 +74,19 @@ const CHART_MIN_HEIGHT = 250;
       CHART_ID,
       chart,
       resetChart,
-      dataSimulation,
+      trainSimulation,
       rotate,
-      keyValues,
       heightOfSpeedSpaceChart,
       ref,
-      dispatch,
       setResetChart
     );
     setChart(localChart);
-    drawTrain(
-      LIST_VALUES_NAME_SPEED_SPACE,
-      simulation,
-      selectedTrain,
-      dataSimulation,
-      keyValues,
-      positionValues,
-      rotate,
-      localSettings,
-      mustRedraw,
-      setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      dispatch,
-      zoomLevel,
-      CHART_ID,
-      localChart,
-      resetChart,
-      heightOfSpeedSpaceChart,
-      ref,
-      setResetChart,
-      true
-    );
-  }, [
-    chart,
-    dataSimulation,
-    dispatch,
-    heightOfSpeedSpaceChart,
-    keyValues,
-    localSettings,
-    mustRedraw,
-    positionValues,
-    resetChart,
-    rotate,
-    selectedTrain,
-    simulation,
-    yPosition,
-    zoomLevel,
-  ]);
+    drawTrain(trainSimulation, rotate, localSettings, localChart);
+  }, [chart, trainSimulation, heightOfSpeedSpaceChart, localSettings, resetChart, rotate]);
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
+    // TODO: this should be moved in createChart
     d3.select(`#${CHART_ID}`).remove();
     setChart({
       ...chart,
@@ -141,48 +96,6 @@ const CHART_MIN_HEIGHT = 250;
       originalScaleY: chart.originalScaleX,
     });
     setRotate(!rotate);
-  };
-
-  // Reset Chart Handle (first button on right bottom)
-  const resetChartToggle = () => {
-    const localChart = createChart(
-      CHART_ID,
-      chart,
-      resetChart,
-      dataSimulation,
-      false,
-      keyValues,
-      heightOfSpeedSpaceChart,
-      ref,
-      dispatch,
-      setResetChart
-    );
-    setChart(localChart);
-    drawTrain(
-      LIST_VALUES_NAME_SPEED_SPACE,
-      simulation,
-      selectedTrain,
-      dataSimulation,
-      keyValues,
-      positionValues,
-      false,
-      localSettings,
-      mustRedraw,
-      setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      dispatch,
-      zoomLevel,
-      CHART_ID,
-      localChart,
-      resetChart,
-      heightOfSpeedSpaceChart,
-      ref,
-      setResetChart,
-      true
-    );
-    setRotate(false);
   };
 
   const debounceResize = (interval) => {
@@ -201,12 +114,10 @@ const CHART_MIN_HEIGHT = 250;
         CHART_ID,
         chart,
         resetChart,
-        dataSimulation,
+        trainSimulation,
         rotate,
-        keyValues,
         heightOfSpeedSpaceChart,
         ref,
-        dispatch,
         setResetChart
       )
     );
@@ -214,19 +125,19 @@ const CHART_MIN_HEIGHT = 250;
 
   // plug event handlers once the chart is ready or recreated
   useEffect(() => {
-    enableInteractivity(
+    isolatedEnableInteractivity(
       chart,
-      dataSimulation,
-      dispatch,
-      keyValues,
+      trainSimulation,
+      SPEED_SPACE_CHART_KEY_VALUES,
       LIST_VALUES_NAME_SPEED_SPACE,
-      positionValues,
       rotate,
       setChart,
-      setYPosition,
-      setZoomLevel,
-      yPosition,
-      zoomLevel
+      noop,
+      noop,
+      noop,
+      simulationIsPlaying,
+      dispatchUpdateMustRedraw,
+      dispatchUpdateTimePositionValues
     );
   }, [chart]);
 
@@ -234,14 +145,14 @@ const CHART_MIN_HEIGHT = 250;
   useEffect(() => {
     createChartAndTrain();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mustRedraw, rotate, consolidatedSimulation, localSettings]);
+  }, [mustRedraw, rotate, localSettings]);
 
   // draw or redraw the position line indictator when usefull
   useEffect(() => {
     traceVerticalLine(
       chart,
-      dataSimulation,
-      keyValues,
+      trainSimulation,
+      SPEED_SPACE_CHART_KEY_VALUES,
       LIST_VALUES_NAME_SPEED_SPACE,
       positionValues,
       'speed',
@@ -265,12 +176,20 @@ const CHART_MIN_HEIGHT = 250;
   }, []);
 
   // reset chart
-  useEffect(() => resetChartToggle(), [resetChart]);
+  useEffect(() => {
+    if (resetChart) {
+      if (rotate) {
+        // cancel rotation and redraw the train
+        toggleRotation();
+      } else {
+        createChartAndTrain();
+      }
+    }
+  }, [resetChart]);
 
   // draw the first chart
   useEffect(() => {
     createChartAndTrain();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -351,23 +270,16 @@ const CHART_MIN_HEIGHT = 250;
 }
 
 SpeedSpaceChart.propTypes = {
-  dispatchUpdateMustRedraw: PropTypes.func,
-  /**
-   * height of chart
-   */
-  heightOfSpeedSpaceChart: PropTypes.number,
-  /**
-   * current simulation (selected train) ! to be removed
-   */
-  simulation: PropTypes.object,
   /**
    * Current X linear scale for synced charts
    */
   chartXGEV: PropTypes.func,
+  dispatchUpdateMustRedraw: PropTypes.func,
+  dispatchUpdateTimePositionValues: PropTypes.func,
   /**
-   * Dispath to store func
+   * height of chart
    */
-  dispatch: PropTypes.func,
+  initialHeightOfSpeedSpaceChart: PropTypes.number.isRequired,
   /**
    * Force d3 render trigger ! To be removed
    */
@@ -377,40 +289,35 @@ SpeedSpaceChart.propTypes = {
    */
   positionValues: PropTypes.object,
   /**
-   * Current Selected Train index
+   * current simulation (selected train)
    */
-  selectedTrain: PropTypes.number,
+  trainSimulation: PropTypes.object,
+  simulationIsPlaying: PropTypes.bool,
   /**
    * Chart settings
    */
   speedSpaceSettings: PropTypes.object,
+  onSetSettings: PropTypes.func,
+  onSetBaseHeightOfSpeedSpaceChart: PropTypes.func,
   /**
    * Current Time Position to be showed (vertical line)
    */
   timePosition: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
-  /**
-   * Current Simulation with more data (for current train)
-   */
-  consolidatedSimulation: PropTypes.array,
-  /**
-   * Toggle the Settings div ! Not isolated
-   */
-  toggleSetting: PropTypes.func,
 };
 
 SpeedSpaceChart.defaultProps = {
-  heightOfSpeedSpaceChart: 250,
-  simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   chartXGEV: undefined,
-  dispatch: noop,
-  mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
-  positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
-  selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
-  speedSpaceSettings: ORSD_GEV_SAMPLE_DATA.speedSpaceSettings,
-  timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
-  consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
-  toggleSetting: noop,
-  onSetSettings: noop,
   dispatchUpdateMustRedraw: noop,
+  dispatchUpdateTimePositionValues: noop,
+  mustRedraw: false,
   onSetBaseHeightOfSpeedSpaceChart: noop,
+  onSetSettings: noop,
+  positionValues: ORSD_GRAPH_SAMPLE_DATA.positionValues,
+  simulationIsPlaying: false,
+  speedSpaceSettings: ORSD_GRAPH_SAMPLE_DATA.speedSpaceSettings,
+  timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
+  trainSimulation: prepareData(
+    ORSD_GRAPH_SAMPLE_DATA.simulation.present,
+    ORSD_GRAPH_SAMPLE_DATA.selectedTrain
+  ),
 };
