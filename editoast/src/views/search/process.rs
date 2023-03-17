@@ -91,10 +91,8 @@ impl QueryContext {
 /// - ilike : string -> (string | null) -> (bool | null)
 /// - search : string -> (string | null) -> bool
 /// - =i : string -> string -> bool
-/// - list : variadic any -> any list[1]
-///
-/// [1]: The type of the list items is refined as precisely as possible, i.e.:
-///      if all arguments are string, `list` returns a `string list`.
+/// - list : variadic string -> string list
+/// - contains : string list -> string list -> bool
 pub fn create_processing_context() -> QueryContext {
     let mut context = QueryContext::default();
     context.def_function_1::<dsl::Nullable<dsl::Ersatz<dsl::Boolean>>, dsl::Sql<dsl::Boolean>>(
@@ -171,18 +169,18 @@ pub fn create_processing_context() -> QueryContext {
     context.def_function_2::<dsl::Ersatz<dsl::String>, dsl::Nullable<dsl::String>, dsl::Sql<dsl::Boolean>>(
         "=i",
         Rc::new(|left, right| {
-                Ok(SqlQuery::infix("ILIKE", left, right.into()))
-            })
-        );
+            Ok(SqlQuery::infix("ILIKE", left, right.into()))
+        })
+    );
     context.def_function(
         "list",
         TypeSpec::varg(AstType::String) >> TypeSpec::seq(AstType::String),
         Rc::new(|args| Ok(TypedAst::Sequence(args, AstType::String.into()))),
     );
     context.def_function_2::<dsl::Ersatz<dsl::Array<dsl::String>>, dsl::Ersatz<dsl::Array<dsl::String>>, dsl::Sql<dsl::Boolean>>(
-            "contains",
-            Rc::new(|sub, array| Ok(SqlQuery::infix("<@", sub, array))),
-        );
+        "contains",
+        Rc::new(|sub, array| Ok(SqlQuery::infix("<@", sub, array))),
+    );
     context
 }
 
@@ -436,49 +434,5 @@ mod tests {
         assert!(try_eval(json!(["not", true, false])).is_err());
         assert!(try_eval(json!(["like", "test"])).is_err());
         assert!(try_eval(json!(["like", "test", null, null])).is_err());
-    }
-
-    #[test]
-    fn test_list_construction() {
-        assert_eq!(
-            eval(json!(["list", 1, 2, 3])),
-            TypedAst::Sequence(
-                vec![
-                    TypedAst::Integer(1),
-                    TypedAst::Integer(2),
-                    TypedAst::Integer(3)
-                ],
-                AstType::Integer.into()
-            )
-        );
-        assert_eq!(
-            eval(json!(["list", 1, "lol", 3])),
-            TypedAst::Sequence(
-                vec![
-                    TypedAst::Integer(1),
-                    TypedAst::String("lol".to_owned()),
-                    TypedAst::Integer(3)
-                ],
-                TypeSpec::or(AstType::Integer, AstType::String)
-            )
-        );
-        assert_eq!(
-            eval(json!(["list", 1, "lol", 3, ["list", 1.1, 2.2]])),
-            TypedAst::Sequence(
-                vec![
-                    TypedAst::Integer(1),
-                    TypedAst::String("lol".to_owned()),
-                    TypedAst::Integer(3),
-                    TypedAst::Sequence(
-                        vec![TypedAst::Float(1.1), TypedAst::Float(2.2)],
-                        AstType::Float.into()
-                    )
-                ],
-                TypeSpec::or(
-                    TypeSpec::or(AstType::Integer, AstType::String),
-                    TypeSpec::seq(AstType::Float)
-                )
-            )
-        );
     }
 }
