@@ -29,7 +29,7 @@ export default function MapSearchStation(props) {
 
   const updateSearch = async (params, setResults) => {
     const { data, error } = await postSearch({
-      body: { object: params.object, query: params.query },
+      body: params,
     });
     if (error) console.error(error);
     setResults(data);
