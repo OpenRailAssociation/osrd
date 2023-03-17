@@ -56,7 +56,7 @@ public enum EnvelopeShape {
 
     /** Checks whether an envelope follows a given shape, where envelope parts can have internal shape changes */
     public static void check(Envelope envelope, EnvelopeShape[][] expectedPhases) {
-        assertEquals(envelope.size(), expectedPhases.length);
+        assertEquals(expectedPhases.length, envelope.size());
         for (int i = 0; i < expectedPhases.length; i++)
             check(envelope.get(i), expectedPhases[i]);
     }

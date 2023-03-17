@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
@@ -79,12 +78,41 @@ public class ConstraintBuilderTest {
     }
 
     @Test
+    void testSpeedMaintainConstraint() {
+        var partBuilder = new EnvelopePartBuilder();
+        var constraint = new SpeedConstraint(2, EQUAL);
+        var builder = new ConstrainedEnvelopePartBuilder(
+                partBuilder,
+                constraint
+        );
+        assertTrue(builder.initEnvelopePart(2, 2, 1));
+        assertTrue(builder.addStep(2.5, 2));
+        assertFalse(builder.addStep(3, 1));
+        builder.lastIntersection = -1;
+        assertFalse(builder.addStep(3, 3));
+        assertEquals(0, builder.lastIntersection);
+    }
+
+    @Test
+    void testNoConstraint() {
+        var partBuilder = new EnvelopePartBuilder();
+        var builder = new ConstrainedEnvelopePartBuilder(
+                partBuilder
+        );
+        assertTrue(builder.initEnvelopePart(2, 2, 1));
+        assertTrue(builder.addStep(2.5, 2));
+    }
+
+    @Test
     void testEnvelopeFloor() {
         var builder = wrap(new NullEnvelopePartConsumer());
         assertTrue(builder.initEnvelopePart(2, 0, 1));
         assertTrue(builder.addStep(3, 1));
         assertFalse(builder.addStep(5, 1));
         assertEquals(2, builder.lastIntersection);
+        builder.lastIntersection = -1;
+        assertFalse(builder.initEnvelopePart(-1, 0, 1));
+        assertFalse(builder.initEnvelopePart(11, 0, 1));
     }
 
     @Test
@@ -94,6 +122,8 @@ public class ConstraintBuilderTest {
         assertTrue(builder.addStep(3, 1));
         assertFalse(builder.addStep(8, 5));
         assertEquals(3, builder.lastIntersection);
+        assertFalse(builder.initEnvelopePart(-1, 0, 1));
+        assertFalse(builder.initEnvelopePart(11, 0, 1));
     }
 
     @Test

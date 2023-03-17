@@ -86,6 +86,13 @@ public final class TrainPhysicsIntegrator {
         if (action == Action.BRAKE)
             brakingForce = rollingStock.getMaxBrakingForce(speed);
 
+        if (action == Action.MAINTAIN) {
+            tractionForce = rollingResistance - weightForce;
+            if (tractionForce <= maxTractionForce)
+                return newtonStep(timeStep, speed, 0, directionSign);
+            else tractionForce = maxTractionForce;
+        }
+
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);
         return newtonStep(timeStep, speed, acceleration, directionSign);

@@ -14,7 +14,7 @@ public class PositionConstraint implements EnvelopePartConstraint {
     }
 
     @Override
-    public boolean initCheck(double direction, double position, double speed) {
+    public boolean initCheck(double position, double speed, double direction) {
         return position >= rangeBegin && position <= rangeEnd;
     }
 

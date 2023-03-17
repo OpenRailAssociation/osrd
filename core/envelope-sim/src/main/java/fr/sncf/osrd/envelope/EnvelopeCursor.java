@@ -309,30 +309,8 @@ public final class EnvelopeCursor {
 
     /** Attempts to find a transition between envelope parts which matches a predicate */
     public boolean findPartTransition(TransitionPredicate predicate) {
-        if (hasReachedEnd())
-            return false;
-
         do {
-            // find the next part
-            var nextPartInd = nextPartIndex();
-            if (nextPartInd == -1)
-                return false;
-            var nextPart = envelope.get(nextPartInd);
-
-            var curEndIndex = lastIndex(part.stepCount());
-            var nextStartIndex = firstIndex(nextPart.stepCount());
-
-            // get the coordinates of the last point of this envelope and the first point of the next envelope
-            var curPos = getStepEndPos(part, curEndIndex);
-            var curSpeed = getStepEndSpeed(part, curEndIndex);
-            var nextPos = getStepBeginPos(nextPart, nextStartIndex);
-            var nextSpeed = getStepBeginSpeed(nextPart, nextStartIndex);
-
-            // move the cursor to the end of the current part
-            this.stepIndex = curEndIndex;
-            setPosition(curPos);
-
-            if (predicate.test(curPos, curSpeed, nextPos, nextSpeed))
+            if (checkPartTransition(predicate))
                 return true;
         } while (nextPart());
         return false;
@@ -342,7 +320,6 @@ public final class EnvelopeCursor {
     public boolean findPart(Predicate<EnvelopePart> predicate) {
         if (hasReachedEnd())
             return false;
-
         do {
             if (predicate.test(part))
                 return true;
@@ -381,8 +358,6 @@ public final class EnvelopeCursor {
                 return false;
             // if the current part was scanned and contains no matching step,
             // scan for another matching envelope part.
-            // this should only ever happen once, if the findSpeed call starts in a part
-            // which has a matching point, but after this point.
             if (nextStepRes == NEXT_PART) {
                 if (!findPart(partPredicate))
                     return false;
@@ -401,6 +376,40 @@ public final class EnvelopeCursor {
         );
         setPosition(intersectionPos, speed);
         return true;
+    }
+
+    /** Check if the next transition between envelope parts matches the given predicate */
+    public boolean checkPartTransition(TransitionPredicate predicate) {
+        if (hasReachedEnd())
+            return false;
+
+        // find the next part
+        var nextPartInd = nextPartIndex();
+        if (nextPartInd == -1)
+            return false;
+        var nextPart = envelope.get(nextPartInd);
+
+        var curEndIndex = lastIndex(part.stepCount());
+        var nextStartIndex = firstIndex(nextPart.stepCount());
+
+        // get the coordinates of the last point of this envelope and the first point of the next envelope
+        var curPos = getStepEndPos(part, curEndIndex);
+        var curSpeed = getStepEndSpeed(part, curEndIndex);
+        var nextPos = getStepBeginPos(nextPart, nextStartIndex);
+        var nextSpeed = getStepBeginSpeed(nextPart, nextStartIndex);
+
+        // move the cursor to the end of the current part
+        this.stepIndex = curEndIndex;
+        setPosition(curPos);
+
+        return predicate.test(curPos, curSpeed, nextPos, nextSpeed);
+    }
+
+    /** Check if the current part matches the given predicate */
+    public boolean checkPart(Predicate<EnvelopePart> predicate) {
+        if (getPosition() < getPartEndPos())
+            return predicate.test(part);
+        return false;
     }
 
     /** A predicate which applies to a transition between two points */

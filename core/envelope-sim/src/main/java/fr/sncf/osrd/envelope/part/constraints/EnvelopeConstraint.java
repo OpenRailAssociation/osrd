@@ -2,8 +2,7 @@ package fr.sncf.osrd.envelope.part.constraints;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.*;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
@@ -21,7 +20,7 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
     }
 
     @Override
-    public boolean initCheck(double direction, double position, double speed) {
+    public boolean initCheck(double position, double speed, double direction) {
         var partIndex = envelope.findRightDir(position, direction);
 
         // if the position is off the envelope, fail
@@ -32,10 +31,11 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
         var stepIndex = part.findRightDir(position, direction);
         var envelopeSpeed = part.interpolateSpeed(stepIndex, position);
         cursor = new EnvelopeCursor(envelope, direction < 0, partIndex, stepIndex, position);
-        if (type == CEILING)
-            return envelopeSpeed >= speed;
-        else
-            return envelopeSpeed <= speed;
+        return switch (type) {
+            case CEILING -> envelopeSpeed >= speed;
+            case FLOOR -> envelopeSpeed <= speed;
+            case EQUAL -> envelopeSpeed == speed;
+        };
     }
 
     // region INTERSECTION

@@ -51,7 +51,7 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
     @Override
     public boolean initEnvelopePart(double position, double speed, double direction) {
         for (var constraint : constraints)
-            if (!constraint.initCheck(direction, position, speed))
+            if (!constraint.initCheck(position, speed, direction))
                 return false;
         this.lastPos = position;
         this.lastSpeed = speed;
