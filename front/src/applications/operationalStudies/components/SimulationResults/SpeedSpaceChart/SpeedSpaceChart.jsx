@@ -20,6 +20,7 @@ import {
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
+import prepareData from './prepareData';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
@@ -315,5 +316,8 @@ SpeedSpaceChart.defaultProps = {
   simulationIsPlaying: false,
   speedSpaceSettings: ORSD_GRAPH_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
-  trainSimulation: ORSD_GRAPH_SAMPLE_DATA.selectedTrainSimulation,
+  trainSimulation: prepareData(
+    ORSD_GRAPH_SAMPLE_DATA.simulation.present,
+    ORSD_GRAPH_SAMPLE_DATA.selectedTrain
+  ),
 };

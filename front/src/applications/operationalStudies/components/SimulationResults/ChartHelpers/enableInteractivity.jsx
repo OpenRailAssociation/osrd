@@ -481,7 +481,18 @@ export const isolatedEnableInteractivity = (
         });
 
         if (timePositionLocal) {
-          debounceUpdateTimePositionValues(timePositionLocal, null, 15);
+          debounceUpdateTimePositionValues(timePositionLocal, 15);
+        }
+
+        if (chart?.svg) {
+          const verticalMark = pointer(event, event.currentTarget)[0];
+          const horizontalMark = pointer(event, event.currentTarget)[1];
+          chart.svg.selectAll('#vertical-line').attr('x1', verticalMark).attr('x2', verticalMark);
+          chart.svg
+            .selectAll('#horizontal-line')
+            .attr('y1', horizontalMark)
+            .attr('y2', horizontalMark);
+          updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
         }
       }
 
