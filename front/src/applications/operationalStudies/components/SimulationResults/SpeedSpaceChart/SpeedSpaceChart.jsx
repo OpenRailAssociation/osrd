@@ -75,13 +75,13 @@ export default function SpeedSpaceChart(props) {
       resetChart,
       trainSimulation,
       rotate,
-      heightOfSpeedSpaceChart,
+      initialHeightOfSpeedSpaceChart,
       ref,
       setResetChart
     );
     setChart(localChart);
     drawTrain(trainSimulation, rotate, localSettings, localChart);
-  }, [chart, trainSimulation, heightOfSpeedSpaceChart, localSettings, resetChart, rotate]);
+  }, [chart, trainSimulation, localSettings, resetChart, rotate]);
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
@@ -101,8 +101,7 @@ export default function SpeedSpaceChart(props) {
     let debounceTimeoutId;
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      const height = d3.select(`#container-${CHART_ID}`).node().clientHeight;
-      setHeightOfSpeedSpaceChart(height);
+      createChartAndTrain();
     }, interval);
   };
 
@@ -115,12 +114,12 @@ export default function SpeedSpaceChart(props) {
         resetChart,
         trainSimulation,
         rotate,
-        heightOfSpeedSpaceChart,
+        initialHeightOfSpeedSpaceChart,
         ref,
         setResetChart
       )
     );
-  }, [ref, rotate, heightOfSpeedSpaceChart]);
+  }, [ref, rotate]);
 
   // plug event handlers once the chart is ready or recreated
   useEffect(() => {
