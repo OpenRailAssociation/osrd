@@ -17,6 +17,7 @@ import { scheduleURL } from 'applications/operationalStudies/components/Simulati
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getConf, getTimetableID } from 'reducers/osrdconf/selectors';
 import getTimetable from '../Scenario/getTimetable';
+
 export default function AddTrainSchedule({
   setDisplayTrainScheduleManagement,
 }: {

@@ -65,7 +65,7 @@ export function computeRouteGeometry(
     removeDuplicatePoints(
       trackRanges.flatMap((range, i) => {
         const track = tracks[range.track];
-        const direction = range.direction;
+        const { direction } = range;
 
         if (!track) throw new Error(`Track ${range.track} not found`);
 

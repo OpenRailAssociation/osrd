@@ -72,7 +72,7 @@ export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
 });
 
 interface MODES_Types {
-  [n: string]: string
+  [n: string]: string;
 }
 
 export const MODES: MODES_Types = Object.freeze({
