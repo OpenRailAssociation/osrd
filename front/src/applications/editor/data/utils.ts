@@ -15,6 +15,7 @@ import {
   DeleteOperation,
   UpdateOperation,
   RailjsonObject,
+  PostInfraByIdObjectsAndObjectTypeApiResponse,
 } from '../../../common/api/osrdEditoastApi';
 import { EditoastType } from '../tools/types';
 
@@ -176,4 +177,16 @@ export function entityToDeleteOperation(entity: EditorEntity): DeleteOperation {
     obj_id: entity.properties.id,
     obj_type: entity.objType,
   };
+}
+
+export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
+  entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
+  type: T['objType']
+): T {
+  return {
+    type: 'Feature',
+    properties: entity.railjson,
+    objType: type,
+    geometry: entity.geographic,
+  } as T;
 }

@@ -12,7 +12,7 @@ import { FiSearch } from 'react-icons/fi';
 
 import { EditRoutePathState, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
-import { ExtendedEditorContextType, OSRDConf } from '../../types';
+import { ExtendedEditorContextType } from '../../types';
 import { getCompatibleRoutes, getEntity } from '../../../data/api';
 import { EditorEntity, RouteEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
