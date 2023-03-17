@@ -107,9 +107,10 @@ public class RJSRollingStock implements Identified {
     }
 
     //********************** 2D point and generic interpolation function ****************************
+    /** Point in a 2D space (X-axis value, Y-axis value)*/
     record CurvePoint(double x, double y) { }    // position of a point in a 2D space (x, y)
 
-    /** Get interpolated Y=f(X) from a given real X*/
+    /** Return Y=f(X) on the linear approximation (interpolation) of the curve*/
     static double getInterpolatedY(double realX, CurvePoint[] curvePointArray) {
         int index = 0;
         int left = 0;
@@ -139,7 +140,50 @@ public class RJSRollingStock implements Identified {
                 (previousPoint.y() - nextPoint.y()) / (previousPoint.x() - nextPoint.x());
         return previousPoint.y() + coeff * (Math.abs(realX) - previousPoint.x());
     }
+
+    /** Return value restricted by Floor and Ceiling limits : Floor <= return <= Ceiling
+     * - also called saturation*/
+    public static double hardClipping(double floorLimit,double value, double ceilingLimit){
+        /* Hard clipping or Hard limiter if you think of double value as a signal (or a given sample of a signal if
+         * you will)
+         *
+         * As a transfer function :     . Output(Input)
+         *              ▲ Output
+         *              │
+         *              │    ...........
+         *              │   .
+         *              │  .
+         *       Floor  │ .
+         *          │   │.   │       Input
+         * ─────────┼───.────┼───────────►
+         *          │  .│    │
+         *            . │
+         *           .  │   Ceiling
+         *   ........   │
+         *              │
+         *              │
+         *
+         * If you take time into account here's how it would look like for a (kind of) sinusoid :
+         *              ▲Value                                ..  signal or value
+         *              │
+         *              │                   Ceiling
+         *  ────────────┼─────────────────────────────────
+         *         ...  │  ..               ..
+         *       ...    │   ..             ..
+         *      ..      │    ...           ..                  Time(Doesn't matter here)
+         * ─────────────┼──────..─────────..─────────────────────►
+         *              │       ..        ..
+         *              │        ..      ..        Floor
+         *   ───────────┼────────────────────────────────────
+         *              │
+         *              │
+         */
+        return Math.min(Math.max(floorLimit,value),ceilingLimit); //floorAndCeilingBlockedValue
+    }
+
     //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
+
+
     public static class SpeedDependantPowerCoefficient{
         // x:speed values , y:associated dimensionless powerCoefficient which modulate output power
         CurvePoint[] curve;
@@ -148,6 +192,7 @@ public class RJSRollingStock implements Identified {
             this.curve = curve;
         }
 
+        /** Return Power Coefficient at a given speed*/
         double getPowerCoefficientFromSpeed(double speed){
             return getInterpolatedY(speed,this.curve);
         }
@@ -160,7 +205,7 @@ public class RJSRollingStock implements Identified {
         public SocDependantPowerCoefficient(CurvePoint[] curve) {
             this.curve = curve;
         }
-
+        /** Return Power Coefficient at a given SoC*/
         double getPowerCoefficientFromSoc(double soc){
             return getInterpolatedY(soc,this.curve);
         }
@@ -171,20 +216,31 @@ public class RJSRollingStock implements Identified {
         public PowerConverter(double efficiency){
             this.efficiency = efficiency;
         }
+        /** Return (power>0) ? power*n : power/n*/
+        public double convert(double power){
+            return (power>0) ? power*efficiency : power/efficiency;// Je sais pas lequel est le mieux
+            //return power*Math.pow(efficiency,Math.signum(power));
+        }
+
     }
 
     public static class RefillLaw {
-        double tauRech = 0.45 ;     //Time constant of the refill behavior https://en.wikipedia.org/wiki/Time_constant
-        //5 Tau => 99%·socRef
-        double socRef = 0.85;   //Set-point of State of charge https://en.wikipedia.org/wiki/Setpoint_(control_system)
-        double Kp = 1000/tauRech;   //Kp = capacity/tauRech  <=> = Joule·Second^-1 = Watt
+        /** Time constant of the refill behavior <a href="https://en.wikipedia.org/wiki/Time_constant">...</a> */
+        double tauRech ;
 
-        public RefillLaw() {}
+        /** Set-point of State of charge <a href="https://en.wikipedia.org/wiki/Setpoint_(control_system)">...</a> */
+        double socRef;
+
+        /** Gain of the Energy Storage regulation Kp = capacity/tauRech  <=> = Joule·Second^-1 = Watt*/
+        double Kp;
+
         public RefillLaw(double tauRech, double socRef, double EnergyStorageCapacity) {
             this.tauRech = tauRech;
             this.socRef = socRef;
-            this.Kp = EnergyStorageCapacity/tauRech;    // Kp = Joule·Second^-1 = Watt
+            this.Kp = EnergyStorageCapacity/tauRech;
         }
+
+        /** Return regulated refill power */
         public double getRefillPower(double soc){
             return (socRef-soc)*Kp; //refill power >0 when soc<=socRef
         }
@@ -201,11 +257,15 @@ public class RJSRollingStock implements Identified {
     }
 
     public static class EnergyStorage{
-        double capacity;//How much energy you can store (in Joules or Watts·Seconds)
-        double soc;//The State of Charge of your EnergyStorage, soc·capacity = actual stock of energy
-        RefillLaw refillLaw;
-        ManagementSystem management;
-        SocDependantPowerCoefficient socDependency;
+
+        /** How much energy you can store (in Joules or Watts·Seconds) */
+        double capacity;
+
+        /** The State of Charge of your EnergyStorage, soc*capacity = actual stock of energy */
+        double soc;//
+        public RefillLaw refillLaw;
+        public ManagementSystem management;
+        public SocDependantPowerCoefficient socDependency;
 
         public EnergyStorage(
                 double capacity, double soc, RefillLaw refillLaw,
@@ -222,12 +282,13 @@ public class RJSRollingStock implements Identified {
         }
     }
 
+    /** Base I/O of our EMR model */
     public static class EnergySource{
-        double pMin;           // Negative power limit
-        double pMax;           // Positive power limit
-        EnergyStorage Storage;          // If your EnergySource have a limited quantity of energy
-        PowerConverter Converter;  // If your EnergySource has power conversion and/or need to account for power losses
-        SpeedDependantPowerCoefficient speedCoef;
+        public double pMin;           // Ceiling power limit
+        public double pMax;           // Floor power limit
+        public EnergyStorage Storage;          // If your EnergySource have a limited quantity of energy
+        public PowerConverter Converter;  // If your EnergySource has power conversion and/or need to account for power losses
+        public SpeedDependantPowerCoefficient speedCoef;
         // If your EnergySource output power is dependent on speed of the train
 
         public EnergySource(double pMin, double pMax, SpeedDependantPowerCoefficient speedCoef) {
@@ -254,15 +315,21 @@ public class RJSRollingStock implements Identified {
             this.speedCoef = speedCoef;
         }
 
-        // Methods :
-        public double getPower(double speed){ //return available power depending on context (speed for now)
+        // METHODS :
+        /** Return value restricted by EnergySource's Ceiling and Floor power limits : ES.pMin <= return <= ES.pMax*/
+        public double clipToESPowerLimits(double power){
+            return hardClipping(pMin,power,pMax);
+        }
+
+        /** Return available power based on contextual speed */
+        public double getPower(double speed){
             double availablePower = pMax;
             if(Storage!=null && Storage.socDependency!=null)
-                availablePower *= Storage.socDependency.getPowerCoefficientFromSoc(.45/**/);
+                availablePower *= Storage.socDependency.getPowerCoefficientFromSoc(Storage.soc);
             if(Converter!=null) availablePower *= Converter.efficiency;
             if(speedCoef!=null) availablePower *= speedCoef.getPowerCoefficientFromSpeed(speed);
-            return availablePower;
-        }
+            return clipToESPowerLimits(availablePower);
+        }     // Clip could become a problem if any coef>1, need to find a work around or at least keep it in sight
     }
 
 
@@ -280,10 +347,9 @@ public class RJSRollingStock implements Identified {
 
         EnergySource pantograph = new EnergySource(
                 400.,
-                500.,
+                0.0,
                 new SpeedDependantPowerCoefficient(curveLowValueOnLowSpeed)
         );
-
 
         // BATTERY
         CurvePoint[] curveHigherValueOnHighSpeed = {
@@ -294,18 +360,16 @@ public class RJSRollingStock implements Identified {
                 new CurvePoint(120.0,1.5),
                 new CurvePoint(3000.0,1.5)
         };
-
         EnergySource battery = new EnergySource(
                 400.,
                 500.,
                 new EnergyStorage(
                         150*3.6E6, 0.8,         // kWh to J : x3.6E6
-                        new RefillLaw(),
+                        new RefillLaw(97.6,0.8,150*3.6E6),
                         new ManagementSystem(0.9,0.2),  // to be used later
                         new SocDependantPowerCoefficient(curveHigherValueOnHighSpeed)
-                        ),
-                new PowerConverter(0.56)
-        );
+                ),
+                new PowerConverter(0.8));
 
         EnergySourceArray.add(pantograph);
         EnergySourceArray.add(battery);

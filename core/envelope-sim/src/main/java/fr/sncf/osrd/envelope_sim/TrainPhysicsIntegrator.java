@@ -2,8 +2,6 @@ package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.RangeMap;
 
-import java.util.TreeMap;
-
 /**
  * An utility class to help simulate the train, using numerical integration.
  * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
@@ -80,103 +78,88 @@ public final class TrainPhysicsIntegrator {
         assert tractiveEffortCurve != null;
 
         // CHANTIER PRISE EN COMPTE ENERGY SOURCE ******************************************
-        TreeMap<Integer, RJSRollingStock.EnergySource> energySourceTreeMap = RJSRollingStock.getEnergySources();
+        var energySources = rollingStock.getEnergySources();
+        boolean Electrification = (timeStep >= 2.345);//Simulate an electrification availability for tests further down
+        double motorEfficiency = 0.643;               // Should go in RJSRolling Stock in the end
+        double AuxiliaryEquipmentPower = 100.0;       // idem
 
-
-        double availableElectricalPower = 0.0;
-        for(var rsEnergySource : energySourceTreeMap.entrySet() ){
-            availableElectricalPower += rsEnergySource.getValue().getPower(speed);
-        }
-        double motorEfficiency = 0.643;
-        double availableMechanicalPower = availableElectricalPower*motorEfficiency;
-        // Motor output power once conversion efficiency's accounted for
-        double maxTractionForceFromEnergySources = availableMechanicalPower/speed;
-
-        //                                      /!\ Vitesse = french("speed") /!\
-        //     ▲ Force
-        //     │
-        //     │....................       │
-        //     │         X        ....     │
-        //     │          X         ...    │               .....   classic F(V) <=> Fixed power func(Electrification)
-        //     │           X          ..   │                                        *or nearly fixed power
-        //     │            X          ... │
-        //     │             X           ..│
-        //     │              X           .│.              XXXXX   F(Pmax(V)) = maxMecaPower·motorEfficiency/V
-        //     │               XX          │...
-        //     │                XX         │  ..
-        //     │                  X        │   ...
-        //     │                    X      │      ..
-        //     │                      X    │        ....
-        //     │                        X  │          ....
-        //     │                          X│             .....
-        //     │                           │X                ......
-        //     │                           │   X                 ................
-        //     │                           │      X  X XXXXXXXX                 .....................
-        // ────┼───────────────────────────┼───────────────────────────────────────────────────────────►
-        //     │                           │                                                            Speed
-        //     │                         Speed
-        //
-        // I imagine 2 options to account for variable available power :
-        // Each point of the F(V) correspond to à given power (Power = Force x Vitesse)
-        // then we could multpiply F by a coefficient, using K x F(V), we would get a variable power
-        // But it wouldn't account for wheel slip, we'd have to add complexity to avoid uncanny behaviors
-        //
-        // We prefer to use the min between an existing measured "best case, best power" curve and a computed curve:
-        // the power each energy source can provide at a given time and speed, adds up and we can then compute
-        // (Force = Power/Vitesse )
-        // it guarantee us the train can't have unexpectedly high torque, or misrepresent its movement behavior
-
+        // Get EnergySources overall power capability
+        double availableElectricalPower = 0.0;              // Sum each available power from Energy Source of the train
+        for(var rsEnergySource : EnergySources){availableElectricalPower += rsEnergySource.getPower(speed);}
+        double maxTractionForceFromEnergySources = availableElectricalPower*motorEfficiency/speed;  // F = Pmeca/Speed
+        /*                  HOW WE DEAL WE WITH MODULATING TRACTION POWER
+         *                                      /!\ Vitesse = french("speed") /!\
+         *     ▲ Force
+         *     │
+         *     │....................       │
+         *     │         X        ....     │
+         *     │          X         ...    │               .....   classic F(V) <=> Fixed power func(Electrification)
+         *     │           X          ..   │                                        *or nearly fixed power
+         *     │            X          ... │
+         *     │             X           ..│
+         *     │              X           .│.              XXXXX   F(Pmax(V)) = maxMecaPower·motorEfficiency/V
+         *     │               XX          │...
+         *     │                XX         │  ..
+         *     │                  X        │   ...
+         *     │                    X      │      ..
+         *     │                      X    │        ....
+         *     │                        X  │          ....
+         *     │                          X│             .....
+         *     │                           │X                ......
+         *     │                           │   X                 ................
+         *     │                           │      X  X XXXXXXXX                 .....................
+         * ────┼───────────────────────────┼───────────────────────────────────────────────────────────►
+         *     │                           │                                                            Speed
+         *     │                         Speed
+         *
+         * I imagine 2 options to account for variable available power :
+         * Each point of the F(V) correspond to à given power (Power = Force x Vitesse)
+         * then we could multpiply F by a coefficient, using K x F(V), we would get a variable power
+         * But it wouldn't account for wheel slip the same way, we'd have to add complexity to avoid uncanny behaviors
+         *
+         * We prefer to use the min between an existing measured "best case, best power" curve and a computed curve:
+         * the power each energy source can provide at a given time and speed, adds up and we can then compute
+         * (Force = Power/Vitesse )
+         * it guarantees us the train can't have unexpectedly high torque, or misrepresent its movement behavior
+         */
         double maxTractionForce = Math.min(
                 PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve),
                 maxTractionForceFromEnergySources
         );
 
-        var EnergyVariationOnTimeStep = timeStep*(maxTractionForce*speed); // Re-evaluate real consumed energy value
+        // Re-compute actual power used by traction for case where we use
+        double actualElectricalTractionPower = motorEfficiency/(maxTractionForce*speed);
+        /*Ppwp|cat = Pbus + Prech + Pconvbat
+         *Ppwp|cat = Paux + Ptrac + Prech + Pconvbat
+         */
 
-        // Now we have to apply rules on what to take the energy of
-        // We now know how much power we consume :
-        //
-        //              "Coupling"
-        // ┌─────┐         ┌───┐
-        // │     │         │   │
-        // │ E.S ├────────►│   │
-        // │  0  │         │   │
-        // └─────┘         │   │
-        //    ·            │   │────────►TractionForce*speed/Efficiency = "UpstreamOfTheMotor"Power
-        // ┌─────┐         │   │
-        // │     │         │   │
-        // │ E.S ├────────►│   │
-        // │  1  │         │   │
-        // └─────┘         └───┘
-        //
-        // Still have work on this  YYYYYYYYYYYYY
-        // /!\ power allocation STEP
-        // To allocate power we need to know is there a (Catenary ? Powerpack H2|Diesel ? Battery ?)
-        // How much power battery is asking for to recharge
-        // How much power the battery is asked
-        // Cat power = min(Ptrac + Precharge, PcatMax)
-        //
-        //               ─┬─── Cat+Bat max pow
-        //                │
-        //     ▲         ─┼─── Cat max power
-        //     ▼          │
-        // Train Pow ─►   │
-        //                │
-        //             ───┴───────── 0 power consumed
+        // Retrieve Pmax & Pmin depending on electrification availability (Powerpack or Catenary/Pantograph power)
+        double Pmaxpwpcat = Electrification? EnergySources.get(0).pMax:0; // Panto.pMax : Rien
+        //double Pminpwpcat = Electrification? EnergySources.get(0).pMin:0; // Panto.pMax : Rien
 
-        //
-        // /!\ Energy calculation STEP
-        // from allocation step we know each E.S power at this timeStep
-        // We can then compute the energy variation and account for that variation either in SoC variation
-        // or fuel in fuel quantity variation
-        //
-        //for(var rsEnergySource : energySourceTreeMap.entrySet() ){
-        //    rsEnergySource.accountForStepEnergy(Energy);
-        //}
-        // The Energy Source with an energyStorage should update their SoC from this
-        // accountForStepEnergy(Double EnergyVariationOnTimeStep) method
+        double pBus = actualElectricalTractionPower + AuxiliaryEquipmentPower;
+        double pBat = EnergySources.get(1).clipToESPowerLimits(pBus - Pmaxpwpcat);
 
-        // CHANTIER PRISE EN COMPTE ENERGY SOURCE
+        //double Ppwp_cat = PmaxBase - actualElectricalTractionPower + EnergySources.get(1).Storage.refillLaw.getRefillPower(0.6);
+        //double  = Pbus - Pconvbat;
+
+
+        /* /!\ Energy calculation STEP
+         * We can then compute the energy variation and account for that variation either in SoC variation
+         * or fuel in fuel quantity variation
+         *
+         *for(var rsEnergySource : energySourceTreeMap.entrySet() ){
+         *    rsEnergySource.accountForStepEnergy(Energy);
+         *}
+         * The Energy Source with an energyStorage should update their SoC from this
+         * accountForStepEnergy(Double EnergyVariationOnTimeStep) method
+         *
+         * Notes : Depending on position, catenary shouldn't be loaded as much depending on distance from power emitter
+         * and from other load on the power network (meaning other Rolling Stock) -> see "profiles électriques"
+         * CHANTIER PRISE EN COMPTE ENERGY SOURCE
+         */
+        EnergySources.get(1).Storage.updateStateOfCharge(pBat*timeStep);
+        // FIN CHANTIER PRISE EN COMPTE ENERGY SOURCE ******************************************
 
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
