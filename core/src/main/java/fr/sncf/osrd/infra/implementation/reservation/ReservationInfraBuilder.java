@@ -108,6 +108,7 @@ public class ReservationInfraBuilder {
     ) {
         var networkBuilder = NetworkBuilder
                 .directed()
+                .allowsParallelEdges(true)
                 .<DiDetector, ReservationRoute>immutable();
         var routesPerSection = new IdentityHashMap<DetectionSection, ImmutableSet.Builder<ReservationRoute>>();
         for (var section : reservationSections)
