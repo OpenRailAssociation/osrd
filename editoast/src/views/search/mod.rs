@@ -205,8 +205,8 @@ pub mod typing;
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
 use crate::DbPool;
-use actix_web::post;
 use actix_web::web::{block, Data, Json, Query};
+use actix_web::{post, HttpResponse, Responder};
 use config::{Config as SearchConfig, SearchEntry};
 use diesel::pg::Pg;
 use diesel::query_builder::BoxedSqlQuery;
@@ -265,6 +265,7 @@ impl config::SearchEntry {
 pub struct SearchPayload {
     object: String,
     query: JsonValue,
+    dry: Option<bool>,
 }
 
 fn create_sql_query(
@@ -320,6 +321,7 @@ struct SearchDBResult {
 ///     {
 ///         "object": string,
 ///         "query": query,
+///         "dry": boolean, # default: false
 ///     }
 ///
 /// Where:
@@ -359,13 +361,18 @@ pub async fn search(
     payload: Json<SearchPayload>,
     db_pool: Data<DbPool>,
     config: Data<SearchConfig>,
-) -> Result<Json<JsonValue>> {
-    let Json(SearchPayload { object, query }) = payload;
+) -> Result<impl Responder> {
+    let Json(SearchPayload { object, query, dry }) = payload;
     let page = query_params.page;
     let per_page = query_params.page_size.unwrap_or(25).max(10);
     let search = config.entry(&object)?;
     let offset = (page - 1) * per_page;
     let sql = create_sql_query(query, search, per_page, offset)?;
+
+    if dry.unwrap_or(false) {
+        let query = diesel::debug_query::<Pg, _>(&sql).to_string();
+        return Ok(HttpResponse::Ok().body(query));
+    }
 
     let objects: Vec<SearchDBResult> = block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
@@ -375,5 +382,7 @@ pub async fn search(
     .unwrap()?;
 
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
-    Ok(Json(serde_json::to_value(results).unwrap()))
+    Ok(HttpResponse::Ok()
+        .content_type("application/json")
+        .body(serde_json::to_value(results).unwrap().to_string()))
 }
