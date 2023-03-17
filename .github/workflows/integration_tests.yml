@@ -89,9 +89,7 @@ jobs:
           poetry run pytest
 
       - name: Run Playwright tests
-        run: |
-          docker exec osrd-api python manage.py setup_dummy_db
-          yarn --cwd front playwright test
+        run: yarn --cwd front playwright test
 
       - name: Store tests artifacts
         uses: actions/upload-artifact@v3
