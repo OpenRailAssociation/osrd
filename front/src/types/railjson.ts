@@ -1,7 +1,7 @@
 //
 // Railjson
 //
-import { DeleteOperation, OperationObject } from '../common/api/osrdEditoastApi';
+import { OperationObject } from '../common/api/osrdEditoastApi';
 
 // For the response of the patch
 // export type EntityDeleteOperationResult = DeleteOperation;
