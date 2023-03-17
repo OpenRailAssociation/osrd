@@ -1,5 +1,7 @@
 use core::f64::consts::PI;
 
+use crate::client::get_app_version;
+
 use super::BoundingBox;
 
 /// Web mercator coordinates
@@ -87,7 +89,8 @@ pub fn count_tiles(max_zoom: u64, bbox: &BoundingBox) -> u64 {
 }
 
 pub fn get_layer_cache_prefix(layer_name: &str, infra_id: i64) -> String {
-    format!("editoast.layer.{layer_name}.infra_{infra_id}")
+    let version = get_app_version().unwrap_or("default".into());
+    format!("editoast.{version}.layer.{layer_name}.infra_{infra_id}")
 }
 
 pub fn get_view_cache_prefix<T1, T2>(layer_name: T1, infra_id: i64, view_name: T2) -> String
@@ -168,7 +171,7 @@ mod tests {
     fn test_get_layer_cache_prefix() {
         assert_eq!(
             get_layer_cache_prefix("track_sections", 1),
-            "editoast.layer.track_sections.infra_1"
+            "editoast.default.layer.track_sections.infra_1"
         );
     }
 
@@ -176,7 +179,7 @@ mod tests {
     fn test_get_view_cache_prefix() {
         assert_eq!(
             get_view_cache_prefix("track_sections", 1, "geo"),
-            "editoast.layer.track_sections.infra_1.geo"
+            "editoast.default.layer.track_sections.infra_1.geo"
         );
     }
 
@@ -184,10 +187,10 @@ mod tests {
     fn test_get_cache_tile_key() {
         assert_eq!(
             get_cache_tile_key(
-                "editoast.layer.track_sections.infra_1",
+                "editoast.default.layer.track_sections.infra_1",
                 &Tile { x: 1, y: 2, z: 3 }
             ),
-            "editoast.layer.track_sections.infra_1.tile/3/1/2"
+            "editoast.default.layer.track_sections.infra_1.tile/3/1/2"
         );
     }
 }
