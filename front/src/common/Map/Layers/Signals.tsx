@@ -15,13 +15,13 @@ import {
 } from 'common/Map/Consts/SignalsNames';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import {
   getPointLayerProps,
   getSignalLayerProps,
   getSignalMatLayerProps,
   SignalContext,
 } from './geoSignalsLayers';
-import { getInfraID } from 'reducers/osrdconf/selectors';
 
 interface PlatformProps {
   colors: Theme;

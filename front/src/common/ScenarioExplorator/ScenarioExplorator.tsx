@@ -60,18 +60,15 @@ export default function ScenarioExplorator() {
         `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
         setScenarioDetails
       );
-    } 
-    else if(!projectID) {
-      setProjectDetails({})
-      setStudyDetails({})
-      setScenarioDetails({})
-    }
-    else if(!studyID) {
-      setStudyDetails({})
-      setScenarioDetails({})
-    }
-    else if(!scenarioID){
-      setScenarioDetails({})
+    } else if (!projectID) {
+      setProjectDetails({});
+      setStudyDetails({});
+      setScenarioDetails({});
+    } else if (!studyID) {
+      setStudyDetails({});
+      setScenarioDetails({});
+    } else if (!scenarioID) {
+      setScenarioDetails({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioID, studyID, scenarioID, mode]);

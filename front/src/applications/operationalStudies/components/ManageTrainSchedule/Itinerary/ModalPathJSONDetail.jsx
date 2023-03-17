@@ -11,7 +11,7 @@ import { getPathfindingID } from 'reducers/osrdconf/selectors';
 
 export default function ModalPathJSONDetail() {
   const dispatch = useDispatch();
-  const pathfindingID  = useSelector(getPathfindingID);
+  const pathfindingID = useSelector(getPathfindingID);
   const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
   const textareaRef = useRef(null);
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
