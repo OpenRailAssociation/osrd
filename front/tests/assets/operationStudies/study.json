@@ -14,5 +14,6 @@
   "expected_end_date_study": "2023-02-02T23:37:21.271Z",
   "actual_end_date_study": "2023-02-02T23:37:21.271Z",
   "state": "started",
-  "type": "timeTables"
+  "type": "timeTables",
+  "tags": ["string"]
 }
