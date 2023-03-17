@@ -85,12 +85,6 @@ where
     }
 }
 
-// impl<T: Into<TypedAst>> From<Vec<T>> for TypedAst {
-//     fn from(value: Vec<T>) -> Self {
-//         Self::Sequence(value.into_iter().map(Into::<Self>::into).collect())
-//     }
-// }
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "search")]
 pub enum ProcessingError {

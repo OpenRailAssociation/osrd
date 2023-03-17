@@ -100,11 +100,11 @@ class SearchIndex(enum.Enum):
 
     def create(self, column: str, table: str) -> str:
         prefix, method, opclass = self.value
-        return f'CREATE INDEX IF NOT EXISTS "idx_{prefix}_{column}" ON "{table}" USING {method} ("{column}" {opclass})'
+        return f'CREATE INDEX IF NOT EXISTS "idx_{prefix}_{table}_{column}" ON "{table}" USING {method} ("{column}" {opclass})'
 
-    def drop(self, column: str) -> str:
+    def drop(self, column: str, table: str) -> str:
         prefix, _, __ = self.value
-        return f'DROP INDEX IF EXISTS "idx_{prefix}_{column}"'
+        return f'DROP INDEX IF EXISTS "idx_{prefix}_{table}_{column}"'
 
 
 SEARCH_TABLE_REGEXP = re.compile(r"^[a-z_](\w|[_-])*$", re.IGNORECASE)
@@ -114,7 +114,9 @@ SEARCH_RESERVED_COLUMNS_REGEXP = re.compile(r"^id$", re.IGNORECASE)
 Sql = str
 
 
-def insert_trigger(search_table: str, source_table: str, columns: dict[str, Sql], query_continuation: Sql) -> Sql:
+def insert_trigger(
+    search_table: str, source_table: str, columns: dict[str, Sql], joins: Sql, query_continuation: Sql
+) -> Sql:
     insert_columns = ", ".join(f'"{col}"' for col in columns)
     select_columns = ", ".join(f'({sql}) AS "{col}"' for col, sql in columns.items())
     trigger = f'"{search_table}__ins_trig"'
@@ -129,6 +131,7 @@ def insert_trigger(search_table: str, source_table: str, columns: dict[str, Sql]
             INSERT INTO "{search_table}" (id, {insert_columns})
                 SELECT t.id AS id, {select_columns}
                 FROM (SELECT NEW.*) AS t
+                {joins}
                 {query_continuation};
             RETURN NEW;
         END;
@@ -147,7 +150,9 @@ def insert_trigger(search_table: str, source_table: str, columns: dict[str, Sql]
     )
 
 
-def update_trigger(search_table: str, source_table: str, columns: dict[str, Sql], query_continuation: Sql) -> Sql:
+def update_trigger(
+    search_table: str, source_table: str, columns: dict[str, Sql], joins: Sql, query_continuation: Sql
+) -> Sql:
     set_columns = ", ".join(f'"{col}" = ({sql})' for col, sql in columns.items())
     trigger = f'"{search_table}__upd_trig"'
     proc = f'"{search_table}__upd_trig_fun"'
@@ -161,6 +166,7 @@ def update_trigger(search_table: str, source_table: str, columns: dict[str, Sql]
             UPDATE "{search_table}"
                 SET {set_columns}
                 FROM (SELECT NEW.*) AS t
+                {joins}
                 WHERE t.id = "{search_table}".id
                 {query_continuation};
             RETURN NEW;
@@ -191,6 +197,7 @@ def run_sql_create_infra_search_table(
     phony_model_name: Optional[str] = None,
     source_table_pk: str = "id",
     triggers: bool = False,
+    joins: Sql = "",
     create_table_continuation: Sql = "",
     query_continuation: Sql = "",
 ) -> migrations.RunSQL:
@@ -245,7 +252,7 @@ def run_sql_create_infra_search_table(
             (f'({sql}) AS "{col}"' for col, sql in column_exprs.items()),
         )
     )
-    select = f"""SELECT {select_columns} FROM "{source_table}" {query_continuation}"""
+    select = f"""SELECT {select_columns} FROM "{source_table}" {joins} {query_continuation}"""
     if table_type is SearchTableType.TABLE:
         # NOTE: here source_table has to be a physical table and not a subquery
         search_columns = ", ".join(
@@ -265,8 +272,8 @@ def run_sql_create_infra_search_table(
         insert_table = f"""INSERT INTO "{name}" {select}""".format(source=source_table)
         create_triggers, drop_triggers = "", ""
         if triggers:
-            c_ins, d_ins = insert_trigger(name, source_table, column_exprs, query_continuation)
-            c_upd, d_upd = update_trigger(name, source_table, column_exprs, query_continuation)
+            c_ins, d_ins = insert_trigger(name, source_table, column_exprs, joins, query_continuation)
+            c_upd, d_upd = update_trigger(name, source_table, column_exprs, joins, query_continuation)
             create_triggers = f"{c_ins}\n{c_upd}"
             drop_triggers = f"{d_ins}\n{d_upd}"
         sql = f"{create_table};\n{create_indexes};\n{create_triggers};\n{insert_table}"
