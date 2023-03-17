@@ -5,41 +5,31 @@ import { defineLinear } from 'applications/operationalStudies/components/Simulat
 import * as d3 from 'd3';
 import { createProfileSegment } from 'applications/operationalStudies/consts';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
-import { SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
+import { POSITION, SPEED, SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
 
 function createChart(
   CHART_ID,
   chart,
   resetChart,
-  dataSimulation,
+  trainSimulation,
   rotate,
   heightOfSpeedSpaceChart,
   ref,
   setResetChart
 ) {
   d3.select(`#${CHART_ID}`).remove();
-  const defineX =
+  const scaleX =
     chart === undefined || resetChart
       ? defineLinear(
-          d3.max(Object.values(dataSimulation), (data) =>
-            d3.max(
-              data,
-              (d) =>
-                d[rotate ? SPEED_SPACE_CHART_KEY_VALUES[1] : SPEED_SPACE_CHART_KEY_VALUES[0]] + 100
-            )
-          )
+          d3.max(trainSimulation.speed, (speedObject) => speedObject[rotate ? SPEED : POSITION]) +
+            100
         )
       : chart.x;
-  const defineY =
+  const scaleY =
     chart === undefined || resetChart
       ? defineLinear(
-          d3.max(Object.values(dataSimulation), (data) =>
-            d3.max(
-              data,
-              (d) =>
-                d[rotate ? SPEED_SPACE_CHART_KEY_VALUES[0] : SPEED_SPACE_CHART_KEY_VALUES[1]] + 50
-            )
-          )
+          d3.max(trainSimulation.speed, (speedObject) => speedObject[rotate ? POSITION : SPEED]) +
+            50
         )
       : chart.y;
 
@@ -52,8 +42,8 @@ function createChart(
   return defineChart(
     width,
     heightOfSpeedSpaceChart,
-    defineX,
-    defineY,
+    scaleX,
+    scaleY,
     ref,
     rotate,
     SPEED_SPACE_CHART_KEY_VALUES,

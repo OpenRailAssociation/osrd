@@ -38,7 +38,6 @@ export default function SpeedSpaceChart(props) {
     dispatchUpdateMustRedraw,
     dispatchUpdateTimePositionValues,
     initialHeightOfSpeedSpaceChart,
-    mustRedraw,
     positionValues,
     trainSimulation,
     simulationIsPlaying,
@@ -141,11 +140,15 @@ export default function SpeedSpaceChart(props) {
     );
   }, [chart]);
 
+  // reset the chart if the trainSimulation has changed
+  useEffect(() => {
+    setResetChart(true);
+  }, [trainSimulation]);
+
   // redraw the train if necessary
   useEffect(() => {
     createChartAndTrain();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mustRedraw, rotate, localSettings]);
+  }, [rotate, localSettings]);
 
   // draw or redraw the position line indictator when usefull
   useEffect(() => {
@@ -159,7 +162,7 @@ export default function SpeedSpaceChart(props) {
       rotate,
       timePosition
     );
-  }, [chart, mustRedraw, positionValues, timePosition]);
+  }, [chart, positionValues, timePosition]);
 
   useEffect(() => {
     if (chartXGEV) {
@@ -281,10 +284,6 @@ SpeedSpaceChart.propTypes = {
    */
   initialHeightOfSpeedSpaceChart: PropTypes.number.isRequired,
   /**
-   * Force d3 render trigger ! To be removed
-   */
-  mustRedraw: PropTypes.bool,
-  /**
    * Current Position to be showed (vertical line)
    */
   positionValues: PropTypes.object,
@@ -309,7 +308,6 @@ SpeedSpaceChart.defaultProps = {
   chartXGEV: undefined,
   dispatchUpdateMustRedraw: noop,
   dispatchUpdateTimePositionValues: noop,
-  mustRedraw: false,
   onSetBaseHeightOfSpeedSpaceChart: noop,
   onSetSettings: noop,
   positionValues: ORSD_GRAPH_SAMPLE_DATA.positionValues,
