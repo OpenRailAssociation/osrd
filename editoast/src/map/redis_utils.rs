@@ -1,9 +1,10 @@
-pub use super::bounding_box::{BoundingBox, Zone};
-pub use super::layers::{Layer, MapLayers};
 use crate::error::Result;
 use redis::aio::ConnectionManager;
 use redis::{cmd, FromRedisValue, ToRedisArgs};
 
+/// Retrieve all keys matching the given `key_pattern`.
+///
+/// Check redis pattern documentation [here](https://redis.io/commands/keys).
 pub async fn keys(redis: &mut ConnectionManager, key_pattern: &str) -> Result<Vec<String>> {
     Ok(cmd("KEYS")
         .arg(key_pattern)
@@ -11,6 +12,7 @@ pub async fn keys(redis: &mut ConnectionManager, key_pattern: &str) -> Result<Ve
         .await?)
 }
 
+/// Delete redis values associated to the given keys.
 pub async fn delete(redis: &mut ConnectionManager, keys_to_delete: Vec<String>) -> Result<u64> {
     if keys_to_delete.is_empty() {
         return Ok(0);
@@ -22,6 +24,8 @@ pub async fn delete(redis: &mut ConnectionManager, keys_to_delete: Vec<String>) 
     Ok(del.query_async::<_, u64>(redis).await?)
 }
 
+/// Sets redis value associated to a specific key
+/// The key will expire after cache_duration (in seconds)
 pub async fn set<T: ToRedisArgs>(
     redis: &mut ConnectionManager,
     key: &str,
@@ -41,12 +45,9 @@ pub async fn set<T: ToRedisArgs>(
     Ok(())
 }
 
-/// Gets Redis value associated to a  specific key
+/// Gets redis value associated to a specific key
 /// Returns None if key does not exists.
-pub async fn get<T: Default + FromRedisValue>(
-    redis: &mut ConnectionManager,
-    cache_key: &str,
-) -> Option<T> {
+pub async fn get<T: FromRedisValue>(redis: &mut ConnectionManager, cache_key: &str) -> Option<T> {
     cmd("GET")
         .arg(cache_key)
         .query_async::<_, Option<T>>(redis)
