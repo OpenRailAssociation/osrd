@@ -1,6 +1,6 @@
 import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { updateConsolidatedSimulation, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -18,6 +18,9 @@ export default function OSRDStcdmResults(props) {
   const { currentStdcmRequestStatus } = props;
   const dispatch = useDispatch();
 
+  const [spaceTimeChartHeight, setSpaceTimeChartHeight] = useState(450);
+  const [speedSpaceTimeChartHeight, setSpeedSpaceTimeChartHeight] = useState(450);
+
   // With this hook we update and store
   // the consolidatedSimuation (simualtion stucture for the selected train)
   useEffect(() => {
@@ -33,12 +36,11 @@ export default function OSRDStcdmResults(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation]);
 
-  let stdcmResultsSection;
   if (
     currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success &&
     simulation.trains[selectedTrain] !== undefined
-  ) {
-    stdcmResultsSection = (
+  )
+    return (
       <main className="osrd-config-mastcontainer" style={{ height: '115vh' }}>
         <div className="osrd-simulation-container mb-2 mx-3 simulation-results">
           <h1 className="text-center text-info">
@@ -48,23 +50,29 @@ export default function OSRDStcdmResults(props) {
             <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
             <div
               className="speedspacechart-container"
-              style={{ height: '450px', marginBottom: '50px' }}
+              style={{ height: `${speedSpaceTimeChartHeight}px`, marginBottom: '50px' }}
             >
               <SpeedSpaceChart
-                heightOfSpeedSpaceChart={450}
-                showSettings={false}
                 initialHeightOfSpeedSpaceChart={450}
+                onSetBaseHeightOfSpeedSpaceChart={setSpeedSpaceTimeChartHeight}
               />
             </div>
-            <div className="spacetimechart-container" style={{ height: '450px' }}>
-              <SpaceTimeChart initialHeightOfSpaceTimeChart={450} />
+            <div
+              className="spacetimechart-container"
+              style={{ height: `${spaceTimeChartHeight}px` }}
+            >
+              <SpaceTimeChart
+                initialHeightOfSpaceTimeChart={450}
+                onSetBaseHeightOfSpaceTimeChart={setSpaceTimeChartHeight}
+              />
             </div>
           </div>
         </div>
       </main>
     );
-  } else if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.noresults) {
-    stdcmResultsSection = (
+
+  if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.noresults) {
+    return (
       <main className="osrd-config-mastcontainer mastcontainer">
         <div className="osrd-simulation-container">
           <h1 className="text-center text-info">
@@ -74,24 +82,28 @@ export default function OSRDStcdmResults(props) {
         </div>
       </main>
     );
-  } else
-    stdcmResultsSection = (
-      <main className="osrd-config-mastcontainer mastcontainer">
-        <div className="osrd-simulation-container mx-3">
-          <h1 className="text-center text-info">
-            <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
-          </h1>
-          <div className="osrd-config-item mb-2">
-            <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
-            <div className="speedspacechart-container" style={{ height: '450px' }}>
-              {simulation.trains.length > 0 && (
-                <SpaceTimeChart initialHeightOfSpaceTimeChart={450} />
-              )}
-            </div>
+  }
+  return (
+    <main className="osrd-config-mastcontainer mastcontainer">
+      <div className="osrd-simulation-container mx-3">
+        <h1 className="text-center text-info">
+          <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
+        </h1>
+        <div className="osrd-config-item mb-2">
+          <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
+          <div
+            className="speedspacechart-container"
+            style={{ height: `${spaceTimeChartHeight}px` }}
+          >
+            {simulation.trains.length > 0 && (
+              <SpaceTimeChart
+                initialHeightOfSpaceTimeChart={450}
+                onSetBaseHeightOfSpaceTimeChart={setSpaceTimeChartHeight}
+              />
+            )}
           </div>
         </div>
-      </main>
-    );
-
-  return stdcmResultsSection;
+      </div>
+    </main>
+  );
 }
