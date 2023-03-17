@@ -16,6 +16,7 @@ import EntitySumUp from '../../components/EntitySumUp';
 
 import './styles.scss';
 import { zoneToFeature } from '../../../../utils/mapboxHelper';
+import { getMapStyle } from '../../../../reducers/map/selectors';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -39,9 +40,7 @@ export const SelectionLayers: FC = () => {
     editorState: { editorLayers },
     renderingFingerprint,
   } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
+  const mapStyle = useSelector(getMapStyle);
 
   let selectionZone: Zone | undefined;
 

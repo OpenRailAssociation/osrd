@@ -13,7 +13,7 @@ import { Position } from 'geojson';
 
 import EditorContext from '../../context';
 import Tipped from '../../components/Tipped';
-import { ExtendedEditorContextType, OSRDConf } from '../types';
+import { ExtendedEditorContextType } from '../types';
 import {
   CreateEntityOperation,
   DEFAULT_ENDPOINT,
@@ -44,6 +44,8 @@ import {
 import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntity } from '../../data/api';
+import { getInfraID, getSwitchTypes } from '../../../../reducers/osrdconf/selectors';
+import { getMapStyle } from '../../../../reducers/map/selectors';
 
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
@@ -58,7 +60,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
   const { t } = useTranslation();
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const infraID = useSelector(getInfraID);
 
   const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
   const endpoint = ENDPOINTS_SET.has(formData?.endpoint) ? formData.endpoint : DEFAULT_ENDPOINT;
@@ -101,17 +103,15 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
 
   useEffect(() => {
     if (typeof formData?.track === 'string') {
-      getEntity<TrackSectionEntity>(
-        osrdConf.infraID as string,
-        formData.track,
-        'TrackSection'
-      ).then((track) => {
-        setTrackSection(track);
-      });
+      getEntity<TrackSectionEntity>(infraID as number, formData.track, 'TrackSection').then(
+        (track) => {
+          setTrackSection(track);
+        }
+      );
     } else {
       setTrackSection(null);
     }
-  }, [formData?.track, osrdConf.infraID]);
+  }, [formData?.track, infraID]);
 
   return (
     <div className="mb-4">
@@ -186,7 +186,7 @@ export const SwitchEditionLeftPanel: FC = () => {
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
 
   // Retrieve proper data
-  const { switchTypes } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const switchTypes = useSelector(getSwitchTypes);
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(
     () =>
@@ -300,7 +300,8 @@ export const SwitchEditionLeftPanel: FC = () => {
 
 export const SwitchEditionLayers: FC = () => {
   const { t } = useTranslation();
-  const { switchTypes, infraID } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const switchTypes = useSelector(getSwitchTypes);
+  const infraID = useSelector(getInfraID);
   const {
     renderingFingerprint,
     state,
@@ -313,9 +314,7 @@ export const SwitchEditionLayers: FC = () => {
     () => (entity.properties?.switch_type ? switchTypesDict[entity.properties.switch_type] : null),
     [entity.properties?.switch_type, switchTypesDict]
   );
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
+  const mapStyle = useSelector(getMapStyle);
   const layerProps = useMemo(
     () =>
       getSwitchesLayerProps({
@@ -348,7 +347,7 @@ export const SwitchEditionLayers: FC = () => {
       (trackStatus.type === 'loaded' && trackStatus.trackSection.properties.id !== hoveredTrackId)
     ) {
       setTrackStatus({ type: 'loading', trackSectionID: hoveredTrackId });
-      getEntity<TrackSectionEntity>(infraID as string, hoveredTrackId, 'TrackSection')
+      getEntity<TrackSectionEntity>(infraID as number, hoveredTrackId, 'TrackSection')
         .then((trackSection) => {
           setTrackStatus({ type: 'loaded', trackSection });
         })
@@ -409,7 +408,7 @@ export const SwitchEditionLayers: FC = () => {
       setGeometryState({ type: 'ready' });
     } else {
       setGeometryState({ type: 'loading' });
-      getEntity<TrackSectionEntity>(infraID as string, port.track, 'TrackSection').then((track) => {
+      getEntity<TrackSectionEntity>(infraID as number, port.track, 'TrackSection').then((track) => {
         if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
 
         const coordinates =

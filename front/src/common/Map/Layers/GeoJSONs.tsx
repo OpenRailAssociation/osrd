@@ -4,7 +4,7 @@ import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, keyBy, mapValues } from 'lodash';
 import { Layer, Source } from 'react-map-gl';
-import { getConf } from 'reducers/osrdconf/selectors';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import { SymbolPaint } from 'mapbox-gl';
 
 import { AnyLayer, Theme } from '../../../types';
@@ -26,7 +26,7 @@ import {
   getLineTextErrorsLayerProps,
   getPointTextErrorsLayerProps,
 } from './Errors';
-import { LayerType, OSRDConf } from '../../../applications/editor/tools/types';
+import { LayerType } from '../../../applications/editor/tools/types';
 import { ALL_SIGNAL_LAYERS, SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
 import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
 
@@ -245,7 +245,7 @@ const GeoJSONs: FC<{
   layers?: Set<LayerType>;
   fingerprint?: string | number;
 }> = ({ colors, hidden, selection, layers, fingerprint, prefix = 'editor/' }) => {
-  const osrdConf = useSelector(getConf);
+  const infraID = useSelector(getInfraID);
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
     () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),
@@ -293,14 +293,14 @@ const GeoJSONs: FC<{
           ? [
               {
                 id: `${prefix}geo/${source.entityType}`,
-                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
                 layers: source
                   .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
                   .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
               },
               {
                 id: `${selectedPrefix}geo/${source.entityType}`,
-                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
                 layers: source
                   .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
                   .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
@@ -308,16 +308,7 @@ const GeoJSONs: FC<{
             ]
           : []
       ),
-    [
-      hidden,
-      hiddenLayerContext,
-      layerContext,
-      layers,
-      osrdConf.infraID,
-      prefix,
-      selectedPrefix,
-      selection,
-    ]
+    [hidden, hiddenLayerContext, layerContext, layers, infraID, prefix, selectedPrefix, selection]
   );
 
   return (

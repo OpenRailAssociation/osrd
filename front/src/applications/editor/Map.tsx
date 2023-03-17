@@ -15,7 +15,6 @@ import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
-import { RootState } from 'reducers';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
 import Background from '../../common/Map/Layers/Background';
 import OSM from '../../common/Map/Layers/OSM';
@@ -34,10 +33,11 @@ import {
   LAYER_TO_EDITOAST_DICT,
   LAYERS_SET,
   LayerType,
-  OSRDConf,
   Tool,
 } from './tools/types';
 import { getEntity } from './data/api';
+import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
+import { getShowOSM } from '../../reducers/map/selectors';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -72,21 +72,23 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
     isHovering: false,
   });
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
-  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
+  const switchTypes = useSelector(getSwitchTypes);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
-  const { showOSM } = useSelector((state: RootState) => state.map);
+  const showOSM = useSelector(getShowOSM);
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
       dispatch,
       editorState,
-      osrdConf,
+      infraID,
+      switchTypes,
       mapState: {
         viewport,
         mapStyle,
       },
     }),
-    [context, dispatch, editorState, mapStyle, osrdConf, viewport]
+    [context, dispatch, editorState, mapStyle, infraID, switchTypes, viewport]
   );
   const interactiveLayerIDs = useMemo(
     () => (activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []),
@@ -199,22 +201,20 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               : e;
             if (toolState.hovered && activeTool.onClickEntity) {
               if (toolState.hovered.type) {
-                getEntity(
-                  osrdConf.infraID as string,
-                  toolState.hovered.id,
-                  toolState.hovered.type
-                ).then((entity) => {
-                  if (activeTool.onClickEntity) {
-                    // Those features lack a proper "geometry", and have a "_geometry"
-                    // instead. This fixes it:
-                    entity = {
-                      ...entity,
-                      // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
-                      geometry: entity.geometry || (entity as any)._geometry,
-                    };
-                    activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                getEntity(infraID as number, toolState.hovered.id, toolState.hovered.type).then(
+                  (entity) => {
+                    if (activeTool.onClickEntity) {
+                      // Those features lack a proper "geometry", and have a "_geometry"
+                      // instead. This fixes it:
+                      entity = {
+                        ...entity,
+                        // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+                        geometry: entity.geometry || (entity as any)._geometry,
+                      };
+                      activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                    }
                   }
-                });
+                );
               }
             }
             if (activeTool.onClickMap) {

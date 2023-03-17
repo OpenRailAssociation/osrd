@@ -24,23 +24,24 @@ import {
   EditorState,
   ExtendedEditorContextType,
   FullTool,
-  OSRDConf,
   Tool,
 } from './tools/types';
 import TOOLS from './tools/list';
+import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
   const { urlInfra } = useParams();
-  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
+  const switchTypes = useSelector(getSwitchTypes);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
     tool: TOOLS[0],
-    state: TOOLS[0].getInitialState({ osrdConf }),
+    state: TOOLS[0].getInitialState({ infraID, switchTypes }),
   });
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
   const forceRender = useCallback(() => {
@@ -49,13 +50,13 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
 
   const switchTool = useCallback(
     <S extends CommonToolState>(tool: Tool<S>, partialState?: Partial<S>) => {
-      const state = { ...tool.getInitialState({ osrdConf }), ...(partialState || {}) };
+      const state = { ...tool.getInitialState({ infraID, switchTypes }), ...(partialState || {}) };
       setToolAndState({
         tool,
         state,
       });
     },
-    [osrdConf, setToolAndState]
+    [infraID, setToolAndState]
   );
   const setToolState = useCallback(
     <S extends CommonToolState>(state: Partial<S>) => {
@@ -104,7 +105,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       toolAndState,
       openModal,
       closeModal,
-      osrdConf,
+      infraID,
       t,
       forceRender,
       renderingFingerprint,
@@ -115,13 +116,14 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       ...context,
       dispatch,
       editorState,
-      osrdConf,
+      infraID,
+      switchTypes,
       mapState: {
         viewport,
         mapStyle,
       },
     }),
-    [context, dispatch, editorState, mapStyle, osrdConf, viewport]
+    [context, dispatch, editorState, mapStyle, infraID, switchTypes, viewport]
   );
 
   const actionsGroups = useMemo(
@@ -142,8 +144,8 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   useEffect(() => {
     // load the data model
     dispatch(loadDataModel());
-    if (isNil(urlInfra) && !isNil(osrdConf.infraID)) {
-      navigate(`/editor/${osrdConf.infraID}`);
+    if (isNil(urlInfra) && !isNil(infraID)) {
+      navigate(`/editor/${infraID}`);
     }
   }, []);
 
@@ -175,7 +177,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         className={cx(
           'editor-root mastcontainer mastcontainer-map',
           fullscreen && ' fullscreen',
-          osrdConf.infraID && 'infra-selected'
+          infraID && 'infra-selected'
         )}
       >
         <div className="layout">
@@ -290,7 +292,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                             'editor-btn',
                             'btn-rounded',
                             isActive && isActive(editorState) ? 'active' : '',
-                            isBlink && isBlink(editorState, osrdConf.infraID)
+                            isBlink && isBlink(editorState, infraID)
                               ? 'btn-map-infras-blinking'
                               : ''
                           )}

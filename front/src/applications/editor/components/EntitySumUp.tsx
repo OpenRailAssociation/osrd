@@ -15,8 +15,9 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../types';
-import { EditoastType, OSRDConf } from '../tools/types';
+import { EditoastType } from '../tools/types';
 import { getEntities, getEntity } from '../data/api';
+import { getInfraID } from '../../../reducers/osrdconf/selectors';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {
@@ -41,7 +42,7 @@ const DEFAULT_CLASSES = {
 };
 
 async function getAdditionalEntities(
-  infra: string,
+  infra: number,
   entity: EditorEntity
 ): Promise<Record<string, EditorEntity>> {
   switch (entity.objType) {
@@ -236,7 +237,7 @@ const EntitySumUp: FC<
   )
 > = ({ entity, id, objType, classes, status }) => {
   const { t } = useTranslation();
-  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const [state, setState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }
@@ -249,7 +250,7 @@ const EntitySumUp: FC<
       setState({ type: 'loading' });
 
       if (entity) {
-        getAdditionalEntities(osrdConf.infraID as string, entity).then((additionalEntities) => {
+        getAdditionalEntities(infraID as number, entity).then((additionalEntities) => {
           setState({
             type: 'ready',
             entity,
@@ -257,22 +258,20 @@ const EntitySumUp: FC<
           });
         });
       } else {
-        getEntity(osrdConf.infraID as string, id as string, objType as EditoastType).then(
+        getEntity(infraID as number, id as string, objType as EditoastType).then(
           (fetchedEntity) => {
-            getAdditionalEntities(osrdConf.infraID as string, fetchedEntity).then(
-              (additionalEntities) => {
-                setState({
-                  type: 'ready',
-                  entity: fetchedEntity,
-                  additionalEntities,
-                });
-              }
-            );
+            getAdditionalEntities(infraID as number, fetchedEntity).then((additionalEntities) => {
+              setState({
+                type: 'ready',
+                entity: fetchedEntity,
+                additionalEntities,
+              });
+            });
           }
         );
       }
     }
-  }, [entity, id, objType, osrdConf.infraID, state.type]);
+  }, [entity, id, objType, infraID, state.type]);
 
   if (state.type === 'loading' || state.type === 'idle') return <Spinner />;
 
