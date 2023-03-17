@@ -6,11 +6,12 @@ import { Position } from 'geojson';
 
 import { EndPoint, WayPoint, WayPointEntity } from '../../../../../types';
 import EditorContext from '../../../context';
-import { ExtendedEditorContextType, OSRDConf } from '../../types';
+import { ExtendedEditorContextType } from '../../types';
 import { EditRoutePathState } from '../types';
 import { getEntity } from '../../../data/api';
 import EntitySumUp from '../../../components/EntitySumUp';
 import Tipped from '../../../components/Tipped';
+import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
 
 const WayPointInput: FC<{
   endPoint: EndPoint;
@@ -21,7 +22,7 @@ const WayPointInput: FC<{
     EditorContext
   ) as ExtendedEditorContextType<EditRoutePathState>;
   const { t } = useTranslation();
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const infraID = useSelector(getInfraID);
   const [entityState, setEntityState] = useState<
     { type: 'data'; entity: WayPointEntity } | { type: 'loading' } | { type: 'empty' }
   >({ type: 'empty' });
@@ -67,8 +68,8 @@ const WayPointInput: FC<{
     ) {
       if (wayPoint) {
         setEntityState({ type: 'loading' });
-        getEntity<WayPointEntity>(osrdConf.infraID as string, wayPoint.id, wayPoint.type).then(
-          (entity) => setEntityState({ type: 'data', entity })
+        getEntity<WayPointEntity>(infraID as number, wayPoint.id, wayPoint.type).then((entity) =>
+          setEntityState({ type: 'data', entity })
         );
       } else {
         setEntityState({ type: 'empty' });

@@ -9,6 +9,7 @@ import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import { RouteEditionState } from './types';
 import { EditRoutePathEditionLayers, EditRoutePathLeftPanel } from './components/EditRoutePath';
 import { EditRouteMetadataLayers, EditRouteMetadataPanel } from './components/EditRouteMetadata';
+import { getMapStyle } from '../../../../reducers/map/selectors';
 
 export const RouteEditionLeftPanel: FC = () => {
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
@@ -30,9 +31,7 @@ export const RouteEditionLayers: FC = () => {
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
+  const mapStyle = useSelector(getMapStyle);
 
   return (
     <>

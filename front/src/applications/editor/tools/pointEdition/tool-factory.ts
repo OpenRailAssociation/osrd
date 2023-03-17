@@ -81,7 +81,7 @@ function getPointEditionTool<T extends EditorPoint>({
     ],
 
     // Interactions:
-    onClickMap(_e, { setState, state, osrdConf: { infraID } }) {
+    onClickMap(_e, { setState, state, infraID }) {
       const { isHoveringTarget, entity, nearestPoint } = state;
       if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY) && isHoveringTarget) {
         setState({
@@ -106,7 +106,7 @@ function getPointEditionTool<T extends EditorPoint>({
 
         // retrieve the track section to be sure that the computation of the distance will be good
         // we can't trust maplibre, because the stored gemetry is not necessary the real one
-        getEntity(infraID as string, newEntity.properties.track, 'TrackSection').then((track) => {
+        getEntity(infraID as number, newEntity.properties.track, 'TrackSection').then((track) => {
           newEntity.properties.position = nearestPointOnLine(
             (track as Feature<LineString>).geometry,
             newEntity.geometry as Point,
@@ -178,12 +178,12 @@ function getPointEditionTool<T extends EditorPoint>({
     },
 
     // Lifecycle:
-    onMount({ state: { entity }, osrdConf: { infraID } }) {
+    onMount({ state: { entity }, infraID }) {
       const trackId = entity.properties?.track;
 
       if (typeof trackId !== 'string') return;
 
-      getEntity(infraID as string, trackId, 'TrackSection').then((track) => {
+      getEntity(infraID as number, trackId, 'TrackSection').then((track) => {
         const dbPosition = entity.properties.position;
         const computedPosition = nearestPointOnLine(
           (track as Feature<LineString>).geometry,

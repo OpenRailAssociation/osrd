@@ -217,7 +217,7 @@ const SelectionTool: Tool<SelectionState> = {
       selection,
     });
   },
-  onClickMap(e, { setState, state, osrdConf }) {
+  onClickMap(e, { setState, state, infraID }) {
     const position = e.lngLat;
     const map = e.target;
 
@@ -240,7 +240,7 @@ const SelectionTool: Tool<SelectionState> = {
 
           setState({ isLoading: true });
           getMixedEntities(
-            osrdConf.infraID as string,
+            infraID as number,
             selection.flatMap((entity) =>
               entity.properties?.id
                 ? [
@@ -296,7 +296,7 @@ const SelectionTool: Tool<SelectionState> = {
 
           setState({ isLoading: true });
           getMixedEntities(
-            osrdConf.infraID as string,
+            infraID as number,
             selection.flatMap((entity) =>
               entity.properties?.id
                 ? [

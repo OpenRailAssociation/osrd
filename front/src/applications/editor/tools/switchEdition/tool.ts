@@ -17,10 +17,10 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
     );
   },
 
-  getInitialState({ osrdConf }) {
-    if (!osrdConf.switchTypes?.length) throw new Error('There is no switch type yet.');
+  getInitialState({ switchTypes }) {
+    if (!switchTypes?.length) throw new Error('There is no switch type yet.');
 
-    const entity = getNewSwitch(osrdConf.switchTypes[0]);
+    const entity = getNewSwitch(switchTypes[0]);
 
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
@@ -36,10 +36,10 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
         id: 'new-switch',
         icon: IoMdAddCircleOutline,
         labelTranslationKey: 'Editor.tools.switch-edition.actions.new-switch',
-        onClick({ setState, osrdConf }) {
-          if (!osrdConf.switchTypes?.length) throw new Error('There is no switch type yet.');
+        onClick({ setState, switchTypes }) {
+          if (!switchTypes?.length) throw new Error('There is no switch type yet.');
 
-          const entity = getNewSwitch(osrdConf.switchTypes[0]);
+          const entity = getNewSwitch(switchTypes[0]);
 
           setState({
             ...DEFAULT_COMMON_TOOL_STATE,

@@ -59,8 +59,8 @@ export interface MapState {
   viewport: ViewState;
 }
 export interface OSRDConf {
-  infraID: string | number | undefined;
-  switchTypes: SwitchType[] | null;
+  infraID: number | undefined;
+  switchTypes: SwitchType[] | undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +90,8 @@ export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   dispatch: Dispatch<any>;
   editorState: EditorState;
   mapState: MapState;
-  osrdConf: OSRDConf;
+  infraID: number | undefined;
+  switchTypes: SwitchType[] | undefined;
 }
 
 export type ReadOnlyEditorContextType<S> = Omit<
@@ -130,7 +131,10 @@ export interface Tool<S> {
   icon: IconType;
   labelTranslationKey: string;
   actions: ToolAction<S>[][];
-  getInitialState: (context: { osrdConf: OSRDConf }) => S;
+  getInitialState: (context: {
+    infraID: number | undefined;
+    switchTypes: SwitchType[] | undefined;
+  }) => S;
   requiredLayers?: Set<LayerType>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
 

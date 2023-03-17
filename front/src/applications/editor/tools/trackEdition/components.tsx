@@ -15,6 +15,7 @@ import { CreateEntityOperation, TrackSectionEntity } from '../../../../types';
 import { ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
+import { getMapStyle } from '../../../../reducers/map/selectors';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -28,9 +29,7 @@ export const TrackEditionLayers: FC = () => {
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
+  const mapStyle = useSelector(getMapStyle);
 
   const isAddingPointOnExistingSection =
     typeof state.nearestPoint?.properties?.sectionIndex === 'number';

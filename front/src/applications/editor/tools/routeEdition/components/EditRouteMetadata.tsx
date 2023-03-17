@@ -11,7 +11,7 @@ import { MdDelete, MdSave } from 'react-icons/md';
 import { FiSearch } from 'react-icons/fi';
 
 import { EditRoutePathState, EditRouteMetadataState, RouteEditionState } from '../types';
-import { ExtendedEditorContextType, OSRDConf } from '../../types';
+import { ExtendedEditorContextType } from '../../types';
 import {
   getRoutesLineLayerProps,
   getRoutesPointLayerProps,
@@ -27,6 +27,8 @@ import { addNotification } from '../../../../../reducers/main';
 import { ConfirmModal } from '../../../../../common/BootstrapSNCF/ModalSNCF/ConfirmModal';
 import { save } from '../../../../../reducers/editor';
 import { DisplayEndpoints } from './Endpoints';
+import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
+import { getMapStyle } from '../../../../../reducers/map/selectors';
 
 export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
   const dispatch = useDispatch();
@@ -36,7 +38,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
   const { setState, openModal, closeModal } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<RouteEditionState>;
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const infraID = useSelector(getInfraID);
   const [isLoading, setIsLoading] = useState(false);
 
   const isReleaseDetectorsEditionLocked =
@@ -125,31 +127,30 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
             const baseState = getEmptyCreateRouteState() as EditRoutePathState;
 
             setIsLoading(true);
-            getMixedEntities<WayPointEntity>(osrdConf.infraID as string, [
-              entry_point,
-              exit_point,
-            ]).then((entities) => {
-              const entryPointEntity = entities[entry_point.id];
-              const exitPointEntity = entities[exit_point.id];
-              setIsLoading(false);
-              setState({
-                ...baseState,
-                routeState: {
-                  ...baseState.routeState,
-                  entryPoint: {
-                    id: entry_point.id,
-                    type: entry_point.type,
-                    position: entryPointEntity.geometry.coordinates,
+            getMixedEntities<WayPointEntity>(infraID as number, [entry_point, exit_point]).then(
+              (entities) => {
+                const entryPointEntity = entities[entry_point.id];
+                const exitPointEntity = entities[exit_point.id];
+                setIsLoading(false);
+                setState({
+                  ...baseState,
+                  routeState: {
+                    ...baseState.routeState,
+                    entryPoint: {
+                      id: entry_point.id,
+                      type: entry_point.type,
+                      position: entryPointEntity.geometry.coordinates,
+                    },
+                    entryPointDirection: entry_point_direction,
+                    exitPoint: {
+                      id: exit_point.id,
+                      type: exit_point.type,
+                      position: exitPointEntity.geometry.coordinates,
+                    },
                   },
-                  entryPointDirection: entry_point_direction,
-                  exitPoint: {
-                    id: exit_point.id,
-                    type: exit_point.type,
-                    position: exitPointEntity.geometry.coordinates,
-                  },
-                },
-              });
-            });
+                });
+              }
+            );
           }}
         >
           <FiSearch /> {t('Editor.tools.routes-edition.alternative-routes')}
@@ -189,10 +190,8 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
 
 export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
   const { t } = useTranslation();
-  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
+  const infraID = useSelector(getInfraID);
+  const mapStyle = useSelector(getMapStyle);
 
   const lineProps = useMemo(() => {
     const layer = getRoutesLineLayerProps({ colors: colors[mapStyle] });
@@ -233,7 +232,7 @@ export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({
 
     if (geometryState.type === 'ready' && geometryState.feature?.properties.id !== id) {
       setGeometryState({ type: 'loading' });
-      getRouteGeometryByRouteId(osrdConf.infraID as string, id)
+      getRouteGeometryByRouteId(infraID as number, id)
         .then((feature) => {
           setGeometryState({
             type: 'ready',
@@ -247,20 +246,19 @@ export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({
           });
 
           const { entry_point, exit_point } = state.routeEntity.properties;
-          getMixedEntities<WayPointEntity>(osrdConf.infraID as string, [
-            entry_point,
-            exit_point,
-          ]).then((entities) => {
-            const entryPointEntity = entities[entry_point.id];
-            const exitPointEntity = entities[exit_point.id];
-            setGeometryState({
-              type: 'ready',
-              feature: lineString(
-                [entryPointEntity.geometry.coordinates, exitPointEntity.geometry.coordinates],
-                { id }
-              ),
-            });
-          });
+          getMixedEntities<WayPointEntity>(infraID as number, [entry_point, exit_point]).then(
+            (entities) => {
+              const entryPointEntity = entities[entry_point.id];
+              const exitPointEntity = entities[exit_point.id];
+              setGeometryState({
+                type: 'ready',
+                feature: lineString(
+                  [entryPointEntity.geometry.coordinates, exitPointEntity.geometry.coordinates],
+                  { id }
+                ),
+              });
+            }
+          );
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
