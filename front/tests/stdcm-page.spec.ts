@@ -27,7 +27,7 @@ test.describe('STDCM page', () => {
 
     await playwrightHomePage.goToSTDCMPage();
 
-    // Intercept the project request and return data test results
+    // Intercept the list of projects request and return data test results
     await playwrightSTDCMPage.page.route('**/projects/*', async (route) => {
       route.fulfill({
         status: 200,
@@ -35,7 +35,7 @@ test.describe('STDCM page', () => {
       });
     });
 
-    // Intercept the study request and return data test results
+    // Intercept the list of studies request and return data test results
     await playwrightSTDCMPage.page.route('**/projects/*/studies/*', async (route) => {
       route.fulfill({
         status: 200,
@@ -43,7 +43,7 @@ test.describe('STDCM page', () => {
       });
     });
 
-    // Intercept the scenario request and return data test results
+    // Intercept the list of scenarios request and return data test results
     await playwrightSTDCMPage.page.route('**/projects/*/studies/*/scenarios/*', async (route) => {
       route.fulfill({
         status: 200,
@@ -51,13 +51,14 @@ test.describe('STDCM page', () => {
       });
     });
 
-    // Intercept the light rolling stock request and return data test results
+    // Intercept the list of light rolling stock request and return data test results
     await playwrightSTDCMPage.page.route('**/light_rolling_stock/*', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(light_rolling_stock),
       });
     });
+    // Intercept a single rolling stock request and return data test results
     await playwrightSTDCMPage.page.route('**/rolling_stock/*/', async (route) => {
       route.fulfill({
         status: 200,
