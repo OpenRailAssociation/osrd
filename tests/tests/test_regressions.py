@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 import requests
 
+from .scenario import Scenario
 from .services import API_URL
-from .utils.simulation import _get_rolling_stock_id
 
 REGRESSION_TESTS_DATA_FOLDER = Path(__file__).parent / "regression_tests_data"
 REGRESSION_TESTS_JSON_FILES = [json_file.name for json_file in REGRESSION_TESTS_DATA_FOLDER.resolve().glob("*.json")]
@@ -30,7 +30,7 @@ def _schedule_with_payload(base_url, payload, accept_400):
     return r.json()["ids"][0]
 
 
-def _stdcm_with_payload(base_url, payload):
+def _stdcm_with_payload(base_url: str, payload):
     r = requests.post(base_url + "stdcm/", json=payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4:
@@ -38,7 +38,7 @@ def _stdcm_with_payload(base_url, payload):
         raise RuntimeError(f"stdcm error {r.status_code}: {r.content}")
 
 
-def _reproduce_test(path_to_json, all_scenarios):
+def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: int):
     fuzzer_output = json.loads(path_to_json.read_bytes())
 
     if fuzzer_output["error_type"] == "STDCM":
@@ -48,12 +48,11 @@ def _reproduce_test(path_to_json, all_scenarios):
     stop_after_pathfinding = fuzzer_output["error_type"] == "PATHFINDING"
     stop_after_schedule = fuzzer_output["error_type"] == "SCHEDULE"
 
-    scenario = all_scenarios[fuzzer_output["infra_name"]]
+    assert "small_infra" == fuzzer_output["infra_name"]
     timetable = scenario.timetable
     path_id = _pathfinding_with_payload(API_URL, fuzzer_output["path_payload"], scenario.infra, stop_after_pathfinding)
     if stop_after_pathfinding:
         return
-    rolling_stock_id = _get_rolling_stock_id(API_URL, "fast_rolling_stock")
 
     payload = fuzzer_output["schedule_payload"]
     payload["path"] = path_id
@@ -69,5 +68,5 @@ def _reproduce_test(path_to_json, all_scenarios):
 
 
 @pytest.mark.parametrize("file_name", REGRESSION_TESTS_JSON_FILES)
-def test_regressions(file_name: str, scenarios):
-    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, scenarios)
+def test_regressions(file_name: str, small_scenario: Scenario, fast_rolling_stock: int):
+    _reproduce_test(REGRESSION_TESTS_DATA_FOLDER / file_name, small_scenario, fast_rolling_stock)

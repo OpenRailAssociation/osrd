@@ -124,7 +124,16 @@
         "liveries": [{ "name": "default", "id": 187 }],
         "version": "3.0",
         "name": "7200GH",
-        "effort_curves": { "modes": { "1500": { "is_electric": true } }, "default_mode": "1500" },
+        "effort_curves": {
+          "modes": {
+            "1500": {
+              "curves": [],
+              "default_curve": { "speeds": [], "max_efforts": [], "is_electric": true },
+              "is_electric": true
+            }
+          },
+          "default_mode": "1500"
+        },
         "power_class": "3",
         "length": 17.48,
         "max_speed": 44.44444444444444,
@@ -154,7 +163,16 @@
         "liveries": [{ "name": "default", "id": 3 }],
         "version": "3.0",
         "name": "15000",
-        "effort_curves": { "modes": { "25000": { "is_electric": true } }, "default_mode": "25000" },
+        "effort_curves": {
+          "modes": {
+            "25000": {
+              "curves": [],
+              "default_curve": { "speeds": [], "max_efforts": [], "is_electric": true },
+              "is_electric": true
+            }
+          },
+          "default_mode": "25000"
+        },
         "power_class": "4",
         "length": 17.48,
         "max_speed": 44.44444444444444,
@@ -185,7 +203,18 @@
         "version": "3.0",
         "name": "22200G",
         "effort_curves": {
-          "modes": { "1500": { "is_electric": true }, "25000": { "is_electric": true } },
+          "modes": {
+            "1500": {
+              "curves": [],
+              "default_curve": { "speeds": [], "max_efforts": [], "is_electric": true },
+              "is_electric": true
+            }
+          },
+          "25000": {
+            "curves": [],
+            "default_curve": { "speeds": [], "max_efforts": [], "is_electric": true },
+            "is_electric": true
+          },
           "default_mode": "25000"
         },
         "power_class": "3",

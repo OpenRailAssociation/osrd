@@ -1,13 +1,145 @@
-from .scenario import Scenario
-from .services import API_URL
-from .utils.simulation import _get_waypoints_dummy_infra, run_pathfinding
+from itertools import chain
+
+import pytest
+
+from .path import Path
+
+_EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
+    **{
+        "id": -1,  # not checked
+        "owner": "00000000-0000-0000-0000-000000000000",
+        "created": "",  # not checked
+        "slopes": [
+            {"position": 0, "gradient": 0},
+            {"position": 5162.966050992638, "gradient": 0},
+            {"position": 5162.966050992638, "gradient": -3.0},
+            {"position": 5462.966050992638, "gradient": -3.0},
+            {"position": 5462.966050992638, "gradient": -6.0},
+            {"position": 5862.966050992638, "gradient": -6.0},
+            {"position": 5862.966050992638, "gradient": -3.0},
+            {"position": 6162.966050992638, "gradient": -3.0},
+            {"position": 6162.966050992638, "gradient": 0},
+            {"position": 8162.966050992638, "gradient": 0},
+            {"position": 8162.966050992638, "gradient": 3.0},
+            {"position": 8462.966050992638, "gradient": 3.0},
+            {"position": 8462.966050992638, "gradient": 6.0},
+            {"position": 8862.966050992638, "gradient": 6.0},
+            {"position": 8862.966050992638, "gradient": 3.0},
+            {"position": 9162.966050992638, "gradient": 3.0},
+            {"position": 9162.966050992638, "gradient": 0},
+            {"position": 18162.96605099264, "gradient": 0},
+            {"position": 18162.96605099264, "gradient": 3.0},
+            {"position": 19162.96605099264, "gradient": 3.0},
+            {"position": 19162.96605099264, "gradient": 6.0},
+            {"position": 20162.96605099264, "gradient": 6.0},
+            {"position": 20162.96605099264, "gradient": 3.0},
+            {"position": 21162.96605099264, "gradient": 3.0},
+            {"position": 21162.96605099264, "gradient": 0},
+            {"position": 26162.96605099264, "gradient": 0},
+            {"position": 26162.96605099264, "gradient": -3.0},
+            {"position": 27162.96605099264, "gradient": -3.0},
+            {"position": 27162.96605099264, "gradient": -6.0},
+            {"position": 28162.96605099264, "gradient": -6.0},
+            {"position": 28162.96605099264, "gradient": -3.0},
+            {"position": 29162.96605099264, "gradient": -3.0},
+            {"position": 29162.96605099264, "gradient": 0},
+            {"position": 45549.5653000392, "gradient": 0},
+        ],
+        "curves": [{"position": 0, "radius": 0}, {"position": 45549.5653000392, "radius": 0}],
+        "geographic": {
+            "type": "LineString",
+            "coordinates": [
+                [-0.387122554630656, 49.4998],
+                [-0.37, 49.4998],
+                [-0.365, 49.4999],
+                [-0.31, 49.4999],
+                [-0.296, 49.4999],
+                [-0.172, 49.4999],
+                [-0.1354, 49.4999],
+                [-0.135, 49.49995],
+                [-0.1346, 49.4999],
+                [-0.12, 49.4999],
+                [-0.115, 49.497],
+                [-0.115, 49.487],
+                [-0.11, 49.484],
+                [-0.095104854807785, 49.484],
+            ],
+        },
+        "schematic": {
+            "type": "LineString",
+            "coordinates": [
+                [-0.387122554630656, 49.4998],
+                [-0.37, 49.4998],
+                [-0.365, 49.4999],
+                [-0.31, 49.4999],
+                [-0.296, 49.4999],
+                [-0.172, 49.4999],
+                [-0.1354, 49.4999],
+                [-0.135, 49.49995],
+                [-0.1346, 49.4999],
+                [-0.12, 49.4999],
+                [-0.115, 49.497],
+                [-0.115, 49.487],
+                [-0.11, 49.484],
+                [-0.095104854807785, 49.484],
+            ],
+        },
+        "steps": [
+            {
+                "track": "TA2",
+                "position": 837.033949007362,
+                "geo": {"type": "Point", "coordinates": [-0.387122554630656, 49.4998]},
+                "sch": {"type": "Point", "coordinates": [-0.387122554630656, 49.4998]},
+                "id": None,
+                "name": None,
+                "suggestion": False,
+                "duration": 0.0,
+            },
+            {
+                "track": "TC2",
+                "position": 450.0,
+                "geo": {"type": "Point", "coordinates": [-0.3037, 49.4999]},
+                "sch": {"type": "Point", "coordinates": [-0.3037, 49.4999]},
+                "id": "Mid_West_station",
+                "name": "Mid_West_station",
+                "suggestion": True,
+                "duration": 0.0,
+            },
+            {
+                "track": "TD1",
+                "position": 14000.0,
+                "geo": {"type": "Point", "coordinates": [-0.22656, 49.4999]},
+                "sch": {"type": "Point", "coordinates": [-0.22656, 49.4999]},
+                "id": "Mid_East_station",
+                "name": "Mid_East_station",
+                "suggestion": True,
+                "duration": 0.0,
+            },
+            {
+                "track": "TH1",
+                "position": 4386.599249046556,
+                "geo": {"type": "Point", "coordinates": [-0.095104854807785, 49.484]},
+                "sch": {"type": "Point", "coordinates": [-0.095104854807785, 49.484]},
+                "id": None,
+                "name": None,
+                "suggestion": False,
+                "duration": 1.0,
+            },
+        ],
+    }
+)
 
 
-def test_pathfinding_small_infra(small_scenario: Scenario):
-    run_pathfinding(
-        API_URL, small_scenario.infra, [{"track_section": "TE1", "offset": 0}, {"track_section": "TE0", "offset": 0}]
+def test_west_to_south_east_path(west_to_south_east_path: Path):
+    assert west_to_south_east_path.owner == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.owner
+    assert west_to_south_east_path.slopes == pytest.approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.slopes)
+    assert west_to_south_east_path.curves == pytest.approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.curves)
+    assert west_to_south_east_path.steps == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.steps
+    assert west_to_south_east_path.geographic["type"] == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.geographic["type"]
+    assert list(chain.from_iterable(west_to_south_east_path.geographic["coordinates"])) == pytest.approx(
+        list(chain.from_iterable(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.geographic["coordinates"]))
     )
-
-
-def test_pathfinding_dummy_infra(dummy_scenario: Scenario):
-    run_pathfinding(API_URL, dummy_scenario.infra, _get_waypoints_dummy_infra(API_URL, dummy_scenario.infra))
+    assert west_to_south_east_path.schematic["type"] == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.schematic["type"]
+    assert list(chain.from_iterable(west_to_south_east_path.schematic["coordinates"])) == pytest.approx(
+        list(chain.from_iterable(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.schematic["coordinates"]))
+    )
