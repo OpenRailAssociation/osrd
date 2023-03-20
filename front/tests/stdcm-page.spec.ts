@@ -65,15 +65,6 @@ test.describe('STDCM page', () => {
       });
     });
 
-
-    // Intercept the rolling stock request and return data test results
-    await playwrightSTDCMPage.page.route('**/rolling_stock/*/', async (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify(playwrightDataTest.rollingStocks.results[0]),
-      });
-    });
-
     await playwrightSTDCMPage.getScenarioExploratorModalClose();
 
     // Opens the scenario explorator and selects project, study and scenario
