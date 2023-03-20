@@ -29,14 +29,11 @@ Check out details on the [website specific page](https://osrd.fr/en/about/).
 
 OSRD also currently has the following "development process" goals:
 
-- **User-facing API ergonomics come first**: Solid user experience should receive significant focus and investment.
-  It should rarely be compromised in the interest of internal implementation details.
 - **Don't merge everything ... don't merge too early**: Every feature we add increases maintenance burden and compile times.
   Only merge features that are "generally" useful.
   Don't merge major changes or new features unless we have relative consensus that the design is correct and that we have the developer capacity to support it.
 - **Control and consistency over 3rd party code reuse**: Only add a dependency if it is absolutely necessary.
   Every dependency we add decreases our autonomy and consistency.
-  Dependencies also have the potential to increase compile times and risk pulling in sub-dependencies we don't want / need.
 - **Don't re-invent every wheel**: As a counter to the previous point, don't re-invent everything at all costs.
   If there is a dependency in the ecosystem that is the "de-facto" standard, we should heavily consider using it.
 - **Thoughtful public interfaces over maximal configurability**: Symbols and apis should be private by default.
@@ -69,7 +66,7 @@ It handles things like merging pull requests, choosing project direction, managi
 Note that you do not need to be a member of the OSRD Team to contribute to OSRD.
 Community contributors (this means you) can freely open issues, submit pull requests, and review pull requests.
 
-Check out our dedicated [Governance document](https://osrd.fr/en/about/governance/) to learn more about how we are organized.
+[Click here](https://osrd.fr/en/about/governance/) to learn more about the project's governance.
 
 ## Contribute code
 
