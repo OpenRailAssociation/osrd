@@ -5,6 +5,7 @@ import {
   isolatedEnableInteractivity,
   updatePointers,
   displayGuide,
+  traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { Rnd } from 'react-rnd';
 import {
@@ -23,7 +24,6 @@ import PropTypes from 'prop-types';
 import { isolatedCreateTrain as createTrain } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 
 import { drawAllTrains } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/d3Helpers';
-import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 
 const CHART_ID = 'SpaceTimeChart';
 const CHART_MIN_HEIGHT = 250;
@@ -228,6 +228,25 @@ export default function SpaceTimeChart(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart]);
+
+  /**
+   * coordinates the vertical cursors with other graphs (GEV for instance)
+   */
+  useEffect(() => {
+    if (trainSimulations) {
+      traceVerticalLine(
+        chart,
+        trainSimulations?.[selectedTrain],
+        KEY_VALUES_FOR_SPACE_TIME_CHART,
+        LIST_VALUES_NAME_SPACE_TIME,
+        positionValues,
+        'headPosition',
+        rotate,
+        timePosition
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chart, positionValues, timePosition]);
 
   useEffect(() => {
     moveGridLinesOnMouseMove();
