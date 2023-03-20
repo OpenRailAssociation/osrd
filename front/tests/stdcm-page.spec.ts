@@ -52,11 +52,20 @@ test.describe('STDCM page', () => {
       });
     });
 
-    // Intercept the rollingstock request and return data test results
+    // Intercept the light rolling stock request and return data test results
     await playwrightSTDCMPage.page.route('**/light_rolling_stock/*', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(playwrightDataTest.rollingStocks),
+      });
+    });
+
+
+    // Intercept the rolling stock request and return data test results
+    await playwrightSTDCMPage.page.route('**/rolling_stock/*/', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify(playwrightDataTest.rollingStocks.results[0]),
       });
     });
 
