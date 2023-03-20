@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
-import playwrightDataTest from './playwright-data-test.json';
+import { projects } from './assets/operationStudies/project.json';
+import { studies } from './assets/operationStudies/study.json';
+import { scenarios } from './assets/operationStudies/scenario.json';
+import { light_rolling_stock, rolling_stock } from './assets/common/rollingStock.json';
 import { PlaywrightSTDCMPage } from './stdcm-page-model';
 
 // Describe the test suite for the STDCM page
@@ -28,7 +31,7 @@ test.describe('STDCM page', () => {
     await playwrightSTDCMPage.page.route('**/projects/*', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify(playwrightDataTest.project),
+        body: JSON.stringify(projects),
       });
     });
 
@@ -36,7 +39,7 @@ test.describe('STDCM page', () => {
     await playwrightSTDCMPage.page.route('**/projects/*/studies/*', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify(playwrightDataTest.study),
+        body: JSON.stringify(studies),
       });
     });
 
@@ -44,7 +47,7 @@ test.describe('STDCM page', () => {
     await playwrightSTDCMPage.page.route('**/projects/*/studies/*/scenarios/*', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify(playwrightDataTest.scenario),
+        body: JSON.stringify(scenarios),
       });
     });
 
@@ -52,7 +55,13 @@ test.describe('STDCM page', () => {
     await playwrightSTDCMPage.page.route('**/light_rolling_stock/*', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify(playwrightDataTest.rollingStocks),
+        body: JSON.stringify(light_rolling_stock),
+      });
+    });
+    await playwrightSTDCMPage.page.route('**/rolling_stock/*/', async (route) => {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify(rolling_stock),
       });
     });
 
@@ -70,19 +79,13 @@ test.describe('STDCM page', () => {
     // Opens the scenario explorator and selects project, study and scenario
     await playwrightSTDCMPage.openScenarioExplorator();
     await playwrightSTDCMPage.getScenarioExploratorModalOpen();
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(
-      playwrightDataTest.project.results[0].name
-    );
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(
-      playwrightDataTest.study.results[0].name
-    );
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(
-      playwrightDataTest.scenario.results[0].name
-    );
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName(projects.results[0].name);
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName(studies.results[0].name);
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName(scenarios.results[0].name);
   });
 
   test('should be correctly displays the rolling stock list and select one', async () => {
-    const rollingstocks = playwrightDataTest.rollingStocks.results;
+    const rollingstocks = light_rolling_stock.results;
     const rollingStockTranslation =
       playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
     const rollingStockTranslationRegEx = new RegExp(rollingStockTranslation as string);

@@ -1,0 +1,263 @@
+{
+  "light_rolling_stock": {
+    "count": 3,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": 1,
+        "liveries": [{ "name": "default", "id": 187 }],
+        "version": "3.0",
+        "name": "7200GH",
+        "effort_curves": { "modes": { "1500": { "is_electric": true } }, "default_mode": "1500" },
+        "power_class": "3",
+        "length": 17.48,
+        "max_speed": 44.44444444444444,
+        "startup_time": 25.0,
+        "startup_acceleration": 0.03,
+        "comfort_acceleration": 0.08,
+        "gamma": { "type": "CONST", "value": 0.5 },
+        "inertia_coefficient": 1.16,
+        "features": [],
+        "mass": 84000.0,
+        "rolling_resistance": { "A": 1066.0, "B": 30.240000000000002, "C": 3.888, "type": "davis" },
+        "loading_gauge": "G1",
+        "metadata": {
+          "type": "Locomotives électriques",
+          "unit": "US",
+          "detail": "BB 7200",
+          "family": "LOCOMOTIVES",
+          "number": "1",
+          "series": "BB 7200",
+          "grouping": "Locomotives électriques courant continu",
+          "reference": "7200",
+          "subseries": "GV"
+        }
+      },
+      {
+        "id": 2,
+        "liveries": [{ "name": "default", "id": 3 }],
+        "version": "3.0",
+        "name": "15000",
+        "effort_curves": { "modes": { "25000": { "is_electric": true } }, "default_mode": "25000" },
+        "power_class": "4",
+        "length": 17.48,
+        "max_speed": 44.44444444444444,
+        "startup_time": 25.0,
+        "startup_acceleration": 0.03,
+        "comfort_acceleration": 0.08,
+        "gamma": { "type": "CONST", "value": 0.5 },
+        "inertia_coefficient": 1.16,
+        "features": [],
+        "mass": 90000.0,
+        "rolling_resistance": { "A": 1110.0, "B": 32.4, "C": 3.888, "type": "davis" },
+        "loading_gauge": "G1",
+        "metadata": {
+          "type": "Locomotives électriques",
+          "unit": "US",
+          "detail": "BB15000 US",
+          "family": "LOCOMOTIVES",
+          "number": "1",
+          "series": "BB 15000",
+          "grouping": "Locomotives électriques monophasé",
+          "reference": "15000",
+          "subseries": "BB 15000"
+        }
+      },
+      {
+        "id": 3,
+        "liveries": [{ "name": "default", "id": 205 }],
+        "version": "3.0",
+        "name": "22200G",
+        "effort_curves": {
+          "modes": { "1500": { "is_electric": true }, "25000": { "is_electric": true } },
+          "default_mode": "25000"
+        },
+        "power_class": "3",
+        "length": 17.48,
+        "max_speed": 44.44444444444444,
+        "startup_time": 25.0,
+        "startup_acceleration": 0.03,
+        "comfort_acceleration": 0.08,
+        "gamma": { "type": "CONST", "value": 0.5 },
+        "inertia_coefficient": 1.16,
+        "features": [],
+        "mass": 89000.0,
+        "rolling_resistance": { "A": 1100.0, "B": 32.04, "C": 3.888, "type": "davis" },
+        "loading_gauge": "G1",
+        "metadata": {
+          "type": "Locomotives électriques",
+          "unit": "US",
+          "detail": "BB 22200",
+          "family": "LOCOMOTIVES",
+          "number": "1",
+          "series": "BB 22200",
+          "grouping": "Locomotives électriques bi courant",
+          "reference": "22200",
+          "subseries": "V160"
+        }
+      }
+    ]
+  },
+  "rolling_stock": {
+    "id": 0,
+    "version": "3.0",
+    "name": "string",
+    "length": 0,
+    "max_speed": 0,
+    "startup_time": 0,
+    "startup_acceleration": 0,
+    "comfort_acceleration": 0,
+    "gamma": {
+      "type": "CONST",
+      "value": 0
+    },
+    "inertia_coefficient": 0,
+    "features": [
+      "string"
+    ],
+    "mass": 0,
+    "rolling_resistance": {
+      "A": 0,
+      "B": 0,
+      "C": 0,
+      "type": "davis"
+    },
+    "loading_gauge": "G1",
+    "effort_curves": {
+      "default_mode": "string",
+      "modes": {
+        "additionalProp1": {
+          "is_electric": true,
+          "curves": [
+            {
+              "cond": {
+                "comfort": "STANDARD",
+                "electrical_profile_level": "string",
+                "power_restriction_code": "string"
+              },
+              "curve": {
+                "speeds": [
+                  0,
+                  2.958,
+                  46.719
+                ],
+                "max_efforts": [
+                  23500,
+                  23200,
+                  21200
+                ]
+              }
+            }
+          ],
+          "default_curve": {
+            "speeds": [
+              0,
+              2.958,
+              46.719
+            ],
+            "max_efforts": [
+              23500,
+              23200,
+              21200
+            ]
+          }
+        },
+        "additionalProp2": {
+          "is_electric": true,
+          "curves": [
+            {
+              "cond": {
+                "comfort": "STANDARD",
+                "electrical_profile_level": "string",
+                "power_restriction_code": "string"
+              },
+              "curve": {
+                "speeds": [
+                  0,
+                  2.958,
+                  46.719
+                ],
+                "max_efforts": [
+                  23500,
+                  23200,
+                  21200
+                ]
+              }
+            }
+          ],
+          "default_curve": {
+            "speeds": [
+              0,
+              2.958,
+              46.719
+            ],
+            "max_efforts": [
+              23500,
+              23200,
+              21200
+            ]
+          }
+        },
+        "additionalProp3": {
+          "is_electric": true,
+          "curves": [
+            {
+              "cond": {
+                "comfort": "STANDARD",
+                "electrical_profile_level": "string",
+                "power_restriction_code": "string"
+              },
+              "curve": {
+                "speeds": [
+                  0,
+                  2.958,
+                  46.719
+                ],
+                "max_efforts": [
+                  23500,
+                  23200,
+                  21200
+                ]
+              }
+            }
+          ],
+          "default_curve": {
+            "speeds": [
+              0,
+              2.958,
+              46.719
+            ],
+            "max_efforts": [
+              23500,
+              23200,
+              21200
+            ]
+          }
+        }
+      }
+    },
+    "base_power_class": "5",
+    "power_restrictions": {
+      "C1US": "4",
+      "C2US": "3"
+    },
+    "metadata": {
+      "detail": "BB 7200",
+      "family": "LOCOMOTIVES",
+      "grouping": "Locomotives électriques courant continu",
+      "number": "1",
+      "reference": "7200",
+      "series": "BB 7200",
+      "subseries": "GV",
+      "type": "Locomotives électriques",
+      "unit": "US"
+    },
+    "liveries": [
+      {
+        "id": 0,
+        "name": "string"
+      }
+    ]
+  }
+}

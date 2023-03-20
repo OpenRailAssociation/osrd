@@ -1,14 +1,41 @@
 {
-  "id": 0,
-  "name": "string",
-  "description": "string",
-  "tags": ["string"],
-  "infra": 0,
-  "creation_date": "2023-02-02T23:31:08.218Z",
-  "last_modification": "2023-02-02T23:31:08.218Z",
-  "timetable": 0,
-  "trains_count": 0,
-  "trains_schedules": [
-    "string"
-  ]
+  "scenarios": {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": 1,
+        "name": "Scenario test 1",
+        "description": "",
+        "timetable": 4,
+        "infra": 1,
+        "electrical_profile_set": null,
+        "trains_count": 2,
+        "creation_date": "2023-02-10 16:32:06.099793",
+        "last_modification": "2023-02-10 16:32:06.099815",
+        "tags": [],
+        "infra_name": "france",
+        "electrical_profile_set_name": null,
+        "train_schedules": [
+          { "id": 42, "train_name": "Train  1", "departure_time": 36000.0, "train_path": 48 },
+          { "id": 43, "train_name": "Train  2", "departure_time": 36900.0, "train_path": 48 }
+        ]
+      }
+    ]
+  },
+  "scenario": {
+    "id": 0,
+    "name": "string",
+    "description": "string",
+    "tags": ["string"],
+    "infra": 0,
+    "creation_date": "2023-02-02T23:31:08.218Z",
+    "last_modification": "2023-02-02T23:31:08.218Z",
+    "timetable": 0,
+    "trains_count": 0,
+    "trains_schedules": [
+      "string"
+    ]
+  }
 }

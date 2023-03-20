@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
-import projectJSON from './assets/operationStudies/project.json';
-import studyJSON from './assets/operationStudies/study.json';
-import scenarioJSON from './assets/operationStudies/scenario.json';
+import { projects, project } from './assets/operationStudies/project.json';
+import { studies, study } from './assets/operationStudies/study.json';
+import { scenarios, scenario } from './assets/operationStudies/scenario.json';
 import timetableJSON from './assets/operationStudies/timetable.json';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
@@ -17,37 +17,37 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await playwrightHomePage.page.route('**/projects/*', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify({ results: [projectJSON] }),
+        body: JSON.stringify(projects),
       });
     });
     await playwrightHomePage.page.route('**/projects/*/', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify(projectJSON),
+        body: JSON.stringify(project),
       });
     });
     await playwrightHomePage.page.route('**/projects/*/studies/*', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify({ results: [studyJSON] }),
+        body: JSON.stringify(studies),
       });
     });
     await playwrightHomePage.page.route('**/projects/*/studies/*/', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify(studyJSON),
+        body: JSON.stringify(study),
       });
     });
     await playwrightHomePage.page.route('**/projects/*/studies/*/scenarios/*', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify({ results: [scenarioJSON] }),
+        body: JSON.stringify(scenarios),
       });
     });
     await playwrightHomePage.page.route('**/projects/*/studies/*/scenarios/*/', async (route) => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify(scenarioJSON),
+        body: JSON.stringify(scenario),
       });
     });
     await playwrightHomePage.page.route('**/timetable/*/', async (route) => {
