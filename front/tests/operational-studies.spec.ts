@@ -14,42 +14,53 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     playwrightHomePage = new PlaywrightHomePage(page);
     await playwrightHomePage.goToHomePage();
+
+    // Intercept call for LIST OF projects
     await playwrightHomePage.page.route('**/projects/*', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(projects),
       });
     });
+    // Intercept call for a SINGLE project
     await playwrightHomePage.page.route('**/projects/*/', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(project),
       });
     });
+
+    // Intercept call for LIST OF studies
     await playwrightHomePage.page.route('**/projects/*/studies/*', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(studies),
       });
     });
+    // Intercept call for a SINGLE study
     await playwrightHomePage.page.route('**/projects/*/studies/*/', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(study),
       });
     });
+
+    // Intercept call for LIST OF scenarios
     await playwrightHomePage.page.route('**/projects/*/studies/*/scenarios/*', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(scenarios),
       });
     });
+    // Intercept call for a SINGLE scenario
     await playwrightHomePage.page.route('**/projects/*/studies/*/scenarios/*/', async (route) => {
       route.fulfill({
         status: 200,
         body: JSON.stringify(scenario),
       });
     });
+
+    // Intercept call for a SINGLE timetable
     await playwrightHomePage.page.route('**/timetable/*/', async (route) => {
       route.fulfill({
         status: 200,
