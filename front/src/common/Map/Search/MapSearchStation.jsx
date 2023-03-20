@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateMapSearchMarker } from 'reducers/map';
@@ -26,48 +26,51 @@ export default function MapSearchStation(props) {
 
   const { t } = useTranslation(['map-search']);
 
-  const updateSearch = async (params, setResults) => {
-    const { data, error } = await postSearch({
-      body: params,
-    });
-    if (error) console.error(error);
-    setResults(data);
-  };
-
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
   // Create playload based on the type of search "name" or "trigram"
 
-  const createPlayload = (queryType) => {
-    const searchQuery =
-      queryType === 'name' ? ['search', ['name'], searchState] : ['=i', ['trigram'], searchState];
-    const payload = {
-      object: 'operationalpoint',
-      query: ['and', searchQuery, ['=', ['infra_id'], infraID]],
-    };
-    return payload;
-  };
+  const createPayload = (searchQuery) => ({
+    object: 'operationalpoint',
+    query: ['and', searchQuery, ['=', ['infra_id'], infraID]],
+  });
 
   // Sort on name, and on yardname
   const orderResults = (results) =>
-    [...results].sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+    results.sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+
+  const searchByTrigrams = useCallback(async () => {
+    const searchQuery = ['=i', ['trigram'], searchState];
+    const payload = createPayload(searchQuery);
+    const { data, error } = await postSearch({
+      body: payload,
+    });
+    if (error) console.error(error);
+    setTrigramResults([...data]);
+  }, [searchState]);
+
+  const searchByNames = useCallback(async () => {
+    const searchQuery = ['search', ['name'], searchState];
+    const payload = createPayload(searchQuery);
+    const { data, error } = await postSearch({
+      body: payload,
+    });
+    if (error) console.error(error);
+    setNameResults(orderResults([...data]));
+  }, [searchState]);
 
   const getResult = async () => {
     if (!searchResults || searchResults.length > 3) setTrigramResults([]);
 
     if (searchState.length < 3) {
       setNameResults([]);
-      const searchTrigramQuery = createPlayload('trigram');
-      updateSearch(searchTrigramQuery, setTrigramResults);
+      searchByTrigrams();
     } else if (searchState.length === 3) {
       // The trigram search should always appear first, we need two api calls here.
-      const searchTrigramQuery = createPlayload('trigram');
-      updateSearch(searchTrigramQuery, setTrigramResults);
-      const searchNameQuery = createPlayload('name');
-      updateSearch(searchNameQuery, setNameResults);
+      searchByTrigrams();
+      searchByNames();
     } else if (searchState.length > 3) {
-      const searchNameQuery = createPlayload('name');
-      updateSearch(searchNameQuery, setNameResults);
+      searchByNames();
     }
   };
 
@@ -78,7 +81,7 @@ export default function MapSearchStation(props) {
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
-    setSearchResults([...trigramResults, ...orderResults(nameResults)]);
+    setSearchResults([...trigramResults, ...nameResults]);
   }, [trigramResults, nameResults]);
 
   const onResultClick = (result) => {
