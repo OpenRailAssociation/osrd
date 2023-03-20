@@ -16,7 +16,6 @@ export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
   const map = useSelector(getMap);
   const [searchState, setSearch] = useState('');
-  const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState(undefined);
   const [trigramResults, setTrigramResults] = useState([]);
   const [nameResults, setNameResults] = useState([]);
@@ -52,25 +51,29 @@ export default function MapSearchStation(props) {
   // Sort on name, and on yardname
   const orderResults = (results) =>
     [...results].sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+
   const getResult = async () => {
-    if (!dontSearch && debouncedSearchTerm) {
-      if (searchState.length < 3) {
-        const searchTrigramQuery = createPlayload('trigram');
-        updateSearch(searchTrigramQuery, setTrigramResults);
-      } else if (searchState.length === 3) {
-        const searchTrigramQuery = createPlayload('trigram');
-        updateSearch(searchTrigramQuery, setTrigramResults);
-        const searchNameQuery = createPlayload('name');
-        updateSearch(searchNameQuery, setNameResults);
-      } else if (searchState.length > 3) {
-        const searchNameQuery = createPlayload('name');
-        updateSearch(searchNameQuery, setNameResults);
-      }
+    if (!searchResults || searchResults.length > 3) setTrigramResults([]);
+
+    if (searchState.length < 3) {
+      setNameResults([]);
+      const searchTrigramQuery = createPlayload('trigram');
+      updateSearch(searchTrigramQuery, setTrigramResults);
+    } else if (searchState.length === 3) {
+      // The trigram search should always appear first, we need two api calls here.
+      const searchTrigramQuery = createPlayload('trigram');
+      updateSearch(searchTrigramQuery, setTrigramResults);
+      const searchNameQuery = createPlayload('name');
+      updateSearch(searchNameQuery, setNameResults);
+    } else if (searchState.length > 3) {
+      const searchNameQuery = createPlayload('name');
+      updateSearch(searchNameQuery, setNameResults);
     }
   };
 
   useEffect(() => {
     getResult();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
 
@@ -118,7 +121,6 @@ export default function MapSearchStation(props) {
             id="map-search-station"
             onChange={(e) => {
               setSearch(e.target.value);
-              setDontSearch(false);
             }}
             onClear={clearSearchResult}
             value={searchState}
