@@ -8,6 +8,7 @@ use std::{
 
 use crate::error::Result;
 use editoast_derive::EditoastError;
+use serde::Deserialize;
 use thiserror::Error;
 
 #[derive(Debug, PartialEq, Error, EditoastError)]
@@ -37,8 +38,17 @@ enum TypeCheckError {
 ///
 /// See [TypeSpec].
 #[derive(
-    Debug, PartialEq, Eq, Clone, Copy, strum_macros::Display, Hash, strum_macros::EnumIter,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    strum_macros::Display,
+    Hash,
+    strum_macros::EnumIter,
+    Deserialize,
 )]
+#[serde(rename_all = "lowercase")]
 pub enum AstType {
     Null,
     Boolean,
@@ -147,14 +157,6 @@ impl TypeSpec {
 
     pub fn or<T: Into<TypeSpec>, U: Into<TypeSpec>>(left: T, right: U) -> TypeSpec {
         TypeSpec::Union(Box::new(left.into()), Box::new(right.into()))
-    }
-
-    pub fn union_from_iter<T: Into<TypeSpec>, I: IntoIterator<Item = T>>(
-        alts: I,
-    ) -> Option<TypeSpec> {
-        alts.into_iter()
-            .map(|alt| Into::<TypeSpec>::into(alt))
-            .reduce(TypeSpec::or)
     }
 
     pub fn seq<T: Into<TypeSpec>>(item: T) -> TypeSpec {
