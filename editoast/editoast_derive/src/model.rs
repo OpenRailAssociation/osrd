@@ -14,6 +14,8 @@ struct ModelOptions {
     retrieve: Option<bool>,
     /// Enable the `delete` functions
     delete: Option<bool>,
+    /// Enable the `update` functions
+    update: Option<bool>,
 }
 
 struct Config {
@@ -22,6 +24,7 @@ struct Config {
     create_enabled: bool,
     retrieve_enabled: bool,
     delete_enabled: bool,
+    update_enabled: bool,
 }
 
 impl Config {
@@ -32,6 +35,7 @@ impl Config {
             create_enabled: options.create.unwrap_or(false),
             retrieve_enabled: options.retrieve.unwrap_or(false),
             delete_enabled: options.delete.unwrap_or(false),
+            update_enabled: options.update.unwrap_or(false),
         }
     }
 }
@@ -44,11 +48,13 @@ pub fn model(input: &mut DeriveInput) -> Result<TokenStream> {
     let create_functions = create_functions(&config);
     let retrieve_functions = retrieve_functions(&config);
     let delete_functions = delete_functions(&config);
+    let update_functions = update_functions(&config);
 
     let expanded = quote! {
         #create_functions
         #delete_functions
         #retrieve_functions
+        #update_functions
     };
     Ok(expanded)
 }
@@ -200,6 +206,57 @@ fn delete_functions(config: &Config) -> TokenStream {
                 block::<_, crate::error::Result<_>>(move || {
                     let mut conn = db_pool.get()?;
                     Self::delete_conn(&mut conn, id)
+                })
+                .await
+                .unwrap()
+            }
+        }
+    }
+}
+
+fn update_functions(config: &Config) -> TokenStream {
+    // If `delete` is not enabled, we don't generate anything
+    if !config.update_enabled {
+        return quote! {};
+    }
+    let table = &config.table;
+
+    let model_name = &config.model_name;
+    let documentation = format!(
+        r#"
+        Update a `{model_name}` given its ID (primary key).
+        Returns None if not found.
+
+        ### Example
+
+        ```
+        let obj_patch: {model_name} = ...;
+        let obj: {model_name} = obj_patch.update(db_pool, 42).await?;
+        ```
+        "#
+    );
+
+    quote! {
+        #[async_trait::async_trait]
+        impl crate::models::Update for #model_name {
+            fn update_conn(self, conn: &mut diesel::PgConnection, obj_id: i64) -> crate::error::Result<Option<Self>> {
+                use #table::table;
+
+                match diesel::update(table.find(obj_id)).set(&self).get_result(conn)
+                {
+                    Ok(obj) => Ok(Some(obj)),
+                    Err(DieselError::NotFound) => Ok(None),
+                    Err(e) => Err(e.into()),
+                }
+            }
+
+            #[doc = #documentation]
+            async fn update(self, db_pool: actix_web::web::Data<crate::DbPool>, id: i64) -> crate::error::Result<Option<Self>> {
+                use actix_web::web::block;
+
+                block::<_, crate::error::Result<_>>(move || {
+                    let mut conn = db_pool.get()?;
+                    self.update_conn(&mut conn, id)
                 })
                 .await
                 .unwrap()

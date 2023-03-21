@@ -9,7 +9,6 @@ use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt};
-use diesel::update;
 use diesel::Associations;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -27,14 +26,13 @@ use serde::{Deserialize, Serialize};
     Queryable,
     QueryableByName,
     AsChangeset,
-    Identifiable,
     Associations,
     Model,
 )]
 #[derivative(Default)]
 #[diesel(belongs_to(Project))]
 #[model(table = "osrd_infra_study")]
-#[model(create, delete, retrieve)]
+#[model(create, delete, retrieve, update)]
 #[diesel(table_name = osrd_infra_study)]
 pub struct Study {
     #[diesel(deserialize_as = i64)]
@@ -104,7 +102,7 @@ impl Study {
         project_id: i64,
     ) -> Result<PaginatedResponse<StudyWithScenarios>> {
         sql_query(
-            "SELECT study.*, COALESCE(ARRAY_AGG(scenario.id) FILTER (WHERE scenario.id is not NULL), ARRAY[]::bigint[])  as scenarios FROM osrd_infra_study study
+            "SELECT study.*, COALESCE(ARRAY_AGG(scenario.id) FILTER (WHERE scenario.id is not NULL), ARRAY[]::bigint[]) as scenarios FROM osrd_infra_study study
             LEFT JOIN osrd_infra_scenario scenario ON scenario.study_id = study.id WHERE study.project_id = $1
             GROUP BY study.id"
         ).bind::<BigInt,_>(project_id)
@@ -112,24 +110,6 @@ impl Study {
         .per_page(per_page)
         .load_and_count(db_pool)
         .await
-    }
-    /// Update a study.
-    /// If the study id is `None` this functions panic.
-    pub async fn update(self, db_pool: Data<DbPool>) -> Result<Option<Study>> {
-        block::<_, Result<_>>(move || {
-            use crate::tables::osrd_infra_study::dsl::*;
-            let mut conn = db_pool.get()?;
-            match update(osrd_infra_study.find(self.id.unwrap()))
-                .set(&self)
-                .get_result::<Study>(&mut conn)
-            {
-                Ok(study) => Ok(Some(study)),
-                Err(DieselError::NotFound) => Ok(None),
-                Err(e) => Err(e.into()),
-            }
-        })
-        .await
-        .unwrap()
     }
 }
 
