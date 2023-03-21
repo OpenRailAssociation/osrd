@@ -1,6 +1,6 @@
 //! Defines [SqlQuery]
 
-use std::{collections::VecDeque, fmt::Display};
+use std::{collections::HashMap, fmt::Display};
 
 use super::{
     context::TypedAst,
@@ -11,7 +11,6 @@ use super::{
 /// and reliable to use (as opposed to multiple string interpolations)
 ///
 /// Also takes care of parenthesizing and providing the strings to interpolate.
-/// See [SqlQuery::unsafe_strings()].
 #[derive(Debug, PartialEq)]
 pub enum SqlQuery {
     Value(TypedAst),
@@ -83,14 +82,14 @@ impl SqlQuery {
     }
 
     /// Builds the SQL code represented by self
-    pub fn to_sql(&self, bind_pos: &mut u64) -> String {
+    pub fn to_sql(&self, bind_pos: &mut u64, string_bind_map: &mut HashMap<u64, String>) -> String {
         match self {
-            SqlQuery::Value(value) => value_to_sql(value, bind_pos),
+            SqlQuery::Value(value) => value_to_sql(value, bind_pos, string_bind_map),
             SqlQuery::Call { function, args } => {
                 format!(
                     "{function}({0})",
                     args.iter()
-                        .map(|arg| format!("({0})", arg.to_sql(bind_pos)))
+                        .map(|arg| format!("({0})", arg.to_sql(bind_pos, string_bind_map)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 )
@@ -98,7 +97,7 @@ impl SqlQuery {
             SqlQuery::PrefixOp { operator, operand } => format!("{operator} ({operand})"),
             SqlQuery::InfixOp { operator, operands } => operands
                 .iter()
-                .map(|op| format!("({0})", op.to_sql(bind_pos)))
+                .map(|op| format!("({0})", op.to_sql(bind_pos, string_bind_map)))
                 .collect::<Vec<_>>()
                 .join(&format!(" {operator} ")),
         }
@@ -107,8 +106,7 @@ impl SqlQuery {
 
 impl Display for SqlQuery {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut n = 1;
-        let sql = self.to_sql(&mut n);
+        let sql = self.to_sql(&mut 1, &mut Default::default());
         write!(f, "{sql}")
     }
 }
@@ -123,14 +121,19 @@ fn sql_type(spec: &TypeSpec) -> Option<String> {
     }
 }
 
-fn value_to_sql(value: &TypedAst, bind_pos: &mut u64) -> String {
+fn value_to_sql(
+    value: &TypedAst,
+    bind_pos: &mut u64,
+    string_bind_map: &mut HashMap<u64, String>,
+) -> String {
     match value {
         TypedAst::Null => "NULL".to_owned(),
         TypedAst::Boolean(true) => "TRUE".to_owned(),
         TypedAst::Boolean(false) => "FALSE".to_owned(),
         TypedAst::Integer(i) => i.to_string(),
         TypedAst::Float(n) => format!("{n:?}"), // HACK: keeps .0 if n is an integer, otherwise displays all decimals
-        TypedAst::String(_) => {
+        TypedAst::String(string) => {
+            string_bind_map.insert(*bind_pos, string.clone());
             *bind_pos += 1;
             format!("${0}", *bind_pos - 1)
         }
@@ -149,7 +152,7 @@ fn value_to_sql(value: &TypedAst, bind_pos: &mut u64) -> String {
             let cast = sql_type(item_type).expect("could not convert into sql type");
             let items = items
                 .iter()
-                .map(|val| format!("({0})", value_to_sql(val, bind_pos)))
+                .map(|val| format!("({0})", value_to_sql(val, bind_pos, string_bind_map)))
                 .collect::<Vec<_>>()
                 .join(",");
             format!("ARRAY[{items}]::{cast}[]")
@@ -157,65 +160,10 @@ fn value_to_sql(value: &TypedAst, bind_pos: &mut u64) -> String {
     }
 }
 
-impl SqlQuery {
-    /// Returns an iterator that iterates through all strings to interpolate in
-    /// the SQL Query
-    pub fn unsafe_strings(&self) -> UnsafeStrings {
-        UnsafeStrings {
-            stack: VecDeque::from([self]),
-            ast_values: Default::default(),
-        }
-    }
-}
-
-/// See [SqlQuery::unsafe_strings()]
-pub struct UnsafeStrings<'a> {
-    stack: VecDeque<&'a SqlQuery>,
-    ast_values: VecDeque<&'a TypedAst>,
-}
-
-impl<'a> Iterator for UnsafeStrings<'a> {
-    type Item = &'a String;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some(value) = self.ast_values.pop_front() {
-            match value {
-                TypedAst::String(string) => Some(string),
-                TypedAst::Sequence(items, _) => {
-                    self.ast_values.extend(items.iter());
-                    self.next()
-                }
-                _ => self.next(),
-            }
-        } else {
-            let sql = self.stack.pop_front()?;
-            match sql {
-                SqlQuery::Value(value) => {
-                    self.ast_values.push_back(value);
-                    self.next()
-                }
-                SqlQuery::Call {
-                    args: sub_expressions,
-                    ..
-                }
-                | SqlQuery::InfixOp {
-                    operands: sub_expressions,
-                    ..
-                } => {
-                    self.stack.extend(sub_expressions.iter());
-                    self.next()
-                }
-                SqlQuery::PrefixOp { operand, .. } => {
-                    self.stack.push_back(operand);
-                    self.next()
-                }
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
+
     use crate::views::search::{context::TypedAst, typing::AstType};
 
     use super::SqlQuery;
@@ -243,11 +191,12 @@ mod test {
             &SqlQuery::Value(TypedAst::String("hello".to_owned())).to_string(),
             "$1"
         );
-        let mut n = 42;
+        let mut binds = Default::default();
         assert_eq!(
-            &SqlQuery::Value(TypedAst::String("hello".to_owned())).to_sql(&mut n),
+            &SqlQuery::Value(TypedAst::String("hello".to_owned())).to_sql(&mut 42, &mut binds),
             "$42"
         );
+        assert_eq!(binds, HashMap::from([(42, "hello".to_owned())]));
         assert_eq!(
             &SqlQuery::Value(TypedAst::Column {
                 name: "column".to_owned(),
