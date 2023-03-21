@@ -144,7 +144,7 @@ async fn runserver(
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
             .app_data(Data::new(SearchConfig::parse()))
-            .service(views::routes())
+            .service((views::routes(), views::study_routes()))
     });
 
     // Run server
