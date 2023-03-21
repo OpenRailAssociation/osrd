@@ -1,6 +1,6 @@
 import { noop } from 'lodash';
 import * as d3 from 'd3';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
@@ -69,7 +69,7 @@ export default function SpeedSpaceChart(props) {
   };
 
   // draw the train
-  const createChartAndTrain = useCallback(() => {
+  const createChartAndTrain = () => {
     const localChart = createChart(
       CHART_ID,
       chart,
@@ -82,10 +82,10 @@ export default function SpeedSpaceChart(props) {
     );
     setChart(localChart);
     drawTrain(trainSimulation, rotate, localSettings, localChart);
-  }, [chart, trainSimulation, localSettings, resetChart, rotate]);
+  };
 
   // rotation Handle (button on right bottom)
-  const toggleRotation = useCallback(() => {
+  const toggleRotation = () => {
     // TODO: this should be moved in createChart
     d3.select(`#${CHART_ID}`).remove();
     setChart({
@@ -96,7 +96,7 @@ export default function SpeedSpaceChart(props) {
       originalScaleY: chart.originalScaleX,
     });
     setRotate(!rotate);
-  }, [chart, rotate]);
+  };
 
   const debounceResize = () => {
     let debounceTimeoutId;
@@ -266,7 +266,7 @@ export default function SpeedSpaceChart(props) {
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate"
-          onClick={() => toggleRotation(rotate, setRotate)}
+          onClick={() => toggleRotation()}
         >
           <i className="icons-refresh" />
         </button>
