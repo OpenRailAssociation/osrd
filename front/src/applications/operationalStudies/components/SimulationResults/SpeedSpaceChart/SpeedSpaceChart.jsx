@@ -56,7 +56,6 @@ export default function SpeedSpaceChart(props) {
     initialHeightOfSpeedSpaceChart
   );
   const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
-  const [redrawAfterWindowResize, setRedrawAfterWindowResize] = useState(false);
   const [resetChart, setResetChart] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -102,16 +101,9 @@ export default function SpeedSpaceChart(props) {
     let debounceTimeoutId;
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      setRedrawAfterWindowResize(true);
+      createChartAndTrain();
     }, 15);
   };
-
-  useEffect(() => {
-    if (redrawAfterWindowResize) {
-      createChartAndTrain();
-      setRedrawAfterWindowResize(false);
-    }
-  }, [redrawAfterWindowResize]);
 
   // in case of initial ref creation of rotate, recreate the chart
   useEffect(() => {
@@ -183,7 +175,7 @@ export default function SpeedSpaceChart(props) {
     return () => {
       window.removeEventListener('resize', debounceResize);
     };
-  }, []);
+  }, [chart, trainSimulation, localSettings, resetChart, rotate]);
 
   // reset chart
   useEffect(() => {
