@@ -1,10 +1,13 @@
+use crate::diesel::QueryDsl;
+use crate::error::Result;
+use crate::models::train_schedule::TrainScheduleDetails;
 use crate::tables::osrd_infra_timetable;
 use crate::DbPool;
-use crate::{error::Result, models::train_schedule::TrainScheduleDetails};
 use actix_web::web::{block, Data};
 use derivative::Derivative;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
+use diesel::ExpressionMethods;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +25,7 @@ use serde::{Deserialize, Serialize};
 )]
 #[derivative(Default)]
 #[model(table = "osrd_infra_timetable")]
-#[model(create, retrieve)]
+#[model(create, delete, retrieve)]
 #[diesel(table_name = osrd_infra_timetable)]
 pub struct Timetable {
     #[diesel(deserialize_as = i64)]

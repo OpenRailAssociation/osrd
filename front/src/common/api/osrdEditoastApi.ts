@@ -316,6 +316,15 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.scenarioRequest,
       }),
     }),
+    deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+      DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+      DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        method: 'DELETE',
+      }),
+    }),
     getRollingStockByIdLiveryAndLiveryId: build.query<
       GetRollingStockByIdLiveryAndLiveryIdApiResponse,
       GetRollingStockByIdLiveryAndLiveryIdApiArg
@@ -754,6 +763,15 @@ export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   projectId: number;
   studyId: number;
   scenarioRequest: ScenarioRequest;
+};
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse = unknown;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** project id refered to the scenario */
+  projectId: number;
+  /** study id refered to the scenario */
+  studyId: number;
+  /** scenario id you want to delete */
+  scenarioId: number;
 };
 export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
 export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {
