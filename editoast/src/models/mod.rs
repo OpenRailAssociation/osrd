@@ -58,7 +58,7 @@ pub trait Delete {
     /// ### Example
     ///
     /// ```
-    /// assert!({model_name}::delete(db_pool, 42).await?);
+    /// assert!(Model::delete(db_pool, 42).await?);
     /// ```
     async fn delete(db_pool: Data<DbPool>, id: i64) -> Result<bool> {
         block::<_, crate::error::Result<_>>(move || {
@@ -86,7 +86,7 @@ pub trait Retrieve: Sized + 'static {
     /// ### Example
     ///
     /// ```
-    /// if let Some(obj) = Document::retrieve(db_pool, 42).await? {
+    /// if let Some(obj) = Model::retrieve(db_pool, 42).await? {
     ///     // do something with obj
     /// }
     /// ```
@@ -94,6 +94,35 @@ pub trait Retrieve: Sized + 'static {
         block::<_, crate::error::Result<_>>(move || {
             let mut conn = db_pool.get()?;
             Self::retrieve_conn(&mut conn, id)
+        })
+        .await
+        .unwrap()
+    }
+}
+
+/// Trait to implement the `update` and `update_conn` methods.
+/// This trait is automatically implemented by the `#[derive(Model)]` macro.
+/// Check the macro documentation [here](editoast_derive::Model)
+/// You can implement it manually if you want to customize the behavior.
+#[async_trait]
+pub trait Update: Sized + 'static {
+    /// Same as [update](Self::update) but takes a single postgres connection.
+    /// Useful when you are in a transaction.
+    fn update_conn(self, conn: &mut PgConnection, id: i64) -> Result<Option<Self>>;
+
+    /// Update an object given its ID (primary key).
+    /// Return 'None' if not found.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// let patch_model = ...;
+    /// let new_obj = patch_model.update(db_pool).await?.expect("Object not found");
+    /// ```
+    async fn update(self, db_pool: Data<DbPool>, id: i64) -> Result<Option<Self>> {
+        block::<_, crate::error::Result<_>>(move || {
+            let mut conn = db_pool.get()?;
+            self.update_conn(&mut conn, id)
         })
         .await
         .unwrap()

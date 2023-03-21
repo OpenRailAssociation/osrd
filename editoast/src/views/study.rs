@@ -5,6 +5,7 @@ use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Study;
 use crate::models::StudyWithScenarios;
+use crate::models::Update;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -189,22 +190,20 @@ struct StudyPatchForm {
     pub study_type: Option<String>,
 }
 
-impl StudyPatchForm {
-    fn into_study(self, project_id: i64, study_id: i64) -> Study {
+impl From<StudyPatchForm> for Study {
+    fn from(form: StudyPatchForm) -> Self {
         Study {
-            id: Some(study_id),
-            name: self.name,
-            project_id: Some(project_id),
-            description: self.description,
-            start_date: Some(self.start_date),
-            expected_end_date: Some(self.expected_end_date),
-            actual_end_date: Some(self.actual_end_date),
-            budget: self.budget,
-            business_code: self.business_code,
-            service_code: self.service_code,
-            state: self.state,
-            tags: self.tags,
-            study_type: self.study_type,
+            name: form.name,
+            description: form.description,
+            start_date: Some(form.start_date),
+            expected_end_date: Some(form.expected_end_date),
+            actual_end_date: Some(form.actual_end_date),
+            budget: form.budget,
+            business_code: form.business_code,
+            service_code: form.service_code,
+            state: form.state,
+            tags: form.tags,
+            study_type: form.study_type,
             ..Default::default()
         }
     }
@@ -225,8 +224,8 @@ async fn patch(
     };
 
     // Update study
-    let study = data.into_inner().into_study(project_id, study_id);
-    let study = match study.update(db_pool.clone()).await? {
+    let study: Study = data.into_inner().into();
+    let study = match study.update(db_pool.clone(), study_id).await? {
         Some(study) => study,
         None => return Err(StudyError::NotFound { study_id }.into()),
     };
