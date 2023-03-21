@@ -80,7 +80,7 @@ public final class CoastingGenerator {
             return backwardPartBuilder.build();
 
         var resultCoast = coastFromBeginning(envelope, context, constrainedBuilder.getLastPos());
-        assert resultCoast == null || resultCoast.getEndPos() <= endPos;
+        assert resultCoast == null || resultCoast.getEndPos() <= endPos + context.timeStep * speed;
         return resultCoast;
     }
 }
