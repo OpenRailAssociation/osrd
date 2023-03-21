@@ -281,6 +281,7 @@ table! {
 joinable!(  osrd_infra_trainschedule -> osrd_infra_timetable (timetable_id));
 
 allow_tables_to_appear_in_same_query!(osrd_infra_trainschedule, osrd_infra_timetable);
+
 table! {
     osrd_infra_document(id) {
         id -> BigInt,

@@ -3,6 +3,7 @@ use crate::tables::osrd_infra_scenario;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::sql_types::Array;
+use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -15,8 +16,11 @@ use serde::{Deserialize, Serialize};
     QueryableByName,
     Insertable,
     Identifiable,
+    Model,
 )]
 #[derivative(Default)]
+#[model(table = "osrd_infra_scenario")]
+#[model(create)]
 #[diesel(table_name = osrd_infra_scenario)]
 pub struct Scenario {
     #[diesel(deserialize_as = i64)]

@@ -79,6 +79,11 @@ pub struct StudyWithScenarios {
 }
 
 impl Study {
+    pub async fn update_last_modified(mut self, db_pool: Data<DbPool>) -> Result<Option<Study>> {
+        self.last_modification = Utc::now().naive_utc();
+        self.update(db_pool).await
+    }
+
     /// This function adds the list of scenarios ID that are linked to the study
     pub async fn with_scenarios(self, db_pool: Data<DbPool>) -> Result<StudyWithScenarios> {
         block::<_, Result<_>>(move || {

@@ -6,6 +6,7 @@ use crate::models::Retrieve;
 use crate::models::Study;
 use crate::models::StudyWithScenarios;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
+use crate::views::scenario;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::patch;
@@ -20,9 +21,11 @@ use thiserror::Error;
 
 /// Returns `/projects/{project}/studies` routes
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/studies")
-        .service((create, list))
-        .service(web::scope("/{study}").service((delete, get, patch)))
+    web::scope("/studies").service((create, list)).service(
+        web::scope("/{study}")
+            .service((delete, get, patch))
+            .service(scenario::routes()),
+    )
 }
 
 #[derive(Debug, Error, EditoastError)]
