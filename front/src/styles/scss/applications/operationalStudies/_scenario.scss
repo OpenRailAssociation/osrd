@@ -4,8 +4,12 @@
   position: relative;
   padding: 0.5rem 1rem;
   @keyframes fadein {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   .scenario-loader {
     position: absolute;
@@ -143,11 +147,11 @@
               }
             }
             .scenario-timetable-train-buttons-duplicate {
-              color: var(--primary);       
+              color: var(--primary);
               &:hover {
                 background-color: var(--primary);
                 color: var(--white);
-              }       
+              }
             }
             .scenario-timetable-train-buttons-update {
               color: var(--orange);
@@ -158,11 +162,11 @@
             }
             .scenario-timetable-train-buttons-delete {
               border-radius: 0 4px 4px 0;
-              color: var(--red);       
+              color: var(--red);
               &:hover {
                 background-color: var(--red);
                 color: var(--white);
-              }       
+              }
             }
           }
           .scenario-timetable-train-container {
@@ -186,7 +190,7 @@
                   border-radius: 4px;
                   color: var(--secondary);
                   background-color: var(--coolgray1);
-                  font-size: .6rem;
+                  font-size: 0.6rem;
                   margin: 0.25rem 0.5rem 0.25rem 0;
                   padding: 0.25rem;
                   min-width: 1.5rem;
@@ -196,7 +200,8 @@
                 font-size: 1.25rem;
                 width: 50%;
               }
-              .scenario-timetable-train-departure, .scenario-timetable-train-arrival {
+              .scenario-timetable-train-departure,
+              .scenario-timetable-train-arrival {
                 width: 25%;
                 text-align: right;
                 font-weight: 500;
@@ -220,7 +225,7 @@
                 padding: 0 0.25rem;
                 overflow: auto;
                 .scenario-timetable-train-tags-tag {
-                  font-size: 0.9rem;   
+                  font-size: 0.9rem;
                   background-color: var(--teal);
                   border-radius: 4px;
                   padding: 0 0.25rem;
@@ -229,7 +234,8 @@
               }
             }
             &:not(.with-details) {
-              .scenario-timetable-train-body, .scenario-timetable-train-tags {
+              .scenario-timetable-train-body,
+              .scenario-timetable-train-tags {
                 display: none;
               }
             }
@@ -261,7 +267,7 @@
     top: 0;
     left: 0;
     background-color: var(--coolgray1);
-    z-index: 2;
+    z-index: 3;
     height: 100%;
     width: 100%;
     padding-left: 0.5rem;
