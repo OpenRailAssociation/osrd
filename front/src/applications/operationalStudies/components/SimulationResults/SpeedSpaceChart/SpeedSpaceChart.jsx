@@ -56,6 +56,7 @@ export default function SpeedSpaceChart(props) {
     initialHeightOfSpeedSpaceChart
   );
   const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
+  const [redrawAfterWindowResize, setRedrawAfterWindowResize] = useState(false);
   const [resetChart, setResetChart] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -84,7 +85,7 @@ export default function SpeedSpaceChart(props) {
   }, [chart, trainSimulation, localSettings, resetChart, rotate]);
 
   // rotation Handle (button on right bottom)
-  const toggleRotation = () => {
+  const toggleRotation = useCallback(() => {
     // TODO: this should be moved in createChart
     d3.select(`#${CHART_ID}`).remove();
     setChart({
@@ -95,15 +96,22 @@ export default function SpeedSpaceChart(props) {
       originalScaleY: chart.originalScaleX,
     });
     setRotate(!rotate);
-  };
+  }, [chart, rotate]);
 
-  const debounceResize = (interval) => {
+  const debounceResize = () => {
     let debounceTimeoutId;
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      createChartAndTrain();
-    }, interval);
+      setRedrawAfterWindowResize(true);
+    }, 15);
   };
+
+  useEffect(() => {
+    if (redrawAfterWindowResize) {
+      createChartAndTrain();
+      setRedrawAfterWindowResize(false);
+    }
+  }, [redrawAfterWindowResize]);
 
   // in case of initial ref creation of rotate, recreate the chart
   useEffect(() => {
