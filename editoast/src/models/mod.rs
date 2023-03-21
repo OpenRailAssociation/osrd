@@ -1,5 +1,6 @@
 mod documents;
 mod projects;
+mod scenario;
 mod study;
 mod timetable;
 mod train_schedule;
@@ -12,6 +13,7 @@ use diesel::PgConnection;
 
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
+pub use scenario::{Scenario, ScenarioWithTrains};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::Timetable;
 pub use train_schedule::TrainSchedule;

@@ -13,9 +13,9 @@ use serde::Serialize;
 #[diesel(table_name = osrd_infra_timetable)]
 pub struct Timetable {
     #[diesel(deserialize_as = i64)]
-    pub id: i64,
+    pub id: Option<i64>,
     #[diesel(deserialize_as = String)]
-    pub name: String,
+    pub name: Option<String>,
 }
 
 impl Timetable {
