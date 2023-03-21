@@ -13,7 +13,7 @@ function createChart(
   resetChart,
   trainSimulation,
   rotate,
-  heightOfSpeedSpaceChart,
+  initialHeight,
   ref,
   setResetChart
 ) {
@@ -37,11 +37,15 @@ function createChart(
     d3.select(`#container-${CHART_ID}`) !== null
       ? parseInt(d3.select(`#container-${CHART_ID}`)?.style('width'), 10)
       : 250;
+  const height =
+    d3.select(`#container-${CHART_ID}`) !== null
+      ? d3.select(`#container-${CHART_ID}`).node().clientHeight
+      : initialHeight;
 
   setResetChart(false);
   return defineChart(
     width,
-    heightOfSpeedSpaceChart,
+    height,
     scaleX,
     scaleY,
     ref,

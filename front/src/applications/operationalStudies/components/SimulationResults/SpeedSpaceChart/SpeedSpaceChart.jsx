@@ -1,6 +1,6 @@
 import { noop } from 'lodash';
 import * as d3 from 'd3';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
@@ -68,20 +68,20 @@ export default function SpeedSpaceChart(props) {
   };
 
   // draw the train
-  const createChartAndTrain = useCallback(() => {
+  const createChartAndTrain = () => {
     const localChart = createChart(
       CHART_ID,
       chart,
       resetChart,
       trainSimulation,
       rotate,
-      heightOfSpeedSpaceChart,
+      initialHeightOfSpeedSpaceChart,
       ref,
       setResetChart
     );
     setChart(localChart);
     drawTrain(trainSimulation, rotate, localSettings, localChart);
-  }, [chart, trainSimulation, heightOfSpeedSpaceChart, localSettings, resetChart, rotate]);
+  };
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
@@ -97,13 +97,12 @@ export default function SpeedSpaceChart(props) {
     setRotate(!rotate);
   };
 
-  const debounceResize = (interval) => {
+  const debounceResize = () => {
     let debounceTimeoutId;
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      const height = d3.select(`#container-${CHART_ID}`).node().clientHeight;
-      setHeightOfSpeedSpaceChart(height);
-    }, interval);
+      createChartAndTrain();
+    }, 15);
   };
 
   // in case of initial ref creation of rotate, recreate the chart
@@ -115,12 +114,12 @@ export default function SpeedSpaceChart(props) {
         resetChart,
         trainSimulation,
         rotate,
-        heightOfSpeedSpaceChart,
+        initialHeightOfSpeedSpaceChart,
         ref,
         setResetChart
       )
     );
-  }, [ref, rotate, heightOfSpeedSpaceChart]);
+  }, [ref, rotate]);
 
   // plug event handlers once the chart is ready or recreated
   useEffect(() => {
@@ -148,7 +147,7 @@ export default function SpeedSpaceChart(props) {
   // redraw the train if necessary
   useEffect(() => {
     createChartAndTrain();
-  }, [rotate, localSettings]);
+  }, [rotate, localSettings, heightOfSpeedSpaceChart]);
 
   // draw or redraw the position line indictator when usefull
   useEffect(() => {
@@ -176,7 +175,7 @@ export default function SpeedSpaceChart(props) {
     return () => {
       window.removeEventListener('resize', debounceResize);
     };
-  }, []);
+  }, [chart, trainSimulation, localSettings, resetChart, rotate]);
 
   // reset chart
   useEffect(() => {
@@ -259,7 +258,7 @@ export default function SpeedSpaceChart(props) {
         <button
           type="button"
           className="btn-rounded btn-rounded-white box-shadow btn-rotate"
-          onClick={() => toggleRotation(rotate, setRotate)}
+          onClick={() => toggleRotation()}
         >
           <i className="icons-refresh" />
         </button>
