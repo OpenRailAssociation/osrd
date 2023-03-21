@@ -64,7 +64,7 @@ public class PathfindingRoutesEndpoint implements Take {
             var reqWaypoints = request.waypoints;
 
             // load infra
-            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            var infra = infraManager.load(request.infra, request.expectedVersion, recorder).java();
 
             // load rolling stocks
             var rollingStocks = List.<RollingStock>of();

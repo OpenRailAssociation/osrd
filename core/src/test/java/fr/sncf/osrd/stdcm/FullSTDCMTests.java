@@ -37,14 +37,15 @@ public class FullSTDCMTests {
      * add a train at `2 * min delay`, and try to fit a train between the two. */
     @Test
     public void testTinyInfraSmallOpening() throws IOException, URISyntaxException {
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        var fullInfra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        var infra = fullInfra.java();
         var firstRoute = infra.findSignalingRoute("rt.buffer_stop_b->tde.foo_b-switch_foo", "BAL3");
         var secondRoute = infra.findSignalingRoute("rt.tde.foo_b-switch_foo->buffer_stop_c", "BAL3");
         var start = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100));
         var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125));
-        var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
+        var occupancies = STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 0);
         double minDelay = STDCMHelpers.getMaxOccupancyLength(occupancies); // Eventually we may need to add a % margin
-        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, minDelay * 2));
+        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, minDelay * 2));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(minDelay)
@@ -58,13 +59,14 @@ public class FullSTDCMTests {
     /** We try to fit a train in a short opening between two trains, this time on small_infra */
     @Test
     public void testSmallInfraSmallOpening() throws IOException, URISyntaxException {
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        var fullInfra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        var infra = fullInfra.java();
         var firstRoute = infra.findSignalingRoute("rt.buffer_stop.3->DB0", "BAL3");
         var secondRoute = infra.findSignalingRoute("rt.DH1_2->buffer_stop.7", "BAL3");
         var start = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 1590));
         var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 1137));
-        var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
-        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, 600));
+        var occupancies = STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 0);
+        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 600));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(300)

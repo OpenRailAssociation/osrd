@@ -2,21 +2,15 @@
 
 package fr.sncf.osrd.standalone_sim
 
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra
 import fr.sncf.osrd.infra_state.api.TrainPath
+import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
-import fr.sncf.osrd.signaling.bal.*
-import fr.sncf.osrd.signaling.bapr.BAPR
-import fr.sncf.osrd.signaling.bapr.BAPRtoBAL
-import fr.sncf.osrd.signaling.bapr.BAPRtoBAPR
-import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
-import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
-import fr.sncf.osrd.sim_infra_adapter.adaptRawInfra
 import fr.sncf.osrd.standalone_sim.result.*
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
@@ -27,29 +21,20 @@ import kotlin.math.abs
 
 /** Use an already computed envelope to extract various metadata about a trip.  */
 fun run(
-    envelope: Envelope, trainPath: TrainPath, schedule: StandaloneTrainSchedule, infra: SignalingInfra
+    envelope: Envelope, trainPath: TrainPath, schedule: StandaloneTrainSchedule, fullInfra: FullInfra
 ): ResultTrain {
     assert(envelope.continuous)
 
-    // Load the kotlin infra
-    // TODO: don't do it here
-    val sigSystemManager = SigSystemManagerImpl()
-    val bal = sigSystemManager.addSignalingSystem(BAL)
-    val bapr = sigSystemManager.addSignalingSystem(BAPR)
-    val tvm = sigSystemManager.addSignalingSystem(TVM)
+    val rawInfra = fullInfra.rawInfra;
+    val loadedSignalInfra = fullInfra.loadedSignalInfra;
+    val blockInfra = fullInfra.blockInfra;
+    val simulator = fullInfra.signalingSimulator;
 
-    sigSystemManager.addSignalDriver(BALtoBAL)
-    sigSystemManager.addSignalDriver(BALtoBAPR)
-    sigSystemManager.addSignalDriver(BAPRtoBAPR)
-    sigSystemManager.addSignalDriver(BAPRtoBAL)
-    sigSystemManager.addSignalDriver(TVMtoTVM)
-    sigSystemManager.addSignalDriver(TVMtoBAL)
-    sigSystemManager.addSignalDriver(BALtoTVM)
-
-    val rawInfra = adaptRawInfra(infra)
-    val simulator = SignalingSimulatorImpl(sigSystemManager)
-    val loadedSignalInfra = simulator.loadSignals(rawInfra)
-    val blockInfra = simulator.buildBlocks(rawInfra, loadedSignalInfra)
+    // TODO: the allowed signaling systems should be dependant on the type of train
+    val sigSystemManager = simulator.sigModuleManager
+    val bal = sigSystemManager.findSignalingSystem("BAL")
+    val bapr = sigSystemManager.findSignalingSystem("BAPR")
+    val tvm = sigSystemManager.findSignalingSystem("TVM")
 
     // Get the route path
     // TODO: do it in the pathfinding
@@ -232,7 +217,7 @@ private fun computeSignalAspectChangeEvents(
     blockInfra: BlockInfra,
     pathSignals: List<PathSignal>,
     zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>,
-    simulator: SignalingSimulatorImpl,
+    simulator: SignalingSimulator,
     rawInfra: SimInfraAdapter,
     loadedSignalInfra: LoadedSignalInfra
 ): Map<PathSignal, MutableList<SignalAspectChangeEvent>> {

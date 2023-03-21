@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.stdcm;
 
 import fr.sncf.osrd.api.ExceptionHandler;
+import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
@@ -85,7 +86,8 @@ public class STDCMEndpoint implements Take {
                 );
             if (Double.isNaN(startTime))
                 throw new RuntimeException("STDCM requests with unspecified start time are not supported yet");
-            final var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            final var fullInfra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            final var infra = fullInfra.java();
             final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
             final var startLocations = findRoutes(infra, request.startPoints);
@@ -111,7 +113,7 @@ public class STDCMEndpoint implements Take {
                     request.gridMarginBeforeSTDCM
             );
             double minRunTime = getMinRunTime(
-                    infra,
+                    fullInfra,
                     rollingStock,
                     comfort,
                     startLocations,
@@ -150,7 +152,7 @@ public class STDCMEndpoint implements Take {
                     res.envelope(),
                     res.trainPath(),
                     makeTrainSchedule(res.envelope(), rollingStock, comfort),
-                    infra
+                    fullInfra
             ));
             simResult.ecoSimulations.add(null);
             var pathfindingRes = PathfindingResultConverter.convert(res.routes(), infra, recorder);
@@ -187,7 +189,7 @@ public class STDCMEndpoint implements Take {
     /** Find the minimum run time to go from start to end, assuming the timetable is empty.
      * Returns 0 if we can't find a valid path. */
     private double getMinRunTime(
-            SignalingInfra infra,
+            FullInfra fullInfra,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             Set<EdgeLocation<SignalingRoute>> startLocations,
@@ -195,6 +197,7 @@ public class STDCMEndpoint implements Take {
             double timeStep,
             AllowanceValue standardAllowance
     ) {
+        var infra = fullInfra.java();
         var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations);
         var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
@@ -216,7 +219,7 @@ public class STDCMEndpoint implements Take {
         var path = TrainPathBuilder.from(routes, startLocation, lastLocation);
         DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
         var standaloneResult = StandaloneSim.run(
-                infra,
+                fullInfra,
                 path,
                 EnvelopeTrainPath.from(path),
                 List.of(new StandaloneTrainSchedule(
