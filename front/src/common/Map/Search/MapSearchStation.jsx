@@ -28,6 +28,11 @@ export default function MapSearchStation(props) {
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
+  const resetSearchResult = () => {
+    setNameResults([]);
+    setTrigramResults([]);
+  };
+
   // Create playload based on the type of search "name" or "trigram"
 
   const createPayload = (searchQuery) => ({
@@ -45,8 +50,11 @@ export default function MapSearchStation(props) {
     const { data, error } = await postSearch({
       body: payload,
     });
-    if (error) console.error(error);
-    setTrigramResults([...data]);
+    if (error) {
+      resetSearchResult();
+    } else {
+      setTrigramResults(data);
+    }
   }, [searchState]);
 
   const searchByNames = useCallback(async () => {
@@ -55,13 +63,14 @@ export default function MapSearchStation(props) {
     const { data, error } = await postSearch({
       body: payload,
     });
-    if (error) console.error(error);
-    setNameResults(orderResults([...data]));
+    if (error) {
+      resetSearchResult();
+    } else {
+      setNameResults(orderResults([...data]));
+    }
   }, [searchState]);
 
   const getResult = async () => {
-    if (!searchResults || searchResults.length > 3) setTrigramResults([]);
-
     if (searchState.length < 3) {
       setNameResults([]);
       searchByTrigrams();
@@ -70,12 +79,17 @@ export default function MapSearchStation(props) {
       searchByTrigrams();
       searchByNames();
     } else if (searchState.length > 3) {
+      setTrigramResults([]);
       searchByNames();
     }
   };
 
   useEffect(() => {
-    getResult();
+    if (searchState) {
+      getResult();
+    } else {
+      resetSearchResult();
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
@@ -110,6 +124,7 @@ export default function MapSearchStation(props) {
 
   const clearSearchResult = () => {
     setSearch('');
+    resetSearchResult();
     setSearchResults(undefined);
     dispatch(updateMapSearchMarker(undefined));
   };
