@@ -1,5 +1,6 @@
 use crate::error::Result;
 use crate::models::Project;
+use crate::models::Update;
 use crate::tables::osrd_infra_study;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -77,6 +78,12 @@ pub struct StudyWithScenarios {
 }
 
 impl Study {
+    pub async fn update_last_modified(mut self, db_pool: Data<DbPool>) -> Result<Option<Study>> {
+        self.last_modification = Utc::now().naive_utc();
+        let study_id = self.id.unwrap();
+        self.update(db_pool, study_id).await
+    }
+
     /// This function adds the list of scenarios ID that are linked to the study
     pub async fn with_scenarios(self, db_pool: Data<DbPool>) -> Result<StudyWithScenarios> {
         block::<_, Result<_>>(move || {

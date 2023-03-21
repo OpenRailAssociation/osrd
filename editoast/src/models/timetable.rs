@@ -1,15 +1,28 @@
-use super::{Retrieve, TrainSchedule};
-use crate::error::Result;
 use crate::tables::osrd_infra_timetable;
-use diesel::pg::PgConnection;
+use crate::DbPool;
+use crate::{error::Result, models::train_schedule::TrainScheduleDetails};
+use actix_web::web::{block, Data};
+use derivative::Derivative;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
 use editoast_derive::Model;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Queryable, Identifiable, Serialize, Selectable, Model)]
+#[derive(
+    Debug,
+    PartialEq,
+    Queryable,
+    Identifiable,
+    Serialize,
+    Selectable,
+    Model,
+    Derivative,
+    Insertable,
+    Deserialize,
+)]
+#[derivative(Default)]
 #[model(table = "osrd_infra_timetable")]
-#[model(retrieve)]
+#[model(create, retrieve)]
 #[diesel(table_name = osrd_infra_timetable)]
 pub struct Timetable {
     #[diesel(deserialize_as = i64)]
@@ -18,20 +31,33 @@ pub struct Timetable {
     pub name: Option<String>,
 }
 
+#[derive(Debug, PartialEq, Serialize)]
+pub struct TimetableWithSchedules {
+    #[serde(flatten)]
+    pub timetable: Timetable,
+    pub train_schedules: Vec<TrainScheduleDetails>,
+}
+
 impl Timetable {
     /// Retrieves timetable with a specific id and its associated train schedules
-    pub fn with_train_schedules(
-        conn: &mut PgConnection,
-        timetable_id: i64,
-    ) -> Result<Option<(Timetable, Vec<TrainSchedule>)>> {
-        let timetable = match Timetable::retrieve_conn(conn, timetable_id)? {
-            Some(timetable) => timetable,
-            None => return Ok(None),
-        };
+    pub async fn with_train_schedules(
+        self,
+        db_pool: Data<DbPool>,
+    ) -> Result<TimetableWithSchedules> {
+        use crate::tables::osrd_infra_trainschedule::dsl;
+        block::<_, Result<_>>(move || {
+            let mut conn = db_pool.get()?;
+            let train_schedules: Vec<TrainScheduleDetails> = dsl::osrd_infra_trainschedule
+                .filter(dsl::timetable_id.eq(self.id.unwrap()))
+                .select((dsl::id, dsl::train_name, dsl::departure_time, dsl::path_id))
+                .load(&mut conn)?;
 
-        let train_schedules = TrainSchedule::belonging_to(&timetable)
-            .select(TrainSchedule::as_select())
-            .load::<TrainSchedule>(conn)?;
-        Ok(Some((timetable, train_schedules)))
+            Ok(TimetableWithSchedules {
+                timetable: self,
+                train_schedules,
+            })
+        })
+        .await
+        .unwrap()
     }
 }
