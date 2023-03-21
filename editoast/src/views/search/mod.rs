@@ -188,7 +188,6 @@
 //!
 //! The last step is to bind all user strings to the SQL query in order to
 //! prevent any SQL injection. That way, no malicious search query can be forged.
-//! [sqlquery::SqlQuery::unsafe_strings()] provide the strings to interpolate, in order.
 //!
 //! The SQL request is now complete and ready to be executed in Postgres.
 //! The resulting table of the request will then be converted to a JSON array of
@@ -280,7 +279,7 @@ fn create_sql_query(
     if !AstType::Boolean.is_supertype_spec(&search_ast_expression_type) {
         return Err(SearchError::QueryAst(search_ast_expression_type).into());
     }
-    let constraints = context.search_ast_to_sql(&ast)?;
+    let where_expression = context.search_ast_to_sql(&ast)?;
     let table = &search_entry.table;
     let joins = search_entry
         .result
@@ -289,6 +288,8 @@ fn create_sql_query(
         .cloned()
         .unwrap_or_default();
     let result_columns = search_entry.result_columns();
+    let mut bind_pos = Default::default();
+    let constraints = where_expression.to_sql(&mut 1, &mut bind_pos);
     let sql_code = format!(
         "WITH _RESULT AS (
             SELECT {result_columns}
@@ -300,10 +301,11 @@ fn create_sql_query(
         SELECT to_jsonb(_RESULT) AS result
         FROM _RESULT"
     );
+    let mut ordered = bind_pos.iter().collect::<Vec<_>>();
+    ordered.sort_by_key(|(pos, _)| *pos);
     let mut sql_query = sql_query(sql_code).into_boxed();
-    for string in constraints.unsafe_strings() {
-        let replacement = string.replace('\'', "\\'");
-        sql_query = sql_query.bind::<Text, _>(replacement);
+    for (_, string) in ordered {
+        sql_query = sql_query.bind::<Text, _>(string.to_owned());
     }
     Ok(sql_query)
 }
