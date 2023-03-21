@@ -36,10 +36,8 @@ To compile and run the application with an example infrastructure:
 docker-compose up -d --build
 
 # generate and load an example infrastructure
-python3 -m venv .venv
-source .venv/bin/activate
-pip install geojson-pydantic
-scripts/generate-infra.sh small_infra
+poetry --directory=python/railjson_generator shell
+./scripts/generate-infra.sh small_infra
 
 # open the web app
 xdg-open http://localhost:3000/

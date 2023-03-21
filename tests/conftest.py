@@ -1,11 +1,11 @@
 import json
 import subprocess
-import sys
 from pathlib import Path
 from typing import List
 
 import pytest
 import requests
+from railjson_generator.scripts.generate import main
 
 from tests import FAST_ROLLING_STOCK_JSON_PATH
 from tests.infra import Infra
@@ -16,10 +16,9 @@ from tests.utils.timetable import create_scenario
 
 
 def _load_generated_infra(name: str) -> int:
-    generator = Path(__file__).resolve().parents[1] / "core/examples/generated/generate.py"
     output = Path("/tmp/osrd-generated-examples")
     infra = output / f"{name}/infra.json"
-    subprocess.check_call([sys.executable, str(generator), str(output), name])
+    main([name], output)
     subprocess.check_call(["docker", "cp", str(infra), "osrd-api:/infra.json"])
     result = subprocess.check_output(
         [

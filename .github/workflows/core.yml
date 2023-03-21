@@ -20,12 +20,17 @@ jobs:
         with:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
-
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - run: pip install -r core/examples/generated/lib/requirements.txt
+          cache: "poetry"
+      - name: Install railjson_generator dependencies
+        run: |
+          cd python/railjson_generator
+          poetry install
       - uses: actions/setup-java@v3
         with:
           java-version: 17
