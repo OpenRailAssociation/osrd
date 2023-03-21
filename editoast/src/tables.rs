@@ -242,10 +242,45 @@ table! {
     osrd_infra_scenario {
         id -> BigInt,
         study_id -> BigInt,
-        // TODO : add other fields
+        infra_id -> BigInt,
+        electrical_profile_set_id -> Nullable<BigInt>,
+        timetable_id -> BigInt,
+        name -> Text,
+        description -> Text,
+        creation_date -> Timestamp,
+        last_modification -> Timestamp,
+        tags -> Array<Text>,
     }
 }
 
+table! {
+    osrd_infra_timetable {
+        id -> BigInt,
+        name -> Text,
+    }
+}
+
+table! {
+    osrd_infra_trainschedule(id) {
+        id -> BigInt,
+        train_name -> Text,
+        labels -> Jsonb,
+        departure_time -> Double,
+        initial_speed -> Double,
+        allowances -> Jsonb,
+        comfort -> Text,
+        speed_limit_tags -> Nullable<Text>,
+        power_restriction_ranges -> Nullable<Jsonb>,
+        options -> Nullable<Jsonb>,
+        path_id -> BigInt,
+        rolling_stock_id -> BigInt,
+        timetable_id -> BigInt,
+    }
+}
+
+joinable!(  osrd_infra_trainschedule -> osrd_infra_timetable (timetable_id));
+
+allow_tables_to_appear_in_same_query!(osrd_infra_trainschedule, osrd_infra_timetable);
 table! {
     osrd_infra_document(id) {
         id -> BigInt,
