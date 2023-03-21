@@ -7,6 +7,7 @@ use crate::models::Study;
 use crate::models::StudyWithScenarios;
 use crate::models::Update;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
+use crate::views::projects::ProjectError;
 use crate::views::scenario;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -31,11 +32,7 @@ pub fn routes() -> impl HttpServiceFactory {
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "study")]
-enum StudyError {
-    /// Couldn't found the project with the given project_id
-    #[error("Project '{project_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    ProjectNotFound { project_id: i64 },
+pub enum StudyError {
     /// Couldn't found the project with the given project_id
     #[error("Study '{study_id}', could not be found")]
     #[editoast_error(status = 404)]
@@ -96,7 +93,7 @@ async fn create(
     let project_id = project.into_inner();
     // Check if project exists
     let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-        None => return Err(StudyError::ProjectNotFound { project_id }.into()),
+        None => return Err(ProjectError::NotFound { project_id }.into()),
         Some(project) => project,
     };
 
@@ -123,7 +120,7 @@ async fn delete(path: Path<(i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpRes
     let (project_id, study_id) = path.into_inner();
     // Check if project exists
     let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-        None => return Err(StudyError::ProjectNotFound { project_id }.into()),
+        None => return Err(ProjectError::NotFound { project_id }.into()),
         Some(project) => project,
     };
 
@@ -164,7 +161,7 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
         .await?
         .is_none()
     {
-        return Err(StudyError::ProjectNotFound { project_id }.into());
+        return Err(ProjectError::NotFound { project_id }.into());
     };
 
     // Return the studies
@@ -222,7 +219,7 @@ async fn patch(
 
     // Check if project exists
     let project = match Project::retrieve(db_pool.clone(), project_id).await? {
-        None => return Err(StudyError::ProjectNotFound { project_id }.into()),
+        None => return Err(ProjectError::NotFound { project_id }.into()),
         Some(project) => project,
     };
 
@@ -242,7 +239,7 @@ async fn patch(
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use crate::models::Project;
     use crate::models::Study;
     use crate::views::projects::test::{create_project_request, delete_project_request};

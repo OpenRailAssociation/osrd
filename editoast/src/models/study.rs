@@ -135,7 +135,7 @@ pub mod test {
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::PgConnection;
 
-    fn build_test_study(project_id: i64) -> Study {
+    pub fn build_test_study(project_id: i64) -> Study {
         Study {
             name: Some("test".into()),
             project_id: Some(project_id),

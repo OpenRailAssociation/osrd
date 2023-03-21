@@ -365,7 +365,7 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use crate::infra::Infra;
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};

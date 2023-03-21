@@ -30,7 +30,7 @@ pub fn routes() -> impl HttpServiceFactory {
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "project")]
-enum ProjectError {
+pub enum ProjectError {
     /// Couldn't found the project with the given id
     #[error("Project '{project_id}', could not be found")]
     #[editoast_error(status = 404)]
