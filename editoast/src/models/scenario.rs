@@ -1,11 +1,14 @@
+use crate::error::Result;
 use crate::models::train_schedule::TrainScheduleDetails;
+use crate::models::Delete;
 use crate::tables::osrd_infra_scenario;
-use crate::{error::Result, DbPool};
+use crate::DbPool;
 use actix_web::web::{block, Data};
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
+use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, BigInt, Nullable, Text};
-use diesel::QueryDsl;
+use diesel::{delete, QueryDsl};
 use diesel::{ExpressionMethods, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
@@ -15,10 +18,10 @@ use serde::{Deserialize, Serialize};
     Debug,
     Serialize,
     Deserialize,
+    Insertable,
     Derivative,
     Queryable,
     QueryableByName,
-    Insertable,
     Identifiable,
     Model,
 )]
@@ -65,7 +68,7 @@ pub struct ScenarioWithDetails {
     #[diesel(sql_type = Array<TrainScheduleDetails>)]
     pub train_schedules: Vec<TrainScheduleDetails>,
     #[diesel(sql_type = BigInt)]
-    pub train_count: i64,
+    pub trains_count: i64,
 }
 
 impl Scenario {
@@ -95,17 +98,118 @@ impl Scenario {
                 .select((id, train_name, departure_time, path_id))
                 .load::<TrainScheduleDetails>(&mut conn)?;
 
-            let train_count = train_schedules.len() as i64;
+            let trains_count = train_schedules.len() as i64;
 
             Ok(ScenarioWithDetails {
                 scenario: self,
                 infra_name,
                 electrical_profile_set_name,
                 train_schedules,
-                train_count,
+                trains_count,
             })
         })
         .await
         .unwrap()
+    }
+}
+/// Delete a scenario.
+/// When we delete a scenario, the associated timetable is deleted too.
+impl Delete for Scenario {
+    fn delete_conn(conn: &mut diesel::PgConnection, scenario_id: i64) -> Result<bool> {
+        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
+        use crate::tables::osrd_infra_timetable::dsl as timetable_dsl;
+
+        // Delete scenario
+        let scenario = match delete(
+            scenario_dsl::osrd_infra_scenario.filter(scenario_dsl::id.eq(scenario_id)),
+        )
+        .get_result::<Scenario>(conn)
+        {
+            Ok(scenario) => scenario,
+            Err(DieselError::NotFound) => return Ok(false),
+            Err(err) => return Err(err.into()),
+        };
+
+        // Delete timetable
+        delete(
+            timetable_dsl::osrd_infra_timetable
+                .filter(timetable_dsl::id.eq(scenario.timetable.unwrap())),
+        )
+        .execute(conn)?;
+        Ok(true)
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+
+    use crate::client::PostgresConfig;
+    use crate::infra::Infra;
+    use crate::models::projects::test::build_test_project;
+    use crate::models::study::test::build_test_study;
+    use crate::models::Create;
+    use crate::models::Delete;
+    use crate::models::Timetable;
+    use crate::models::{Project, Study};
+    use actix_web::test as actix_test;
+    use actix_web::web::Data;
+    use chrono::Utc;
+    use diesel::r2d2::{ConnectionManager, Pool};
+    use diesel::Connection;
+    use diesel::PgConnection;
+
+    use super::Scenario;
+
+    fn build_test_scenario(study_id: i64, infra_id: i64, timetable_id: i64) -> Scenario {
+        Scenario {
+            name: Some("test".into()),
+            study: Some(study_id),
+            infra: Some(infra_id),
+            description: Some("test".into()),
+            timetable: Some(timetable_id),
+            creation_date: Some(Utc::now().naive_utc()),
+            tags: Some(vec![]),
+            electrical_profile_set: None,
+            ..Default::default()
+        }
+    }
+
+    #[actix_test]
+    async fn create_delete_scenario() {
+        let project = build_test_project();
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
+        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+
+        // Create a project
+        let project = project.create(pool.clone()).await.unwrap();
+        let project_id = project.id.unwrap();
+
+        // Create a study
+        let study = build_test_study(project_id);
+        let study: Study = study.create(pool.clone()).await.unwrap();
+        let study_id = study.id.unwrap();
+
+        // Create an infra
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let infra: Infra = Infra::create("infra_test", &mut conn).unwrap();
+
+        // Create a timetable
+        let timetable = Timetable {
+            id: None,
+            name: Some("timetable_test".into()),
+        };
+        let timetable: Timetable = timetable.create(pool.clone()).await.unwrap();
+
+        // Create a scenario
+        let scenario = build_test_scenario(study_id, infra.id, timetable.id.unwrap());
+        let scenario: Scenario = scenario.create(pool.clone()).await.unwrap();
+        let scenario_id = scenario.id.unwrap();
+
+        // Delete the scenario
+        Scenario::delete(pool.clone(), scenario_id).await.unwrap();
+        Project::delete(pool.clone(), project_id).await.unwrap();
+
+        // Second delete should fail
+        assert!(!Scenario::delete(pool.clone(), scenario_id).await.unwrap());
     }
 }
