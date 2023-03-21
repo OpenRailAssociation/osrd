@@ -13,6 +13,8 @@ use diesel::{delete, sql_query, update, QueryDsl, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
+use super::Update;
+
 #[derive(
     Clone,
     Debug,
@@ -160,6 +162,34 @@ impl Delete for Project {
             let _ = Document::delete_conn(conn, image);
         };
         Ok(true)
+    }
+}
+
+impl Update for Project {
+    /// Update a project. If the image is changed, the old image is deleted.
+    /// If the image is not found, return `None`.
+    fn update_conn(self, conn: &mut diesel::PgConnection, project_id: i64) -> Result<Option<Self>> {
+        let project = match Project::retrieve_conn(conn, project_id)? {
+            Some(project) => project,
+            None => return Ok(None),
+        };
+        let image_to_delete = if project.image != self.image {
+            project.image.unwrap()
+        } else {
+            None
+        };
+
+        use crate::tables::osrd_infra_project::dsl::osrd_infra_project;
+        let project = update(osrd_infra_project.find(project_id))
+            .set(&self)
+            .get_result::<Project>(conn)?;
+
+        if let Some(image) = image_to_delete {
+            // We don't check the result. We don't want to throw an error if the image is used in another project.
+            let _ = Document::delete_conn(conn, image);
+        }
+
+        Ok(Some(project))
     }
 }
 
