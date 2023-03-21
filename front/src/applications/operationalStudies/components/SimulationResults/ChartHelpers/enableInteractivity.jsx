@@ -112,7 +112,7 @@ const updateChart = (chart, keyValues, rotate, event) => {
       (d) =>
         newY(rotate ? d[`${keyValues[0]}_start`] : d[`${keyValues[1]}_start`]) -
         (rotate
-          ? newY(d[`${keyValues[0]}_end`] - d[`${keyValues[0]}_start`])
+          ? newY(d[`${keyValues[0]}_end`]) - newY(d[`${keyValues[0]}_start`])
           : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) *
           -1
     )
