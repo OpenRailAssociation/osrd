@@ -121,7 +121,7 @@ export default function RollingStockCardDetail(props) {
               <span className="ml-1">{data.features.join(', ')}</span>
             </div>
           ) : null}
-          {Object.keys(data.power_restrictions).length !== 0 && (
+          {data.power_restrictions && Object.keys(data.power_restrictions).length !== 0 && (
             <table className="rollingstock-details-table mb-1">
               <tbody>
                 <tr>
