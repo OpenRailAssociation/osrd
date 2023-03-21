@@ -1,13 +1,16 @@
 package fr.sncf.osrd.api;
 
+import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
+import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
+
 import com.squareup.moshi.JsonDataException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
+import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -21,6 +24,7 @@ public class InfraManager extends APIClient {
     static final Logger logger = LoggerFactory.getLogger(InfraManager.class);
 
     private final ConcurrentHashMap<String, InfraCacheEntry> infraCache = new ConcurrentHashMap<>();
+    private final SignalingSimulator signalingSimulator = makeSignalingSimulator();
 
     public void forEach(BiConsumer<String, InfraCacheEntry> action) {
         infraCache.forEach(action);
@@ -87,11 +91,12 @@ public class InfraManager extends APIClient {
         }
     }
 
+
     public static final class InfraCacheEntry {
         public InfraStatus status = InfraStatus.INITIALIZING;
         public InfraStatus lastStatus = null;
         public Throwable lastError = null;
-        public SignalingInfra infra = null;
+        public FullInfra infra = null;
         public String expectedVersion = null;
 
         void transitionTo(InfraStatus newStatus) {
@@ -113,7 +118,7 @@ public class InfraManager extends APIClient {
 
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"})
-    private SignalingInfra downloadInfra(
+    private FullInfra downloadInfra(
             InfraCacheEntry cacheEntry,
             String infraId,
             String expectedVersion,
@@ -152,12 +157,19 @@ public class InfraManager extends APIClient {
                     diagnosticRecorder
             );
 
+            logger.info("adaptation to kotlin of {}", request.url());
+            var rawInfra = adaptRawInfra(infra);
+            logger.info("loading signals of {}", request.url());
+            var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);
+            logger.info("building blocks of {}", request.url());
+            var blockInfra = signalingSimulator.buildBlocks(rawInfra, loadedSignalInfra);
+
             // Cache the infra
             logger.info("successfully cached {}", request.url());
-            cacheEntry.infra = infra;
+            cacheEntry.infra = new FullInfra(infra, rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
             cacheEntry.expectedVersion = expectedVersion;
             cacheEntry.transitionTo(InfraStatus.CACHED);
-            return infra;
+            return cacheEntry.infra;
         } catch (IOException | UnexpectedHttpResponse | VirtualMachineError e) {
             cacheEntry.transitionTo(InfraStatus.TRANSIENT_ERROR, e);
             throw new InfraLoadException("soft error while loading new infra", cacheEntry.lastStatus, e);
@@ -172,7 +184,7 @@ public class InfraManager extends APIClient {
      */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
-    public SignalingInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
+    public FullInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws InfraLoadException, InterruptedException {
         try {
             infraCache.putIfAbsent(infraId, new InfraCacheEntry());

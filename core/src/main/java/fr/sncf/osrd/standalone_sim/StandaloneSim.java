@@ -1,6 +1,7 @@
 package fr.sncf.osrd.standalone_sim;
 
 import fr.sncf.osrd.DriverBehaviour;
+import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -8,7 +9,6 @@ import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
@@ -26,7 +26,7 @@ public class StandaloneSim {
      * Interactions between trains are ignored.
      */
     public static StandaloneSimResult run(
-            SignalingInfra infra,
+            FullInfra infra,
             TrainPath trainPath,
             EnvelopeSimPath envelopeSimPath,
             List<StandaloneTrainSchedule> schedules,
