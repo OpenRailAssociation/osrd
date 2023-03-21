@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -27,12 +28,12 @@ import java.util.Set;
 public class STDCMHelpers {
     /** Make the occupancy multimap of a train going from point A to B starting at departureTime */
     public static Multimap<SignalingRoute, OccupancyBlock> makeOccupancyFromPath(
-            SignalingInfra infra,
+            FullInfra infra,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
             double departureTime
     ) {
-        var trainPath = makeTrainPath(infra, startLocations, endLocations);
+        var trainPath = makeTrainPath(infra.java(), startLocations, endLocations);
         var result = StandaloneSim.run(
                 infra,
                 trainPath,
@@ -59,7 +60,7 @@ public class STDCMHelpers {
             ));
         }
         return UnavailableSpaceBuilder.computeUnavailableSpace(
-                infra,
+                infra.java(),
                 occupancies,
                 REALISTIC_FAST_TRAIN,
                 0,
