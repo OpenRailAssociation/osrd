@@ -7,6 +7,7 @@ pub mod pagination;
 pub mod params;
 pub mod projects;
 pub mod rolling_stocks;
+pub mod scenario;
 pub mod search;
 pub mod study;
 
@@ -30,6 +31,7 @@ pub fn routes() -> impl HttpServiceFactory {
         electrical_profiles::routes(),
         projects::routes(),
         study::routes(),
+        scenario::routes(),
         documents::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
