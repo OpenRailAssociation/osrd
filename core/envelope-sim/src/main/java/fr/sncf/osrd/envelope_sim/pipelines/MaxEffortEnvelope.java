@@ -45,6 +45,8 @@ public class MaxEffortEnvelope {
             );
             EnvelopeAcceleration.accelerate(context, 0, initialSpeed, overlayBuilder, 1);
             cursor.findPosition(overlayBuilder.getLastPos());
+            if (partBuilder.isEmpty())
+                throw new ImpossibleSimulationError(); // Not enough traction to start
             builder.addPart(partBuilder.build());
         }
 
@@ -105,6 +107,8 @@ public class MaxEffortEnvelope {
                 var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
                 EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
                 cursor.findPosition(overlayBuilder.getLastPos());
+                if (partBuilder.isEmpty())
+                    throw new ImpossibleSimulationError(); // Not enough traction to restart
                 builder.addPart(partBuilder.build());
             }
             else

@@ -5,8 +5,10 @@ import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxE
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.common.collect.ImmutableRangeMap;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -119,5 +121,36 @@ public class MaxEffortEnvelopeTest {
         var mrsp = mrspBuilder.build();
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(testContext, stops, mrsp);
         MaxEffortEnvelope.from(testContext, 0, maxSpeedEnvelope);
+    }
+
+    @Test
+    public void testNotEnoughTractionToStart() {
+        var length = 10_000;
+        var path = new FlatPath(length, 1_000);
+        var testContext = new EnvelopeSimContext(SimpleRollingStock.STANDARD_TRAIN, path, 2.,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var stops = new double[] {length};
+        assertThrows(
+                ImpossibleSimulationError.class,
+                () -> makeSimpleMaxEffortEnvelope(testContext, 44.4, stops)
+        );
+    }
+
+    @Test
+    public void testNotEnoughTractionToRestart() {
+        var length = 10_000;
+        var path = new EnvelopeSimPath(
+                length,
+                new double[]{0, 5_000, 5_100, length},
+                new double[]{0, 1_000, 0},
+                ImmutableRangeMap.of()
+        );
+        var testContext = new EnvelopeSimContext(SimpleRollingStock.STANDARD_TRAIN, path, 2.,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var stops = new double[] {5_100, length};
+        assertThrows(
+                ImpossibleSimulationError.class,
+                () -> makeSimpleMaxEffortEnvelope(testContext, 44.4, stops)
+        );
     }
 }
