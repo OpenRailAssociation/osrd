@@ -1114,6 +1114,7 @@ paths:
                 example: ["started", "inProgress", "finish"]
   /projects/{project_id}/studies/{study_id}/scenarios/:
     post:
+      deprecated: true
       tags:
         - scenarios
       summary: Create a new scenario

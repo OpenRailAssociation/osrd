@@ -31,13 +31,18 @@ pub fn routes() -> impl HttpServiceFactory {
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),
-        projects::routes(),
-        study::routes(),
         timetable::routes(),
-        scenario::routes(),
-        documents::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
+    ]
+}
+
+pub fn study_routes() -> impl HttpServiceFactory {
+    services![
+        projects::routes(),
+        study::routes(),
+        scenario::routes(),
+        documents::routes(),
     ]
 }
 
@@ -69,7 +74,7 @@ mod tests {
     use crate::infra_cache::InfraCache;
     use crate::map::MapLayers;
 
-    use super::routes;
+    use super::{routes, study_routes};
     use actix_http::body::BoxBody;
     use actix_http::Request;
     use actix_web::dev::{Service, ServiceResponse};
@@ -107,7 +112,7 @@ mod tests {
             .app_data(Data::new(CHashMap::<i64, InfraCache>::default()))
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(MapLayersConfig::default()))
-            .service(routes());
+            .service((routes(), study_routes()));
         init_service(app).await
     }
 

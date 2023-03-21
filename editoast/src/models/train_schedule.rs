@@ -1,10 +1,20 @@
 use crate::models::Timetable;
 use crate::tables::osrd_infra_trainschedule;
 use diesel::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
-#[derive(Queryable, Selectable, Identifiable, Associations, Serialize, Debug, PartialEq, Clone)]
+#[derive(
+    Queryable,
+    Selectable,
+    Identifiable,
+    Associations,
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Clone,
+)]
 #[diesel(belongs_to(Timetable))]
 #[diesel(table_name = osrd_infra_trainschedule)]
 pub struct TrainSchedule {
@@ -22,7 +32,7 @@ pub struct TrainSchedule {
     pub rolling_stock_id: i64,
     pub timetable_id: i64,
 }
-#[derive(Serialize, Debug, PartialEq)]
+#[derive(Serialize, Debug, PartialEq, Clone, Queryable)]
 pub struct TrainScheduleDetails {
     pub id: i64,
     pub train_name: String,

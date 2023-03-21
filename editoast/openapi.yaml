@@ -1389,6 +1389,35 @@ paths:
         204:
           description: No content
 
+  /projects/{project_id}/studies/{study_id}/scenarios/:
+    post:
+      tags:
+        - scenarios
+      summary: Create a new scenario
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioRequest"
+      responses:
+        201:
+          description: The created scenario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioResult"
+
   /rolling_stock/{id}/livery/{livery_id}/:
     get:
       tags:
@@ -2229,6 +2258,66 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
+    ScenarioRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 1024
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+        infra:
+          type: integer
+        electrical_profile_set:
+          type: number
+          nullable: true
+          description: Electrical profile set id (if any)
+      required:
+        - "name"
+
+    ScenarioResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        infra:
+          type: integer
+        infra_name:
+          type: string
+        electrical_profile_set:
+          type: integer
+          nullable: true
+        electrical_profile_set_name:
+          type: string
+          nullable: true
+        creation_date:
+          type: string
+          format: date-time
+        last_modification:
+          type: string
+          format: date-time
+        timetable:
+          type: integer
+        trains_count:
+          type: integer
+        trains_schedules:
+          type: array
+          items:
+            type: string
 
     Geometry:
       type: object
