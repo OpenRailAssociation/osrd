@@ -30,3 +30,7 @@ flags:
     paths:
       - front/
     carryforward: true
+
+parsers:
+  jacoco:
+    partials_as_hits: true
