@@ -306,6 +306,16 @@ const injectedRtkApi = api.injectEndpoints({
         method: 'DELETE',
       }),
     }),
+    postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
+      PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+      PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+        method: 'POST',
+        body: queryArg.scenarioRequest,
+      }),
+    }),
     getRollingStockByIdLiveryAndLiveryId: build.query<
       GetRollingStockByIdLiveryAndLiveryIdApiResponse,
       GetRollingStockByIdLiveryAndLiveryIdApiArg
@@ -738,6 +748,13 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** study id you want to delete */
   studyId: number;
 };
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 201 The created scenario */ ScenarioResult;
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  projectId: number;
+  studyId: number;
+  scenarioRequest: ScenarioRequest;
+};
 export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
 export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {
   /** Rolling Stock ID */
@@ -1091,4 +1108,26 @@ export type StudyPatchRequest = {
     | 'strategicPlanning'
     | 'chartStability'
     | 'disturbanceTests';
+};
+export type ScenarioResult = {
+  id?: number;
+  name?: string;
+  description?: string[];
+  tags?: string[];
+  infra?: number;
+  infra_name?: string;
+  electrical_profile_set?: number | null;
+  electrical_profile_set_name?: string | null;
+  creation_date?: string;
+  last_modification?: string;
+  timetable?: number;
+  trains_count?: number;
+  trains_schedules?: string[];
+};
+export type ScenarioRequest = {
+  name: string;
+  description?: string;
+  tags?: string[];
+  infra?: number;
+  electrical_profile_set?: number | null;
 };

@@ -13,9 +13,9 @@ use diesel::PgConnection;
 
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
-pub use scenario::{Scenario, ScenarioWithTrains};
+pub use scenario::{Scenario, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
-pub use timetable::Timetable;
+pub use timetable::{Timetable, TimetableWithSchedules};
 pub use train_schedule::TrainSchedule;
 
 /// Trait to implement the `create` and `create_conn` methods.
