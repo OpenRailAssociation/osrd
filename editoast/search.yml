@@ -40,7 +40,9 @@ signal:
     line_name: string
     line_code: integer
     label: string
-    aspects: ["array", "string"]
+    aspects:
+      type: array
+      item: string
   result:
     joins: |
       INNER JOIN osrd_infra_signalmodel AS sig ON sig.id = osrd_search_signal.id
