@@ -1272,6 +1272,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
     delete:
+      deprecated: true
       tags:
         - scenarios
       summary: delete a scenario
