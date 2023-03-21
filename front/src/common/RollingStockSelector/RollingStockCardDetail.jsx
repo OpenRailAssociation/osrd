@@ -111,16 +111,6 @@ export default function RollingStockCardDetail(props) {
                 <td className="text-primary">{t('loadingGauge')}</td>
                 <td>{data.loading_gauge}</td>
               </tr>
-              <tr>
-                <td className="text-primary">
-                  {Object.keys(data.power_restrictions).length !== 0 ? t('powerNotch') : null}
-                </td>
-                <td>
-                  {data.power_restrictions !== null
-                    ? Object.keys(data.power_restrictions).join(' ')
-                    : null}
-                </td>
-              </tr>
             </tbody>
           </table>
         </div>
@@ -131,6 +121,22 @@ export default function RollingStockCardDetail(props) {
               <span className="ml-1">{data.features.join(', ')}</span>
             </div>
           ) : null}
+          {Object.keys(data.power_restrictions).length !== 0 && (
+            <table className="rollingstock-details-table mb-1">
+              <tbody>
+                <tr>
+                  <td className="text-primary text-nowrap pr-1">
+                    {t('powerRestriction', { count: Object.keys(data.power_restrictions).length })}
+                  </td>
+                  <td>
+                    {data.power_restrictions !== null
+                      ? Object.keys(data.power_restrictions).join(' ')
+                      : null}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          )}
           <div>
             {t('rollingResistance')}
             <div className="text-muted small">{t('rollingResistanceFormula')}</div>
