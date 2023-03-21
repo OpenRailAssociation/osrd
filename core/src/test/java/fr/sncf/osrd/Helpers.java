@@ -1,7 +1,10 @@
 package fr.sncf.osrd;
 
+import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
+import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
 
 import com.squareup.moshi.JsonAdapter;
+import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
 
 public class Helpers {
     /** Parse all serialized .json rolling stock files and add these to the given map */
@@ -84,5 +88,15 @@ public class Helpers {
     public static SignalingInfra infraFromRJS(RJSInfra rjs) {
         var wr = new DiagnosticRecorderImpl(true);
         return SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3(wr)), wr);
+    }
+
+    /** Generates a full infra from rjs data */
+    public static FullInfra fullInfraFromRJS(RJSInfra rjs) {
+        var signalingInfra = infraFromRJS(rjs);
+        var signalingSimulator = makeSignalingSimulator();
+        var rawInfra = adaptRawInfra(signalingInfra);
+        var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);
+        var blockInfra = signalingSimulator.buildBlocks(rawInfra, loadedSignalInfra);
+        return new FullInfra(signalingInfra, rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
     }
 }

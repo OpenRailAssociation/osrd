@@ -84,7 +84,7 @@ public class StandaloneSimulationEndpoint implements Take {
             }
 
             // Parse trainPath
-            var trainPath = TrainPathBuilder.from(infra, request.trainsPath);
+            var trainPath = TrainPathBuilder.from(infra.java(), request.trainsPath);
             var envelopePath = EnvelopeTrainPath.from(trainPath);
 
             if (electricalProfileMap.isPresent()) {
@@ -96,7 +96,7 @@ public class StandaloneSimulationEndpoint implements Take {
             var trainSchedules = new ArrayList<StandaloneTrainSchedule>();
             for (var rjsTrainSchedule : request.trainSchedules)
                 trainSchedules.add(RJSStandaloneTrainScheduleParser.parse(
-                        infra, rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
+                        infra.java(), rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
 
             // Compute envelopes and extract metadata
             DriverBehaviour driverBehaviour = new DriverBehaviour();
