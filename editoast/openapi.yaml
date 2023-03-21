@@ -1418,6 +1418,34 @@ paths:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
 
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
+    delete:
+      tags:
+        - scenarios
+      summary: delete a scenario
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the scenario
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+          description: study id refered to the scenario
+        - in: path
+          required: true
+          name: scenario_id
+          schema:
+            type: integer
+          description: scenario id you want to delete
+      responses:
+        204:
+          description: No content
+
   /rolling_stock/{id}/livery/{livery_id}/:
     get:
       tags:
