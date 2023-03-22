@@ -113,22 +113,6 @@ export default function drawTrain(
     : undefined;
 
   if (direction && currentAllowanceSettings) {
-    // Let's draw route_aspects
-    trainToDraw.routeAspects.forEach((routeAspect) => {
-      drawRect(
-        chart,
-        `${isSelected && 'selected'} route-aspect`,
-        routeAspect,
-        groupID,
-        'curveLinear',
-        keyValues,
-        'eco_routeEndOccupancy',
-        rotate,
-        isSelected,
-        `${groupID}${routeAspect.route_id}${routeAspect.color}`
-      );
-    });
-
     if (trainToDraw.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {
       // Let's draw eco_route_aspects
       trainToDraw.eco_routeAspects.forEach((ecoRouteAspect) => {
@@ -142,6 +126,22 @@ export default function drawTrain(
           'eco_routeEndOccupancy',
           rotate,
           isSelected
+        );
+      });
+    } else {
+      // Let's draw normal route_aspects
+      trainToDraw.routeAspects.forEach((routeAspect) => {
+        drawRect(
+          chart,
+          `${isSelected && 'selected'} route-aspect`,
+          routeAspect,
+          groupID,
+          'curveLinear',
+          keyValues,
+          'eco_routeEndOccupancy',
+          rotate,
+          isSelected,
+          `${groupID}${routeAspect.route_id}${routeAspect.color}`
         );
       });
     }
