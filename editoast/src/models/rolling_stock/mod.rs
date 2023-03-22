@@ -1,9 +1,12 @@
+pub mod light_rolling_stock;
+
 use crate::error::Result;
 use crate::models::Identifiable;
-use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
-use crate::schema::rolling_stock_schema::rolling_stock::{
-    Gamma, RollingResistance, RollingStock, RollingStockMetadata, RollingStockWithLiveries,
+use crate::schema::rolling_stock::{
+    EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
+    RollingStockWithLiveries,
 };
+use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::tables::osrd_infra_rollingstock;
 use crate::DbPool;
 use actix_web::web::{block, Data};
@@ -29,8 +32,8 @@ pub struct RollingStockModel {
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
     pub version: Option<String>,
-    #[diesel(deserialize_as = JsonValue)]
-    pub effort_curves: Option<JsonValue>,
+    #[diesel(deserialize_as = DieselJson<EffortCurves>)]
+    pub effort_curves: Option<DieselJson<EffortCurves>>,
     #[diesel(deserialize_as = String)]
     pub base_power_class: Option<String>,
     #[diesel(deserialize_as = f64)]
@@ -92,20 +95,20 @@ impl From<RollingStockModel> for RollingStock {
             id: rolling_stock_model.id.unwrap(),
             name: rolling_stock_model.name.unwrap(),
             version: rolling_stock_model.version.unwrap(),
-            effort_curves: rolling_stock_model.effort_curves.unwrap(),
+            effort_curves: rolling_stock_model.effort_curves.unwrap().0,
             base_power_class: rolling_stock_model.base_power_class.unwrap(),
             length: rolling_stock_model.length.unwrap(),
             max_speed: rolling_stock_model.max_speed.unwrap(),
             startup_time: rolling_stock_model.startup_time.unwrap(),
             startup_acceleration: rolling_stock_model.startup_acceleration.unwrap(),
             comfort_acceleration: rolling_stock_model.comfort_acceleration.unwrap(),
-            gamma: rolling_stock_model.gamma.unwrap(),
+            gamma: rolling_stock_model.gamma.unwrap().0,
             inertia_coefficient: rolling_stock_model.inertia_coefficient.unwrap(),
             features: rolling_stock_model.features.unwrap(),
             mass: rolling_stock_model.mass.unwrap(),
-            rolling_resistance: rolling_stock_model.rolling_resistance.unwrap(),
+            rolling_resistance: rolling_stock_model.rolling_resistance.unwrap().0,
             loading_gauge: rolling_stock_model.loading_gauge.unwrap(),
-            metadata: rolling_stock_model.metadata.unwrap(),
+            metadata: rolling_stock_model.metadata.unwrap().0,
             power_restrictions: rolling_stock_model.power_restrictions.unwrap(),
         }
     }

@@ -650,7 +650,7 @@ export type GetLightRollingStockApiArg = {
   pageSize?: number;
 };
 export type GetLightRollingStockByIdApiResponse =
-  /** status 200 The rolling stock without effort curves nor rolling resistance */ LightRollingStock;
+  /** status 200 The rolling stock with their simplified effort curves */ LightRollingStock;
 export type GetLightRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;

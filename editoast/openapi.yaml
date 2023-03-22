@@ -1018,7 +1018,7 @@ paths:
           required: true
       responses:
         200:
-          description: The rolling stock without effort curves nor rolling resistance
+          description: The rolling stock with their simplified effort curves
           content:
             application/json:
               schema:
