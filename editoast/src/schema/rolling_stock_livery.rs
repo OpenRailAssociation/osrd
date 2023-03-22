@@ -126,7 +126,8 @@ impl RollingStockLivery {
 mod tests {
     use super::{RollingStockLivery, RollingStockLiveryForm};
     use crate::client::PostgresConfig;
-    use crate::schema::rolling_stock::{RollingStock, RollingStockForm};
+    use crate::models::RollingStock;
+    use crate::models::{Create, Delete};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
@@ -152,17 +153,16 @@ mod tests {
             .await
             .unwrap();
 
-        let mut rolling_stock_form: RollingStockForm =
+        let mut rolling_stock: RollingStock =
             serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
-        rolling_stock_form.name = String::from("create_get_delete_rolling_stock_livery");
-        let rolling_stock = RollingStock::create(db_pool.clone(), rolling_stock_form)
-            .await
-            .unwrap();
+        rolling_stock.name = String::from("create_get_delete_rolling_stock_livery");
+        let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
+        let rolling_stock_id = rolling_stock.id.unwrap();
 
         let livery_form = RollingStockLiveryForm {
             name: String::from("test_livery"),
-            rolling_stock_id: rolling_stock.id,
+            rolling_stock_id,
             compound_image_id: Some(image_id),
         };
         let livery_id = RollingStockLivery::create(db_pool.clone(), livery_form)
@@ -196,7 +196,7 @@ mod tests {
             StatusCode::NOT_FOUND
         );
 
-        assert!(RollingStock::delete(db_pool.clone(), rolling_stock.id)
+        assert!(RollingStock::delete(db_pool.clone(), rolling_stock_id)
             .await
             .is_ok());
     }

@@ -206,6 +206,9 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
     }),
+    postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
+      query: () => ({ url: `/rolling_stock/`, method: 'POST' }),
+    }),
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
     }),
@@ -663,6 +666,8 @@ export type GetLightRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
 };
+export type PostRollingStockApiResponse = /** status 200 The rolling stock list */ RollingStock;
+export type PostRollingStockApiArg = void;
 export type GetRollingStockByIdApiResponse =
   /** status 200 The rolling stock information */ RollingStock;
 export type GetRollingStockByIdApiArg = {

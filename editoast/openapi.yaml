@@ -1031,6 +1031,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/LightRollingStock"
 
+  /rolling_stock/:
+    post:
+      tags:
+        - rolling_stock
+      summary: Create a rolling stock
+      responses:
+        200:
+          description: The rolling stock list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollingStock"
+
   /rolling_stock/{id}/:
     get:
       tags:
