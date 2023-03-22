@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { get, post } from 'common/requests';
 // osrd Redux reducers
 import {
-  updateAllowancesSettings,
   updateConsolidatedSimulation,
   updateMustRedraw,
   updateSelectedTrain,
@@ -37,8 +36,6 @@ const timetableURI = '/editoast/timetable/';
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector(getConf);
-
-  const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
@@ -80,6 +77,7 @@ export default function StdcmRequestModal(props) {
 
           // ask for timetable with the new path
           get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {
+            // eslint-disable-next-line camelcase
             const trainIds = timetable.train_schedules.map((train_schedule) => train_schedule.id);
             get(`${trainscheduleURI}results/`, {
               params: {
@@ -99,29 +97,6 @@ export default function StdcmRequestModal(props) {
               dispatch(updateConsolidatedSimulation(consolidatedSimulation));
               dispatch(updateSimulation(newSimulation));
               dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
-
-              // Create margins settings for each train if not set
-              const newAllowancesSettings = { ...allowancesSettings };
-              simulationLocal.forEach((train) => {
-                if (!newAllowancesSettings[train.id]) {
-                  newAllowancesSettings[train.id] = {
-                    base: true,
-                    baseBlocks: true,
-                    eco: true,
-                    ecoBlocks: false,
-                  };
-                }
-              });
-
-              if (!newAllowancesSettings[fakedNewTrain.id]) {
-                newAllowancesSettings[fakedNewTrain.id] = {
-                  base: true,
-                  baseBlocks: true,
-                  eco: true,
-                  ecoBlocks: false,
-                };
-                dispatch(updateAllowancesSettings(newAllowancesSettings));
-              }
 
               dispatch(
                 updateSelectedProjection({
