@@ -50,7 +50,7 @@ export default function ChipsSNCF(props) {
         </label>
       ) : null}
       <div className="form-control-container form-chips-container">
-        {tags.map((label, idx) => chip(label, idx))}
+        {tags && tags.map((label, idx) => chip(label, idx))}
         <input
           data-role="typewriter"
           type="text"
