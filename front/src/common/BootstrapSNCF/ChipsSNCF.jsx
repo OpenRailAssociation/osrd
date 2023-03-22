@@ -67,7 +67,7 @@ export default function ChipsSNCF(props) {
 
 ChipsSNCF.propTypes = {
   title: PropTypes.string,
-  tags: PropTypes.array.isRequired,
+  tags: PropTypes.array,
   removeTag: PropTypes.func.isRequired,
   addTag: PropTypes.func.isRequired,
   color: PropTypes.string,
@@ -75,4 +75,5 @@ ChipsSNCF.propTypes = {
 ChipsSNCF.defaultProps = {
   title: null,
   color: 'primary',
+  tags: [],
 };
