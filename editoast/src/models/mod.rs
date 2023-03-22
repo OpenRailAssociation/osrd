@@ -16,7 +16,10 @@ use diesel::PgConnection;
 pub use self::pathfinding::*;
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
-pub use rolling_stock::{light_rolling_stock::LightRollingStockModel, RollingStockModel};
+pub use rolling_stock::{
+    light_rolling_stock::LightRollingStockModel, rolling_stock_livery::RollingStockLiveryModel,
+    RollingStockModel,
+};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules};

@@ -28,7 +28,7 @@ pub struct RollingStockCompoundImage {
 }
 
 #[derive(Debug, Identifiable, Queryable, Serialize)]
-#[diesel(belongs_to(RollingStockLivery, foreign_key = livery_id))]
+#[diesel(belongs_to(RollingStockLiveryModel, foreign_key = livery_id))]
 #[diesel(table_name = osrd_infra_rollingstockimage)]
 pub struct RollingStockSeparatedImage {
     id: i64,
@@ -142,9 +142,12 @@ impl RollingStockCompoundImage {
 #[cfg(test)]
 mod tests {
     use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
+    use crate::models::rolling_stock::rolling_stock_livery::{
+        tests::get_rolling_stock_livery_example, RollingStockLiveryModel,
+    };
     use crate::models::RollingStockModel;
+    use crate::models::{Create, Retrieve};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
-    use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
     use rstest::*;
@@ -170,14 +173,9 @@ mod tests {
 
         let rolling_stock = fast_rolling_stock.await;
 
-        let livery_form = RollingStockLiveryForm {
-            name: String::from("test_livery"),
-            rolling_stock_id: rolling_stock.id(),
-            compound_image_id: Some(image_id),
-        };
-        let livery_id = RollingStockLivery::create(db_pool.clone(), livery_form)
-            .await
-            .unwrap();
+        let livery = get_rolling_stock_livery_example(rolling_stock.id(), image_id);
+        let livery = livery.create(db_pool.clone()).await.unwrap();
+        let livery_id = livery.id.unwrap();
 
         // get
         assert!(
@@ -192,8 +190,10 @@ mod tests {
                 .await
                 .is_ok()
         );
-        assert!(RollingStockLivery::retrieve(db_pool.clone(), livery_id)
-            .await
-            .is_ok());
+        assert!(
+            RollingStockLiveryModel::retrieve(db_pool.clone(), livery_id)
+                .await
+                .is_ok()
+        );
     }
 }

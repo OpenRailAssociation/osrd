@@ -9,7 +9,6 @@ mod operational_point;
 mod railjson;
 pub mod rolling_stock;
 pub mod rolling_stock_image;
-pub mod rolling_stock_livery;
 mod route;
 mod signal;
 mod speed_section;

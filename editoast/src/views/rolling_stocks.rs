@@ -1,11 +1,11 @@
 use crate::error::Result;
-use crate::models::{Create, Retrieve, RollingStockModel};
+use crate::models::{Create, Retrieve, RollingStockLiveryModel, RollingStockModel};
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
     EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
 use crate::schema::rolling_stock_image::RollingStockCompoundImage;
-use crate::schema::rolling_stock_livery::RollingStockLivery;
 use crate::DbPool;
 use actix_http::StatusCode;
 use actix_web::dev::HttpServiceFactory;
@@ -23,6 +23,14 @@ pub enum RollingStockError {
     #[error("Rolling stock '{rolling_stock_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { rolling_stock_id: i64 },
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "rollingstocks")]
+pub enum RollingStockLiveryError {
+    #[error("Rolling stock livery '{livery_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { livery_id: i64 },
 }
 
 pub fn routes() -> impl HttpServiceFactory {
@@ -44,7 +52,11 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
 #[get("/{rolling_stock_id}/livery/{livery_id}")]
 async fn get_livery(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<HttpResponse> {
     let (_rolling_stock_id, livery_id) = path.into_inner();
-    let livery = RollingStockLivery::retrieve(db_pool.clone(), livery_id).await?;
+    let livery: RollingStockLivery =
+        match RollingStockLiveryModel::retrieve(db_pool.clone(), livery_id).await? {
+            Some(livery) => livery.into(),
+            None => return Err(RollingStockLiveryError::NotFound { livery_id }.into()),
+        };
     if livery.compound_image_id.is_some() {
         let compound_image = RollingStockCompoundImage::retrieve(
             db_pool.clone(),
@@ -120,9 +132,9 @@ async fn create(
 #[cfg(test)]
 mod tests {
     use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
-    use crate::models::{Delete, RollingStockModel};
+    use crate::models::rolling_stock::rolling_stock_livery::tests::get_rolling_stock_livery_example;
+    use crate::models::{Create, Delete, RollingStockModel};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
-    use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
     use crate::views::rolling_stocks::RollingStock;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
@@ -164,14 +176,9 @@ mod tests {
             .await
             .unwrap();
 
-        let livery_form = RollingStockLiveryForm {
-            name: String::from("test_livery"),
-            rolling_stock_id: rolling_stock.id(),
-            compound_image_id: Some(image_id),
-        };
-        let livery_id = RollingStockLivery::create(db_pool.clone(), livery_form)
-            .await
-            .unwrap();
+        let livery = get_rolling_stock_livery_example(rolling_stock.id(), image_id);
+        let livery = livery.create(db_pool.clone()).await.unwrap();
+        let livery_id = livery.id.unwrap();
 
         // get - success
         let req = TestRequest::get()
