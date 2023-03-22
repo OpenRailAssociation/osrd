@@ -1,19 +1,29 @@
 use crate::error::Result;
 use crate::models::{Create, Retrieve, RollingStockModel};
-use crate::schema::rolling_stock_image::RollingStockCompoundImage;
-use crate::schema::rolling_stock_livery::RollingStockLivery;
-use crate::schema::rolling_stock_schema::rolling_stock::{
-    Gamma, RollingResistance, RollingStock, RollingStockError, RollingStockMetadata,
+use crate::schema::rolling_stock::{
+    EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
+use crate::schema::rolling_stock_image::RollingStockCompoundImage;
+use crate::schema::rolling_stock_livery::RollingStockLivery;
 use crate::DbPool;
 use actix_http::StatusCode;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, Data, Json, Path};
 use actix_web::{get, post, HttpResponse};
 use diesel_json::Json as DieselJson;
+use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use thiserror::Error;
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "rollingstocks")]
+pub enum RollingStockError {
+    #[error("Rolling stock '{rolling_stock_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { rolling_stock_id: i64 },
+}
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/rolling_stock").service((get, get_livery, create))
@@ -54,20 +64,20 @@ async fn get_livery(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Htt
 struct RollingStockCreateForm {
     pub name: String,
     pub version: String,
-    pub effort_curves: JsonValue,
+    pub effort_curves: EffortCurves,
     pub base_power_class: String,
     pub length: f64,
     pub max_speed: f64,
     pub startup_time: f64,
     pub startup_acceleration: f64,
     pub comfort_acceleration: f64,
-    pub gamma: DieselJson<Gamma>,
+    pub gamma: Gamma,
     pub inertia_coefficient: f64,
     pub features: Vec<String>,
     pub mass: f64,
-    pub rolling_resistance: DieselJson<RollingResistance>,
+    pub rolling_resistance: RollingResistance,
     pub loading_gauge: String,
-    pub metadata: DieselJson<RollingStockMetadata>,
+    pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<JsonValue>,
 }
 
@@ -76,20 +86,20 @@ impl From<RollingStockCreateForm> for RollingStockModel {
         RollingStockModel {
             name: Some(rolling_stock.name),
             version: Some(rolling_stock.version),
-            effort_curves: Some(rolling_stock.effort_curves),
+            effort_curves: Some(DieselJson(rolling_stock.effort_curves)),
             base_power_class: Some(rolling_stock.base_power_class),
             length: Some(rolling_stock.length),
             max_speed: Some(rolling_stock.max_speed),
             startup_time: Some(rolling_stock.startup_time),
             startup_acceleration: Some(rolling_stock.startup_acceleration),
             comfort_acceleration: Some(rolling_stock.comfort_acceleration),
-            gamma: Some(rolling_stock.gamma),
+            gamma: Some(DieselJson(rolling_stock.gamma)),
             inertia_coefficient: Some(rolling_stock.inertia_coefficient),
             features: Some(rolling_stock.features),
             mass: Some(rolling_stock.mass),
-            rolling_resistance: Some(rolling_stock.rolling_resistance),
+            rolling_resistance: Some(DieselJson(rolling_stock.rolling_resistance)),
             loading_gauge: Some(rolling_stock.loading_gauge),
-            metadata: Some(rolling_stock.metadata),
+            metadata: Some(DieselJson(rolling_stock.metadata)),
             power_restrictions: Some(rolling_stock.power_restrictions),
             ..Default::default()
         }
