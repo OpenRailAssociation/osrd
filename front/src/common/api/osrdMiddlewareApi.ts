@@ -123,15 +123,6 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.writableTrainSchedule,
       }),
     }),
-    getTrainScheduleByIdResult: build.query<
-      GetTrainScheduleByIdResultApiResponse,
-      GetTrainScheduleByIdResultApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/train_schedule/${queryArg.id}/result/`,
-        params: { path: queryArg.path },
-      }),
-    }),
     getTrainScheduleResults: build.query<
       GetTrainScheduleResultsApiResponse,
       GetTrainScheduleResultsApiArg
@@ -476,14 +467,6 @@ export type PatchTrainScheduleByIdApiArg = {
   id: number;
   /** Train schedule fields */
   writableTrainSchedule: WritableTrainSchedule;
-};
-export type GetTrainScheduleByIdResultApiResponse =
-  /** status 200 The train schedule result */ TrainScheduleResult;
-export type GetTrainScheduleByIdResultApiArg = {
-  /** Train schedule ID */
-  id: number;
-  /** Path id used to project the train path */
-  path?: number;
 };
 export type GetTrainScheduleResultsApiResponse =
   /** status 200 The train schedules results */ TrainScheduleResult[];

@@ -67,14 +67,6 @@ class TrainScheduleView(
             simulation_output.save()
         return Response(serializer.data)
 
-    @action(detail=True)
-    def result(self, request, pk=None):
-        train_schedule = self.get_object()
-        path_id = request.query_params.get("path", train_schedule.path_id)
-        path = get_object_or_404(PathModel, pk=path_id)
-        res = create_simulation_report(train_schedule, path)
-        return Response(res)
-
     @action(detail=False)
     def results(self, request):
         train_ids = request.query_params.get("train_ids", None)

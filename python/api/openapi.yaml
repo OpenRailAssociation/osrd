@@ -579,30 +579,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TrainSchedule"
-  /train_schedule/{id}/result/:
-    get:
-      tags:
-        - train_schedule
-      summary: Retrieve a simulation result
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Train schedule ID
-          required: true
-        - in: query
-          name: path
-          schema:
-            type: integer
-          description: Path id used to project the train path
-      responses:
-        200:
-          description: The train schedule result
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TrainScheduleResult"
   /train_schedule/results/:
     get:
       tags:
