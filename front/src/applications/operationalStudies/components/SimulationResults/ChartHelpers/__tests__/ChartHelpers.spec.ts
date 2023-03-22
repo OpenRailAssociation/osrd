@@ -1,5 +1,9 @@
 import { Regime, SimulationTrain } from 'reducers/osrdsimulation/types';
-import { mergeDatasArea, interpolateOnTime } from '../ChartHelpers';
+import {
+  mergeDatasArea,
+  interpolateOnTime,
+  trainWithDepartureAndArrivalTimes,
+} from '../ChartHelpers';
 import { LIST_VALUES_NAME_SPACE_TIME } from '../../simulationResultsConsts';
 
 import train from '../../../../../../../tests/assets/operationStudies/train.json';
@@ -58,6 +62,61 @@ describe('interpolateOnTime', () => {
           speed: 209.04144260747736,
           time: new Date('1900-01-01T11:57:37.000Z'),
         },
+      });
+    });
+  });
+});
+
+describe('offsetTrainDepartureAndArrivalTimes', () => {
+  describe('no offset', () => {
+    test('add departure & arrival time', () => {
+      const result = trainWithDepartureAndArrivalTimes(train[0]);
+      expect(result).toEqual({
+        id: 395,
+        labels: [],
+        name: 'Fonction ζ',
+        path: 596,
+        departure: 43200,
+        arrival: 44417.01477978789,
+        speed_limit_tags: undefined,
+      });
+    });
+  });
+  describe('with offset', () => {
+    it('should add the given offset to arrival and departure', () => {
+      const result = trainWithDepartureAndArrivalTimes(train[0], 1000);
+      expect(result).toEqual({
+        id: 395,
+        labels: [],
+        name: 'Fonction ζ',
+        path: 596,
+        departure: 44200,
+        arrival: 45417.01477978789,
+        speed_limit_tags: undefined,
+      });
+    });
+    it('should handle time exceeding midnight', () => {
+      const result = trainWithDepartureAndArrivalTimes(train[0], 86400);
+      expect(result).toEqual({
+        id: 395,
+        labels: [],
+        name: 'Fonction ζ',
+        path: 596,
+        departure: 43200,
+        arrival: 44417.01477978789,
+        speed_limit_tags: undefined,
+      });
+    });
+    it('should handle time before midnight', () => {
+      const result = trainWithDepartureAndArrivalTimes(train[0], -86400);
+      expect(result).toEqual({
+        id: 395,
+        labels: [],
+        name: 'Fonction ζ',
+        path: 596,
+        departure: 43200,
+        arrival: 44417.01477978789,
+        speed_limit_tags: undefined,
       });
     });
   });

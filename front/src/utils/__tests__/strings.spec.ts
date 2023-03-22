@@ -11,7 +11,7 @@ describe('conditionalStringConcat', () => {
   });
   it('should ignore falsy entries', () => {
     expect(
-      conditionalStringConcat([
+      conditionalStringConcat<boolean | undefined | string | null>([
         [true, 'abcd'],
         [undefined, 'ζ'],
         ['', 'efg'],

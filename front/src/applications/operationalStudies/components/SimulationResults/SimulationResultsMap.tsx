@@ -14,7 +14,11 @@ import { CgLoadbar } from 'react-icons/cg';
 import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
-import { AllowancesSettings, PositionValues, PositionSpeed } from 'reducers/osrdsimulation/types';
+import {
+  AllowancesSettings,
+  PositionValues,
+  PositionSpeedTime,
+} from 'reducers/osrdsimulation/types';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/types';
@@ -75,7 +79,7 @@ function getPosition(
   const key = (
     allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? `eco_${baseKey}` : baseKey
   ) as keyof PositionValues;
-  return positionValues[key] as PositionSpeed;
+  return positionValues[key] as PositionSpeedTime;
 }
 
 interface MapProps {
@@ -126,7 +130,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             ['time', 'position'],
             ['head_positions', 'tail_positions', 'speeds'],
             actualTime
-          ) as Record<string, PositionSpeed>;
+          ) as Record<string, PositionSpeedTime>;
           if (interpolation.head_positions && interpolation.speeds) {
             concernedTrains.push({
               ...interpolation,
@@ -253,7 +257,10 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
       const keyValues = ['position', 'speed'] as const;
-      const timePositionLocal = interpolateOnPosition<(typeof keyValues)[number], PositionSpeed>(
+      const timePositionLocal = interpolateOnPosition<
+        (typeof keyValues)[number],
+        PositionSpeedTime
+      >(
         { speed: simulation.trains[selectedTrain][key].speeds },
         ['position', 'speed'] as const,
         positionLocal
