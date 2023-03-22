@@ -1,6 +1,6 @@
 mod documents;
 mod projects;
-pub mod rolling_stock_models;
+pub mod rolling_stock;
 mod scenario;
 mod study;
 mod timetable;
@@ -14,7 +14,7 @@ use diesel::PgConnection;
 
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
-pub use rolling_stock_models::rolling_stock::RollingStockModel;
+pub use rolling_stock::{light_rolling_stock::LightRollingStockModel, RollingStockModel};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules};

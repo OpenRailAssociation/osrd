@@ -5,8 +5,9 @@ use crate::DbPool;
 use actix_web::web::{block, Data};
 use diesel::expression_methods::ExpressionMethods;
 use diesel::result::Error as DieselError;
+use diesel::sql_types::{BigInt, Text};
 use editoast_derive::EditoastError;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use super::rolling_stock_image::RollingStockCompoundImage;
@@ -36,10 +37,14 @@ pub struct RollingStockLiveryForm {
     pub compound_image_id: Option<i64>,
 }
 
-#[derive(Debug, Queryable, Selectable, Serialize)]
+#[derive(Debug, Deserialize, Queryable, QueryableByName, Selectable, Serialize)]
 #[diesel(table_name = osrd_infra_rollingstocklivery)]
 pub struct RollingStockLiveryMetadata {
+    #[diesel(sql_type = BigInt)]
+    #[diesel(deserialize_as = i64)]
     id: i64,
+    #[diesel(sql_type = Text)]
+    #[diesel(deserialize_as = String)]
     name: String,
 }
 
