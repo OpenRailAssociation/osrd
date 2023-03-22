@@ -106,9 +106,9 @@ export default function StdcmRequestModal(props) {
                 if (!newAllowancesSettings[train.id]) {
                   newAllowancesSettings[train.id] = {
                     base: true,
-                    baseBlocks: true,
+                    baseBlocks: false,
                     eco: true,
-                    ecoBlocks: false,
+                    ecoBlocks: true,
                   };
                 }
               });
@@ -116,9 +116,9 @@ export default function StdcmRequestModal(props) {
               if (!newAllowancesSettings[fakedNewTrain.id]) {
                 newAllowancesSettings[fakedNewTrain.id] = {
                   base: true,
-                  baseBlocks: true,
+                  baseBlocks: false,
                   eco: true,
-                  ecoBlocks: false,
+                  ecoBlocks: true,
                 };
                 dispatch(updateAllowancesSettings(newAllowancesSettings));
               }
