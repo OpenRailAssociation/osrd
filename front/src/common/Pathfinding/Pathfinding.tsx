@@ -175,8 +175,8 @@ interface PathfindingProps {
 
 function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [pathfindingRequest, setPathfindingRequest] = useState<any>();
+  const [pathfindingRequest, setPathfindingRequest] =
+    useState<ReturnType<typeof postPathfinding>>();
   const { openModal } = useModal();
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID, isEqual);
@@ -197,7 +197,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   };
   const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
   const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
-
   const openModalWrapperBecauseTypescriptSucks = () => {
     openModal(<ModalPathJSONDetail />, 'lg');
   };
@@ -272,8 +271,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
           pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
         })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .catch((e: any) => {
+        .catch((e) => {
           if (e.error) {
             dispatch(
               setFailure({

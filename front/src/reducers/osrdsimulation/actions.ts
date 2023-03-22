@@ -47,14 +47,6 @@ export function updateContextMenu(contextMenu: OsrdSimulationState['contextMenu'
     });
   };
 }
-export function updateHoverPosition(hoverPosition: OsrdSimulationState['hoverPosition']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_HOVER_POSITION,
-      hoverPosition,
-    });
-  };
-}
 export function updateIsPlaying(isPlaying: OsrdSimulationState['isPlaying']) {
   return (dispatch: Dispatch) => {
     dispatch({

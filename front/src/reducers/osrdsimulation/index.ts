@@ -10,17 +10,16 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import {
   interpolateOnTime,
-  offsetSeconds,
+  offsetAllTrainsDepartureAndArrivalTimes,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 
-import { SimulationSnapshot, Train, OsrdSimulationState, SimulationTrain } from './types';
+import { OsrdSimulationState, SimulationTrain } from './types';
 
 import {
   UPDATE_CHART,
   UPDATE_CHARTXGEV,
   UPDATE_CONTEXTMENU,
-  UPDATE_HOVER_POSITION,
   UPDATE_IS_PLAYING,
   UPDATE_IS_UPDATING,
   UPDATE_ALLOWANCES_SETTINGS,
@@ -37,23 +36,11 @@ import {
   UPDATE_TIME_POSITION_VALUES,
 } from './actions';
 
-export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOffset: number) =>
-  simulation.trains.map((train: Train) => ({
-    id: train.id,
-    labels: train.labels,
-    name: train.name,
-    path: train.path,
-    departure: offsetSeconds(train.base.stops[0].time + dragOffset),
-    arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
-    speed_limit_tags: train.speed_limit_tags,
-  }));
-
 // Reducer
 export const initialState: OsrdSimulationState = {
   chart: undefined,
   chartXGEV: undefined,
   contextMenu: undefined,
-  hoverPosition: undefined,
   isPlaying: false,
   isUpdating: false,
   allowancesSettings: undefined,
@@ -111,9 +98,6 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_CONTEXTMENU:
         draft.contextMenu = action.contextMenu;
         break;
-      case UPDATE_HOVER_POSITION:
-        draft.hoverPosition = action.hoverPosition;
-        break;
       case UPDATE_IS_PLAYING:
         draft.isPlaying = action.isPlaying;
         break;
@@ -153,7 +137,10 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case REDO_SIMULATION:
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
+        draft.departureArrivalTimes = offsetAllTrainsDepartureAndArrivalTimes(
+          draft.simulation.present.trains,
+          0
+        );
 
         draft.consolidatedSimulation = createTrain(
           noop,
