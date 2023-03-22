@@ -77,7 +77,7 @@ export default function InfraSelectorModalBodyEdition(props) {
           />
         </div>
         <div className="text-center small text-muted">
-          {infrasList ? `${infrasList.length} ${t('infraManagement:infrasFound')}` : null}
+          {infrasList && t('infraManagement:infrasFound', { count: infrasList.length })}
         </div>
         <div className="infraslist">
           {infrasList.map((infra) => (
