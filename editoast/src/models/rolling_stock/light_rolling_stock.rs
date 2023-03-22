@@ -1,9 +1,9 @@
 use crate::error::Result;
+use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
 };
 use crate::schema::rolling_stock::{Gamma, RollingResistance, RollingStockMetadata};
-use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::tables::osrd_infra_rollingstock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
