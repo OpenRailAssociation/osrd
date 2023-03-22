@@ -1,12 +1,13 @@
 pub mod light_rolling_stock;
+pub mod rolling_stock_livery;
 
 use crate::error::Result;
+use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::models::Identifiable;
 use crate::schema::rolling_stock::{
     EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
-use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::tables::osrd_infra_rollingstock;
 use crate::DbPool;
 use actix_web::web::{block, Data};

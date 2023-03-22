@@ -1,9 +1,11 @@
 pub mod light_rolling_stock;
+pub mod rolling_stock_livery;
 
-use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+
+use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RollingStock {
