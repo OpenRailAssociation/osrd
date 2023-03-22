@@ -1,9 +1,10 @@
-use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use diesel::sql_types::{Array, BigInt, Double, Jsonb, Nullable, Text};
 use diesel_json::Json as DieselJson;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+
+use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 
 use super::{Gamma, RollingResistance, RollingStockMetadata};
 
