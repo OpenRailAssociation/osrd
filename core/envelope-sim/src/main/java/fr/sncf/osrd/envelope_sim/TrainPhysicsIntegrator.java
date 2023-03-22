@@ -79,22 +79,21 @@ public final class TrainPhysicsIntegrator {
 
         // CHANTIER PRISE EN COMPTE ENERGY SOURCE ******************************************
         var energySources = rollingStock.getEnergySources();
-        boolean Electrification = (timeStep >= 2.345);//Simulate an electrification availability for tests further down
-        double motorEfficiency = 0.643;               // Should go in RJSRolling Stock in the end
-        double AuxiliaryEquipmentPower = 100.0;       // idem
+        boolean electrification = path.isElectrificated(position);//Simulate an electrification availability for tests further down
         // TODO : Validate the program with real test
 
         // Get EnergySources overall power capability
+        var availableElectricalPower = rollingStock.getAvailableElectricalPower(speed);
         double availableElectricalPower = 0.0;              // Sum each available power from Energy Source of the train
-        for(var rsEnergySource : EnergySources){availableElectricalPower += rsEnergySource.getPower(speed);}
-        double maxTractionForceFromEnergySources = availableElectricalPower*motorEfficiency/speed;  // F = Pmeca/Speed
+        for(var source : EnergySources){availableElectricalPower += source.getPower(speed);}
+        double maxTractionForceFromEnergySources = availableElectricalPower * rollingStock.motorEfficiency / speed;  // F = Pmeca/Speed
         /*                  HOW WE DEAL WE WITH MODULATING TRACTION POWER
          *                                      /!\ Vitesse = french("speed") /!\
          *     ▲ Force
          *     │
          *     │....................       │
          *     │         X        ....     │
-         *     │          X         ...    │               .....   classic F(V) <=> Fixed power func(Electrification)
+         *     │          X         ...    │               .....   classic F(V) <=> Fixed power func(electrification)
          *     │           X          ..   │                                        *or nearly fixed power
          *     │            X          ... │
          *     │             X           ..│
@@ -129,18 +128,18 @@ public final class TrainPhysicsIntegrator {
         );
 
         // Re-compute actual power used by traction for case where we're limited by ES power
-        double actualElectricalTractionPower = motorEfficiency/(maxTractionForce*speed);
-        double pBus = actualElectricalTractionPower + AuxiliaryEquipmentPower;
+        double actualElectricalTractionPower = rollingStock.motorEfficiency/(maxTractionForce*speed);
+        double pBus = actualElectricalTractionPower + rollingStock.auxiliaryEquipmentPower;
         /*Ppwp|cat = Pbus + Prech + Pconvbat <=> Ppwp|cat = Paux + Ptrac + Prech + Pconvbat*/
 
         // Retrieve Pmax & Pmin depending on electrification availability (Powerpack or Catenary/Pantograph power)
-        double Pmaxpwpcat = Electrification ? EnergySources.get(0).pMax : 0.0; // Panto.pMax : Rien
-        //double Pminpwpcat = Electrification? EnergySources.get(0).pMin : 0; // Panto.pMax : Rien
+        double Pmaxpwpcat = electrification ? energySources.get(0).pMax : 0.0; // Panto.pMax : Rien
+        //double Pminpwpcat = electrification? EnergySources.get(0).pMin : 0; // Panto.pMax : Rien
 
 
         // TUTUT Battery try to recover from it's discharged state :
-        double SoC = EnergySources.get(1).Storage.getSoc();
-        double callForPower = EnergySources.get(1).Storage.refillLaw.getRefillPower(SoC);
+        double SoC = energySources.get(1).Storage.getSoc();
+        double callForPower = energySources.get(1).Storage.refillLaw.getRefillPower(SoC);
         // Whatever the Traction+Auxiliary Power ( Bus power )
         // Limite de ce que peut recharger la batterie par la puissance restante dispo : pBus - Pmaxpwpcat
         double callForPowerFromPbusLeftsOver = RJSRollingStock.hardClipping(
@@ -148,8 +147,8 @@ public final class TrainPhysicsIntegrator {
                 callForPower,
                 pBus - Pmaxpwpcat
         );
-        double pBat = EnergySources.get(1).clipToESPowerLimits(callForPowerFromPbusLeftsOver);
-        double ppwpcat = EnergySources.get(0).clipToESPowerLimits(pBus - pBat);
+        double pBat = energySources.get(1).clipToESPowerLimits(callForPowerFromPbusLeftsOver);
+        double ppwpcat = energySources.get(0).clipToESPowerLimits(pBus - pBat);
 
         //double Ppwp_cat = PmaxBase - actualElectricalTractionPower + EnergySources.get(1).Storage.refillLaw.getRefillPower(0.6);
         //double  = Pbus - Pconvbat;
