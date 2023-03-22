@@ -44,7 +44,7 @@ export default function InfraSelectorModalBodyStandard(props) {
         />
       </div>
       <div className="text-center small text-muted infras-count">
-        {infrasList ? `${infrasList.length} ${t('infraManagement:infrasFound')}` : null}
+        {infrasList && t('infraManagement:infrasFound', { count: infrasList.length })}
       </div>
       <div className="infraslist" data-testid="infraslist">
         {infrasList.map((infra) => (
