@@ -1,8 +1,8 @@
 use crate::error::Result;
-use crate::schema::rolling_stock_schema::rolling_stock::{
-    LightRollingStock, LightRollingStockWithLiveries,
-};
+use crate::models::{LightRollingStockModel, Retrieve};
+use crate::schema::rolling_stock::light_rolling_stock::LightRollingStockWithLiveries;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
+use crate::views::rolling_stocks::RollingStockError;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
@@ -16,11 +16,11 @@ pub fn routes() -> impl HttpServiceFactory {
 async fn list(
     db_pool: Data<DbPool>,
     page_settings: Query<PaginationQueryParam>,
-) -> Result<Json<PaginatedResponse<LightRollingStock>>> {
+) -> Result<Json<PaginatedResponse<LightRollingStockWithLiveries>>> {
     let page = page_settings.page;
     let per_page = page_settings.page_size.unwrap_or(25);
     Ok(Json(
-        LightRollingStock::list(db_pool, page, per_page).await?,
+        LightRollingStockModel::list(db_pool, page, per_page).await?,
     ))
 }
 
@@ -30,9 +30,13 @@ async fn get(
     rolling_stock_id: Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
     let rolling_stock_id = rolling_stock_id.into_inner();
-    Ok(Json(
-        LightRollingStock::retrieve(db_pool, rolling_stock_id).await?,
-    ))
+    let rolling_stock =
+        match LightRollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await? {
+            Some(rolling_stock) => rolling_stock,
+            None => return Err(RollingStockError::NotFound { rolling_stock_id }.into()),
+        };
+    let rollig_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    Ok(Json(rollig_stock_with_liveries))
 }
 
 #[cfg(test)]
