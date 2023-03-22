@@ -30,7 +30,7 @@ public class RJSRollingStock implements Identified {
      * <p>Engineers measured a number of effort curves for each rolling stock.
      * These are referenced from effort curve profiles.
      * Effort curves associate a speed to a traction force.
-     * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves</p>
+     * <a href="https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves">...</a></p>
      * This match the default effort curve to take
      */
     @Json(name = "effort_curves")
@@ -184,13 +184,12 @@ public class RJSRollingStock implements Identified {
     //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
 
 
-    public static class SpeedDependantPowerCoefficient{
-        // x:speed values , y:associated dimensionless powerCoefficient which modulate output power
-        CurvePoint[] curve;
-
-        public SpeedDependantPowerCoefficient(CurvePoint[] curve) {
-            this.curve = curve;
-        }
+    public record SpeedDependantPowerCoefficient(CurvePoint[] curve){
+        /* Use cases :
+         * you need to modulate power with speed to simulate catenary/pantograph limitation
+         * you need to modulate power with speed to simulate a fuel cell behavior
+         * x:speed values , y:associated dimensionless powerCoefficient which modulate output power
+         */
 
         /** Return Power Coefficient at a given speed*/
         double getPowerCoefficientFromSpeed(double speed){
@@ -200,6 +199,7 @@ public class RJSRollingStock implements Identified {
 
     public static class SocDependantPowerCoefficient{
         // x:speed values , y:associated dimensionless powerCoefficient which modulate output power
+        // TODO : specify use case
         CurvePoint[] curve;
 
         public SocDependantPowerCoefficient(CurvePoint[] curve) {
@@ -212,16 +212,28 @@ public class RJSRollingStock implements Identified {
     }
 
     public static class PowerConverter {
+        // TODO : Make things comprehensible
+        // TODO : Should evolve
         double efficiency;
+        private double efficiencyInverse;
         public PowerConverter(double efficiency){
             this.efficiency = efficiency;
-        }
-        /** Return (power>0) ? power*n : power/n*/
-        public double convert(double power){
-            return (power>0) ? power*efficiency : power/efficiency;// Je sais pas lequel est le mieux
-            //return power*Math.pow(efficiency,Math.signum(power));
+            this.efficiencyInverse = 1/efficiency;
         }
 
+        /** Account for conversion loss - adirectional -> no input or output
+         * @param power power converted through
+         * @return inferior or equals {@code power}
+         */
+        public double convert(double power){
+            return  (power>0) ? power*efficiency : power*efficiencyInverse;
+            // return power*Math.pow(efficiency,Math.copySign(efficiency,power)); //Meh
+        }
+
+        public double deconvert(double power){//
+            return  (power>0) ? power*efficiencyInverse : power*efficiency;
+            // return power*Math.pow(efficiency,Math.copySign(efficiency,power)); //Meh
+        }
     }
 
     public static class RefillLaw {
@@ -280,6 +292,10 @@ public class RJSRollingStock implements Identified {
         public void updateStateOfCharge(double energy){
             soc += energy/capacity;
         }
+
+        public double getSoc() {
+            return soc;
+        }
     }
 
     /** Base I/O of our EMR model */
@@ -324,16 +340,15 @@ public class RJSRollingStock implements Identified {
         /** Return available power based on contextual speed */
         public double getPower(double speed){
             double availablePower = pMax;
-            if(Storage!=null && Storage.socDependency!=null)
-                availablePower *= Storage.socDependency.getPowerCoefficientFromSoc(Storage.soc);
-            if(Converter!=null) availablePower *= Converter.efficiency;
+            // Not sure if we MUST test if Storage!=null && Storage.socDependency!=null
+            if(Storage.socDependency!=null) availablePower *= Storage.socDependency.getPowerCoefficientFromSoc(Storage.soc);
             if(speedCoef!=null) availablePower *= speedCoef.getPowerCoefficientFromSpeed(speed);
+            if(Converter!=null) availablePower = Converter.convert(availablePower);
             return clipToESPowerLimits(availablePower);
         }     // Clip could become a problem if any coef>1, need to find a work around or at least keep it in sight
     }
 
 
-    // INSTANTIATING PANTOGRAPH AND BATTERY ENERGY SOURCE -------------------------------------------------------------
     public static ArrayList<EnergySource> getEnergySources() {
         ArrayList<EnergySource> EnergySourceArray = new ArrayList<>(); // Create an ArrayList object
 

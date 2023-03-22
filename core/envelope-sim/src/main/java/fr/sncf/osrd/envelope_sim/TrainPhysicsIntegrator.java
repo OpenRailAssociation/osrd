@@ -82,6 +82,7 @@ public final class TrainPhysicsIntegrator {
         boolean Electrification = (timeStep >= 2.345);//Simulate an electrification availability for tests further down
         double motorEfficiency = 0.643;               // Should go in RJSRolling Stock in the end
         double AuxiliaryEquipmentPower = 100.0;       // idem
+        // TODO : Validate the program with real test
 
         // Get EnergySources overall power capability
         double availableElectricalPower = 0.0;              // Sum each available power from Energy Source of the train
@@ -127,37 +128,35 @@ public final class TrainPhysicsIntegrator {
                 maxTractionForceFromEnergySources
         );
 
-        // Re-compute actual power used by traction for case where we use
+        // Re-compute actual power used by traction for case where we're limited by ES power
         double actualElectricalTractionPower = motorEfficiency/(maxTractionForce*speed);
-        /*Ppwp|cat = Pbus + Prech + Pconvbat
-         *Ppwp|cat = Paux + Ptrac + Prech + Pconvbat
-         */
+        double pBus = actualElectricalTractionPower + AuxiliaryEquipmentPower;
+        /*Ppwp|cat = Pbus + Prech + Pconvbat <=> Ppwp|cat = Paux + Ptrac + Prech + Pconvbat*/
 
         // Retrieve Pmax & Pmin depending on electrification availability (Powerpack or Catenary/Pantograph power)
-        double Pmaxpwpcat = Electrification? EnergySources.get(0).pMax:0; // Panto.pMax : Rien
-        //double Pminpwpcat = Electrification? EnergySources.get(0).pMin:0; // Panto.pMax : Rien
+        double Pmaxpwpcat = Electrification ? EnergySources.get(0).pMax : 0.0; // Panto.pMax : Rien
+        //double Pminpwpcat = Electrification? EnergySources.get(0).pMin : 0; // Panto.pMax : Rien
 
-        double pBus = actualElectricalTractionPower + AuxiliaryEquipmentPower;
-        double pBat = EnergySources.get(1).clipToESPowerLimits(pBus - Pmaxpwpcat);
+
+        // TUTUT Battery try to recover from it's discharged state :
+        double SoC = EnergySources.get(1).Storage.getSoc();
+        double callForPower = EnergySources.get(1).Storage.refillLaw.getRefillPower(SoC);
+        // Whatever the Traction+Auxiliary Power ( Bus power )
+        // Limite de ce que peut recharger la batterie par la puissance restante dispo : pBus - Pmaxpwpcat
+        double callForPowerFromPbusLeftsOver = RJSRollingStock.hardClipping(
+                0,
+                callForPower,
+                pBus - Pmaxpwpcat
+        );
+        double pBat = EnergySources.get(1).clipToESPowerLimits(callForPowerFromPbusLeftsOver);
+        double ppwpcat = EnergySources.get(0).clipToESPowerLimits(pBus - pBat);
 
         //double Ppwp_cat = PmaxBase - actualElectricalTractionPower + EnergySources.get(1).Storage.refillLaw.getRefillPower(0.6);
         //double  = Pbus - Pconvbat;
 
 
-        /* /!\ Energy calculation STEP
-         * We can then compute the energy variation and account for that variation either in SoC variation
-         * or fuel in fuel quantity variation
-         *
-         *for(var rsEnergySource : energySourceTreeMap.entrySet() ){
-         *    rsEnergySource.accountForStepEnergy(Energy);
-         *}
-         * The Energy Source with an energyStorage should update their SoC from this
-         * accountForStepEnergy(Double EnergyVariationOnTimeStep) method
-         *
-         * Notes : Depending on position, catenary shouldn't be loaded as much depending on distance from power emitter
-         * and from other load on the power network (meaning other Rolling Stock) -> see "profiles électriques"
-         * CHANTIER PRISE EN COMPTE ENERGY SOURCE
-         */
+        /* /!\ Energy calculation STEP */
+
         EnergySources.get(1).Storage.updateStateOfCharge(pBat*timeStep);
         // FIN CHANTIER PRISE EN COMPTE ENERGY SOURCE ******************************************
 
