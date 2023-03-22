@@ -162,7 +162,6 @@ export function updateProfile(id, oldProfile, newProfile) {
       dispatch(getUsers());
     } catch (err) {
       dispatch(updateError(err));
-      return err;
     }
   };
 }

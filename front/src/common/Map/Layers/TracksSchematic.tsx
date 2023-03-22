@@ -6,7 +6,6 @@ import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import { schematicMainLayer } from 'common/Map/Layers/schematiclayers';
 import { Theme } from 'types';
-import { RootState } from 'reducers';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';

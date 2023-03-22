@@ -42,12 +42,12 @@ export interface Position<Time = number> {
 }
 export type ConsolidatedPosition<DateType = Date> = Position<DateType | null>;
 
-export type PositionSpeed<Time = number> = Position<Time> & {
+export type PositionSpeedTime<Time = number> = Position<Time> & {
   speed: number;
 };
-export type ConsolidatePositionSpeed<DateType = Date> = PositionSpeed<DateType | null>;
+export type ConsolidatePositionSpeed<DateType = Date> = PositionSpeedTime<DateType | null>;
 
-interface Stop {
+export interface Stop {
   id: string | null;
   name: string | null;
   time: number;
@@ -84,11 +84,11 @@ export interface Regime {
   tail_positions: Position[][];
   route_begin_occupancy: Position[][];
   route_end_occupancy: Position[][];
-  speeds: PositionSpeed[];
+  speeds: PositionSpeedTime[];
   stops: Stop[];
   route_aspects: RouteAspect[];
   signal_aspects?: SignalAspect[];
-  error?: any;
+  error?: string;
 }
 
 export interface ModesAndProfiles {
@@ -97,20 +97,47 @@ export interface ModesAndProfiles {
   used_mode: string;
   used_profile: string;
 }
+
+export type ScheduledTrain = {
+  id: number;
+  labels: string[];
+  name: string;
+  path: number;
+  departure: number;
+  arrival: number;
+  speed_limit_tags: string;
+  isFiltered?: boolean;
+};
+
+interface GradientPosition {
+  gradient: number;
+  position: number;
+}
+
+interface RadiusPosition {
+  radius: number;
+  position: number;
+}
+
+interface SpeedPosition {
+  speed: number;
+  position: number;
+}
+
 export interface Train {
   modes_and_profiles: ModesAndProfiles[];
   id: number;
-  labels: any[];
+  labels: string[];
   path: number;
   name: string;
-  vmax: any[];
-  slopes: any[];
-  curves: any[];
+  vmax: SpeedPosition[];
+  slopes: GradientPosition[];
+  curves: RadiusPosition[];
   base: Regime;
   eco: Regime;
   margins: Regime;
-  isStdcm: boolean;
-  speed_limit_tags: string;
+  isStdcm?: boolean;
+  speed_limit_tags?: string;
 }
 
 export interface SimulationSnapshot {
@@ -120,8 +147,8 @@ export interface SimulationSnapshot {
 export type SimulationHistory = SimulationSnapshot[];
 
 export interface PositionValues {
-  headPosition: PositionSpeed;
-  tailPosition: PositionSpeed;
+  headPosition: PositionSpeedTime;
+  tailPosition: PositionSpeedTime;
   speed: {
     speed: number;
     time: number;
@@ -149,16 +176,22 @@ export interface SimulationTrain<DateType = Date> {
 
 export interface OsrdSimulationState {
   redirectToGraph?: boolean;
-  chart: any;
-  chartXGEV: any;
-  contextMenu: any;
-  hoverPosition: any;
+  chart?: Chart;
+  chartXGEV?: Chart['x'];
+  contextMenu?: {
+    id: unknown;
+    xPos: unknown;
+    yPos: unknown;
+  };
   isPlaying: boolean;
   isUpdating: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionValues;
-  selectedProjection: any;
+  selectedProjection?: {
+    id: unknown;
+    path: unknown;
+  };
   selectedTrain: number;
   speedSpaceSettings: {
     altitude: boolean;
