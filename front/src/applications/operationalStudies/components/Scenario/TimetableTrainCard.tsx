@@ -6,24 +6,17 @@ import { MdContentCopy } from 'react-icons/md';
 import { sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
 
-type trainType = {
-  id: number;
-  name: string;
-  departure: number;
-  arrival: number;
-  labels: Array<1>;
-  speed_limit_tags: string;
-  isFiltered: boolean;
-};
+import { ScheduledTrain } from 'reducers/osrdsimulation/types';
+
 type Props = {
-  train: trainType;
+  train: ScheduledTrain;
   isSelected: boolean;
   projectionPathIsUsed: boolean;
   idx: number;
   changeSelectedTrain: (idx: number) => void;
-  deleteTrain: (train: trainType) => void;
-  selectPathProjection: (train: trainType) => void;
-  duplicateTrain: (train: trainType) => void;
+  deleteTrain: (train: ScheduledTrain) => void;
+  selectPathProjection: (train: ScheduledTrain) => void;
+  duplicateTrain: (train: ScheduledTrain) => void;
 };
 
 export default function TimetableTrainCard({

@@ -41,12 +41,10 @@ function prepareData(simulation: SimulationSnapshot, selectedTrain: number): Gev
   }
 
   if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
-    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
-      (step: any) => ({
-        ...step,
-        speed: step.speed * 3.6,
-      })
-    );
+    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map((step) => ({
+      ...step,
+      speed: step.speed * 3.6,
+    }));
   }
 
   if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
