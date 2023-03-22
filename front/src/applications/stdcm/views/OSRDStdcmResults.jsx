@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { updateConsolidatedSimulation, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
+import { ForcedEcoSpaceTimeChart }  from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
 import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 
