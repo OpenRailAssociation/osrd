@@ -11,7 +11,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import Map from './Map';
 
 const HomeReferenceMap: FC = () => {
-  const { t } = useTranslation(['home', 'referenceMap']);
+  const { t } = useTranslation(['home/home', 'referenceMap']);
   const infraID = useSelector(getInfraID);
   const [getInfraById, { data: infra }] = osrdEditoastApi.endpoints.getInfraById.useLazyQuery({});
 

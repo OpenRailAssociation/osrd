@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import licenses from './json/licenses.json';
 
 const LicenseAttributions = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('home/navbar');
 
   const attributions = Object.values(licenses).map(({ name, version, copyright, publisher }) => (
     <div className="d-flex flex-column align-items-start" key={name}>
@@ -17,7 +17,9 @@ const LicenseAttributions = () => {
 
   return (
     <>
-      <h2 className="d-flex justify-content-center mt-5 mb-4">{t('NavBar.attributions')}</h2>
+      <h2 className="d-flex justify-content-center mt-5 mb-4">
+        {t('informations.releaseInformations')}
+      </h2>
       {attributions}
     </>
   );
