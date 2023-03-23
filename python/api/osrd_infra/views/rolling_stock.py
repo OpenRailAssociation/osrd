@@ -48,7 +48,7 @@ class RollingStockLiveryView(
     def retrieve(self, request, pk=None, rolling_stock_pk=None):
         queryset = RollingStockLivery.objects.all()
         livery = get_object_or_404(queryset, pk=pk)
-        image_db = livery.compound_image.image
+        image_db = livery.compound_image.data
 
         if str(livery.rolling_stock.id) != rolling_stock_pk:
             raise ValueError(f"Livery {pk} does not belong to rolling stock {rolling_stock_pk}")
@@ -90,7 +90,12 @@ class RollingStockLiveryView(
         compound_image_bytes = BytesIO()
         compound_image.save(compound_image_bytes, "PNG")
         return InMemoryUploadedFile(
-            compound_image_bytes, None, "compound_image.png", "PNG", sys.getsizeof(compound_image_bytes), None
+            compound_image_bytes,
+            None,
+            "compound_image.png",
+            "PNG",
+            sys.getsizeof(compound_image_bytes),
+            None,
         )
 
     def create(self, request, *args, **kwargs):
@@ -104,7 +109,10 @@ class RollingStockLiveryView(
         compound_image = self.create_compound_image(images)
 
         input_data = dict(
-            rolling_stock_id=rolling_stock_id, livery_name=livery_name, images=images, compound_image=compound_image
+            rolling_stock_id=rolling_stock_id,
+            livery_name=livery_name,
+            images=images,
+            compound_image=compound_image,
         )
 
         input_serializer = CreateRollingStockLiverySerializer(data=input_data)
