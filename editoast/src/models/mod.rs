@@ -13,7 +13,7 @@ use diesel::PgConnection;
 
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
-pub use scenario::{Scenario, ScenarioWithDetails};
+pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules};
 pub use train_schedule::TrainSchedule;

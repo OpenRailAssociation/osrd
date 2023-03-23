@@ -1142,6 +1142,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
     get:
+      deprecated: true
       tags:
         - scenarios
       summary: Paginated list of scenarios
@@ -1207,6 +1208,7 @@ paths:
 
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     get:
+      deprecated: true
       tags:
         - scenarios
       summary: Retrieve a scenario
