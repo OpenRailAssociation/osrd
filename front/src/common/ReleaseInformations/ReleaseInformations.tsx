@@ -15,7 +15,7 @@ import './ReleaseInformations.scss';
 import LicenseAttributions from './LicenseAttributions';
 
 function ReleaseInformations() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('home/navbar');
   const { data: editoastVersion } = osrdEditoastApi.useGetVersionQuery();
   const { data: coreVersion } = osrdMiddlewareApi.useGetVersionCoreQuery();
   const { data: apiVersion } = osrdMiddlewareApi.useGetVersionApiQuery();
@@ -23,7 +23,7 @@ function ReleaseInformations() {
 
   const osrdWebSite = 'https://osrd.fr/';
 
-  function serviceRow(name: string, version: any) {
+  function serviceRow(name: string, version?: string | number | null) {
     return (
       <tr>
         <th scope="row">
@@ -55,10 +55,10 @@ function ReleaseInformations() {
           <thead>
             <tr>
               <th scope="col">
-                <div className="cell-inner">{t('Application')}</div>
+                <div className="cell-inner">{t('informations.application')}</div>
               </th>
               <th scope="col" id="cellfirst-t5">
-                <div className="cell-inner">{t('Version')}</div>
+                <div className="cell-inner">{t('informations.version')}</div>
               </th>
             </tr>
           </thead>
