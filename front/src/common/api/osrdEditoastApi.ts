@@ -316,6 +316,23 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.scenarioRequest,
       }),
     }),
+    getProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+        params: { page: queryArg.page, page_size: queryArg.pageSize },
+      }),
+    }),
+    getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+      GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+      }),
+    }),
     deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
       DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
       DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
@@ -764,6 +781,32 @@ export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   studyId: number;
   scenarioRequest: ScenarioRequest;
 };
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
+  /** status 200 list of scenarios */ {
+    count?: number;
+    next?: any;
+    previous?: any;
+    results?: {
+      schema?: ScenarioListResult;
+    }[];
+  };
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
+  projectId: number;
+  studyId: number;
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The operational study info */ ScenarioResult;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** project id refered to the scenario */
+  projectId: number;
+  studyId: number;
+  /** scenario id you want to retrieve */
+  scenarioId: number;
+};
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** project id refered to the scenario */
@@ -1140,7 +1183,12 @@ export type ScenarioResult = {
   last_modification?: string;
   timetable?: number;
   trains_count?: number;
-  trains_schedules?: string[];
+  trains_schedules?: {
+    id?: number;
+    train_name?: string;
+    departure_time?: string;
+    train_path?: number;
+  }[];
 };
 export type ScenarioRequest = {
   name: string;
@@ -1148,4 +1196,18 @@ export type ScenarioRequest = {
   tags?: string[];
   infra?: number;
   electrical_profile_set?: number | null;
+};
+export type ScenarioListResult = {
+  id?: number;
+  name?: string;
+  description?: string[];
+  tags?: string[];
+  infra?: number;
+  infra_name?: string;
+  electrical_profile_set?: number | null;
+  electrical_profile_set_name?: string | null;
+  creation_date?: string;
+  last_modification?: string;
+  timetable?: number;
+  trains_count?: number;
 };
