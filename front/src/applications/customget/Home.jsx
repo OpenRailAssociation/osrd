@@ -14,7 +14,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import UploadFileModal from './components/uploadFileModal';
 
 function HomeCustomGET() {
-  const { t } = useTranslation(['customget', 'home']);
+  const { t } = useTranslation(['customget', 'home/home']);
   const { openModal } = useModal();
 
   return (
@@ -40,7 +40,7 @@ function HomeCustomGET() {
           </div>
         }
       />
-      <NavBarSNCF appName={t('home:customget')} logo={logo} />
+      <NavBarSNCF appName={t('home/home:customget')} logo={logo} />
       <Routes>
         <Route path="" element={<CustomGET />} />
       </Routes>
