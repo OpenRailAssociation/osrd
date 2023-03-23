@@ -10,6 +10,8 @@ import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAd
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /** This class makes it easier to handle the STDCM pathfinding parameters,
@@ -22,8 +24,8 @@ public class STDCMPathfindingBuilder {
 
     // region NON-OPTIONAL
     private SignalingInfra infra = null;
-    Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations = null;
-    Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations = null;
+
+    List<STDCMStep> steps = new ArrayList<>();
 
     // endregion NON-OPTIONAL
 
@@ -52,15 +54,21 @@ public class STDCMPathfindingBuilder {
         return this;
     }
 
-    /** Sets the locations at which the train can start */
+    /** Sets the locations at which the train can start. Meant to be used for simple tests with no intermediate steps */
     public STDCMPathfindingBuilder setStartLocations(Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations) {
-        this.startLocations = startLocations;
+        this.steps.add(0, new STDCMStep(startLocations, 0, true));
         return this;
     }
 
-    /** Sets the locations we are trying to reach */
+    /** Sets the locations the train must reach. Meant to be used for simple tests with no intermediate steps */
     public STDCMPathfindingBuilder setEndLocations(Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations) {
-        this.endLocations = endLocations;
+        this.steps.add(new STDCMStep(endLocations, 0, true));
+        return this;
+    }
+
+    /** Add a step to the path */
+    public STDCMPathfindingBuilder addStep(STDCMStep step) {
+        this.steps.add(step);
         return this;
     }
 
@@ -120,16 +128,14 @@ public class STDCMPathfindingBuilder {
     public STDCMResult run() {
         assert infra != null : "infra is a required parameter and was not set";
         assert rollingStock != null : "rolling stock is a required parameter and was not set";
-        assert startLocations != null : "start locations is a required parameter and was not set";
-        assert endLocations != null : "end locations is a required parameter and was not set";
+        assert steps.size() >= 2 : "Not enough steps have been set";
         return STDCMPathfinding.findPath(
                 infra,
                 rollingStock,
                 comfort,
                 startTime,
                 0,
-                startLocations,
-                endLocations,
+                steps,
                 new RouteAvailabilityLegacyAdapter(unavailableTimes),
                 timeStep,
                 maxDepartureDelay,
