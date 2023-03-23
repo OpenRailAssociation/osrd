@@ -1,0 +1,21 @@
+{
+  "about": "Quiénes somos",
+  "attributions": "Asignaciones",
+  "disconnect": "Desconexión",
+  "informations": {
+    "application": "Aplicación",
+    "releaseInformations": "Información sobre la versión",
+    "version": "Versión"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "it": "Italiano",
+    "jp": "やまと",
+    "ru": "Русский",
+    "uk": "Українська",
+    "languageChoice": "Idioma de la interfaz"
+  }
+}

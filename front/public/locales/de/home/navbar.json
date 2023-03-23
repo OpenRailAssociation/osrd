@@ -1,10 +1,10 @@
 {
-  "about": "A propos",
-  "attributions": "Attributions",
-  "disconnect": "Déconnexion",
+  "about": "Über OSRD",
+  "attributions": "Zuweisungen",
+  "disconnect": "Abmelden",
   "informations": {
-    "application": "Application",
-    "releaseInformations": "Informations de version",
+    "application": "Anwendung",
+    "releaseInformations": "Versionsinformationen",
     "version": "Version"
   },
   "language": {
@@ -16,6 +16,6 @@
     "jp": "やまと",
     "ru": "Русский",
     "uk": "Українська",
-    "languageChoice": "Langue de l'interface"
+    "languageChoice": "Sprache der Schnittstelle"
   }
 }
