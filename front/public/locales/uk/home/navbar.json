@@ -1,0 +1,21 @@
+{
+  "about": "Про нас",
+  "attributions": "Розподіл",
+  "disconnect": "Відключення",
+  "informations": {
+    "application": "Заявка",
+    "releaseInformations": "Інформація про версію",
+    "version": "Версія"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "it": "Italiano",
+    "jp": "やまと",
+    "ru": "Русский",
+    "uk": "Українська",
+    "languageChoice": "Мова інтерфейсу"
+  }
+}
