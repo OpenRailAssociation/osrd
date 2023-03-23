@@ -45,8 +45,10 @@ def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_s
         "timetable": timetable,
         "start_time": 0,
         "name": "foo",
-        "start_points": [_START],
-        "end_points": [_STOP],
+        "steps": [
+            {"duration": 0.1, "waypoints": [_START]},
+            {"duration": 0.1, "waypoints": [_STOP]},
+        ],
     }
     r = requests.post(API_URL + "stdcm/", json=payload)
     assert r.status_code == 200
@@ -61,8 +63,10 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int, west_
         "timetable": small_scenario.timetable,
         "start_time": 5000,
         "name": "foo",
-        "start_points": [_START],
-        "end_points": [_STOP],
+        "steps": [
+            {"duration": 0.1, "waypoints": [_START]},
+            {"duration": 0.1, "waypoints": [_STOP]},
+        ],
     }
     r = requests.post(API_URL + "stdcm/", json=payload)
     if r.status_code // 100 != 2:

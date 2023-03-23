@@ -712,16 +712,22 @@ components:
         end_time:
           type: number
           format: double
-        start_points:
+        steps:
           type: array
+          minimum: 2
           items:
-            $ref: "#/components/schemas/Waypoint"
-          minimum: 1
-        end_points:
-          type: array
-          items:
-            $ref: "#/components/schemas/Waypoint"
-          minimum: 1
+            type: object
+            properties:
+              waypoints:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Waypoint"
+                minimum: 1
+              stop:
+                type: boolean
+              stop_duration:
+                type: number
+                format: double
         speed_limit_tags:
           type: string
           description: Train composition used for speed limit
