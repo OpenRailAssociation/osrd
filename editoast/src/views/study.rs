@@ -33,7 +33,7 @@ pub fn routes() -> impl HttpServiceFactory {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "study")]
 pub enum StudyError {
-    /// Couldn't found the project with the given project_id
+    /// Couldn't found the study with the given study ID
     #[error("Study '{study_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { study_id: i64 },
@@ -301,7 +301,7 @@ pub mod test {
     }
 
     #[actix_test]
-    async fn project_get() {
+    async fn study_get() {
         let app = create_test_service().await;
         let study: Study = call_and_read_body_json(&app, create_study_request().await).await;
         let project_id = study.project_id.unwrap();
@@ -314,9 +314,8 @@ pub mod test {
         let req = TestRequest::delete().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
-        let response = call_service(&app, delete_study_request(project_id, study_id)).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let response = call_service(&app, delete_project_request(project_id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[actix_test]
@@ -333,6 +332,8 @@ pub mod test {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let response = call_service(&app, delete_study_request(project_id, study_id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let response = call_service(&app, delete_project_request(project_id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

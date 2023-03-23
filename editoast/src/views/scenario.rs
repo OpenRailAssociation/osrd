@@ -1,7 +1,16 @@
 use crate::error::Result;
-use crate::models::{Create, Delete, Project, Retrieve, ScenarioWithDetails, Study, Timetable};
+use crate::models::{
+    Create, Delete, Project, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study,
+    Timetable,
+};
+use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
+use crate::views::projects::ProjectError;
+use crate::views::study::StudyError;
 use crate::{models::Scenario, DbPool};
 use actix_web::{delete, HttpResponse};
+
+use actix_web::get;
+use actix_web::web::Query;
 use actix_web::{
     dev::HttpServiceFactory,
     post,
@@ -13,19 +22,18 @@ use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use super::projects::ProjectError;
-use super::study::StudyError;
-
 /// Returns `/projects/{project}/studies/{study}/scenarios` routes
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/scenarios").service((create, delete))
+    web::scope("/scenarios")
+        .service((create, delete, list))
+        .service(web::scope("/{scenario}").service(get))
 }
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "scenario")]
 #[allow(clippy::enum_variant_names)]
 enum ScenarioError {
-    /// Couldn't found the scenario with the given study_id
+    /// Couldn't found the scenario with the given scenario ID
     #[error("Scenario '{scenario_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { scenario_id: i64 },
@@ -140,6 +148,40 @@ async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<Ht
     Ok(HttpResponse::NoContent().finish())
 }
 
+#[get("")]
+async fn get(
+    db_pool: Data<DbPool>,
+    path: Path<(i64, i64, i64)>,
+) -> Result<Json<ScenarioWithDetails>> {
+    let (project_id, study_id, scenario_id) = path.into_inner();
+
+    let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
+
+    // Return the scenarios
+    let scenario = match Scenario::retrieve(db_pool.clone(), scenario_id).await? {
+        Some(study) => study,
+        None => return Err(ScenarioError::NotFound { scenario_id }.into()),
+    };
+    let scenario_with_trains = scenario.with_details(db_pool).await?;
+    Ok(Json(scenario_with_trains))
+}
+
+/// Return a list of studies
+#[get("")]
+async fn list(
+    db_pool: Data<DbPool>,
+    pagination_params: Query<PaginationQueryParam>,
+    path: Path<(i64, i64)>,
+) -> Result<Json<PaginatedResponse<ScenarioWithCountTrains>>> {
+    let (project_id, study_id) = path.into_inner();
+    let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
+    let page = pagination_params.page;
+    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
+    let scenarios = Scenario::list(db_pool, page, per_page, study_id).await?;
+
+    Ok(Json(scenarios))
+}
+
 #[cfg(test)]
 mod test {
     use crate::infra::Infra;
@@ -154,6 +196,7 @@ mod test {
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
+    use actix_web::test::call_and_read_body_json;
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use serde_json::json;
 
@@ -201,6 +244,48 @@ mod test {
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         let response = call_service(&app, delete_infra_request(scenario.infra.unwrap())).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn scenario_list() {
+        let app = create_test_service().await;
+        let (request, project_id) = create_scenario_request().await;
+        let response = call_service(&app, request).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let scenario: Scenario = read_body_json(response).await;
+        let study_id = scenario.study.unwrap();
+        let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/");
+        let req = TestRequest::get().uri(url.as_str()).to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let response = call_service(&app, delete_project_request(project_id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn scenario_get() {
+        let app = create_test_service().await;
+        let (request, project_id) = create_scenario_request().await;
+        let scenario: Scenario = call_and_read_body_json(&app, request).await;
+        let study_id = scenario.study.unwrap();
+        let scenario_id = scenario.id.unwrap();
+        let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
+        let req = TestRequest::get().uri(url.as_str()).to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let req = TestRequest::delete().uri(url.as_str()).to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let response = call_service(
+            &app,
+            delete_scenario_request(project_id, study_id, scenario_id),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let response = call_service(&app, delete_project_request(project_id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }
