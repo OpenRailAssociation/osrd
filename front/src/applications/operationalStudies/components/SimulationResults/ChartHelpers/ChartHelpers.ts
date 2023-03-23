@@ -6,12 +6,13 @@ import { sec2time } from 'utils/timeManipulation';
 // eslint-disable-next-line
 import {
   Position,
-  PositionSpeed,
+  PositionSpeedTime,
   RouteAspect,
   ConsolidatedRouteAspect,
   SignalAspect,
   MergedDataPoint,
   Train,
+  Stop,
 } from 'reducers/osrdsimulation/types';
 import { TIME } from '../simulationResultsConsts';
 
@@ -293,7 +294,7 @@ export const interpolateOnTime = <ListValues extends string, Time = number>(
     [key: string]: unknown;
   };
   const bisect = d3.bisector<ObjectWithGivenKey, Time>((d) => d[keyValues[0]]).left;
-  const positionInterpolated = {} as Record<ListValues, PositionSpeed<Time>>;
+  const positionInterpolated = {} as Record<ListValues, PositionSpeedTime<Time>>;
   listValues.forEach((listValue) => {
     let bisection;
     if (dataSimulation?.[listValue]) {
@@ -336,3 +337,30 @@ export const interpolateOnTime = <ListValues extends string, Time = number>(
 };
 
 export const isGET = (keyValues: string[]) => keyValues[0] === TIME;
+
+export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) {
+  const firstStop = train.base.stops[0];
+  const lastStop = last(train.base.stops) as Stop;
+  const departure = offsetSeconds(firstStop.time + dragOffset);
+  const arrival = offsetSeconds(lastStop.time + dragOffset);
+  return {
+    id: train.id,
+    labels: train.labels,
+    name: train.name,
+    path: train.path,
+    departure,
+    arrival,
+    speed_limit_tags: train.speed_limit_tags,
+  };
+}
+
+export function makeTrainList(trains: Train[], trainToOffset: number, dragOffset = 0) {
+  return trains.map((train) => {
+    const usedOffset = trainToOffset !== undefined && trainToOffset === train.id ? dragOffset : 0;
+    return trainWithDepartureAndArrivalTimes(train, usedOffset);
+  });
+}
+
+export function makeTrainListWithAllTrainsOffset(trains: Train[], dragOffset = 0) {
+  return trains.map((train) => trainWithDepartureAndArrivalTimes(train, dragOffset));
+}

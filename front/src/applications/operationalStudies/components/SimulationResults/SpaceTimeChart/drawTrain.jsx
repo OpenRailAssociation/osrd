@@ -3,7 +3,7 @@ import { drag as d3drag } from 'd3-drag';
 
 import {
   getDirection,
-  offsetSeconds,
+  makeTrainList,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import drawCurve from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawCurve';
 import drawRect from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/drawRect';
@@ -63,23 +63,6 @@ export default function drawTrain(
     }, interval);
   }
 
-  const makeDepartureArrivalTimes = (dragOffset, selectedTrainId) =>
-    simulationTrains.map((train) => ({
-      id: train.id,
-      labels: train.labels,
-      name: train.name,
-      path: train.path,
-      departure:
-        selectedTrainId !== undefined && selectedTrainId === train.id
-          ? offsetSeconds(train.base.stops[0].time + dragOffset)
-          : train.base.stops[0].time,
-      arrival:
-        selectedTrainId !== undefined && selectedTrainId === train.id
-          ? offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset)
-          : train.base.stops[train.base.stops.length - 1].time,
-      speed_limit_tags: train.speed_limit_tags,
-    }));
-
   const drag = d3drag()
     .container((d) => d) // the component is dragged from its initial position
     .on('end', () => {
@@ -93,8 +76,8 @@ export default function drawTrain(
     })
     .on('drag', (event) => {
       dragFullOffset += rotate ? event.dy : event.dx;
-      const value = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = makeDepartureArrivalTimes(value, trainToDraw.id);
+      const offset = getDragOffsetValue(dragFullOffset);
+      const newDepartureArrivalTimes = makeTrainList(simulationTrains, trainToDraw.id, offset);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });

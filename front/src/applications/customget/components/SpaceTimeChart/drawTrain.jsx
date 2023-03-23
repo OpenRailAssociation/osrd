@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 
 import { getDirection } from 'applications/customget/components/ChartHelpers';
-import { offsetAllTrainsDepartureAndArrivalTimes } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import { makeTrainListWithAllTrainsOffset } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 
 import drawCurve from 'applications/customget/components/drawCurve';
 import drawText from 'applications/customget/components/drawText';
@@ -78,10 +78,7 @@ export default function drawTrain(
     .on('drag', () => {
       dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
       const value = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = offsetAllTrainsDepartureAndArrivalTimes(
-        simulation.trains,
-        value
-      );
+      const newDepartureArrivalTimes = makeTrainListWithAllTrainsOffset(simulation.trains, value);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
