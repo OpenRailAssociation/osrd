@@ -209,17 +209,25 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
         "maximum_relative_run_time": random.random() * 4,
         "margin_before": random.randint(0, 600),
         "margin_after": random.randint(0, 600),
-        "start_points": [
+        "steps": [
             {
-                "track_section": start_edge,
-                "offset": start_offset,
-            }
-        ],
-        "end_points": [
+                "waypoints": [
+                    {
+                        "track_section": start_edge,
+                        "offset": start_offset,
+                    }
+                ],
+                "duration": 0.1,
+            },
             {
-                "track_section": last_edge,
-                "offset": last_offset,
-            }
+                "waypoints": [
+                    {
+                        "track_section": last_edge,
+                        "offset": last_offset,
+                    }
+                ],
+                "duration": 0.1,
+            },
         ],
     }
     allowance_value = make_random_allowance_value(0)

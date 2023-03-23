@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api.stdcm;
 
+import com.google.common.collect.Iterables;
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.InfraManager;
@@ -89,8 +90,9 @@ public class STDCMEndpoint implements Take {
             final var infra = fullInfra.java();
             final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
-            final var startLocations = findRoutes(infra, request.startPoints);
-            final var endLocations = findRoutes(infra, request.endPoints);
+            // TODO: handle more than 2 waypoints
+            final var startLocations = findRoutes(infra, request.steps.get(0).waypoints);
+            final var endLocations = findRoutes(infra, Iterables.getLast(request.steps).waypoints);
             final String tag = request.speedLimitComposition;
             var occupancies = request.routeOccupancies;
             AllowanceValue standardAllowance = null;
