@@ -50,6 +50,7 @@ signal:
     joins: |
       INNER JOIN osrd_infra_signalmodel AS sig ON sig.id = osrd_search_signal.id
       INNER JOIN osrd_infra_tracksectionmodel AS ts ON ts.obj_id = sig.data->>'track' AND ts.infra_id = sig.infra_id
+      INNER JOIN osrd_infra_signallayer AS lay ON lay.infra_id = sig.infra_id AND lay.obj_id = sig.obj_id
     columns:
       infra_id: sig.infra_id
       label: sig.data->'extensions'->'sncf'->>'label'
@@ -57,3 +58,5 @@ signal:
       logical_types: osrd_search_signal.logical_types
       line_code: osrd_search_signal.line_code
       line_name: ts.data->'extensions'->'sncf'->>'line_name'
+      geographic: ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json
+      schematic: ST_AsGeoJSON(ST_Transform(lay.schematic, 4326))::json
