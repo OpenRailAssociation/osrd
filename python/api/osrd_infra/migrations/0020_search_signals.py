@@ -23,7 +23,16 @@ class Migration(migrations.Migration):
                 "infra_id": ("{source}.infra_id", "INT"),
                 "obj_id": ("{source}.obj_id", "VARCHAR(255)"),
                 "aspects": (
-                    "ARRAY(SELECT jsonb_array_elements_text({source}.data->'extensions'->'sncf'->'aspects'))::text[]",
+                    """array_remove(
+                        ARRAY(
+                            SELECT jsonb_array_elements_text(jsonb_strip_nulls({source}.data)->'extensions'->'sncf'->'aspects')
+                        )::text[],
+                        NULL
+                    )""",
+                    "TEXT[]",
+                ),
+                "logical_types": (
+                    "ARRAY(SELECT * FROM jsonb_to_recordset(jsonb_strip_nulls({source}.data)->'logical_signals') AS (signaling_system text))",
                     "TEXT[]",
                 ),
                 "line_code": ("(ts.data->'extensions'->'sncf'->>'line_code')::integer", "INT"),
@@ -31,5 +40,9 @@ class Migration(migrations.Migration):
             triggers=True,
             phony_model_name="OsrdSearchSignal",
             joins="INNER JOIN osrd_infra_tracksectionmodel AS ts ON ts.infra_id = {source}.infra_id AND ts.obj_id = {source}.data->>'track'",
-        )
+        ),
+        migrations.RunSQL(
+            sql="CREATE INDEX IF NOT EXISTS osrd_search_signal_infra_id_line_code_idx ON osrd_search_signal(infra_id, line_code) INCLUDE (label);",
+            reverse_sql="DROP INDEX IF EXISTS osrd_search_signal_infra_id_line_code_idx",
+        ),
     ]
