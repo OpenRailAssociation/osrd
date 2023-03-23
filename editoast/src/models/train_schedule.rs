@@ -32,6 +32,7 @@ pub struct TrainSchedule {
     pub rolling_stock_id: i64,
     pub timetable_id: i64,
 }
+
 #[derive(Serialize, Debug, PartialEq, Clone, Queryable)]
 pub struct TrainScheduleDetails {
     pub id: i64,
