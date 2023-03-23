@@ -924,14 +924,6 @@ export type TrainScheduleResultData = {
     time?: number;
     position?: number;
   }[][];
-  route_begin_occupancy?: {
-    time?: number;
-    position?: number;
-  }[][];
-  route_end_occupancy?: {
-    time?: number;
-    position?: number;
-  }[][];
   stops?: {
     id?: number;
     name?: string;

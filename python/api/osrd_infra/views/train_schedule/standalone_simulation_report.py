@@ -111,10 +111,6 @@ def project_simulation_results(
     tail_positions = compute_tail_positions(head_positions, train_length)
     train_end_time = simulation_result["head_positions"][-1]["time"]
 
-    route_begin_occupancy, route_end_occupancy = convert_route_occupancies(
-        simulation_result["route_occupancies"], projection_path_payload, departure_time
-    )
-    
     signal_sightings = simulation_result["signal_sightings"]
     zone_updates = simulation_result["zone_updates"]
     signaling_sim_res = evaluate_signals(infra, None, projection_path_payload, signal_sightings, zone_updates)
@@ -134,8 +130,6 @@ def project_simulation_results(
     return {
         "head_positions": head_positions,
         "tail_positions": tail_positions,
-        "route_begin_occupancy": route_begin_occupancy,
-        "route_end_occupancy": route_end_occupancy,
         "speeds": speeds,
         "stops": stops,
         "route_aspects": route_aspects,
@@ -230,52 +224,3 @@ def build_signal_updates(signal_updates, departure_time):
             }
         )
     return results
-
-
-def convert_route_occupancies(route_occupancies, projection_path_payload: PathPayload, departure_time):
-    return [], []
-    begin_occupancies = []
-    end_occupancies = []
-    current_begin_curve = []
-    current_end_curve = []
-    start_pos = 0
-    for route_path in projection_path_payload.route_paths:
-        route_id = route_path.route
-
-        end_pos = start_pos
-        for track_range in route_path.track_sections:
-            end_pos += track_range.length()
-
-        if route_id not in route_occupancies:
-            start_pos = end_pos
-
-            if not current_begin_curve:
-                continue
-
-            begin_occupancies.append(current_begin_curve)
-            end_occupancies.append(current_end_curve)
-            current_begin_curve = []
-            current_end_curve = []
-            start_pos = end_pos
-            continue
-
-        route_occupancy = route_occupancies[route_id]
-        if not current_begin_curve or current_begin_curve[-1]["position"] < start_pos:
-            current_begin_curve.append(
-                {"time": route_occupancy["time_head_occupy"] + departure_time, "position": start_pos}
-            )
-            current_end_curve.append(
-                {"time": route_occupancy["time_tail_occupy"] + departure_time, "position": start_pos}
-            )
-
-        current_begin_curve.append({"time": route_occupancy["time_head_occupy"] + departure_time, "position": end_pos})
-        current_begin_curve.append({"time": route_occupancy["time_head_free"] + departure_time, "position": end_pos})
-        current_end_curve.append({"time": route_occupancy["time_tail_free"] + departure_time, "position": start_pos})
-        current_end_curve.append({"time": route_occupancy["time_tail_free"] + departure_time, "position": end_pos})
-        start_pos = end_pos
-
-    if current_begin_curve:
-        begin_occupancies.append(current_begin_curve)
-        end_occupancies.append(current_end_curve)
-
-    return begin_occupancies, end_occupancies
