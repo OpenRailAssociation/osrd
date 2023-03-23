@@ -1036,6 +1036,11 @@ paths:
       tags:
         - rolling_stock
       summary: Create a rolling stock
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RollingStockCreatePayload"
       responses:
         200:
           description: The rolling stock list
@@ -1982,9 +1987,47 @@ components:
           $ref: "#/components/schemas/Direction"
 
     LightRollingStock:
+      allOf:
+        - $ref: "#/components/schemas/RollingStock"
+        - type: object
+          properties:
+            effort_curves:
+              type: object
+              properties:
+                default_mode:
+                  type: string
+                modes:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      is_electric:
+                        type: boolean
+                    required: [is_electric]
+              required: [default_mode, modes]
+          required: [effort_curves]
+
+    RollingStock:
+      allOf:
+        - $ref: "#/components/schemas/RollingStockCreatePayload"
+        - type: object
+          properties:
+            id:
+              type: number
+            liveries:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+                required: [id, name]
+          required: [id, liveries]
+  
+    RollingStockCreatePayload:
       properties:
-        id:
-          type: number
         version:
           type: string
           example: "3.0"
@@ -2014,6 +2057,7 @@ components:
             value:
               type: number
               format: float
+          required: [type, value]
         inertia_coefficient:
           type: number
           format: float
@@ -2036,6 +2080,7 @@ components:
             type:
               type: string
               enum: ["davis"]
+          required: [A, B, C, type]
         loading_gauge:
           type: string
           enum:
@@ -2058,8 +2103,16 @@ components:
               additionalProperties:
                 type: object
                 properties:
+                  curves:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ConditionalEffortCurve"
+                  default_curve:
+                    $ref: "#/components/schemas/EffortCurve"
                   is_electric:
                     type: boolean
+                required: [curves, default_curve, is_electric]
+          required: [default_mode, modes]
         base_power_class:
           type: string
           example: "5"
@@ -2073,6 +2126,25 @@ components:
             "C2US": "3"
         metadata:
           type: object
+          properties:
+            detail:
+              type: string
+            family:
+              type: string
+            grouping:
+              type: string
+            number:
+              type: string
+            reference:
+              type: string
+            series:
+              type: string
+            subseries:
+              type: string
+            type:
+              type: string
+            unit:
+              type: string
           example:
             detail: "BB 7200"
             family: "LOCOMOTIVES"
@@ -2083,39 +2155,25 @@ components:
             subseries: "GV"
             type: "Locomotives électriques"
             unit: "US"
-        liveries:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: number
-              name:
-                type: string
-
-    RollingStock:
-      allOf:
-        - $ref: "#/components/schemas/LightRollingStock"
-        - type: object
-          properties:
-            effort_curves:
-              type: object
-              properties:
-                default_mode:
-                  type: string
-                modes:
-                  type: object
-                  additionalProperties:
-                    type: object
-                    properties:
-                      curves:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/ConditionalEffortCurve"
-                      default_curve:
-                        $ref: "#/components/schemas/EffortCurve"
-                      is_electric:
-                        type: boolean
+          required: [detail, family, grouping, number, reference, series, subseries, type, unit]
+      required:
+        - version
+        - name
+        - length
+        - max_speed
+        - startup_time
+        - startup_acceleration
+        - comfort_acceleration
+        - gamma
+        - inertia_coefficient
+        - features
+        - mass
+        - rolling_resistance
+        - loading_gauge
+        - effort_curves
+        - base_power_class
+        - power_restrictions
+        - metadata
 
     RouteTrackRangesComputed:
       type: object
@@ -2174,6 +2232,7 @@ components:
           ],
           ["=", ["infra_id"], 2],
         ]
+
     ProjectCreateRequest:
       properties:
         name:
@@ -2203,6 +2262,7 @@ components:
             maxLength: 255
       required:
         - name
+
     ProjectPatchRequest:
       properties:
         name:
@@ -2227,6 +2287,7 @@ components:
           items:
             type: string
             maxLength: 255
+
     ProjectResult:
       properties:
         id:
@@ -2264,6 +2325,7 @@ components:
           type: array
           items:
             type: string
+
     StudyCreateRequest:
       properties:
         name:

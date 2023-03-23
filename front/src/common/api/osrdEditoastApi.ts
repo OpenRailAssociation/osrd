@@ -207,7 +207,11 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
     }),
     postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
-      query: () => ({ url: `/rolling_stock/`, method: 'POST' }),
+      query: (queryArg) => ({
+        url: `/rolling_stock/`,
+        method: 'POST',
+        body: queryArg.rollingStockCreatePayload,
+      }),
     }),
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
@@ -667,7 +671,9 @@ export type GetLightRollingStockByIdApiArg = {
   id: number;
 };
 export type PostRollingStockApiResponse = /** status 200 The rolling stock list */ RollingStock;
-export type PostRollingStockApiArg = void;
+export type PostRollingStockApiArg = {
+  rollingStockCreatePayload: RollingStockCreatePayload;
+};
 export type GetRollingStockByIdApiResponse =
   /** status 200 The rolling stock information */ RollingStock;
 export type GetRollingStockByIdApiArg = {
@@ -1030,47 +1036,6 @@ export type ElectricalProfile = {
   power_class?: string;
   track_ranges?: TrackRange[];
 };
-export type LightRollingStock = {
-  id?: number;
-  version?: string;
-  name?: string;
-  length?: number;
-  max_speed?: number;
-  startup_time?: number;
-  startup_acceleration?: number;
-  comfort_acceleration?: number;
-  gamma?: {
-    type?: 'CONST' | 'MAX';
-    value?: number;
-  };
-  inertia_coefficient?: number;
-  features?: string[];
-  mass?: number;
-  rolling_resistance?: {
-    A?: number;
-    B?: number;
-    C?: number;
-    type?: 'davis';
-  };
-  loading_gauge?: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  effort_curves?: {
-    default_mode?: string;
-    modes?: {
-      [key: string]: {
-        is_electric?: boolean;
-      };
-    };
-  };
-  base_power_class?: string;
-  power_restrictions?: {
-    [key: string]: string;
-  };
-  metadata?: object;
-  liveries?: {
-    id?: number;
-    name?: string;
-  }[];
-};
 export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type EffortCurve = {
   speeds?: number[];
@@ -1084,14 +1049,67 @@ export type ConditionalEffortCurve = {
   } | null;
   curve?: EffortCurve;
 };
-export type RollingStock = LightRollingStock & {
-  effort_curves?: {
-    default_mode?: string;
-    modes?: {
+export type RollingStockCreatePayload = {
+  version: string;
+  name: string;
+  length: number;
+  max_speed: number;
+  startup_time: number;
+  startup_acceleration: number;
+  comfort_acceleration: number;
+  gamma: {
+    type: 'CONST' | 'MAX';
+    value: number;
+  };
+  inertia_coefficient: number;
+  features: string[];
+  mass: number;
+  rolling_resistance: {
+    A: number;
+    B: number;
+    C: number;
+    type: 'davis';
+  };
+  loading_gauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
+  effort_curves: {
+    default_mode: string;
+    modes: {
       [key: string]: {
-        curves?: ConditionalEffortCurve[];
-        default_curve?: EffortCurve;
-        is_electric?: boolean;
+        curves: ConditionalEffortCurve[];
+        default_curve: EffortCurve;
+        is_electric: boolean;
+      };
+    };
+  };
+  base_power_class: string;
+  power_restrictions: {
+    [key: string]: string;
+  };
+  metadata: {
+    detail: string;
+    family: string;
+    grouping: string;
+    number: string;
+    reference: string;
+    series: string;
+    subseries: string;
+    type: string;
+    unit: string;
+  };
+};
+export type RollingStock = RollingStockCreatePayload & {
+  id: number;
+  liveries: {
+    id: number;
+    name: string;
+  }[];
+};
+export type LightRollingStock = RollingStock & {
+  effort_curves: {
+    default_mode: string;
+    modes: {
+      [key: string]: {
+        is_electric: boolean;
       };
     };
   };
