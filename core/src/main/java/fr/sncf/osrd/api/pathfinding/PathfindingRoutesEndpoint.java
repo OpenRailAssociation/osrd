@@ -112,7 +112,16 @@ public class PathfindingRoutesEndpoint implements Take {
         var electrificationConstraints = new ElectrificationConstraints(rollingStocks);
         final List<EdgeToRanges<SignalingRoute>> constraintsList =
                 List.of(loadingGaugeConstraints, electrificationConstraints);
+        var remainingDistanceEstimators = makeHeuristics(waypoints);
 
+        // Compute the paths from the entry waypoint to the exit waypoint
+        return computePaths(infra, waypoints, constraintsList, remainingDistanceEstimators);
+    }
+
+    /** Initialize the heuristics */
+    public static ArrayList<AStarHeuristic<SignalingRoute>> makeHeuristics(
+            List<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints
+    ) {
         // Compute the minimum distance between steps
         double[] stepMinDistance = new double[waypoints.size() - 1];
         for (int i = 0; i < waypoints.size() - 2; i++) {
@@ -129,9 +138,7 @@ public class PathfindingRoutesEndpoint implements Take {
         for (int i = 0; i < waypoints.size() - 1; i++) {
             remainingDistanceEstimators.add(new RemainingDistanceEstimator(waypoints.get(i + 1), stepMinDistance[i]));
         }
-
-        // Compute the paths from the entry waypoint to the exit waypoint
-        return computePaths(infra, waypoints, constraintsList, remainingDistanceEstimators);
+        return remainingDistanceEstimators;
     }
 
 

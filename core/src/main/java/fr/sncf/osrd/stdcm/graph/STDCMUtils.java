@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 
+import com.google.common.collect.Iterables;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -50,7 +51,8 @@ public class STDCMUtils {
     /** Returns the offset of the stops on the given route, starting at startOffset*/
     static Double getStopOnRoute(STDCMGraph graph, SignalingRoute route, double startOffset) {
         var res = new ArrayList<Double>();
-        for (var endLocation : graph.endLocations) {
+        // FIXME: use more than the last step
+        for (var endLocation : Iterables.getLast(graph.steps).locations()) {
             if (endLocation.edge() == route) {
                 var offset = endLocation.offset() - startOffset;
                 if (offset >= 0)

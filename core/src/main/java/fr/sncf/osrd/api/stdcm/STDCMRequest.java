@@ -175,6 +175,7 @@ public final class STDCMRequest {
         public Collection<PathfindingWaypoint> waypoints;
 
 
+        /** Create a new step */
         public STDCMStep(double stopDuration, boolean stop, Collection<PathfindingWaypoint> waypoints) {
             this.stopDuration = stopDuration;
             this.stop = stop;
