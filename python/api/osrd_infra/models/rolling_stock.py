@@ -15,6 +15,7 @@ from osrd_schemas.rolling_stock import (
 )
 from osrd_schemas.rolling_stock import RollingStock as RollingStockSchema
 
+from osrd_infra.models.documents import Document
 from osrd_infra.utils import PydanticValidator
 
 
@@ -113,25 +114,10 @@ class RollingStock(models.Model):
         return rolling_stock
 
 
-class RollingStockImage(models.Model):
-    image = models.BinaryField(null=False, blank=False)
-
-    class Meta:
-        abstract = True
-        verbose_name_plural = "rolling stock images"
-
-
-class RollingStockCompoundImage(RollingStockImage):
-    class Meta:
-        db_table = "osrd_infra_rollingstockimage"
-        managed = False
-        verbose_name_plural = "rolling stock compound images"
-
-
 class RollingStockLivery(models.Model):
     name = models.CharField(max_length=255, help_text=_("Name of the livery"), default="default")
     rolling_stock = models.ForeignKey(RollingStock, related_name="liveries", on_delete=models.CASCADE)
-    compound_image = models.OneToOneField(RollingStockCompoundImage, null=True, on_delete=models.SET_NULL)
+    compound_image = models.OneToOneField(Document, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name_plural = "rolling stocks liveries"
@@ -141,11 +127,12 @@ class RollingStockLivery(models.Model):
         return self.name
 
 
-class RollingStockSeparatedImage(RollingStockImage):
+class RollingStockSeparatedImage(models.Model):
+    image = models.OneToOneField(Document, null=False, on_delete=models.CASCADE)
     livery = models.ForeignKey(RollingStockLivery, on_delete=models.CASCADE)
     order = models.IntegerField(help_text=_("Position of this image in its livery"), default=0)
 
     class Meta:
-        db_table = "osrd_infra_rollingstockimage"
+        db_table = "osrd_infra_rollingstockseparatedimage"
         unique_together = (("livery", "order"),)
         verbose_name_plural = "rolling stock separated images"
