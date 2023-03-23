@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
-import { projects } from './assets/operationStudies/project.json';
-import { studies } from './assets/operationStudies/study.json';
-import { scenarios } from './assets/operationStudies/scenario.json';
-import { light_rolling_stock, rolling_stock } from './assets/common/rollingStock.json';
 import { PlaywrightSTDCMPage } from './stdcm-page-model';
 
 // Describe the test suite for the STDCM page
@@ -27,64 +23,23 @@ test.describe('STDCM page', () => {
 
     await playwrightHomePage.goToSTDCMPage();
 
-    // Intercept the list of projects request and return data test results
-    await playwrightSTDCMPage.page.route('**/projects/*', async (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify(projects),
-      });
-    });
-
-    // Intercept the list of studies request and return data test results
-    await playwrightSTDCMPage.page.route('**/projects/*/studies/*', async (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify(studies),
-      });
-    });
-
-    // Intercept the list of scenarios request and return data test results
-    await playwrightSTDCMPage.page.route('**/projects/*/studies/*/scenarios/*', async (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify(scenarios),
-      });
-    });
-
-    // Intercept the list of light rolling stock request and return data test results
-    await playwrightSTDCMPage.page.route('**/light_rolling_stock/*', async (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify(light_rolling_stock),
-      });
-    });
-    // Intercept a single rolling stock request and return data test results
-    await playwrightSTDCMPage.page.route('**/rolling_stock/*/', async (route) => {
-      route.fulfill({
-        status: 200,
-        body: JSON.stringify(rolling_stock),
-      });
-    });
-
     await playwrightSTDCMPage.getScenarioExploratorModalClose();
 
     // Opens the scenario explorator and selects project, study and scenario
     await playwrightSTDCMPage.openScenarioExplorator();
     await playwrightSTDCMPage.getScenarioExploratorModalOpen();
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(projects.results[0].name);
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(studies.results[0].name);
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(scenarios.results[0].name);
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('Project test');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('Study test');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('Scenario test');
   });
 
   test('should be correctly displays the rolling stock list and select one', async () => {
-    const rollingstocks = light_rolling_stock.results;
     const rollingStockTranslation =
       playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
     const rollingStockTranslationRegEx = new RegExp(rollingStockTranslation as string);
     const rollingstockItem = playwrightSTDCMPage.getRollingstockByTestId(
-      `rollingstock${rollingstocks[0].id}`
+      `rollingstock-BB 7200GVLOCOMOTIVES`
     );
-
     // Check that no rollingstock is selected
     await expect(
       playwrightSTDCMPage.getRollingStockSelector.locator('.rollingstock-minicard')
@@ -99,41 +54,25 @@ test.describe('STDCM page', () => {
 
     const numberOfRollingstock = await playwrightSTDCMPage.getRollingStockListItem.count();
 
-    expect(numberOfRollingstock).toEqual(rollingstocks.length);
+    expect(numberOfRollingstock).toEqual(3);
 
     const infoCardText = await playwrightSTDCMPage.getRollingStockListItem
       .locator('.rollingstock-infos')
       .allTextContents();
+    expect(infoCardText).toContain(
+      'BB 7200GVLOCOMOTIVES / Locomotives électriques / Locomotives électriques courant continuBB 7200GVLOCOMOTIVES'
+    );
+    expect(infoCardText).toContain(
+      'BB 15000BB15000 USLOCOMOTIVES / Locomotives électriques / Locomotives électriques monophaséLocomotives électriques'
+    );
+    expect(infoCardText).toContain(
+      'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courantLocomotives électriques courant continu7200GH'
+    );
 
     const footerCardText = await playwrightSTDCMPage.getRollingStockListItem
       .locator('.rollingstock-footer')
       .allTextContents();
-
-    rollingstocks.forEach(async (rollingstock) => {
-      const { metadata } = rollingstock;
-
-      // Format rollingstock data for test
-      const rollingstockSerie = metadata.series || metadata.reference;
-      const rollingstockSubserie =
-        metadata.series && metadata.series !== metadata.subseries
-          ? metadata?.subseries
-          : metadata?.detail;
-      const infoTextFormat = `${rollingstockSerie}${rollingstockSubserie}${metadata?.family} / ${metadata?.type} / ${metadata?.grouping}${rollingstock.name}`;
-
-      const rollingstockVolages = Object.keys(rollingstock.effort_curves.modes)
-        .map((key) => `${key}V`)
-        .join('');
-
-      const rollingstockLength = `${rollingstock.length}m`;
-      const rollingstockMass = `${Math.round(rollingstock.mass / 1000)}t`;
-      const rollingstockMaxSpeed = `${Math.round(rollingstock.max_speed * 3.6)}km/h`;
-
-      const footerTextFormat = `${rollingstockVolages}${rollingstockLength}${rollingstockMass}${rollingstockMaxSpeed}`;
-
-      // Check if the rollingstocks info and footer are displayed correctly
-      expect(infoCardText).toContain(infoTextFormat);
-      expect(footerCardText).toContain(footerTextFormat);
-    });
+    expect(footerCardText).toContain('400m900t288km/h');
 
     // Check if rollingstock detail is close
     await expect(rollingstockItem).toHaveClass(/inactive/);
