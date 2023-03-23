@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const user = useSelector((state) => state.user);
-  const { t } = useTranslation('home');
+  const { t } = useTranslation('home/home');
 
   return (
     <>
