@@ -10,7 +10,7 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import {
   interpolateOnTime,
-  offsetAllTrainsDepartureAndArrivalTimes,
+  makeTrainListWithAllTrainsOffset,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 
@@ -137,7 +137,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case REDO_SIMULATION:
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = offsetAllTrainsDepartureAndArrivalTimes(
+        draft.departureArrivalTimes = makeTrainListWithAllTrainsOffset(
           draft.simulation.present.trains,
           0
         );
