@@ -8,10 +8,10 @@ import { useTranslation } from 'react-i18next';
 import OSRDSTDCM from './views/OSRDSTDCM';
 
 export default function HomeStdcm() {
-  const { t } = useTranslation(['home', 'translation']);
+  const { t } = useTranslation('home/home');
   return (
     <>
-      <NavBarSNCF appName={t('home:stdcm')} logo={logo} />
+      <NavBarSNCF appName={t('stdcm')} logo={logo} />
       <Routes>
         <Route path="" element={<OSRDSTDCM />} />
       </Routes>

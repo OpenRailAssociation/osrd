@@ -1,0 +1,19 @@
+{
+  "about": "A propos",
+  "attributions": "Attributions",
+  "disconnect": "Déconnexion",
+  "informations": {
+    "application": "Application",
+    "releaseInformations": "Informations de version",
+    "version": "Version"
+  },
+  "language": {
+    "de": "Allemand",
+    "en": "Anglais",
+    "es": "Espagnol",
+    "fr": "Français",
+    "it": "Italien",
+    "jp": "Japonais",
+    "languageChoice": "Langue de l'interface"
+  }
+}
