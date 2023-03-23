@@ -24,16 +24,18 @@ public class STDCMEndpointTest extends ApiTest {
                 "1",
                 parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0),
                 Set.of(),
-                Set.of(new PathfindingWaypoint(
-                        "ne.micro.foo_b",
-                        100,
-                        EdgeDirection.START_TO_STOP
-                )),
-                Set.of(new PathfindingWaypoint(
-                        "ne.micro.bar_a",
-                        100,
-                        EdgeDirection.START_TO_STOP
-                )),
+                List.of(
+                        new STDCMRequest.STDCMStep(0, true, Set.of(new PathfindingWaypoint(
+                                "ne.micro.foo_b",
+                                100,
+                                EdgeDirection.START_TO_STOP
+                        ))),
+                        new STDCMRequest.STDCMStep(0, true, Set.of(new PathfindingWaypoint(
+                                "ne.micro.bar_a",
+                                100,
+                                EdgeDirection.START_TO_STOP
+                        )))
+                ),
                 0,
                 0,
                 "foo",
