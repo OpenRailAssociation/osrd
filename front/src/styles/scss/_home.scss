@@ -43,3 +43,15 @@
 .modal-header .close {
   padding-top: 1.8rem !important;
 }
+
+.language-choice-btn {
+  display: flex !important;
+  padding: 0.5rem 1rem !important;
+  gap: 1rem;
+  svg {
+    height: 24px;
+  }
+  &:disabled svg {
+    opacity: 0.5 !important;
+  }
+}

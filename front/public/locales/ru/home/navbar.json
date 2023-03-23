@@ -1,0 +1,21 @@
+{
+  "about": "О нас",
+  "attributions": "Распределение",
+  "disconnect": "Разъединение",
+  "informations": {
+    "application": "Приложение",
+    "releaseInformations": "Информация о версии",
+    "version": "Версия"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "it": "Italiano",
+    "jp": "やまと",
+    "ru": "Русский",
+    "uk": "Українська",
+    "languageChoice": "Язык интерфейса"
+  }
+}

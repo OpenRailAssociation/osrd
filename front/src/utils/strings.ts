@@ -17,3 +17,14 @@ export function formatKmValue(value?: number, digits = 0) {
   }
   return `${value.toFixed(digits)}${NO_BREAK_SPACE}km`;
 }
+
+export function language2flag(lng: string) {
+  switch (lng) {
+    case 'en':
+      return 'gb';
+    case 'uk':
+      return 'ua';
+    default:
+      return lng;
+  }
+}
