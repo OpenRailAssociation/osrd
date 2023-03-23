@@ -1,0 +1,21 @@
+{
+  "about": "私たちについて",
+  "attributions": "アロケーション",
+  "disconnect": "断線",
+  "informations": {
+    "application": "アプリケーション",
+    "releaseInformations": "バージョン情報",
+    "version": "バージョン"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "it": "Italiano",
+    "jp": "やまと",
+    "ru": "Русский",
+    "uk": "Українська",
+    "languageChoice": "インターフェース言語"
+  }
+}
