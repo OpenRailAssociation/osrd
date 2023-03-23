@@ -73,8 +73,6 @@ const convertData = (trains) => {
           }))
         ),
         stops: convertStops(train.space_time_curves[0].points),
-        route_begin_occupancy: [],
-        route_end_occupancy: [],
         route_aspects: [],
         signals: [],
       },

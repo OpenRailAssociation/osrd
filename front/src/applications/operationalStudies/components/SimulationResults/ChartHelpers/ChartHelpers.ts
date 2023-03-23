@@ -112,12 +112,6 @@ export const timeShiftTrain = (train: Train, offset: number) => ({
     tail_positions: train.base.tail_positions.map((section) =>
       section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
     ),
-    route_end_occupancy: train.base.route_end_occupancy.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
-    ),
-    route_begin_occupancy: train.base.route_begin_occupancy.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
-    ),
     route_aspects: train.base.route_aspects.map((square) => ({
       ...square,
       time_start: offsetSeconds(square.time_start + offset),
@@ -140,12 +134,6 @@ export const timeShiftTrain = (train: Train, offset: number) => ({
         tail_positions: train.margins.tail_positions.map((section) =>
           section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
         ),
-        route_end_occupancy: train.margins.route_end_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
-        ),
-        route_begin_occupancy: train.margins.route_begin_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
-        ),
         speeds: train.margins.speeds.map((step) => ({
           ...step,
           time: offsetSeconds(step.time + offset),
@@ -162,12 +150,6 @@ export const timeShiftTrain = (train: Train, offset: number) => ({
           section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
         ),
         tail_positions: train.eco.tail_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
-        ),
-        route_end_occupancy: train.eco.route_end_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
-        ),
-        route_begin_occupancy: train.eco.route_begin_occupancy.map((section) =>
           section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
         ),
         route_aspects: train.eco.route_aspects.map((square) => ({
