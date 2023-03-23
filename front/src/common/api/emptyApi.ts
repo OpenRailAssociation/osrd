@@ -4,7 +4,7 @@ import { isNil } from 'lodash';
 import { MAIN_API } from 'config/config';
 import { getAuthConfig } from 'common/requests';
 
-interface ApiError {
+export interface ApiError {
   data: {
     type: string;
     message: string;
@@ -29,6 +29,9 @@ export const baseApi = createApi({
 });
 export const baseEditoastApi = createApi({
   reducerPath: 'editoastApi',
-  baseQuery: fetchBaseQuery({ baseUrl: `${MAIN_API.proxy_editoast}/`, prepareHeaders }) as BaseQueryFn<FetchArgs, unknown, ApiError>,
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${MAIN_API.proxy_editoast}/`,
+    prepareHeaders,
+  }) as BaseQueryFn<FetchArgs, unknown, ApiError>,
   endpoints: () => ({}),
 });

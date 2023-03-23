@@ -1,24 +1,28 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateMapSearchMarker } from 'reducers/map';
+import { Viewport, updateMapSearchMarker } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import nextId from 'react-id-generator';
+import turfCenter from '@turf/center';
 import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { onResultSearchClick } from '../utils';
+import { Geometry, SearchQuery, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { IStationSearchResult } from './searchTypes';
 
-export default function MapSearchStation(props) {
-  const { updateExtViewport } = props;
+type MapSearchStationProps = {
+  updateExtViewport: (viewport: Partial<Viewport>) => void;
+};
+
+const MapSearchStation = ({ updateExtViewport }: MapSearchStationProps) => {
   const map = useSelector(getMap);
-  const [searchState, setSearch] = useState('');
-  const [searchResults, setSearchResults] = useState(undefined);
-  const [trigramResults, setTrigramResults] = useState([]);
-  const [nameResults, setNameResults] = useState([]);
+  const [searchState, setSearch] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<IStationSearchResult[] | undefined>(undefined);
+  const [trigramResults, setTrigramResults] = useState<IStationSearchResult[]>([]);
+  const [nameResults, setNameResults] = useState<IStationSearchResult[]>([]);
   const infraID = useSelector(getInfraID);
 
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
@@ -35,39 +39,43 @@ export default function MapSearchStation(props) {
 
   // Create playload based on the type of search "name" or "trigram"
 
-  const createPayload = (searchQuery) => ({
+  const createPayload = (searchQuery: (string | string[])[]) => ({
     object: 'operationalpoint',
-    query: ['and', searchQuery, ['=', ['infra_id'], infraID]],
+    query: ['and', searchQuery, ['=', ['infra_id'], infraID]] as SearchQuery,
   });
 
   // Sort on name, and on yardname
-  const orderResults = (results) =>
+  const orderResults = (results: IStationSearchResult[]) =>
     results.sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
 
   const searchByTrigrams = useCallback(async () => {
     const searchQuery = ['=i', ['trigram'], searchState];
     const payload = createPayload(searchQuery);
-    const { data, error } = await postSearch({
+    await postSearch({
       body: payload,
-    });
-    if (error) {
-      resetSearchResult();
-    } else {
-      setTrigramResults(data);
-    }
+    })
+      .unwrap()
+      .then((results) => {
+        setTrigramResults(results as IStationSearchResult[]);
+      })
+      .catch(() => {
+        resetSearchResult();
+      });
   }, [searchState]);
 
   const searchByNames = useCallback(async () => {
     const searchQuery = ['search', ['name'], searchState];
     const payload = createPayload(searchQuery);
-    const { data, error } = await postSearch({
+    await postSearch({
       body: payload,
-    });
-    if (error) {
-      resetSearchResult();
-    } else {
-      setNameResults(orderResults([...data]));
-    }
+    })
+      .unwrap()
+      .then((results) => {
+        setNameResults(orderResults([...(results as IStationSearchResult[])]));
+      })
+      .catch(() => {
+        resetSearchResult();
+      });
   }, [searchState]);
 
   const getResult = async () => {
@@ -98,15 +106,29 @@ export default function MapSearchStation(props) {
     setSearchResults([...trigramResults, ...nameResults]);
   }, [trigramResults, nameResults]);
 
-  const onResultClick = (result) =>
-    onResultSearchClick({
-      result,
-      map,
-      updateExtViewport,
-      dispatch,
-      title: result.name,
-      setSearch,
-    });
+  const onResultClick = (result: IStationSearchResult) => {
+    setSearch(result.name);
+
+    const coordinates = map.mapTrackSources === 'schematic' ? result.schematic : result.geographic;
+
+    const center = turfCenter({ coordinates } as Geometry);
+
+    if (result.lon !== null && result.lat !== null) {
+      const newViewport = {
+        ...map.viewport,
+        longitude: center.geometry.coordinates[0],
+        latitude: center.geometry.coordinates[1],
+        zoom: 12,
+      };
+      updateExtViewport(newViewport);
+      dispatch(
+        updateMapSearchMarker({
+          title: result.name,
+          lonlat: [center.geometry.coordinates[0], center.geometry.coordinates[1]],
+        })
+      );
+    }
+  };
 
   const clearSearchResult = () => {
     setSearch('');
@@ -154,8 +176,6 @@ export default function MapSearchStation(props) {
       </div>
     </>
   );
-}
-
-MapSearchStation.propTypes = {
-  updateExtViewport: PropTypes.func.isRequired,
 };
+
+export default MapSearchStation;
