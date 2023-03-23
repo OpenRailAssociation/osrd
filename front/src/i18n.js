@@ -3,28 +3,19 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// not like to use this?
-// have a look at the Quick start guide
-// for passing in lng and translations on init
+// Official languages codes to use from IANA
+// https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
 
 i18n
-  // load translation using xhr -> see /public/locales (i.e. https://github.com/i18next/react-i18next/tree/master/example/react/public/locales)
-  // learn more: https://github.com/i18next/i18next-xhr-backend
   .use(Backend)
-  // pass the i18n instance to react-i18next.
   .use(initReactI18next)
-  // detect user language
-  // learn more: https://github.com/i18next/i18next-browser-languageDetector
   .use(LanguageDetector)
-  // init i18next
-  // for all options read: https://www.i18next.com/overview/configuration-options
   .init({
-    fallbackLng: 'fr',
+    fallbackLng: ['fr', 'en', 'de', 'es', 'it', 'jp', 'uk'],
     debug: false,
-    supportedLngs: ['fr'],
-    load: 'fr',
+    supportedLngs: ['de', 'en', 'es', 'fr', 'it', 'jp', 'ru', 'uk'],
     interpolation: {
-      escapeValue: false, // not needed for react as it escapes by default
+      escapeValue: false,
     },
     react: {
       useSuspense: false,

@@ -9,12 +9,13 @@
   },
   "language": {
     "languageChoice": "Interface language",
-    "fr": "French",
+    "de": "Deutsch",
     "en": "English",
-    "de": "German",
-    "it": "Italian",
-    "es": "Spanish",
-    "jp": "Japanese",
-    "ru": "Russian"
+    "es": "Español",
+    "fr": "Français",
+    "it": "Italiano",
+    "jp": "やまと",
+    "ru": "Русский",
+    "uk": "Українська"
   }
 }

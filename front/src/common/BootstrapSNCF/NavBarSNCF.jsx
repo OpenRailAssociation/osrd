@@ -4,12 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import React from 'react';
-// import englishFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/english.svg';
-// import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
-// import i18n from 'i18next';
 import { logout } from 'reducers/user';
 import { useTranslation } from 'react-i18next';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
+import ChangeLanguageModal from 'common/ChangeLanguageModal';
+import i18n from 'i18next';
+import getUnicodeFlagIcon from 'country-flag-icons/unicode';
+import { language2flag } from 'utils/strings';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { useModal } from './ModalSNCF';
 
@@ -19,22 +20,11 @@ export default function LegacyNavBarSNCF(props) {
   const { fullscreen } = useSelector((state) => state.main);
   const { appName, logo } = props;
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation('home/navbar');
 
   const toLogout = () => {
     dispatch(logout());
   };
-
-  /*
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-  };
-
-  const changeDarkmode = () => {
-    dispatch(toggleDarkmode());
-    window.location.reload(false);
-  };
-  */
 
   return (
     <div className={`mastheader${fullscreen ? ' fullscreen' : ''}`}>
@@ -72,13 +62,24 @@ export default function LegacyNavBarSNCF(props) {
                 <span className="mr-2">
                   <FaInfoCircle />
                 </span>
-                {t('NavBar.about')}
+                {t('about')}
+              </button>,
+              <button
+                type="button"
+                className="btn-link text-reset"
+                onClick={() => openModal(<ChangeLanguageModal />, 'sm')}
+                key="release"
+              >
+                <span className="mr-2">
+                  {i18n.language && getUnicodeFlagIcon(language2flag(i18n.language))}
+                </span>
+                {t(`language.${i18n.language}`)}
               </button>,
               <button type="button" className="btn-link text-reset" onClick={toLogout} key="logout">
                 <span className="mr-2">
                   <FaPowerOff />
                 </span>
-                {t('NavBar.disconnect')}
+                {t('disconnect')}
               </button>,
             ]}
           />
