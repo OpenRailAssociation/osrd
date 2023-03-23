@@ -2,11 +2,14 @@ use crate::error::Result;
 use crate::models::train_schedule::TrainScheduleDetails;
 use crate::models::Delete;
 use crate::tables::osrd_infra_scenario;
+use crate::views::pagination::Paginate;
+use crate::views::pagination::PaginatedResponse;
 use crate::DbPool;
 use actix_web::web::{block, Data};
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
+use diesel::sql_query;
 use diesel::sql_types::{Array, BigInt, Nullable, Text};
 use diesel::{delete, QueryDsl};
 use diesel::{ExpressionMethods, RunQueryDsl};
@@ -27,7 +30,7 @@ use serde::{Deserialize, Serialize};
 )]
 #[derivative(Default)]
 #[model(table = "osrd_infra_scenario")]
-#[model(create)]
+#[model(create, retrieve)]
 #[diesel(table_name = osrd_infra_scenario)]
 pub struct Scenario {
     #[diesel(deserialize_as = i64)]
@@ -67,6 +70,15 @@ pub struct ScenarioWithDetails {
     pub electrical_profile_set_name: Option<String>,
     #[diesel(sql_type = Array<TrainScheduleDetails>)]
     pub train_schedules: Vec<TrainScheduleDetails>,
+    #[diesel(sql_type = BigInt)]
+    pub trains_count: i64,
+}
+
+#[derive(Debug, Clone, Serialize, QueryableByName)]
+pub struct ScenarioWithCountTrains {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub scenario: Scenario,
     #[diesel(sql_type = BigInt)]
     pub trains_count: i64,
 }
@@ -111,6 +123,23 @@ impl Scenario {
         .await
         .unwrap()
     }
+
+    pub async fn list(
+        db_pool: Data<DbPool>,
+        page: i64,
+        per_page: i64,
+        study_id: i64,
+    ) -> Result<PaginatedResponse<ScenarioWithCountTrains>> {
+        sql_query(
+            "SELECT scenario.*,COUNT(trainschedule.id) as trains_count FROM osrd_infra_scenario scenario
+            LEFT JOIN osrd_infra_trainschedule trainschedule ON scenario.timetable_id = trainschedule.timetable_id WHERE scenario.study_id = $1
+            GROUP BY scenario.id"
+        ).bind::<BigInt,_>(study_id)
+        .paginate(page)
+        .per_page(per_page)
+        .load_and_count(db_pool)
+        .await
+    }
 }
 /// Delete a scenario.
 /// When we delete a scenario, the associated timetable is deleted too.
@@ -149,6 +178,7 @@ pub mod test {
     use crate::models::study::test::build_test_study;
     use crate::models::Create;
     use crate::models::Delete;
+    use crate::models::Retrieve;
     use crate::models::Timetable;
     use crate::models::{Project, Study};
     use actix_web::test as actix_test;
@@ -211,5 +241,45 @@ pub mod test {
 
         // Second delete should fail
         assert!(!Scenario::delete(pool.clone(), scenario_id).await.unwrap());
+    }
+
+    #[actix_test]
+    async fn get_study() {
+        let project = build_test_project();
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
+        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+
+        // Create a project
+        let project = project.create(pool.clone()).await.unwrap();
+        let project_id = project.id.unwrap();
+
+        // Create a study
+        let study = build_test_study(project_id);
+        let study: Study = study.create(pool.clone()).await.unwrap();
+        let study_id = study.id.unwrap();
+
+        // Create an infra
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let infra: Infra = Infra::create("infra_test", &mut conn).unwrap();
+
+        // Create a timetable
+        let timetable = Timetable {
+            id: None,
+            name: Some("timetable_test".into()),
+        };
+        let timetable: Timetable = timetable.create(pool.clone()).await.unwrap();
+
+        // Create a scenario
+        let scenario = build_test_scenario(study_id, infra.id, timetable.id.unwrap());
+        let scenario: Scenario = scenario.create(pool.clone()).await.unwrap();
+        let scenario_id = scenario.id.unwrap();
+
+        // Get a scenario
+        assert!(Scenario::retrieve(pool.clone(), study_id).await.is_ok());
+        assert!(Scenario::list(pool.clone(), 1, 25, study_id).await.is_ok());
+
+        // Delete the scenario
+        Scenario::delete(pool.clone(), scenario_id).await.unwrap();
+        Project::delete(pool.clone(), project_id).await.unwrap();
     }
 }

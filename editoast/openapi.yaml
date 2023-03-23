@@ -1417,8 +1417,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
+    get:
+      tags:
+        - scenarios
+      summary: Paginated list of scenarios
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
+      responses:
+        200:
+          description: list of scenarios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        schema:
+                          $ref: "#/components/schemas/ScenarioListResult"
 
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
+    get:
+      tags:
+        - scenarios
+      summary: Retrieve a scenario
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the scenario
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+        - in: path
+          required: true
+          name: scenario_id
+          schema:
+            type: integer
+          description: scenario id you want to retrieve
+      responses:
+        200:
+          description: The operational study info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioResult"
     delete:
       tags:
         - scenarios
@@ -2345,7 +2422,51 @@ components:
         trains_schedules:
           type: array
           items:
+            type: object
+            properties:
+              id:
+                type: integer
+              train_name:
+                type: string
+              departure_time:
+                type: string
+              train_path:
+                type: integer
+
+    ScenarioListResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          items:
             type: string
+        tags:
+          type: array
+          items:
+            type: string
+        infra:
+          type: integer
+        infra_name:
+          type: string
+        electrical_profile_set:
+          type: integer
+          nullable: true
+        electrical_profile_set_name:
+          type: string
+          nullable: true
+        creation_date:
+          type: string
+          format: date-time
+        last_modification:
+          type: string
+          format: date-time
+        timetable:
+          type: integer
+        trains_count:
+          type: integer
 
     Geometry:
       type: object
