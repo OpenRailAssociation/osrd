@@ -32,6 +32,7 @@ interface PhysicalSignalBuilder {
 
 class PhysicalSignalBuilderImpl(
     private val name: String?,
+    private val sightDistance: Distance,
     private val globalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
 ) : PhysicalSignalBuilder {
     private val children: MutableStaticIdxList<LogicalSignal> = MutableStaticIdxArrayList()
@@ -47,7 +48,7 @@ class PhysicalSignalBuilderImpl(
     }
 
     fun build(): PhysicalSignalDescriptor {
-        return PhysicalSignalDescriptor(name, children)
+        return PhysicalSignalDescriptor(name, children, sightDistance)
     }
 }
 
@@ -162,7 +163,7 @@ interface RestrictedRawInfraBuilder {
     ): ZonePathId
     fun zonePath(entry: DirDetectorId, exit: DirDetectorId, length: Distance): ZonePathId
     fun route(name: String?, init: RouteBuilder.() -> Unit): RouteId
-    fun physicalSignal(name: String?, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId
+    fun physicalSignal(name: String?, sightDistance: Distance, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId
 }
 
 interface RawInfraBuilder : RestrictedRawInfraBuilder {
@@ -261,8 +262,8 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         return routePool.add(builder.build())
     }
 
-    override fun physicalSignal(name: String?, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId {
-        val builder = PhysicalSignalBuilderImpl(name, logicalSignalPool)
+    override fun physicalSignal(name: String?, sightDistance: Distance, init: PhysicalSignalBuilder.() -> Unit): PhysicalSignalId {
+        val builder = PhysicalSignalBuilderImpl(name, sightDistance, logicalSignalPool)
         builder.init()
         return physicalSignalPool.add(builder.build())
     }
