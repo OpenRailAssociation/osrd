@@ -1,5 +1,5 @@
 import { noop } from 'lodash';
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -19,23 +19,35 @@ import {
   getStudyID,
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
+import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import OSRDStdcmResults from './OSRDStdcmResults';
 
 type OSRDStdcmConfigProps = {
+  currentStdcmRequestStatus: string;
   setCurrentStdcmRequestStatus: (status: string) => void;
 };
 
-export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmConfigProps) {
+export default function OSRDConfig({
+  currentStdcmRequestStatus,
+  setCurrentStdcmRequestStatus,
+}: OSRDStdcmConfigProps) {
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
   const infraID = useSelector(getInfraID);
+  const [showMap, setShowMap] = useState<boolean>(true);
 
   const { t } = useTranslation([
     'translation',
     'operationalStudies/manageTrainSchedule',
     'allowances',
+    'simulation',
   ]);
+
+  const selectedTrain = useSelector(getSelectedTrain);
+  const simulation = useSelector(getPresentSimulation);
+  const shouldDisplayStdcmResult = simulation.trains[selectedTrain] !== undefined;
 
   return (
     <main
@@ -44,7 +56,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
     >
       {/* use class from new workflow in future */}
       <div className="row m-0 px-1 py-3 h-100">
-        <div className="col-md-7 col-lg-6">
+        <div className="col-md-7 col-lg-4">
           <ScenarioExplorator />
           {projectID && studyID && scenarioID && timetableID && infraID && (
             <>
@@ -68,23 +80,25 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
                     />
                   </div>
                 </div>
-                <div className="row">
-                  <div className="col-xl-12">
-                    <div className="osrd-config-item mb-2 osrd-config-item-container">
-                      <StdcmSingleAllowance
-                        title={t('allowances:standardAllowance')}
-                        typeKey="standardStdcmAllowance"
-                      />
-                    </div>
+                <div className="col-xl-12">
+                  <div className="osrd-config-item mb-2 osrd-config-item-container">
+                    <StdcmSingleAllowance
+                      title={t('allowances:standardAllowance')}
+                      typeKey="standardStdcmAllowance"
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="osrd-config-stdcm-apply">
+                {/* TODO: use RTK request status */}
                 <button
                   className="btn btn-sm  btn-primary "
                   type="button"
-                  onClick={() => setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending)}
+                  onClick={() => {
+                    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
+                    setShowMap(false);
+                  }}
                 >
                   {t('operationalStudies/manageTrainSchedule:apply')}
                   <span className="sr-only" aria-hidden="true">
@@ -96,12 +110,33 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
           )}
         </div>
         {projectID && studyID && scenarioID && timetableID && infraID && (
-          <div className="col-md-5 col-lg-6">
-            <div className="osrd-config-item mb-2">
-              <div className="osrd-config-item-container osrd-config-item-container-map">
-                <Map />
+          <div className="col-md-5 col-lg-8">
+            <div className="osrd-config-item-container mb-2">
+              {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success && (
+                <div
+                  role="button"
+                  tabIndex={-1}
+                  className="btn d-flex align-items-center mb-1 font-weight-bold"
+                  onClick={() => setShowMap(!showMap)}
+                >
+                  {t('simulation:map')}
+                  <i className={showMap ? 'icons-arrow-up ml-auto' : 'icons-arrow-down ml-auto'} />
+                </div>
+              )}
+              <div className="osrd-config-item">
+                {showMap && (
+                  <div
+                    className={`osrd-config-item-container osrd-config-item-container-map ${
+                      currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success ? 'open' : ''
+                    }`}
+                  >
+                    <Map />
+                  </div>
+                )}
               </div>
             </div>
+            {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success &&
+              shouldDisplayStdcmResult && <OSRDStdcmResults />}
           </div>
         )}
       </div>
