@@ -10,23 +10,15 @@ import java.util.ArrayList;
 public class ResultOccupancyTiming {
     @Json(name = "time_head_occupy")
     public final double timeHeadOccupy;
-    @Json(name = "time_head_free")
-    public final double timeHeadFree;
-    @Json(name = "time_tail_occupy")
-    public final double timeTailOccupy;
     @Json(name = "time_tail_free")
     public final double timeTailFree;
 
     /** Directly create an occupancy timing */
     public ResultOccupancyTiming(
             double timeHeadOccupy,
-            double timeHeadFree,
-            double timeTailOccupy,
             double timeTailFree
     ) {
         this.timeHeadOccupy = timeHeadOccupy;
-        this.timeHeadFree = timeHeadFree;
-        this.timeTailOccupy = timeTailOccupy;
         this.timeTailFree = timeTailFree;
     }
 
@@ -44,14 +36,9 @@ public class ResultOccupancyTiming {
             ArrayList<ResultPosition> headPositions,
             double trainLength
     ) {
-        var timeHeadFree = interpolateTime(endPosition, headPositions);
         var timeHeadOccupy = interpolateTime(startPosition, headPositions);
         var pathLength = headPositions.get(headPositions.size() - 1).pathOffset;
         var timeTailFree = interpolateTime(Math.min(pathLength, endPosition + trainLength), headPositions);
-        double timeTailOccupy = 0;
-        // Special case for first route
-        if (startPosition > 0)
-            timeTailOccupy = interpolateTime(Math.min(pathLength, startPosition + trainLength), headPositions);
-        return new ResultOccupancyTiming(timeHeadOccupy, timeHeadFree, timeTailOccupy, timeTailFree);
+        return new ResultOccupancyTiming(timeHeadOccupy, timeTailFree);
     }
 }

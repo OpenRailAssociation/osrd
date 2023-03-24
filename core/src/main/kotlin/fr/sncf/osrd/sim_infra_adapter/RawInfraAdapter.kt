@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra
 import fr.sncf.osrd.infra.api.tracks.undirected.*
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
@@ -25,7 +26,8 @@ class SimInfraAdapter(
     val switchMap: BiMap<Switch, MovableElementId>,
     val switchGroupsMap: Map<Switch, Map<String, MovableElementConfigId>>,
     val routeMap: BiMap<ReservationRoute, RouteId>,
-    val signalMap: Map<String, PhysicalSignalId>
+    val signalMap: BiMap<String, PhysicalSignalId>,
+    val rjsSignalMap: BiMap<String, RJSSignal>
 ) : RawInfra by simInfra
 
 
@@ -41,14 +43,15 @@ class TrackRangeViewIterator(private val views: ImmutableList<TrackRangeView>) {
 data class TrackSignal(val position: Distance, val direction: Direction, val signal: PhysicalSignalId)
 
 
-fun adaptRawInfra(infra: SignalingInfra): RawInfra {
+fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     val builder = RawInfraBuilder()
     val zoneMap = HashBiMap.create<DetectionSection, ZoneId>()
     val detectorMap = HashBiMap.create<Detector, DetectorId>()
     val switchMap = HashBiMap.create<Switch, MovableElementId>()
     val switchGroupsMap = mutableMapOf<Switch, Map<String, MovableElementConfigId>>()
     val signalsPerTrack: MutableMap<String, MutableList<TrackSignal>> = mutableMapOf()
-    val signalMap: MutableMap<String, PhysicalSignalId> = mutableMapOf()
+    val signalMap = HashBiMap.create<String, PhysicalSignalId>()
+    val rjsSignalMap = HashBiMap.create<String, RJSSignal>()
     val routeMap = HashBiMap.create<ReservationRoute, RouteId>()
 
     // parse switches
@@ -101,6 +104,7 @@ fun adaptRawInfra(infra: SignalingInfra): RawInfra {
 
     // parse signals
     for (rjsSignal in infra.signalMap.keys()) {
+        rjsSignalMap[rjsSignal.id] = rjsSignal
         val trackSignals = signalsPerTrack.getOrPut(rjsSignal.track!!) { mutableListOf() }
         val signalId = builder.physicalSignal(rjsSignal.id, rjsSignal.sightDistance.meters) {
             if (rjsSignal.logicalSignals == null)
@@ -175,7 +179,7 @@ fun adaptRawInfra(infra: SignalingInfra): RawInfra {
     // TODO: check the length of built routes is the same as on the base infra
     // assert(route.length.meters == routeLength)
 
-    return SimInfraAdapter(builder.build(), zoneMap, detectorMap, switchMap, switchGroupsMap, routeMap, signalMap)
+    return SimInfraAdapter(builder.build(), zoneMap, detectorMap, switchMap, switchGroupsMap, routeMap, signalMap, rjsSignalMap)
 }
 
 private fun buildZonePath(
