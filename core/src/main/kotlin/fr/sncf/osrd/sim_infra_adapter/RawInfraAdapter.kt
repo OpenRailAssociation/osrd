@@ -102,7 +102,7 @@ fun adaptRawInfra(infra: SignalingInfra): RawInfra {
     // parse signals
     for (rjsSignal in infra.signalMap.keys()) {
         val trackSignals = signalsPerTrack.getOrPut(rjsSignal.track!!) { mutableListOf() }
-        val signalId = builder.physicalSignal(rjsSignal.id) {
+        val signalId = builder.physicalSignal(rjsSignal.id, rjsSignal.sightDistance.meters) {
             if (rjsSignal.logicalSignals == null)
                 return@physicalSignal
             for (rjsLogicalSignal in rjsSignal.logicalSignals) {

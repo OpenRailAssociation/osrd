@@ -50,16 +50,16 @@ class TestBAPRtoBAL {
         // endregion
 
         // region signals
-        val signalm = builder.physicalSignal("m") {
+        val signalm = builder.physicalSignal("m", 300.meters) {
             logicalSignal("BAPR", listOf("BAPR"), mapOf(Pair("distant", "true"),Pair("Nf", "false")))
         }
-        val signalM = builder.physicalSignal("M") {
+        val signalM = builder.physicalSignal("M", 300.meters) {
             logicalSignal("BAPR", listOf("BAPR"), mapOf(Pair("distant", "false"),Pair("Nf", "true")))
         }
-        val signaln = builder.physicalSignal("n") {
+        val signaln = builder.physicalSignal("n", 300.meters) {
             logicalSignal("BAPR", listOf("BAL"), mapOf(Pair("distant", "true"),Pair("Nf", "false")))
         }
-        val signalN = builder.physicalSignal("N") {
+        val signalN = builder.physicalSignal("N", 300.meters) {
             logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
         }
 

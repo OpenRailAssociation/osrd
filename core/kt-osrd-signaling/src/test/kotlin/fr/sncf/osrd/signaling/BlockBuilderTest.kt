@@ -61,10 +61,10 @@ class BlockBuilderTest {
         // endregion
 
         // region signals
-        val signalX = builder.physicalSignal("X") {
+        val signalX = builder.physicalSignal("X", 300.meters) {
             logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
         }
-        val signalV = builder.physicalSignal("Y") {
+        val signalV = builder.physicalSignal("Y", 300.meters) {
             logicalSignal("BAL", listOf("BAL"), mapOf(Pair("Nf", "true")))
         }
         // endregion
