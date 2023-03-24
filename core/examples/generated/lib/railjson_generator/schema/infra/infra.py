@@ -2,6 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List
 
+from osrd_schemas import infra
 from railjson_generator.rjs_static import SWITCH_TYPES
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.link import Link
@@ -10,8 +11,7 @@ from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.speed_section import SpeedSection
 from railjson_generator.schema.infra.switch import Switch
 from railjson_generator.schema.infra.track_section import TrackSection
-
-from osrd_schemas import infra
+from railjson_generator.schema.infra.waypoint import BufferStop, Detector
 
 
 @dataclass
@@ -24,7 +24,7 @@ class Infra:
     speed_sections: List[SpeedSection] = field(default_factory=list)
     catenaries: List[Catenary] = field(default_factory=list)
 
-    VERSION = "3.1.0"
+    VERSION = "3.2.0"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -58,13 +58,13 @@ class Infra:
     def make_rjs_buffer_stops(self):
         for track in self.track_sections:
             for waypoint in track.waypoints:
-                if waypoint.waypoint_type == "buffer_stop":
+                if isinstance(waypoint, BufferStop):
                     yield waypoint.to_rjs(track)
 
     def make_rjs_detectors(self):
         for track in self.track_sections:
             for waypoint in track.waypoints:
-                if waypoint.waypoint_type == "detector":
+                if isinstance(waypoint, Detector):
                     yield waypoint.to_rjs(track)
 
     def make_rjs_operational_points(self):

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
+from osrd_schemas import infra
 from pydantic.error_wrappers import ValidationError
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
@@ -10,8 +11,6 @@ from railjson_generator.schema.infra.operational_point import OperationalPointPa
 from railjson_generator.schema.infra.range_elements import Curve, Slope
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
-
-from osrd_schemas import infra
 
 
 def _track_id():
@@ -75,7 +74,7 @@ class TrackSection:
 
     def contains_buffer_stop(self) -> bool:
         for waypoint in self.waypoints:
-            if waypoint.waypoint_type == "buffer_stop":
+            if isinstance(waypoint, BufferStop):
                 return True
         return False
 

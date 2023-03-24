@@ -2,13 +2,8 @@
 
 from pathlib import Path
 
-from railjson_generator import (
-    InfraBuilder,
-    SimulationBuilder,
-    ApplicableDirection,
-    Location,
-)
-from railjson_generator.schema.infra.direction import Direction
+from railjson_generator import (Direction, InfraBuilder, Location,
+                                SimulationBuilder)
 
 CURRENT_DIR = Path(__file__).parent
 
@@ -44,7 +39,7 @@ for i in (2, 3, 4, 5, 6):
     detector = track.add_detector(position=200)
     signal = track.add_signal(detector.position - 25, Direction.START_TO_STOP, detector)
     signal.add_logical_signal("BAL", settings={"Nf": "true"})
-    signal = track.add_signal(detector.position + 25, Direction.STOP_TO_START, detector).add_logical_signal("BAL")
+    signal = track.add_signal(detector.position + 25, Direction.STOP_TO_START, detector)
     signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
 for i in (0, 1, 2, 4):
