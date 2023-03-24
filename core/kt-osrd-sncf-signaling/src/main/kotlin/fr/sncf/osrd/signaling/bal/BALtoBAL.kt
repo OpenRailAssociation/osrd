@@ -32,8 +32,10 @@ object BALtoBAL : SignalDriver {
             when (maView!!.protectionStatus) {
                 NO_PROTECTED_ZONES -> throw RuntimeException("BAL signals always protect zones")
                 INCOMPATIBLE -> {
-                    assert(signal.getFlag("Nf"))
-                    value("aspect", "C")
+                    if (!signal.getFlag("Nf"))  // This can happen when doing partial simulation.
+                        value("aspect", "S") // We take the most restrictive available aspect
+                    else
+                        value("aspect", "C")
                 }
                 OCCUPIED -> value("aspect", "S")
                 CLEAR -> {
