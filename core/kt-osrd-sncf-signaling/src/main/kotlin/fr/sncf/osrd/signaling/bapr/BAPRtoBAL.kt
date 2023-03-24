@@ -25,12 +25,12 @@ object BAPRtoBAL : SignalDriver {
         signal: SigSettings, stateSchema: SigStateSchema, maView: MovementAuthorityView?, limitView: SpeedLimitView?
     ): SigState {
         return stateSchema {
-            assert(signal.getFlag("distant"))
             assert(maView!!.hasNextSignal)
             value("aspect", cascadePrimaryAspect(maView.nextSignalState.getEnum("aspect")))
         }
     }
 
     override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {
+        // assert(signal.getFlag("distant"))
     }
 }
