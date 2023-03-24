@@ -1,7 +1,7 @@
 {
-  "customget": "See JSON GET",
+  "customget": "JSON Space-Time diagram viewer",
   "editor": "Infrastructure editor",
   "map": "Map viewer",
-  "stdcm": "Short term DCM",
-  "operationalStudies": "Operational studies"
+  "operationalStudies": "Operational studies",
+  "stdcm": "Short term path request"
 }
