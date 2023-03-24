@@ -19,10 +19,7 @@ pub use self::pathfinding::*;
 pub use documents::Document;
 pub use infra::{Infra, RAILJSON_VERSION};
 pub use projects::{Ordering, Project, ProjectWithStudies};
-pub use rolling_stock::{
-    light_rolling_stock::LightRollingStockModel, rolling_stock_livery::RollingStockLiveryModel,
-    RollingStockModel,
-};
+pub use rolling_stock::{LightRollingStockModel, RollingStockLiveryModel, RollingStockModel};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules};

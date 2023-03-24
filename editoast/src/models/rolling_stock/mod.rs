@@ -1,5 +1,9 @@
 pub mod light_rolling_stock;
+pub mod rolling_stock_image;
 pub mod rolling_stock_livery;
+
+pub use light_rolling_stock::LightRollingStockModel;
+pub use rolling_stock_livery::RollingStockLiveryModel;
 
 use crate::error::Result;
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
