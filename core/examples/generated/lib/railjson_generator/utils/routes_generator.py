@@ -1,6 +1,7 @@
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
+from railjson_generator.schema.infra.waypoint import Detector
 from railjson_generator.utils.pathfinding import PathfindingStep, explore_paths
 
 
@@ -70,9 +71,9 @@ def generate_routes(builder):
             for path in explore_paths(origin):
                 create_if_not_seen(builder, path, seen_paths)
         for waypoint in track.waypoints:
-            if waypoint.waypoint_type == "detector":
+            if isinstance(waypoint, Detector):
                 continue
-            for direction in waypoint.applicable_direction.directions():
-                origin = PathfindingStep(track, waypoint.position, direction)
-                for path in explore_paths(origin):
-                    create_if_not_seen(builder, path, seen_paths)
+            direction = waypoint.get_direction(track)
+            origin = PathfindingStep(track, waypoint.position, direction)
+            for path in explore_paths(origin):
+                create_if_not_seen(builder, path, seen_paths)

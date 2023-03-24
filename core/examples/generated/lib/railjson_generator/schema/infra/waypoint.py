@@ -1,37 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Optional
-
-from railjson_generator.schema.infra.direction import ApplicableDirection
+from typing import Optional, Type, Union
 
 from osrd_schemas import infra
+from railjson_generator.schema.infra.direction import (ApplicableDirection,
+                                                       Direction)
 
-
-@dataclass
-class Waypoint:
-    position: float
-    waypoint_type: str
-    label: str
-    applicable_direction: ApplicableDirection = field(default=ApplicableDirection.BOTH)
-    left_tvd: Optional["TVDSection"] = field(default=None, repr=False)
-    right_tvd: Optional["TVDSection"] = field(default=None, repr=False)
-
-    @property
-    def id(self):
-        return self.label
-
-    def get_waypoint_ref(self):
-        if self.waypoint_type == "buffer_stop":
-            return infra.BufferStopReference(id=self.label, type="BufferStop")
-        return infra.DetectorReference(id=self.label, type="Detector")
-
-    def to_rjs(self, track):
-        rjs_type = infra.BufferStop if self.waypoint_type == "buffer_stop" else infra.Detector
-        return rjs_type(
-            id=self.label,
-            track=track.id,
-            position=self.position,
-            applicable_directions=infra.ApplicableDirections[self.applicable_direction.name],
-        )
+Waypoint = Union[Type["BufferStop"], Type["Detector"]]
 
 
 def _buffer_stop_id():
@@ -41,11 +15,32 @@ def _buffer_stop_id():
 
 
 @dataclass
-class BufferStop(Waypoint):
-    waypoint_type: str = "buffer_stop"
+class BufferStop:
+    position: float
     label: str = field(default_factory=_buffer_stop_id)
+    left_tvd: Optional["TVDSection"] = field(default=None, repr=False)
+    right_tvd: Optional["TVDSection"] = field(default=None, repr=False)
 
     _INDEX = 0
+
+    @property
+    def id(self):
+        return self.label
+
+    def get_waypoint_ref(self):
+        return infra.BufferStopReference(id=self.label, type="BufferStop")
+
+    def to_rjs(self, track):
+        return infra.BufferStop(
+            id=self.label,
+            track=track.id,
+            position=self.position,
+        )
+
+    def get_direction(self, track) -> Direction:
+        if self.position < track.length / 2:
+            return Direction.START_TO_STOP
+        return Direction.STOP_TO_START
 
 
 def _detector_id():
@@ -55,8 +50,26 @@ def _detector_id():
 
 
 @dataclass
-class Detector(Waypoint):
-    waypoint_type: str = "detector"
+class Detector:
+    position: float
+    applicable_direction: ApplicableDirection = field(default=ApplicableDirection.BOTH)
     label: str = field(default_factory=_detector_id)
+    left_tvd: Optional["TVDSection"] = field(default=None, repr=False)
+    right_tvd: Optional["TVDSection"] = field(default=None, repr=False)
 
     _INDEX = 0
+
+    @property
+    def id(self):
+        return self.label
+
+    def get_waypoint_ref(self):
+        return infra.DetectorReference(id=self.label, type="Detector")
+
+    def to_rjs(self, track):
+        return infra.Detector(
+            id=self.label,
+            track=track.id,
+            position=self.position,
+            applicable_directions=infra.ApplicableDirections[self.applicable_direction.name],
+        )
