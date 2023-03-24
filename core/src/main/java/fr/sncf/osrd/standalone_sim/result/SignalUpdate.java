@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import java.util.Set;
 
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public class SignalUpdate {
@@ -13,17 +12,13 @@ public class SignalUpdate {
     @Json(name = "signal_id")
     public final String signalID;
 
-    /** IDs of all the routes protected by the updated signal */
-    @Json(name = "route_ids")
-    public final Set<String> routeIDs;
-
     /** Time of the update */
     @Json(name = "time_start")
     public final double timeStart;
 
     /** Time at which the signal changes to a different state */
     @Json(name = "time_end")
-    public final double timeEnd;
+    public final Double timeEnd;
 
     /** Position of the signal */
     @Json(name = "position_start")
@@ -31,7 +26,7 @@ public class SignalUpdate {
 
     /** Position of the end of the signal "semiblock" */
     @Json(name = "position_end")
-    public final double positionEnd;
+    public final Double positionEnd;
 
     /** Color to be displayed for the given state, as encoded by {@link java.awt.Color#getRGB}. */
     public final int color;
@@ -51,15 +46,13 @@ public class SignalUpdate {
     /** Constructor */
     public SignalUpdate(
             String signalID,
-            Set<String> routeIDs,
             double timeStart,
-            double timeEnd,
-            double positionStart, double positionEnd, int color,
+            Double timeEnd,
+            double positionStart, Double positionEnd, int color,
             boolean blinking,
             String aspectLabel,
             String track, Double trackOffset) {
         this.signalID = signalID;
-        this.routeIDs = routeIDs;
         this.timeStart = timeStart;
         this.timeEnd = timeEnd;
         this.positionStart = positionStart;
@@ -76,7 +69,6 @@ public class SignalUpdate {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("signalID", signalID)
-                .add("routeIDs", routeIDs)
                 .add("timeStart", timeStart)
                 .add("timeEnd", timeEnd)
                 .add("positionStart", positionStart)
