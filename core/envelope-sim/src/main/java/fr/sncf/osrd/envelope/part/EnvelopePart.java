@@ -164,7 +164,7 @@ public final class EnvelopePart implements SearchableEnvelope {
      * (which should be avoided when possible) */
     private void runSanityChecks() {
         assert attrs != null : "missing attributes";
-        assert positions.length >= 2 : "attempted to create a single point EnvelopePart";
+        assert positions.length > 0 : "attempted to create an empty EnvelopePart";
         assert positions.length == speeds.length : "there must be the same number of point and speeds";
         assert timeDeltas.length == positions.length - 1 : "there must be as many timeDeltas as gaps between points";
         assert checkNaNFree(positions) : "NaNs in positions";

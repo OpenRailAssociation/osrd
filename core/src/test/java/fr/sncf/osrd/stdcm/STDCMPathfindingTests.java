@@ -7,7 +7,6 @@ import com.google.common.collect.*;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,32 +125,6 @@ public class STDCMPathfindingTests {
                 .setUnavailableTimes(occupancyGraph)
                 .run();
         assertNotNull(res);
-        STDCMHelpers.occupancyTest(res, occupancyGraph);
-    }
-
-    /** Tests that an occupied route can cause delays */
-    @Test
-    @Disabled
-    public void intermediateRouteCausingDelays() {
-        /*
-        a --> b --> c --> d
-         */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b");
-        var intermediateRoute = infraBuilder.addRoute("b", "c");
-        var lastRoute = infraBuilder.addRoute("c", "d");
-        var infra = infraBuilder.build();
-        var occupancyGraph = ImmutableMultimap.of(
-                intermediateRoute, new OccupancyBlock(0, 1000, 0, 100)
-        );
-        var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)))
-                .setUnavailableTimes(occupancyGraph)
-                .run();
-        assertNotNull(res);
-        assert res.envelope().getTotalTime() >= 1000;
         STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
 
@@ -355,7 +328,6 @@ public class STDCMPathfindingTests {
 
     /** Test that we ignore occupancy that happen after the end goal */
     @Test
-    @Disabled("TODO")
     public void testOccupancyEnvelopeLengthBlockSize() {
         /*
         a -(start) -> (end) ---------------[occupied]---------> b
@@ -378,7 +350,6 @@ public class STDCMPathfindingTests {
 
     /** Test that we don't use the full route envelope when the destination is close to the start */
     @Test
-    @Disabled("TODO")
     public void testOccupancyEnvelopeLength() {
         /*
         a -(start) -> (end) ------------------------> b
