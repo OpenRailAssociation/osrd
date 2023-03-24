@@ -35,17 +35,35 @@ interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
 }
 
+export function withOSRDData<T>(Component: ComponentType<T>) {
+  return (hocProps: T) => {
+    const stdcmMode = useSelector(getStdcmMode);
+    const mode = useSelector(getMode);
+    const origin = useSelector(getOrigin);
+    const originDate = useSelector(getOriginDate);
+    const originTime = useSelector(getOriginTime);
+    const originSpeed = useSelector(getOriginSpeed);
+    const originLinkedBounds = useSelector(getOriginLinkedBounds);
+    const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
+    const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
+    return <Component {...(hocProps as T)} vias={vias} geojson={geojson} />;
+  };
+}
+
 function Origin(props: OriginProps) {
-  const { zoomToFeaturePoint } = props;
-  const stdcmMode = useSelector(getStdcmMode);
-  const mode = useSelector(getMode);
-  const origin = useSelector(getOrigin);
-  const originDate = useSelector(getOriginDate);
-  const originTime = useSelector(getOriginTime);
-  const originSpeed = useSelector(getOriginSpeed);
-  const originLinkedBounds = useSelector(getOriginLinkedBounds);
-  const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
-  const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
+  const {
+    zoomToFeaturePoint,
+    stdcmMode,
+    mode,
+    origin,
+    originDate,
+    originTime,
+    originSpeed,
+    originLinkedBounds,
+    originUpperBoundDate,
+    originUpperBoundTime,
+  } = props;
+
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import { RiMapPin3Fill } from 'react-icons/ri';
@@ -8,17 +8,28 @@ import { useTranslation } from 'react-i18next';
 import DisplayVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayVias';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getGeojson, getVias } from 'reducers/osrdconf/selectors';
+import { PointOnMap } from 'applications/operationalStudies/consts';
+import { Path } from 'common/api/osrdMiddlewareApi';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
   viaModalContent: JSX.Element;
+  vias: PointOnMap[];
+  geojson: Path | undefined;
+}
+
+export function withOSRDData<T>(Component: ComponentType<T>) {
+  return (hocProps: T) => {
+    const vias = useSelector(getVias);
+    const geojson = useSelector(getGeojson);
+    return <Component {...(hocProps as T)} vias={vias} geojson={geojson} />;
+  };
 }
 
 function Vias(props: ViasProps) {
-  const { zoomToFeaturePoint, viaModalContent } = props;
-  const vias = useSelector(getVias);
+  const { zoomToFeaturePoint, viaModalContent, vias, geojson } = props;
+
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const geojson = useSelector(getGeojson);
   const { openModal } = useModal();
 
   const viasTitle = (
