@@ -264,7 +264,8 @@ impl config::SearchEntry {
 pub struct SearchPayload {
     object: String,
     query: JsonValue,
-    dry: Option<bool>,
+    #[serde(default)]
+    dry: bool,
 }
 
 fn create_sql_query(
@@ -288,8 +289,8 @@ fn create_sql_query(
         .cloned()
         .unwrap_or_default();
     let result_columns = search_entry.result_columns();
-    let mut bind_pos = Default::default();
-    let constraints = where_expression.to_sql(&mut 1, &mut bind_pos);
+    let mut bindings = Default::default();
+    let constraints = where_expression.to_sql(&mut 1, &mut bindings);
     let sql_code = format!(
         "WITH _RESULT AS (
             SELECT {result_columns}
@@ -301,10 +302,8 @@ fn create_sql_query(
         SELECT to_jsonb(_RESULT) AS result
         FROM _RESULT"
     );
-    let mut ordered = bind_pos.iter().collect::<Vec<_>>();
-    ordered.sort_by_key(|(pos, _)| *pos);
     let mut sql_query = sql_query(sql_code).into_boxed();
-    for (_, string) in ordered {
+    for string in bindings {
         sql_query = sql_query.bind::<Text, _>(string.to_owned());
     }
     Ok(sql_query)
@@ -371,7 +370,7 @@ pub async fn search(
     let offset = (page - 1) * per_page;
     let sql = create_sql_query(query, search, per_page, offset)?;
 
-    if dry.unwrap_or(false) {
+    if dry {
         let query = diesel::debug_query::<Pg, _>(&sql).to_string();
         return Ok(HttpResponse::Ok().body(query));
     }

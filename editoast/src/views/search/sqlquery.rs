@@ -1,6 +1,6 @@
 //! Defines [SqlQuery]
 
-use std::{collections::HashMap, fmt::Display};
+use std::fmt::Display;
 
 use super::{
     context::TypedAst,
@@ -82,14 +82,14 @@ impl SqlQuery {
     }
 
     /// Builds the SQL code represented by self
-    pub fn to_sql(&self, bind_pos: &mut u64, string_bind_map: &mut HashMap<u64, String>) -> String {
+    pub fn to_sql(&self, bind_pos: &mut u64, string_bindings: &mut Vec<String>) -> String {
         match self {
-            SqlQuery::Value(value) => value_to_sql(value, bind_pos, string_bind_map),
+            SqlQuery::Value(value) => value_to_sql(value, bind_pos, string_bindings),
             SqlQuery::Call { function, args } => {
                 format!(
                     "{function}({0})",
                     args.iter()
-                        .map(|arg| format!("({0})", arg.to_sql(bind_pos, string_bind_map)))
+                        .map(|arg| format!("({0})", arg.to_sql(bind_pos, string_bindings)))
                         .collect::<Vec<_>>()
                         .join(", ")
                 )
@@ -97,7 +97,7 @@ impl SqlQuery {
             SqlQuery::PrefixOp { operator, operand } => format!("{operator} ({operand})"),
             SqlQuery::InfixOp { operator, operands } => operands
                 .iter()
-                .map(|op| format!("({0})", op.to_sql(bind_pos, string_bind_map)))
+                .map(|op| format!("({0})", op.to_sql(bind_pos, string_bindings)))
                 .collect::<Vec<_>>()
                 .join(&format!(" {operator} ")),
         }
@@ -121,11 +121,7 @@ fn sql_type(spec: &TypeSpec) -> Option<String> {
     }
 }
 
-fn value_to_sql(
-    value: &TypedAst,
-    bind_pos: &mut u64,
-    string_bind_map: &mut HashMap<u64, String>,
-) -> String {
+fn value_to_sql(value: &TypedAst, bind_pos: &mut u64, string_bindings: &mut Vec<String>) -> String {
     match value {
         TypedAst::Null => "NULL".to_owned(),
         TypedAst::Boolean(true) => "TRUE".to_owned(),
@@ -133,7 +129,7 @@ fn value_to_sql(
         TypedAst::Integer(i) => i.to_string(),
         TypedAst::Float(n) => format!("{n:?}"), // HACK: keeps .0 if n is an integer, otherwise displays all decimals
         TypedAst::String(string) => {
-            string_bind_map.insert(*bind_pos, string.clone());
+            string_bindings.push(string.clone());
             *bind_pos += 1;
             format!("${0}", *bind_pos - 1)
         }
@@ -152,7 +148,7 @@ fn value_to_sql(
             let cast = sql_type(item_type).expect("could not convert into sql type");
             let items = items
                 .iter()
-                .map(|val| format!("({0})", value_to_sql(val, bind_pos, string_bind_map)))
+                .map(|val| format!("({0})", value_to_sql(val, bind_pos, string_bindings)))
                 .collect::<Vec<_>>()
                 .join(",");
             format!("ARRAY[{items}]::{cast}[]")
@@ -162,7 +158,6 @@ fn value_to_sql(
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
 
     use crate::views::search::{context::TypedAst, typing::AstType};
 
@@ -196,7 +191,7 @@ mod test {
             &SqlQuery::Value(TypedAst::String("hello".to_owned())).to_sql(&mut 42, &mut binds),
             "$42"
         );
-        assert_eq!(binds, HashMap::from([(42, "hello".to_owned())]));
+        assert_eq!(&binds, &["hello".to_owned()]);
         assert_eq!(
             &SqlQuery::Value(TypedAst::Column {
                 name: "column".to_owned(),
