@@ -41,11 +41,9 @@ signal:
     line_code: integer
     label: string
     aspects:
-      type: array
-      item: string
-    logical_types:
-      type: array
-      item: string
+      array: string
+    systems:
+      array: string
   result:
     joins: |
       INNER JOIN osrd_infra_signalmodel AS sig ON sig.id = osrd_search_signal.id
@@ -55,7 +53,8 @@ signal:
       infra_id: sig.infra_id
       label: sig.data->'extensions'->'sncf'->>'label'
       aspects: osrd_search_signal.aspects
-      logical_types: osrd_search_signal.logical_types
+      systems: osrd_search_signal.systems
+      type: sig.data->'extensions'->'sncf'->>'installation_type'
       line_code: osrd_search_signal.line_code
       line_name: ts.data->'extensions'->'sncf'->>'line_name'
       geographic: ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json

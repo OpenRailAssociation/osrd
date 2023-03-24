@@ -29,13 +29,7 @@ pub struct SearchResult {
 #[serde(untagged)]
 pub enum TypeDescriptor {
     Atomic(AstType),
-    Compound(CompoundTypeDescriptor),
-}
-
-#[derive(Debug, Deserialize, Clone, PartialEq)]
-#[serde(tag = "type", rename_all = "lowercase")]
-pub enum CompoundTypeDescriptor {
-    Array { item: Box<TypeDescriptor> },
+    Array { array: Box<TypeDescriptor> },
 }
 
 impl Config {
@@ -49,9 +43,7 @@ impl From<TypeDescriptor> for TypeSpec {
     fn from(value: TypeDescriptor) -> Self {
         match value {
             TypeDescriptor::Atomic(t) => t.into(),
-            TypeDescriptor::Compound(CompoundTypeDescriptor::Array { item }) => {
-                TypeSpec::Sequence(Box::new((*item).into()))
-            }
+            TypeDescriptor::Array { array } => TypeSpec::Sequence(Box::new((*array).into())),
         }
     }
 }
