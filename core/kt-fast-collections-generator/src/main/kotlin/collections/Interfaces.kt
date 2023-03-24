@@ -21,15 +21,19 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             import ${type.qualifiedName}
 
+            /** GENERATED CODE */
             interface ${simpleName}Collection${paramsDecl} : Iterable<${type}> {
                 val size: Int
             }
 
+            /** GENERATED CODE */
             interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse} {
                 operator fun get(index: Int): $type
                 fun clone(): Mutable${simpleName}List${paramsUse}
+                fun reversed() : Mutable${simpleName}ArrayList${paramsUse}
             }
 
+            /** GENERATED CODE */
             interface Mutable${simpleName}List${paramsDecl} : ${simpleName}List${paramsUse} {
                 fun ensureCapacity(expectedElements: Int)
                 fun add(element: ${type}): Boolean
@@ -42,11 +46,13 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
                 fun remove(index: Int): $type
             }
 
+            /** GENERATED CODE */
             interface ${simpleName}SortedSet${paramsDecl} : ${simpleName}Collection${paramsUse} {
                 operator fun contains(value: ${type}): Boolean
                 fun getAtIndex(index: Int): $type
             }
 
+            /** GENERATED CODE */
             interface Mutable${simpleName}SortedSet${paramsDecl} : ${simpleName}SortedSet${paramsDecl} {
                 fun add(element: ${type}): Boolean
                 fun add(elemA: ${type}, elemB: ${type})

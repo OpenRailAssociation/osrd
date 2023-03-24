@@ -29,6 +29,7 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
             import fr.sncf.osrd.fast_collections.growCapacity
             import ${type.qualifiedName}
 
+            /** GENERATED CODE */
             class Mutable${simpleName}ArraySet${paramsDecl} private constructor(
                 private var usedElements: Int,
                 private var buffer: ${bufferType},
@@ -253,6 +254,7 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
                 return res
             }
 
+            /** GENERATED CODE */
             class ${simpleName}ArraySet${paramsDecl} public constructor(
                 private var buffer: ${bufferType},
             ) : ${simpleName}SortedSet${paramsUse}, Comparable<${simpleName}SortedSet${paramsUse}> {
