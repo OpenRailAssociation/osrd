@@ -12,7 +12,7 @@ use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-pub const RAILJSON_VERSION: &str = "3.1.0";
+pub const RAILJSON_VERSION: &str = "3.2.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
 #[diesel(table_name = osrd_infra_infra)]
