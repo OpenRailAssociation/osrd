@@ -1,7 +1,11 @@
 #[cfg(test)]
 pub mod tests {
+    use std::io::Cursor;
+
     use crate::client::PostgresConfig;
-    use crate::models::{Create, Delete, Identifiable, RollingStockModel};
+    use crate::models::{
+        Create, Delete, Document, Identifiable, RollingStockLiveryModel, RollingStockModel,
+    };
 
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
@@ -44,6 +48,47 @@ pub mod tests {
             .create(db_pool.clone())
             .await
             .unwrap(),
+            db_pool,
+        }
+    }
+
+    #[fixture]
+    pub async fn document_example(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) -> TestFixture<Document> {
+        let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
+        let mut img_bytes: Vec<u8> = Vec::new();
+        assert!(img
+            .write_to(
+                &mut Cursor::new(&mut img_bytes),
+                image::ImageOutputFormat::Png
+            )
+            .is_ok());
+        TestFixture {
+            model: Document::new(String::from("image/png"), img_bytes)
+                .create(db_pool.clone())
+                .await
+                .unwrap(),
+            db_pool,
+        }
+    }
+
+    #[fixture]
+    pub async fn rolling_stock_livery(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+        #[future] document_example: TestFixture<Document>,
+    ) -> TestFixture<RollingStockLiveryModel> {
+        let rolling_stock = fast_rolling_stock.await;
+        let image = document_example.await;
+        let rolling_stock_livery = RollingStockLiveryModel {
+            id: None,
+            name: Some(String::from("test_livery")),
+            rolling_stock_id: Some(rolling_stock.id()),
+            compound_image_id: Some(Some(image.id())),
+        };
+        TestFixture {
+            model: rolling_stock_livery.create(db_pool.clone()).await.unwrap(),
             db_pool,
         }
     }
