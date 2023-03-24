@@ -2,10 +2,12 @@ from dataclasses import dataclass, field
 from time import perf_counter
 from typing import Dict, List, Optional, Tuple
 
+import requests
+from django.conf import settings
 from django.core.validators import BaseValidator
 from pydantic import BaseModel
 from pydantic import ValidationError as PydanticValidationError
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import APIException, ValidationError
 
 
 class PydanticValidator(BaseValidator):
@@ -70,3 +72,20 @@ def make_exception_from_error(response, user_error_type, internal_error_type):
         return user_error_type(content)
     else:
         return internal_error_type(content)
+
+
+class ServiceUnavailable(APIException):
+    status_code = 503
+    default_detail = "Service temporarily unavailable"
+    default_code = "service_unavailable"
+
+
+def call_backend(endpoint, **kwargs):
+    try:
+        return requests.post(
+            f"{settings.OSRD_BACKEND_URL}{endpoint}",
+            headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
+            **kwargs,
+        )
+    except requests.exceptions.ConnectionError as e:
+        raise ServiceUnavailable("Service OSRD backend unavailable") from e

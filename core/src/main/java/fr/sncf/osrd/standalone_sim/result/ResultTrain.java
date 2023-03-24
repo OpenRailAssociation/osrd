@@ -14,8 +14,47 @@ public class ResultTrain {
     public final List<ResultStops> stops;
     @Json(name = "route_occupancies")
     public final Map<String, ResultOccupancyTiming> routeOccupancies;
-    @Json(name = "signal_updates")
-    public final List<SignalUpdate> signalUpdates;
+
+    public static class SignalSighting {
+        public String signal;
+        public double time;
+        public double offset;
+        public String state;
+
+        /**
+         * Constructor
+         * */
+        public SignalSighting(String signal, double time, double offset, String state) {
+            this.signal = signal;
+            this.time = time;
+            this.offset = offset;
+            this.state = state;
+        }
+    }
+
+    @Json(name = "signal_sightings")
+    public final List<SignalSighting> signalSightings;
+
+    public static class ZoneUpdate {
+        public String zone;
+        public double time;
+        public double offset;
+        public boolean isEntry;
+
+        /**
+         * Constructor
+         */
+        public ZoneUpdate(String zone, double time, double offset, boolean isEntry) {
+            this.zone = zone;
+            this.time = time;
+            this.offset = offset;
+            this.isEntry = isEntry;
+        }
+    }
+
+    @Json(name = "zone_updates")
+    public final List<ZoneUpdate> zoneUpdates;
+
     @Json(name = "mechanical_energy_consumed")
     public final double mechanicalEnergyConsumed;
 
@@ -25,14 +64,16 @@ public class ResultTrain {
             List<ResultPosition> headPositions,
             List<ResultStops> stops, Map<String,
             ResultOccupancyTiming> routeOccupancies,
-            List<SignalUpdate> signalUpdates,
-            double mechanicalEnergyConsumed
+            double mechanicalEnergyConsumed,
+            List<SignalSighting> signalSightings,
+            List<ZoneUpdate> zoneUpdates
     ) {
         this.speeds = speeds;
         this.headPositions = headPositions;
         this.stops = stops;
         this.routeOccupancies = routeOccupancies;
-        this.signalUpdates = signalUpdates;
         this.mechanicalEnergyConsumed = mechanicalEnergyConsumed;
+        this.signalSightings = signalSightings;
+        this.zoneUpdates = zoneUpdates;
     }
 }
