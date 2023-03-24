@@ -48,7 +48,10 @@
 
 .osrd-config-item-container-map {
   border-radius: 0 0 4px 4px;
-  height: 40vh;
+  height: 85vh;
+  &.open {
+    height: 40vh;
+  }
   .btn-map-container {
     top: 1.5rem;
     right: 1.5rem;
@@ -279,13 +282,13 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    
+
     button {
       outline: none;
     }
 
     &:before {
-      content: "";
+      content: '';
       position: absolute;
       top: 25%;
       left: 40%;
@@ -296,7 +299,7 @@
     }
 
     &:after {
-      content: "";
+      content: '';
       position: absolute;
       bottom: 25%;
       left: 40%;

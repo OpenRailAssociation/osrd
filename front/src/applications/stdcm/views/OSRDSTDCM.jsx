@@ -5,7 +5,6 @@ import { updateSelectedTrain, updateSelectedProjection } from 'reducers/osrdsimu
 import { MODES, STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateMode } from 'reducers/osrdconf';
 import OSRDStdcmConfig from './OSRDCStdcmConfig';
-import OSRDStdcmResults from './OSRDStdcmResults';
 import StdcmRequestModal from './StdcmRequestModal';
 
 export default function OSRDSTDCM() {
@@ -26,15 +25,15 @@ export default function OSRDSTDCM() {
 
   return (
     <>
-      <OSRDStdcmConfig setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus} />
+      <OSRDStdcmConfig
+        currentStdcmRequestStatus={currentStdcmRequestStatus}
+        setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
+      />
       <StdcmRequestModal
         setCurrentStdcmRequestResults={setCurrentStdcmRequestResults}
         setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
         currentStdcmRequestStatus={currentStdcmRequestStatus}
       />
-      {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success && (
-        <OSRDStdcmResults currentStdcmRequestStatus={currentStdcmRequestStatus} />
-      )}
     </>
   );
 }
