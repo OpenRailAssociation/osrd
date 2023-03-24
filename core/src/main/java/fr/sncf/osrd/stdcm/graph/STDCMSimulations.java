@@ -3,10 +3,10 @@ package fr.sncf.osrd.stdcm.graph;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
-import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
@@ -29,6 +29,7 @@ import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** This class contains all the methods used to simulate the train behavior.
  * */
@@ -52,6 +53,7 @@ public class STDCMSimulations {
     }
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.
+     * stopPosition specifies the position at which the train should stop, may be null (no stop)
      *
      * <p>
      * Note: there are some approximations made here as we only "see" the tracks on the given routes.
@@ -65,24 +67,41 @@ public class STDCMSimulations {
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             double timeStep,
-            double[] stops,
+            Double stopPosition,
             String tag
     ) {
+        if (stopPosition != null && stopPosition == 0)
+            return makeSinglePointEnvelope(0);
+        var context = makeSimContext(List.of(route), start, rollingStock, comfort, timeStep);
+        double[] stops = new double[]{};
+        double length = context.path.getLength();
+        if (stopPosition != null) {
+            stops = new double[]{stopPosition};
+            length = Math.min(length, stopPosition);
+        }
+        var mrsp = MRSP.from(
+                route.getInfraRoute().getTrackRanges(start, start + length),
+                rollingStock,
+                false,
+                tag
+        );
         try {
-            var context = makeSimContext(List.of(route), start, rollingStock, comfort, timeStep);
-            var mrsp = MRSP.from(
-                    route.getInfraRoute().getTrackRanges(start, start + context.path.getLength()),
-                    rollingStock,
-                    false,
-                    tag
-            );
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
             return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
         } catch (ImpossibleSimulationError e) {
-            // This can happen when the train can't go through this part,
-            // for example because of high slopes with a "weak" rolling stock
+            // The train can't reach its destination, for example because of high slopes
             return null;
         }
+    }
+
+    /** Make an envelope with a single point of the given speed */
+    private static Envelope makeSinglePointEnvelope(double speed) {
+        return Envelope.make(new EnvelopePart(
+                Map.of(),
+                new double[]{0},
+                new double[]{speed},
+                new double[]{}
+        ));
     }
 
     /** Returns the time at which the offset on the given route is reached */

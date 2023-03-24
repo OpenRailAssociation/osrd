@@ -2,7 +2,6 @@ package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 
-import com.google.common.primitives.Doubles;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -11,6 +10,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class STDCMUtils {
@@ -48,7 +48,7 @@ public class STDCMUtils {
     }
 
     /** Returns the offset of the stops on the given route, starting at startOffset*/
-    static double[] getStopsOnRoute(STDCMGraph graph, SignalingRoute route, double startOffset) {
+    static Double getStopOnRoute(STDCMGraph graph, SignalingRoute route, double startOffset) {
         var res = new ArrayList<Double>();
         for (var endLocation : graph.endLocations) {
             if (endLocation.edge() == route) {
@@ -57,7 +57,9 @@ public class STDCMUtils {
                     res.add(offset);
             }
         }
-        return Doubles.toArray(res);
+        if (res.isEmpty())
+            return null;
+        return Collections.min(res);
     }
 
     /** Builds a train path from a route, and offset from its start, and an envelope. */
