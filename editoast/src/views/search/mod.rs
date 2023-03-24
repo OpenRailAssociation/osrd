@@ -290,7 +290,7 @@ fn create_sql_query(
         .unwrap_or_default();
     let result_columns = search_entry.result_columns();
     let mut bindings = Default::default();
-    let constraints = where_expression.to_sql(&mut 1, &mut bindings);
+    let constraints = where_expression.to_sql(&mut bindings);
     let sql_code = format!(
         "WITH _RESULT AS (
             SELECT {result_columns}
@@ -383,7 +383,5 @@ pub async fn search(
     .unwrap()?;
 
     let results: Vec<_> = objects.into_iter().map(|r| r.result).collect();
-    Ok(HttpResponse::Ok()
-        .content_type("application/json")
-        .body(serde_json::to_value(results).unwrap().to_string()))
+    Ok(HttpResponse::Ok().json(results))
 }
