@@ -70,6 +70,10 @@ interface LocationInfra : MovableElementsInfra {
     fun getDetectorName(det: DetectorId): String?
 }
 
+fun LocationInfra.getZoneName(zone: ZoneId): String {
+    return "zone.${getZoneBounds(zone).map { "${getDetectorName(it.detector)}:${it.direction}" }.minOf { it }}"
+}
+
 fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
     return getNextZone(detector.normal) == null || getNextZone(detector.reverse) == null
 }
