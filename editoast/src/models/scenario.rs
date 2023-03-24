@@ -25,12 +25,13 @@ use serde::{Deserialize, Serialize};
     Derivative,
     Queryable,
     QueryableByName,
+    AsChangeset,
     Identifiable,
     Model,
 )]
 #[derivative(Default)]
 #[model(table = "osrd_infra_scenario")]
-#[model(create, retrieve)]
+#[model(create, retrieve, update)]
 #[diesel(table_name = osrd_infra_scenario)]
 pub struct Scenario {
     #[diesel(deserialize_as = i64)]
