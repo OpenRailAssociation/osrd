@@ -6,6 +6,7 @@ from osrd_schemas import infra
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint
 from railjson_generator.schema.infra.track_section import TrackSection
+from railjson_generator.schema.infra.waypoint import BufferStop
 
 
 @dataclass
@@ -100,7 +101,7 @@ def search_buffer_stop(candidate) -> bool:
             continue
         if candidate.direction == Direction.STOP_TO_START and waypoint.position >= candidate.offset:
             continue
-        if waypoint.waypoint_type == "buffer_stop":
+        if isinstance(waypoint, BufferStop):
             return waypoint
     return None
 
