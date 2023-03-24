@@ -84,7 +84,7 @@ public class TrainPathBuilder {
     private static void validate(TrainPath path) {
         assert !path.routePath().isEmpty() : "empty route path";
         assert !path.trackRangePath().isEmpty() : "empty track range path";
-        assert path.length() > 0 : "length must be strictly positive";
+        assert path.length() >= 0 : "length must be positive";
 
         checkDetectorOverlap(path.detectors());
         if (path.detectionSections().size() > 0)

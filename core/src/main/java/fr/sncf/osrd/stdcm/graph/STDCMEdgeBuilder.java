@@ -1,6 +1,5 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import java.util.ArrayList;
@@ -128,7 +127,7 @@ public class STDCMEdgeBuilder {
                     graph.rollingStock,
                     graph.comfort,
                     graph.timeStep,
-                    STDCMUtils.getStopsOnRoute(graph, route, startOffset),
+                    STDCMUtils.getStopOnRoute(graph, route, startOffset),
                     graph.tag
             );
         if (envelope == null)
