@@ -72,7 +72,8 @@ class TrainScheduleView(
         train_schedule = self.get_object()
         path_id = request.query_params.get("path", train_schedule.path_id)
         path = get_object_or_404(PathModel, pk=path_id)
-        res = create_simulation_report(train_schedule, path)
+        infra = train_schedule.timetable.infra
+        res = create_simulation_report(infra, train_schedule, path)
         return Response(res)
 
     @action(detail=False)
@@ -105,11 +106,13 @@ class TrainScheduleView(
         else:
             path = schedules_map[train_ids[0]].path
 
+        infra = schedules[0].timetable.infra
+
         res = []
         for train_id in train_ids:
             train_schedule = schedules_map[train_id]
             # create the simulation report to something frontend-friendly
-            sim_report = create_simulation_report(train_schedule, path)
+            sim_report = create_simulation_report(infra, train_schedule, path)
             if not sim_report["base"]["head_positions"]:
                 continue
             res.append(sim_report)

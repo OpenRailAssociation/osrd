@@ -104,7 +104,8 @@ def make_stdcm_core_payload(request):
 def compute_stdcm(request, user):
     core_output = request_stdcm(make_stdcm_core_payload(request))
     path = PathModel()
-    postprocess_path(path, core_output["path"], request["infra"], user, [0, 0])
+    infra = request["infra"]
+    postprocess_path(path, core_output["path"], infra, user, [0, 0])
     path.save()
 
     schedule = TrainSchedule()
@@ -115,7 +116,7 @@ def compute_stdcm(request, user):
     schedule.comfort = request["comfort"]
 
     simulation_output = process_simulation_response(request["infra"], [schedule], core_output["simulation"])[0]
-    simulation = create_simulation_report(schedule, path, simulation_output=simulation_output)
+    simulation = create_simulation_report(infra, schedule, path, simulation_output=simulation_output)
     return {
         "path": {
             **PathSerializer(path).data,
