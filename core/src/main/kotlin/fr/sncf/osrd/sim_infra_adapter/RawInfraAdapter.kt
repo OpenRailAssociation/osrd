@@ -253,9 +253,14 @@ private fun buildZonePath(
     var zonePathPosition = Distance.ZERO
     for (range in zoneTrackPath) {
         val edge = range.track
-        val trackSignals = signalsPerTrack[edge.id] ?: continue
         val rangeBegin = range.begin
         val rangeEnd = range.end
+        val trackSignals = signalsPerTrack[edge.id]
+        if (trackSignals == null) {
+            zonePathPosition += (rangeEnd - rangeBegin)
+            continue
+        }
+
         for (trackSignal in trackSignals) {
             // if the signal is not visible along the route's path, ignore it
             if (trackSignal.direction != range.direction)
