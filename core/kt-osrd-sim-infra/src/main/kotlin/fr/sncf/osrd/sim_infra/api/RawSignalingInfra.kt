@@ -33,6 +33,7 @@ typealias LogicalSignalId = StaticIdx<LogicalSignal>
 @JvmInline
 value class Distance(val millimeters: Long) : Comparable<Distance> {
     val absoluteValue get() = Distance(millimeters.absoluteValue)
+    val meters get() = millimeters / 1000.0
     operator fun plus(value: Distance): Distance {
         return Distance(millimeters + value.millimeters)
     }
