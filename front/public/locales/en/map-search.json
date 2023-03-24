@@ -1,0 +1,19 @@
+{
+  "linecode": "Line code",
+  "name": "Name",
+  "noresult": "No results",
+  "placeholderline": "Line number",
+  "placeholdername": "Name, label",
+  "pk": "PK",
+  "resultsCount_zero": "No results",
+  "resultsCount_one": "1 result",
+  "resultsCount_other": "{{ count }} results",
+  "search": "Search",
+  "signal": "Signal",
+  "signalbox": "Switchbox",
+  "station": "Station",
+  "trackname": "Track",
+  "type": "Type",
+  "line": "Line",
+  "reset": "Reset"
+}
