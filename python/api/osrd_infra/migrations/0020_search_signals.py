@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                     )""",
                     "TEXT[]",
                 ),
-                "logical_types": (
+                "systems": (
                     "ARRAY(SELECT * FROM jsonb_to_recordset(jsonb_strip_nulls({source}.data)->'logical_signals') AS (signaling_system text))",
                     "TEXT[]",
                 ),
@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             joins="INNER JOIN osrd_infra_tracksectionmodel AS ts ON ts.infra_id = {source}.infra_id AND ts.obj_id = {source}.data->>'track'",
         ),
         migrations.RunSQL(
-            sql="CREATE INDEX IF NOT EXISTS osrd_search_signal_infra_id_line_code_idx ON osrd_search_signal(infra_id, line_code) INCLUDE (label);",
+            sql="CREATE INDEX IF NOT EXISTS osrd_search_signal_infra_id_line_code_idx ON osrd_search_signal(infra_id, line_code) INCLUDE (label, aspects);",
             reverse_sql="DROP INDEX IF EXISTS osrd_search_signal_infra_id_line_code_idx",
         ),
     ]
