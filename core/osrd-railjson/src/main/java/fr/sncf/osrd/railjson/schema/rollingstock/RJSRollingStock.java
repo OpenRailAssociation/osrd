@@ -90,6 +90,10 @@ public class RJSRollingStock implements Identified {
     @Json(name = "loading_gauge")
     public RJSLoadingGaugeType loadingGauge = null;
 
+    /** The different energy sources of the rolling sotck */
+    @Json(name = "energy_sources")
+    public ArrayList<RJSEnergySource> energySources = null;
+
     public enum GammaType {
         CONST,
         MAX
@@ -105,51 +109,4 @@ public class RJSRollingStock implements Identified {
     public String getID() {
         return name;
     }
-
-    //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
-
-
-    public static ArrayList<EnergySource> getEnergySources() {
-        ArrayList<EnergySource> EnergySourceArray = new ArrayList<>(); // Create an ArrayList object
-
-        // PANTOGRAPH
-        CurvePoint[] curveLowValueOnLowSpeed = {
-                new CurvePoint(0.0,0.5),
-                new CurvePoint(10.0,0.5),
-                new CurvePoint(20.0,1.0),
-                new CurvePoint(3000.0,1.0)
-        };
-
-        EnergySource pantograph = new EnergySource(
-                400.,
-                0.0,
-                new SpeedDependantPowerCoefficient(curveLowValueOnLowSpeed)
-        );
-
-        // BATTERY
-        CurvePoint[] curveHigherValueOnHighSpeed = {
-                new CurvePoint(0.0,0.1),
-                new CurvePoint(10.0,0.1),
-                new CurvePoint(20.0,1.0),
-                new CurvePoint(110.0,1.0),
-                new CurvePoint(120.0,1.5),
-                new CurvePoint(3000.0,1.5)
-        };
-        EnergySource battery = new EnergySource(
-                400.,
-                500.,
-                new EnergyStorage(
-                        150*3.6E6, 0.8,         // kWh to J : x3.6E6
-                        new RefillLaw(97.6,0.8,150*3.6E6),
-                        new ManagementSystem(0.9,0.2),  // to be used later
-                        new SocDependantPowerCoefficient(curveHigherValueOnHighSpeed)
-                ),
-                new PowerConverter(0.8));
-
-        EnergySourceArray.add(pantograph);
-        EnergySourceArray.add(battery);
-        return EnergySourceArray;
-    }
-
-    //***************************** CHANTIER QUALESI SIM PARAMETERS *********************************
 }

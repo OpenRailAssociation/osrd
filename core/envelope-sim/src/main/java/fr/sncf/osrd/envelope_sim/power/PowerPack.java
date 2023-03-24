@@ -44,6 +44,7 @@ public class PowerPack implements EnergySource {
     }
 
     public static PowerPack newPowerPackDiesel() {
-        return PowerPack(0, )
+        // TODO: add parameters
+        return PowerPack(0, );
     }
 }

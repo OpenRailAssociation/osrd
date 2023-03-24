@@ -19,14 +19,14 @@ public final class TrainPhysicsIntegrator {
     private final Action action;
     private final double directionSign;
 
-    private final RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap;
+    private final RangeMap<Double, Utils.CurvePoint[]> tractiveEffortCurveMap;
 
     private TrainPhysicsIntegrator(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             Action action,
             double directionSign,
-            RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap
+            RangeMap<Double, Utils.CurvePoint[]> tractiveEffortCurveMap
     ) {
         this.rollingStock = rollingStock;
         this.path = path;
@@ -77,87 +77,11 @@ public final class TrainPhysicsIntegrator {
         var tractiveEffortCurve = tractiveEffortCurveMap.get(position);
         assert tractiveEffortCurve != null;
 
-        // CHANTIER PRISE EN COMPTE ENERGY SOURCE ******************************************
-        var energySources = rollingStock.getEnergySources();
-        boolean electrification = path.isElectrificated(position);//Simulate an electrification availability for tests further down
-        // TODO : Validate the program with real test
+        //Simulate an electrification availability for tests further down
+        boolean electrification = path.isElectrified(position);
 
-        // Get EnergySources overall power capability
-        var availableElectricalPower = rollingStock.getAvailableElectricalPower(speed);
-        double availableElectricalPower = 0.0;              // Sum each available power from Energy Source of the train
-        for(var source : EnergySources){availableElectricalPower += source.getPower(speed);}
-        double maxTractionForceFromEnergySources = availableElectricalPower * rollingStock.motorEfficiency / speed;  // F = Pmeca/Speed
-        /*                  HOW WE DEAL WE WITH MODULATING TRACTION POWER
-         *                                      /!\ Vitesse = french("speed") /!\
-         *     ▲ Force
-         *     │
-         *     │....................       │
-         *     │         X        ....     │
-         *     │          X         ...    │               .....   classic F(V) <=> Fixed power func(electrification)
-         *     │           X          ..   │                                        *or nearly fixed power
-         *     │            X          ... │
-         *     │             X           ..│
-         *     │              X           .│.              XXXXX   F(Pmax(V)) = maxMecaPower·motorEfficiency/V
-         *     │               XX          │...
-         *     │                XX         │  ..
-         *     │                  X        │   ...
-         *     │                    X      │      ..
-         *     │                      X    │        ....
-         *     │                        X  │          ....
-         *     │                          X│             .....
-         *     │                           │X                ......
-         *     │                           │   X                 ................
-         *     │                           │      X  X XXXXXXXX                 .....................
-         * ────┼───────────────────────────┼───────────────────────────────────────────────────────────►
-         *     │                           │                                                            Speed
-         *     │                         Speed
-         *
-         * I imagine 2 options to account for variable available power :
-         * Each point of the F(V) correspond to à given power (Power = Force x Vitesse)
-         * then we could multpiply F by a coefficient, using K x F(V), we would get a variable power
-         * But it wouldn't account for wheel slip the same way, we'd have to add complexity to avoid uncanny behaviors
-         *
-         * We prefer to use the min between an existing measured "best case, best power" curve and a computed curve:
-         * the power each energy source can provide at a given time and speed, adds up and we can then compute
-         * (Force = Power/Vitesse )
-         * it guarantees us the train can't have unexpectedly high torque, or misrepresent its movement behavior
-         */
-        double maxTractionForce = Math.min(
-                PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve),
-                maxTractionForceFromEnergySources
-        );
-
-        // Re-compute actual power used by traction for case where we're limited by ES power
-        double actualElectricalTractionPower = rollingStock.motorEfficiency/(maxTractionForce*speed);
-        double pBus = actualElectricalTractionPower + rollingStock.auxiliaryEquipmentPower;
-        /*Ppwp|cat = Pbus + Prech + Pconvbat <=> Ppwp|cat = Paux + Ptrac + Prech + Pconvbat*/
-
-        // Retrieve Pmax & Pmin depending on electrification availability (Powerpack or Catenary/Pantograph power)
-        double Pmaxpwpcat = electrification ? energySources.get(0).pMax : 0.0; // Panto.pMax : Rien
-        //double Pminpwpcat = electrification? EnergySources.get(0).pMin : 0; // Panto.pMax : Rien
-
-
-        // TUTUT Battery try to recover from it's discharged state :
-        double SoC = energySources.get(1).Storage.getSoc();
-        double callForPower = energySources.get(1).Storage.refillLaw.getRefillPower(SoC);
-        // Whatever the Traction+Auxiliary Power ( Bus power )
-        // Limite de ce que peut recharger la batterie par la puissance restante dispo : pBus - Pmaxpwpcat
-        double callForPowerFromPbusLeftsOver = RJSRollingStock.hardClipping(
-                0,
-                callForPower,
-                pBus - Pmaxpwpcat
-        );
-        double pBat = energySources.get(1).clipToESPowerLimits(callForPowerFromPbusLeftsOver);
-        double ppwpcat = energySources.get(0).clipToESPowerLimits(pBus - pBat);
-
-        //double Ppwp_cat = PmaxBase - actualElectricalTractionPower + EnergySources.get(1).Storage.refillLaw.getRefillPower(0.6);
-        //double  = Pbus - Pconvbat;
-
-
-        /* /!\ Energy calculation STEP */
-
-        EnergySources.get(1).Storage.updateStateOfCharge(pBat*timeStep);
-        // FIN CHANTIER PRISE EN COMPTE ENERGY SOURCE ******************************************
+        // TODO: correct this for diesel
+        double maxTractionForce = electrification? PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve) : 0.;
 
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
@@ -170,10 +94,16 @@ public final class TrainPhysicsIntegrator {
 
         if (action == Action.MAINTAIN) {
             tractionForce = rollingResistance - weightForce;
-            if (tractionForce <= maxTractionForce)
-                return newtonStep(timeStep, speed, 0, directionSign);
+            if (tractionForce <= maxTractionForce) {
+                //TODO: avoid this pointless return
+                tractionForce += rollingStock.updateBatterySocAndComputeTractionForce(maxTractionForce - tractionForce, speed, timeStep);
+                return newtonStep(timeStep, speed, 0., directionSign);
+            }
             else tractionForce = maxTractionForce;
         }
+
+        // TODO: in the case of braking, tractionForce should remain zero
+        tractionForce += rollingStock.updateBatterySocAndComputeTractionForce(0, speed, timeStep);
 
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);

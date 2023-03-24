@@ -1,5 +1,11 @@
 package fr.sncf.osrd.envelope_sim.power;
 
+import fr.sncf.osrd.envelope_sim.Utils.*;
+import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
+import fr.sncf.osrd.envelope_sim.power.storage.ManagementSystem;
+import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
+import fr.sncf.osrd.envelope_sim.power.storage.SocDependantPowerCoefficient;
+
 import static fr.sncf.osrd.envelope_sim.Utils.clamp;
 
 public class Catenary implements EnergySource {
@@ -41,5 +47,21 @@ public class Catenary implements EnergySource {
         if (converter!=null)
             availablePower = converter.convert(availablePower);
         return clampPowerLimits(availablePower);
+    }
+
+    public static Catenary newCatenary() {
+        CurvePoint[] curveLowValueOnLowSpeed = {
+                new CurvePoint(0.0,0.5),
+                new CurvePoint(10.0,0.5),
+                new CurvePoint(20.0,1.0),
+                new CurvePoint(3000.0,1.0)
+        };
+
+        return new Catenary(
+                0.,
+                400.0,
+                new PowerConverter(0.8),
+                new SpeedDependantPowerCoefficient(curveLowValueOnLowSpeed)
+        );
     }
 }

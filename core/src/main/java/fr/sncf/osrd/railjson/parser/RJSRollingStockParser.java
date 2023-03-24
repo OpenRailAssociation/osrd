@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.parser;
 
+import fr.sncf.osrd.envelope_sim.Utils.*;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingRollingStockField;
@@ -84,6 +85,9 @@ public class RJSRollingStockParser {
         if (Double.isNaN(rjsRollingStock.mass))
             throw new MissingRollingStockField("mass");
 
+        if (rjsRollingStock.energySources == null)
+            throw new MissingRollingStockField("energy_source");
+
         var rollingResistance = parseRollingResistance(rjsRollingStock.rollingResistance);
 
         var gammaType = switch (rjsRollingStock.gamma.type) {
@@ -108,7 +112,9 @@ public class RJSRollingStockParser {
                 rjsRollingStock.loadingGauge,
                 modes,
                 rjsRollingStock.effortCurves.defaultMode,
-                rjsRollingStock.basePowerClass
+                rjsRollingStock.basePowerClass,
+                //TODO: convert type from RJSEnergySource to EnergySource
+                rjsRollingStock.energySources
         );
     }
 
@@ -159,7 +165,7 @@ public class RJSRollingStockParser {
         return new RollingStock.ModeEffortCurves(rjsMode.isElectric, defaultCurve, curves);
     }
 
-    private static RollingStock.TractiveEffortPoint[] parseEffortCurve(
+    private static CurvePoint[] parseEffortCurve(
             RJSEffortCurves.RJSEffortCurve rjsEffortCurve,
             String fieldKey
     ) throws InvalidRollingStockField {
@@ -171,7 +177,7 @@ public class RJSRollingStockParser {
             throw new InvalidRollingStock(
                     "Invalid rolling stock effort curve, speeds and max_efforts should be same length");
 
-        var tractiveEffortCurve  = new RollingStock.TractiveEffortPoint[rjsEffortCurve.speeds.length];
+        var tractiveEffortCurve  = new CurvePoint[rjsEffortCurve.speeds.length];
         for (int i = 0; i < rjsEffortCurve.speeds.length; i++) {
             var speed = rjsEffortCurve.speeds[i];
             if (speed < 0)
@@ -179,8 +185,8 @@ public class RJSRollingStockParser {
             var maxEffort = rjsEffortCurve.maxEfforts[i];
             if (maxEffort < 0)
                 throw new InvalidRollingStockField(fieldKey, "negative max effort");
-            tractiveEffortCurve[i] = new RollingStock.TractiveEffortPoint(speed, maxEffort);
-            assert i == 0 || tractiveEffortCurve[i - 1].speed() < speed;
+            tractiveEffortCurve[i] = new CurvePoint(speed, maxEffort);
+            assert i == 0 || tractiveEffortCurve[i - 1].x() < speed;
         }
         return tractiveEffortCurve;
     }

@@ -8,7 +8,12 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.envelope_sim.Utils.*;
+import fr.sncf.osrd.envelope_sim.power.Battery;
+import fr.sncf.osrd.envelope_sim.power.EnergySource;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
+
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -91,6 +96,13 @@ public class RollingStock implements PhysicsRollingStock {
 
     private final String defaultMode;
     public final String powerClass;
+    public final double motorEfficiency;
+
+    /** The different energy sources of the rollingStock */
+    public final ArrayList<EnergySource> energySources;
+
+    /** The power consumed by the auxiliaries */
+    public final double auxiliariesPower;
 
     @Override
     public double getMass() {
@@ -136,15 +148,39 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
+    public ArrayList<EnergySource> getEnergySources() {
+        return energySources;
+    }
+
+    @Override
+    public double updateBatterySocAndComputeTractionForce(double forceLeftover, double speed, double timeStep) {
+        var battery = getBattery();
+        if (battery != null) {
+            var powerLeftoverAfterTraction =
+                    forceLeftover * speed / motorEfficiency;
+            double soc = battery.storage.getSoc();
+            double callForPower = battery.storage.refillLaw.getRefillPower(soc);
+            var powerSentToBattery = Math.min(powerLeftoverAfterTraction , callForPower);
+            powerSentToBattery = battery.clampPowerLimits(powerSentToBattery);
+            var deltaSoc = powerSentToBattery * timeStep;
+            battery.storage.updateStateOfCharge(deltaSoc);
+            if (speed > 0) {
+                return powerSentToBattery / speed;
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public GammaType getGammaType() {
         return gammaType;
     }
 
-    public record ModeEffortCurves(boolean isElectric, TractiveEffortPoint[] defaultCurve,
+    public record ModeEffortCurves(boolean isElectric, CurvePoint[] defaultCurve,
                                    ConditionalEffortCurve[] curves) {
     }
 
-    public record ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {
+    public record ConditionalEffortCurve(EffortCurveConditions cond, CurvePoint[] curve) {
     }
 
     public record EffortCurveConditions(Comfort comfort, String electricalProfile) {
@@ -164,10 +200,10 @@ public class RollingStock implements PhysicsRollingStock {
         AC,
     }
 
-    protected record CurveAndCondition(TractiveEffortPoint[] curve, ModeAndProfile modeAndProfile) {
+    protected record CurveAndCondition(CurvePoint[] curve, ModeAndProfile modeAndProfile) {
     }
 
-    public record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
+    public record CurvesAndConditions(RangeMap<Double, CurvePoint[]> curves,
                                       RangeMap<Double, ModeAndProfile> conditions) {
     }
 
@@ -210,7 +246,7 @@ public class RollingStock implements PhysicsRollingStock {
     public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, ModeAndProfile> modeAndProfileMap,
                                                        Comfort comfort, double pathLength) {
         TreeRangeMap<Double, ModeAndProfile> conditionsUsed = TreeRangeMap.create();
-        TreeRangeMap<Double, TractiveEffortPoint[]> res = TreeRangeMap.create();
+        TreeRangeMap<Double, CurvePoint[]> res = TreeRangeMap.create();
         var defaultCurve = findTractiveEffortCurve(defaultMode, null, comfort);
         res.put(Range.all(), defaultCurve.curve);
         conditionsUsed.put(Range.closed(0., pathLength), defaultCurve.modeAndProfile);
@@ -238,6 +274,14 @@ public class RollingStock implements PhysicsRollingStock {
         return true;
     }
 
+    public Battery getBattery() {
+        for (var source : energySources) {
+            if (source instanceof Battery)
+                return (Battery) source;
+        }
+        return null;
+    }
+
     /**
      * Creates a new rolling stock (a physical train inventory item).
      */
@@ -258,8 +302,8 @@ public class RollingStock implements PhysicsRollingStock {
             RJSLoadingGaugeType loadingGaugeType,
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
-            String powerClass
-    ) {
+            String powerClass,
+            ArrayList<EnergySource> energySources) {
         this.id = id;
         this.A = a;
         this.B = b;
@@ -278,5 +322,9 @@ public class RollingStock implements PhysicsRollingStock {
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
         this.powerClass = powerClass;
+        this.energySources = energySources;
+        //TODO: change this later
+        this.motorEfficiency = 0.8;
+        this.auxiliariesPower = 0;
     }
 }

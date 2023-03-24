@@ -2,7 +2,15 @@ package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
+import fr.sncf.osrd.envelope_sim.power.Battery;
+import fr.sncf.osrd.envelope_sim.power.EnergySource;
+import fr.sncf.osrd.envelope_sim.power.PowerPack;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
+
+import static fr.sncf.osrd.envelope_sim.power.PowerPack.newPowerPackDiesel;
 
 public class SimpleRollingStock implements PhysicsRollingStock {
 
@@ -52,6 +60,8 @@ public class SimpleRollingStock implements PhysicsRollingStock {
 
     private static double MAX_SPEED = 300 / 3.6;
 
+    private final ArrayList<EnergySource> energySources;
+
     public SimpleRollingStock(
             double length,
             double mass,
@@ -61,7 +71,8 @@ public class SimpleRollingStock implements PhysicsRollingStock {
             double c,
             double maxSpeed,
             double gamma,
-            GammaType gammaType
+            GammaType gammaType,
+            ArrayList<EnergySource> energySources
     ) {
         this.length = length;
         this.mass = mass;
@@ -73,6 +84,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         this.maxSpeed = maxSpeed;
         this.gamma = gamma;
         this.gammaType = gammaType;
+        this.energySources = energySources;
     }
 
     @Override
@@ -124,6 +136,17 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         return gamma * inertia;
     }
 
+    @Override
+    public ArrayList<EnergySource> getEnergySources() {
+        return energySources;
+    }
+
+    @Override
+    public double updateBatterySocAndComputeTractionForce(double forceLeftover, double speed, double timeStep) {
+        return 0;
+    }
+
+
     /**
      * The tractive effort curve shape. It can be either linear (effort proportional to speed), or hyperbolic (effort
      * inversely proportional to speed -> constant power)
@@ -144,19 +167,19 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         return maxEffort / Math.max(1, speed);
     }
 
-    public static TractiveEffortPoint[] createEffortSpeedCurve(double maxSpeed, CurveShape curveShape) {
-        var newEffortCurve = new ArrayList<TractiveEffortPoint>();
+    public static Utils.CurvePoint[] createEffortSpeedCurve(double maxSpeed, CurveShape curveShape) {
+        var newEffortCurve = new ArrayList<Utils.CurvePoint>();
 
         for (int speed = 0; speed < maxSpeed; speed += 1) {
             double effort = getEffort(curveShape, speed, maxSpeed);
-            newEffortCurve.add(new TractiveEffortPoint(speed, effort));
+            newEffortCurve.add(new Utils.CurvePoint(speed, effort));
         }
-        return newEffortCurve.toArray(new TractiveEffortPoint[0]);
+        return newEffortCurve.toArray(new Utils.CurvePoint[0]);
     }
 
-    public static ImmutableRangeMap<Double, TractiveEffortPoint[]> createEffortCurveMap(double maxSpeed,
+    public static ImmutableRangeMap<Double, Utils.CurvePoint[]> createEffortCurveMap(double maxSpeed,
                                                                                         CurveShape curveShape) {
-        var builder = ImmutableRangeMap.<Double, TractiveEffortPoint[]>builder();
+        var builder = ImmutableRangeMap.<Double, Utils.CurvePoint[]>builder();
         builder.put(Range.all(), createEffortSpeedCurve(maxSpeed, curveShape));
         return builder.build();
     }
@@ -181,14 +204,15 @@ public class SimpleRollingStock implements PhysicsRollingStock {
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
                 MAX_SPEED,
                 gamma,
-                gammaType
+                gammaType,
+                new ArrayList<>(List.of(newPowerPackDiesel()))
         );
     }
 
-    static final public ImmutableRangeMap<Double, TractiveEffortPoint[]> LINEAR_EFFORT_CURVE_MAP =
+    static final public ImmutableRangeMap<Double, Utils.CurvePoint[]> LINEAR_EFFORT_CURVE_MAP =
             createEffortCurveMap(MAX_SPEED, CurveShape.LINEAR);
 
-    static final public ImmutableRangeMap<Double, TractiveEffortPoint[]> HYPERBOLIC_EFFORT_CURVE_MAP =
+    static final public ImmutableRangeMap<Double, Utils.CurvePoint[]> HYPERBOLIC_EFFORT_CURVE_MAP =
             createEffortCurveMap(MAX_SPEED, CurveShape.HYPERBOLIC);
 
     static final public SimpleRollingStock SHORT_TRAIN = SimpleRollingStock.build(1, .5, GammaType.CONST);

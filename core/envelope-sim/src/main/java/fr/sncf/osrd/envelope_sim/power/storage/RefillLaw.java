@@ -1,23 +1,26 @@
 package fr.sncf.osrd.envelope_sim.power.storage;
 
 public class RefillLaw {
-    /** Time constant of the refill behavior <a href="https://en.wikipedia.org/wiki/Time_constant">...</a> */
+    /** Time constant of the refill behavior, in seconds
+     * <a href="https://en.wikipedia.org/wiki/Time_constant">...</a> */
     double tauRech ;
 
-    /** Set-point of State of charge <a href="https://en.wikipedia.org/wiki/Setpoint_(control_system)">...</a> */
+    /** State of charge target, between 0 and 1
+     * <a href="https://en.wikipedia.org/wiki/Setpoint_(control_system)">...</a> */
     double socRef;
 
-    /** Gain of the Energy Storage regulation Kp = capacity/tauRech  <=> = Joule·Second^-1 = Watt*/
+    /** Gain of the Energy Storage regulation, in Watt
+     * Kp = capacity / tauRech */
     double Kp;
 
-    public RefillLaw(double tauRech, double socRef, double EnergyStorageCapacity) {
+    public RefillLaw(double tauRech, double socRef, double energyStorageCapacity) {
         this.tauRech = tauRech;
         this.socRef = socRef;
-        this.Kp = EnergyStorageCapacity/tauRech;
+        this.Kp = energyStorageCapacity / tauRech;
     }
 
     /** Return regulated refill power */
     public double getRefillPower(double soc){
-        return (socRef-soc)*Kp; //refill power >0 when soc<=socRef
+        return (socRef - soc) * Kp; //refill power >0 when soc<=socRef
     }
 }
