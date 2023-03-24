@@ -6,12 +6,8 @@ from .schema.infra.infra import Infra
 from .schema.infra.link import Link
 from .schema.infra.operational_point import OperationalPoint
 from .schema.infra.speed_section import SpeedSection
-from .schema.infra.switch import (
-    PointSwitch,
-    CrossSwitch,
-    DoubleCrossSwitch,
-    Switch,
-)
+from .schema.infra.switch import (CrossSwitch, DoubleCrossSwitch, PointSwitch,
+                                  Switch)
 from .schema.infra.track_section import TrackSection
 from .utils import generate_routes
 
@@ -25,9 +21,9 @@ class InfraBuilder:
     """
 
     infra: Infra = field(default_factory=Infra)
-    switches_group_map: Mapping[
-        Tuple[int, Endpoint, int, Endpoint], Tuple[Type[Switch], str]
-    ] = field(default_factory=dict)
+    switches_group_map: Mapping[Tuple[int, Endpoint, int, Endpoint], Tuple[Type[Switch], str]] = field(
+        default_factory=dict
+    )
 
     def add_track_section(self, *args, **kwargs):
         track = TrackSection(index=len(self.infra.track_sections), *args, **kwargs)
@@ -89,9 +85,7 @@ class InfraBuilder:
         """
         Adds a switch as well as all links between concerned track sections.
         """
-        switch = DoubleCrossSwitch(
-            north_1=north_1, north_2=north_2, south_1=south_1, south_2=south_2, **kwargs
-        )
+        switch = DoubleCrossSwitch(north_1=north_1, north_2=north_2, south_1=south_1, south_2=south_2, **kwargs)
         for (src, dst), group_name in [
             ((north_1, south_1), "N1_S1"),
             ((north_1, south_2), "N1_S2"),
