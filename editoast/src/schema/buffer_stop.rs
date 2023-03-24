@@ -1,9 +1,6 @@
-use super::ApplicableDirections;
-use super::OSRDIdentified;
+use super::{OSRDIdentified, OSRDTyped, ObjectType};
 
 use super::utils::Identifier;
-use super::OSRDTyped;
-use super::ObjectType;
 use crate::infra_cache::{Cache, ObjectCache};
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
@@ -19,7 +16,6 @@ pub struct BufferStop {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
     pub position: f64,
-    pub applicable_directions: ApplicableDirections,
 }
 
 impl OSRDTyped for BufferStop {

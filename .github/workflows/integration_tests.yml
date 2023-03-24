@@ -32,7 +32,7 @@ jobs:
         id: cached-poetry-integration-tests-dependencies
         with:
           path: tests/.venv
-          key: cached-poetry-integration-tests-dependencies-${{ hashFiles('tests/poetry.lock') }}
+          key: cached-poetry-integration-tests-dependencies-${{ hashFiles('tests/poetry.lock', 'python/osrd_schemas') }}
       - name: Install dependencies
         if: steps.cached-poetry-integration-tests-dependencies.outputs.cache-hit != 'true'
         run: |

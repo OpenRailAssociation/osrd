@@ -14,7 +14,7 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.1.0"
+RAILJSON_INFRA_VERSION = "3.2.0"
 
 
 # Traits
@@ -403,8 +403,6 @@ class BufferStop(BaseObjectTrait, TrackLocationTrait):
     to stop any drifting trains from continuing off the road.
     A buffer stop is characterized by its id and its corresponding track.
     """
-
-    applicable_directions: ApplicableDirections = Field(description="Direction of the application of the buffer stop")
 
     def ref(self):
         return BufferStopReference(type="BufferStop", id=self.id)
