@@ -17,7 +17,10 @@ object BAPRtoBAPR : SignalDriver {
             "VL" -> "VL"
             "S" -> "A"
             "C" -> "A"
-            "A" -> throw RuntimeException("invalid aspect: A")
+            // this is only used for distant signals, which should only cascade on non-distant signals,
+            // which never display "Avertissement". Even though it should never happen in a valid infrastructure,
+            // we cannot be sure it won't happen, and still have to do something.
+            "A" -> "VL"
             else -> throw RuntimeException("unknown aspect: $aspect")
         }
     }

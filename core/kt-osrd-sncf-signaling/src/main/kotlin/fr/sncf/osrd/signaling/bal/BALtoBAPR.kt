@@ -17,6 +17,10 @@ object BALtoBAPR : SignalDriver {
             "VL" -> "VL"
             "S" -> "A"
             "C" -> "A"
+            // even though this aspect is unexpected by BAL to BAPR transitions
+            // (as the BAPR signal should not be distant), we still have to handle it
+            // until the infrastructure gets a fix
+            "A" -> "VL"
             else -> throw RuntimeException("unknown aspect: $aspect")
         }
     }
@@ -26,7 +30,6 @@ object BALtoBAPR : SignalDriver {
     ): SigState {
         return stateSchema {
             assert(maView!!.hasNextSignal)
-            assert(!maView.nextSignalSettings.getFlag("distant"))
             when (maView.protectionStatus) {
                 NO_PROTECTED_ZONES -> throw RuntimeException("BAL signals always protect zones")
                 INCOMPATIBLE -> value("aspect", "C")
@@ -41,5 +44,6 @@ object BALtoBAPR : SignalDriver {
     }
 
     override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {
+        // assert(!maView.nextSignalSettings.getFlag("distant"))
     }
 }
