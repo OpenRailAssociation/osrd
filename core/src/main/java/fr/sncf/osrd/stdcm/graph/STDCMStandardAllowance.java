@@ -69,7 +69,7 @@ public class STDCMStandardAllowance {
         var availability = routeAvailability.getAvailability(
                 path,
                 0,
-                path.length(),
+                envelope.getEndPos(),
                 envelope,
                 departureTime
         );
