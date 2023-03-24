@@ -173,8 +173,8 @@ class InputSNCF extends React.Component<InputSNCFProps> {
       );
     }
 
-    return (
-      <div className={flex}>
+    const inputComponent = (
+      <>
         {label && (
           <label
             className={flex ? 'font-weight-medium mb-0 mr-2' : 'font-weight-medium mb-2'}
@@ -209,8 +209,10 @@ class InputSNCF extends React.Component<InputSNCFProps> {
           {this.renderAppendButton(sm)}
           {invalidMsg}
         </div>
-      </div>
+      </>
     );
+
+    return flex ? <div className={flex}>{inputComponent}</div> : inputComponent;
   };
 
   render() {
@@ -219,7 +221,11 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     // Build conditional classes
     const containerMargin = noMargin ? '' : 'mb-4';
 
-    return <div className={containerMargin}>{this.renderBasicInput()}</div>;
+    return containerMargin ? (
+      <div className={containerMargin}>{this.renderBasicInput()}</div>
+    ) : (
+      this.renderBasicInput()
+    );
   }
 }
 

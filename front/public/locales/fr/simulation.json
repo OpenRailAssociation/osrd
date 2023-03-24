@@ -52,5 +52,6 @@
   },
   "trainList": "Liste des trains",
   "speedLimitComposition": "Composition",
-  "waiting": "Chargement en cours…"
+  "waiting": "Chargement en cours…",
+  "map": "Carte"
 }
