@@ -71,6 +71,7 @@ interface RawSignalingInfra : RoutingInfra {
     fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal>
     fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId
     fun getPhysicalSignalName(signal: PhysicalSignalId): String?
+    fun getSignalSightDistance(signal: PhysicalSignalId): Distance
     fun getSignalingSystemId(signal: LogicalSignalId): String
     fun getRawSettings(signal: LogicalSignalId): Map<String, String>
     fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String>

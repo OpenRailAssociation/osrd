@@ -34,6 +34,7 @@ class LogicalSignalDescriptor(
 class PhysicalSignalDescriptor(
     val name: String?,
     val logicalSignals: StaticIdxList<LogicalSignal>,
+    val sightDistance: Distance,
 )
 
 open class ZonePathSpec(
@@ -183,6 +184,10 @@ class RawInfraImpl(
 
     override fun getPhysicalSignalName(signal: PhysicalSignalId): String? {
         return physicalSignalPool[signal].name
+    }
+
+    override fun getSignalSightDistance(signal: PhysicalSignalId): Distance {
+        return physicalSignalPool[signal].sightDistance
     }
 
     override fun getSignalingSystemId(signal: LogicalSignalId): String {
