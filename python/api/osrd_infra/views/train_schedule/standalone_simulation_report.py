@@ -1,12 +1,21 @@
 from typing import Optional
 
 from osrd_schemas.path import PathPayload
+from rest_framework.exceptions import APIException
 
 from osrd_infra.models import PathModel, SimulationOutput, TrainSchedule
+from osrd_infra.utils import call_backend, make_exception_from_error
 from osrd_infra.views.projection import Projection
 
 
+class SignalingSimulationError(APIException):
+    status_code = 500
+    default_detail = "An internal signaling simulation error occurred"
+    default_code = "internal_signaling_simulation_error"
+
+
 def create_simulation_report(
+    infra,
     train_schedule: TrainSchedule,
     projection_path: PathModel,
     *,
@@ -31,7 +40,9 @@ def create_simulation_report(
     projection = Projection(projection_path_payload)
     train_length = train_schedule.rolling_stock.length
 
-    base = convert_simulation_results(
+    base = project_simulation_results(
+        infra,
+        train_schedule,
         simulation_output.base_simulation,
         train_path_payload,
         projection,
@@ -57,7 +68,9 @@ def create_simulation_report(
         return res
 
     # Add margins and eco results if available
-    res["eco"] = convert_simulation_results(
+    res["eco"] = project_simulation_results(
+        infra,
+        train_schedule,
         simulation_output.eco_simulation,
         train_path_payload,
         projection,
@@ -68,7 +81,23 @@ def create_simulation_report(
     return res
 
 
-def convert_simulation_results(
+def evaluate_signals(infra, version, projection_path_payload, signal_sightings, zone_updates):
+    request_payload = {
+        "infra": infra.pk,
+        "expected_version": version,
+        "train_path": projection_path_payload.dict(),
+        "signal_sightings": signal_sightings,
+        "zone_updates": zone_updates,
+    }
+    response = call_backend("/project_signals", json=request_payload)
+    if not response:
+        raise make_exception_from_error(response, SignalingSimulationError, SignalingSimulationError)
+    return response.json()
+
+
+def project_simulation_results(
+    infra,
+    train_schedule,
     simulation_result,
     train_path_payload: PathPayload,
     projection,
@@ -80,11 +109,24 @@ def convert_simulation_results(
     sim_head_positions_results = simulation_result["head_positions"]
     head_positions = project_head_positions(sim_head_positions_results, projection, train_path_payload, departure_time)
     tail_positions = compute_tail_positions(head_positions, train_length)
+    train_end_time = simulation_result["head_positions"][-1]["time"]
 
     route_begin_occupancy, route_end_occupancy = convert_route_occupancies(
         simulation_result["route_occupancies"], projection_path_payload, departure_time
     )
-    route_aspects = project_signal_updates(simulation_result["signal_updates"], projection_path_payload, departure_time)
+    
+    signal_sightings = simulation_result["signal_sightings"]
+    zone_updates = simulation_result["zone_updates"]
+    signaling_sim_res = evaluate_signals(infra, None, projection_path_payload, signal_sightings, zone_updates)
+    signal_updates = signaling_sim_res["signal_updates"]
+    route_aspects = [
+        {
+            **update,
+            "time_start": update["time_start"] + departure_time,
+            "time_end": update.get("time_end", train_end_time) + departure_time,
+        }
+        for update in signal_updates
+    ]
 
     speeds = [{**speed, "time": speed["time"] + departure_time} for speed in simulation_result["speeds"]]
     stops = [{**stop, "time": stop["time"] + departure_time} for stop in simulation_result["stops"]]
@@ -185,19 +227,6 @@ def build_signal_updates(signal_updates, departure_time):
                 "color": update["color"],
                 "blinking": update["blinking"],
                 "aspect_label": update["aspect_label"],
-            }
-        )
-    return results
-
-
-def project_signal_updates(signal_updates, projection_path_payload: PathPayload, departure_time):
-    results = []
-    for update in signal_updates:
-        results.append(
-            {
-                **update,
-                "time_start": update["time_start"] + departure_time,
-                "time_end": update["time_end"] + departure_time,
             }
         )
     return results
