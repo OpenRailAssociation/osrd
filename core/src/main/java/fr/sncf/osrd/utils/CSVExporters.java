@@ -24,8 +24,6 @@ public class CSVExporters {
                         route.pathOffset(),
                         route.element().getInfraRoute().getLength(),
                         t.timeHeadOccupy,
-                        t.timeTailOccupy,
-                        t.timeHeadFree,
                         t.timeTailFree
                 ));
             }
