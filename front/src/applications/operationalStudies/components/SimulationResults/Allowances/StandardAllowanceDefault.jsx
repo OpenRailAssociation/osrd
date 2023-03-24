@@ -214,9 +214,12 @@ export default function StandardAllowanceDefault(props) {
 
   return (
     <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
-      <div className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}>
+      <label
+        htmlFor={`standardAllowanceType-${title}`}
+        className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}
+      >
         {title || t('sandardAllowancesWholePath')}
-      </div>
+      </label>
 
       <div className="col">
         <div className="row">
@@ -247,8 +250,7 @@ export default function StandardAllowanceDefault(props) {
               />
             ) : (
               <InputSNCF
-                id="standardAllowanceType"
-                label={allowanceTypes[0].label}
+                id={`standardAllowanceType-${title}`}
                 onChange={(e) =>
                   handleType({
                     type: allowanceTypes[0].id,
@@ -260,7 +262,6 @@ export default function StandardAllowanceDefault(props) {
                 type="text"
                 sm
                 noMargin
-                isFlex
               />
             )}
           </div>

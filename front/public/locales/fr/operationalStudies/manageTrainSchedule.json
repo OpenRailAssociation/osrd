@@ -60,6 +60,7 @@
   "searchingItinerary": "Recherche de sillon…",
   "simulation": "Simulation",
   "spaceSpeedGraphic": "Graphique Espace-Vitesse",
+  "spaceTimeGraphic": "Graphique Espace-Temps",
   "speedLimitByTag": "Code de composition",
   "stdcmComputation": "Calcul de l'itinéraire",
   "stdcmNoResults": "Aucun sillon trouvé",
