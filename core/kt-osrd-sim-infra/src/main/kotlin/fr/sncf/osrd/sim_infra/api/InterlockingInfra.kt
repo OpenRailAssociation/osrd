@@ -38,7 +38,7 @@ typealias ZoneId = StaticIdx<Zone>
 
 /** A directional detector encodes a direction over a detector */
 @JvmInline
-value class DirDetectorId private constructor(private val data: UInt) : NumIdx {
+value class DirDetectorId constructor(private val data: UInt) : NumIdx {
     public constructor(detector: StaticIdx<Detector>, direction: Direction) : this(
         (detector.index shl 1) or when (direction) {
             Direction.NORMAL -> 0u
