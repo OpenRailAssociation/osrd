@@ -1,18 +1,10 @@
 from typing import Any, Dict, Iterator, List, Optional
 
-import requests
-from django.conf import settings
 from rest_framework.exceptions import APIException
 
 from osrd_infra.models import SimulationOutput, TrackSectionModel, TrainSchedule
 from osrd_infra.models.infra import Infra
-from osrd_infra.utils import make_exception_from_error
-
-
-class ServiceUnavailable(APIException):
-    status_code = 503
-    default_detail = "Service temporarily unavailable"
-    default_code = "service_unavailable"
+from osrd_infra.utils import call_backend, make_exception_from_error
 
 
 class InternalSimulationError(APIException):
@@ -69,15 +61,7 @@ def create_backend_request_payload(train_schedules: Iterator[TrainSchedule]):
 
 
 def run_simulation(request_payload):
-    try:
-        response = requests.post(
-            f"{settings.OSRD_BACKEND_URL}/standalone_simulation",
-            headers={"Authorization": "Bearer " + settings.OSRD_BACKEND_TOKEN},
-            json=request_payload,
-        )
-    except requests.exceptions.ConnectionError as e:
-        raise ServiceUnavailable("Service OSRD backend unavailable") from e
-
+    response = call_backend("/standalone_simulation", json=request_payload)
     if not response:
         raise make_exception_from_error(response, InvalidSimulationInput, InternalSimulationError)
     return response.json()
