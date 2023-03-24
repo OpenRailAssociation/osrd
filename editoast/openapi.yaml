@@ -1522,6 +1522,42 @@ paths:
       responses:
         204:
           description: No content
+    patch:
+      tags:
+        - scenarios
+      summary: update a scenario
+      parameters:
+        - in: path
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the scenario
+          required: true
+        - in: path
+          required: true
+          name: study_id
+          schema:
+            type: integer
+          description: study refered to the scenario
+        - in: path
+          required: true
+          name: scenario_id
+          schema:
+            type: integer
+          description: scenario you want to update
+      requestBody:
+        description: The fields you want to update
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioRequest"
+      responses:
+        200:
+          description: The scenario updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioResult"
 
   /rolling_stock/{id}/livery/{livery_id}/:
     get:
