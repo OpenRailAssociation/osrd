@@ -30,6 +30,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
             import fr.sncf.osrd.fast_collections.growCapacity
             import ${type.qualifiedName}
 
+            /** GENERATED CODE */
             class Mutable${simpleName}ArrayList${paramsDecl} private constructor(
                 private var usedElements: Int,
                 private var buffer: ${bufferType},
@@ -40,6 +41,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
                 override val size get() = usedElements
 
+                /** GENERATED CODE */
                 override fun iterator(): Iterator<$type> {
                     return object : Iterator<$type> {
                         var i = 0
@@ -57,6 +59,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
                 private val capacity: Int get() = buffer.size
 
+                /** GENERATED CODE */
                 private fun ensureBufferSpace(expectedAdditions: Int) {
                     val requiredCapacity = usedElements + expectedAdditions
                     if (requiredCapacity > capacity) {
@@ -69,24 +72,28 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     }
                 }
 
+                /** GENERATED CODE */
                 override fun ensureCapacity(expectedElements: Int) {
                     if (expectedElements > capacity) {
                         ensureBufferSpace(expectedElements - usedElements)
                     }
                 }
 
+                /** GENERATED CODE */
                 override fun add(element: $type): Boolean {
                     ensureBufferSpace(1)
                     buffer[usedElements++] = element
                     return true
                 }
 
+                /** GENERATED CODE */
                 override fun add(elemA: $type, elemB: $type) {
                     ensureBufferSpace(2)
                     buffer[usedElements++] = elemA
                     buffer[usedElements++] = elemB
                 }
 
+                /** GENERATED CODE */
                 override fun add(elemA: $type, elemB: $type, elemC: $type) {
                     ensureBufferSpace(3)
                     buffer[usedElements++] = elemA
@@ -94,6 +101,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     buffer[usedElements++] = elemC
                 }
 
+                /** GENERATED CODE */
                 override fun addAll(elements: Collection<$type>): Boolean {
                     ensureBufferSpace(elements.size)
                     for (item in elements)
@@ -101,12 +109,14 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     return true
                 }
 
+                /** GENERATED CODE */
                 override fun addAll(iterable: Iterable<$type>): Boolean {
                     for (item in iterable)
                         add(item)
                     return true
                 }
 
+                /** GENERATED CODE */
                 override fun insert(index: Int, elem: $type) {
                     ensureBufferSpace(1)
                     for (i in (index + 1 until size + 1).reversed())
@@ -115,11 +125,13 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     usedElements++
                 }
 
+                /** GENERATED CODE */
                 override operator fun get(index: Int): $type {
                     assert(index < usedElements)
                     return buffer[index]
                 }
 
+                /** GENERATED CODE */
                 override fun set(index: Int, element: $type): $type {
                     assert(index < usedElements)
                     val oldValue = buffer[index]
@@ -127,6 +139,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     return oldValue
                 }
 
+                /** GENERATED CODE */
                 override fun remove(index: Int): $type {
                     assert(index < usedElements)
                     val oldValue = buffer[index]
@@ -136,10 +149,21 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     return oldValue
                 }
 
+                /** GENERATED CODE */
                 override fun clone() : Mutable${simpleName}ArrayList${paramsUse} {
                     return Mutable${simpleName}ArrayList${paramsUse}(usedElements, buffer.copyOf())
                 }
 
+                /** GENERATED CODE */
+                override fun reversed() : Mutable${simpleName}ArrayList${paramsUse} {
+                    val new = Mutable${simpleName}ArrayList${paramsUse}()
+                    for (i in 0 until usedElements) {
+                        new.add(buffer[usedElements - i - 1])
+                    }
+                    return new
+                }
+
+                /** GENERATED CODE */
                 private fun unsafeCompareTo(other: ${simpleName}List${paramsStar}): Int {
                     val sizeCmp = size.compareTo(other.size)
                     if (sizeCmp != 0)
@@ -152,10 +176,12 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     return 0
                 }
 
+                /** GENERATED CODE */
                 override fun compareTo(other: $itemListType): Int {
                     return unsafeCompareTo(other)
                 }
 
+                /** GENERATED CODE */
                 override fun hashCode(): Int {
                     var h = 1
                     for (i in 0 until size) {
@@ -164,6 +190,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     return h
                 }
 
+                /** GENERATED CODE */
                 override fun equals(other: Any?): Boolean {
                     if (other !is ${simpleName}List${type.paramsStar})
                         return false
@@ -171,16 +198,19 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 }
             }
 
+            /** GENERATED CODE */
             fun ${paramsDecl} mutable${simpleName}ArrayListOf(): Mutable${simpleName}ArrayList${paramsUse} {
                 return Mutable${simpleName}ArrayList${paramsUse}()
             }
-            
+
+            /** GENERATED CODE */
             fun ${paramsDecl} mutable${simpleName}ArrayListOf(a: $type): Mutable${simpleName}ArrayList${paramsUse} {
                 val res = Mutable${simpleName}ArrayList${paramsUse}(1)
                 res.add(a)
                 return res
             }
 
+            /** GENERATED CODE */
             fun ${paramsDecl} mutable${simpleName}ArrayListOf(a: $type, b: $type): Mutable${simpleName}ArrayList${paramsUse} {
                 val res = Mutable${simpleName}ArrayList${paramsUse}(2)
                 res.add(a)
@@ -188,6 +218,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 return res
             }
 
+            /** GENERATED CODE */
             fun ${paramsDecl} mutable${simpleName}ArrayListOf(a: $type, b: $type, c: $type): Mutable${simpleName}ArrayList${paramsUse} {
                 val res = Mutable${simpleName}ArrayList${paramsUse}(3)
                 res.add(a)
