@@ -342,6 +342,16 @@ const injectedRtkApi = api.injectEndpoints({
         method: 'DELETE',
       }),
     }),
+    patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+      PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+      PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        method: 'PATCH',
+        body: queryArg.scenarioRequest,
+      }),
+    }),
     getRollingStockByIdLiveryAndLiveryId: build.query<
       GetRollingStockByIdLiveryAndLiveryIdApiResponse,
       GetRollingStockByIdLiveryAndLiveryIdApiArg
@@ -815,6 +825,18 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg 
   studyId: number;
   /** scenario id you want to delete */
   scenarioId: number;
+};
+export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
+  /** status 200 The scenario updated */ ScenarioResult;
+export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
+  /** project id refered to the scenario */
+  projectId: number;
+  /** study refered to the scenario */
+  studyId: number;
+  /** scenario you want to update */
+  scenarioId: number;
+  /** The fields you want to update */
+  scenarioRequest: ScenarioRequest;
 };
 export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
 export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {

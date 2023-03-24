@@ -1238,6 +1238,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
     patch:
+      deprecated: true
       tags:
         - scenarios
       summary: update a scenario

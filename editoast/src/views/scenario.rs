@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::models::{
     Create, Delete, Project, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study,
-    Timetable,
+    Timetable, Update,
 };
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::ProjectError;
@@ -10,6 +10,7 @@ use crate::{models::Scenario, DbPool};
 use actix_web::{delete, HttpResponse};
 
 use actix_web::get;
+use actix_web::patch;
 use actix_web::web::Query;
 use actix_web::{
     dev::HttpServiceFactory,
@@ -25,8 +26,8 @@ use thiserror::Error;
 /// Returns `/projects/{project}/studies/{study}/scenarios` routes
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/scenarios")
-        .service((create, delete, list))
-        .service(web::scope("/{scenario}").service(get))
+        .service((create, list))
+        .service(web::scope("/{scenario}").service((get, delete, patch)))
 }
 
 #[derive(Debug, Error, EditoastError)]
@@ -34,6 +35,7 @@ pub fn routes() -> impl HttpServiceFactory {
 #[allow(clippy::enum_variant_names)]
 enum ScenarioError {
     /// Couldn't found the scenario with the given scenario ID
+
     #[error("Scenario '{scenario_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { scenario_id: i64 },
@@ -123,7 +125,7 @@ async fn create(
 }
 
 /// Delete a scenario
-#[delete("/{scenario_id}")]
+#[delete("")]
 async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
     let (project_id, study_id, scenario_id) = path.into_inner();
 
@@ -146,6 +148,60 @@ async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<Ht
     study.expect("Study should exist");
 
     Ok(HttpResponse::NoContent().finish())
+}
+
+/// This structure is used by the patch endpoint to patch a study
+#[derive(Serialize, Deserialize, Derivative)]
+#[derivative(Default)]
+struct ScenarioPatchForm {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub electrical_profile_set: Option<Option<i64>>,
+    pub tags: Option<Vec<String>>,
+}
+
+impl From<ScenarioPatchForm> for Scenario {
+    fn from(form: ScenarioPatchForm) -> Self {
+        Scenario {
+            name: form.name,
+            description: form.description,
+            electrical_profile_set: form.electrical_profile_set,
+            tags: form.tags,
+            ..Default::default()
+        }
+    }
+}
+
+#[patch("")]
+async fn patch(
+    data: Json<ScenarioPatchForm>,
+    path: Path<(i64, i64, i64)>,
+    db_pool: Data<DbPool>,
+) -> Result<Json<ScenarioWithDetails>> {
+    let (project_id, study_id, scenario_id) = path.into_inner();
+
+    // Check if project and study exist
+    let (project, study) = check_project_study(db_pool.clone(), project_id, study_id)
+        .await
+        .unwrap();
+
+    // Update a scenario
+    let scenario: Scenario = data.into_inner().into();
+    let scenario = match scenario.update(db_pool.clone(), scenario_id).await? {
+        Some(scenario) => scenario,
+        None => return Err(ScenarioError::NotFound { scenario_id }.into()),
+    };
+
+    // Update study last_modification field
+    let study = study.update_last_modified(db_pool.clone()).await?;
+    study.expect("Study should exist");
+
+    // Update project last_modification field
+    let project = project.update_last_modified(db_pool.clone()).await?;
+    project.expect("Project should exist");
+
+    let scenarios_with_details = scenario.with_details(db_pool).await?;
+    Ok(Json(scenarios_with_details))
 }
 
 #[get("")]
@@ -285,6 +341,24 @@ mod test {
         )
         .await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let response = call_service(&app, delete_project_request(project_id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn scenario_patch() {
+        let app = create_test_service().await;
+        let (request, project_id) = create_scenario_request().await;
+        let scenario: Scenario = call_and_read_body_json(&app, request).await;
+        let study_id = scenario.study.unwrap();
+        let scenario_id = scenario.id.unwrap();
+        let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
+        let req = TestRequest::patch()
+            .uri(url.as_str())
+            .set_json(json!({"name": "rename_test"}))
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
         let response = call_service(&app, delete_project_request(project_id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
