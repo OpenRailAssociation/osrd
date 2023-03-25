@@ -36,6 +36,7 @@ export default function Scenario() {
   const [project, setProject] = useState();
   const [study, setStudy] = useState();
   const [scenario, setScenario] = useState();
+  const [trainScheduleIDToModify, setTrainScheduleIDToModify] = useState();
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
@@ -173,19 +174,24 @@ export default function Scenario() {
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   />
                 )}
-                <Timetable setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement} />
+                <Timetable
+                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                  setTrainScheduleIDToModify={setTrainScheduleIDToModify}
+                />
               </div>
             </div>
             <div className="col-lg-8">
-              {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
+              {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
+                displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
                   <ManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    trainScheduleIDToModify={trainScheduleIDToModify}
                   />
                 </div>
               )}
-              {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.opendata && (
+              {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
                 <div className="scenario-managetrainschedule">
                   <ImportTrainSchedule />
                 </div>

@@ -137,6 +137,16 @@ export interface Train {
   isStdcm?: boolean;
   speed_limit_tags?: string;
 }
+export type DepartureArrivalTimes = {
+  id: number;
+  name: string;
+  departure: number;
+  arrival: number;
+  labels: Array<1>;
+  path: number;
+  speed_limit_tags: string;
+  isFiltered?: boolean;
+};
 
 export interface SimulationSnapshot {
   trains: Train[];
@@ -201,7 +211,7 @@ export interface OsrdSimulationState {
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];
-  departureArrivalTimes: Array<any>;
+  departureArrivalTimes: Array<DepartureArrivalTimes>;
   simulation: {
     past: SimulationHistory;
     present: SimulationSnapshot;
