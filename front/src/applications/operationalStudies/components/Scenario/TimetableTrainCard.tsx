@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdContentCopy } from 'react-icons/md';
 import { sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import cx from 'classnames';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 
@@ -17,6 +20,8 @@ type Props = {
   deleteTrain: (train: ScheduledTrain) => void;
   selectPathProjection: (train: ScheduledTrain) => void;
   duplicateTrain: (train: ScheduledTrain) => void;
+  setDisplayTrainScheduleManagement: (arg0: string) => void;
+  setTrainScheduleIDToModify: (arg0: number | undefined) => void;
 };
 
 export default function TimetableTrainCard({
@@ -28,8 +33,44 @@ export default function TimetableTrainCard({
   deleteTrain,
   selectPathProjection,
   duplicateTrain,
+  setDisplayTrainScheduleManagement,
+  setTrainScheduleIDToModify,
 }: Props) {
+  const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getRollingStock, { data: rollingStock }] =
+    osrdMiddlewareApi.endpoints.getLightRollingStockById.useLazyQuery({});
+  const [getRollingStockLivery, { data: rollingStockLivery }] =
+    osrdMiddlewareApi.endpoints.getRollingStockByIdLivery.useLazyQuery({});
   const { t } = useTranslation(['operationalStudies/scenario']);
+
+  const editTrainSchedule = () => {
+    setTrainScheduleIDToModify(train.id);
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+  };
+
+  useEffect(() => {
+    if (train.id) {
+      getTrainSchedule({ id: train.id })
+        .unwrap()
+        .then((trainSchedule) => {
+          if (trainSchedule.rolling_stock)
+            getRollingStock({ id: trainSchedule.rolling_stock })
+              .unwrap()
+              .then((rollingStockData) => {
+                if (
+                  rollingStockData.id &&
+                  rollingStockData.liveries &&
+                  rollingStockData.liveries[0].id
+                ) {
+                  getRollingStockLivery({
+                    id: rollingStockData.id,
+                    liveryId: rollingStockData.liveries[0].id,
+                  });
+                }
+              });
+        });
+    }
+  }, [train.id]);
 
   return (
     <div className={`scenario-timetable-train ${isSelected ? 'selected' : ''}`}>
@@ -41,13 +82,20 @@ export default function TimetableTrainCard({
       >
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
-            <div className="scenario-timetable-train-idx">{idx + 1}</div>
+            <div
+              className={cx('scenario-timetable-train-idx', projectionPathIsUsed && 'projected')}
+            >
+              {idx + 1}
+            </div>
+            {train.name}
             {projectionPathIsUsed && (
-              <span className="mr-1">
+              <span className="mx-1">
                 <GiPathDistance />
               </span>
             )}
-            {train.name}
+            {rollingStockLivery && (
+              <img src={URL.createObjectURL(rollingStockLivery)} alt="rollingstock livery" />
+            )}
           </div>
           <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
           <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
@@ -85,9 +133,10 @@ export default function TimetableTrainCard({
           <MdContentCopy />
         </button>
         <button
-          className="scenario-timetable-train-buttons-update d-none"
+          className="scenario-timetable-train-buttons-update"
           type="button"
           title={t('timetable.update')}
+          onClick={editTrainSchedule}
         >
           <FaPencilAlt />
         </button>

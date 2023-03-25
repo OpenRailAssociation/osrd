@@ -67,8 +67,8 @@ export const DUMMYCONST = null;
 export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   none: 'NONE',
   add: 'ADD',
-  update: 'UPDATE',
-  opendata: 'OPENDATA',
+  edit: 'EDIT',
+  import: 'IMPORT',
 });
 
 interface MODES_Types {

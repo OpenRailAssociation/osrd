@@ -1,3 +1,4 @@
+import React from 'react';
 import cx from 'classnames';
 import { patch } from 'common/requests';
 import { useTranslation } from 'react-i18next';

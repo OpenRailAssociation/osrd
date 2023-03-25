@@ -195,16 +195,21 @@
                   padding: 0.25rem;
                   min-width: 1.5rem;
                   text-align: center;
+                  &.projected {
+                    color: var(--white);
+                    background-color: var(--cyan);
+                  }
                 }
                 font-weight: bold;
-                font-size: 1.25rem;
-                width: 50%;
+                font-size: 1rem;
+                width: 60%;
               }
               .scenario-timetable-train-departure,
               .scenario-timetable-train-arrival {
-                width: 25%;
+                width: 20%;
                 text-align: right;
                 font-weight: 500;
+                font-size: 0.8rem;
               }
             }
             &.with-details {

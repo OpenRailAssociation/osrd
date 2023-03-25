@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
@@ -13,19 +13,33 @@ import submitConf from 'applications/operationalStudies/components/ManageTrainSc
 import { FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 
 type Props = {
   setDisplayTrainScheduleManagement: (arg0: string) => void;
+  trainScheduleIDToModify?: number;
 };
 
-export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
+export default function ManageTrainSchedule({
+  setDisplayTrainScheduleManagement,
+  trainScheduleIDToModify,
+}: Props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
+  const [getTrainScheduleById, { data: trainScheduleToModify }] =
+    osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+
+  useEffect(() => {
+    if (trainScheduleIDToModify) {
+      getTrainScheduleById({ id: trainScheduleIDToModify });
+    }
+  }, [trainScheduleIDToModify, getTrainScheduleById]);
 
   return (
     <>
+      {trainScheduleToModify && <h1>Coucou {trainScheduleToModify.train_name}</h1>}
       <div className="manage-train-schedule-title">
         1.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.chooseRollingStock')}
       </div>
@@ -54,7 +68,7 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
       </div>
       <div className="manage-train-schedule-title">3.&nbsp;{t('indications.configValidate')}</div>
       <TrainLabels />
-      <TrainSettings />
+      {!trainScheduleIDToModify && <TrainSettings />}
       <div className="osrd-config-item" data-testid="add-train-schedules">
         <div className="d-flex justify-content-end">
           <button
