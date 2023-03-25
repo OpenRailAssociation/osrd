@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaDownload, FaPlus } from 'react-icons/fa';
-import PropTypes from 'prop-types';
 
 import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -18,6 +17,8 @@ import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
+import { DepartureArrivalTimes } from 'reducers/osrdsimulation/types';
+import { RootState } from 'reducers';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 
@@ -34,25 +35,37 @@ import TimetableTrainCard from './TimetableTrainCard';
   return durationList;
 } */
 
-export default function Timetable(props) {
-  const { setDisplayTrainScheduleManagement } = props;
-  const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
-  const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
-  const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
+type Props = {
+  setDisplayTrainScheduleManagement: (mode: string) => void;
+  setTrainScheduleIDToModify: (id?: number) => void;
+};
+
+export default function Timetable({
+  setDisplayTrainScheduleManagement,
+  setTrainScheduleIDToModify,
+}: Props) {
+  const selectedProjection = useSelector(
+    (state: RootState) => state.osrdsimulation.selectedProjection
+  );
+  const departureArrivalTimes = useSelector(
+    (state: RootState) => state.osrdsimulation.departureArrivalTimes
+  );
+  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const timetableID = useSelector(getTimetableID);
   const [filter, setFilter] = useState('');
-  const [trainsList, setTrainsList] = useState();
+  const [trainsList, setTrainsList] = useState<DepartureArrivalTimes[]>();
+
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/scenario']);
 
   const debouncedTerm = useDebounce(filter, 500);
 
-  const changeSelectedTrain = (idx) => {
+  const changeSelectedTrain = (idx: number) => {
     dispatch(updateSelectedTrain(idx));
     dispatch(updateMustRedraw(true));
   };
 
-  const deleteTrain = async (train) => {
+  const deleteTrain = async (train: DepartureArrivalTimes) => {
     try {
       await deleteRequest(`${trainscheduleURI}${train.id}/`);
       getTimetable(timetableID);
@@ -64,16 +77,18 @@ export default function Timetable(props) {
       );
     } catch (e) {
       console.error(e);
-      dispatch(
-        setFailure({
-          name: e.name,
-          message: e.message,
-        })
-      );
+      if (e instanceof Error) {
+        dispatch(
+          setFailure({
+            name: e.name,
+            message: e.message,
+          })
+        );
+      }
     }
   };
 
-  const duplicateTrain = async (train) => {
+  const duplicateTrain = async (train: DepartureArrivalTimes) => {
     // Static for now, will be dynamic when UI will be ready
     const trainName = `${train.name} (${t('timetable.copy')})`;
     const trainDelta = 5;
@@ -82,10 +97,11 @@ export default function Timetable(props) {
     //
 
     const trainDetail = await get(`${trainscheduleURI}${train.id}/`);
+    const paramsSchedules: DepartureArrivalTimes[] = [];
     const params = {
       timetable: trainDetail.timetable,
       path: trainDetail.path,
-      schedules: [],
+      schedules: paramsSchedules,
     };
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
@@ -93,13 +109,9 @@ export default function Timetable(props) {
       const newOriginTime = train.departure + newTrainDelta;
       const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
       params.schedules.push({
+        ...trainDetail,
         departure_time: newOriginTime,
-        initial_speed: trainDetail.initial_speed,
-        labels: trainDetail.labels,
-        rolling_stock: trainDetail.rolling_stock,
         train_name: newTrainName,
-        allowances: trainDetail.allowances,
-        speed_limit_tags: trainDetail.speed_limit_tags,
       });
       actualTrainCount += trainStep;
     }
@@ -114,16 +126,18 @@ export default function Timetable(props) {
       );
     } catch (e) {
       console.error(e);
-      dispatch(
-        setFailure({
-          name: e.name,
-          message: e.message,
-        })
-      );
+      if (e instanceof Error) {
+        dispatch(
+          setFailure({
+            name: e.name,
+            message: e.message,
+          })
+        );
+      }
     }
   };
 
-  const selectPathProjection = async (train) => {
+  const selectPathProjection = async (train: DepartureArrivalTimes) => {
     if (train) {
       dispatch(
         updateSelectedProjection({
@@ -137,7 +151,7 @@ export default function Timetable(props) {
   useEffect(() => {
     if (debouncedTerm !== '' && departureArrivalTimes) {
       setTrainsList(
-        departureArrivalTimes.map((train) => ({
+        departureArrivalTimes.map((train: DepartureArrivalTimes) => ({
           ...train,
           isFiltered: !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()),
         }))
@@ -155,7 +169,7 @@ export default function Timetable(props) {
           className="btn btn-secondary btn-sm"
           type="button"
           data-testid="scenarios-import-train-schedule-button"
-          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.opendata)}
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.import)}
         >
           <span className="mr-2">
             <FaDownload />
@@ -166,7 +180,10 @@ export default function Timetable(props) {
           className="btn btn-primary btn-sm"
           type="button"
           data-testid="scenarios-add-train-schedule-button"
-          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
+          onClick={() => {
+            setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
+            setTrainScheduleIDToModify(undefined);
+          }}
         >
           <span className="mr-2">
             <FaPlus />
@@ -177,7 +194,9 @@ export default function Timetable(props) {
       <div className="scenario-timetable-toolbar">
         <div className="small">
           {t('trainCount', {
-            count: trainsList ? trainsList.filter((train) => !train.isFiltered).length : 0,
+            count: trainsList
+              ? trainsList.filter((train: DepartureArrivalTimes) => !train.isFiltered).length
+              : 0,
           })}
         </div>
         <div className="flex-grow-1">
@@ -199,7 +218,7 @@ export default function Timetable(props) {
       <div className="scenario-timetable-trains">
         {trainsList &&
           selectedProjection &&
-          trainsList.map((train, idx) =>
+          trainsList.map((train: DepartureArrivalTimes, idx: number) =>
             !train.isFiltered ? (
               <TimetableTrainCard
                 train={train}
@@ -211,6 +230,8 @@ export default function Timetable(props) {
                 deleteTrain={deleteTrain}
                 duplicateTrain={duplicateTrain}
                 selectPathProjection={selectPathProjection}
+                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                setTrainScheduleIDToModify={setTrainScheduleIDToModify}
               />
             ) : null
           )}
@@ -218,7 +239,3 @@ export default function Timetable(props) {
     </div>
   );
 }
-
-Timetable.propTypes = {
-  setDisplayTrainScheduleManagement: PropTypes.func.isRequired,
-};
