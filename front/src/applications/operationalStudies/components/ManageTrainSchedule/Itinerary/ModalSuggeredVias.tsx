@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, ComponentType } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
@@ -15,27 +15,51 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
 import { ArrayElement } from 'utils/types';
 import { Path } from 'common/api/osrdMiddlewareApi';
+import { Dispatch } from 'redux';
+import { OsrdConfState, PointOnMap } from 'applications/operationalStudies/consts';
+import { noop } from 'lodash';
 
-type Props = {
+type ModalSugerredViasProps = {
   inverseOD: () => void;
   removeAllVias: () => void;
   pathfindingInProgress?: boolean;
+  dispatch: Dispatch;
+  vias: PointOnMap[];
+  mapTrackSources: 'geographic' | 'schematic';
+  suggeredVias: OsrdConfState['suggeredVias'];
 };
+
+export function withOSRDData<T>(Component: ComponentType<T>) {
+  return (hocProps: T) => {
+    const dispatch = useDispatch();
+    const suggeredVias = useSelector(getSuggeredVias);
+    const vias = useSelector(getVias);
+    const mapTrackSources = useSelector(getMapTrackSources);
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        suggeredVias={suggeredVias}
+        vias={vias}
+        mapTrackSources={mapTrackSources}
+      />
+    );
+  };
+}
 
 function LoaderPathfindingInProgress() {
   return <Spinner className="loaderPathfindingInProgress" />;
 }
 
-export default function ModalSugerredVias({
+export function ModalSugerredVias({
   inverseOD,
   removeAllVias,
   pathfindingInProgress,
-}: Props) {
-  const dispatch = useDispatch();
-  const suggeredVias = useSelector(getSuggeredVias);
-  const vias = useSelector(getVias);
-  const mapTrackSources = useSelector(getMapTrackSources);
-
+  dispatch = noop,
+  vias,
+  suggeredVias,
+  mapTrackSources,
+}: ModalSugerredViasProps) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias ? suggeredVias.length - 1 : 0;
   const selectedViasTracks = vias.map((via) => via.position);
@@ -137,3 +161,5 @@ export default function ModalSugerredVias({
     </>
   );
 }
+
+export default withOSRDData(ModalSugerredVias);
