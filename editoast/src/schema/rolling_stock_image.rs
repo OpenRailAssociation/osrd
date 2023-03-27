@@ -142,7 +142,7 @@ impl RollingStockCompoundImage {
 #[cfg(test)]
 mod tests {
     use crate::client::PostgresConfig;
-    use crate::models::RollingStock;
+    use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
@@ -170,10 +170,12 @@ mod tests {
             .await
             .unwrap();
 
-        let mut rolling_stock: RollingStock =
+        let mut rolling_stock: RollingStockModel =
             serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
-        rolling_stock.name = String::from("create_get_delete_rolling_stock_compound_image");
+        rolling_stock.name = Some(String::from(
+            "create_get_delete_rolling_stock_compound_image",
+        ));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 
@@ -204,7 +206,7 @@ mod tests {
             .is_ok());
 
         // clean
-        assert!(RollingStock::delete(db_pool.clone(), rolling_stock_id)
+        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
             .await
             .is_ok());
     }

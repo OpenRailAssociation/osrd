@@ -1,6 +1,5 @@
 use crate::diesel::{QueryDsl, RunQueryDsl};
 use crate::error::{InternalError, Result};
-use crate::models::RollingStock;
 use crate::tables::osrd_infra_rollingstock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -8,6 +7,7 @@ use actix_web::web::{block, Data};
 use diesel::expression_methods::ExpressionMethods;
 use diesel::result::Error as DieselError;
 use diesel::{sql_query, SelectableHelper};
+use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -15,6 +15,27 @@ use thiserror::Error;
 
 use super::rolling_stock_livery::RollingStockLiveryMetadata;
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RollingStock {
+    pub id: i64,
+    pub name: String,
+    pub version: String,
+    pub effort_curves: JsonValue,
+    pub base_power_class: String,
+    pub length: f64,
+    pub max_speed: f64,
+    pub startup_time: f64,
+    pub startup_acceleration: f64,
+    pub comfort_acceleration: f64,
+    pub gamma: DieselJson<Gamma>,
+    pub inertia_coefficient: f64,
+    pub features: Vec<String>,
+    pub mass: f64,
+    pub rolling_resistance: DieselJson<RollingResistance>,
+    pub loading_gauge: String,
+    pub metadata: DieselJson<RollingStockMetadata>,
+    pub power_restrictions: Option<JsonValue>,
+}
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Gamma {
@@ -153,7 +174,7 @@ pub enum RollingStockError {
 mod tests {
     use super::LightRollingStock;
     use crate::client::PostgresConfig;
-    use crate::models::RollingStock;
+    use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use actix_web::test as actix_test;
     use actix_web::web::Data;
@@ -165,10 +186,10 @@ mod tests {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
-        let mut rolling_stock: RollingStock =
+        let mut rolling_stock: RollingStockModel =
             serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
-        rolling_stock.name = String::from("very_fast_rolling_stock");
+        rolling_stock.name = Some(String::from("very_fast_rolling_stock"));
 
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
@@ -177,7 +198,7 @@ mod tests {
             .await
             .unwrap();
 
-        assert!(RollingStock::delete(db_pool.clone(), rolling_stock_id)
+        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
             .await
             .is_ok());
     }

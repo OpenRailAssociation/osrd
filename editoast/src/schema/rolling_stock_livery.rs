@@ -19,7 +19,7 @@ use super::rolling_stock_image::RollingStockCompoundImage;
 ///
 /// /!\ Its compound image is not deleted by cascade if the livery is removed.
 #[derive(Debug, Identifiable, Queryable, Serialize)]
-#[diesel(belongs_to(RollingStock, foreign_key = rolling_stock_id))]
+#[diesel(belongs_to(RollingStockModel, foreign_key = rolling_stock_id))]
 #[diesel(table_name = osrd_infra_rollingstocklivery)]
 pub struct RollingStockLivery {
     pub id: i64,
@@ -126,7 +126,7 @@ impl RollingStockLivery {
 mod tests {
     use super::{RollingStockLivery, RollingStockLiveryForm};
     use crate::client::PostgresConfig;
-    use crate::models::RollingStock;
+    use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use actix_http::StatusCode;
@@ -153,10 +153,10 @@ mod tests {
             .await
             .unwrap();
 
-        let mut rolling_stock: RollingStock =
+        let mut rolling_stock: RollingStockModel =
             serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
-        rolling_stock.name = String::from("create_get_delete_rolling_stock_livery");
+        rolling_stock.name = Some(String::from("create_get_delete_rolling_stock_livery"));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 
@@ -196,7 +196,7 @@ mod tests {
             StatusCode::NOT_FOUND
         );
 
-        assert!(RollingStock::delete(db_pool.clone(), rolling_stock_id)
+        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
             .await
             .is_ok());
     }

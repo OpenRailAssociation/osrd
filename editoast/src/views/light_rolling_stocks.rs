@@ -36,7 +36,7 @@ async fn get(
 #[cfg(test)]
 mod tests {
     use crate::client::PostgresConfig;
-    use crate::models::RollingStock;
+    use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
@@ -60,10 +60,10 @@ mod tests {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
-        let mut rolling_stock: RollingStock =
+        let mut rolling_stock: RollingStockModel =
             serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
-        rolling_stock.name = String::from("get_light_rolling_stock_test");
+        rolling_stock.name = Some(String::from("get_light_rolling_stock_test"));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 
@@ -73,7 +73,7 @@ mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        RollingStock::delete(db_pool.clone(), rolling_stock_id)
+        RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
             .await
             .unwrap();
 
