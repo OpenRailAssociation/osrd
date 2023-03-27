@@ -68,7 +68,7 @@ impl StudyCreateForm {
     pub fn into_study(self, project_id: i64) -> Study {
         Study {
             name: Some(self.name),
-            project_id: Some(project_id),
+            project: Some(project_id),
             description: Some(self.description),
             budget: Some(self.budget),
             tags: Some(self.tags),
@@ -278,12 +278,12 @@ pub mod test {
         assert_eq!(study.name.unwrap(), "study_test");
         let response = call_service(
             &app,
-            delete_study_request(study.project_id.unwrap(), study.id.unwrap()),
+            delete_study_request(study.project.unwrap(), study.id.unwrap()),
         )
         .await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(&app, delete_project_request(study.project_id.unwrap())).await;
+        let response = call_service(&app, delete_project_request(study.project.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
@@ -293,7 +293,7 @@ pub mod test {
         let response = call_service(&app, create_study_request().await).await;
         assert_eq!(response.status(), StatusCode::OK);
         let study: Study = read_body_json(response).await;
-        let project_id = study.project_id.unwrap();
+        let project_id = study.project.unwrap();
         let req = TestRequest::get()
             .uri(format!("/projects/{project_id}/studies").as_str())
             .to_request();
@@ -305,7 +305,7 @@ pub mod test {
     async fn study_get() {
         let app = create_test_service().await;
         let study: Study = call_and_read_body_json(&app, create_study_request().await).await;
-        let project_id = study.project_id.unwrap();
+        let project_id = study.project.unwrap();
         let study_id = study.id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}/");
         let req = TestRequest::get().uri(url.as_str()).to_request();
@@ -323,7 +323,7 @@ pub mod test {
     async fn study_patch() {
         let app = create_test_service().await;
         let study: Study = call_and_read_body_json(&app, create_study_request().await).await;
-        let project_id = study.project_id.unwrap();
+        let project_id = study.project.unwrap();
         let study_id = study.id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}");
         let req = TestRequest::patch()
