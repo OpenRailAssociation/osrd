@@ -1,5 +1,4 @@
 import { noop } from 'lodash';
-import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
@@ -24,8 +23,10 @@ import prepareData from './prepareData';
 
 const CHART_ID = 'SpeedSpaceChart';
 const CHART_MIN_HEIGHT = 250;
+
 /**
  * A chart to see the evolution of speed of one train on its journey
+ *
  * Features:
  * - One train only (current selected)
  * - Vertical line to the current position
@@ -34,27 +35,23 @@ const CHART_MIN_HEIGHT = 250;
  */
 export default function SpeedSpaceChart(props) {
   const {
-    chartXGEV,
     dispatchUpdateMustRedraw,
     dispatchUpdateTimePositionValues,
-    initialHeightOfSpeedSpaceChart,
+    initialHeight,
     positionValues,
     trainSimulation,
     simulationIsPlaying,
     speedSpaceSettings,
     onSetSettings,
-    onSetBaseHeightOfSpeedSpaceChart,
+    onSetChartBaseHeight,
     timePosition,
   } = props;
 
-  const [baseHeightOfSpeedSpaceChart, setBaseHeightOfSpeedSpaceChart] = useState(
-    initialHeightOfSpeedSpaceChart
-  );
   const [chart, setChart] = useState(undefined);
+  const [chartBaseHeight, setChartBaseHeight] = useState(initialHeight);
+  const [chartHeight, setChartHeight] = useState(initialHeight);
+  const [hasJustRotated, setHasJustRotated] = useState(false);
   const [isActive, setIsActive] = useState(false);
-  const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(
-    initialHeightOfSpeedSpaceChart
-  );
   const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
   const [resetChart, setResetChart] = useState(false);
   const [rotate, setRotate] = useState(false);
@@ -67,61 +64,78 @@ export default function SpeedSpaceChart(props) {
     onSetSettings(settings);
   };
 
-  // draw the train
+  /**
+   * DRAW AND REDRAW TRAIN
+   */
+
   const createChartAndTrain = () => {
     const localChart = createChart(
       CHART_ID,
       chart,
       resetChart,
       trainSimulation,
-      rotate,
-      initialHeightOfSpeedSpaceChart,
-      ref,
-      setResetChart
+      hasJustRotated,
+      initialHeight,
+      ref
     );
     setChart(localChart);
     drawTrain(trainSimulation, rotate, localSettings, localChart);
+    setHasJustRotated(false);
+    setResetChart(false);
   };
 
-  // rotation Handle (button on right bottom)
   const toggleRotation = () => {
-    // TODO: this should be moved in createChart
-    d3.select(`#${CHART_ID}`).remove();
-    setChart({
-      ...chart,
-      x: chart.y,
-      y: chart.x,
-      originalScaleX: chart.originalScaleY,
-      originalScaleY: chart.originalScaleX,
-    });
     setRotate(!rotate);
+    setHasJustRotated(true);
   };
 
-  const debounceResize = () => {
-    let debounceTimeoutId;
-    clearTimeout(debounceTimeoutId);
-    debounceTimeoutId = setTimeout(() => {
-      createChartAndTrain();
-    }, 15);
-  };
-
-  // in case of initial ref creation of rotate, recreate the chart
+  /**
+   * draw the first chart
+   */
   useEffect(() => {
-    setChart(
-      createChart(
-        CHART_ID,
-        chart,
-        resetChart,
-        trainSimulation,
-        rotate,
-        initialHeightOfSpeedSpaceChart,
-        ref,
-        setResetChart
-      )
-    );
-  }, [ref, rotate]);
+    createChartAndTrain();
+  }, []);
 
-  // plug event handlers once the chart is ready or recreated
+  /**
+   * reset the chart if the trainSimulation has changed
+   */
+  useEffect(() => {
+    setResetChart(true);
+  }, [trainSimulation]);
+
+  /**
+   * redraw the train if:
+   * - the train must be rotated
+   * - the local settings have been changed
+   * - the chart has been resized (vertically only)
+   */
+  useEffect(() => {
+    createChartAndTrain();
+  }, [rotate, localSettings, chartHeight]);
+
+  /**
+   * reset chart (only if resetChart is true)
+   */
+  useEffect(() => {
+    if (resetChart) {
+      if (rotate) {
+        // cancel rotation and redraw the train
+        toggleRotation();
+      } else {
+        createChartAndTrain();
+      }
+    }
+  }, [resetChart]);
+
+  /**
+   * CHART INTERACTIVITY
+   */
+
+  /**
+   * plug event handlers once the chart is ready or recreated
+   * - allow zooming (ctrl + third mouse button)
+   * - on mouse move: update pointers and vertical/horizontal guidelines
+   */
   useEffect(() => {
     isolatedEnableInteractivity(
       chart,
@@ -139,17 +153,12 @@ export default function SpeedSpaceChart(props) {
     );
   }, [chart]);
 
-  // reset the chart if the trainSimulation has changed
-  useEffect(() => {
-    setResetChart(true);
-  }, [trainSimulation]);
-
-  // redraw the train if necessary
-  useEffect(() => {
-    createChartAndTrain();
-  }, [rotate, localSettings, heightOfSpeedSpaceChart]);
-
-  // draw or redraw the position line indictator when usefull
+  /**
+   * coordinate guidelines and pointers with other graphs
+   *
+   * when timePosition or positionValues are updated by moving the mouse on an other graph,
+   * the guidelines and pointers are updated on the SpeedSpaceChart too
+   */
   useEffect(() => {
     traceVerticalLine(
       chart,
@@ -163,36 +172,22 @@ export default function SpeedSpaceChart(props) {
     );
   }, [chart, positionValues, timePosition]);
 
+  /**
+   * redraw the graph when resized horizontally (window resized)
+   */
   useEffect(() => {
-    if (chartXGEV) {
-      setChart({ ...chart, x: chartXGEV });
-    }
-  }, [chartXGEV]);
-
-  // set the window resize event manager
-  useEffect(() => {
+    const debounceResize = () => {
+      let debounceTimeoutId;
+      clearTimeout(debounceTimeoutId);
+      debounceTimeoutId = setTimeout(() => {
+        createChartAndTrain();
+      }, 15);
+    };
     window.addEventListener('resize', debounceResize);
     return () => {
       window.removeEventListener('resize', debounceResize);
     };
   }, [chart, trainSimulation, localSettings, resetChart, rotate]);
-
-  // reset chart
-  useEffect(() => {
-    if (resetChart) {
-      if (rotate) {
-        // cancel rotation and redraw the train
-        toggleRotation();
-      } else {
-        createChartAndTrain();
-      }
-    }
-  }, [resetChart]);
-
-  // draw the first chart
-  useEffect(() => {
-    createChartAndTrain();
-  }, []);
 
   return (
     <Rnd
@@ -200,7 +195,7 @@ export default function SpeedSpaceChart(props) {
         x: 0,
         y: 0,
         width: '100%',
-        height: `${heightOfSpeedSpaceChart}px`,
+        height: `${chartHeight}px`,
       }}
       minHeight={CHART_MIN_HEIGHT}
       disableDragging
@@ -208,21 +203,18 @@ export default function SpeedSpaceChart(props) {
         bottom: true,
       }}
       onResizeStart={() => {
-        setBaseHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart);
-        onSetBaseHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart);
+        setChartBaseHeight(chartHeight);
+        onSetChartBaseHeight(chartHeight);
       }}
       onResize={(_e, _dir, _refToElement, delta) => {
-        setHeightOfSpeedSpaceChart(baseHeightOfSpeedSpaceChart + delta.height);
-        onSetBaseHeightOfSpeedSpaceChart(baseHeightOfSpeedSpaceChart + delta.height);
-      }}
-      onResizeStop={() => {
-        dispatchUpdateMustRedraw(true);
+        setChartHeight(chartBaseHeight + delta.height);
+        onSetChartBaseHeight(chartBaseHeight + delta.height);
       }}
     >
       <div
         id={`container-${CHART_ID}`}
         className="speedspace-chart w-100"
-        style={{ height: `${heightOfSpeedSpaceChart}px` }}
+        style={{ height: `${chartHeight}px` }}
       >
         <button
           type="button"
@@ -272,16 +264,12 @@ export default function SpeedSpaceChart(props) {
 }
 
 SpeedSpaceChart.propTypes = {
-  /**
-   * Current X linear scale for synced charts
-   */
-  chartXGEV: PropTypes.func,
   dispatchUpdateMustRedraw: PropTypes.func,
   dispatchUpdateTimePositionValues: PropTypes.func,
   /**
    * height of chart
    */
-  initialHeightOfSpeedSpaceChart: PropTypes.number.isRequired,
+  initialHeight: PropTypes.number.isRequired,
   /**
    * Current Position to be showed (vertical line)
    */
@@ -296,7 +284,7 @@ SpeedSpaceChart.propTypes = {
    */
   speedSpaceSettings: PropTypes.object,
   onSetSettings: PropTypes.func,
-  onSetBaseHeightOfSpeedSpaceChart: PropTypes.func,
+  onSetChartBaseHeight: PropTypes.func,
   /**
    * Current Time Position to be showed (vertical line)
    */
@@ -304,10 +292,9 @@ SpeedSpaceChart.propTypes = {
 };
 
 SpeedSpaceChart.defaultProps = {
-  chartXGEV: undefined,
   dispatchUpdateMustRedraw: noop,
   dispatchUpdateTimePositionValues: noop,
-  onSetBaseHeightOfSpeedSpaceChart: noop,
+  onSetChartBaseHeight: noop,
   onSetSettings: noop,
   positionValues: ORSD_GRAPH_SAMPLE_DATA.positionValues,
   simulationIsPlaying: false,

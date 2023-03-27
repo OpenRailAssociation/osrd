@@ -151,8 +151,8 @@ export default function SimulationResults() {
             >
               {displaySimulation && (
                 <SpeedSpaceChart
-                  initialHeightOfSpeedSpaceChart={heightOfSpeedSpaceChart}
-                  onSetBaseHeightOfSpeedSpaceChart={setHeightOfSpeedSpaceChart}
+                  initialHeight={heightOfSpeedSpaceChart}
+                  onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
                 />
               )}
             </div>

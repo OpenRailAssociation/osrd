@@ -53,8 +53,8 @@ export default function OSRDStcdmResults(props) {
               style={{ height: `${speedSpaceTimeChartHeight}px`, marginBottom: '50px' }}
             >
               <SpeedSpaceChart
-                initialHeightOfSpeedSpaceChart={450}
-                onSetBaseHeightOfSpeedSpaceChart={setSpeedSpaceTimeChartHeight}
+                initialHeight={450}
+                onSetChartBaseHeight={setSpeedSpaceTimeChartHeight}
               />
             </div>
             <div
