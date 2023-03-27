@@ -10,7 +10,7 @@ const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function PowerNotchSelector() {
   const rollingStockID = useSelector(getRollingStockID);
-  const powerNotch = useSelector(getPowerRestriction);
+  const powerRestriction = useSelector(getPowerRestriction);
   const [rollingStockSelected, setRollingStockSelected] = useState<
     { id: number; power_restrictions: Record<string, string> } | undefined
   >(undefined);
