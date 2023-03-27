@@ -17,7 +17,6 @@ import SpeedSpaceChart from './SpeedSpaceChart';
  */
 const withOSRDData = (Component) =>
   function WrapperComponent(props) {
-    const chartXGEV = useSelector((state) => state.osrdsimulation.chartXGEV);
     const positionValues = useSelector((state) => state.osrdsimulation.positionValues);
     const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
     const speedSpaceSettings = useSelector((state) => state.osrdsimulation.speedSpaceSettings);
@@ -59,7 +58,6 @@ const withOSRDData = (Component) =>
       <Component
         {...props}
         trainSimulation={trainSimulation}
-        chartXGEV={chartXGEV}
         dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
         dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
         positionValues={positionValues}
