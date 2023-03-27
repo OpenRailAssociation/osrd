@@ -58,3 +58,4 @@ export const getGridMarginBefore = (state: RootState) => getSection(state).gridM
 export const getGridMarginAfter = (state: RootState) => getSection(state).gridMarginAfter;
 export const getStandardStdcmAllowance = (state: RootState) =>
   state.osrdconf.stdcmConf.standardStdcmAllowance;
+export const getPowerRestriction = (state: RootState) => getSection(state).powerRestriction;
