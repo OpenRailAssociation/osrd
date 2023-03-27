@@ -20,11 +20,7 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import DOCUMENT_URI from 'common/consts';
-import {
-  LEGACY_PROJECTS_URI,
-  PROJECTS_URI,
-  STUDIES_URI,
-} from '../components/operationalStudiesConsts';
+import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
@@ -108,7 +104,7 @@ export default function Project() {
         description: filter,
         tags: filter,
       };
-      const data = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
+      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
       setStudiesList(data.results);
     } catch (error) {
       console.error(error);

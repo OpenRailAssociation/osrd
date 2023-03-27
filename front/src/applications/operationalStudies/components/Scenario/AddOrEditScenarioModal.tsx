@@ -22,7 +22,7 @@ import { updateScenarioID } from 'reducers/osrdconf';
 import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import {
   ELECTRICAL_PROFILE_SET_URI,
-  LEGACY_PROJECTS_URI,
+  PROJECTS_URI,
   SCENARIOS_URI,
   STUDIES_URI,
 } from '../operationalStudiesConsts';
@@ -85,7 +85,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
     }
   };
 
-  const rootURI = `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
+  const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
 
   const removeTag = (idx: number) => {
     const newTags: string[] = Array.from(currentScenario.tags);

@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import {
-  LEGACY_PROJECTS_URI,
   PROJECTS_URI,
   SCENARIOS_URI,
   STUDIES_URI,
@@ -55,9 +54,9 @@ export default function ScenarioExplorator() {
   useEffect(() => {
     if (projectID && studyID && scenarioID) {
       getDetails(`${PROJECTS_URI}${projectID}/`, setProjectDetails);
-      getDetails(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
+      getDetails(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
       getDetails(
-        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
+        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
         setScenarioDetails
       );
     } else if (!projectID) {
