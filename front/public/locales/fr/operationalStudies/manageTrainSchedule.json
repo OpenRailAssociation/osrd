@@ -47,6 +47,7 @@
   "noTimetable": "Choisissez une grille horaire",
   "noTrainCompo": "Aucun matériel défini…",
   "noplacechosen": "Aucun point défini",
+  "noPowerRestriction": "Aucun cran de puissance disponible",
   "origin": "Origine",
   "pathfinding": "Recherche d’itinéraire",
   "pathfindingDone": "Recherche terminée : ",

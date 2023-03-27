@@ -57,12 +57,16 @@ export default function PowerNotchSelector() {
       <div className="osrd-config-item-container">
         <img width="32px" className="mr-2" src={icon} alt="PowerRestrictionIcon" />
         <span className="text-muted">{t('powerRestriction')}</span>
-        <SelectImprovedSNCF
-          sm
-          options={options}
-          selectedValue={selectedOptions}
-          onChange={handleRollingStockChange}
-        />
+        {options.length !== 0 ? (
+          <SelectImprovedSNCF
+            sm
+            options={options}
+            selectedValue={selectedOptions}
+            onChange={handleRollingStockChange}
+          />
+        ) : (
+          <div className="ml-2">{t('noPowerRestriction')}</div>
+        )}
       </div>
     </div>
   );
