@@ -2,39 +2,36 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Source } from 'react-map-gl';
 import lineSliceAlong from '@turf/line-slice-along';
+import { featureCollection } from '@turf/helpers';
 import { Feature, LineString } from 'geojson';
-import { RootState } from 'reducers';
+import { isFinite } from 'lodash';
+
+import { RouteAspect } from 'reducers/osrdsimulation/types';
+import { getSelectedTrain, getPresentSimulation } from 'reducers/osrdsimulation/selectors';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { TrainPosition } from './types';
 
-function setCurrentBlockState(
+function blockState(
   geojsonPath: Feature<LineString>,
   headDistance: number,
-  tailDistance: number
+  tailDistance: number,
+  type: string
 ) {
-  const threshold = 0;
-  if (headDistance - tailDistance > threshold) {
-    return lineSliceAlong(geojsonPath, tailDistance, headDistance);
+  const threshold = 0.000001;
+  let newLineString = lineSliceAlong(geojsonPath, 0, threshold);
+  if (isFinite(headDistance) && isFinite(tailDistance)) {
+    if (headDistance - tailDistance > threshold) {
+      newLineString = lineSliceAlong(geojsonPath, tailDistance, headDistance);
+    } else if (headDistance > threshold) {
+      newLineString = lineSliceAlong(geojsonPath, headDistance - threshold, headDistance);
+    }
   }
-  if (headDistance > threshold) {
-    return lineSliceAlong(geojsonPath, headDistance - threshold, headDistance);
-  }
-  return lineSliceAlong(geojsonPath, 0, threshold);
+  newLineString.properties = { ...newLineString.properties, type };
+  return newLineString;
 }
 
-function setPreviousBlockState(
-  geojsonPath: Feature<LineString>,
-  headDistance: number,
-  tailDistance: number
-) {
-  const threshold = 0;
-  if (headDistance - tailDistance > threshold) {
-    return lineSliceAlong(geojsonPath, tailDistance, headDistance);
-  }
-  if (headDistance > threshold) {
-    return lineSliceAlong(geojsonPath, headDistance - threshold, headDistance);
-  }
-  return lineSliceAlong(geojsonPath, 0, threshold);
+function getPositionStart(data: RouteAspect[], blockIndex: number) {
+  return data?.[blockIndex]?.position_start / 1000;
 }
 
 interface RenderBlockStateProps {
@@ -45,76 +42,62 @@ interface RenderBlockStateProps {
 
 export default function RenderBlockState(props: RenderBlockStateProps) {
   const { point, geojsonPath, layerOrder } = props;
-  const { selectedTrain } = useSelector((state: RootState) => state.osrdsimulation);
-  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
+  const selectedTrain = useSelector(getSelectedTrain);
+  const simulation = useSelector(getPresentSimulation);
   const data = simulation.trains[selectedTrain].base.route_aspects;
 
   function getCurrentBlockState(
     // eslint-disable-next-line no-shadow
     geojsonPath: Feature<LineString>,
-    blockStateStartPosition: number,
-    blockStateEndPosition: number
+    blockStateStartIndex: number,
+    blockStateEndIndex: number
   ) {
-    let endOfBlock = data[blockStateStartPosition].position_start / 1000;
-    let startOfBlock = data[blockStateEndPosition].position_start / 1000;
+    let endOfBlock = getPositionStart(data, blockStateStartIndex);
+    let startOfBlock = getPositionStart(data, blockStateEndIndex);
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < geojsonPath.geometry.coordinates.length; i++) {
-      if (blockStateStartPosition === data.length - 1) {
+      if (blockStateStartIndex === data?.length - 1) {
         break;
       }
       if (point.headDistanceAlong > endOfBlock) {
-        blockStateStartPosition += 1;
-        blockStateEndPosition += 1;
-        endOfBlock = data[blockStateStartPosition].position_start / 1000;
-        startOfBlock = data[blockStateEndPosition].position_start / 1000;
+        blockStateStartIndex += 1;
+        blockStateEndIndex += 1;
+        endOfBlock = getPositionStart(data, blockStateStartIndex);
+        startOfBlock = getPositionStart(data, blockStateEndIndex);
       }
     }
-    const currentBlockState = setCurrentBlockState(geojsonPath, endOfBlock, startOfBlock);
+    const currentBlockState = blockState(geojsonPath, endOfBlock, startOfBlock, 'current');
     return [currentBlockState];
   }
 
   function getPreviousBlockState(
     // eslint-disable-next-line no-shadow
     geojsonPath: Feature<LineString>,
-    blockStateStartPosition: number,
-    blockStateEndPosition: number
+    blockStateStartIndex: number,
+    blockStateEndIndex: number
   ) {
-    let endOfBlock = data[blockStateStartPosition].position_start / 1000;
-    let startOfBlock = data[blockStateEndPosition].position_start / 1000;
+    let endOfBlock = getPositionStart(data, blockStateStartIndex);
+    let startOfBlock = getPositionStart(data, blockStateEndIndex);
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < geojsonPath.geometry.coordinates.length; i++) {
-      if (blockStateStartPosition === data.length - 1) {
+      if (blockStateStartIndex === data?.length - 1) {
         break;
       }
-      if (point.headDistanceAlong > data[blockStateStartPosition + 1].position_start / 1000) {
-        blockStateStartPosition += 1;
-        blockStateEndPosition += 1;
-        endOfBlock = data[blockStateStartPosition - 1].position_start / 1000;
-        startOfBlock = data[blockStateEndPosition - 1].position_start / 1000;
+      if (point.headDistanceAlong > getPositionStart(data, blockStateStartIndex + 1)) {
+        blockStateStartIndex += 1;
+        blockStateEndIndex += 1;
+        endOfBlock = getPositionStart(data, blockStateStartIndex - 1);
+        startOfBlock = getPositionStart(data, blockStateEndIndex - 1);
       }
     }
-    const previousBlockState = setPreviousBlockState(geojsonPath, endOfBlock, startOfBlock);
+    const previousBlockState = blockState(geojsonPath, endOfBlock, startOfBlock, 'previous');
     return [previousBlockState];
   }
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
     const [currentBlockState] = getCurrentBlockState(geojsonPath, 1, 0);
     const [previousBlockState] = getPreviousBlockState(geojsonPath, 1, 0);
-    const mergedData: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: currentBlockState.geometry,
-          properties: { ...currentBlockState.properties, type: 'current' },
-        },
-        {
-          type: 'Feature',
-          geometry: previousBlockState.geometry,
-          properties: { ...previousBlockState.properties, type: 'previous' },
-        },
-      ],
-    };
+    const mergedData = featureCollection([currentBlockState, previousBlockState]);
     return (
       <Source type="geojson" data={mergedData}>
         <OrderedLayer
