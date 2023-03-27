@@ -8,6 +8,7 @@ import Itinerary from 'applications/operationalStudies/components/ManageTrainSch
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
+import PowerNotchSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
 import submitConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConf';
 import { FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
@@ -31,10 +32,11 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
           <RollingStockSelector />
+          <ElectricalProfiles />
         </div>
         <div className="col-xl-6">
           <SpeedLimitByTagSelector />
-          <ElectricalProfiles />
+          <PowerNotchSelector />
         </div>
       </div>
       <div className="manage-train-schedule-title">2.&nbsp;{t('indications.choosePath')}</div>
