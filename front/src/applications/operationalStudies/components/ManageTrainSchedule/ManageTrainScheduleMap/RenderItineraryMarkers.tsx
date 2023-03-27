@@ -25,7 +25,7 @@ const RenderItineraryMarkers: FC = () => {
 
   const markers = useMemo(() => {
     const result = [];
-    if (origin !== undefined) {
+    if (origin?.coordinates) {
       result.push(
         <Marker
           longitude={origin.coordinates[0]}
@@ -40,7 +40,7 @@ const RenderItineraryMarkers: FC = () => {
         </Marker>
       );
     }
-    if (destination !== undefined) {
+    if (destination?.coordinates) {
       result.push(
         <Marker
           longitude={destination.coordinates[0]}
