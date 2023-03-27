@@ -2,6 +2,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import List
 
 import pytest
 import requests
@@ -37,16 +38,6 @@ def _load_generated_infra(name: str) -> int:
 
 
 @pytest.fixture(scope="session")
-def dummy_infra() -> Infra:
-    result = subprocess.check_output(
-        ["docker", "exec", "osrd-api", "python", "manage.py", "setup_dummy_db"],
-    )
-    infra_id = int(result)
-    yield Infra(infra_id, "dummy_infra")
-    requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
-
-
-@pytest.fixture(scope="session")
 def tiny_infra() -> Infra:
     infra_id = _load_generated_infra("tiny_infra")
     yield Infra(infra_id, "tiny_infra")
@@ -77,12 +68,6 @@ def foo_study_id(foo_project_id: int) -> int:
     payload = {"name": "foo", "service_code": "AAA", "business_code": "BBB", "tags": []}
     res = requests.post(API_URL + f"projects/{foo_project_id}/studies/", json=payload)
     yield res.json()["id"]
-
-
-@pytest.fixture
-def dummy_scenario(dummy_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, dummy_infra.id, foo_project_id, foo_study_id)
-    yield Scenario(foo_project_id, foo_study_id, scenario_id, dummy_infra.id, timetable_id)
 
 
 @pytest.fixture
@@ -137,3 +122,28 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Trai
         },
     )
     yield TrainPath(**response.json())
+
+
+@pytest.fixture
+def west_to_south_east_simulation(
+    small_scenario: Scenario, west_to_south_east_path: TrainPath, fast_rolling_stock: int
+) -> List[int]:
+    response = requests.post(
+        f"{API_URL}train_schedule/standalone_simulation/",
+        json={
+            "timetable": small_scenario.timetable,
+            "path": west_to_south_east_path.id,
+            "schedules": [
+                {
+                    "train_name": "foo",
+                    "labels": [],
+                    "allowances": [],
+                    "departure_time": 0,
+                    "initial_speed": 0,
+                    "rolling_stock": fast_rolling_stock,
+                    "speed_limit_category": "foo",
+                }
+            ],
+        },
+    )
+    yield response.json()["ids"]
