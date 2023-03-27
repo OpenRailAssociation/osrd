@@ -59,6 +59,7 @@ export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLIC
 export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
 export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
 export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
+export const UPDATE_POWER_RESTRICTION = 'osrdconf/UPDATE_POWER_RESTRICTION';
 
 // Reducer
 const defaultCommonConf = {
@@ -284,6 +285,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_STANDARD_STDCM_ALLOWANCE:
         draft.stdcmConf.standardStdcmAllowance = action.standardStdcmAllowance;
+        break;
+      case UPDATE_POWER_RESTRICTION:
+        draft[section].powerRestriction = action.powerRestriction;
         break;
     }
   });
@@ -626,6 +630,14 @@ export function deleteItinerary() {
   return (dispatch: Dispatch) => {
     dispatch({
       type: DELETE_ITINERARY,
+    });
+  };
+}
+export function updatePowerRestriction(powerRestriction: string) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_POWER_RESTRICTION,
+      powerRestriction,
     });
   };
 }
