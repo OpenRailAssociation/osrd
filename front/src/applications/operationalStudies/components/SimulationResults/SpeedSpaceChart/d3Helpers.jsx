@@ -12,26 +12,24 @@ function createChart(
   chart,
   resetChart,
   trainSimulation,
-  rotate,
+  hasJustRotated,
   initialHeight,
-  ref,
-  setResetChart
+  ref
 ) {
   d3.select(`#${CHART_ID}`).remove();
-  const scaleX =
-    chart === undefined || resetChart
-      ? defineLinear(
-          d3.max(trainSimulation.speed, (speedObject) => speedObject[rotate ? SPEED : POSITION]) +
-            100
-        )
-      : chart.x;
-  const scaleY =
-    chart === undefined || resetChart
-      ? defineLinear(
-          d3.max(trainSimulation.speed, (speedObject) => speedObject[rotate ? POSITION : SPEED]) +
-            50
-        )
-      : chart.y;
+
+  let scaleX;
+  let scaleY;
+
+  if (chart === undefined || resetChart) {
+    scaleX = defineLinear(
+      d3.max(trainSimulation.speed, (speedObject) => speedObject[POSITION]) + 100
+    );
+    scaleY = defineLinear(d3.max(trainSimulation.speed, (speedObject) => speedObject[SPEED]) + 50);
+  } else {
+    scaleX = !hasJustRotated ? chart.x : chart.y;
+    scaleY = !hasJustRotated ? chart.y : chart.x;
+  }
 
   const width =
     d3.select(`#container-${CHART_ID}`) !== null
@@ -42,14 +40,13 @@ function createChart(
       ? d3.select(`#container-${CHART_ID}`).node().clientHeight
       : initialHeight;
 
-  setResetChart(false);
   return defineChart(
     width,
     height,
     scaleX,
     scaleY,
     ref,
-    rotate,
+    false, // not used for GEV
     SPEED_SPACE_CHART_KEY_VALUES,
     CHART_ID
   );

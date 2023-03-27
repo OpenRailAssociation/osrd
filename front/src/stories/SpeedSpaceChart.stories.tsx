@@ -16,7 +16,7 @@ export default {
 const Template: ComponentStory<typeof SpeedSpaceChart> = (args) => (
   <div className="simulation-results">
     <div className="speedspacechart-container">
-      <SpeedSpaceChart initialHeightOfSpeedSpaceChart={400} {...args} />
+      <SpeedSpaceChart initialHeight={400} {...args} />
     </div>
   </div>
 );
@@ -29,5 +29,5 @@ Standard.args = {
   toggleSetting: noop,
   onSetSettings: noop,
   dispatchUpdateMustRedraw: noop,
-  onSetBaseHeightOfSpeedSpaceChart: noop,
+  onSetChartBaseHeight: noop,
 };
