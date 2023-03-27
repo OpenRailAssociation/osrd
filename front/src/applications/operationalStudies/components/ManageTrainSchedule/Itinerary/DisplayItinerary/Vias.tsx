@@ -14,8 +14,8 @@ import { Path } from 'common/api/osrdMiddlewareApi';
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
   viaModalContent: JSX.Element;
-  vias: PointOnMap[];
-  geojson: Path | undefined;
+  vias?: PointOnMap[];
+  geojson?: Path | undefined;
 }
 
 export function withOSRDData<T>(Component: ComponentType<T>) {
@@ -26,7 +26,7 @@ export function withOSRDData<T>(Component: ComponentType<T>) {
   };
 }
 
-function Vias(props: ViasProps) {
+export function Vias(props: ViasProps) {
   const { zoomToFeaturePoint, viaModalContent, vias, geojson } = props;
 
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -51,7 +51,7 @@ function Vias(props: ViasProps) {
     <>
       {viasTitle}
       <div className="mb-3">
-        {vias.length > 0 ? (
+        {vias && vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (
           <small className="ml-4">{t('noplacechosen')}</small>
@@ -61,4 +61,4 @@ function Vias(props: ViasProps) {
   );
 }
 
-export default Vias;
+export default withOSRDData(Vias);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import { RiMapPin2Fill } from 'react-icons/ri';
@@ -29,14 +29,33 @@ import {
 import { makeEnumBooleans } from 'utils/constants';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
+import {
+  DEFAULT_MODE,
+  DEFAULT_STDCM_MODE,
+  MODES,
+  PointOnMap,
+  STDCM_MODES,
+} from 'applications/operationalStudies/consts';
+import { noop } from 'lodash';
+import { Dispatch } from 'redux';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  stdcmMode?: symbol;
+  mode?: string;
+  origin?: PointOnMap | undefined;
+  originDate?: string | undefined;
+  originTime?: string | undefined;
+  originSpeed?: number;
+  originLinkedBounds?: boolean;
+  originUpperBoundDate?: string | undefined;
+  originUpperBoundTime?: string | undefined;
+  dispatch?: Dispatch;
 }
 
 export function withOSRDData<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
+    const dispatch = useDispatch();
     const stdcmMode = useSelector(getStdcmMode);
     const mode = useSelector(getMode);
     const origin = useSelector(getOrigin);
@@ -46,15 +65,30 @@ export function withOSRDData<T>(Component: ComponentType<T>) {
     const originLinkedBounds = useSelector(getOriginLinkedBounds);
     const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
     const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
-    return <Component {...(hocProps as T)} vias={vias} geojson={geojson} />;
+    return (
+      <Component
+        {...(hocProps as T)}
+        dispatch={dispatch}
+        stdcmMode={stdcmMode}
+        mode={mode}
+        origin={origin}
+        originDate={originDate}
+        originTime={originTime}
+        originSpeed={originSpeed}
+        originLinkedBounds={originLinkedBounds}
+        originUpperBoundDate={originUpperBoundDate}
+        originUpperBoundTime={originUpperBoundTime}
+      />
+    );
   };
 }
 
-function Origin(props: OriginProps) {
+export function Origin(props: OriginProps) {
   const {
-    zoomToFeaturePoint,
-    stdcmMode,
-    mode,
+    dispatch = noop,
+    zoomToFeaturePoint = noop,
+    stdcmMode = DEFAULT_STDCM_MODE,
+    mode = DEFAULT_MODE,
     origin,
     originDate,
     originTime,
@@ -64,7 +98,6 @@ function Origin(props: OriginProps) {
     originUpperBoundTime,
   } = props;
 
-  const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
@@ -219,4 +252,4 @@ function Origin(props: OriginProps) {
   );
 }
 
-export default Origin;
+export default withOSRDData(Origin);
