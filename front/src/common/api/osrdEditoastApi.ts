@@ -1142,6 +1142,7 @@ export type ProjectPatchRequest = {
 export type StudyResult = {
   id?: number;
   name?: string;
+  project_id?: number;
   description?: string;
   budget?: number;
   service_code?: string;
@@ -1211,15 +1212,16 @@ export type StudyPatchRequest = {
 export type ScenarioResult = {
   id?: number;
   name?: string;
+  study_id?: number;
   description?: string[];
   tags?: string[];
-  infra?: number;
+  infra_id?: number;
   infra_name?: string;
-  electrical_profile_set?: number | null;
+  electrical_profile_set_id?: number | null;
   electrical_profile_set_name?: string | null;
   creation_date?: string;
   last_modification?: string;
-  timetable?: number;
+  timetable_id?: number;
   trains_count?: number;
   trains_schedules?: {
     id?: number;
@@ -1238,14 +1240,15 @@ export type ScenarioRequest = {
 export type ScenarioListResult = {
   id?: number;
   name?: string;
+  study_id?: number;
   description?: string[];
   tags?: string[];
-  infra?: number;
+  infra_id?: number;
   infra_name?: string;
-  electrical_profile_set?: number | null;
+  electrical_profile_set_id?: number | null;
   electrical_profile_set_name?: string | null;
   creation_date?: string;
   last_modification?: string;
-  timetable?: number;
+  timetable_id?: number;
   trains_count?: number;
 };
