@@ -13,7 +13,7 @@ use actix_web::web::{block, Data};
 use async_trait::async_trait;
 use diesel::PgConnection;
 
-pub use self::pathfinding::Pathfinding;
+pub use self::pathfinding::*;
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
 pub use rolling_stock_models::rolling_stock::RollingStockModel;

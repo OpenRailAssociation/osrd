@@ -1,2 +1,0 @@
-[print_schema]
-import_types = ["diesel::sql_types::*", "postgis_diesel::sql_types::*"]
