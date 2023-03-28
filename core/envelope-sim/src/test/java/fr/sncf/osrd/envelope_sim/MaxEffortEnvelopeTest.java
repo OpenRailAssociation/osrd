@@ -153,4 +153,29 @@ public class MaxEffortEnvelopeTest {
                 () -> makeSimpleMaxEffortEnvelope(testContext, 44.4, stops)
         );
     }
+
+    /** Reproduces a bug where the train would "miss" accelerations when there are many small plateau with
+     * identical max speed before an acceleration.
+     * See issue #3385. */
+    @Test
+    public void testSeveralSmallPlateau() {
+        var testContext = makeSimpleContext(100, 0);
+        var stops = new double[] {3_000};
+        var mrspBuilder = new MRSPEnvelopeBuilder();
+        for (int i = 0; i < 200; i++) {
+            mrspBuilder.addPart(EnvelopePart.generateTimes(
+                    List.of(EnvelopeProfile.CONSTANT_SPEED),
+                    new double[] {i * 10, (i + 1) * 10},
+                    new double[] {30, 30}
+            ));
+        }
+        mrspBuilder.addPart(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED),
+                new double[] {2_000, 3_000},
+                new double[] {1000, 1000}
+        ));
+        var mrsp = mrspBuilder.build();
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(testContext, stops, mrsp);
+        MaxEffortEnvelope.from(testContext, 0, maxSpeedEnvelope);
+    }
 }
