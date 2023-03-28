@@ -5,6 +5,7 @@ mod layers;
 pub mod light_rolling_stocks;
 pub mod pagination;
 pub mod params;
+pub mod pathfinding;
 pub mod projects;
 pub mod rolling_stocks;
 pub mod scenario;
@@ -34,9 +35,7 @@ pub fn routes() -> impl HttpServiceFactory {
         timetable::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
-        timetable::routes(),
-        rolling_stocks::routes(),
-        light_rolling_stocks::routes()
+        pathfinding::routes()
     ]
 }
 
