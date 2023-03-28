@@ -12,9 +12,9 @@ use std::pin::Pin;
 use self::edition::edit;
 use super::params::List;
 use crate::error::Result;
-use crate::infra::{Infra, InfraName};
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
+use crate::models::{Delete, Infra, InfraName, Retrieve};
 use crate::schema::{ObjectType, SwitchType};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -23,6 +23,7 @@ use actix_web::{delete, get, post, put, HttpResponse, Responder};
 use chashmap::CHashMap;
 use diesel::sql_types::{BigInt, Double, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use editoast_derive::EditoastError;
 use futures::future::join_all;
 use futures::Future;
 use redis::Client;
@@ -30,6 +31,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 use std::result::Result as StdResult;
 use strum::IntoEnumIterator;
+use thiserror::Error;
 
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -58,6 +60,15 @@ pub fn routes() -> impl HttpServiceFactory {
                     attached::routes(),
                 )),
         )
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "infra")]
+pub enum InfraApiError {
+    /// Couldn't find the infra with the given id
+    #[error("Infra '{infra_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { infra_id: i64 },
 }
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
@@ -147,13 +158,13 @@ async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<Infra>>> {
 /// Return a specific infra
 #[get("")]
 async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
-    let infra = infra.into_inner();
-    block(move || {
-        let mut conn = db_pool.get()?;
-        Ok(Json(Infra::retrieve(&mut conn, infra)?))
-    })
-    .await
-    .unwrap()
+    let infra_id = infra.into_inner();
+
+    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
+        Some(infra) => infra,
+        None => return Err(InfraApiError::NotFound { infra_id }.into()),
+    };
+    Ok(Json(infra))
 }
 
 /// Create an infra
@@ -179,13 +190,8 @@ async fn clone(
     let mut futures = Vec::<Pin<Box<dyn Future<Output = _>>>>::new();
 
     let infra = infra.into_inner();
-    let cloned_infra = block::<_, Result<_>>(move || {
-        let name = new_name.name.clone();
-        let mut conn = db_pool_ref.get()?;
-        Infra::clone(infra, &mut conn, name)
-    })
-    .await
-    .unwrap()?;
+    let name = new_name.name.clone();
+    let cloned_infra = Infra::clone(infra, db_pool_ref.clone(), name).await?;
 
     for object in ObjectType::iter() {
         let model_table = object.get_table();
@@ -232,14 +238,8 @@ async fn delete(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<HttpResponse> {
     let infra = infra.into_inner();
-    block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        Infra::delete(infra, &mut conn)?;
-        infra_caches.remove(&infra);
-        Ok(())
-    })
-    .await
-    .unwrap()?;
+    assert!(Infra::delete(db_pool.clone(), infra).await?);
+    infra_caches.remove(&infra);
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -267,10 +267,13 @@ async fn get_switch_types(
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<Json<Vec<SwitchType>>> {
-    let infra = infra.into_inner();
+    let infra_id = infra.into_inner();
+    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
+        Some(infra) => infra,
+        None => return Err(InfraApiError::NotFound { infra_id }.into()),
+    };
     block(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve(&mut conn, infra)?;
         let infra = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         Ok(Json(
             infra
@@ -366,7 +369,7 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
 
 #[cfg(test)]
 pub mod tests {
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};
     use crate::views::tests::create_test_service;

@@ -1,7 +1,7 @@
 use crate::error::Result;
-use crate::infra::Infra;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::Zone;
+use crate::models::{Infra, Retrieve};
 
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -31,9 +31,9 @@ async fn get_line_bbox(
 ) -> Result<Json<Zone>> {
     let (infra_id, line_code) = path.into_inner();
     let line_code: i32 = line_code.try_into().unwrap();
+    let infra = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
     let zone = block::<_, Result<_>>(move || {
         let conn = &mut db_pool.get()?;
-        let infra = Infra::retrieve(conn, infra_id)?;
         let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra)?;
         let mut zone = Zone::default();
         let mut tracksections = infra_cache

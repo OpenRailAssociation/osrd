@@ -5,13 +5,14 @@ mod client;
 mod error;
 mod fixtures;
 mod generated_data;
-mod infra;
 mod infra_cache;
 mod map;
 mod models;
 mod schema;
 mod tables;
 mod views;
+
+use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use actix_cors::Cors;
@@ -28,9 +29,9 @@ use colored::*;
 use diesel::r2d2::{self, ConnectionManager, Pool};
 use diesel::{Connection, PgConnection};
 use diesel_json::Json as DieselJson;
-use infra::Infra;
 use infra_cache::InfraCache;
 use map::MapLayers;
+use models::Retrieve;
 use sentry::ClientInitGuard;
 use std::env;
 use std::error::Error;
@@ -38,6 +39,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
 use views::electrical_profiles::ElectricalProfileSet;
+use views::infra::InfraApiError;
 use views::search::config::Config as SearchConfig;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
@@ -175,7 +177,13 @@ async fn generate(
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
-
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(
+        Pool::builder()
+            .max_size(pg_config.pool_size)
+            .build(manager)
+            .expect("Failed to create pool."),
+    );
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
@@ -185,7 +193,16 @@ async fn generate(
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&mut conn, id as i64)?);
+            let infra = match Infra::retrieve(pool.clone(), id as i64).await? {
+                Some(infra) => infra,
+                None => {
+                    return Err(InfraApiError::NotFound {
+                        infra_id: id as i64,
+                    }
+                    .into())
+                }
+            };
+            infras.push(infra);
         }
     };
 
@@ -268,6 +285,13 @@ async fn clear(
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(
+        Pool::builder()
+            .max_size(pg_config.pool_size)
+            .build(manager)
+            .expect("Failed to create pool."),
+    );
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
@@ -277,7 +301,16 @@ async fn clear(
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&mut conn, id as i64)?);
+            let infra = match Infra::retrieve(pool.clone(), id as i64).await? {
+                Some(infra) => infra,
+                None => {
+                    return Err(InfraApiError::NotFound {
+                        infra_id: id as i64,
+                    }
+                    .into())
+                }
+            };
+            infras.push(infra);
         }
     };
 

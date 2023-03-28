@@ -126,7 +126,7 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
 
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::schema::SwitchType;
     use crate::views::infra::tests::{
         create_infra_request, create_object_request, delete_infra_request,

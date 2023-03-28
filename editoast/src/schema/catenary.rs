@@ -48,7 +48,7 @@ impl Cache for Catenary {
 mod test {
 
     use super::Catenary;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
 
     #[test]
     fn test_persist() {
