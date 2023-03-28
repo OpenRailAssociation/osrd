@@ -330,3 +330,22 @@ table! {
 joinable!(  osrd_infra_trainschedule -> osrd_infra_timetable (timetable_id));
 
 allow_tables_to_appear_in_same_query!(osrd_infra_trainschedule, osrd_infra_timetable);
+
+table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    osrd_infra_pathmodel(id) {
+        id -> BigInt,
+        owner -> Uuid,
+        created -> Timestamp,
+        payload -> Jsonb,
+        slopes -> Jsonb,
+        curves -> Jsonb,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> BigInt,
+    }
+}
+
+joinable!(osrd_infra_trainschedule -> osrd_infra_pathmodel (path_id));

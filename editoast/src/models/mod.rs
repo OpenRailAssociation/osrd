@@ -1,4 +1,5 @@
 mod documents;
+mod pathfinding;
 mod projects;
 pub mod rolling_stock_models;
 mod scenario;
@@ -12,6 +13,7 @@ use actix_web::web::{block, Data};
 use async_trait::async_trait;
 use diesel::PgConnection;
 
+pub use self::pathfinding::Pathfinding;
 pub use documents::Document;
 pub use projects::{Project, ProjectWithStudies};
 pub use rolling_stock_models::rolling_stock::RollingStockModel;
