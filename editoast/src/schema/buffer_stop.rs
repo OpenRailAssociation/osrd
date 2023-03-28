@@ -85,7 +85,7 @@ impl From<BufferStop> for BufferStopCache {
 mod test {
 
     use super::BufferStop;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
 
     #[test]
     fn test_persist() {

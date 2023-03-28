@@ -173,7 +173,7 @@ impl From<OperationalPoint> for RailjsonObject {
 pub mod tests {
     use diesel::PgConnection;
 
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
     use crate::schema::{
         BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,

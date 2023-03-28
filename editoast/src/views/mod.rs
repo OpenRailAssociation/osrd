@@ -1,6 +1,6 @@
 mod documents;
 pub mod electrical_profiles;
-mod infra;
+pub mod infra;
 mod layers;
 pub mod light_rolling_stocks;
 pub mod pagination;

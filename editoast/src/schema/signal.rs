@@ -135,7 +135,7 @@ impl From<Signal> for SignalCache {
 mod test {
     use super::Signal;
     use super::SignalExtensions;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
     use serde_json::from_str;
 
     #[test]

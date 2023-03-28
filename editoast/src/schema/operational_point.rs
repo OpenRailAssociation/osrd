@@ -115,7 +115,7 @@ mod test {
 
     use super::OperationalPoint;
     use super::OperationalPointExtensions;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
     use serde_json::from_str;
 
     #[test]

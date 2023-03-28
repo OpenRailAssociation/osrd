@@ -194,8 +194,8 @@ impl Cache for TrackSectionCache {
 mod test {
     use super::TrackSection;
     use super::TrackSectionExtensions;
-    use crate::infra::tests::test_infra_transaction;
     use crate::map::BoundingBox;
+    use crate::models::infra::tests::test_infra_transaction;
     use geos::geojson;
     use serde_json::from_str;
 

@@ -76,7 +76,7 @@ impl Cache for SpeedSection {
 mod test {
     use super::SpeedSection;
     use super::SpeedSectionExtensions;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
     use serde_json::from_str;
 
     #[test]

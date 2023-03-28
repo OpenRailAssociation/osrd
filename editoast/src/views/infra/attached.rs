@@ -1,6 +1,6 @@
 use crate::error::Result;
-use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
+use crate::models::Infra;
 use crate::schema::ObjectType;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -84,7 +84,7 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
 
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::schema::operation::RailjsonObject;
     use crate::schema::{Detector, OSRDIdentified, ObjectType, TrackSection};
     use crate::views::infra::tests::{

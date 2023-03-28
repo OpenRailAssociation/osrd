@@ -49,7 +49,7 @@ impl Cache for TrackSectionLink {
 mod test {
 
     use super::TrackSectionLink;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
 
     #[test]
     fn test_persist() {

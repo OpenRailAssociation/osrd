@@ -1,8 +1,8 @@
 mod graph;
 
 use crate::error::Result;
-use crate::infra::Infra;
 use crate::map::BoundingBox;
+use crate::models::Infra;
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
@@ -547,9 +547,9 @@ pub mod tests {
 
     use chashmap::CHashMap;
 
-    use crate::infra::tests::test_infra_transaction;
     use crate::infra_cache::{InfraCache, SwitchCache};
     use crate::map::BoundingBox;
+    use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
