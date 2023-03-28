@@ -39,17 +39,13 @@ pub struct Scenario {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
     #[diesel(deserialize_as = i64)]
-    #[diesel(column_name = "study_id")]
-    pub study: Option<i64>,
+    pub study_id: Option<i64>,
     #[diesel(deserialize_as = i64)]
-    #[diesel(column_name = "infra_id")]
-    pub infra: Option<i64>,
+    pub infra_id: Option<i64>,
     #[diesel(deserialize_as = Option<i64>)]
-    #[diesel(column_name = "electrical_profile_set_id")]
-    pub electrical_profile_set: Option<Option<i64>>,
+    pub electrical_profile_set_id: Option<Option<i64>>,
     #[diesel(deserialize_as = i64)]
-    #[diesel(column_name = "timetable_id")]
-    pub timetable: Option<i64>,
+    pub timetable_id: Option<i64>,
     #[diesel(deserialize_as = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
@@ -94,11 +90,11 @@ impl Scenario {
             use crate::tables::osrd_infra_trainschedule::dsl::*;
             let mut conn = db_pool.get()?;
             let infra_name = infra_dsl::osrd_infra_infra
-                .filter(infra_dsl::id.eq(self.infra.unwrap()))
+                .filter(infra_dsl::id.eq(self.infra_id.unwrap()))
                 .select(infra_dsl::name)
                 .first::<String>(&mut conn)?;
 
-            let electrical_profile_set_name = match self.electrical_profile_set.unwrap() {
+            let electrical_profile_set_name = match self.electrical_profile_set_id.unwrap() {
                 Some(electrical_profile_set) => Some(
                     elec_dsl::osrd_infra_electricalprofileset
                         .filter(elec_dsl::id.eq(electrical_profile_set))
@@ -109,7 +105,7 @@ impl Scenario {
             };
 
             let train_schedules = osrd_infra_trainschedule
-                .filter(timetable_id.eq(self.timetable.unwrap()))
+                .filter(timetable_id.eq(self.timetable_id.unwrap()))
                 .select((id, train_name, departure_time, path_id))
                 .load::<TrainScheduleDetails>(&mut conn)?;
 
@@ -149,7 +145,7 @@ impl Delete for Scenario {
         // Delete timetable
         delete(
             timetable_dsl::osrd_infra_timetable
-                .filter(timetable_dsl::id.eq(scenario.timetable.unwrap())),
+                .filter(timetable_dsl::id.eq(scenario.timetable_id.unwrap())),
         )
         .execute(conn)?;
         Ok(true)
@@ -201,13 +197,13 @@ pub mod test {
     fn build_test_scenario(study_id: i64, infra_id: i64, timetable_id: i64) -> Scenario {
         Scenario {
             name: Some("test".into()),
-            study: Some(study_id),
-            infra: Some(infra_id),
+            study_id: Some(study_id),
+            infra_id: Some(infra_id),
             description: Some("test".into()),
-            timetable: Some(timetable_id),
+            timetable_id: Some(timetable_id),
             creation_date: Some(Utc::now().naive_utc()),
             tags: Some(vec![]),
-            electrical_profile_set: None,
+            electrical_profile_set_id: None,
             ..Default::default()
         }
     }

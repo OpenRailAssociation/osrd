@@ -2483,6 +2483,8 @@ components:
           type: integer
         name:
           type: string
+        project_id:
+          type: integer
         description:
           type: string
         budget:
@@ -2555,6 +2557,8 @@ components:
           type: integer
         name:
           type: string
+        study_id:
+          type: integer
         description:
           type: string
           items:
@@ -2563,11 +2567,11 @@ components:
           type: array
           items:
             type: string
-        infra:
+        infra_id:
           type: integer
         infra_name:
           type: string
-        electrical_profile_set:
+        electrical_profile_set_id:
           type: integer
           nullable: true
         electrical_profile_set_name:
@@ -2579,7 +2583,7 @@ components:
         last_modification:
           type: string
           format: date-time
-        timetable:
+        timetable_id:
           type: integer
         trains_count:
           type: integer
@@ -2603,6 +2607,8 @@ components:
           type: integer
         name:
           type: string
+        study_id:
+          type: integer
         description:
           type: string
           items:
@@ -2611,11 +2617,11 @@ components:
           type: array
           items:
             type: string
-        infra:
+        infra_id:
           type: integer
         infra_name:
           type: string
-        electrical_profile_set:
+        electrical_profile_set_id:
           type: integer
           nullable: true
         electrical_profile_set_name:
@@ -2627,7 +2633,7 @@ components:
         last_modification:
           type: string
           format: date-time
-        timetable:
+        timetable_id:
           type: integer
         trains_count:
           type: integer
