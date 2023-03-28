@@ -1,0 +1,14 @@
+.informations-modal {
+  max-height: 75vh;
+
+  &-version {
+    font-size: small;
+  }
+}
+
+@media (min-width: 768px) {
+  .license-attributions {
+    height: calc(75vh - 48px - 1.875rem);
+    overflow: auto;
+  }
+}
