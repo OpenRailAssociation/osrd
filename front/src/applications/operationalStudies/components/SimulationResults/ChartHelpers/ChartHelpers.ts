@@ -326,13 +326,9 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
   const departure = offsetSeconds(firstStop.time + dragOffset);
   const arrival = offsetSeconds(lastStop.time + dragOffset);
   return {
-    id: train.id,
-    labels: train.labels,
-    name: train.name,
-    path: train.path,
+    ...train,
     departure,
     arrival,
-    speed_limit_tags: train.speed_limit_tags,
   };
 }
 
