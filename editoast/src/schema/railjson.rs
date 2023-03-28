@@ -3,7 +3,7 @@ use super::{
     Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use crate::error::Result;
-use crate::infra::{Infra, RAILJSON_VERSION};
+use crate::models::{Infra, RAILJSON_VERSION};
 use derivative::Derivative;
 use diesel::{
     sql_query,
@@ -100,8 +100,8 @@ pub mod test {
     use super::find_objects;
     use crate::error::EditoastError;
     use crate::error::Result;
-    use crate::infra::Infra;
-    use crate::infra::RAILJSON_VERSION;
+    use crate::models::Infra;
+    use crate::models::RAILJSON_VERSION;
     use crate::schema::OSRDIdentified;
     use crate::schema::{RailJson, RailjsonError};
     use crate::tests::test_transaction;

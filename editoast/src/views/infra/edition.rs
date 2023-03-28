@@ -7,9 +7,9 @@ use redis::Client;
 use thiserror::Error;
 
 use crate::client::MapLayersConfig;
-use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
 use crate::map::{self, MapLayers, Zone};
+use crate::models::Infra;
 use crate::schema::operation::{Operation, OperationResult};
 use crate::{generated_data, DbPool};
 use editoast_derive::EditoastError;

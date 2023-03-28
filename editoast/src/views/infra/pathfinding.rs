@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::infra::Infra;
 use crate::infra_cache::{Graph, InfraCache};
+use crate::models::Infra;
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
 use crate::DbPool;
