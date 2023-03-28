@@ -78,6 +78,7 @@ const defaultCommonConf = {
   timetableID: undefined,
   rollingStockID: undefined,
   rollingStockComfort: 'STANDARD',
+  powerRestriction: undefined,
   speedLimitByTag: undefined,
   origin: undefined,
   originSpeed: 0,
@@ -633,7 +634,7 @@ export function deleteItinerary() {
     });
   };
 }
-export function updatePowerRestriction(powerRestriction: string) {
+export function updatePowerRestriction(powerRestriction?: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_POWER_RESTRICTION,
