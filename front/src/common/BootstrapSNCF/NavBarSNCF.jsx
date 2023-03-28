@@ -56,7 +56,7 @@ export default function LegacyNavBarSNCF(props) {
               <button
                 type="button"
                 className="btn-link text-reset"
-                onClick={() => openModal(<ReleaseInformations />)}
+                onClick={() => openModal(<ReleaseInformations />, 'lg')}
                 key="release"
               >
                 <span className="mr-2">
