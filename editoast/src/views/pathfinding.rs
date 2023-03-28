@@ -1,40 +1,40 @@
-use actix_web::get;
 use actix_web::web::{Data, Json, Path};
-use actix_web::{dev::HttpServiceFactory, web};
+use actix_web::{delete, get};
+use actix_web::{dev::HttpServiceFactory, web, HttpResponse, Responder};
+use chrono::NaiveDateTime;
 use editoast_derive::EditoastError;
 use serde::Serialize;
 use thiserror::Error;
 
 use crate::error::Result;
-use crate::models::Pathfinding;
-use crate::models::Retrieve;
+use crate::models::{CurveGraph, Delete, Retrieve};
+use crate::models::{PathWaypoint, Pathfinding, SlopeGraph};
 use crate::schema::LineString;
 use crate::DbPool;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pathfinding")]
 enum PathfindingError {
-    /// Couldn't found the scenario with the given scenario ID
-    #[error("Pathfinding {id} does not exist")]
+    #[error("Pathfinding {pathfinding_id} does not exist")]
     #[editoast_error(status = 404)]
-    NotFound { id: i64 },
+    NotFound { pathfinding_id: i64 },
 }
 
 /// Returns `/pathfinding` routes
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/pathfinding").service(get_pf)
+    web::scope("/pathfinding").service((get_pf, del_pf))
 }
 
 #[derive(Clone, Debug, Serialize)]
 struct Response {
     pub id: i64,
-    pub owner: String,
-    pub created: String,
-    pub slopes: serde_json::Value,
-    pub curves: serde_json::Value,
+    pub owner: uuid::Uuid,
+    pub created: NaiveDateTime,
+    pub slopes: SlopeGraph,
+    pub curves: CurveGraph,
     pub geographic: LineString,
     pub schematic: LineString,
-    pub steps: serde_json::Value,
+    pub steps: Vec<PathWaypoint>,
 }
 
 impl From<Pathfinding> for Response {
@@ -52,27 +52,32 @@ impl From<Pathfinding> for Response {
         } = value;
         Self {
             id,
-            owner: owner.to_string(),
-            created: created.format("%Y-%m-%d %H:%M:%S.%f").to_string(),
-            slopes,
-            curves,
+            owner,
+            created,
+            slopes: slopes.0,
+            curves: curves.0,
             geographic: geographic.into(),
             schematic: schematic.into(),
-            steps: payload
-                .as_object()
-                .expect("invalid pathfinding payload")
-                .get("path_waypoints")
-                .expect("missing 'path_waypoints' from pathfinding payload")
-                .clone(),
+            steps: payload.0.path_waypoints,
         }
     }
 }
 
 #[get("{id}")]
 async fn get_pf(path: Path<i64>, db_pool: Data<DbPool>) -> Result<Json<Response>> {
-    let id = path.into_inner();
-    match Pathfinding::retrieve(db_pool, id).await? {
+    let pathfinding_id = path.into_inner();
+    match Pathfinding::retrieve(db_pool, pathfinding_id).await? {
         Some(pf) => Ok(Json(pf.into())),
-        None => Err(PathfindingError::NotFound { id }.into()),
+        None => Err(PathfindingError::NotFound { pathfinding_id }.into()),
+    }
+}
+
+#[delete("{id}")]
+async fn del_pf(path: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
+    let pathfinding_id = path.into_inner();
+    if Pathfinding::delete(db_pool, pathfinding_id).await? {
+        Ok(HttpResponse::NoContent())
+    } else {
+        Err(PathfindingError::NotFound { pathfinding_id }.into())
     }
 }
