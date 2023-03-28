@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::models::{Create, Retrieve, RollingStockModel};
-use crate::schema::rolling_stock::{
+use crate::schema::rolling_stock::rolling_stock::{
     Gamma, RollingResistance, RollingStock, RollingStockError, RollingStockMetadata,
     RollingStockWithLiveries,
 };
@@ -50,7 +50,6 @@ async fn get_livery(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Htt
     }
 }
 
-/// Creation form for a project
 #[derive(Serialize, Deserialize)]
 pub struct RollingStockCreateForm {
     pub name: String,
@@ -75,7 +74,6 @@ pub struct RollingStockCreateForm {
 impl From<RollingStockCreateForm> for RollingStockModel {
     fn from(rolling_stock: RollingStockCreateForm) -> Self {
         RollingStockModel {
-            id: None,
             name: Some(rolling_stock.name),
             version: Some(rolling_stock.version),
             effort_curves: Some(rolling_stock.effort_curves),
@@ -93,6 +91,7 @@ impl From<RollingStockCreateForm> for RollingStockModel {
             loading_gauge: Some(rolling_stock.loading_gauge),
             metadata: Some(rolling_stock.metadata),
             power_restrictions: Some(rolling_stock.power_restrictions),
+            ..Default::default()
         }
     }
 }
@@ -111,12 +110,12 @@ async fn create(
 #[cfg(test)]
 mod tests {
     use crate::client::PostgresConfig;
+    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
-    use crate::schema::rolling_stock::RollingStock;
+    use crate::schema::rolling_stock::rolling_stock::RollingStock;
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
-    use crate::views::rolling_stocks::RollingStockCreateForm;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
@@ -132,10 +131,8 @@ mod tests {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
-        let mut rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock.name = Some(String::from("get_rolling_stock_test"));
+        let rolling_stock: RollingStockModel =
+            get_rolling_stock_example(String::from("get_rolling_stock_test"));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 
@@ -162,10 +159,8 @@ mod tests {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
-        let mut rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock.name = Some(String::from("get_rolling_stock_livery_test"));
+        let rolling_stock: RollingStockModel =
+            get_rolling_stock_example(String::from("get_rolling_stock_livery_test"));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 
@@ -225,10 +220,8 @@ mod tests {
         let app = create_test_service().await;
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-        let mut rolling_stock: RollingStockCreateForm =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock.name = String::from("new rolling stock");
+        let rolling_stock: RollingStockModel =
+            get_rolling_stock_example(String::from("new_rolling_stock"));
 
         let response = call_service(
             &app,
@@ -241,7 +234,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         let rolling_stock: RollingStock = read_body_json(response).await;
-        assert_eq!(rolling_stock.name, "new rolling stock");
+        assert_eq!(rolling_stock.name, "new_rolling_stock");
         assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock.id)
             .await
             .is_ok());

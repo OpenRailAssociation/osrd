@@ -1,5 +1,6 @@
 use crate::diesel::{QueryDsl, RunQueryDsl};
 use crate::error::{InternalError, Result};
+use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::tables::osrd_infra_rollingstock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -12,8 +13,6 @@ use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use thiserror::Error;
-
-use super::rolling_stock_livery::RollingStockLiveryMetadata;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RollingStock {
@@ -174,6 +173,7 @@ pub enum RollingStockError {
 mod tests {
     use super::LightRollingStock;
     use crate::client::PostgresConfig;
+    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use actix_web::test as actix_test;
@@ -186,11 +186,8 @@ mod tests {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
-        let mut rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock.name = Some(String::from("very_fast_rolling_stock"));
-
+        let rolling_stock: RollingStockModel =
+            get_rolling_stock_example(String::from("very_fast_rolling_stock"));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 

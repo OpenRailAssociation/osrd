@@ -1,5 +1,7 @@
 use crate::error::Result;
-use crate::schema::rolling_stock::{LightRollingStock, LightRollingStockWithLiveries};
+use crate::schema::rolling_stock::rolling_stock::{
+    LightRollingStock, LightRollingStockWithLiveries,
+};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -36,6 +38,7 @@ async fn get(
 #[cfg(test)]
 mod tests {
     use crate::client::PostgresConfig;
+    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use crate::views::tests::create_test_service;
@@ -60,10 +63,8 @@ mod tests {
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
-        let mut rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock.name = Some(String::from("get_light_rolling_stock_test"));
+        let rolling_stock: RollingStockModel =
+            get_rolling_stock_example(String::from("get_light_rolling_stock_test"));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 

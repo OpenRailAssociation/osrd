@@ -126,6 +126,7 @@ impl RollingStockLivery {
 mod tests {
     use super::{RollingStockLivery, RollingStockLiveryForm};
     use crate::client::PostgresConfig;
+    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
@@ -153,10 +154,8 @@ mod tests {
             .await
             .unwrap();
 
-        let mut rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock.name = Some(String::from("create_get_delete_rolling_stock_livery"));
+        let rolling_stock: RollingStockModel =
+            get_rolling_stock_example(String::from("create_get_delete_rolling_stock_livery"));
         let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
         let rolling_stock_id = rolling_stock.id.unwrap();
 

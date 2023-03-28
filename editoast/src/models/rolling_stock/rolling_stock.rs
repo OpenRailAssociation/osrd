@@ -1,11 +1,12 @@
 use crate::error::Result;
-use crate::schema::rolling_stock::{
+use crate::schema::rolling_stock::rolling_stock::{
     Gamma, RollingResistance, RollingStock, RollingStockMetadata, RollingStockWithLiveries,
 };
 use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::tables::osrd_infra_rollingstock;
 use crate::DbPool;
 use actix_web::web::{block, Data};
+use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::ExpressionMethods;
 use diesel::SelectableHelper;
@@ -15,7 +16,8 @@ use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
-#[derive(Debug, Deserialize, Identifiable, Insertable, Model, Queryable, Serialize)]
+#[derive(Debug, Derivative, Deserialize, Identifiable, Insertable, Model, Queryable, Serialize)]
+#[derivative(Default)]
 #[model(table = "osrd_infra_rollingstock")]
 #[model(create, retrieve, delete)]
 #[diesel(table_name = osrd_infra_rollingstock)]
@@ -103,42 +105,77 @@ impl From<RollingStockModel> for RollingStock {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use crate::client::PostgresConfig;
     use crate::models::{Create, Delete, Retrieve};
-    use crate::schema::rolling_stock::RollingStock;
     use actix_web::test as actix_test;
-    use actix_web::web::Data;
-    use diesel::r2d2::{ConnectionManager, Pool};
+    use diesel::result::Error;
+    use diesel::Connection;
     use diesel::PgConnection;
 
     use super::RollingStockModel;
 
-    #[actix_test]
-    async fn create_get_delete_rolling_stock() {
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+    pub fn test_rolling_stock_transaction(
+        rolling_stock_name: String,
+        fn_test: fn(&mut PgConnection, RollingStockModel),
+    ) {
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|conn| {
+            let rolling_stock = get_rolling_stock_example(rolling_stock_name);
+            let rolling_stock = RollingStockModel::create_conn(rolling_stock, conn).unwrap();
 
-        let rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
+            fn_test(conn, rolling_stock);
+            Ok(())
+        });
+    }
+
+    pub fn get_rolling_stock_example(rolling_stock_name: String) -> RollingStockModel {
+        let mut rolling_stock: RollingStockModel =
+            serde_json::from_str(include_str!("../../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
+        rolling_stock.name = Some(rolling_stock_name);
+        return rolling_stock;
+    }
 
-        // create a rolling stock
-        let rolling_stock: RollingStock =
-            rolling_stock.create(db_pool.clone()).await.unwrap().into();
-        let rolling_stock_id = rolling_stock.id;
+    #[actix_test]
+    async fn create_delete_rolling_stock() {
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|conn| {
+            let rolling_stock_form =
+                get_rolling_stock_example(String::from("model_create_delete_rolling_stock"));
+            let rolling_stock = RollingStockModel::create_conn(rolling_stock_form, conn).unwrap();
+            assert_eq!(
+                "model_create_delete_rolling_stock",
+                rolling_stock.name.unwrap()
+            );
 
-        // get a rolling stock
-        assert!(
-            RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
-                .await
-                .unwrap()
-                .is_some()
-        );
+            assert!(RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).is_ok());
+            let result = RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).unwrap();
+            assert_eq!(result, false);
+            Ok(())
+        });
+    }
 
-        // delete a rolling stock
-        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
-            .await
-            .unwrap());
+    #[actix_test]
+    async fn get_rolling_stock() {
+        test_rolling_stock_transaction(
+            String::from("model_get_rolling_stock"),
+            |conn, rolling_stock| {
+                let rolling_stock_retrieved =
+                    RollingStockModel::retrieve_conn(conn, rolling_stock.id.unwrap())
+                        .unwrap()
+                        .unwrap();
+                assert_eq!(
+                    rolling_stock_retrieved.name.unwrap(),
+                    rolling_stock.name.unwrap()
+                );
+                assert!(RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).is_ok());
+                assert!(
+                    RollingStockModel::retrieve_conn(conn, rolling_stock.id.unwrap())
+                        .unwrap()
+                        .is_none()
+                );
+            },
+        )
     }
 }
