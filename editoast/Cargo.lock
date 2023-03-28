@@ -973,6 +973,7 @@ dependencies = [
  "pq-sys",
  "r2d2",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]
@@ -1033,6 +1034,7 @@ dependencies = [
  "mvt",
  "pathfinding",
  "pointy",
+ "postgis_diesel",
  "r2d2",
  "rand 0.8.5",
  "redis",
@@ -1047,6 +1049,7 @@ dependencies = [
  "strum_macros",
  "tempfile",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
@@ -2166,6 +2169,17 @@ dependencies = [
  "log",
  "pin-project-lite",
  "windows-sys 0.45.0",
+]
+
+[[package]]
+name = "postgis_diesel"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6db7bc162f8e7a4da3dfeb760ae767045b75028f3db81c4f53ad8abec841419c"
+dependencies = [
+ "byteorder",
+ "diesel",
+ "serde",
 ]
 
 [[package]]

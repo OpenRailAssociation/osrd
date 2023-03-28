@@ -12,6 +12,7 @@ use crate::map::BoundingBox;
 
 use derivative::Derivative;
 use editoast_derive::InfraModel;
+use postgis_diesel::types as postgis;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
@@ -128,6 +129,14 @@ impl LineString {
             max.1 = max.1.max(p[1]);
         }
         BoundingBox(min, max)
+    }
+}
+
+impl From<postgis::LineString<postgis::Point>> for LineString {
+    fn from(value: postgis::LineString<postgis::Point>) -> Self {
+        Self::LineString {
+            coordinates: value.points.into_iter().map(|p| [p.x, p.y]).collect(),
+        }
     }
 }
 
