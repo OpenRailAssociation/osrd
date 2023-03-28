@@ -105,8 +105,7 @@ const MultiSelectSNCF = ({
               className="sr-only"
               id={`multiSelect-${multiSelectTitle}`}
               multiple
-              value={selectedValues}
-              defaultValue="DEFAULT"
+              defaultValue={selectedValues}
               aria-expanded="true"
             >
               {selectOptions && renderOptions(selectOptions)}

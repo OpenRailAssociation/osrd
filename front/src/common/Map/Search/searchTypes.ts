@@ -1,3 +1,5 @@
+import { Geometry } from 'geojson';
+
 export interface ILineSearchResult {
   line_code: number;
   line_name: string;
@@ -8,9 +10,9 @@ export interface ISignalSearchResult {
   infra_id: number;
   label: string;
   aspects: string[];
-  logical_types: string[];
+  type: string;
   line_code: number;
   line_name: string;
-  geographic: number[];
-  schematic: number[];
+  geographic: Geometry;
+  schematic: Geometry;
 }
