@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
@@ -8,8 +8,10 @@ import nextId from 'react-id-generator';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import cx from 'classnames';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
+import { get } from 'common/requests';
 
 type Props = {
   train: ScheduledTrain;
@@ -24,7 +26,7 @@ type Props = {
   setTrainScheduleIDToModify: (arg0: number | undefined) => void;
 };
 
-export default function TimetableTrainCard({
+function TimetableTrainCard({
   train,
   isSelected,
   projectionPathIsUsed,
@@ -36,16 +38,23 @@ export default function TimetableTrainCard({
   setDisplayTrainScheduleManagement,
   setTrainScheduleIDToModify,
 }: Props) {
+  const [imageUrl, setImageUrl] = useState<string>();
   const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
-  const [getRollingStock, { data: rollingStock }] =
-    osrdMiddlewareApi.endpoints.getLightRollingStockById.useLazyQuery({});
-  const [getRollingStockLivery, { data: rollingStockLivery }] =
-    osrdMiddlewareApi.endpoints.getRollingStockByIdLivery.useLazyQuery({});
+  const [getRollingStock] = osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
   const { t } = useTranslation(['operationalStudies/scenario']);
 
   const editTrainSchedule = () => {
     setTrainScheduleIDToModify(train.id);
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+  };
+
+  const getLivery = async (id?: number, liveryId?: number) => {
+    if (id && liveryId) {
+      const image = await get(`/editoast/rolling_stock/${id}/livery/${liveryId}/`, {
+        responseType: 'blob',
+      });
+      if (image) setImageUrl(URL.createObjectURL(image));
+    }
   };
 
   useEffect(() => {
@@ -57,15 +66,8 @@ export default function TimetableTrainCard({
             getRollingStock({ id: trainSchedule.rolling_stock })
               .unwrap()
               .then((rollingStockData) => {
-                if (
-                  rollingStockData.id &&
-                  rollingStockData.liveries &&
-                  rollingStockData.liveries[0].id
-                ) {
-                  getRollingStockLivery({
-                    id: rollingStockData.id,
-                    liveryId: rollingStockData.liveries[0].id,
-                  });
+                if (rollingStockData.liveries) {
+                  getLivery(rollingStockData.id, rollingStockData.liveries[0].id);
                 }
               });
         });
@@ -75,7 +77,7 @@ export default function TimetableTrainCard({
   return (
     <div className={`scenario-timetable-train ${isSelected ? 'selected' : ''}`}>
       <div
-        className="scenario-timetable-train-container"
+        className="scenario-timetable-train-container with-details"
         role="button"
         tabIndex={0}
         onClick={() => changeSelectedTrain(idx)}
@@ -93,18 +95,14 @@ export default function TimetableTrainCard({
                 <GiPathDistance />
               </span>
             )}
-            {rollingStockLivery && (
-              <img src={URL.createObjectURL(rollingStockLivery)} alt="rollingstock livery" />
-            )}
+            {imageUrl && <img src={imageUrl} alt="rollingstock livery" />}
           </div>
           <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
           <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
         </div>
         <div className="scenario-timetable-train-body">
-          <div className="scenario-timetable-train-duration">{train.speed_limit_tags}</div>
-          <div className="scenario-timetable-train-duration">
-            {sec2time(train.arrival - train.departure)}
-          </div>
+          <span>{train.speed_limit_tags}</span>
+          {sec2time(train.arrival - train.departure)}
         </div>
         <div className="scenario-timetable-train-tags">
           {train.labels.map((tag) => (
@@ -152,3 +150,5 @@ export default function TimetableTrainCard({
     </div>
   );
 }
+
+export default React.memo(TimetableTrainCard);

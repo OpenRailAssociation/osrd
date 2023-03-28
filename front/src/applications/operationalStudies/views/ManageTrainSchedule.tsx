@@ -14,6 +14,7 @@ import { FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { updateRollingStockID, updateSpeedLimitByTag } from 'reducers/osrdconf';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 
 type Props = {
@@ -31,11 +32,20 @@ export default function ManageTrainSchedule({
   const [getTrainScheduleById, { data: trainScheduleToModify }] =
     osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
 
+  function ajustConf2TrainToModify(id: number) {
+    getTrainScheduleById({ id })
+      .unwrap()
+      .then((trainScheduleData) => {
+        if (trainScheduleData.rolling_stock)
+          dispatch(updateRollingStockID(trainScheduleData.rolling_stock));
+
+        dispatch(updateSpeedLimitByTag(trainScheduleData.speed_limit_tags));
+      });
+  }
+
   useEffect(() => {
-    if (trainScheduleIDToModify) {
-      getTrainScheduleById({ id: trainScheduleIDToModify });
-    }
-  }, [trainScheduleIDToModify, getTrainScheduleById]);
+    if (trainScheduleIDToModify) ajustConf2TrainToModify(trainScheduleIDToModify);
+  }, [trainScheduleIDToModify]);
 
   return (
     <>

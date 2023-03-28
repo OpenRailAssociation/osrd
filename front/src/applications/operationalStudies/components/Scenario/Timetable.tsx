@@ -17,7 +17,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
-import { DepartureArrivalTimes } from 'reducers/osrdsimulation/types';
+import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
@@ -53,7 +53,7 @@ export default function Timetable({
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const timetableID = useSelector(getTimetableID);
   const [filter, setFilter] = useState('');
-  const [trainsList, setTrainsList] = useState<DepartureArrivalTimes[]>();
+  const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -65,7 +65,7 @@ export default function Timetable({
     dispatch(updateMustRedraw(true));
   };
 
-  const deleteTrain = async (train: DepartureArrivalTimes) => {
+  const deleteTrain = async (train: ScheduledTrain) => {
     try {
       await deleteRequest(`${trainscheduleURI}${train.id}/`);
       getTimetable(timetableID);
@@ -88,7 +88,7 @@ export default function Timetable({
     }
   };
 
-  const duplicateTrain = async (train: DepartureArrivalTimes) => {
+  const duplicateTrain = async (train: ScheduledTrain) => {
     // Static for now, will be dynamic when UI will be ready
     const trainName = `${train.name} (${t('timetable.copy')})`;
     const trainDelta = 5;
@@ -97,7 +97,7 @@ export default function Timetable({
     //
 
     const trainDetail = await get(`${trainscheduleURI}${train.id}/`);
-    const paramsSchedules: DepartureArrivalTimes[] = [];
+    const paramsSchedules: ScheduledTrain[] = [];
     const params = {
       timetable: trainDetail.timetable,
       path: trainDetail.path,
@@ -137,7 +137,7 @@ export default function Timetable({
     }
   };
 
-  const selectPathProjection = async (train: DepartureArrivalTimes) => {
+  const selectPathProjection = async (train: ScheduledTrain) => {
     if (train) {
       dispatch(
         updateSelectedProjection({
@@ -151,7 +151,7 @@ export default function Timetable({
   useEffect(() => {
     if (debouncedTerm !== '' && departureArrivalTimes) {
       setTrainsList(
-        departureArrivalTimes.map((train: DepartureArrivalTimes) => ({
+        departureArrivalTimes.map((train: ScheduledTrain) => ({
           ...train,
           isFiltered: !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()),
         }))
@@ -195,7 +195,7 @@ export default function Timetable({
         <div className="small">
           {t('trainCount', {
             count: trainsList
-              ? trainsList.filter((train: DepartureArrivalTimes) => !train.isFiltered).length
+              ? trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length
               : 0,
           })}
         </div>
@@ -218,7 +218,7 @@ export default function Timetable({
       <div className="scenario-timetable-trains">
         {trainsList &&
           selectedProjection &&
-          trainsList.map((train: DepartureArrivalTimes, idx: number) =>
+          trainsList.map((train: ScheduledTrain, idx: number) =>
             !train.isFiltered ? (
               <TimetableTrainCard
                 train={train}
