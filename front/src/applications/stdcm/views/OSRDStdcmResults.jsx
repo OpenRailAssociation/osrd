@@ -61,7 +61,7 @@ export default function OSRDStcdmResults(props) {
               className="spacetimechart-container"
               style={{ height: `${spaceTimeChartHeight}px` }}
             >
-              <SpaceTimeChart
+              <ForcedEcoSpaceTimeChart
                 initialHeightOfSpaceTimeChart={450}
                 onSetBaseHeightOfSpaceTimeChart={setSpaceTimeChartHeight}
               />
@@ -96,7 +96,7 @@ export default function OSRDStcdmResults(props) {
             style={{ height: `${spaceTimeChartHeight}px` }}
           >
             {simulation.trains.length > 0 && (
-              <SpaceTimeChart
+              <ForcedEcoSpaceTimeChart
                 initialHeightOfSpaceTimeChart={450}
                 onSetBaseHeightOfSpaceTimeChart={setSpaceTimeChartHeight}
               />
