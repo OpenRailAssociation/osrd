@@ -41,8 +41,7 @@ pub struct Study {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
     #[diesel(deserialize_as = i64)]
-    #[diesel(column_name = "project_id")]
-    pub project: Option<i64>,
+    pub project_id: Option<i64>,
     #[diesel(deserialize_as = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
@@ -143,7 +142,7 @@ pub mod test {
     pub fn build_test_study(project_id: i64) -> Study {
         Study {
             name: Some("test".into()),
-            project: Some(project_id),
+            project_id: Some(project_id),
             description: Some("test".into()),
             creation_date: Some(Utc::now().naive_utc()),
             business_code: Some("AAA".into()),

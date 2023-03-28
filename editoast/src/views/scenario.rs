@@ -58,10 +58,10 @@ impl ScenarioCreateForm {
     pub fn into_scenario(self, study_id: i64, timetable_id: i64) -> Scenario {
         Scenario {
             name: Some(self.name),
-            study: Some(study_id),
-            infra: Some(self.infra),
-            electrical_profile_set: Some(self.electrical_profile_set),
-            timetable: Some(timetable_id),
+            study_id: Some(study_id),
+            infra_id: Some(self.infra),
+            electrical_profile_set_id: Some(self.electrical_profile_set),
+            timetable_id: Some(timetable_id),
             description: Some(self.description),
             tags: Some(self.tags),
             creation_date: Some(Utc::now().naive_utc()),
@@ -165,7 +165,7 @@ impl From<ScenarioPatchForm> for Scenario {
         Scenario {
             name: form.name,
             description: form.description,
-            electrical_profile_set: form.electrical_profile_set,
+            electrical_profile_set_id: form.electrical_profile_set,
             tags: form.tags,
             ..Default::default()
         }
@@ -291,7 +291,7 @@ mod test {
         assert_eq!(scenario.name.unwrap(), "scenario_test");
         let response = call_service(
             &app,
-            delete_scenario_request(project_id, scenario.study.unwrap(), scenario.id.unwrap()),
+            delete_scenario_request(project_id, scenario.study_id.unwrap(), scenario.id.unwrap()),
         )
         .await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -299,7 +299,7 @@ mod test {
         let response = call_service(&app, delete_project_request(project_id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(&app, delete_infra_request(scenario.infra.unwrap())).await;
+        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
@@ -310,7 +310,7 @@ mod test {
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::OK);
         let scenario: Scenario = read_body_json(response).await;
-        let study_id = scenario.study.unwrap();
+        let study_id = scenario.study_id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/");
         let req = TestRequest::get().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
@@ -324,7 +324,7 @@ mod test {
         let app = create_test_service().await;
         let (request, project_id) = create_scenario_request().await;
         let scenario: Scenario = call_and_read_body_json(&app, request).await;
-        let study_id = scenario.study.unwrap();
+        let study_id = scenario.study_id.unwrap();
         let scenario_id = scenario.id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
         let req = TestRequest::get().uri(url.as_str()).to_request();
@@ -350,7 +350,7 @@ mod test {
         let app = create_test_service().await;
         let (request, project_id) = create_scenario_request().await;
         let scenario: Scenario = call_and_read_body_json(&app, request).await;
-        let study_id = scenario.study.unwrap();
+        let study_id = scenario.study_id.unwrap();
         let scenario_id = scenario.id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
         let req = TestRequest::patch()
