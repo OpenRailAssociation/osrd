@@ -244,7 +244,7 @@ async fn list(
 
 #[cfg(test)]
 mod test {
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::models::Project;
     use crate::models::Scenario;
     use crate::models::Study;

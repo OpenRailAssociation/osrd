@@ -166,8 +166,8 @@ mod test {
 
     use super::Route;
     use crate::{
-        infra::tests::test_infra_transaction,
         infra_cache::{tests::create_small_infra_cache, Graph},
+        models::infra::tests::test_infra_transaction,
     };
 
     #[test]

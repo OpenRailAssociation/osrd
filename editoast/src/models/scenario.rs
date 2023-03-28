@@ -177,11 +177,11 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
 pub mod test {
 
     use crate::client::PostgresConfig;
-    use crate::infra::Infra;
     use crate::models::projects::test::build_test_project;
     use crate::models::study::test::build_test_study;
     use crate::models::Create;
     use crate::models::Delete;
+    use crate::models::Infra;
     use crate::models::List;
     use crate::models::Ordering;
     use crate::models::Retrieve;

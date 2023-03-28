@@ -57,7 +57,7 @@ impl Cache for SwitchType {
 mod test {
 
     use super::SwitchType;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
 
     #[test]
     fn test_persist() {

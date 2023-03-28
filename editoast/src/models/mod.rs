@@ -1,4 +1,5 @@
 mod documents;
+pub mod infra;
 pub mod infra_objects;
 mod pathfinding;
 mod projects;
@@ -16,6 +17,7 @@ use diesel::PgConnection;
 
 pub use self::pathfinding::*;
 pub use documents::Document;
+pub use infra::{Infra, InfraName, RAILJSON_VERSION};
 pub use projects::{Ordering, Project, ProjectWithStudies};
 pub use rolling_stock::{
     light_rolling_stock::LightRollingStockModel, rolling_stock_livery::RollingStockLiveryModel,

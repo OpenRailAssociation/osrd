@@ -1,6 +1,6 @@
 use crate::error::Result;
-use crate::infra::RAILJSON_VERSION;
 use crate::infra_cache::InfraCache;
+use crate::models::infra::RAILJSON_VERSION;
 use crate::schema::{ObjectType, RailJson};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -166,7 +166,7 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json};
 
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::schema::{RailJson, SwitchType};
     use crate::views::infra::railjson::PostRailjsonResponse;
     use crate::views::infra::tests::{
@@ -190,7 +190,7 @@ mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let railjson: RailJson = read_body_json(response).await;
-        assert_eq!(railjson.version, crate::infra::RAILJSON_VERSION);
+        assert_eq!(railjson.version, crate::models::infra::RAILJSON_VERSION);
         assert_eq!(railjson.switch_types.len(), 1);
 
         let response = call_service(&app, delete_infra_request(infra.id)).await;

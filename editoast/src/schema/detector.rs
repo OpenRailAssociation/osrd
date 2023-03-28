@@ -93,7 +93,7 @@ impl Cache for DetectorCache {
 mod test {
 
     use super::Detector;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
 
     #[test]
     fn test_persist() {

@@ -1,21 +1,35 @@
 use crate::error::Result;
-use crate::generated_data;
 use crate::infra_cache::InfraCache;
+use crate::models::Retrieve;
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl;
+use crate::views::infra::InfraApiError;
+use crate::{generated_data, DbPool};
+use actix_web::web::{block, Data};
 use chrono::{NaiveDateTime, Utc};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Bool, Nullable, Text};
 use diesel::ExpressionMethods;
-use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
-use editoast_derive::EditoastError;
+use diesel::{sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
+use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 pub const RAILJSON_VERSION: &str = "3.2.0";
 
-#[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
+#[derive(
+    Clone,
+    QueryableByName,
+    Queryable,
+    Debug,
+    Serialize,
+    Insertable,
+    Deserialize,
+    Identifiable,
+    Model,
+)]
 #[diesel(table_name = osrd_infra_infra)]
+#[model(retrieve, delete)]
+#[model(table = "osrd_infra_infra")]
 pub struct Infra {
     pub id: i64,
     pub name: String,
@@ -33,24 +47,7 @@ pub struct InfraName {
     pub name: String,
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "infra")]
-pub enum InfraApiError {
-    /// Couldn't find the infra with the given id
-    #[error("Infra '{infra_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    NotFound { infra_id: i64 },
-}
-
 impl Infra {
-    pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
-        match dsl::osrd_infra_infra.find(infra_id).first(conn) {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id }.into()),
-            Err(e) => Err(e.into()),
-        }
-    }
-
     pub fn retrieve_for_update(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
         match dsl::osrd_infra_infra
             .for_update()
@@ -153,16 +150,10 @@ impl Infra {
         }
     }
 
-    pub fn delete(infra_id: i64, conn: &mut PgConnection) -> Result<()> {
-        match delete(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id))).execute(conn) {
-            Ok(1) => Ok(()),
-            Ok(_) => Err(InfraApiError::NotFound { infra_id }.into()),
-            Err(err) => Err(err.into()),
-        }
-    }
-
-    pub fn clone(infra_id: i64, conn: &mut PgConnection, new_name: String) -> Result<Infra> {
-        let infra_to_clone = Infra::retrieve(conn, infra_id)?;
+    pub async fn clone(infra_id: i64, db_pool: Data<DbPool>, new_name: String) -> Result<Infra> {
+        let infra_to_clone = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
+        block::<_, Result<_>>(move || {
+        let mut conn = db_pool.get()?;
         match sql_query(
             "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked, created, modified
             )
@@ -176,11 +167,13 @@ impl Infra {
         .bind::<Nullable<Text>,_>(infra_to_clone.generated_version)
         .bind::<Bool,_>(infra_to_clone.locked)
         .bind::<BigInt,_>(infra_id)
-        .get_result::<Infra>(conn)
+        .get_result::<Infra>(&mut conn)
         {
             Ok(infra) => Ok(infra),
             Err(err) => Err(err.into()),
-        }
+        }})
+        .await
+        .unwrap()
     }
 
     /// Lock or unlock the infra whether `lock` is true or false
@@ -233,8 +226,6 @@ impl Infra {
 pub mod tests {
     use super::Infra;
     use crate::client::PostgresConfig;
-    use actix_web::http::StatusCode;
-    use actix_web::ResponseError;
     use diesel::result::Error;
     use diesel::{Connection, PgConnection};
 
@@ -252,15 +243,6 @@ pub mod tests {
     fn create_infra() {
         test_infra_transaction(|_, infra| {
             assert_eq!("test", infra.name);
-        });
-    }
-
-    #[test]
-    fn delete_infra() {
-        test_infra_transaction(|conn, infra| {
-            assert!(Infra::delete(infra.id, conn).is_ok());
-            let err = Infra::delete(infra.id, conn).unwrap_err();
-            assert_eq!(err.status_code(), StatusCode::NOT_FOUND);
         });
     }
 

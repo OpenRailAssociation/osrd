@@ -1,7 +1,8 @@
 use crate::error::Result;
-use crate::infra::Infra;
 use crate::infra_cache::{Graph, InfraCache};
+use crate::models::{Infra, Retrieve};
 use crate::schema::DirectionalTrackRange;
+use crate::views::infra::InfraApiError;
 use crate::views::params::List;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -88,10 +89,13 @@ async fn get_routes_track_ranges<'a>(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     db_pool: Data<DbPool>,
 ) -> Result<Json<Vec<RouteTrackRangesResult>>> {
-    let infra = infra.into_inner();
+    let infra_id = infra.into_inner();
+    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
+        Some(infra) => infra,
+        None => return Err(InfraApiError::NotFound { infra_id }.into()),
+    };
     let result = block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve(&mut conn, infra)?;
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         let graph = Graph::load(&infra_cache);
         let routes_cache = infra_cache.routes();

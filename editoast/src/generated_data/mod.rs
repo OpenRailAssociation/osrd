@@ -116,8 +116,8 @@ pub fn update_all(
 #[cfg(test)]
 pub mod tests {
     use crate::generated_data::{clear_all, refresh_all, update_all};
-    use crate::infra::tests::test_infra_transaction;
-    use crate::infra::Infra;
+    use crate::models::infra::tests::test_infra_transaction;
+    use crate::models::Infra;
     use diesel::PgConnection;
 
     #[test]

@@ -121,7 +121,7 @@ async fn get_paginated_infra_errors(
 
 #[cfg(test)]
 mod tests {
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::views::infra::errors::check_error_type_query;
     use crate::views::tests::create_test_service;
     use actix_web::http::StatusCode;

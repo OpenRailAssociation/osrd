@@ -83,7 +83,7 @@ impl DataObject {
 mod tests {
     use super::UpdateOperation;
     use crate::error::EditoastError;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_signal, create_speed, create_switch, create_track,
     };
