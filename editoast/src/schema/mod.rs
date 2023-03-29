@@ -266,6 +266,14 @@ pub struct TrackEndpoint {
 }
 
 impl TrackEndpoint {
+    /// Create a new `TrackEndpoint` from a track id and an endpoint.
+    pub fn new<T: AsRef<str>>(track: T, endpoint: Endpoint) -> Self {
+        TrackEndpoint {
+            track: track.as_ref().into(),
+            endpoint,
+        }
+    }
+
     /// Create a `TrackEndpoint` from a track id and a direction.
     pub fn from_track_and_direction<T: AsRef<str>>(track: T, dir: Direction) -> TrackEndpoint {
         let endpoint = match dir {

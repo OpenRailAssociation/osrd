@@ -370,23 +370,7 @@ paths:
         - in: query
           name: error_type
           schema:
-            type: string
-            enum:
-              - invalid_reference
-              - out_of_range
-              - empty_path
-              - path_does_not_match_endpoints
-              - unknown_port_name
-              - invalid_switch_ports
-              - empty_object
-              - object_out_of_path
-              - missing_route
-              - unused_port
-              - duplicated_group
-              - missing_buffer_stop
-              - path_is_not_continuous
-              - overlapping_switches
-              - overlapping_track_links
+            $ref: "#/components/schemas/InfraErrorType"
           description: The type of error to filter on
         - in: query
           name: object_id
@@ -1884,6 +1868,27 @@ components:
           type: integer
           example: 18
 
+    InfraErrorType:
+      type: string
+      description: Type of the infra error
+      enum:
+        - duplicated_group
+        - empty_object
+        - empty_path
+        - invalid_reference
+        - invalid_switch_ports
+        - missing_buffer_stop
+        - missing_route
+        - object_out_of_path
+        - odd_buffer_stop_location
+        - out_of_range
+        - overlapping_switches
+        - overlapping_track_links
+        - path_does_not_match_endpoints
+        - path_is_not_continuous
+        - unknown_port_name
+        - unused_port
+
     InfraError:
       type: object
       description: An infra error or warning
@@ -1914,23 +1919,7 @@ components:
                 - Switch
                 - Route
             error_type:
-              type: string
-              enum:
-                - invalid_reference
-                - out_of_range
-                - empty_path
-                - path_does_not_match_endpoints
-                - unknown_port_name
-                - invalid_switch_ports
-                - empty_object
-                - object_out_of_path
-                - missing_route
-                - unused_port
-                - duplicated_group
-                - missing_buffer_stop
-                - path_is_not_continuous
-                - overlapping_switches
-                - overlapping_track_links
+              $ref: "#/components/schemas/InfraErrorType"
             field:
               type: string
             is_warning:
