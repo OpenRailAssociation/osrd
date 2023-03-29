@@ -1,7 +1,4 @@
 use crate::error::Result;
-use crate::DbPool;
-use actix_web::web::block;
-use actix_web::web::Data;
 use diesel::pg::Pg;
 use diesel::query_builder::*;
 use diesel::query_dsl::LoadQuery;
@@ -54,33 +51,34 @@ fn default_page() -> i64 {
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pagination")]
 pub enum PaginationError {
-    #[error("Invalid page number")]
+    #[error("Invalid page number ({page})")]
     #[editoast_error(status = 404)]
-    InvalidPage,
+    InvalidPage { page: i64 },
+    #[error("Invalid page size ({page_size}), expected an integer strictly greater than 0")]
+    #[editoast_error(status = 400)]
+    InvalidPageSize { page_size: i64 },
 }
 
 pub trait Paginate: Sized {
-    fn paginate(self, page: i64) -> Paginated<Self>;
+    fn paginate(self, page: i64, page_size: i64) -> Paginated<Self>;
 }
 
 impl<T> Paginate for T {
-    fn paginate(self, page: i64) -> Paginated<Self> {
+    fn paginate(self, page: i64, page_size: i64) -> Paginated<Self> {
         Paginated {
             query: self,
-            per_page: DEFAULT_PER_PAGE,
+            page_size,
             page,
-            offset: (page - 1) * DEFAULT_PER_PAGE,
+            offset: (page - 1) * page_size,
         }
     }
 }
-
-const DEFAULT_PER_PAGE: i64 = 25;
 
 #[derive(Debug, Clone, Copy, QueryId)]
 pub struct Paginated<T> {
     query: T,
     page: i64,
-    per_page: i64,
+    page_size: i64,
     offset: i64,
 }
 
@@ -93,36 +91,26 @@ pub struct InternalPaginatedResult<T: QueryableByName<Pg>> {
 }
 
 impl<T> Paginated<T> {
-    pub fn per_page(self, per_page: i64) -> Self {
-        Paginated {
-            per_page,
-            offset: (self.page - 1) * per_page,
-            ..self
-        }
-    }
-
-    pub async fn load_and_count<'a, R>(self, db_pool: Data<DbPool>) -> Result<PaginatedResponse<R>>
+    pub fn load_and_count<'a, R>(self, conn: &mut PgConnection) -> Result<PaginatedResponse<R>>
     where
         Self: LoadQuery<'a, PgConnection, InternalPaginatedResult<R>>,
         R: QueryableByName<Pg> + Send + 'static,
         T: Send + 'static,
     {
-        let per_page = self.per_page;
+        let page_size = self.page_size;
         let page = self.page;
-        let results = block::<_, Result<_>>(move || {
-            let mut conn = db_pool.get()?;
-            match self.load::<InternalPaginatedResult<R>>(&mut conn) {
-                Ok(results) => Ok(results),
-                Err(error) => Err(error.into()),
-            }
-        })
-        .await
-        .unwrap()?;
+        if page < 1 {
+            return Err(PaginationError::InvalidPage { page }.into());
+        } else if page_size < 1 {
+            return Err(PaginationError::InvalidPageSize { page_size }.into());
+        }
+
+        let results = self.load::<InternalPaginatedResult<R>>(conn)?;
 
         // Check when no results
         if results.is_empty() {
             if page > 1 {
-                return Err(PaginationError::InvalidPage.into());
+                return Err(PaginationError::InvalidPage { page }.into());
             } else {
                 return Ok(PaginatedResponse {
                     count: 0,
@@ -135,7 +123,7 @@ impl<T> Paginated<T> {
 
         let count = results.get(0).unwrap().count;
         let previous = if page > 1 { Some(page - 1) } else { None };
-        let next = if count > page * per_page {
+        let next = if count > page * page_size {
             Some(page + 1)
         } else {
             None
@@ -158,7 +146,7 @@ where
         out.push_sql("SELECT *, COUNT(*) OVER () FROM (");
         self.query.walk_ast(out.reborrow())?;
         out.push_sql(") as paged_query_with LIMIT ");
-        out.push_bind_param::<BigInt, _>(&self.per_page)?;
+        out.push_bind_param::<BigInt, _>(&self.page_size)?;
         out.push_sql(" OFFSET ");
         out.push_bind_param::<BigInt, _>(&self.offset)?;
         Ok(())

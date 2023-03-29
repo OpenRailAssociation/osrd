@@ -2,6 +2,8 @@ use crate::error::Result;
 use crate::models::Create;
 use crate::models::Delete;
 use crate::models::Document;
+use crate::models::List;
+use crate::models::NoParams;
 use crate::models::Project;
 use crate::models::ProjectWithStudies;
 use crate::models::Retrieve;
@@ -130,7 +132,7 @@ async fn list(
 ) -> Result<Json<PaginatedResponse<ProjectWithImageUrl>>> {
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let projects = Project::list(db_pool, page, per_page).await?;
+    let projects = ProjectWithStudies::list(db_pool, page, per_page, NoParams).await?;
 
     Ok(Json(projects.into()))
 }
