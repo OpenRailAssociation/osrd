@@ -34,10 +34,10 @@ export type scenarioTypes = {
   id?: number;
   name: string;
   description: string;
-  infra?: number;
+  infra_id?: number;
   infra_name?: string;
   electrical_profile_set_name?: string;
-  timetable?: number;
-  electrical_profile_set?: number;
+  timetable_id?: number;
+  electrical_profile_set_id?: number;
   tags: string[];
 };
