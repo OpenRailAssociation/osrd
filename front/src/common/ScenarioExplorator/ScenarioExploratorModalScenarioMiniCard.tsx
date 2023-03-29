@@ -24,8 +24,8 @@ export default function ScenarioMiniCard({
     dispatch(updateProjectID(projectID));
     dispatch(updateStudyID(studyID));
     dispatch(updateScenarioID(scenario.id));
-    dispatch(updateInfraID(scenario.infra));
-    dispatch(updateTimetableID(scenario.timetable));
+    dispatch(updateInfraID(scenario.infra_id));
+    dispatch(updateTimetableID(scenario.timetable_id));
     closeModal();
   };
   return (
