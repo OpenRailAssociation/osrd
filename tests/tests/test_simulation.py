@@ -1,7 +1,5 @@
-from .scenario import Scenario
-from .services import API_URL
-from .utils.simulation import run_simulation
+from typing import Iterable
 
 
-def test_dummy_simulation(dummy_scenario: Scenario):
-    run_simulation(API_URL, dummy_scenario)
+def test_dummy_simulation(west_to_south_east_simulation: Iterable[int]):
+    assert len(west_to_south_east_simulation) == 1
