@@ -1,4 +1,4 @@
-use super::{OSRDIdentified, OSRDObject, ObjectType};
+use super::{Endpoint, OSRDIdentified, OSRDObject, ObjectType};
 use crate::schema::ObjectRef;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumVariantNames;
@@ -8,7 +8,7 @@ use strum_macros::EnumVariantNames;
 pub struct InfraError {
     obj_id: String,
     obj_type: ObjectType,
-    field: String,
+    field: Option<String>,
     is_warning: bool,
     #[serde(flatten)]
     sub_type: InfraErrorType,
@@ -32,7 +32,9 @@ pub enum InfraErrorType {
     InvalidRoute,
     InvalidSwitchPorts,
     MissingRoute,
-    NoBufferStop,
+    MissingBufferStop {
+        endpoint: Endpoint,
+    },
     ObjectOutOfPath {
         reference: ObjectRef,
     },
@@ -63,7 +65,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: false,
             sub_type: InfraErrorType::InvalidReference { reference },
         }
@@ -78,7 +80,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: false,
             sub_type: InfraErrorType::OutOfRange {
                 position,
@@ -91,7 +93,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: "".into(), // This error concern the whole object consistency
+            field: None, // This error concern the whole object consistency
             is_warning: false,
             sub_type: InfraErrorType::InvalidRoute,
         }
@@ -101,7 +103,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: true,
             sub_type: InfraErrorType::EmptyObject,
         }
@@ -115,7 +117,7 @@ impl InfraError {
         Self {
             obj_id: route.get_id().clone(),
             obj_type: route.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: false,
             sub_type: InfraErrorType::ObjectOutOfPath { reference },
         }
@@ -140,7 +142,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: false,
             sub_type: InfraErrorType::UnknownPortName { port_name },
         }
@@ -150,7 +152,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: false,
             sub_type: InfraErrorType::InvalidSwitchPorts,
         }
@@ -164,7 +166,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: true,
             sub_type: InfraErrorType::UnusedPort {
                 port_name: port_name.as_ref().into(),
@@ -180,7 +182,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: true,
             sub_type: InfraErrorType::DuplicatedGroup {
                 original_group_path,
@@ -197,7 +199,7 @@ impl InfraError {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: Some(field.as_ref().into()),
             is_warning: false,
             sub_type: InfraErrorType::InvalidGroup {
                 group: group.as_ref().into(),
@@ -206,13 +208,13 @@ impl InfraError {
         }
     }
 
-    pub fn new_no_buffer_stop<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
+    pub fn new_missing_buffer_stop<O: OSRDObject>(obj: &O, endpoint: Endpoint) -> Self {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: None,
             is_warning: true,
-            sub_type: InfraErrorType::NoBufferStop,
+            sub_type: InfraErrorType::MissingBufferStop { endpoint },
         }
     }
 
