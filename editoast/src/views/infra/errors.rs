@@ -151,7 +151,9 @@ mod tests {
             .uri(
                 format!(
                     "/infra/{}/errors?error_type={}&level={}",
-                    infra.id, error_type, level
+                    infra.id.unwrap(),
+                    error_type,
+                    level
                 )
                 .as_str(),
             )
@@ -160,7 +162,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         let req = TestRequest::delete()
-            .uri(format!("/infra/{}", infra.id).as_str())
+            .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);

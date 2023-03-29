@@ -56,13 +56,13 @@ fn apply_edit(
 ) -> Result<(Vec<OperationResult>, Zone)> {
     // Check if the infra is locked
     if infra.locked {
-        return Err(EditionError::InfraIsLocked(infra.id).into());
+        return Err(EditionError::InfraIsLocked(infra.id.unwrap()).into());
     }
 
     // Apply modifications
     let mut operation_results = vec![];
     for operation in operations.iter() {
-        operation_results.push(operation.apply(infra.id, conn)?);
+        operation_results.push(operation.apply(infra.id.unwrap(), conn)?);
     }
 
     // Bump version
@@ -74,7 +74,7 @@ fn apply_edit(
     // Apply operations to infra cache
     infra_cache.apply_operations(&operation_results);
     // Refresh layers if needed
-    generated_data::update_all(conn, infra.id, &operation_results, infra_cache)
+    generated_data::update_all(conn, infra.id.unwrap(), &operation_results, infra_cache)
         .expect("Update generated data failed");
 
     // Bump infra generated version to the infra version

@@ -77,6 +77,7 @@ mod test {
     use super::SpeedSection;
     use super::SpeedSectionExtensions;
     use crate::models::infra::tests::test_infra_transaction;
+    use actix_web::test as actix_test;
     use serde_json::from_str;
 
     #[test]
@@ -84,14 +85,15 @@ mod test {
         from_str::<SpeedSectionExtensions>(r#"{}"#).unwrap();
     }
 
-    #[test]
-    fn test_persist() {
+    #[actix_test]
+    async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10)
                 .map(|_| SpeedSection::default())
                 .collect::<Vec<SpeedSection>>();
 
-            assert!(SpeedSection::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(SpeedSection::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 }
