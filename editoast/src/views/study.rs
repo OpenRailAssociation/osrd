@@ -15,7 +15,7 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::patch;
 use actix_web::web::{self, Data, Json, Path, Query};
 use actix_web::{delete, get, post, HttpResponse};
-use chrono::NaiveDateTime;
+use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
@@ -47,9 +47,9 @@ struct StudyCreateForm {
     pub name: String,
     #[serde(default)]
     pub description: String,
-    pub start_date: Option<NaiveDateTime>,
-    pub expected_end_date: Option<NaiveDateTime>,
-    pub actual_end_date: Option<NaiveDateTime>,
+    pub start_date: Option<NaiveDate>,
+    pub expected_end_date: Option<NaiveDate>,
+    pub actual_end_date: Option<NaiveDate>,
     #[serde(default)]
     pub business_code: String,
     #[serde(default)]
@@ -180,9 +180,9 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
 struct StudyPatchForm {
     pub name: Option<String>,
     pub description: Option<String>,
-    pub start_date: Option<NaiveDateTime>,
-    pub expected_end_date: Option<NaiveDateTime>,
-    pub actual_end_date: Option<NaiveDateTime>,
+    pub start_date: Option<Option<NaiveDate>>,
+    pub expected_end_date: Option<Option<NaiveDate>>,
+    pub actual_end_date: Option<Option<NaiveDate>>,
     pub business_code: Option<String>,
     pub service_code: Option<String>,
     pub budget: Option<i32>,
@@ -196,9 +196,9 @@ impl From<StudyPatchForm> for Study {
         Study {
             name: form.name,
             description: form.description,
-            start_date: Some(form.start_date),
-            expected_end_date: Some(form.expected_end_date),
-            actual_end_date: Some(form.actual_end_date),
+            start_date: form.start_date,
+            expected_end_date: form.expected_end_date,
+            actual_end_date: form.actual_end_date,
             budget: form.budget,
             business_code: form.business_code,
             service_code: form.service_code,

@@ -54,30 +54,30 @@ def small_infra() -> Infra:
 @pytest.fixture
 def foo_project_id() -> int:
     response = requests.post(
-        API_URL + "projects/",
-        json={"name": "Project test 1", "description": "", "objectives": "", "funders": "", "tags": [], "budget": 0},
+        EDITOAST_URL + "projects/",
+        json={"name": "foo", "description": "", "objectives": "", "funders": "", "tags": [], "budget": 0},
     )
     project_id = response.json()["id"]
     yield project_id
-    requests.delete(API_URL + f"projects/{project_id}/")
+    requests.delete(EDITOAST_URL + f"projects/{project_id}/")
 
 
 @pytest.fixture
 def foo_study_id(foo_project_id: int) -> int:
-    payload = {"name": "Study test 1", "service_code": "AAA", "business_code": "BBB", "tags": []}
-    res = requests.post(API_URL + f"projects/{foo_project_id}/studies/", json=payload)
+    payload = {"name": "foo", "service_code": "AAA", "business_code": "BBB", "tags": []}
+    res = requests.post(EDITOAST_URL + f"projects/{foo_project_id}/studies/", json=payload)
     yield res.json()["id"]
 
 
 @pytest.fixture
 def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, tiny_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario(EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id)
 
 
 @pytest.fixture
 def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, small_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
@@ -129,6 +129,7 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Trai
             "rolling_stocks": [fast_rolling_stock],
         },
     )
+    print(response.json())
     yield TrainPath(**response.json())
 
 
