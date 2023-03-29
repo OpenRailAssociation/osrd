@@ -53,4 +53,5 @@ pointy = "0.4.0"
 futures = "0.3"
 
 [dev-dependencies]
-ntest = "0.9.0"
+rstest = "0.17.0"
+async-std = { version = "1.5", features = ["attributes", "tokio1"] }

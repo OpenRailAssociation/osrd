@@ -37,17 +37,13 @@ async fn get(
 
 #[cfg(test)]
 mod tests {
-    use crate::client::PostgresConfig;
-    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
+    use crate::fixtures::tests::{fast_rolling_stock, TestFixture};
     use crate::models::RollingStockModel;
-    use crate::models::{Create, Delete};
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_service, TestRequest};
-    use actix_web::web::Data;
-    use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::*;
 
     #[actix_test]
     async fn list_light_rolling_stock() {
@@ -57,29 +53,24 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    #[actix_test]
-    async fn get_light_rolling_stock() {
+    #[rstest]
+    async fn get_light_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
         let app = create_test_service().await;
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        let rolling_stock: RollingStockModel =
-            get_rolling_stock_example(String::from("get_light_rolling_stock_test"));
-        let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
-        let rolling_stock_id = rolling_stock.id.unwrap();
+        let rolling_stock = fast_rolling_stock.await;
 
         let req = TestRequest::get()
-            .uri(format!("/light_rolling_stock/{}", rolling_stock_id).as_str())
+            .uri(format!("/light_rolling_stock/{}", rolling_stock.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+    }
 
-        RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
-            .await
-            .unwrap();
+    #[rstest]
+    async fn no_rolling_stock() {
+        let app = create_test_service().await;
 
         let req = TestRequest::get()
-            .uri(format!("/light_rolling_stock/{}", rolling_stock_id).as_str())
+            .uri(format!("/light_rolling_stock/{}", -1).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
