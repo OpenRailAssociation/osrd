@@ -14,7 +14,8 @@ def create_op_study(base_url, project_id: int) -> int:
 
 
 def create_scenario(base_url, infra_id, project_id, op_study_id) -> Tuple[int, int]:
-    scenario_payload = {"name": "Scenario test 1", "infra": infra_id, "tags": []}
+
+    scenario_payload = {"name": "foo", "infra": infra_id}
     r = requests.post(
         base_url + f"projects/{project_id}/studies/{op_study_id}/scenarios/",
         json=scenario_payload,
@@ -22,4 +23,4 @@ def create_scenario(base_url, infra_id, project_id, op_study_id) -> Tuple[int, i
     if r.status_code // 100 != 2:
         err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(scenario_payload)}"
         raise RuntimeError(err)
-    return (r.json()["id"], r.json()["timetable"])
+    return (r.json()["id"], r.json()["timetable_id"])
