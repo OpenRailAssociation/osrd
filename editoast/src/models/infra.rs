@@ -1,7 +1,7 @@
 use super::{Create, List, NoParams, Update};
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
-use crate::models::Retrieve;
+use crate::models::{Identifiable, Retrieve};
 use crate::schema::{
     BufferStop, Catenary, Detector, OperationalPoint, RailJson, RailjsonError, Route, Signal,
     SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
@@ -203,6 +203,12 @@ impl List<NoParams> for Infra {
             .distinct()
             .paginate(page, page_size)
             .load_and_count(conn)
+    }
+}
+
+impl Identifiable for Infra {
+    fn get_id(&self) -> i64 {
+        self.id.unwrap()
     }
 }
 

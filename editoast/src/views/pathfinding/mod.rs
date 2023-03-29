@@ -1,3 +1,5 @@
+mod catenaries;
+
 use actix_web::{
     delete,
     dev::HttpServiceFactory,
@@ -24,11 +26,14 @@ enum PathfindingError {
     #[error("Pathfinding {pathfinding_id} does not exist")]
     #[editoast_error(status = 404)]
     NotFound { pathfinding_id: i64 },
+    #[error("Pathfinding {pathfinding_id} has reference to invalid infra id {infra_id}")]
+    #[editoast_error(status = 500)]
+    InvalidInfraId { pathfinding_id: i64, infra_id: i64 },
 }
 
 /// Returns `/pathfinding` routes
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/pathfinding").service((get_pf, del_pf))
+    web::scope("/pathfinding").service((get_pf, del_pf, catenaries::routes()))
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -63,7 +68,7 @@ impl From<Pathfinding> for Response {
             ..
         } = value;
         Self {
-            id,
+            id: id.expect("Pathfinding ID should be set"),
             owner,
             created,
             slopes: slopes.0,
