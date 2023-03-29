@@ -38,6 +38,7 @@ pub enum InfraErrorType {
     ObjectOutOfPath {
         reference: ObjectRef,
     },
+    OddBufferStopLocation,
     OutOfRange {
         position: f64,
         expected_range: [f64; 2],
@@ -215,6 +216,16 @@ impl InfraError {
             field: None,
             is_warning: true,
             sub_type: InfraErrorType::MissingBufferStop { endpoint },
+        }
+    }
+
+    pub fn new_odd_buffer_stop_location<O: OSRDObject>(obj: &O) -> Self {
+        Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
+            field: None,
+            is_warning: true,
+            sub_type: InfraErrorType::OddBufferStopLocation,
         }
     }
 
