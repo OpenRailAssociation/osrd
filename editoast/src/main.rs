@@ -18,7 +18,7 @@ use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
-use actix_web::web::{Data, JsonConfig};
+use actix_web::web::{block, Data, JsonConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
@@ -188,7 +188,7 @@ async fn generate(
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&mut conn) {
+        for infra in Infra::all(&mut conn) {
             infras.push(infra);
         }
     } else {
@@ -241,33 +241,45 @@ async fn import_railjson(
     let railjson_file = File::open(args.railjson_path)?;
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
     let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-    let conn = &mut PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+
     let infra: Infra = InfraForm {
         name: args.infra_name,
     }
     .into();
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
-    let infra = infra.persist(railjson, pool).await?;
-    let infra = infra.bump_version(conn)?;
+    let infra = infra.persist(railjson, pool.clone()).await?;
+    block::<_, Result<(), Box<dyn Error + Send + Sync>>>(move || {
+        let mut conn = pool.get()?;
+        let infra = match infra.bump_version(&mut conn) {
+            Ok(infra) => infra,
+            Err(_) => {
+                return Err(InfraApiError::NotFound {
+                    infra_id: infra.id.unwrap(),
+                }
+                .into())
+            }
+        };
 
-    println!(
-        "✅ Infra {}[{}] saved!",
-        infra.name.clone().unwrap().bold(),
-        infra.id.unwrap()
-    );
-    // Generate only if the was set
-    if args.generate {
-        let infra_cache = InfraCache::load(conn, &infra)?;
-        infra.refresh(conn, true, &infra_cache)?;
         println!(
-            "✅ Infra {}[{}] generated data refreshed!",
-            infra.name.unwrap().bold(),
+            "✅ Infra {}[{}] saved!",
+            infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
         );
-    }
-
-    Ok(())
+        // Generate only if the was set
+        if args.generate {
+            let infra_cache = InfraCache::load(&mut conn, &infra)?;
+            infra.refresh(&mut conn, true, &infra_cache)?;
+            println!(
+                "✅ Infra {}[{}] generated data refreshed!",
+                infra.name.unwrap().bold(),
+                infra.id.unwrap()
+            );
+        };
+        Ok(())
+    })
+    .await
+    .unwrap()
 }
 
 async fn add_electrical_profile_set(
@@ -310,7 +322,7 @@ async fn clear(
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&mut conn) {
+        for infra in Infra::all(&mut conn) {
             infras.push(infra);
         }
     } else {
@@ -359,14 +371,6 @@ mod tests {
     use rand::{thread_rng, Rng};
     use std::io::Write;
     use tempfile::NamedTempFile;
-
-    // pub fn test_transaction(fn_test: fn(&mut PgConnection)) {
-    //     let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-    //     conn.test_transaction::<_, Error, _>(|conn| {
-    //         fn_test(conn);
-    //         Ok(())
-    //     });
-    // }
 
     #[actix_test]
     async fn import_railjson_ko_file_not_found() {

@@ -14,6 +14,7 @@ use crate::infra_cache::{Graph, InfraCache};
 use crate::models::Infra;
 use crate::schema::utils::Identifier;
 use crate::schema::{Direction, DirectionalTrackRange, Endpoint, ObjectType, TrackEndpoint};
+use crate::views::infra::InfraApiError;
 use crate::DbPool;
 use editoast_derive::EditoastError;
 
@@ -90,7 +91,10 @@ async fn pathfinding_view(
 
     block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
+        let infra = match Infra::retrieve_for_update(&mut conn, infra) {
+            Ok(infra) => infra,
+            Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
+        };
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
 
         // Check that the starting and ending track locations are valid

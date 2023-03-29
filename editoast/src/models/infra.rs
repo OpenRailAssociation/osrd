@@ -1,3 +1,4 @@
+use super::{Create, List, NoParams, Update};
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::Retrieve;
@@ -7,20 +8,18 @@ use crate::schema::{
 };
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl;
-use crate::views::infra::InfraApiError;
+use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::{generated_data, DbPool};
 use actix_web::web::{block, Data};
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Bool, Nullable, Text};
-use diesel::{sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
+use diesel::{sql_query, PgConnection, QueryDsl, RunQueryDsl};
 use diesel::{Connection, ExpressionMethods};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-use super::Create;
 
 pub const RAILJSON_VERSION: &str = "3.2.0";
 
@@ -34,10 +33,11 @@ pub const RAILJSON_VERSION: &str = "3.2.0";
     Deserialize,
     Identifiable,
     Model,
+    AsChangeset,
     Derivative,
 )]
 #[diesel(table_name = osrd_infra_infra)]
-#[model(retrieve, delete, create)]
+#[model(retrieve, delete, create, update)]
 #[model(table = "osrd_infra_infra")]
 #[derivative(Default)]
 pub struct Infra {
@@ -52,49 +52,35 @@ pub struct Infra {
     pub owner: Option<Uuid>,
     #[derivative(Default(value = "'0'.into()"))]
     pub version: String,
-    #[derivative(Default(value = "Some('0'.into())"))]
-    pub generated_version: Option<String>,
+    #[diesel(deserialize_as = Option<String>)]
+    #[derivative(Default(value = "Some(Some('0'.into()))"))]
+    pub generated_version: Option<Option<String>>,
     #[derivative(Default(value = "false"))]
     pub locked: bool,
-    #[derivative(Default(value = "Utc::now().naive_utc()"))]
-    pub created: NaiveDateTime,
+    #[diesel(deserialize_as = NaiveDateTime)]
+    pub created: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub modified: NaiveDateTime,
 }
 
 impl Infra {
     pub fn retrieve_for_update(conn: &mut PgConnection, infra_id: i64) -> Result<Infra> {
-        match dsl::osrd_infra_infra
+        let infra = dsl::osrd_infra_infra
             .for_update()
             .find(infra_id)
-            .first(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id }.into()),
-            Err(e) => Err(e.into()),
-        }
-    }
-
-    pub fn rename(conn: &mut PgConnection, infra_id: i64, new_name: String) -> Result<Infra> {
-        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id)))
-            .set(dsl::name.eq(new_name))
-            .get_result::<Infra>(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound { infra_id }.into()),
-            Err(err) => Err(err.into()),
-        }
-    }
-
-    pub fn list(conn: &mut PgConnection) -> Vec<Infra> {
-        dsl::osrd_infra_infra
-            .load::<Self>(conn)
-            .expect("List infra query failed")
+            .first(conn)?;
+        Ok(infra)
     }
 
     pub fn list_for_update(conn: &mut PgConnection) -> Vec<Infra> {
         dsl::osrd_infra_infra
             .for_update()
+            .load::<Self>(conn)
+            .expect("List infra query failed")
+    }
+
+    pub fn all(conn: &mut PgConnection) -> Vec<Infra> {
+        dsl::osrd_infra_infra
             .load::<Self>(conn)
             .expect("List infra query failed")
     }
@@ -105,60 +91,12 @@ impl Infra {
             .parse::<u32>()
             .expect("Cannot convert version into an Integer")
             + 1;
-
-        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id.unwrap())))
-            .set(dsl::version.eq(new_version.to_string()))
-            .get_result::<Infra>(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound {
-                infra_id: self.id.unwrap(),
-            }
-            .into()),
-            Err(err) => Err(err.into()),
-        }
-    }
-
-    pub fn bump_generated_version(&self, conn: &mut PgConnection) -> Result<Self> {
-        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id.unwrap())))
-            .set(dsl::generated_version.eq(&self.version))
-            .get_result::<Infra>(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound {
-                infra_id: self.id.unwrap(),
-            }
-            .into()),
-            Err(err) => Err(err.into()),
-        }
-    }
-
-    pub fn downgrade_generated_version(&self, conn: &mut PgConnection) -> Result<Self> {
-        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id.unwrap())))
-            .set(dsl::generated_version.eq::<Option<String>>(None))
-            .get_result::<Infra>(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound {
-                infra_id: self.id.unwrap(),
-            }
-            .into()),
-            Err(err) => Err(err.into()),
-        }
-    }
-
-    pub fn update_modified_timestamp_to_now(&self, conn: &mut PgConnection) -> Result<Self> {
-        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id.unwrap())))
-            .set(dsl::modified.eq(Utc::now().naive_utc()))
-            .get_result::<Infra>(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound {
-                infra_id: self.id.unwrap(),
-            }
-            .into()),
-            Err(err) => Err(err.into()),
-        }
+        let infra_id = self.id.unwrap();
+        let new_version = new_version.to_string();
+        let mut infra = self.clone();
+        infra.version = new_version;
+        let infra = infra.update_conn(conn, infra_id)?.unwrap();
+        Ok(infra)
     }
 
     pub async fn persist(self, railjson: RailJson, db_pool: Data<DbPool>) -> Result<Infra> {
@@ -167,9 +105,10 @@ impl Infra {
                 return Err(RailjsonError::WrongVersion(railjson.version).into());
             }
             let mut conn = db_pool.get()?;
-            let infra = self.create_conn(&mut conn)?;
-            let infra_id = infra.id.unwrap();
+
             conn.transaction(|conn| {
+                let infra = self.create_conn(conn)?;
+                let infra_id = infra.id.unwrap();
                 BufferStop::persist_batch(&railjson.buffer_stops, infra_id, conn)?;
                 Catenary::persist_batch(&railjson.catenaries, infra_id, conn)?;
                 Detector::persist_batch(&railjson.detectors, infra_id, conn)?;
@@ -202,7 +141,7 @@ impl Infra {
         .bind::<Text, _>(new_name)
         .bind::<Text, _>(RAILJSON_VERSION)
         .bind::<Text,_>(infra_to_clone.version)
-        .bind::<Nullable<Text>,_>(infra_to_clone.generated_version)
+        .bind::<Nullable<Text>,_>(infra_to_clone.generated_version.unwrap())
         .bind::<Bool,_>(infra_to_clone.locked)
         .bind::<BigInt,_>(infra_id)
         .get_result::<Infra>(&mut conn)
@@ -212,21 +151,6 @@ impl Infra {
         }})
         .await
         .unwrap()
-    }
-
-    /// Lock or unlock the infra whether `lock` is true or false
-    pub fn set_locked(&self, lock: bool, conn: &mut PgConnection) -> Result<Self> {
-        match update(dsl::osrd_infra_infra.filter(dsl::id.eq(self.id.unwrap())))
-            .set(dsl::locked.eq(lock))
-            .get_result::<Infra>(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(InfraApiError::NotFound {
-                infra_id: self.id.unwrap(),
-            }
-            .into()),
-            Err(err) => Err(err.into()),
-        }
     }
 
     /// Refreshes generated data if not up to date and returns whether they were refreshed.
@@ -242,7 +166,7 @@ impl Infra {
         // Check if refresh is needed
         if !force
             && self.generated_version.is_some()
-            && &self.version == self.generated_version.as_ref().unwrap()
+            && &self.version == self.generated_version.as_ref().unwrap().as_ref().unwrap()
         {
             return Ok(false);
         }
@@ -250,16 +174,35 @@ impl Infra {
         generated_data::refresh_all(conn, self.id.unwrap(), infra_cache)?;
 
         // Update generated infra version
-        self.bump_generated_version(conn)?;
+        let mut infra = self.clone();
+        infra.generated_version = Some(Some(self.version.clone()));
+        infra.update_conn(conn, self.id.unwrap())?;
+
         Ok(true)
     }
 
     /// Clear generated data of the infra
     /// This function will update `generated_version` acordingly.
     pub fn clear(&self, conn: &mut PgConnection) -> Result<bool> {
-        generated_data::clear_all(conn, self.id.unwrap())?;
-        self.downgrade_generated_version(conn)?;
+        generated_data::clear_all(conn, self.clone().id.unwrap())?;
+        let mut infra = self.clone();
+        infra.generated_version = Some(None);
+        infra.update_conn(conn, self.id.unwrap())?;
         Ok(true)
+    }
+}
+
+impl List<NoParams> for Infra {
+    fn list_conn(
+        conn: &mut diesel::PgConnection,
+        page: i64,
+        page_size: i64,
+        _: NoParams,
+    ) -> Result<PaginatedResponse<Self>> {
+        dsl::osrd_infra_infra
+            .distinct()
+            .paginate(page, page_size)
+            .load_and_count(conn)
     }
 }
 
@@ -269,28 +212,25 @@ pub mod tests {
     use crate::client::PostgresConfig;
     use crate::models::Create;
     use actix_web::test as actix_test;
-    use actix_web::web::Data;
-    use diesel::r2d2::ConnectionManager;
+    use chrono::Utc;
     use diesel::result::Error;
     use diesel::{Connection, PgConnection};
-    use r2d2::Pool;
-    use uuid::uuid;
+    use uuid::Uuid;
 
     pub fn build_test_infra() -> Infra {
         Infra {
             name: Some("test".into()),
-            owner: Some(uuid!("00000000-0000-0000-0000-000000000000")),
+            created: Some(Utc::now().naive_utc()),
+            owner: Some(Uuid::nil()),
             ..Default::default()
         }
     }
 
     pub async fn test_infra_transaction(fn_test: fn(&mut PgConnection, Infra)) {
         let infra = build_test_infra();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
         let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        let infra = infra.create(pool).await.unwrap();
         conn.test_transaction::<_, Error, _>(|conn| {
+            let infra = infra.create_conn(conn).unwrap();
             fn_test(conn, infra);
             Ok(())
         })
@@ -302,29 +242,5 @@ pub mod tests {
             assert_eq!("test", infra.name.unwrap());
         })
         .await;
-    }
-
-    #[actix_test]
-    async fn update_infra_name() {
-        test_infra_transaction(|conn, infra| {
-            let new_name = "new_name";
-            let updated_infra = Infra::rename(conn, infra.id.unwrap(), new_name.into()).unwrap();
-            assert_eq!(new_name, updated_infra.name.unwrap());
-        })
-        .await;
-    }
-
-    #[actix_test]
-    async fn downgrade_version() {
-        let infra = build_test_infra();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-        let infra = infra.create(pool).await.unwrap();
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        assert!(infra
-            .downgrade_generated_version(&mut conn)
-            .unwrap()
-            .generated_version
-            .is_none())
     }
 }

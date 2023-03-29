@@ -1,4 +1,5 @@
 use crate::error::Result;
+use crate::views::infra::InfraApiError;
 use actix_web::post;
 use actix_web::web::{block, Data, Json, Path};
 use chashmap::CHashMap;
@@ -9,7 +10,7 @@ use thiserror::Error;
 use crate::client::MapLayersConfig;
 use crate::infra_cache::InfraCache;
 use crate::map::{self, MapLayers, Zone};
-use crate::models::Infra;
+use crate::models::{Infra, Update};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::{generated_data, DbPool};
 use editoast_derive::EditoastError;
@@ -28,7 +29,10 @@ pub async fn edit<'a>(
     let infra = infra.into_inner();
     let (operation_results, invalid_zone) = block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
+        let infra = match Infra::retrieve_for_update(&mut conn, infra) {
+            Ok(infra) => infra,
+            Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
+        };
         let mut infra_cache =
             InfraCache::get_or_load_mut(&mut conn, &infra_caches, &infra).unwrap();
         apply_edit(&mut conn, &infra, &operations, &mut infra_cache)
@@ -66,7 +70,15 @@ fn apply_edit(
     }
 
     // Bump version
-    let infra = infra.bump_version(conn)?;
+    let infra = match infra.bump_version(conn) {
+        Ok(infra) => infra,
+        Err(_) => {
+            return Err(InfraApiError::NotFound {
+                infra_id: infra.id.unwrap(),
+            }
+            .into())
+        }
+    };
 
     // Compute cache invalidation zone
     let invalid_zone = Zone::compute(infra_cache, &operation_results);
@@ -78,10 +90,22 @@ fn apply_edit(
         .expect("Update generated data failed");
 
     // Bump infra generated version to the infra version
-    infra.bump_generated_version(conn)?;
+    let mut infra_bump = infra.clone();
+    infra_bump.generated_version = Some(Some(infra.version.clone()));
+    match infra_bump.update_conn(conn, infra.id.unwrap()) {
+        Ok(infra) => infra.unwrap(),
+        Err(_) => {
+            return Err(InfraApiError::NotFound {
+                infra_id: infra.id.unwrap(),
+            }
+            .into())
+        }
+    };
 
     // update infra modified medata
-    infra.update_modified_timestamp_to_now(conn)?;
+    Infra::default()
+        .update_conn(conn, infra.id.unwrap())?
+        .unwrap();
 
     Ok((operation_results, invalid_zone))
 }

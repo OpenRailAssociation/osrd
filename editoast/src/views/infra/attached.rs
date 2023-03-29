@@ -2,6 +2,7 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::Infra;
 use crate::schema::ObjectType;
+use crate::views::infra::InfraApiError;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
@@ -47,7 +48,10 @@ async fn attached(
 
     block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
+        let infra = match Infra::retrieve_for_update(&mut conn, infra) {
+            Ok(infra) => infra,
+            Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
+        };
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         // Check track existence
         if !infra_cache.track_sections().contains_key(&track_id) {
