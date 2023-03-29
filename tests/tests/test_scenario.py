@@ -24,10 +24,10 @@ class _ScenarioResponse:
     train_schedules: Iterable[Any]
 
 
-def test_get_scenario(dummy_scenario: Scenario):
+def test_get_scenario(small_scenario: Scenario):
     response = requests.get(
         API_URL
-        + f"projects/{dummy_scenario.project}/studies/{dummy_scenario.op_study}/scenarios/{dummy_scenario.scenario}/"
+        + f"projects/{small_scenario.project}/studies/{small_scenario.op_study}/scenarios/{small_scenario.scenario}/"
     )
     assert response.status_code == 200
     body = _ScenarioResponse(**response.json())
