@@ -3,8 +3,6 @@ package fr.sncf.osrd.envelope_sim;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import fr.sncf.osrd.envelope_sim.power.EnergySource;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_sim.power;
 
 import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
-import fr.sncf.osrd.envelope_sim.power.storage.ManagementSystem;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 import fr.sncf.osrd.envelope_sim.power.storage.SocDependantPowerCoefficient;
 
@@ -51,9 +50,8 @@ public class PowerPack implements EnergySource {
         double volume = 4; // m^3
         double capacity = 10 * 3.6e6 * volume; // Joules
         var refillLaw = new RefillLaw(100,1,capacity);
-        var managementSystem = new ManagementSystem(1,0.2);  // to be used later
         var socCoef = new SocDependantPowerCoefficient(1);
-        var storage = new EnergyStorage(capacity, 1, refillLaw, managementSystem, socCoef);
+        var storage = new EnergyStorage(capacity, 1, 0, 1, refillLaw, socCoef);
         double efficiency = 1;
         return new PowerPack(pMin, pMax, storage, efficiency);
     }

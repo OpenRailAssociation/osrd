@@ -6,27 +6,31 @@ public class EnergyStorage{
     double capacity;
 
     /** The State of Charge of the EnergyStorage, soc * capacity = actual stock of energy */
-    double soc;//
+    double soc;
     public RefillLaw refillLaw;
-    public ManagementSystem management;
+    public double socMin;
+    public double socMax;
     public SocDependantPowerCoefficient socDependency;
 
     public EnergyStorage(
             double capacity,
-            double soc,
+            double initialSoc,
+            double socMin,
+            double socMax,
             RefillLaw refillLaw,
-            ManagementSystem management,
             SocDependantPowerCoefficient socDependency
     ) {
         this.capacity = capacity;
-        this.soc = soc;
+        this.soc = initialSoc;
         this.refillLaw = refillLaw;
-        this.management = management;
+        this.socMin = socMin;
+        this.socMax = socMax;
         this.socDependency = socDependency;
     }
 
     public void updateStateOfCharge(double energy){
         soc += energy/capacity;
+        soc = Math.max(Math.min(soc, socMax), socMin);
     }
 
     public double getSoc() {

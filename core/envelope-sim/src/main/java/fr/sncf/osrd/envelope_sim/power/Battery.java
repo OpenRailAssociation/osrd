@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope_sim.power;
 
 import fr.sncf.osrd.envelope_sim.Utils.*;
 import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
-import fr.sncf.osrd.envelope_sim.power.storage.ManagementSystem;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 import fr.sncf.osrd.envelope_sim.power.storage.SocDependantPowerCoefficient;
 
@@ -56,13 +55,17 @@ public class Battery implements EnergySource {
                 new CurvePoint(120.0,1.5),
                 new CurvePoint(3000.0,1.5)
         };
+        double pMin = -400.;
+        double pMax = 500;
+        double capacity = 150 * 3.6e6;
         return new Battery(
-                -400.,
-                500.,
+                pMin,
+                pMax,
                 new EnergyStorage(
-                        150*3.6E6, 0.8,         // kWh to J : x3.6E6
-                        new RefillLaw(97.6,0.8,150*3.6E6),
-                        new ManagementSystem(0.9,0.2),  // to be used later
+                        capacity,
+                        0.8,
+                        0.2, 0.9,
+                        new RefillLaw(97.6,0.8, capacity),
                         new SocDependantPowerCoefficient(curveHigherValueOnHighSpeed)
                 ),
                 1
