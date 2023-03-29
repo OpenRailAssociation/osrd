@@ -475,7 +475,7 @@ export type GetInfraByIdErrorsApiArg = {
     | 'missing_route'
     | 'unused_port'
     | 'duplicated_group'
-    | 'no_buffer_stop'
+    | 'missing_buffer_stop'
     | 'path_is_not_continuous'
     | 'overlapping_switches'
     | 'overlapping_track_links';
@@ -981,7 +981,7 @@ export type InfraError = {
       | 'missing_route'
       | 'unused_port'
       | 'duplicated_group'
-      | 'no_buffer_stop'
+      | 'missing_buffer_stop'
       | 'path_is_not_continuous'
       | 'overlapping_switches'
       | 'overlapping_track_links';
