@@ -100,7 +100,6 @@ public final class TrainPhysicsIntegrator {
             else tractionForce = maxTractionForce;
         }
 
-        // TODO: in the case of braking, tractionForce should remain zero
         rollingStock.updateEnergyStorages(maxTractionForce, maxTractionForce, speed, timeStep);
 
         double acceleration = computeAcceleration(rollingStock, rollingResistance,

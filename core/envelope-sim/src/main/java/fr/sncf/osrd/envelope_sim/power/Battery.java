@@ -19,18 +19,18 @@ public class Battery implements EnergySource {
     /** The energy storage object of the battery */
     public EnergyStorage storage;
 
-    /** The power conversion to account for power losses */
-    public PowerConverter converter;
+    /** The efficiency of the battery, between 0 and 1 */
+    public final double efficiency;
 
     public Battery(double pMin,
                    double pMax,
                    EnergyStorage storage,
-                   PowerConverter converter
+                   double efficiency
     ) {
         this.pMin = pMin;
         this.pMax = pMax;
         this.storage = storage;
-        this.converter = converter;
+        this.efficiency = efficiency;
     }
 
     // METHODS :
@@ -43,8 +43,7 @@ public class Battery implements EnergySource {
     public double getPower(double speed){
         double availablePower = pMax;
         availablePower *= storage.socDependency.getPowerCoefficientFromSoc(storage.getSoc());
-        if (converter!=null)
-            availablePower = converter.convert(availablePower);
+        availablePower *= efficiency;
         return clampPowerLimits(availablePower);
     }
 
@@ -66,6 +65,7 @@ public class Battery implements EnergySource {
                         new ManagementSystem(0.9,0.2),  // to be used later
                         new SocDependantPowerCoefficient(curveHigherValueOnHighSpeed)
                 ),
-                new PowerConverter(0.8));
+                1
+        );
     }
 }

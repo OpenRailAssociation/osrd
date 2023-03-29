@@ -2,14 +2,13 @@ package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
-import fr.sncf.osrd.envelope_sim.power.Battery;
 import fr.sncf.osrd.envelope_sim.power.EnergySource;
-import fr.sncf.osrd.envelope_sim.power.PowerPack;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
+import static fr.sncf.osrd.envelope_sim.Utils.interpolate;
 import static fr.sncf.osrd.envelope_sim.power.PowerPack.newPowerPackDiesel;
 
 public class SimpleRollingStock implements PhysicsRollingStock {
@@ -124,6 +123,11 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     public double getRollingResistanceDeriv(double speed) {
         speed = Math.abs(speed);
         return B + 2 * C * speed;
+    }
+
+    @Override
+    public double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve) {
+        return interpolate(speed, tractiveEffortCurve);
     }
 
     @Override

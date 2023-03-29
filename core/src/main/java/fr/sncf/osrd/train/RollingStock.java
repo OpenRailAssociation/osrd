@@ -143,9 +143,10 @@ public class RollingStock implements PhysicsRollingStock {
         return B + 2 * C * speed;
     }
 
+    @Override
     public double getMaxTractionForce(double speed, CurvePoint[] tractiveEffortCurve) {
         var battery = getBattery();
-        var maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
+        var maxTractionForce = interpolate(speed, tractiveEffortCurve);
         if (battery == null) {
             return maxTractionForce;
         }
@@ -185,9 +186,10 @@ public class RollingStock implements PhysicsRollingStock {
             assert forceLeftover >= 0;
             var powerLeftoverAfterTraction =
                     forceLeftover * speed / motorEfficiency;
-            double soc = battery.storage.getSoc();
-            double callForPower = battery.storage.refillLaw.getRefillPower(soc);
-            var powerSentToBattery = Math.min(powerLeftoverAfterTraction - battery.pMax, callForPower);
+            var soc = battery.storage.getSoc();
+            var callForPower = battery.storage.refillLaw.getRefillPower(soc);
+            var powerNeededFromBattery = battery.pMax - powerLeftoverAfterTraction / battery.efficiency;
+            var powerSentToBattery = Math.min(-powerNeededFromBattery, callForPower);
             powerSentToBattery = battery.clampPowerLimits(powerSentToBattery);
             var deltaSoc = powerSentToBattery * timeStep;
             battery.storage.updateStateOfCharge(deltaSoc);

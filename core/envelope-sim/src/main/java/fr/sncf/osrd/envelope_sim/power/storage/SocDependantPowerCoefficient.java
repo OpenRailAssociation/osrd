@@ -13,6 +13,13 @@ public class SocDependantPowerCoefficient{
         this.curve = curve;
     }
 
+    public SocDependantPowerCoefficient(double constantValue) {
+        this.curve = new CurvePoint[] {
+            new CurvePoint(0. ,constantValue),
+                new CurvePoint(1.,constantValue)
+        };
+    }
+
     /** Return Power Coefficient at a given SoC*/
     public double getPowerCoefficientFromSoc(double soc){
         return interpolate(soc, curve);

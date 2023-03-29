@@ -24,15 +24,18 @@ public class Catenary implements EnergySource {
      */
     public SpeedDependantPowerCoefficient speedCoef;
 
+    /** The efficiency of the catenary - pantograph transfer, between 0 and 1 */
+    public final double efficiency;
+
     public Catenary(double pMin,
-                     double pMax,
-                     PowerConverter converter,
-                     SpeedDependantPowerCoefficient speedCoef
+                    double pMax,
+                    double efficiency,
+                    SpeedDependantPowerCoefficient speedCoef
     ) {
         this.pMin = pMin;
         this.pMax = pMax;
-        this.converter = converter;
         this.speedCoef = speedCoef;
+        this.efficiency = efficiency;
     }
 
     // METHODS :
@@ -60,7 +63,7 @@ public class Catenary implements EnergySource {
         return new Catenary(
                 0.,
                 400.0,
-                new PowerConverter(0.8),
+                1,
                 new SpeedDependantPowerCoefficient(curveLowValueOnLowSpeed)
         );
     }

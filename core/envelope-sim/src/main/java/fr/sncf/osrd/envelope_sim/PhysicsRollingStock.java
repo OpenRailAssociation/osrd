@@ -30,9 +30,7 @@ public interface PhysicsRollingStock {
     double getRollingResistanceDeriv(double speed);
 
     /** Get the effort the train can apply at a given speed, in newtons */
-    static double getMaxEffort(double speed, Utils.CurvePoint[] tractiveEffortCurve) {
-        return interpolate(speed, tractiveEffortCurve);
-    }
+    double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve);
 
     /** The maximum constant deceleration, in m/s^2 */
     double getDeceleration();
