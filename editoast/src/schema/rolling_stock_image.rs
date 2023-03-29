@@ -141,23 +141,20 @@ impl RollingStockCompoundImage {
 
 #[cfg(test)]
 mod tests {
-    use crate::client::PostgresConfig;
-    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
+    use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
     use crate::models::RollingStockModel;
-    use crate::models::{Create, Delete};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
-    use actix_web::test as actix_test;
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::*;
     use std::io::Cursor;
 
-    #[actix_test]
-    async fn create_get_delete_rolling_stock_compound_image() {
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
+    #[rstest]
+    async fn create_get_delete_rolling_stock_compound_image(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
         // create and set up
         let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
         let mut img_bytes: Vec<u8> = Vec::new();
@@ -171,15 +168,11 @@ mod tests {
             .await
             .unwrap();
 
-        let rolling_stock: RollingStockModel = get_rolling_stock_example(String::from(
-            "create_get_delete_rolling_stock_compound_image",
-        ));
-        let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
-        let rolling_stock_id = rolling_stock.id.unwrap();
+        let rolling_stock = fast_rolling_stock.await;
 
         let livery_form = RollingStockLiveryForm {
             name: String::from("test_livery"),
-            rolling_stock_id,
+            rolling_stock_id: rolling_stock.id(),
             compound_image_id: Some(image_id),
         };
         let livery_id = RollingStockLivery::create(db_pool.clone(), livery_form)
@@ -200,11 +193,6 @@ mod tests {
                 .is_ok()
         );
         assert!(RollingStockLivery::retrieve(db_pool.clone(), livery_id)
-            .await
-            .is_ok());
-
-        // clean
-        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
             .await
             .is_ok());
     }

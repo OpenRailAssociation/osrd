@@ -56,11 +56,12 @@ mod tests {
     use crate::infra_cache::tests::{create_small_infra_cache, create_track_section_cache};
     use crate::infra_cache::Graph;
     use crate::schema::{Curve, Slope};
-    use ntest::test_case;
+    use rstest::rstest;
 
-    #[test_case(50., false)]
-    #[test_case(110., true)]
-    fn slope_out_of_range(pos: f64, error: bool) {
+    #[rstest]
+    #[case(50., false)]
+    #[case(110., true)]
+    fn slope_out_of_range(#[case] pos: f64, #[case] error: bool) {
         let mut infra_cache = create_small_infra_cache();
         let mut track = create_track_section_cache("S_error", 100.);
         track.slopes = vec![Slope {
@@ -83,9 +84,10 @@ mod tests {
         }
     }
 
-    #[test_case(50., false)]
-    #[test_case(110., true)]
-    fn curve_out_of_range(pos: f64, error: bool) {
+    #[rstest]
+    #[case(50., false)]
+    #[case(110., true)]
+    fn curve_out_of_range(#[case] pos: f64, #[case] error: bool) {
         let mut infra_cache = create_small_infra_cache();
         let mut track = create_track_section_cache("S_error", 100.);
         track.curves = vec![Curve {
