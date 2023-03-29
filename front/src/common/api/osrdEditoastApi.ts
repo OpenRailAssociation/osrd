@@ -470,22 +470,7 @@ export type GetInfraByIdErrorsApiArg = {
   /** The number of item per page */
   pageSize?: number;
   /** The type of error to filter on */
-  errorType?:
-    | 'invalid_reference'
-    | 'out_of_range'
-    | 'empty_path'
-    | 'path_does_not_match_endpoints'
-    | 'unknown_port_name'
-    | 'invalid_switch_ports'
-    | 'empty_object'
-    | 'object_out_of_path'
-    | 'missing_route'
-    | 'unused_port'
-    | 'duplicated_group'
-    | 'missing_buffer_stop'
-    | 'path_is_not_continuous'
-    | 'overlapping_switches'
-    | 'overlapping_track_links';
+  errorType?: InfraErrorType;
   /** errors and warnings that only part of a given object */
   objectId?: string;
   /** Whether the response should include errors or warnings */
@@ -974,28 +959,30 @@ export type MultiPolygon = {
   coordinates: Point3D[][][];
 };
 export type Geometry = Point | LineString | Polygon | MultiPoint | MultiLineString | MultiPolygon;
+export type InfraErrorType =
+  | 'duplicated_group'
+  | 'empty_object'
+  | 'empty_path'
+  | 'invalid_reference'
+  | 'invalid_switch_ports'
+  | 'missing_buffer_stop'
+  | 'missing_route'
+  | 'object_out_of_path'
+  | 'odd_buffer_stop_location'
+  | 'out_of_range'
+  | 'overlapping_switches'
+  | 'overlapping_track_links'
+  | 'path_does_not_match_endpoints'
+  | 'path_is_not_continuous'
+  | 'unknown_port_name'
+  | 'unused_port';
 export type InfraError = {
   geographic?: Geometry | null;
   schematic?: object | null;
   information: {
     obj_id: string;
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
-    error_type:
-      | 'invalid_reference'
-      | 'out_of_range'
-      | 'empty_path'
-      | 'path_does_not_match_endpoints'
-      | 'unknown_port_name'
-      | 'invalid_switch_ports'
-      | 'empty_object'
-      | 'object_out_of_path'
-      | 'missing_route'
-      | 'unused_port'
-      | 'duplicated_group'
-      | 'missing_buffer_stop'
-      | 'path_is_not_continuous'
-      | 'overlapping_switches'
-      | 'overlapping_track_links';
+    error_type: InfraErrorType;
     field?: string;
     is_warning: boolean;
   };
