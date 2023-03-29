@@ -8,12 +8,12 @@ use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, BigInt};
-use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, QueryDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, PgConnection};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
-use super::Update;
+use super::{List, NoParams, Update};
 
 #[derive(
     Clone,
@@ -87,22 +87,6 @@ impl Project {
         })
         .await
         .unwrap()
-    }
-
-    pub async fn list(
-        db_pool: Data<DbPool>,
-        page: i64,
-        per_page: i64,
-    ) -> Result<PaginatedResponse<ProjectWithStudies>> {
-        sql_query(
-            "SELECT project.*, COALESCE(ARRAY_AGG(study.id) FILTER (WHERE study.id is not NULL), ARRAY[]::bigint[])  as studies FROM osrd_infra_project project
-            LEFT JOIN osrd_infra_study study ON study.project_id = project.id
-            GROUP BY project.id"
-        )
-        .paginate(page)
-        .per_page(per_page)
-        .load_and_count(db_pool)
-        .await
     }
 
     /// Update a project. If the image is changed, the old image is deleted.
@@ -193,11 +177,28 @@ impl Update for Project {
     }
 }
 
+impl List<NoParams> for ProjectWithStudies {
+    fn list_conn(
+        conn: &mut PgConnection,
+        page: i64,
+        page_size: i64,
+        _: NoParams,
+    ) -> Result<PaginatedResponse<Self>> {
+        sql_query(
+            "SELECT project.*, COALESCE(ARRAY_AGG(study.id) FILTER (WHERE study.id is not NULL), ARRAY[]::bigint[])  as studies FROM osrd_infra_project project
+            LEFT JOIN osrd_infra_study study ON study.project_id = project.id
+            GROUP BY project.id"
+        )
+        .paginate(page, page_size)
+        .load_and_count(conn)
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use super::Project;
     use crate::client::PostgresConfig;
-    use crate::models::{Create, Delete, Retrieve};
+    use crate::models::{Create, Delete, List, NoParams, ProjectWithStudies, Retrieve};
     use actix_web::test as actix_test;
     use actix_web::web::Data;
     use chrono::Utc;
@@ -247,7 +248,9 @@ pub mod test {
             .await
             .unwrap()
             .is_some());
-        assert!(Project::list(pool.clone(), 1, 25).await.is_ok());
+        assert!(ProjectWithStudies::list(pool.clone(), 1, 25, NoParams)
+            .await
+            .is_ok());
 
         // Delete the project
         assert!(Project::delete(pool.clone(), project_id).await.unwrap());

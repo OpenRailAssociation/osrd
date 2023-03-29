@@ -6,8 +6,8 @@ mod study;
 mod timetable;
 mod train_schedule;
 
-use crate::error::Result;
 use crate::DbPool;
+use crate::{error::Result, views::pagination::PaginatedResponse};
 use actix_web::web::{block, Data};
 use async_trait::async_trait;
 use diesel::PgConnection;
@@ -131,6 +131,47 @@ pub trait Update: Sized + 'static {
         block::<_, crate::error::Result<_>>(move || {
             let mut conn = db_pool.get()?;
             self.update_conn(&mut conn, id)
+        })
+        .await
+        .unwrap()
+    }
+}
+
+/// Use this struct when you don't need to pass any parameters to the `list` method.
+pub struct NoParams;
+
+/// Trait to implement the `list` and `list_conn` methods.
+/// This trait is automatically implemented by the `#[derive(Model)]` macro.
+/// Check the macro documentation [here](editoast_derive::Model)
+/// You can implement it manually if you want to customize the behavior.
+#[async_trait]
+pub trait List<T: Send + 'static>: Sized + 'static {
+    /// Same as [list](Self::list) but takes a single postgres connection.
+    /// Useful when you are in a transaction.
+    fn list_conn(
+        conn: &mut PgConnection,
+        page: i64,
+        page_size: i64,
+        params: T,
+    ) -> Result<PaginatedResponse<Self>>;
+
+    /// List and paginate objects.
+    ///
+    /// ### Example
+    ///
+    /// ```
+    /// let patch_model = ...;
+    /// let new_obj = patch_model.update(db_pool).await?.expect("Object not found");
+    /// ```
+    async fn list(
+        db_pool: Data<DbPool>,
+        page: i64,
+        page_size: i64,
+        params: T,
+    ) -> Result<PaginatedResponse<Self>> {
+        block::<_, crate::error::Result<_>>(move || {
+            let mut conn = db_pool.get()?;
+            Self::list_conn(&mut conn, page, page_size, params)
         })
         .await
         .unwrap()

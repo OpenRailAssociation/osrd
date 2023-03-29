@@ -17,6 +17,8 @@ use diesel::RunQueryDsl;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
+use super::List;
+
 #[derive(
     Clone,
     Debug,
@@ -101,22 +103,22 @@ impl Study {
         .await
         .unwrap()
     }
+}
 
-    pub async fn list(
-        db_pool: Data<DbPool>,
+impl List<i64> for StudyWithScenarios {
+    fn list_conn(
+        conn: &mut diesel::PgConnection,
         page: i64,
-        per_page: i64,
+        page_size: i64,
         project_id: i64,
-    ) -> Result<PaginatedResponse<StudyWithScenarios>> {
+    ) -> Result<PaginatedResponse<Self>> {
         sql_query(
             "SELECT study.*, COALESCE(ARRAY_AGG(scenario.id) FILTER (WHERE scenario.id is not NULL), ARRAY[]::bigint[]) as scenarios FROM osrd_infra_study study
             LEFT JOIN osrd_infra_scenario scenario ON scenario.study_id = study.id WHERE study.project_id = $1
             GROUP BY study.id"
         ).bind::<BigInt,_>(project_id)
-        .paginate(page)
-        .per_page(per_page)
-        .load_and_count(db_pool)
-        .await
+        .paginate(page, page_size)
+        .load_and_count(conn)
     }
 }
 
@@ -128,7 +130,9 @@ pub mod test {
     use crate::models::projects::test::build_test_project;
     use crate::models::Create;
     use crate::models::Delete;
+    use crate::models::List;
     use crate::models::Retrieve;
+    use crate::models::StudyWithScenarios;
     use actix_web::test as actix_test;
     use actix_web::web::Data;
     use chrono::Utc;
@@ -195,7 +199,9 @@ pub mod test {
         assert!(Study::retrieve(pool.clone(), study.id.unwrap())
             .await
             .is_ok());
-        assert!(Study::list(pool.clone(), 1, 25, project_id).await.is_ok());
+        assert!(StudyWithScenarios::list(pool.clone(), 1, 25, project_id)
+            .await
+            .is_ok());
 
         // Delete the study
         Study::delete(pool.clone(), study.id.unwrap())

@@ -109,22 +109,24 @@ impl LightRollingStock {
     pub async fn list(
         db_pool: Data<DbPool>,
         page: i64,
-        per_page: i64,
+        page_size: i64,
     ) -> Result<PaginatedResponse<LightRollingStock>> {
-        sql_query(
-            "WITH liveries_by_rs AS (SELECT rolling_stock_id, json_build_object('id', livery.id, 'name', livery.name) AS liveries
-            FROM osrd_infra_rollingstocklivery livery)
-            SELECT
-                rolling_stock.*,
-                COALESCE(ARRAY_AGG(liveries_by_rs.liveries), ARRAY[]::json[]) AS liveries
-            FROM osrd_infra_rollingstock rolling_stock
-            LEFT JOIN liveries_by_rs liveries_by_rs ON liveries_by_rs.rolling_stock_id = rolling_stock.id
-            GROUP BY rolling_stock.id"
-        )
-        .paginate(page)
-        .per_page(per_page)
-        .load_and_count(db_pool)
-        .await
+        block::<_, Result<_>>(move || {
+            let mut conn = db_pool.get()?;
+            sql_query(
+                "WITH liveries_by_rs AS (SELECT rolling_stock_id, json_build_object('id', livery.id, 'name', livery.name) AS liveries
+                FROM osrd_infra_rollingstocklivery livery)
+                SELECT
+                    rolling_stock.*,
+                    COALESCE(ARRAY_AGG(liveries_by_rs.liveries), ARRAY[]::json[]) AS liveries
+                FROM osrd_infra_rollingstock rolling_stock
+                LEFT JOIN liveries_by_rs liveries_by_rs ON liveries_by_rs.rolling_stock_id = rolling_stock.id
+                GROUP BY rolling_stock.id"
+            )
+            .paginate(page, page_size)
+            .load_and_count(&mut conn)
+        })
+        .await.unwrap()
     }
 
     /// Retrieve a rolling stock without its effort curves
