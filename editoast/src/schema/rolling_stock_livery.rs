@@ -126,7 +126,7 @@ impl RollingStockLivery {
 mod tests {
     use super::{RollingStockLivery, RollingStockLiveryForm};
     use crate::client::PostgresConfig;
-    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
+    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;

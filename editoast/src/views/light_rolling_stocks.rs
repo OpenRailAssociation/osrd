@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::schema::rolling_stock::rolling_stock::{
+use crate::schema::rolling_stock_schema::rolling_stock::{
     LightRollingStock, LightRollingStockWithLiveries,
 };
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
@@ -38,7 +38,7 @@ async fn get(
 #[cfg(test)]
 mod tests {
     use crate::client::PostgresConfig;
-    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
+    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use crate::views::tests::create_test_service;

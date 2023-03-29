@@ -1,11 +1,11 @@
 use crate::error::Result;
 use crate::models::{Create, Retrieve, RollingStockModel};
-use crate::schema::rolling_stock::rolling_stock::{
+use crate::schema::rolling_stock_image::RollingStockCompoundImage;
+use crate::schema::rolling_stock_livery::RollingStockLivery;
+use crate::schema::rolling_stock_schema::rolling_stock::{
     Gamma, RollingResistance, RollingStock, RollingStockError, RollingStockMetadata,
     RollingStockWithLiveries,
 };
-use crate::schema::rolling_stock_image::RollingStockCompoundImage;
-use crate::schema::rolling_stock_livery::RollingStockLivery;
 use crate::DbPool;
 use actix_http::StatusCode;
 use actix_web::dev::HttpServiceFactory;
@@ -51,7 +51,7 @@ async fn get_livery(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Htt
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct RollingStockCreateForm {
+struct RollingStockCreateForm {
     pub name: String,
     pub version: String,
     pub effort_curves: JsonValue,
@@ -110,12 +110,12 @@ async fn create(
 #[cfg(test)]
 mod tests {
     use crate::client::PostgresConfig;
-    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
+    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
-    use crate::schema::rolling_stock::rolling_stock::RollingStock;
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
+    use crate::schema::rolling_stock_schema::rolling_stock::RollingStock;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;

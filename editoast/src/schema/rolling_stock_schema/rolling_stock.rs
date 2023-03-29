@@ -173,7 +173,7 @@ pub enum RollingStockError {
 mod tests {
     use super::LightRollingStock;
     use crate::client::PostgresConfig;
-    use crate::models::rolling_stock::rolling_stock::tests::get_rolling_stock_example;
+    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
     use crate::models::RollingStockModel;
     use crate::models::{Create, Delete};
     use actix_web::test as actix_test;

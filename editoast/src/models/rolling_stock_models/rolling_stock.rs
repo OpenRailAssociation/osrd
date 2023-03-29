@@ -1,8 +1,8 @@
 use crate::error::Result;
-use crate::schema::rolling_stock::rolling_stock::{
+use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
+use crate::schema::rolling_stock_schema::rolling_stock::{
     Gamma, RollingResistance, RollingStock, RollingStockMetadata, RollingStockWithLiveries,
 };
-use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::tables::osrd_infra_rollingstock;
 use crate::DbPool;
 use actix_web::web::{block, Data};
@@ -134,7 +134,7 @@ pub mod tests {
             serde_json::from_str(include_str!("../../tests/example_rolling_stock.json"))
                 .expect("Unable to parse");
         rolling_stock.name = Some(rolling_stock_name);
-        return rolling_stock;
+        rolling_stock
     }
 
     #[actix_test]
@@ -150,8 +150,7 @@ pub mod tests {
             );
 
             assert!(RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).is_ok());
-            let result = RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).unwrap();
-            assert_eq!(result, false);
+            assert!(!RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).unwrap());
             Ok(())
         });
     }
