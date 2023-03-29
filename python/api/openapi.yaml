@@ -313,6 +313,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/RollingStock"
     post:
+      deprecated: true
       tags:
         - rolling_stock
       summary: Create a rolling stock
