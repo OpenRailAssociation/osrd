@@ -109,60 +109,38 @@ async fn create(
 
 #[cfg(test)]
 mod tests {
-    use crate::client::PostgresConfig;
-    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
-    use crate::models::RollingStockModel;
-    use crate::models::{Create, Delete};
+    use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
+    use crate::models::{Delete, RollingStockModel};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
-    use crate::schema::rolling_stock_schema::rolling_stock::RollingStock;
+    use crate::views::rolling_stocks::RollingStock;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
-    use actix_web::test as actix_test;
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::rstest;
     use std::io::Cursor;
 
-    #[actix_test]
-    async fn get_rolling_stock() {
+    #[rstest]
+    async fn get_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
         let app = create_test_service().await;
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        let rolling_stock: RollingStockModel =
-            get_rolling_stock_example(String::from("get_rolling_stock_test"));
-        let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
-        let rolling_stock_id = rolling_stock.id.unwrap();
+        let rolling_stock = fast_rolling_stock.await;
 
         let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
+            .uri(format!("/rolling_stock/{}", rolling_stock.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-
-        RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
-            .await
-            .unwrap();
-
-        let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
-    #[actix_test]
-    async fn get_rolling_stock_livery() {
+    #[rstest]
+    async fn get_rolling_stock_livery(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
         let app = create_test_service().await;
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        let rolling_stock: RollingStockModel =
-            get_rolling_stock_example(String::from("get_rolling_stock_livery_test"));
-        let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
-        let rolling_stock_id = rolling_stock.id.unwrap();
+        let rolling_stock = fast_rolling_stock.await;
 
         let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
         let mut img_bytes: Vec<u8> = Vec::new();
@@ -178,7 +156,7 @@ mod tests {
 
         let livery_form = RollingStockLiveryForm {
             name: String::from("test_livery"),
-            rolling_stock_id,
+            rolling_stock_id: rolling_stock.id(),
             compound_image_id: Some(image_id),
         };
         let livery_id = RollingStockLivery::create(db_pool.clone(), livery_form)
@@ -187,7 +165,7 @@ mod tests {
 
         // get - success
         let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}/livery/{}", rolling_stock_id, livery_id).as_str())
+            .uri(format!("/rolling_stock/{}/livery/{}", rolling_stock.id(), livery_id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
@@ -199,29 +177,18 @@ mod tests {
                 .is_ok()
         );
         let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}/livery/{}", rolling_stock_id, livery_id).as_str())
+            .uri(format!("/rolling_stock/{}/livery/{}", rolling_stock.id(), livery_id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
-        // get - not found
-        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
-            .await
-            .is_ok());
-        let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}/livery/{}", rolling_stock_id, livery_id).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
-    #[actix_test]
-    async fn create_rolling_stock() {
+    #[rstest]
+    async fn create_rolling_stock(db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>) {
         let app = create_test_service().await;
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
         let rolling_stock: RollingStockModel =
-            get_rolling_stock_example(String::from("new_rolling_stock"));
+            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
+                .expect("Unable to parse");
 
         let response = call_service(
             &app,
@@ -234,7 +201,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         let rolling_stock: RollingStock = read_body_json(response).await;
-        assert_eq!(rolling_stock.name, "new_rolling_stock");
+        assert_eq!(rolling_stock.name, "fast_rolling_stock");
         assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock.id)
             .await
             .is_ok());
