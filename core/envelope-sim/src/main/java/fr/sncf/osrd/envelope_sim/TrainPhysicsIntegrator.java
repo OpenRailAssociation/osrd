@@ -80,8 +80,7 @@ public final class TrainPhysicsIntegrator {
         //Simulate an electrification availability for tests further down
         boolean electrification = path.isElectrified(position);
 
-        // TODO: correct this for diesel
-        double maxTractionForce = electrification? PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve) : 0.;
+        double maxTractionForce = rollingStock.getMaxTractionForce(speed, tractiveEffortCurve);
 
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
@@ -95,15 +94,14 @@ public final class TrainPhysicsIntegrator {
         if (action == Action.MAINTAIN) {
             tractionForce = rollingResistance - weightForce;
             if (tractionForce <= maxTractionForce) {
-                //TODO: avoid this pointless return
-                tractionForce += rollingStock.updateBatterySocAndComputeTractionForce(maxTractionForce - tractionForce, speed, timeStep);
+                rollingStock.updateEnergyStorages(tractionForce, maxTractionForce, speed, timeStep);
                 return newtonStep(timeStep, speed, 0., directionSign);
             }
             else tractionForce = maxTractionForce;
         }
 
         // TODO: in the case of braking, tractionForce should remain zero
-        tractionForce += rollingStock.updateBatterySocAndComputeTractionForce(0, speed, timeStep);
+        rollingStock.updateEnergyStorages(maxTractionForce, maxTractionForce, speed, timeStep);
 
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);

@@ -142,8 +142,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public double updateBatterySocAndComputeTractionForce(double forceLeftover, double speed, double timeStep) {
-        return 0;
+    public void updateEnergyStorages(double maxAvailableForce, double usedForce, double speed, double timeStep) {
     }
 
 

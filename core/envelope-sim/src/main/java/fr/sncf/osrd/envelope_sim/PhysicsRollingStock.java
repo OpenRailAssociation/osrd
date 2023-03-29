@@ -44,7 +44,7 @@ public interface PhysicsRollingStock {
     ArrayList<EnergySource> getEnergySources();
 
     /** If relevant, compute the delta of state of charge */
-    double updateBatterySocAndComputeTractionForce(double forceLeftover, double speed, double timeStep);
+    void updateEnergyStorages(double maxAvailableForce, double usedForce, double speed, double timeStep);
 
     enum GammaType {
         CONST,

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ModeAndProfile;
+import static fr.sncf.osrd.envelope_sim.Utils.interpolate;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
@@ -142,6 +143,30 @@ public class RollingStock implements PhysicsRollingStock {
         return B + 2 * C * speed;
     }
 
+    public double getMaxTractionForce(double speed, CurvePoint[] tractiveEffortCurve) {
+        var battery = getBattery();
+        var maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
+        if (battery == null) {
+            return maxTractionForce;
+        }
+        else {
+            var maxTractionPower = getMaxTractionPower(speed);
+            if (speed == 0)
+                return maxTractionForce;
+            else {
+                return Math.min(maxTractionForce, maxTractionPower / speed);
+            }
+        }
+    }
+
+    private double getMaxTractionPower(double speed) {
+        var availablePower = 0;
+        for (var source : energySources) {
+            availablePower += source.getPower(speed);
+        }
+        return availablePower;
+    }
+
     @Override
     public double getMaxBrakingForce(double speed) {
         return gamma * inertia;
@@ -153,22 +178,20 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public double updateBatterySocAndComputeTractionForce(double forceLeftover, double speed, double timeStep) {
+    public void updateEnergyStorages(double maxAvailableForce, double usedForce, double speed, double timeStep) {
         var battery = getBattery();
         if (battery != null) {
+            var forceLeftover = maxAvailableForce - usedForce;
+            assert forceLeftover >= 0;
             var powerLeftoverAfterTraction =
                     forceLeftover * speed / motorEfficiency;
             double soc = battery.storage.getSoc();
             double callForPower = battery.storage.refillLaw.getRefillPower(soc);
-            var powerSentToBattery = Math.min(powerLeftoverAfterTraction , callForPower);
+            var powerSentToBattery = Math.min(powerLeftoverAfterTraction - battery.pMax, callForPower);
             powerSentToBattery = battery.clampPowerLimits(powerSentToBattery);
             var deltaSoc = powerSentToBattery * timeStep;
             battery.storage.updateStateOfCharge(deltaSoc);
-            if (speed > 0) {
-                return powerSentToBattery / speed;
-            }
         }
-        return 0;
     }
 
     @Override
