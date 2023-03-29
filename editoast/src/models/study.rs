@@ -5,6 +5,7 @@ use crate::tables::osrd_infra_study;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
 use actix_web::web::{block, Data};
+use chrono::NaiveDate;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
@@ -54,12 +55,12 @@ pub struct Study {
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
-    #[diesel(deserialize_as = Option<NaiveDateTime>)]
-    pub start_date: Option<Option<NaiveDateTime>>,
-    #[diesel(deserialize_as = Option<NaiveDateTime>)]
-    pub expected_end_date: Option<Option<NaiveDateTime>>,
-    #[diesel(deserialize_as = Option<NaiveDateTime>)]
-    pub actual_end_date: Option<Option<NaiveDateTime>>,
+    #[diesel(deserialize_as = Option<NaiveDate>)]
+    pub start_date: Option<Option<NaiveDate>>,
+    #[diesel(deserialize_as = Option<NaiveDate>)]
+    pub expected_end_date: Option<Option<NaiveDate>>,
+    #[diesel(deserialize_as = Option<NaiveDate>)]
+    pub actual_end_date: Option<Option<NaiveDate>>,
     #[diesel(deserialize_as = i32)]
     pub budget: Option<i32>,
     #[diesel(deserialize_as = Vec<String>)]
