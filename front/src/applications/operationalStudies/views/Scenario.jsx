@@ -70,10 +70,10 @@ export default function Scenario() {
         `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
       );
       setScenario(result);
-      dispatch(updateTimetableID(result.timetable));
+      dispatch(updateTimetableID(result.timetable_id));
       dispatch(updateInfraID(result.infra));
 
-      const preferedTimetableID = result.timetable || timetableID;
+      const preferedTimetableID = result.timetable_id || timetableID;
 
       getTimetable(preferedTimetableID);
       if (withNotification) {
