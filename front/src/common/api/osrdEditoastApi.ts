@@ -361,6 +361,12 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.scenarioPatchRequest,
       }),
     }),
+    getPathfindingByPathIdCatenaries: build.query<
+      GetPathfindingByPathIdCatenariesApiResponse,
+      GetPathfindingByPathIdCatenariesApiArg
+    >({
+      query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathId}/catenaries/` }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -844,6 +850,12 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
   /** The fields you want to update */
   scenarioPatchRequest: ScenarioPatchRequest;
 };
+export type GetPathfindingByPathIdCatenariesApiResponse =
+  /** status 200 A list of ranges associated to catenary modes */ CatenaryRange[];
+export type GetPathfindingByPathIdCatenariesApiArg = {
+  /** The path's id */
+  pathId: number;
+};
 export type SearchTrackResult = {
   infra_id: number;
   line_code: number;
@@ -1298,4 +1310,9 @@ export type ScenarioPatchRequest = {
   name?: string;
   description?: string;
   tags?: string[];
+};
+export type CatenaryRange = {
+  begin?: number;
+  end?: number;
+  mode?: string;
 };

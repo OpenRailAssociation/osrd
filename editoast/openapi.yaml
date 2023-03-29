@@ -1595,6 +1595,28 @@ paths:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
 
+  /pathfinding/{path_id}/catenaries/:
+    get:
+      tags:
+        - infra
+      summary: Retrieve the modes of catenaries along a path
+      parameters:
+        - in: path
+          name: path_id
+          schema:
+            type: integer
+          description: The path's id
+          required: true
+      responses:
+        200:
+          description: A list of ranges associated to catenary modes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CatenaryRange"
+
 components:
   schemas:
     BoundingBox:
@@ -2265,6 +2287,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TrackRange"
+
+    CatenaryRange:
+      type: object
+      properties:
+        begin:
+          type: number
+          format: float
+          example: 0.0
+        end:
+          type: number
+          format: float
+          example: 100.0
+        mode:
+          type: string
+          example: "25000"
 
     SearchQuery:
       type: array
