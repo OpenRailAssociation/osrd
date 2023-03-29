@@ -18,6 +18,7 @@ export const InfraErrorTypeList: Array<InfraErrorType> = [
   'invalid_switch_ports',
   'empty_object',
   'object_out_of_path',
+  'odd_buffer_stop_location',
   'missing_route',
   'unused_port',
   'duplicated_group',
