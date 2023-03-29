@@ -297,9 +297,14 @@ pub mod test {
 
         let projects = ProjectWithStudies::list(pool.clone(), 1, 25, Ordering::NameDesc)
             .await
-            .unwrap();
-        let name = projects.results.first().unwrap().project.name.clone();
-        assert_eq!(name, Some("test".into()));
+            .unwrap()
+            .results;
+
+        for (p1, p2) in projects.iter().zip(projects.iter().skip(1)) {
+            let name_1 = p1.project.name.as_ref().unwrap().to_lowercase();
+            let name_2 = p2.project.name.as_ref().unwrap().to_lowercase();
+            assert!(name_1.ge(&name_2));
+        }
 
         // Delete the projects
         assert!(Project::delete(pool.clone(), project_id_1).await.unwrap());

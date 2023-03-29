@@ -245,11 +245,10 @@ async fn list(
 #[cfg(test)]
 mod test {
     use crate::models::Infra;
-    use crate::models::Project;
     use crate::models::Scenario;
     use crate::models::Study;
     use crate::views::infra::tests::{create_infra_request, delete_infra_request};
-    use crate::views::projects::test::{create_project_request, delete_project_request};
+    use crate::views::projects::test::delete_project_request;
     use crate::views::study::test::create_study_request;
 
     use crate::views::tests::create_test_service;
@@ -262,13 +261,11 @@ mod test {
 
     pub async fn create_scenario_request() -> (Request, i64) {
         let app = create_test_service().await;
-        let response = call_service(&app, create_project_request()).await;
-        let project: Project = read_body_json(response).await;
         let response = call_service(&app, create_study_request().await).await;
         let study: Study = read_body_json(response).await;
         let response = call_service(&app, create_infra_request("infra_test")).await;
         let infra: Infra = read_body_json(response).await;
-        let project_id = project.id.unwrap();
+        let project_id = study.project_id.unwrap();
         let study_id = study.id.unwrap();
 
         (
@@ -319,7 +316,10 @@ mod test {
         let req = TestRequest::get().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+        println!("{project_id}");
         let response = call_service(&app, delete_project_request(project_id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
@@ -347,6 +347,8 @@ mod test {
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
         let response = call_service(&app, delete_project_request(project_id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[actix_test]
@@ -364,6 +366,8 @@ mod test {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let response = call_service(&app, delete_project_request(project_id)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

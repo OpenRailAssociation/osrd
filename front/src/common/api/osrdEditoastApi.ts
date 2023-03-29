@@ -407,7 +407,12 @@ export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
   y: number;
   infra: number;
 };
-export type GetInfraApiResponse = /** status 200 The infra list */ Infra[];
+export type GetInfraApiResponse = /** status 200 The infra list */ {
+  count: number;
+  next: any;
+  previous: any;
+  results?: Infra[];
+};
 export type GetInfraApiArg = void;
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
 export type PostInfraApiArg = {
@@ -868,13 +873,13 @@ export type ViewMetadata = {
   maxzoom?: number;
 };
 export type Infra = {
-  id?: number;
-  name?: string;
-  version?: string;
-  generated_version?: string | null;
-  created?: string;
-  modified?: string;
-  locked?: boolean;
+  id: number;
+  name: string;
+  version: string;
+  generated_version: string | null;
+  created: string;
+  modified: string;
+  locked: boolean;
 };
 export type ObjectType =
   | 'TrackSection'

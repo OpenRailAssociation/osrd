@@ -220,7 +220,7 @@ pub mod test {
     }
 
     #[actix_test]
-    async fn sort_model() {
+    async fn sort_study() {
         let project = build_test_project();
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
@@ -235,15 +235,18 @@ pub mod test {
 
         // Create second study
         study.name = Some("study_test".into());
-        let study = build_test_study(project_id);
         study.create(pool.clone()).await.unwrap();
 
         let studies =
             StudyWithScenarios::list(pool.clone(), 1, 25, (project_id, Ordering::NameDesc))
                 .await
-                .unwrap();
-        let name = studies.results.first().unwrap().study.name.clone();
-        assert_eq!(name, Some("test".into()));
+                .unwrap()
+                .results;
+        for (p1, p2) in studies.iter().zip(studies.iter().skip(1)) {
+            let name_1 = p1.study.name.as_ref().unwrap().to_lowercase();
+            let name_2 = p2.study.name.as_ref().unwrap().to_lowercase();
+            assert!(name_1.ge(&name_2));
+        }
 
         // Delete the project
         Project::delete(pool.clone(), project_id).await.unwrap();

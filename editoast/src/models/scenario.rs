@@ -229,6 +229,7 @@ pub mod test {
         // Create an infra
         let infra: Infra = build_test_infra();
         let infra = infra.create(pool.clone()).await.unwrap();
+        let infra_id = infra.id.unwrap();
 
         // Create a timetable
         let timetable = Timetable {
@@ -245,6 +246,9 @@ pub mod test {
         // Delete the scenario
         Scenario::delete(pool.clone(), scenario_id).await.unwrap();
         Project::delete(pool.clone(), project_id).await.unwrap();
+
+        // Delete the infra
+        Infra::delete(pool.clone(), infra_id).await.unwrap();
 
         // Second delete should fail
         assert!(!Scenario::delete(pool.clone(), scenario_id).await.unwrap());
@@ -268,6 +272,7 @@ pub mod test {
         // Create an infra
         let infra: Infra = build_test_infra();
         let infra = infra.create(pool.clone()).await.unwrap();
+        let infra_id = infra.id.unwrap();
 
         // Create a timetable
         let timetable = Timetable {
@@ -295,6 +300,9 @@ pub mod test {
         // Delete the scenario
         Scenario::delete(pool.clone(), scenario_id).await.unwrap();
         Project::delete(pool.clone(), project_id).await.unwrap();
+
+        // Delete the infra
+        Infra::delete(pool.clone(), infra_id).await.unwrap();
     }
 
     #[actix_test]
@@ -313,8 +321,9 @@ pub mod test {
         let study_id = study.id.unwrap();
 
         // Create an infra
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        let infra: Infra = Infra::create("infra_test", &mut conn).unwrap();
+        let infra: Infra = build_test_infra();
+        let infra = infra.create(pool.clone()).await.unwrap();
+        let infra_id = infra.id.unwrap();
 
         // Create first timetable
         let timetable = Timetable {
@@ -331,20 +340,25 @@ pub mod test {
         let timetable_2: Timetable = timetable.create(pool.clone()).await.unwrap();
 
         // Create first scenario
-        let mut scenario = build_test_scenario(study_id, infra.id, timetable_1.id.unwrap());
+        let scenario = build_test_scenario(study_id, infra_id, timetable_1.id.unwrap());
         scenario.clone().create(pool.clone()).await.unwrap();
 
         // Create second scenario
+        let mut scenario = build_test_scenario(study_id, infra_id, timetable_2.id.unwrap());
         scenario.name = Some("scenario_test".into());
-        let scenario = build_test_scenario(study_id, infra.id, timetable_2.id.unwrap());
         scenario.create(pool.clone()).await.unwrap();
 
         let scenarios =
             ScenarioWithCountTrains::list(pool.clone(), 1, 25, (study_id, Ordering::NameDesc))
                 .await
-                .unwrap();
-        let name = scenarios.results.first().unwrap().scenario.name.clone();
-        assert_eq!(name, Some("test".into()));
+                .unwrap()
+                .results;
+
+        for (p1, p2) in scenarios.iter().zip(scenarios.iter().skip(1)) {
+            let name_1 = p1.scenario.name.as_ref().unwrap().to_lowercase();
+            let name_2 = p2.scenario.name.as_ref().unwrap().to_lowercase();
+            assert!(name_1.ge(&name_2));
+        }
 
         // Delete the project
         Project::delete(pool.clone(), project_id).await.unwrap();
