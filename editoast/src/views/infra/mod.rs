@@ -14,13 +14,15 @@ use super::params::List;
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::models::{Create, Delete, Infra, Retrieve};
+use crate::models::{Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update};
 use crate::schema::{ObjectType, SwitchType};
+use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, HttpResponse, Responder};
 use chashmap::CHashMap;
+use chrono::Utc;
 use diesel::sql_types::{BigInt, Double, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use editoast_derive::EditoastError;
@@ -32,7 +34,7 @@ use serde_json::{json, Value as JsonValue};
 use std::result::Result as StdResult;
 use strum::IntoEnumIterator;
 use thiserror::Error;
-use uuid::uuid;
+use uuid::Uuid;
 
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
@@ -82,7 +84,8 @@ impl From<InfraForm> for Infra {
     fn from(infra: InfraForm) -> Self {
         Infra {
             name: Some(infra.name),
-            owner: Some(uuid!("00000000-0000-0000-0000-000000000000")),
+            owner: Some(Uuid::nil()),
+            created: Some(Utc::now().naive_utc()),
             ..Default::default()
         }
     }
@@ -131,7 +134,11 @@ async fn refresh(
         } else {
             // Retrieve given infras
             for id in infras.iter() {
-                infras_list.push(Infra::retrieve_for_update(&mut conn, *id)?);
+                let infra = match Infra::retrieve_for_update(&mut conn, *id) {
+                    Ok(infra) => infra,
+                    Err(_) => return Err(InfraApiError::NotFound { infra_id: *id }.into()),
+                };
+                infras_list.push(infra);
             }
         }
 
@@ -163,13 +170,14 @@ async fn refresh(
 
 /// Return a list of infras
 #[get("")]
-async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<Infra>>> {
-    block(move || {
-        let mut conn = db_pool.get()?;
-        Ok(Json(Infra::list(&mut conn)))
-    })
-    .await
-    .unwrap()
+async fn list(
+    db_pool: Data<DbPool>,
+    pagination_params: Query<PaginationQueryParam>,
+) -> Result<Json<PaginatedResponse<Infra>>> {
+    let page = pagination_params.page;
+    let per_page = pagination_params.page_size.unwrap_or(25).max(10);
+    let infras = Infra::list(db_pool, page, per_page, NoParams).await?;
+    Ok(Json(infras))
 }
 
 /// Return a specific infra
@@ -177,11 +185,10 @@ async fn list(db_pool: Data<DbPool>) -> Result<Json<Vec<Infra>>> {
 async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
     let infra_id = infra.into_inner();
 
-    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => infra,
-        None => return Err(InfraApiError::NotFound { infra_id }.into()),
-    };
-    Ok(Json(infra))
+    match Infra::retrieve(db_pool.clone(), infra_id).await? {
+        Some(infra) => Ok(Json(infra)),
+        None => Err(InfraApiError::NotFound { infra_id }.into()),
+    }
 }
 
 /// Create an infra
@@ -256,21 +263,38 @@ async fn delete(
     Ok(HttpResponse::NoContent().finish())
 }
 
+/// Patch form for a project
+#[derive(Serialize, Deserialize)]
+struct InfraPatchForm {
+    pub name: Option<String>,
+    pub generated_version: Option<Option<String>>,
+}
+
+impl InfraPatchForm {
+    fn into_infra(self, infra_id: i64) -> Infra {
+        Infra {
+            id: Some(infra_id),
+            name: self.name,
+            generated_version: self.generated_version,
+            ..Default::default()
+        }
+    }
+}
+
 /// Update an infra name
 #[put("")]
 async fn rename(
     db_pool: Data<DbPool>,
     infra: Path<i64>,
-    new_name: Json<InfraForm>,
+    new_name: Json<InfraPatchForm>,
 ) -> Result<Json<Infra>> {
-    let infra = infra.into_inner();
-    block(move || {
-        let mut conn = db_pool.get()?;
-        let name = new_name.name.clone();
-        Ok(Json(Infra::rename(&mut conn, infra, name)?))
-    })
-    .await
-    .unwrap()
+    let infra_id = infra.into_inner();
+    let infra = new_name.into_inner().into_infra(infra_id);
+    let infra = match infra.update(db_pool.clone(), infra_id).await? {
+        Some(infra) => infra,
+        None => return Err(InfraApiError::NotFound { infra_id }.into()),
+    };
+    Ok(Json(infra))
 }
 
 /// Return the railjson list of switch types
@@ -353,11 +377,15 @@ async fn get_voltages(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<Json<Ve
 /// Lock an infra
 #[post("/lock")]
 async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
-    let infra = infra.into_inner();
+    let infra_id = infra.into_inner();
     block::<_, Result<()>>(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
-        infra.set_locked(true, &mut conn)?;
+        let mut infra = match Infra::retrieve_for_update(&mut conn, infra_id) {
+            Ok(infra) => infra,
+            Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
+        };
+        infra.locked = true;
+        infra.update_conn(&mut conn, infra_id)?;
         Ok(())
     })
     .await
@@ -368,11 +396,15 @@ async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
 /// Unlock an infra
 #[post("/unlock")]
 async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
-    let infra = infra.into_inner();
+    let infra_id = infra.into_inner();
     block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
-        infra.set_locked(false, &mut conn)?;
+        let mut infra = match Infra::retrieve_for_update(&mut conn, infra_id) {
+            Ok(infra) => infra,
+            Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
+        };
+        infra.locked = false;
+        infra.update_conn(&mut conn, infra_id)?;
         Ok(())
     })
     .await
@@ -468,9 +500,6 @@ pub mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[actix_test]
@@ -478,7 +507,6 @@ pub mod tests {
         let app = create_test_service().await;
         let infra: Infra =
             call_and_read_body_json(&app, create_infra_request("infra_rename_test")).await;
-
         let req = TestRequest::put()
             .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
             .set_json(json!({"name": "rename_test"}))

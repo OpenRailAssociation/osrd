@@ -229,7 +229,7 @@ pub mod test {
     pub fn create_project_request() -> Request {
         TestRequest::post()
             .uri("/projects")
-            .set_json(json!({ "name": "test","description": "", "objectives":"" }))
+            .set_json(json!({ "name": "test_project","description": "", "objectives":"" }))
             .to_request()
     }
 
@@ -245,7 +245,7 @@ pub mod test {
         let response = call_service(&app, create_project_request()).await;
         assert_eq!(response.status(), StatusCode::OK);
         let project: Project = read_body_json(response).await;
-        assert_eq!(project.name.unwrap(), "test");
+        assert_eq!(project.name.unwrap(), "test_project");
         let response = call_service(&app, delete_project_request(project.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }

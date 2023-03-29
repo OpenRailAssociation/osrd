@@ -3,7 +3,7 @@ use crate::infra_cache::InfraCache;
 use crate::models::infra::RAILJSON_VERSION;
 use crate::models::Infra;
 use crate::schema::{ObjectType, RailJson};
-use crate::views::infra::InfraForm;
+use crate::views::infra::{InfraApiError, InfraForm};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
@@ -140,7 +140,15 @@ async fn post_railjson(
     let infra = infra.persist(railjson, db_pool.clone()).await?;
     block(move || {
         let mut conn = db_pool.get()?;
-        let infra = infra.bump_version(&mut conn)?;
+        let infra = match infra.bump_version(&mut conn) {
+            Ok(infra) => infra,
+            Err(_) => {
+                return Err(InfraApiError::NotFound {
+                    infra_id: infra.id.unwrap(),
+                }
+                .into())
+            }
+        };
         if params.generate_data {
             let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
             infra.refresh(&mut conn, true, &infra_cache)?;

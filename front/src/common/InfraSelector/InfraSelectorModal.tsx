@@ -43,8 +43,8 @@ export default function InfraSelectorModal({ onInfraChange, onlySelectionMode = 
     setIsFetching(true);
     try {
       const infrasListQuery = await get(INFRA_URL);
-      setInfrasList(infrasListQuery);
-      filterInfras(infrasListQuery);
+      setInfrasList(infrasListQuery.results);
+      filterInfras(infrasListQuery.results);
       setIsFetching(false);
     } catch (e) {
       setIsFetching(false);
