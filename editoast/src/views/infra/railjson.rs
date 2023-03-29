@@ -1,7 +1,9 @@
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::infra::RAILJSON_VERSION;
+use crate::models::Infra;
 use crate::schema::{ObjectType, RailJson};
+use crate::views::infra::InfraForm;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
@@ -145,16 +147,23 @@ async fn post_railjson(
         return Err(ListErrorsRailjson::WrongRailjsonVersionProvided.into());
     }
 
+    let infra: Infra = InfraForm {
+        name: params.name.clone(),
+    }
+    .into();
+    let railjson = railjson.into_inner();
+    let infra = infra.persist(railjson, db_pool.clone()).await?;
     block(move || {
         let mut conn = db_pool.get()?;
-        let infra = railjson.persist(&params.name, &mut conn)?;
         let infra = infra.bump_version(&mut conn)?;
         if params.generate_data {
             let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
             infra.refresh(&mut conn, true, &infra_cache)?;
         }
 
-        Ok(Json(PostRailjsonResponse { infra: infra.id }))
+        Ok(Json(PostRailjsonResponse {
+            infra: infra.id.unwrap(),
+        }))
     })
     .await
     .unwrap()
@@ -180,12 +189,12 @@ mod tests {
         let req = create_infra_request("get_railjson_test");
         let infra: Infra = call_and_read_body_json(&app, req).await;
 
-        let req = create_object_request(infra.id, SwitchType::default().into());
+        let req = create_object_request(infra.id.unwrap(), SwitchType::default().into());
         let response = call_service(&app, req).await;
         assert!(response.status().is_success());
 
         let req = actix_test::TestRequest::get()
-            .uri(&format!("/infra/{}/railjson", infra.id))
+            .uri(&format!("/infra/{}/railjson", infra.id.unwrap()))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
@@ -193,7 +202,7 @@ mod tests {
         assert_eq!(railjson.version, crate::models::infra::RAILJSON_VERSION);
         assert_eq!(railjson.switch_types.len(), 1);
 
-        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
