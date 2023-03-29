@@ -177,6 +177,7 @@ impl List<(i64, Ordering)> for ScenarioWithCountTrains {
 pub mod test {
 
     use crate::client::PostgresConfig;
+    use crate::models::infra::tests::build_test_infra;
     use crate::models::projects::test::build_test_project;
     use crate::models::study::test::build_test_study;
     use crate::models::Create;
@@ -192,7 +193,6 @@ pub mod test {
     use actix_web::web::Data;
     use chrono::Utc;
     use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::Connection;
     use diesel::PgConnection;
 
     use super::Scenario;
@@ -227,8 +227,8 @@ pub mod test {
         let study_id = study.id.unwrap();
 
         // Create an infra
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        let infra: Infra = Infra::create("infra_test", &mut conn).unwrap();
+        let infra: Infra = build_test_infra();
+        let infra = infra.create(pool.clone()).await.unwrap();
 
         // Create a timetable
         let timetable = Timetable {
@@ -238,7 +238,7 @@ pub mod test {
         let timetable: Timetable = timetable.create(pool.clone()).await.unwrap();
 
         // Create a scenario
-        let scenario = build_test_scenario(study_id, infra.id, timetable.id.unwrap());
+        let scenario = build_test_scenario(study_id, infra.id.unwrap(), timetable.id.unwrap());
         let scenario: Scenario = scenario.create(pool.clone()).await.unwrap();
         let scenario_id = scenario.id.unwrap();
 
@@ -266,8 +266,8 @@ pub mod test {
         let study_id = study.id.unwrap();
 
         // Create an infra
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        let infra: Infra = Infra::create("infra_test", &mut conn).unwrap();
+        let infra: Infra = build_test_infra();
+        let infra = infra.create(pool.clone()).await.unwrap();
 
         // Create a timetable
         let timetable = Timetable {
@@ -277,7 +277,7 @@ pub mod test {
         let timetable: Timetable = timetable.create(pool.clone()).await.unwrap();
 
         // Create a scenario
-        let scenario = build_test_scenario(study_id, infra.id, timetable.id.unwrap());
+        let scenario = build_test_scenario(study_id, infra.id.unwrap(), timetable.id.unwrap());
         let scenario: Scenario = scenario.create(pool.clone()).await.unwrap();
         let scenario_id = scenario.id.unwrap();
 

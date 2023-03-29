@@ -58,15 +58,17 @@ mod test {
 
     use super::SwitchType;
     use crate::models::infra::tests::test_infra_transaction;
+    use actix_web::test as actix_test;
 
-    #[test]
-    fn test_persist() {
+    #[actix_test]
+    async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10)
                 .map(|_| SwitchType::default())
                 .collect::<Vec<SwitchType>>();
 
-            assert!(SwitchType::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(SwitchType::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 }

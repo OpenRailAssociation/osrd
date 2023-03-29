@@ -349,7 +349,7 @@ impl InfraCache {
 
     /// Given an infra id load infra cache from database
     pub fn load(conn: &mut PgConnection, infra: &Infra) -> Result<InfraCache> {
-        let infra_id = infra.id;
+        let infra_id = infra.id.unwrap();
         let mut infra_cache = Self::default();
 
         // Load track sections list
@@ -445,12 +445,12 @@ impl InfraCache {
         infra: &Infra,
     ) -> Result<ReadGuard<'a, i64, InfraCache>> {
         // Cache hit
-        if let Some(infra_cache) = infra_caches.get(&infra.id) {
+        if let Some(infra_cache) = infra_caches.get(&infra.id.unwrap()) {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra)?);
-        Ok(infra_caches.get(&infra.id).unwrap())
+        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra)?);
+        Ok(infra_caches.get(&infra.id.unwrap()).unwrap())
     }
 
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
@@ -461,12 +461,12 @@ impl InfraCache {
         infra: &Infra,
     ) -> Result<WriteGuard<'a, i64, InfraCache>> {
         // Cache hit
-        if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
+        if let Some(infra_cache) = infra_caches.get_mut(&infra.id.unwrap()) {
             return Ok(infra_cache);
         }
         // Cache miss
-        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra)?);
-        Ok(infra_caches.get_mut(&infra.id).unwrap())
+        infra_caches.insert_new(infra.id.unwrap(), InfraCache::load(conn, infra)?);
+        Ok(infra_caches.get_mut(&infra.id.unwrap()).unwrap())
     }
 
     /// Get all track sections references of a given track and type
@@ -545,8 +545,6 @@ impl InfraCache {
 pub mod tests {
     use std::collections::HashMap;
 
-    use chashmap::CHashMap;
-
     use crate::infra_cache::{InfraCache, SwitchCache};
     use crate::map::BoundingBox;
     use crate::models::infra::tests::test_infra_transaction;
@@ -560,38 +558,42 @@ pub mod tests {
         OSRDIdentified, OperationalPoint, OperationalPointPart, Route, SpeedSection, Switch,
         SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink, Waypoint,
     };
+    use actix_web::test as actix_test;
+    use chashmap::CHashMap;
 
     use super::{
         BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
     };
 
-    #[test]
-    fn load_track_section() {
+    #[actix_test]
+    async fn load_track_section() {
         test_infra_transaction(|conn, infra| {
-            let track = create_track(conn, infra.id, Default::default());
+            let track = create_track(conn, infra.id.unwrap(), Default::default());
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert_eq!(infra_cache.track_sections().len(), 1);
             assert!(infra_cache.track_sections().contains_key(track.get_id()));
-        });
+        })
+        .await;
     }
 
-    #[test]
-    fn load_signal() {
+    #[actix_test]
+    async fn load_signal() {
         test_infra_transaction(|conn, infra| {
-            let signal = create_signal(conn, infra.id, Default::default());
+            let signal = create_signal(conn, infra.id.unwrap(), Default::default());
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.signals().contains_key(signal.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
+        .await;
     }
 
-    #[test]
-    fn load_speed_section() {
+    #[actix_test]
+    async fn load_speed_section() {
         test_infra_transaction(|conn, infra| {
             let speed = create_speed(
                 conn,
-                infra.id,
+                infra.id.unwrap(),
                 SpeedSection {
                     track_ranges: vec![Default::default()],
                     ..Default::default()
@@ -602,23 +604,25 @@ pub mod tests {
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
+        .await;
     }
 
-    #[test]
-    fn load_route() {
+    #[actix_test]
+    async fn load_route() {
         test_infra_transaction(|conn, infra| {
-            let route = create_route(conn, infra.id, Default::default());
+            let route = create_route(conn, infra.id.unwrap(), Default::default());
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.routes().contains_key(route.get_id()));
         })
+        .await;
     }
 
-    #[test]
-    fn load_operational_point() {
+    #[actix_test]
+    async fn load_operational_point() {
         test_infra_transaction(|conn, infra| {
             let op = create_op(
                 conn,
-                infra.id,
+                infra.id.unwrap(),
                 OperationalPoint {
                     parts: vec![Default::default()],
                     ..Default::default()
@@ -631,25 +635,27 @@ pub mod tests {
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
+        .await;
     }
 
-    #[test]
-    fn load_track_section_link() {
+    #[actix_test]
+    async fn load_track_section_link() {
         test_infra_transaction(|conn, infra| {
-            let link = create_link(conn, infra.id, Default::default());
+            let link = create_link(conn, infra.id.unwrap(), Default::default());
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache
                 .track_section_links()
                 .contains_key(link.get_id()));
         })
+        .await;
     }
 
-    #[test]
-    fn load_switch() {
+    #[actix_test]
+    async fn load_switch() {
         test_infra_transaction(|conn, infra| {
             let switch = create_switch(
                 conn,
-                infra.id,
+                infra.id.unwrap(),
                 Switch {
                     ports: HashMap::from([("port".into(), Default::default())]),
                     ..Default::default()
@@ -658,21 +664,23 @@ pub mod tests {
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.switches().contains_key(switch.get_id()));
         })
+        .await;
     }
 
-    #[test]
-    fn load_switch_type() {
+    #[actix_test]
+    async fn load_switch_type() {
         test_infra_transaction(|conn, infra| {
-            let s_type = create_switch_type(conn, infra.id, Default::default());
+            let s_type = create_switch_type(conn, infra.id.unwrap(), Default::default());
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
         })
+        .await;
     }
 
-    #[test]
-    fn load_detector() {
+    #[actix_test]
+    async fn load_detector() {
         test_infra_transaction(|conn, infra| {
-            let detector = create_detector(conn, infra.id, Default::default());
+            let detector = create_detector(conn, infra.id.unwrap(), Default::default());
 
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
 
@@ -680,12 +688,13 @@ pub mod tests {
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
+        .await;
     }
 
-    #[test]
-    fn load_buffer_stop() {
+    #[actix_test]
+    async fn load_buffer_stop() {
         test_infra_transaction(|conn, infra| {
-            let bs = create_buffer_stop(conn, infra.id, Default::default());
+            let bs = create_buffer_stop(conn, infra.id.unwrap(), Default::default());
 
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
 
@@ -693,14 +702,15 @@ pub mod tests {
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
+        .await;
     }
 
-    #[test]
-    fn load_catenary() {
+    #[actix_test]
+    async fn load_catenary() {
         test_infra_transaction(|conn, infra| {
             let catenary = create_catenary(
                 conn,
-                infra.id,
+                infra.id.unwrap(),
                 Catenary {
                     track_ranges: vec![Default::default()],
                     ..Default::default()
@@ -713,6 +723,7 @@ pub mod tests {
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
+        .await;
     }
 
     pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
@@ -949,25 +960,27 @@ pub mod tests {
         infra_cache
     }
 
-    #[test]
-    fn load_infra_cache() {
+    #[actix_test]
+    async fn load_infra_cache() {
         test_infra_transaction(|conn, infra| {
             let infra_caches = CHashMap::new();
             InfraCache::get_or_load(conn, &infra_caches, &infra).unwrap();
             assert_eq!(infra_caches.len(), 1);
             InfraCache::get_or_load(conn, &infra_caches, &infra).unwrap();
             assert_eq!(infra_caches.len(), 1);
-        });
+        })
+        .await;
     }
 
-    #[test]
-    fn load_infra_cache_mut() {
+    #[actix_test]
+    async fn load_infra_cache_mut() {
         test_infra_transaction(|conn, infra| {
             let infra_caches = CHashMap::new();
             InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
             assert_eq!(infra_caches.len(), 1);
             InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
             assert_eq!(infra_caches.len(), 1);
-        });
+        })
+        .await;
     }
 }

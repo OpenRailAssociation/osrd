@@ -116,17 +116,19 @@ mod test {
     use super::OperationalPoint;
     use super::OperationalPointExtensions;
     use crate::models::infra::tests::test_infra_transaction;
+    use actix_web::test as actix_test;
     use serde_json::from_str;
 
-    #[test]
-    fn test_persist() {
+    #[actix_test]
+    async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10)
                 .map(|_| OperationalPoint::default())
                 .collect::<Vec<OperationalPoint>>();
 
-            assert!(OperationalPoint::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(OperationalPoint::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 
     #[test]
