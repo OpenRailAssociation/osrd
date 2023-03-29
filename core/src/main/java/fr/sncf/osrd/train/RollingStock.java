@@ -144,14 +144,14 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public double getMaxTractionForce(double speed, CurvePoint[] tractiveEffortCurve) {
+    public double getMaxTractionForce(double speed, CurvePoint[] tractiveEffortCurve, boolean electrification) {
         var battery = getBattery();
         var maxTractionForce = interpolate(speed, tractiveEffortCurve);
         if (battery == null) {
             return maxTractionForce;
         }
         else {
-            var maxTractionPower = getMaxTractionPower(speed);
+            var maxTractionPower = getMaxTractionPower(speed, electrification);
             if (speed == 0)
                 return maxTractionForce;
             else {
@@ -160,10 +160,10 @@ public class RollingStock implements PhysicsRollingStock {
         }
     }
 
-    private double getMaxTractionPower(double speed) {
+    private double getMaxTractionPower(double speed, boolean electrification) {
         var availablePower = 0;
         for (var source : energySources) {
-            availablePower += source.getPower(speed);
+            availablePower += source.getPower(speed, electrification);
         }
         return availablePower;
     }
@@ -171,11 +171,6 @@ public class RollingStock implements PhysicsRollingStock {
     @Override
     public double getMaxBrakingForce(double speed) {
         return gamma * inertia;
-    }
-
-    @Override
-    public ArrayList<EnergySource> getEnergySources() {
-        return energySources;
     }
 
     @Override

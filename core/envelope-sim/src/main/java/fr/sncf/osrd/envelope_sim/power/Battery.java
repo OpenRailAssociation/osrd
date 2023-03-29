@@ -40,7 +40,7 @@ public class Battery implements EnergySource {
     }
 
     /** Return available power based on contextual state of charge */
-    public double getPower(double speed){
+    public double getPower(double speed, boolean electrification){
         double availablePower = pMax;
         availablePower *= storage.socDependency.getPowerCoefficientFromSoc(storage.getSoc());
         availablePower *= efficiency;

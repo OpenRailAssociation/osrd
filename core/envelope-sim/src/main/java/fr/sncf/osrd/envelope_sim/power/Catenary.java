@@ -16,9 +16,6 @@ public class Catenary implements EnergySource {
     /** Ceiling power limit */
     public double pMax;
 
-    /** The power conversion to account for power losses */
-    public PowerConverter converter;
-
     /**
      *
      */
@@ -45,10 +42,11 @@ public class Catenary implements EnergySource {
     }
 
     /** Return available power */
-    public double getPower(double speed){
+    public double getPower(double speed, boolean electrification){
+        if (!electrification)
+            return 0;
         double availablePower = pMax;
-        if (converter!=null)
-            availablePower = converter.convert(availablePower);
+        availablePower *= efficiency;
         return clampPowerLimits(availablePower);
     }
 

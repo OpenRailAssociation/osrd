@@ -5,6 +5,6 @@ public interface EnergySource {
     /** Return value restricted by EnergySource's Ceiling and Floor power limits : ES.pMin <= return <= ES.pMax*/
     public double clampPowerLimits(double power);
 
-    /** Return available power based on contextual speed */
-    public double getPower(double speed);
+    /** Return available power based on contextual speed and electrification availability*/
+    public double getPower(double speed, boolean electrification);
 }

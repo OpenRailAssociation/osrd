@@ -39,7 +39,7 @@ public class PowerPack implements EnergySource {
     }
 
     /** Return available power */
-    public double getPower(double speed){
+    public double getPower(double speed, boolean electrification){
         double availablePower = pMax;
         availablePower *= efficiency;
         return clampPowerLimits(availablePower);

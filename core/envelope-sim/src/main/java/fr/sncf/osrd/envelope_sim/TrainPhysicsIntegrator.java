@@ -80,7 +80,7 @@ public final class TrainPhysicsIntegrator {
         //Simulate an electrification availability for tests further down
         boolean electrification = path.isElectrified(position);
 
-        double maxTractionForce = rollingStock.getMaxTractionForce(speed, tractiveEffortCurve);
+        double maxTractionForce = rollingStock.getMaxTractionForce(speed, tractiveEffortCurve, electrification);
 
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);

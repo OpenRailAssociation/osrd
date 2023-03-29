@@ -126,7 +126,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve) {
+    public double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve, boolean electrification) {
         return interpolate(speed, tractiveEffortCurve);
     }
 
@@ -138,11 +138,6 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     @Override
     public double getMaxBrakingForce(double speed) {
         return gamma * inertia;
-    }
-
-    @Override
-    public ArrayList<EnergySource> getEnergySources() {
-        return energySources;
     }
 
     @Override

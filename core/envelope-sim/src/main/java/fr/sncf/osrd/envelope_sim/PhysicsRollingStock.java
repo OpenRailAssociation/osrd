@@ -30,16 +30,13 @@ public interface PhysicsRollingStock {
     double getRollingResistanceDeriv(double speed);
 
     /** Get the effort the train can apply at a given speed, in newtons */
-    double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve);
+    double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve, boolean electrification);
 
     /** The maximum constant deceleration, in m/s^2 */
     double getDeceleration();
 
     /** The maximum braking force which can be applied at a given speed, in newtons */
     double getMaxBrakingForce(double speed);
-
-    /** Returns the different energy sources of the rolling stock */
-    ArrayList<EnergySource> getEnergySources();
 
     /** If relevant, compute the delta of state of charge */
     void updateEnergyStorages(double maxAvailableForce, double usedForce, double speed, double timeStep);
