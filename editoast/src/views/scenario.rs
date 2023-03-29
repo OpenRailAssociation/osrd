@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::models::{
-    Create, Delete, Project, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study,
+    Create, Delete, List, Project, Retrieve, ScenarioWithCountTrains, ScenarioWithDetails, Study,
     Timetable, Update,
 };
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
@@ -233,7 +233,7 @@ async fn list(
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let scenarios = Scenario::list(db_pool, page, per_page, study_id).await?;
+    let scenarios = ScenarioWithCountTrains::list(db_pool, page, per_page, study_id).await?;
 
     Ok(Json(scenarios))
 }

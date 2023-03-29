@@ -1,6 +1,7 @@
 use crate::error::Result;
 use crate::models::Create;
 use crate::models::Delete;
+use crate::models::List;
 use crate::models::Project;
 use crate::models::Retrieve;
 use crate::models::Study;
@@ -146,7 +147,7 @@ async fn list(
     let project = project.into_inner();
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let studies = Study::list(db_pool, page, per_page, project).await?;
+    let studies = StudyWithScenarios::list(db_pool, page, per_page, project).await?;
 
     Ok(Json(studies))
 }
