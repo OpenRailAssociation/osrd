@@ -136,15 +136,17 @@ mod test {
     use super::Signal;
     use super::SignalExtensions;
     use crate::models::infra::tests::test_infra_transaction;
+    use actix_web::test as actix_test;
     use serde_json::from_str;
 
-    #[test]
-    fn test_persist() {
+    #[actix_test]
+    async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10).map(|_| Signal::default()).collect::<Vec<Signal>>();
 
-            assert!(Signal::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(Signal::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 
     #[test]

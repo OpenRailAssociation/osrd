@@ -3,6 +3,7 @@ table! {
         id -> BigInt,
         name -> Text,
         railjson_version -> Text,
+        owner -> Uuid,
         version -> Text,
         generated_version -> Nullable<Text>,
         locked -> Bool,

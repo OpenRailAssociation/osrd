@@ -171,6 +171,7 @@ impl From<OperationalPoint> for RailjsonObject {
 
 #[cfg(test)]
 pub mod tests {
+    use actix_web::test as actix_test;
     use diesel::PgConnection;
 
     use crate::models::infra::tests::test_infra_transaction;
@@ -280,80 +281,91 @@ pub mod tests {
         obj
     }
 
-    #[test]
-    fn create_track_test() {
+    #[actix_test]
+    async fn create_track_test() {
         test_infra_transaction(|conn, infra| {
-            create_track(conn, infra.id, Default::default());
-        });
+            create_track(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_signal_test() {
+    #[actix_test]
+    async fn create_signal_test() {
         test_infra_transaction(|conn, infra| {
-            create_signal(conn, infra.id, Default::default());
-        });
+            create_signal(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_speed_test() {
+    #[actix_test]
+    async fn create_speed_test() {
         test_infra_transaction(|conn, infra| {
-            create_speed(conn, infra.id, Default::default());
-        });
+            create_speed(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_link_test() {
+    #[actix_test]
+    async fn create_link_test() {
         test_infra_transaction(|conn, infra| {
-            create_link(conn, infra.id, Default::default());
-        });
+            create_link(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_switch_test() {
+    #[actix_test]
+    async fn create_switch_test() {
         test_infra_transaction(|conn, infra| {
-            create_switch(conn, infra.id, Default::default());
-        });
+            create_switch(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_detector_test() {
+    #[actix_test]
+    async fn create_detector_test() {
         test_infra_transaction(|conn, infra| {
-            create_detector(conn, infra.id, Default::default());
-        });
+            create_detector(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_buffer_stop_test() {
+    #[actix_test]
+    async fn create_buffer_stop_test() {
         test_infra_transaction(|conn, infra| {
-            create_buffer_stop(conn, infra.id, Default::default());
-        });
+            create_buffer_stop(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_route_test() {
+    #[actix_test]
+    async fn create_route_test() {
         test_infra_transaction(|conn, infra| {
-            create_route(conn, infra.id, Default::default());
-        });
+            create_route(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_op_test() {
+    #[actix_test]
+    async fn create_op_test() {
         test_infra_transaction(|conn, infra| {
-            create_op(conn, infra.id, Default::default());
-        });
+            create_op(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_switch_type_test() {
+    #[actix_test]
+    async fn create_switch_type_test() {
         test_infra_transaction(|conn, infra| {
-            create_switch_type(conn, infra.id, Default::default());
-        });
+            create_switch_type(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 
-    #[test]
-    fn create_catenary_test() {
+    #[actix_test]
+    async fn create_catenary_test() {
         test_infra_transaction(|conn, infra| {
-            create_catenary(conn, infra.id, Default::default());
-        });
+            create_catenary(conn, infra.id.unwrap(), Default::default());
+        })
+        .await;
     }
 }
