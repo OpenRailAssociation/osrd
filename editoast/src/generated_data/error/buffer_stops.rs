@@ -166,7 +166,7 @@ pub mod tests {
     use crate::infra_cache::Graph;
     use crate::schema::Endpoint;
     use crate::schema::{ObjectRef, ObjectType};
-    use ntest::test_case;
+    use rstest::rstest;
 
     #[test]
     fn invalid_ref() {
@@ -209,9 +209,10 @@ pub mod tests {
         assert_eq!(infra_error, errors[0]);
     }
 
-    #[test_case(25.)]
-    #[test_case(175.)]
-    fn complex_missing_buffer_stop(pos: f64) {
+    #[rstest]
+    #[case(25.)]
+    #[case(175.)]
+    fn complex_missing_buffer_stop(#[case] pos: f64) {
         let mut infra_cache = create_small_infra_cache();
         let track = create_track_section_cache("test", 200.);
         infra_cache.add(track.clone());
@@ -243,10 +244,11 @@ pub mod tests {
         assert_eq!(error, errors[1]);
     }
 
-    #[test_case("B", 50.)]
-    #[test_case("A", 30.)]
-    #[test_case("C", 450.)]
-    fn odd_location(track: &str, pos: f64) {
+    #[rstest]
+    #[case("B", 50.)]
+    #[case("A", 30.)]
+    #[case("C", 450.)]
+    fn odd_location(#[case] track: &str, #[case] pos: f64) {
         let mut infra_cache = create_small_infra_cache();
         let bs = create_buffer_stop_cache("bs_test", track, pos);
         infra_cache.add(bs.clone());

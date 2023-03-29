@@ -3,6 +3,7 @@ extern crate diesel;
 
 mod client;
 mod error;
+mod fixtures;
 mod generated_data;
 mod infra;
 mod infra_cache;
@@ -11,7 +12,6 @@ mod models;
 mod schema;
 mod tables;
 mod views;
-
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use actix_cors::Cors;

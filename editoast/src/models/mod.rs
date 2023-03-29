@@ -20,6 +20,16 @@ pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules};
 pub use train_schedule::TrainSchedule;
 
+pub trait Identifiable {
+    fn get_id(&self) -> i64;
+}
+
+impl<T: diesel::Identifiable<Id = i64> + Clone> Identifiable for T {
+    fn get_id(&self) -> i64 {
+        self.clone().id()
+    }
+}
+
 /// Trait to implement the `create` and `create_conn` methods.
 /// This trait is automatically implemented by the `#[derive(Model)]` macro.
 /// Check the macro documentation [here](editoast_derive::Model)

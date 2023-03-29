@@ -174,39 +174,27 @@ pub enum RollingStockError {
 #[cfg(test)]
 mod tests {
     use super::LightRollingStock;
-    use crate::client::PostgresConfig;
-    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
+    use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
     use crate::models::RollingStockModel;
-    use crate::models::{Create, Delete};
-    use actix_web::test as actix_test;
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::*;
 
-    #[actix_test]
-    async fn get_light_rolling_stock() {
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        let rolling_stock: RollingStockModel =
-            get_rolling_stock_example(String::from("very_fast_rolling_stock"));
-        let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
-        let rolling_stock_id = rolling_stock.id.unwrap();
-
-        LightRollingStock::retrieve(db_pool.clone(), rolling_stock_id)
+    #[rstest]
+    async fn get_light_rolling_stock(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let rolling_stock = fast_rolling_stock.await;
+        LightRollingStock::retrieve(db_pool.clone(), rolling_stock.id())
             .await
             .unwrap();
-
-        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
-            .await
-            .is_ok());
     }
 
-    #[actix_test]
-    async fn list_light_rolling_stock() {
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let db_pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
+    #[rstest]
+    async fn list_light_rolling_stock(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) {
         assert!(LightRollingStock::list(db_pool.clone(), 1, 1000)
             .await
             .is_ok());
