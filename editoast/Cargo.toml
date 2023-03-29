@@ -46,7 +46,7 @@ strum = "~0.24.1"
 strum_macros = "~0.24.3"
 thiserror = "1.0"
 enum-map = "2.5"
-tempfile = "3.4.0"
+tempfile = "3.5.0"
 editoast_derive = { path = "./editoast_derive" }
 mvt = "0.8.1"
 pointy = "0.4.0"
