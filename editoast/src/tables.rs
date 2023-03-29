@@ -262,7 +262,7 @@ table! {
 }
 
 table! {
-    osrd_infra_rollingstock(id) {
+    osrd_infra_rollingstock {
         id -> BigInt,
         name -> Text,
         version -> Text,

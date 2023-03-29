@@ -142,7 +142,9 @@ impl RollingStockCompoundImage {
 #[cfg(test)]
 mod tests {
     use crate::client::PostgresConfig;
-    use crate::schema::rolling_stock::{RollingStock, RollingStockForm};
+    use crate::models::rolling_stock_models::rolling_stock::tests::get_rolling_stock_example;
+    use crate::models::RollingStockModel;
+    use crate::models::{Create, Delete};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
     use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
     use actix_web::test as actix_test;
@@ -169,17 +171,15 @@ mod tests {
             .await
             .unwrap();
 
-        let mut rolling_stock_form: RollingStockForm =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock_form.name = String::from("create_get_delete_rolling_stock_compound_image");
-        let rolling_stock = RollingStock::create(db_pool.clone(), rolling_stock_form)
-            .await
-            .unwrap();
+        let rolling_stock: RollingStockModel = get_rolling_stock_example(String::from(
+            "create_get_delete_rolling_stock_compound_image",
+        ));
+        let rolling_stock = rolling_stock.create(db_pool.clone()).await.unwrap();
+        let rolling_stock_id = rolling_stock.id.unwrap();
 
         let livery_form = RollingStockLiveryForm {
             name: String::from("test_livery"),
-            rolling_stock_id: rolling_stock.id,
+            rolling_stock_id,
             compound_image_id: Some(image_id),
         };
         let livery_id = RollingStockLivery::create(db_pool.clone(), livery_form)
@@ -204,7 +204,7 @@ mod tests {
             .is_ok());
 
         // clean
-        assert!(RollingStock::delete(db_pool.clone(), rolling_stock.id)
+        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock_id)
             .await
             .is_ok());
     }
