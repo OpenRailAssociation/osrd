@@ -218,6 +218,15 @@ pub struct DirectionalTrackRange {
     pub direction: Direction,
 }
 
+impl DirectionalTrackRange {
+    pub fn entry_bound(&self) -> f64 {
+        match self.direction {
+            Direction::StartToStop => self.begin,
+            Direction::StopToStart => self.end,
+        }
+    }
+}
+
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]

@@ -887,6 +887,7 @@ pub mod tests {
     /// No speed section
     /// No signal
     /// No operational point
+    /// No catenary
     ///
     pub fn create_small_infra_cache() -> InfraCache {
         let mut infra_cache = InfraCache::default();

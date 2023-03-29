@@ -4,8 +4,9 @@ pub mod tests {
 
     use crate::client::PostgresConfig;
     use crate::models::{
-        Create, Delete, Document, Identifiable, RollingStockLiveryModel, RollingStockModel,
+        Create, Delete, Document, Identifiable, Infra, RollingStockLiveryModel, RollingStockModel,
     };
+    use crate::views::infra::InfraForm;
 
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
@@ -15,7 +16,7 @@ pub mod tests {
 
     pub struct TestFixture<T: Delete + Identifiable + Send> {
         pub model: T,
-        db_pool: Data<Pool<diesel::r2d2::ConnectionManager<diesel::PgConnection>>>,
+        pub db_pool: Data<Pool<diesel::r2d2::ConnectionManager<diesel::PgConnection>>>,
     }
 
     impl<T: Delete + Identifiable + Send> TestFixture<T> {
@@ -89,6 +90,22 @@ pub mod tests {
         };
         TestFixture {
             model: rolling_stock_livery.create(db_pool.clone()).await.unwrap(),
+            db_pool,
+        }
+    }
+
+    #[fixture]
+    pub async fn empty_infra(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) -> TestFixture<Infra> {
+        let infra_form = InfraForm {
+            name: String::from("test_infra"),
+        };
+        TestFixture {
+            model: Infra::from(infra_form)
+                .create(db_pool.clone())
+                .await
+                .unwrap(),
             db_pool,
         }
     }

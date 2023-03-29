@@ -1,7 +1,7 @@
 mod documents;
 pub mod infra;
 pub mod infra_objects;
-mod pathfinding;
+pub mod pathfinding;
 mod projects;
 pub mod rolling_stock;
 mod scenario;
