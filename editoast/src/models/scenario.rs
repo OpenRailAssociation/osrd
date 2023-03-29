@@ -16,6 +16,8 @@ use diesel::{ExpressionMethods, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
+use super::List;
+
 #[derive(
     Clone,
     Debug,
@@ -124,24 +126,8 @@ impl Scenario {
         .await
         .unwrap()
     }
-
-    pub async fn list(
-        db_pool: Data<DbPool>,
-        page: i64,
-        per_page: i64,
-        study_id: i64,
-    ) -> Result<PaginatedResponse<ScenarioWithCountTrains>> {
-        sql_query(
-            "SELECT scenario.*,COUNT(trainschedule.id) as trains_count FROM osrd_infra_scenario scenario
-            LEFT JOIN osrd_infra_trainschedule trainschedule ON scenario.timetable_id = trainschedule.timetable_id WHERE scenario.study_id = $1
-            GROUP BY scenario.id"
-        ).bind::<BigInt,_>(study_id)
-        .paginate(page)
-        .per_page(per_page)
-        .load_and_count(db_pool)
-        .await
-    }
 }
+
 /// Delete a scenario.
 /// When we delete a scenario, the associated timetable is deleted too.
 impl Delete for Scenario {
@@ -170,6 +156,25 @@ impl Delete for Scenario {
     }
 }
 
+impl List<i64> for ScenarioWithCountTrains {
+    /// List all scenarios with the number of trains.
+    /// This functions takes a study_id to filter scenarios.
+    fn list_conn(
+        conn: &mut diesel::PgConnection,
+        page: i64,
+        page_size: i64,
+        study_id: i64,
+    ) -> Result<PaginatedResponse<Self>> {
+        sql_query(
+            "SELECT scenario.*,COUNT(trainschedule.id) as trains_count FROM osrd_infra_scenario scenario
+            LEFT JOIN osrd_infra_trainschedule trainschedule ON scenario.timetable_id = trainschedule.timetable_id WHERE scenario.study_id = $1
+            GROUP BY scenario.id"
+        ).bind::<BigInt,_>(study_id)
+        .paginate(page, page_size)
+        .load_and_count(conn)
+    }
+}
+
 #[cfg(test)]
 pub mod test {
 
@@ -179,7 +184,9 @@ pub mod test {
     use crate::models::study::test::build_test_study;
     use crate::models::Create;
     use crate::models::Delete;
+    use crate::models::List;
     use crate::models::Retrieve;
+    use crate::models::ScenarioWithCountTrains;
     use crate::models::Timetable;
     use crate::models::{Project, Study};
     use actix_web::test as actix_test;
@@ -277,7 +284,9 @@ pub mod test {
 
         // Get a scenario
         assert!(Scenario::retrieve(pool.clone(), study_id).await.is_ok());
-        assert!(Scenario::list(pool.clone(), 1, 25, study_id).await.is_ok());
+        assert!(ScenarioWithCountTrains::list(pool.clone(), 1, 25, study_id)
+            .await
+            .is_ok());
 
         // Delete the scenario
         Scenario::delete(pool.clone(), scenario_id).await.unwrap();
