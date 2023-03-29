@@ -166,9 +166,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Infra"
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Infra"
+                required: [count, next, previous]
     post:
       tags:
         - infra
@@ -1696,6 +1704,8 @@ components:
           format: date
         locked:
           type: boolean
+      required:
+        [id, name, version, generated_version, created, modified, locked]
 
     Zone:
       type: object
