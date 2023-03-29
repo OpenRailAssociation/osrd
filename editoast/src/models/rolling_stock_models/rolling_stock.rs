@@ -1,4 +1,5 @@
 use crate::error::Result;
+use crate::models::Identifiable;
 use crate::schema::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::schema::rolling_stock_schema::rolling_stock::{
     Gamma, RollingResistance, RollingStock, RollingStockMetadata, RollingStockWithLiveries,
@@ -60,6 +61,12 @@ pub struct RollingStockModel {
     pub power_restrictions: Option<Option<JsonValue>>,
 }
 
+impl Identifiable for RollingStockModel {
+    fn get_id(&self) -> i64 {
+        self.id.expect("Id not found")
+    }
+}
+
 impl RollingStockModel {
     pub async fn with_liveries(self, db_pool: Data<DbPool>) -> Result<RollingStockWithLiveries> {
         block::<_, Result<_>>(move || {
@@ -106,75 +113,33 @@ impl From<RollingStockModel> for RollingStock {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::client::PostgresConfig;
-    use crate::models::{Create, Delete, Retrieve};
-    use actix_web::test as actix_test;
-    use diesel::result::Error;
-    use diesel::Connection;
-    use diesel::PgConnection;
+    use crate::{
+        fixtures::tests::{db_pool, fast_rolling_stock, TestFixture},
+        models::Retrieve,
+    };
+    use rstest::*;
 
     use super::RollingStockModel;
+    use actix_web::web::Data;
+    use diesel::r2d2::{ConnectionManager, Pool};
 
-    pub fn test_rolling_stock_transaction(
-        rolling_stock_name: String,
-        fn_test: fn(&mut PgConnection, RollingStockModel),
+    #[rstest]
+    async fn create_delete_rolling_stock(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
     ) {
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|conn| {
-            let rolling_stock = get_rolling_stock_example(rolling_stock_name);
-            let rolling_stock = RollingStockModel::create_conn(rolling_stock, conn).unwrap();
-
-            fn_test(conn, rolling_stock);
-            Ok(())
-        });
-    }
-
-    pub fn get_rolling_stock_example(rolling_stock_name: String) -> RollingStockModel {
-        let mut rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
-        rolling_stock.name = Some(rolling_stock_name);
-        rolling_stock
-    }
-
-    #[actix_test]
-    async fn create_delete_rolling_stock() {
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|conn| {
-            let rolling_stock_form =
-                get_rolling_stock_example(String::from("model_create_delete_rolling_stock"));
-            let rolling_stock = RollingStockModel::create_conn(rolling_stock_form, conn).unwrap();
+        let rolling_stock_id: i64;
+        {
+            let rolling_stock = fast_rolling_stock.await;
+            rolling_stock_id = rolling_stock.id();
             assert_eq!(
-                "model_create_delete_rolling_stock",
-                rolling_stock.name.unwrap()
+                "fast_rolling_stock",
+                rolling_stock.model.name.clone().unwrap()
             );
-
-            assert!(RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).is_ok());
-            assert!(!RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).unwrap());
-            Ok(())
-        });
-    }
-
-    #[actix_test]
-    async fn get_rolling_stock() {
-        test_rolling_stock_transaction(
-            String::from("model_get_rolling_stock"),
-            |conn, rolling_stock| {
-                let rolling_stock_retrieved =
-                    RollingStockModel::retrieve_conn(conn, rolling_stock.id.unwrap())
-                        .unwrap()
-                        .unwrap();
-                assert_eq!(
-                    rolling_stock_retrieved.name.unwrap(),
-                    rolling_stock.name.unwrap()
-                );
-                assert!(RollingStockModel::delete_conn(conn, rolling_stock.id.unwrap()).is_ok());
-                assert!(
-                    RollingStockModel::retrieve_conn(conn, rolling_stock.id.unwrap())
-                        .unwrap()
-                        .is_none()
-                );
-            },
-        )
+        }
+        assert!(RollingStockModel::retrieve(db_pool, rolling_stock_id)
+            .await
+            .unwrap()
+            .is_none());
     }
 }
