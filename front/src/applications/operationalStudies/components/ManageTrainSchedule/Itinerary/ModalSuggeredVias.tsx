@@ -23,10 +23,10 @@ type ModalSugerredViasProps = {
   inverseOD: () => void;
   removeAllVias: () => void;
   pathfindingInProgress?: boolean;
-  dispatch: Dispatch;
-  vias: PointOnMap[];
-  mapTrackSources: 'geographic' | 'schematic';
-  suggeredVias: OsrdConfState['suggeredVias'];
+  dispatch?: Dispatch;
+  vias?: PointOnMap[];
+  mapTrackSources?: 'geographic' | 'schematic';
+  suggeredVias?: OsrdConfState['suggeredVias'];
 };
 
 export function withOSRDData<T>(Component: ComponentType<T>) {
@@ -56,9 +56,9 @@ export function ModalSugerredVias({
   removeAllVias,
   pathfindingInProgress,
   dispatch = noop,
-  vias,
+  vias = [],
   suggeredVias,
-  mapTrackSources,
+  mapTrackSources = 'geographic',
 }: ModalSugerredViasProps) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias ? suggeredVias.length - 1 : 0;
