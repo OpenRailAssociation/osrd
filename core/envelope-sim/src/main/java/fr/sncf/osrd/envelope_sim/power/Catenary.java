@@ -39,6 +39,9 @@ public class Catenary implements EnergySource {
         return availablePower;
     }
 
+    @Override
+    public void updateStorage(double energyDelta) { }
+
     public static Catenary newCatenary() {
         CurvePoint[] curveLowValueOnLowSpeed = {
                 new CurvePoint(0.0,0.5),

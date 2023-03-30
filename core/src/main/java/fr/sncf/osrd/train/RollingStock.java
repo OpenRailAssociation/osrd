@@ -2,6 +2,8 @@ package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ModeAndProfile;
 import static fr.sncf.osrd.envelope_sim.Utils.interpolate;
+import static fr.sncf.osrd.envelope_sim.power.Catenary.newCatenary;
+import static fr.sncf.osrd.envelope_sim.power.PowerPack.newPowerPackDiesel;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
@@ -10,7 +12,6 @@ import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.Utils.*;
-import fr.sncf.osrd.envelope_sim.power.Battery;
 import fr.sncf.osrd.envelope_sim.power.EnergySource;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 
@@ -174,19 +175,17 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public void updateEnergyStorages(double maxAvailableForce, double usedForce, double speed, double timeStep) {
-        var battery = getBattery();
-        if (battery != null) {
-            var forceLeftover = maxAvailableForce - usedForce;
-            assert forceLeftover >= 0;
-            var powerLeftoverAfterTraction =
-                    forceLeftover * speed / motorEfficiency;
-            var soc = battery.storage.getSoc();
-            var callForPower = battery.storage.refillLaw.getRefillPower(soc);
-            // TODO: check if this should be battery.getPower() rather than battery.pMax
-            var powerNeededFromBattery = battery.pMax - powerLeftoverAfterTraction / battery.efficiency;
-            var powerSentToBattery = Math.min(-powerNeededFromBattery, callForPower);
-            battery.sendPower(powerSentToBattery, timeStep);
+    public void updateEnergyStorages(double tractionForce, double speed, double timeStep, boolean electrification) {
+        var remainingEnergy = tractionForce * speed * timeStep;
+        // TODO: make sur this is ordered
+        for (var source : energySources) {
+            var energyConsumed = source.getPower(speed, electrification) * timeStep;
+            if (energyConsumed > remainingEnergy)
+                energyConsumed = remainingEnergy;
+            source.updateStorage(energyConsumed);
+            remainingEnergy -= energyConsumed;
+            if (remainingEnergy == 0)
+                break;
         }
     }
 
@@ -293,14 +292,6 @@ public class RollingStock implements PhysicsRollingStock {
         return true;
     }
 
-    public Battery getBattery() {
-        for (var source : energySources) {
-            if (source instanceof Battery)
-                return (Battery) source;
-        }
-        return null;
-    }
-
     /**
      * Creates a new rolling stock (a physical train inventory item).
      */
@@ -321,8 +312,7 @@ public class RollingStock implements PhysicsRollingStock {
             RJSLoadingGaugeType loadingGaugeType,
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
-            String powerClass,
-            ArrayList<EnergySource> energySources) {
+            String powerClass) {
         this.id = id;
         this.A = a;
         this.B = b;
@@ -341,9 +331,74 @@ public class RollingStock implements PhysicsRollingStock {
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
         this.powerClass = powerClass;
+        this.energySources = createEnergySourcesFromModes(modes);
+        //TODO: change this later
+        this.motorEfficiency = 0.8;
+        this.auxiliariesPower = 0;
+    }
+
+    //TODO: correct this method
+    private ArrayList<EnergySource> createEnergySourcesFromModes(Map<String, ModeEffortCurves> modes) {
+        var energySources = new ArrayList<EnergySource>();
+        for (var mode : modes.values()) {
+            if (mode.isElectric) {
+                energySources.add(newCatenary());
+                break;
+            }
+            else {
+                energySources.add(newPowerPackDiesel());
+                break;
+            }
+        }
+        return energySources;
+    }
+
+    /**
+     * Creates a new qualesi rolling stock.
+     */
+    public RollingStock(
+            String id,
+            double length,
+            double mass,
+            double inertiaCoefficient,
+            double a,
+            double b,
+            double c,
+            double maxSpeed,
+            double startUpTime,
+            double startUpAcceleration,
+            double comfortAcceleration,
+            double gamma,
+            GammaType gammaType,
+            RJSLoadingGaugeType loadingGaugeType,
+            String defaultMode,
+            String powerClass,
+            ArrayList<EnergySource> energySources) {
+        this.id = id;
+        this.A = a;
+        this.B = b;
+        this.C = c;
+        this.length = length;
+        this.maxSpeed = maxSpeed;
+        this.startUpTime = startUpTime;
+        this.startUpAcceleration = startUpAcceleration;
+        this.comfortAcceleration = comfortAcceleration;
+        this.gamma = gamma;
+        this.gammaType = gammaType;
+        this.mass = mass;
+        this.inertiaCoefficient = inertiaCoefficient;
+        this.modes = createModesFromEnergySources(energySources);
+        this.defaultMode = defaultMode;
+        this.inertia = mass * inertiaCoefficient;
+        this.loadingGaugeType = loadingGaugeType;
+        this.powerClass = powerClass;
         this.energySources = energySources;
         //TODO: change this later
         this.motorEfficiency = 0.8;
         this.auxiliariesPower = 0;
+    }
+
+    private Map<String, ModeEffortCurves> createModesFromEnergySources(ArrayList<EnergySource> energySources) {
+//TODO: implement this
     }
 }

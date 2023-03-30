@@ -38,6 +38,11 @@ public class Battery implements EnergySource {
         return availablePower;
     }
 
+    @Override
+    public void updateStorage(double energyDelta) {
+        storage.updateStateOfCharge(energyDelta);
+    }
+
     public static Battery newBattery() {
         CurvePoint[] curveHigherValueOnHighSpeed = {
                 new CurvePoint(0.0,0.1),

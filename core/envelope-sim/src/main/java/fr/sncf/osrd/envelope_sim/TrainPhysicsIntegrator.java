@@ -94,7 +94,7 @@ public final class TrainPhysicsIntegrator {
         if (action == Action.MAINTAIN) {
             tractionForce = rollingResistance - weightForce;
             if (tractionForce <= maxTractionForce) {
-                rollingStock.updateEnergyStorages(tractionForce, maxTractionForce, speed, timeStep);
+                rollingStock.updateEnergyStorages(tractionForce, speed, timeStep, electrification);
                 return newtonStep(timeStep, speed, 0., directionSign);
             }
             else tractionForce = maxTractionForce;

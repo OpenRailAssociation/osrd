@@ -90,10 +90,6 @@ public class RJSRollingStock implements Identified {
     @Json(name = "loading_gauge")
     public RJSLoadingGaugeType loadingGauge = null;
 
-    /** The different energy sources of the rolling sotck */
-    @Json(name = "energy_sources")
-    public ArrayList<RJSEnergySource> energySources = null;
-
     public enum GammaType {
         CONST,
         MAX

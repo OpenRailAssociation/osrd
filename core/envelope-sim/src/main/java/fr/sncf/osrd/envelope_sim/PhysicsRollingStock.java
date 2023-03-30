@@ -39,7 +39,7 @@ public interface PhysicsRollingStock {
     double getMaxBrakingForce(double speed);
 
     /** If relevant, compute the delta of state of charge */
-    void updateEnergyStorages(double maxAvailableForce, double usedForce, double speed, double timeStep);
+    void updateEnergyStorages(double tractionForce, double speed, double timeStep, boolean electrification);
 
     enum GammaType {
         CONST,

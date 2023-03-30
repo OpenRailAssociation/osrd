@@ -4,8 +4,6 @@ import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 import fr.sncf.osrd.envelope_sim.power.storage.SocDependantPowerCoefficient;
 
-import static fr.sncf.osrd.envelope_sim.Utils.clamp;
-
 public class PowerPack implements EnergySource {
 
     /** Floor power limit */
@@ -36,6 +34,11 @@ public class PowerPack implements EnergySource {
         double availablePower = pMax;
         availablePower *= efficiency;
         return availablePower;
+    }
+
+    @Override
+    public void updateStorage(double energyDelta) {
+        storage.updateStateOfCharge(energyDelta);
     }
 
     public static PowerPack newPowerPackDiesel() {

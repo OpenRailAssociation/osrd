@@ -85,9 +85,6 @@ public class RJSRollingStockParser {
         if (Double.isNaN(rjsRollingStock.mass))
             throw new MissingRollingStockField("mass");
 
-        if (rjsRollingStock.energySources == null)
-            throw new MissingRollingStockField("energy_source");
-
         var rollingResistance = parseRollingResistance(rjsRollingStock.rollingResistance);
 
         var gammaType = switch (rjsRollingStock.gamma.type) {
@@ -112,9 +109,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.loadingGauge,
                 modes,
                 rjsRollingStock.effortCurves.defaultMode,
-                rjsRollingStock.basePowerClass,
+                rjsRollingStock.basePowerClass
                 //TODO: convert type from RJSEnergySource to EnergySource
-                rjsRollingStock.energySources
         );
     }
 
