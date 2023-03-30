@@ -8,7 +8,7 @@ import icon from 'assets/pictures/components/speedometer.svg';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
 
-export default function SpeedLimitByTagSelector() {
+export default function SpeedLimitByTagSelector({ condensed = true }) {
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID);
   const speedLimitByTag = useSelector(getSpeedLimitByTag);
@@ -48,10 +48,11 @@ export default function SpeedLimitByTagSelector() {
 
   return speedLimitsTags ? (
     <div className="osrd-config-item mb-2">
-      <div className="osrd-config-item-container">
+      <div className={`osrd-config-item-container ${condensed ? 'flex-on-line' : ''}`}>
         <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
         <span className="text-muted">{t('speedLimitByTag')}</span>
         <SelectImprovedSNCF
+          className={`${condensed ? 'flex-on-line-3' : ''}`}
           options={speedLimitsTags}
           onChange={(e) => dispatch(updateSpeedLimitByTag(e))}
           selectedValue={speedLimitByTag}
