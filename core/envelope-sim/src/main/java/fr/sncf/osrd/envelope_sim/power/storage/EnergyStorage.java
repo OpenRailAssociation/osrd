@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim.power.storage;
 
+import static fr.sncf.osrd.envelope_sim.Utils.clamp;
+
 public class EnergyStorage{
 
     /** How much energy the object can store (in Joules or Watts·Seconds) */
@@ -30,7 +32,8 @@ public class EnergyStorage{
 
     public void updateStateOfCharge(double energy){
         soc += energy/capacity;
-        soc = Math.max(Math.min(soc, socMax), socMin);
+        //TODO: make sure getPower = 0 at socMin
+        soc = clamp(socMin, soc, socMax);
     }
 
     public double getSoc() {

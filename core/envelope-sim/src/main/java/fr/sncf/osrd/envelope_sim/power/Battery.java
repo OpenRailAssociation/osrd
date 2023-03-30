@@ -5,8 +5,6 @@ import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 import fr.sncf.osrd.envelope_sim.power.storage.SocDependantPowerCoefficient;
 
-import static fr.sncf.osrd.envelope_sim.Utils.clamp;
-
 public class Battery implements EnergySource {
 
     /** Floor power limit */
@@ -32,18 +30,12 @@ public class Battery implements EnergySource {
         this.efficiency = efficiency;
     }
 
-    // METHODS :
-    /** Return value restricted by EnergySource's Ceiling and Floor power limits : ES.pMin <= return <= ES.pMax*/
-    public double clampPowerLimits(double power){
-        return clamp(pMin, power, pMax);
-    }
-
     /** Return available power based on contextual state of charge */
     public double getPower(double speed, boolean electrification){
         double availablePower = pMax;
         availablePower *= storage.socDependency.getPowerCoefficientFromSoc(storage.getSoc());
         availablePower *= efficiency;
-        return clampPowerLimits(availablePower);
+        return availablePower;
     }
 
     public static Battery newBattery() {
@@ -68,7 +60,12 @@ public class Battery implements EnergySource {
                         new RefillLaw(97.6,0.8, capacity),
                         new SocDependantPowerCoefficient(curveHigherValueOnHighSpeed)
                 ),
-                1
+                1.
         );
+    }
+
+    public void sendPower(double powerSentToBattery, double timeDelta) {
+        var deltaSoc = powerSentToBattery * timeDelta;
+        storage.updateStateOfCharge(deltaSoc);
     }
 }

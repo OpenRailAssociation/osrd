@@ -2,8 +2,6 @@ package fr.sncf.osrd.envelope_sim.power;
 
 import fr.sncf.osrd.envelope_sim.Utils.*;
 
-import static fr.sncf.osrd.envelope_sim.Utils.clamp;
-
 public class Catenary implements EnergySource {
 
     /** Floor power limit */
@@ -31,19 +29,14 @@ public class Catenary implements EnergySource {
         this.efficiency = efficiency;
     }
 
-    // METHODS :
-    /** Return value restricted by EnergySource's Ceiling and Floor power limits : ES.pMin <= return <= ES.pMax*/
-    public double clampPowerLimits(double power){
-        return clamp(pMin, power, pMax);
-    }
-
     /** Return available power */
     public double getPower(double speed, boolean electrification){
         if (!electrification)
             return 0;
         double availablePower = pMax;
+        availablePower *= speedCoef.getPowerCoefficientFromSpeed(speed);
         availablePower *= efficiency;
-        return clampPowerLimits(availablePower);
+        return availablePower;
     }
 
     public static Catenary newCatenary() {

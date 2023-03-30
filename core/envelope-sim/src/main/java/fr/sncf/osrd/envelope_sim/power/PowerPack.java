@@ -31,17 +31,11 @@ public class PowerPack implements EnergySource {
         this.efficiency = efficiency;
     }
 
-    // METHODS :
-    /** Return value restricted by EnergySource's Ceiling and Floor power limits : ES.pMin <= return <= ES.pMax*/
-    public double clampPowerLimits(double power){
-        return clamp(pMin, power, pMax);
-    }
-
     /** Return available power */
     public double getPower(double speed, boolean electrification){
         double availablePower = pMax;
         availablePower *= efficiency;
-        return clampPowerLimits(availablePower);
+        return availablePower;
     }
 
     public static PowerPack newPowerPackDiesel() {

@@ -183,11 +183,10 @@ public class RollingStock implements PhysicsRollingStock {
                     forceLeftover * speed / motorEfficiency;
             var soc = battery.storage.getSoc();
             var callForPower = battery.storage.refillLaw.getRefillPower(soc);
+            // TODO: check if this should be battery.getPower() rather than battery.pMax
             var powerNeededFromBattery = battery.pMax - powerLeftoverAfterTraction / battery.efficiency;
             var powerSentToBattery = Math.min(-powerNeededFromBattery, callForPower);
-            powerSentToBattery = battery.clampPowerLimits(powerSentToBattery);
-            var deltaSoc = powerSentToBattery * timeStep;
-            battery.storage.updateStateOfCharge(deltaSoc);
+            battery.sendPower(powerSentToBattery, timeStep);
         }
     }
 
