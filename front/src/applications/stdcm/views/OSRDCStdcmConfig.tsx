@@ -60,7 +60,7 @@ export default function OSRDConfig({
           <ScenarioExplorator />
           {projectID && studyID && scenarioID && timetableID && infraID && (
             <>
-              <RollingStockSelector />
+              <RollingStockSelector condensed />
               <SpeedLimitByTagSelector />
               <Itinerary />
               <div className="row">

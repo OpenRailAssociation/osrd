@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 const ROLLINGSTOCK_URL = '/rolling_stock';
 
-export default function RollingStockSelector() {
+export default function RollingStockSelector({ condensed }) {
   const { openModal } = useModal();
   const rollingStockID = useSelector(getRollingStockID);
   const rollingStockComfort = useSelector(getRollingStockComfort);
@@ -63,26 +64,44 @@ export default function RollingStockSelector() {
       >
         {rollingStockSelected !== undefined ? (
           <div className="rollingstock-minicard">
-            <RollingStockInfos data={rollingStockSelected} showMiddle={false} showEnd={false} />
-            <div className="rollingstock-container-img">
-              <div className="rollingstock-img">
-                <RollingStock2Img rollingStock={rollingStockSelected} />
-              </div>
-            </div>
-            <div className="rollingstock-minicard-end">
-              <span className="rollingstock-infos-comfort text-uppercase small">
-                <span className="text-uppercase font-weight-bold">
-                  {`${t('rollingstock:comfort')} `}
-                </span>
+            {condensed ? (
+              <div className="d-flex align-items-center font-weight-bold">
+                <RollingStockInfos
+                  data={rollingStockSelected}
+                  showMiddle={false}
+                  showSeries={false}
+                />
+                <div className="rollingstock-container-img ml-4">
+                  <div className="rollingstock-img d-flex align-items-center">
+                    <RollingStock2Img rollingStock={rollingStockSelected} />
+                  </div>
+                </div>
                 <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
-                {`${t(`rollingstock:comfortTypes.${rollingStockComfort}`)}`}
-              </span>
-              <RollingStockInfos
-                data={rollingStockSelected}
-                showMiddle={false}
-                showSeries={false}
-              />
-            </div>
+              </div>
+            ) : (
+              <>
+                <RollingStockInfos data={rollingStockSelected} showMiddle={false} showEnd={false} />
+                <div className="rollingstock-container-img">
+                  <div className="rollingstock-img">
+                    <RollingStock2Img rollingStock={rollingStockSelected} />
+                  </div>
+                </div>
+                <div className="rollingstock-minicard-end">
+                  <span className="rollingstock-infos-comfort text-uppercase small">
+                    <span className="text-uppercase font-weight-bold">
+                      {`${t('rollingstock:comfort')} `}
+                    </span>
+                    <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
+                    {`${t(`rollingstock:comfortTypes.${rollingStockComfort}`)}`}
+                  </span>
+                  <RollingStockInfos
+                    data={rollingStockSelected}
+                    showMiddle={false}
+                    showSeries={false}
+                  />
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="d-flex align-items-center">
@@ -94,3 +113,11 @@ export default function RollingStockSelector() {
     </div>
   );
 }
+
+RollingStockSelector.propTypes = {
+  condensed: PropTypes.bool,
+};
+
+RollingStockSelector.defaultProps = {
+  condensed: false,
+};
