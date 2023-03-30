@@ -531,9 +531,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             />
           ))}
       </ReactMapGL>
-      <div className="handle-tab-resize">
-        <CgLoadbar />
-      </div>
     </>
   );
 };
