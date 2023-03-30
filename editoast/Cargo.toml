@@ -22,7 +22,7 @@ diesel = { version = "2.0", features = [
     "chrono",
 ] }
 diesel_json = "0.2.0"
-image = "0.24.5"
+image = "0.24"
 json-patch = "0.3.0"
 pathfinding = "4.2.1"
 rand = "0.8.5"
@@ -46,7 +46,7 @@ strum = "~0.24.1"
 strum_macros = "~0.24.3"
 thiserror = "1.0"
 enum-map = "2.5"
-tempfile = "3.4.0"
+tempfile = "3.5.0"
 editoast_derive = { path = "./editoast_derive" }
 mvt = "0.8.1"
 pointy = "0.4.0"
