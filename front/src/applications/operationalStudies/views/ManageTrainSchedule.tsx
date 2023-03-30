@@ -7,7 +7,7 @@ import TrainSettings from 'applications/operationalStudies/components/ManageTrai
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
-import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
+import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelecto';
 import submitConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConf';
 import { FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
