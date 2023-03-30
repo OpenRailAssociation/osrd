@@ -146,18 +146,12 @@ public class RollingStock implements PhysicsRollingStock {
 
     @Override
     public double getMaxTractionForce(double speed, CurvePoint[] tractiveEffortCurve, boolean electrification) {
-        var battery = getBattery();
         var maxTractionForce = interpolate(speed, tractiveEffortCurve);
-        if (battery == null) {
+        if (speed == 0)
             return maxTractionForce;
-        }
         else {
             var maxTractionPower = getMaxTractionPower(speed, electrification);
-            if (speed == 0)
-                return maxTractionForce;
-            else {
-                return Math.min(maxTractionForce, maxTractionPower / speed);
-            }
+            return Math.min(maxTractionForce, maxTractionPower / speed);
         }
     }
 
@@ -175,7 +169,8 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public void updateEnergyStorages(double tractionForce, double speed, double timeStep, boolean electrification) {
+    public void updateEnergyStorages(double availableTractionForce, double tractionForce, double speed, double timeStep, boolean electrification) {
+        // the total energy that will need to be used from the different energy sources
         var remainingEnergy = tractionForce * speed * timeStep;
         // TODO: make sur this is ordered
         for (var source : energySources) {

@@ -53,7 +53,7 @@ public class Catenary implements EnergySource {
         return new Catenary(
                 0.,
                 400.0,
-                1,
+                1.,
                 new SpeedDependantPowerCoefficient(curveLowValueOnLowSpeed)
         );
     }

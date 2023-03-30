@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope_sim.power;
 
 import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
-import fr.sncf.osrd.envelope_sim.power.storage.SocDependantPowerCoefficient;
 
 public class PowerPack implements EnergySource {
 
@@ -16,7 +15,7 @@ public class PowerPack implements EnergySource {
     public EnergyStorage storage;
 
     /** The efficiency of the power pack, between 0 and 1 */
-    private double efficiency;
+    private final double efficiency;
 
     public PowerPack(double pMin,
                      double pMax,
@@ -32,13 +31,15 @@ public class PowerPack implements EnergySource {
     /** Return available power */
     public double getPower(double speed, boolean electrification){
         double availablePower = pMax;
+        availablePower *= storage.getPowerCoefficientFromSoc();
         availablePower *= efficiency;
         return availablePower;
     }
 
     @Override
     public void updateStorage(double energyDelta) {
-        storage.updateStateOfCharge(energyDelta);
+        if (energyDelta <= 0)
+            storage.updateStateOfCharge(energyDelta);
     }
 
     public static PowerPack newPowerPackDiesel() {
@@ -47,8 +48,7 @@ public class PowerPack implements EnergySource {
         double volume = 4; // m^3
         double capacity = 10 * 3.6e6 * volume; // Joules
         var refillLaw = new RefillLaw(100,1,capacity);
-        var socCoef = new SocDependantPowerCoefficient(1);
-        var storage = new EnergyStorage(capacity, 1, 0, 1, refillLaw, socCoef);
+        var storage = new EnergyStorage(capacity, 1, 0, 1, refillLaw);
         double efficiency = 1;
         return new PowerPack(pMin, pMax, storage, efficiency);
     }
