@@ -152,7 +152,11 @@ const injectedRtkApi = api.injectEndpoints({
       }),
     }),
     postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/clone/`, method: 'POST' }),
+      query: (queryArg) => ({
+        url: `/infra/${queryArg.id}/clone/`,
+        method: 'POST',
+        params: { name: queryArg.name },
+      }),
     }),
     getElectricalProfileSet: build.query<
       GetElectricalProfileSetApiResponse,
@@ -597,6 +601,8 @@ export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra 
 export type PostInfraByIdCloneApiArg = {
   /** Infra id */
   id: number;
+  /** New infra name */
+  name: string;
 };
 export type GetElectricalProfileSetApiResponse =
   /** status 200 The list of ids and names of electrical profile sets available */ {

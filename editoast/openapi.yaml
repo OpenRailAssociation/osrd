@@ -812,6 +812,12 @@ paths:
             type: integer
           description: Infra id
           required: true
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: New infra name
+          required: true
       responses:
         201:
           description: The duplicated infra id
@@ -2014,7 +2020,7 @@ components:
                     type: string
                 required: [id, name]
           required: [id, liveries]
-  
+
     RollingStockCreatePayload:
       properties:
         version:
@@ -2144,7 +2150,18 @@ components:
             subseries: "GV"
             type: "Locomotives électriques"
             unit: "US"
-          required: [detail, family, grouping, number, reference, series, subseries, type, unit]
+          required:
+            [
+              detail,
+              family,
+              grouping,
+              number,
+              reference,
+              series,
+              subseries,
+              type,
+              unit,
+            ]
       required:
         - version
         - name
