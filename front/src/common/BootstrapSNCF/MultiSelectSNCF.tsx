@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 type MultiSelectSNCFProps = {
   multiSelectTitle: string;
@@ -6,6 +6,7 @@ type MultiSelectSNCFProps = {
   selectOptions: { label: string }[];
   onChange: React.Dispatch<React.SetStateAction<string[]>>;
   selectedValues: string[];
+  isSelectAll?: boolean;
 };
 
 const MultiSelectSNCF = ({
@@ -14,20 +15,25 @@ const MultiSelectSNCF = ({
   selectOptions,
   onChange,
   selectedValues,
+  isSelectAll,
 }: MultiSelectSNCFProps) => {
   const [multiSelectToggle, setMultiselectToggle] = useState<boolean>(false);
   const [selectAll, setSelectAll] = useState<boolean>(false);
-  const renderOptions = (options: { label: string }[]) =>
-    options.map((selectOption, index) => (
-      <option
-        data-id={index}
-        selected={selectedValues.includes(selectOption.label)}
-        key={`selectOption-${selectOption.label}`}
-        value={selectOption.label}
-      >
-        {selectOption.label}
-      </option>
-    ));
+
+  const renderOptions = useCallback(
+    (options: { label: string }[]) =>
+      options.map((selectOption, index) => (
+        <option
+          data-id={index}
+          selected={selectedValues.includes(selectOption.label)}
+          key={`selectOption-${selectOption.label}`}
+          value={selectOption.label}
+        >
+          {selectOption.label}
+        </option>
+      )),
+    [selectOptions]
+  );
 
   const renderSelectToggles = (options: { label: string }[]) =>
     options.map((toggle, index) => {
@@ -88,18 +94,22 @@ const MultiSelectSNCF = ({
         <div className="select-control">
           <div className="input-group" data-role="select-toggle">
             <div className="form-control">
-              <div className="custom-control custom-checkbox">
-                <button
-                  type="button"
-                  data-role="value"
-                  role="checkbox"
-                  aria-checked="false"
-                  className={`custom-control-label font-weight-medium ${selectAll && 'active'}`}
-                  onClick={() => setSelectAll((prevState) => !prevState)}
-                >
-                  {multiSelectSubTitle || multiSelectTitle}
-                </button>
-              </div>
+              {isSelectAll ? (
+                <div className="custom-control custom-checkbox">
+                  <button
+                    type="button"
+                    data-role="value"
+                    role="checkbox"
+                    aria-checked="false"
+                    className={`custom-control-label font-weight-medium ${selectAll && 'active'}`}
+                    onClick={() => setSelectAll((prevState) => !prevState)}
+                  >
+                    {multiSelectSubTitle || multiSelectTitle}
+                  </button>
+                </div>
+              ) : (
+                multiSelectSubTitle || multiSelectTitle
+              )}
             </div>
             <select
               className="sr-only"

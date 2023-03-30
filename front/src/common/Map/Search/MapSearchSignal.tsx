@@ -11,9 +11,11 @@ import { AllGeoJSON } from '@turf/helpers';
 import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { setFailure } from 'reducers/main';
 import { ISignalSearchResult } from './searchTypes';
 import { searchPayloadType, signalAspects } from '../const';
 import SignalCard from './SignalCard';
+import getCoordinates from '../utils';
 
 type MapSearchSignalProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -21,7 +23,7 @@ type MapSearchSignalProps = {
 
 export type SortType = {
   name: 'label' | 'type' | 'line_name' | 'line_code';
-  order: number;
+  asc: boolean;
 };
 
 const SIGNAL_ASPECTS = signalAspects;
@@ -34,62 +36,67 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   const [searchLineState, setSearchLine] = useState('');
   const [aspect, setAspect] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<ISignalSearchResult[]>([]);
-  // Sort by, and order 0 = ASC, 1 = DESC
+  // Sort by, and order true = ASC, false = DESC
   const [sortFilter, setSortFilter] = useState<SortType>({
     name: 'label',
-    order: 0,
+    asc: true,
   });
   const dispatch = useDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const { t } = useTranslation(['translation', 'map-search']);
 
-  const updateSearch = async (params: searchPayloadType) => {
+  const getPayload = (lineSearch: string, signalName: string) => {
+    const payloadQuery: (string | number | string[])[] = !Number.isNaN(Number(lineSearch))
+      ? ['=', ['line_code'], Number(lineSearch)]
+      : ['search', ['line_name'], lineSearch];
+
+    const aspectQuery = aspect.join(' ');
+    return {
+      object: 'signal',
+      query: [
+        'and',
+        ['=', ['infra_id'], infraID],
+        payloadQuery,
+        !aspectQuery || ['contains', ['list', aspectQuery], ['aspects']],
+        ['search', ['label'], signalName],
+      ],
+    };
+  };
+
+  const updateSearch = async () => {
+    const payload: searchPayloadType = getPayload(searchLineState, searchState);
     await postSearch({
-      body: { object: params.object, query: params.query },
+      body: payload,
     })
       .unwrap()
       .then((results) => {
-        setSearchResults(results as ISignalSearchResult[]);
+        setSearchResults([...results] as ISignalSearchResult[]);
       })
-      .catch((error) => {
-        console.error(error);
+      .catch((e) => {
+        console.error(e);
         setSearchResults([]);
+        dispatch(
+          setFailure({
+            name: t('map-search:errorMessages.unableToSearchSignal'),
+            message: `${e.message}`,
+          })
+        );
       });
   };
 
   const debouncedSearchTerm = useDebounce(searchState, 300);
   const debouncedSearchLine = useDebounce(searchLineState, 300);
 
-  const getPayload = () => {
-    let playloadQuery: (string | number | string[])[] = ['search', ['line_name'], searchState];
-
-    if (searchLineState) playloadQuery = ['=', ['line_code'], Number(searchLineState)];
-
-    const aspectQuery = aspect.join(' ');
-    const payload = {
-      object: 'signal',
-      query: [
-        'and',
-        ['=', ['infra_id'], infraID],
-        playloadQuery,
-        !aspectQuery || ['contains', ['list', aspectQuery], ['aspects']],
-      ],
-    };
-
-    return payload;
-  };
-
   useEffect(() => {
-    if (searchState || searchLineState) {
-      updateSearch(getPayload());
-    }
-    if (!searchState && !searchLineState) {
+    if (searchLineState) {
+      updateSearch();
+    } else {
       setSearchResults([]);
     }
   }, [debouncedSearchTerm, debouncedSearchLine, aspect]);
 
   const onResultClick = (result: ISignalSearchResult) => {
-    const coordinates = map.mapTrackSources === 'schematic' ? result.schematic : result.geographic;
+    const coordinates = getCoordinates(result, map);
 
     const center = turfCenter(coordinates as AllGeoJSON);
 
@@ -109,17 +116,16 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   };
 
   const formatSearchResults = () => {
-    let searchResultsContent = searchResults.filter((result) => result.label !== null);
-    searchResultsContent = searchResultsContent.sort((a, b) => {
+    const searchResultsContent = searchResults.sort((a, b) => {
       if (!a[sortFilter.name]) {
-        return sortFilter.order === 0 ? -1 : 1;
+        return sortFilter.asc ? 1 : -1;
       } // To avoid null values
       if (!b[sortFilter.name]) {
-        return sortFilter.order === 0 ? 1 : -1;
+        return sortFilter.asc ? -1 : 1;
       }
-      return sortFilter.order === 0
-        ? String(a[sortFilter.name]).localeCompare(String(b[sortFilter.name]))
-        : String(b[sortFilter.name]).localeCompare(String(a[sortFilter.name]));
+      return sortFilter.asc
+        ? String(b[sortFilter.name]).localeCompare(String(a[sortFilter.name]))
+        : String(a[sortFilter.name]).localeCompare(String(b[sortFilter.name]));
     });
 
     return (
@@ -137,10 +143,10 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
 
   const orderDisplay = (name: string) => {
     if (name === sortFilter.name) {
-      return sortFilter.order === 0 ? (
-        <i className="icons-arrow-down icons-size-x5 ml-1" />
-      ) : (
+      return sortFilter.asc ? (
         <i className="icons-arrow-up icons-size-x5 ml-1" />
+      ) : (
+        <i className="icons-arrow-down icons-size-x5 ml-1" />
       );
     }
     return null;
@@ -148,9 +154,9 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
 
   const setSortName = (name: typeof sortFilter.name) => {
     if (name === sortFilter.name) {
-      setSortFilter({ name, order: 1 - sortFilter.order });
+      setSortFilter({ name, asc: !sortFilter.asc });
     } else {
-      setSortFilter({ name, order: 0 });
+      setSortFilter({ name, asc: false });
     }
   };
 
@@ -159,26 +165,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       <div className="row mr-2">
         <div className="col-sm-6">
           <InputSNCF
-            label={t('map-search:name')}
-            type="text"
-            placeholder={t('map-search:placeholdername')}
-            id="map-search-signal"
-            onChange={(e) => {
-              setSearch(e.target.value);
-            }}
-            onClear={() => {
-              setSearch('');
-              setSearchResults([]);
-            }}
-            value={searchState}
-            clearButton
-            noMargin
-            sm
-          />
-        </div>
-        <div className="col-sm-6">
-          <InputSNCF
-            label={t('map-search:linecode')}
+            label={t('map-search:line')}
             type="text"
             placeholder={t('map-search:placeholderline')}
             id="map-search-signal-line"
@@ -194,11 +181,29 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
             sm
           />
         </div>
+        <div className="col-sm-6">
+          <InputSNCF
+            label={t('map-search:signal')}
+            type="text"
+            placeholder={t('map-search:placeholdersignal')}
+            id="map-search-signal"
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
+            onClear={() => {
+              setSearch('');
+              setSearchResults([]);
+            }}
+            value={searchState}
+            clearButton
+            noMargin
+            sm
+          />
+        </div>
       </div>
       <div>
         <MultiSelectSNCF
-          multiSelectTitle="Aspect"
-          multiSelectSubTitle="Tout les Aspects"
+          multiSelectTitle={t('map-search:aspect')}
           selectOptions={SIGNAL_ASPECTS}
           onChange={setAspect}
           selectedValues={aspect}
