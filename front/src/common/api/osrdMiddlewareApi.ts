@@ -366,7 +366,7 @@ export type PostPathfindingOpApiArg = {
   /** Steps of the path */
   pathOpQuery: PathOpQuery;
 };
-export type GetPathfindingByIdApiResponse = /** status 200 The path */ Path[];
+export type GetPathfindingByIdApiResponse = /** status 200 The path */ Path;
 export type GetPathfindingByIdApiArg = {
   /** Path ID */
   id: number;

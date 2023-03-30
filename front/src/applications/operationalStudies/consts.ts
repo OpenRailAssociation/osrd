@@ -1,7 +1,7 @@
 import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
-import { Path } from 'common/api/osrdMiddlewareApi';
+import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { ModesAndProfiles } from 'reducers/osrdsimulation/types';
 
 export const BLOCKTYPES = [
@@ -133,7 +133,7 @@ export interface OsrdConfState {
   timetableID?: number;
   rollingStockID?: number;
   speedLimitByTag?: any;
-  powerRestriction?: string;
+  powerRestriction?: PowerRestrictionRange;
   origin?: PointOnMap;
   originSpeed: number;
   destination?: PointOnMap;

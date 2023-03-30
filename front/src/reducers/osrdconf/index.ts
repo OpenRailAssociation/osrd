@@ -15,6 +15,7 @@ import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
 import { getSwitchTypes } from 'applications/editor/data/api';
+import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 /* eslint-disable default-case */
 
 // Action Types
@@ -634,7 +635,7 @@ export function deleteItinerary() {
     });
   };
 }
-export function updatePowerRestriction(powerRestriction?: string) {
+export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_POWER_RESTRICTION,
