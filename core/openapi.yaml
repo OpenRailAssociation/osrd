@@ -196,6 +196,54 @@ paths:
                     type: array
         400:
           description: The request body is invalid
+
+  /project_signals:
+    post:
+      tags:
+        - simulation
+      summary: Compute signal updates
+      operationId: project_signals
+      requestBody:
+        description: Infra id, signal sightings and zone updates
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignalProjectionRequest"
+        required: true
+      responses:
+        200:
+          description: Signal updates
+          content:
+            application/json:
+              schema:
+                properties:
+                  signal_updates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        signal_id:
+                          type: string
+                        route_ids:
+                          type: array
+                          items:
+                            type: string
+                        time_start:
+                          type: number
+                          format: double
+                        time_end:
+                          type: number
+                          format: double
+                        color:
+                          type: integer
+                        blinking:
+                          type: boolean
+                        aspect_label:
+                          type: string
+                  warnings:
+                    type: array
+        400:
+          description: The request body is invalid
 components:
   schemas:
     Waypoint:
@@ -507,29 +555,16 @@ components:
               time_tail_free:
                 type: number
                 format: double
-        signal_updates:
+        signal_sightings:
           type: array
+          minItems: 0
           items:
-            type: object
-            properties:
-              signal_id:
-                type: string
-              route_ids:
-                type: array
-                items:
-                  type: string
-              time_start:
-                type: number
-                format: double
-              time_end:
-                type: number
-                format: double
-              color:
-                type: integer
-              blinking:
-                type: boolean
-              aspect_label:
-                type: string
+            $ref: "#/components/schemas/SignalSighting"
+        train_schedules:
+          type: array
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/ZoneUpdate"
         tag:
           type: string
           example: "tag"
@@ -735,6 +770,39 @@ components:
               type: number
               format: double
               description: end offset of the track range
+    SignalProjectionRequest:
+      required:
+        - infra
+        - train_path
+        - signal_sightings
+        - zone_updates
+      properties:
+        infra:
+          type: string
+          example: "infraID"
+        signal_sightings:
+          type: array
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/SignalSighting"
+        train_schedules:
+          type: array
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/ZoneUpdate"
+        trains_path:
+          properties:
+            track:
+              type: string
+              example: "track"
+            begin:
+              type: number
+              format: double
+              description: begin offset of the track range
+            end:
+              type: number
+              format: double
+              description: end offset of the track range
     AllowanceValue:
       oneOf:
         - $ref: "#/components/schemas/TimePerDistanceAllowanceValue"
@@ -769,3 +837,26 @@ components:
           type: number
           format: double
           description: in %, how much time do we add compared to the fastest run time
+ZoneUpdate:
+  properties:
+    zone:
+      type: string
+    time:
+      type: double
+    offset:
+      type: double
+      description: the offset of the zone on the current path
+    is_entry:
+      type: boolean
+SignalSighting:
+  properties:
+    signal:
+      type: string
+    time:
+      type: double
+    offset:
+      type: double
+      description: The offset of the sighting on the current path
+    state:
+      type: string
+      decription: The expected state of the signal, if the train is alone in the infra
