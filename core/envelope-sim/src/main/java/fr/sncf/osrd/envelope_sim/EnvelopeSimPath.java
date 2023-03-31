@@ -171,9 +171,11 @@ public class EnvelopeSimPath implements PhysicsPath {
     /**
      * Get the catenary related data for a given power class and power restriction map.
      */
-    public ImmutableRangeMap<Double, ElectrificationConditions> getElecCondMap(String basePowerClass,
-                                                                               RangeMap<Double, String> powerRestrictionMap,
-                                                                               Map<String, String> powerRestrictionToPowerClass) {
+    public ImmutableRangeMap<Double, ElectrificationConditions> getElecCondMap(
+            String basePowerClass,
+            RangeMap<Double, String> powerRestrictionMap,
+            Map<String, String> powerRestrictionToPowerClass
+    ) {
         return getElecCondMap(basePowerClass, powerRestrictionMap, powerRestrictionToPowerClass, false);
     }
 
