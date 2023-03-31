@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import './DisplayMissingInfo.scss';
 
 interface Props {
   title: string;
   missingInfoList: string[];
   isShowing: boolean;
-  isCorrect: boolean;
 }
 
 const DisplayMissingInfo = (props: Props) => {
@@ -23,12 +22,12 @@ const DisplayMissingInfo = (props: Props) => {
         <div className="form-error bg-warning text-dark mb-2">
           <div className="d-flex align-items-center">
             <h2 className=" text-uppercase text-dark mr-1 mb-0">{title}</h2>
-            <div role="button" className="btn btn-sm" onClick={() => handleClick()}>
+            <button type="button" className="btn btn-sm outline-btn" onClick={() => handleClick()}>
               <i
                 className={`icons-arrow-down ${isToggle ? 'icons-rotate-180' : ''} text-dark`}
                 aria-hidden="true"
               />
-            </div>
+            </button>
           </div>
           {isToggle && (
             <ul>
@@ -41,18 +40,6 @@ const DisplayMissingInfo = (props: Props) => {
       )}
     </>
   );
-};
-
-DisplayMissingInfo.propTypes = {
-  missingInfoList: PropTypes.array.isRequired,
-  isShowing: PropTypes.bool.isRequired,
-  isCorrect: PropTypes.bool.isRequired,
-};
-
-DisplayMissingInfo.defaultProps = {
-  missingInfoList: [''],
-  isShowing: false,
-  isCorrect: false,
 };
 
 export default DisplayMissingInfo;
