@@ -49,8 +49,7 @@ def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_s
         "end_points": [_STOP],
     }
     r = requests.post(API_URL + "stdcm/", json=payload)
-    if r.status_code // 100 != 2:
-        raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
+    assert r.status_code == 200
 
 
 def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int, west_to_south_east_path: Path):
