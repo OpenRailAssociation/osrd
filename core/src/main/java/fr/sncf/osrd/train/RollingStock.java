@@ -158,7 +158,7 @@ public class RollingStock implements PhysicsRollingStock {
     private double getMaxTractionPower(double speed, boolean electrification) {
         var availablePower = 0;
         for (var source : energySources) {
-            availablePower += source.getPower(speed, electrification);
+            availablePower += source.getMaxOutputPower(speed, electrification);
         }
         return availablePower;
     }
@@ -169,19 +169,27 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public void updateEnergyStorages(double availableTractionForce, double tractionForce, double speed, double timeStep, boolean electrification) {
+    public void updateEnergyStorages(double tractionForce, double speed, double timeStep, boolean electrification) {
         // the total energy that will need to be used from the different energy sources
         var remainingEnergy = tractionForce * speed * timeStep;
+        var leftOverEnergy = 0.;
         // TODO: make sur this is ordered
         for (var source : energySources) {
-            var energyConsumed = source.getPower(speed, electrification) * timeStep;
-            if (energyConsumed > remainingEnergy)
-                energyConsumed = remainingEnergy;
-            source.updateStorage(energyConsumed);
-            remainingEnergy -= energyConsumed;
-            if (remainingEnergy == 0)
-                break;
+            if (remainingEnergy > 0) { // if we still need some energy, get some from the source
+                var availableEnergy = source.getMaxOutputPower(speed, electrification) * timeStep;
+                var consumedEnergy = Math.min(availableEnergy, remainingEnergy);
+                source.consumeEnergy(consumedEnergy);
+                remainingEnergy -= consumedEnergy;
+                leftOverEnergy = availableEnergy - consumedEnergy;
+            }
+            else { // otherwise that means we've got all the energy we need for traction, maybe we can recharge
+                var receivableEnergy = source.getMaxInputPower() * timeStep;
+                var inputEnergy = Math.max(receivableEnergy, -leftOverEnergy);
+                source.consumeEnergy(inputEnergy);
+            }
+
         }
+
     }
 
     @Override

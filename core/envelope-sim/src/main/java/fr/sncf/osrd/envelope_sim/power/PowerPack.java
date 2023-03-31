@@ -5,11 +5,11 @@ import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 
 public class PowerPack implements EnergySource {
 
-    /** Floor power limit */
-    public double pMin;
+    /** Floor power limit : the max power the source can capture (<=0) */
+    public double maxInputPower;
 
-    /** Ceiling power limit */
-    public double pMax;
+    /** Ceiling power limit : the max power the source can provide (>=0)*/
+    public double maxOutputPower;
 
     /** The energy storage object of the power pack */
     public EnergyStorage storage;
@@ -17,27 +17,32 @@ public class PowerPack implements EnergySource {
     /** The efficiency of the power pack, between 0 and 1 */
     private final double efficiency;
 
-    public PowerPack(double pMin,
-                     double pMax,
+    public PowerPack(double maxInputPower,
+                     double maxOutputPower,
                      EnergyStorage storage,
                      double efficiency
     ) {
-        this.pMin = pMin;
-        this.pMax = pMax;
+        this.maxInputPower = maxInputPower;
+        this.maxOutputPower = maxOutputPower;
         this.storage = storage;
         this.efficiency = efficiency;
     }
 
     /** Return available power */
-    public double getPower(double speed, boolean electrification){
-        double availablePower = pMax;
+    public double getMaxOutputPower(double speed, boolean electrification){
+        double availablePower = maxOutputPower;
         availablePower *= storage.getPowerCoefficientFromSoc();
         availablePower *= efficiency;
         return availablePower;
     }
 
     @Override
-    public void updateStorage(double energyDelta) {
+    public double getMaxInputPower() {
+        return 0; // can't refill some gas while the train is running
+    }
+
+    @Override
+    public void consumeEnergy(double energyDelta) {
         if (energyDelta <= 0)
             storage.updateStateOfCharge(energyDelta);
     }
