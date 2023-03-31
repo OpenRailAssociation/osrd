@@ -36,3 +36,8 @@ dependencies {
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
 }
+
+spotbugs {
+    // Ignores unread or unused errors, which are wrongly detected all over this subproject
+    excludeFilter = rootProject.file('config/spotbugs/exclude-railjson.xml')
+}
