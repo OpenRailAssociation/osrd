@@ -174,7 +174,8 @@
     "generate-types": "exec scripts/generate-types.sh",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json"
+    "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
+    "e2e-tests": "cd ../tests && poetry install && poetry run pytest -m e2e -s"
   },
   "browserslist": {
     "production": [
