@@ -2,7 +2,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import List
+from typing import Any, Iterable, List, Mapping, Optional
 
 import pytest
 import requests
@@ -56,7 +56,7 @@ def small_infra() -> Infra:
 def foo_project_id() -> int:
     response = requests.post(
         API_URL + "projects/",
-        json={"name": "foo", "description": "", "objectives": "", "funders": "", "tags": [], "budget": 0},
+        json={"name": "Project test 1", "description": "", "objectives": "", "funders": "", "tags": [], "budget": 0},
     )
     project_id = response.json()["id"]
     yield project_id
@@ -65,7 +65,7 @@ def foo_project_id() -> int:
 
 @pytest.fixture
 def foo_study_id(foo_project_id: int) -> int:
-    payload = {"name": "foo", "service_code": "AAA", "business_code": "BBB", "tags": []}
+    payload = {"name": "Study test 1", "service_code": "AAA", "business_code": "BBB", "tags": []}
     res = requests.post(API_URL + f"projects/{foo_project_id}/studies/", json=payload)
     yield res.json()["id"]
 
@@ -82,23 +82,32 @@ def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
-def _get_or_create_fast_rolling_stock_id():
-    response = requests.post(f"{API_URL}/rolling_stock/", json=json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text()))
-    if response.status_code == 200:
-        return response.json()["id"]
-    # Rolling stock already exists
-    response = requests.get(f"{API_URL}rolling_stock/?page_size=1000")
-    rolling_stocks = response.json()["results"]
-    return next(
-        iter([rolling_stock["id"] for rolling_stock in rolling_stocks if rolling_stock["name"] == "fast_rolling_stock"])
-    )
+def _create_fast_rolling_stocks(names_and_metadata: Optional[Mapping[str, Mapping[str, str]]] = None):
+    payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
+    ids = []
+    if names_and_metadata is None:
+        ids.append(requests.post(f"{API_URL}/rolling_stock/", json=payload).json()["id"])
+    else:
+        for name, metadata in names_and_metadata.items():
+            payload["name"] = name
+            payload["metadata"] = metadata
+            ids.append(requests.post(f"{API_URL}/rolling_stock/", json=payload).json()["id"])
+    return ids
 
 
-@pytest.mark.usefixtures("small_infra")
+@pytest.fixture
+def fast_rolling_stocks(request: Any) -> Iterable[int]:
+    ids = _create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
+    yield ids
+    for id in ids:
+        requests.delete(f"{API_URL}rolling_stock/{id}/")
+
+
 @pytest.fixture
 def fast_rolling_stock() -> int:
-    """Return fast_rolling_stock loaded with small infra."""
-    yield _get_or_create_fast_rolling_stock_id()
+    id = _create_fast_rolling_stocks()[0]
+    yield id
+    requests.delete(f"{API_URL}rolling_stock/{id}/")
 
 
 @pytest.fixture
