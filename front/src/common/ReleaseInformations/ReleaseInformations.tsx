@@ -33,39 +33,43 @@ function ReleaseInformations() {
     );
   }
   return (
-    <div className="informations-modal">
+    <div className="informations-modal h-100">
       <ModalHeaderSNCF withCloseButton />
       <ModalBodySNCF>
-        <div className="row justify-content-between">
-          <div className="col-md-5">
-            <div className="d-flex flex-column align-items-center mb-4">
-              <a href={osrdWebSite} className="mb-4" target="_blank" rel="noreferrer">
-                <img src={osrdLogo} alt="OSRD logo" />
-              </a>
-              <h2>OSRD</h2>
-              <h3>Open Source Railway Designer</h3>
+        <div className="informations-modal-container">
+          <div className="row h-100">
+            <div className="col-md-6">
+              <div className="d-flex flex-column align-items-center mb-4">
+                <a href={osrdWebSite} className="mb-4" target="_blank" rel="noreferrer">
+                  <img src={osrdLogo} alt="OSRD logo" />
+                </a>
+                <h2>OSRD</h2>
+                <h3>Open Source Railway Designer</h3>
+              </div>
+              <table className="table table-bordered">
+                <caption className="sr-only">Titre</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      <div className="cell-inner">{t('informations.application')}</div>
+                    </th>
+                    <th scope="col" id="cellfirst-t5">
+                      <div className="cell-inner">{t('informations.version')}</div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serviceRow('Editoast', editoastVersion?.git_describe)}
+                  {serviceRow('Core', coreVersion?.git_describe)}
+                  {serviceRow('API', apiVersion?.git_describe)}
+                  {serviceRow('Front', import.meta.env.OSRD_GIT_DESCRIBE)}
+                </tbody>
+              </table>
             </div>
-            <table className="table table-bordered">
-              <caption className="sr-only">Titre</caption>
-              <thead>
-                <tr>
-                  <th scope="col">
-                    <div className="cell-inner">{t('informations.application')}</div>
-                  </th>
-                  <th scope="col" id="cellfirst-t5">
-                    <div className="cell-inner">{t('informations.version')}</div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {serviceRow('Editoast', editoastVersion?.git_describe)}
-                {serviceRow('Core', coreVersion?.git_describe)}
-                {serviceRow('API', apiVersion?.git_describe)}
-                {serviceRow('Front', import.meta.env.OSRD_GIT_DESCRIBE)}
-              </tbody>
-            </table>
+            <div className="col-md-6 h-100">
+              <LicenseAttributions />
+            </div>
           </div>
-          <LicenseAttributions />
         </div>
       </ModalBodySNCF>
     </div>
