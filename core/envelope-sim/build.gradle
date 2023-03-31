@@ -28,10 +28,6 @@ dependencies {
     // fast primitive collections
     implementation libs.hppc
 
-    // for linter annotations
-    compileOnly libs.jcip.annotations
-    compileOnly libs.spotbugs.annotations
-
     // Use JUnit Jupiter API for testing.
     testImplementation libs.junit.jupiter.api
     testImplementation libs.junit.jupiter.params
@@ -42,7 +38,12 @@ dependencies {
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
 
-    // linter annotations
+    // for linter annotations
+    testFixturesCompileOnly libs.jcip.annotations
+    testFixturesCompileOnly libs.spotbugs.annotations
+    compileOnly libs.jcip.annotations
+    compileOnly libs.spotbugs.annotations
+    testCompileOnly libs.jcip.annotations
     testCompileOnly libs.spotbugs.annotations
 }
 
