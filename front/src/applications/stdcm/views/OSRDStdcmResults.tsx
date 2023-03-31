@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
+import { ForcedEcoSpaceTimeChart } from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/withOSRDData';
 import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
 import { useTranslation } from 'react-i18next';
 
@@ -22,7 +22,7 @@ const OSRDStcdmResults = () => {
               className="spacetimechart-container mt-2"
               style={{ height: `${spaceTimeChartHeight}px` }}
             >
-              <SpaceTimeChart
+              <ForcedEcoSpaceTimeChart
                 initialHeightOfSpaceTimeChart={450}
                 onSetBaseHeightOfSpaceTimeChart={setSpaceTimeChartHeight}
               />
