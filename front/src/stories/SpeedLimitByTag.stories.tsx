@@ -12,3 +12,7 @@ export default {
   component: SpeedLimitByTagSelector,
   title: 'TrainSimulation/SpeedLimitByTagSelector',
 };
+
+export const Plain = { args: { condensed: false } };
+
+export const Condensed = { args: { condensed: true } };
