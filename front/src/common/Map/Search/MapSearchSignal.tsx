@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import turfCenter from '@turf/center';
 import nextId from 'react-id-generator';
-import { Viewport, updateMapSearchMarker } from 'reducers/map';
+import { Viewport } from 'reducers/map';
 import { useDebounce } from 'utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { getMap } from 'reducers/map/selectors';
-import { AllGeoJSON } from '@turf/helpers';
 import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -16,7 +14,7 @@ import { sortBy } from 'lodash';
 import { ISignalSearchResult } from './searchTypes';
 import { searchPayloadType, signalAspects } from '../const';
 import SignalCard from './SignalCard';
-import getCoordinates from '../utils';
+import { onResultSearchClick } from '../utils';
 
 type MapSearchSignalProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -96,25 +94,15 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
     }
   }, [debouncedSearchTerm, debouncedSearchLine, aspect]);
 
-  const onResultClick = (result: ISignalSearchResult) => {
-    const coordinates = getCoordinates(result, map);
+  const onResultClick = (result: ISignalSearchResult) =>
+    onResultSearchClick({
+      result,
+      map,
+      updateExtViewport,
+      dispatch,
+      title: result.label,
+    });
 
-    const center = turfCenter(coordinates as AllGeoJSON);
-
-    const newViewport = {
-      ...map.viewport,
-      longitude: center.geometry.coordinates[0],
-      latitude: center.geometry.coordinates[1],
-      zoom: 12,
-    };
-    updateExtViewport(newViewport);
-    dispatch(
-      updateMapSearchMarker({
-        title: result.label,
-        lonlat: [center.geometry.coordinates[0], center.geometry.coordinates[1]],
-      })
-    );
-  };
   useEffect(() => {
     const sortedResults = sortBy(searchResults, sortFilter.name);
     if (sortFilter.asc) {
