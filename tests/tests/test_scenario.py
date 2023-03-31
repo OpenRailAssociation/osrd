@@ -33,4 +33,4 @@ def test_get_scenario(small_scenario: Scenario):
     print(response.content)
     assert response.status_code == 200
     body = _ScenarioResponse(**response.json())
-    assert body.name == "Scenario test 1"
+    assert body.name == "foo"

@@ -48,8 +48,8 @@ struct ScenarioCreateForm {
     pub name: String,
     #[serde(default)]
     pub description: String,
-    pub infra: i64,
-    pub electrical_profile_set: Option<i64>,
+    pub infra_id: i64,
+    pub electrical_profile_set_id: Option<i64>,
     #[serde(default)]
     pub tags: Vec<String>,
 }
@@ -59,8 +59,8 @@ impl ScenarioCreateForm {
         Scenario {
             name: Some(self.name),
             study_id: Some(study_id),
-            infra_id: Some(self.infra),
-            electrical_profile_set_id: Some(self.electrical_profile_set),
+            infra_id: Some(self.infra_id),
+            electrical_profile_set_id: Some(self.electrical_profile_set_id),
             timetable_id: Some(timetable_id),
             description: Some(self.description),
             tags: Some(self.tags),
@@ -269,7 +269,7 @@ mod test {
         (
             TestRequest::post()
                 .uri(format!("/projects/{project_id}/studies/{study_id}/scenarios").as_str())
-                .set_json(json!({ "name": "scenario_test" ,"infra": infra.id }))
+                .set_json(json!({ "name": "scenario_test" ,"infra_id": infra.id }))
                 .to_request(),
             project_id,
         )

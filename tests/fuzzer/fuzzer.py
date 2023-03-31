@@ -463,7 +463,7 @@ def create_scenario(base_url: str, infra_id: int) -> Scenario:
     # Create the scenario
     scenario_payload = {
         "name": "fuzzer_scenario",
-        "infra": infra_id,
+        "infra_id": infra_id,
     }
     r = post_with_timeout(base_url + f"{study_url}/scenarios/", json=scenario_payload)
     r.raise_for_status()
