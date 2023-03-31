@@ -1,27 +1,45 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import licenses from './json/licenses.json';
+import attributionsLicenses from './json/licenses.json';
+
+type attributionsLicensesType = {
+  name: string;
+  version: string;
+  copyright: string;
+  publisher: string;
+  url?: string;
+  licenses: string;
+};
 
 const LicenseAttributions = () => {
   const { t } = useTranslation('home/navbar');
 
-  const attributions = Object.values(licenses).map(({ name, version, copyright, publisher }) => (
-    <div className="d-flex flex-column align-items-start" key={name}>
-      <div className="d-flex">
-        <h3 className="mr-1">{name}</h3>
-        <span className="informations-modal-version">{`(${version})`}</span>
-      </div>
-      <span className="pl-4 mb-4">{copyright || publisher || `${name} authors`}</span>
-    </div>
-  ));
+  const attributionsArray = Object.values(attributionsLicenses) as attributionsLicensesType[];
+
+  const attributions = attributionsArray
+    .map((licence) => ({ ...licence, name: licence.name.replace('@', '') }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(({ name, version, copyright, publisher, url, licenses }) => (
+      <a key={name} href={url}>
+        <h3 className="d-flex mr-1 mb-0">
+          {name}
+          <small className="d-flex align-items-center ml-2">
+            {`${version}`}
+            {url && <i className="ml-2 icons-external-link" />}
+          </small>
+        </h3>
+        <div className="small ml-4 mb-2">
+          {copyright.replace('(c)', '©') || publisher || `${name} authors`}
+          {licenses && ` / ${licenses}`}
+        </div>
+      </a>
+    ));
 
   return (
-    <div className="col-md-6 license-attributions">
-      <h2 className="d-flex justify-content-center mt-5 mb-4">
-        {t('informations.releaseInformations')}
-      </h2>
-      {attributions}
-    </div>
+    <>
+      <h2 className="text-center mt-sm-1 mb-4">{t('informations.releaseInformations')}</h2>
+      <div className="license-attributions">{attributions}</div>
+    </>
   );
 };
 

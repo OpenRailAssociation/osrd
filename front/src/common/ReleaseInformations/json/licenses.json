@@ -285,6 +285,13 @@
         "name": "classnames",
         "version": "2.3.2"
     },
+    "country-flag-icons@1.5.7": {
+        "licenses": "MIT",
+        "publisher": "catamphetamine",
+        "copyright": "Copyright (c) 2020 @catamphetamine <purecatamphetamine@gmail.com>",
+        "name": "country-flag-icons",
+        "version": "1.5.7"
+    },
     "d3-brush@3.0.0": {
         "licenses": "ISC",
         "publisher": "Mike Bostock",
@@ -420,6 +427,13 @@
         "name": "keycloak-js",
         "version": "20.0.3",
         "copyright": ""
+    },
+    "license-checker-rseidelsohn@3.3.0": {
+        "licenses": "BSD-3-Clause",
+        "publisher": "Roman Seidelsohn",
+        "copyright": "Copyright 2012 Yahoo Inc.",
+        "name": "license-checker-rseidelsohn",
+        "version": "3.3.0"
     },
     "lodash@4.17.21": {
         "licenses": "MIT",
@@ -673,4 +687,3 @@
         "copyright": ""
     }
 }
-

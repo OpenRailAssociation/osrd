@@ -1,14 +1,29 @@
 .informations-modal {
+  position: relative;
   max-height: 75vh;
-
   &-version {
     font-size: small;
   }
-}
-
-@media (min-width: 768px) {
-  .license-attributions {
-    height: calc(75vh - 48px - 1.875rem);
-    overflow: auto;
+  .informations-modal-container {
+    position: relative;
+    height: 35rem;
+    .license-attributions {
+      position: relative;
+      background-color: var(--coolgray1);
+      padding: 0.5rem;
+      border-radius: 4px;
+      height: calc(100% - 3.80rem);
+      overflow: auto;
+      a[href^="http"] {
+        h3, i, .small {
+          color: var(--primary);
+        }
+        &:hover {
+          h3, i, .small {
+            color: var(--purple);
+          }
+        }
+      }
+    }
   }
 }
