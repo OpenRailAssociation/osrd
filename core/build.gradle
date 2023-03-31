@@ -183,7 +183,7 @@ allprojects {
         // report all diagnosed bugs
         reportLevel = 'low'
         maxHeapSize = '1g'
-        excludeFilter = file('config/spotbugs/exclude.xml')
+        excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
     }
 
     tasks.withType(com.github.spotbugs.snom.SpotBugsTask).tap {

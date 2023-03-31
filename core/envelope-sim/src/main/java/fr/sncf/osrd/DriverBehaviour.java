@@ -1,11 +1,10 @@
 package fr.sncf.osrd;
 
+import java.util.List;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
-
-import java.util.List;
 
 public class DriverBehaviour {
     public final double acceleratingPostponementOffset;
@@ -15,15 +14,17 @@ public class DriverBehaviour {
         this.acceleratingPostponementOffset = 50;
         this.brakingAnticipationOffset = 100;
     }
+
     public DriverBehaviour(double acceleratingPostponementOffset, double brakingAnticipationOffset) {
         this.acceleratingPostponementOffset = acceleratingPostponementOffset;
         this.brakingAnticipationOffset = brakingAnticipationOffset;
     }
 
+    /** Applies the driver behavior to the MRSP, adding reaction time for MRSP changes */
     public Envelope applyToMRSP(Envelope mrsp) {
         var builder = new MRSPEnvelopeBuilder();
         var totalLength = mrsp.getTotalDistance();
-        for(EnvelopePart part: mrsp) {
+        for (EnvelopePart part: mrsp) {
             var begin = part.getBeginPos();
             var end = part.getEndPos();
             // compute driver behaviour offsets

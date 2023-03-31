@@ -73,6 +73,7 @@ public class EnvelopeTestUtils {
         Assertions.assertEquals(expected.getMinSpeed(), actual.getMinSpeed(), delta);
     }
 
+    /** Asserts that the envelopes are equals, with a delta tolerance when comparing speeds */
     public static void assertEquals(Envelope expected, Envelope actual, double delta) {
         Assertions.assertEquals(expected.size(), actual.size());
         Assertions.assertEquals(expected.continuous, actual.continuous);
@@ -82,14 +83,17 @@ public class EnvelopeTestUtils {
             assertEquals(expected.get(i), actual.get(i), delta);
     }
 
+    /** Asserts that the envelopes are equals, with a 0.01 tolerance when comparing speeds */
     static void assertEquals(Envelope expected, Envelope actual) {
         assertEquals(expected, actual, 0.01);
     }
 
+    /** Creates a flat envelope part */
     public static EnvelopePart makeFlatPart(TestAttr attr, double beginPos, double endPos, double speed) {
         return makeFlatPart(List.of(attr), beginPos, endPos, speed);
     }
 
+    /** Creates a flat envelope part */
     public static EnvelopePart makeFlatPart(Iterable<EnvelopeAttr> attrs,
                                             double beginPos, double endPos, double speed) {
         return EnvelopePart.generateTimes(

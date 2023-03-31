@@ -2,8 +2,10 @@ package fr.sncf.osrd.envelope.part.constraints;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopePoint;
 
+@SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
 public class SpeedConstraint implements EnvelopePartConstraint {
     public final double speedConstraint;
     private final EnvelopePartConstraintType type;
