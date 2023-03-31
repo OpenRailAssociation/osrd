@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
           buildMode: true,
         },
         eslint: {
-          lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 140',
+          lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 124',
         },
         overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
           initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',
