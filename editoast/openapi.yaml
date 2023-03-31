@@ -2542,14 +2542,14 @@ components:
           items:
             type: string
             maxLength: 255
-        infra:
+        infra_id:
           type: integer
-        electrical_profile_set:
+        electrical_profile_set_id:
           type: number
-          nullable: true
           description: Electrical profile set id (if any)
       required:
         - "name"
+        - "infra_id"
 
     ScenarioResult:
       properties:
