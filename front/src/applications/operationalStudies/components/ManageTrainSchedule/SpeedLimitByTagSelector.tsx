@@ -9,26 +9,47 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
 import { Dispatch } from 'redux';
 
+interface getListByTagFn {
+  (): Promise<string[]>;
+}
+
 type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
   infraID?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   speedLimitByTag?: any;
-  dispatch: Dispatch;
+  dispatch?: Dispatch;
+  getTagsList?: getListByTagFn;
 };
 
 function withOSRDData<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
+    const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
     const dispatch = useDispatch();
     const infraID = useSelector(getInfraID);
     const speedLimitByTag = useSelector(getSpeedLimitByTag);
-
+    const getTagsList = async (): Promise<T> => {
+      let tagList = [];
+      try {
+        tagList = await get(`/editoast/infra/${infraID}/speed_limit_tags/`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (e: any) {
+        dispatch(
+          setFailure({
+            name: t('errorMessages.unableToRetrieveTags'),
+            message: `${e.message} : ${e.response && e.response.data.detail}`,
+          })
+        );
+      }
+      return tagList;
+    };
     return (
       <Component
         {...(hocProps as T)}
         dispatch={dispatch}
         infraID={infraID}
         speedLimitByTag={speedLimitByTag}
+        getTagsList={getTagsList}
       />
     );
   };
@@ -37,38 +58,25 @@ function withOSRDData<T>(Component: ComponentType<T>) {
 export function SpeedLimitByTagSelector({
   infraID,
   speedLimitByTag,
-  dispatch,
-  condensed = true,
+  dispatch = () => {},
+  getTagsList = async (): Promise<Array<string>> => [],
+  condensed = false,
 }: SpeedLimitByTagSelectorProps) {
-  const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
+  const [speedLimitsTags, setSpeedLimitsTags] = useState<any[] | undefined>(undefined);
   const [oldInfraID, setOldInfraID] = useState(infraID);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const getTagsListController = new AbortController();
 
-  const getTagsList = async () => {
-    try {
-      const tagsList = await get(`/editoast/infra/${infraID}/speed_limit_tags/`);
-      setSpeedLimitsTags(tagsList);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.unableToRetrieveTags'),
-          message: `${e.message} : ${e.response && e.response.data.detail}`,
-        })
-      );
-    }
-  };
-
   useEffect(() => {
     // Check if infraID has changed to avoid clearing value on first mount
     if (infraID !== oldInfraID) {
-      setSpeedLimitsTags(undefined);
+      setSpeedLimitsTags([]);
       dispatch(updateSpeedLimitByTag(''));
       setOldInfraID(infraID);
     }
-    getTagsList();
+    getTagsList().then((tags) => setSpeedLimitsTags(tags));
+
     return function cleanup() {
       getTagsListController.abort();
     };
