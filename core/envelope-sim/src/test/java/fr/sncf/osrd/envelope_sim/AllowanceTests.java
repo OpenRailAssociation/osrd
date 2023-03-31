@@ -177,7 +177,11 @@ public class AllowanceTests {
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
 
-    private void testTransitionPoints(Envelope base, EnvelopeSimContext context, AbstractAllowanceWithRanges allowance) {
+    private void testTransitionPoints(
+            Envelope base,
+            EnvelopeSimContext context,
+            AbstractAllowanceWithRanges allowance
+    ) {
 
         final double tolerance = 0.02; // percentage
         var beginPos = allowance.beginPos;
@@ -324,7 +328,7 @@ public class AllowanceTests {
         double end = 40_000;
 
         // test mareco distribution
-        var marecoAllowance = makeStandardMarecoAllowance( begin, end, 8.33, allowanceValue);
+        var marecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, allowanceValue);
         var marecoThrown =
                 assertThrows(AllowanceConvergenceException.class,
                         () -> marecoAllowance.apply(maxEffortEnvelope, testContext));
@@ -350,7 +354,7 @@ public class AllowanceTests {
         double end = 21_000;
 
         // test mareco distribution
-        var marecoAllowance = makeStandardMarecoAllowance( begin, end, 8.33, allowanceValue);
+        var marecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, allowanceValue);
         var marecoThrown =
                 assertThrows(AllowanceConvergenceException.class,
                         () -> marecoAllowance.apply(maxEffortEnvelope, testContext));
@@ -396,8 +400,8 @@ public class AllowanceTests {
         var engineeringAllowanceValue = new AllowanceValue.FixedTime(30);
 
         // test mareco distribution
-        var standardMarecoAllowance = makeStandardMarecoAllowance( 0, length, 8.33, standardAllowanceValue);
-        var engineeringMarecoAllowance = makeStandardMarecoAllowance( begin, end, 8.33, engineeringAllowanceValue);
+        var standardMarecoAllowance = makeStandardMarecoAllowance(0, length, 8.33, standardAllowanceValue);
+        var engineeringMarecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, engineeringAllowanceValue);
         testEngineeringOnStandardAllowance(maxEffortEnvelope, testContext, standardMarecoAllowance,
                 engineeringMarecoAllowance);
 
