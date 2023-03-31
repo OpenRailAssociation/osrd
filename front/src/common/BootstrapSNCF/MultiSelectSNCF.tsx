@@ -1,88 +1,75 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 type MultiSelectSNCFProps = {
   multiSelectTitle: string;
-  multiSelectSubTitle?: string;
-  selectOptions: { label: string }[];
+  multiSelectPlaceholder: string;
+  options: string[];
   onChange: React.Dispatch<React.SetStateAction<string[]>>;
   selectedValues: string[];
-  isSelectAll?: boolean;
+  allowSelectAll?: boolean;
 };
 
 const MultiSelectSNCF = ({
   multiSelectTitle,
-  multiSelectSubTitle,
-  selectOptions,
+  multiSelectPlaceholder,
+  options,
   onChange,
   selectedValues,
-  isSelectAll,
+  allowSelectAll,
 }: MultiSelectSNCFProps) => {
   const [multiSelectToggle, setMultiselectToggle] = useState<boolean>(false);
   const [selectAll, setSelectAll] = useState<boolean>(false);
 
-  const renderOptions = useCallback(
-    (options: { label: string }[]) =>
-      options.map((selectOption, index) => (
-        <option
-          data-id={index}
-          selected={selectedValues.includes(selectOption.label)}
-          key={`selectOption-${selectOption.label}`}
-          value={selectOption.label}
-        >
-          {selectOption.label}
-        </option>
-      )),
-    [selectOptions]
-  );
-
-  const renderSelectToggles = (options: { label: string }[]) =>
-    options.map((toggle, index) => {
-      const { label } = toggle;
-      const isChecked = selectedValues.includes(label);
-      const onClickToggle = () => {
-        onChange(
-          isChecked
-            ? [...selectedValues.filter((selectValue) => selectValue !== label)]
-            : (prevValues) => [...prevValues, label]
-        );
-      };
-      return (
-        <div className="select-menu-item" role="listitem" key={`selectToggle-${label}`}>
-          <div className="custom-control custom-checkbox">
-            <button
-              type="button"
-              data-role="value"
-              data-target={index}
-              role="checkbox"
-              aria-checked="false"
-              className={`custom-control-label w-100 text-left font-weight-medium ${
-                isChecked ? 'active' : ''
-              }`}
-              onClick={onClickToggle}
-            >
-              {label}
-            </button>
+  const renderSelectToggles = useCallback(
+    (selectOptions: string[]) =>
+      selectOptions.map((selectOption, index) => {
+        const isChecked = selectedValues.includes(selectOption);
+        const onClickToggle = () => {
+          onChange(
+            isChecked
+              ? [...selectedValues.filter((selectValue) => selectValue !== selectOption)]
+              : (prevValues) => [...prevValues, selectOption]
+          );
+        };
+        return (
+          <div className="select-menu-item" role="listitem" key={`selectToggle-${selectOption}`}>
+            <div className="custom-control custom-checkbox">
+              <button
+                type="button"
+                data-role="value"
+                data-target={index}
+                role="checkbox"
+                aria-checked="false"
+                className={`custom-control-label w-100 text-left font-weight-medium ${
+                  isChecked ? 'active' : ''
+                }`}
+                onClick={onClickToggle}
+              >
+                {selectOption}
+              </button>
+            </div>
           </div>
-        </div>
-      );
-    });
-
-  const memoizedAllOptionsLabel = useMemo(
-    () => selectOptions.map((option) => option.label),
-    [selectOptions]
+        );
+      }),
+    [selectedValues]
   );
 
   useEffect(() => {
-    const isAllSelected = memoizedAllOptionsLabel.every((label) => selectedValues.includes(label));
-    if (isAllSelected && !selectAll) setSelectAll(true);
-    if (!isAllSelected && selectAll) setSelectAll(false);
+    const isAllSelected = options.length === selectedValues.length;
+    if (isAllSelected) {
+      setSelectAll(true);
+    } else if (selectAll && !isAllSelected) {
+      setSelectAll(false);
+    }
   }, [selectedValues]);
 
-  useEffect(() => {
-    const isAllSelected = memoizedAllOptionsLabel.every((label) => selectedValues.includes(label));
-    const selects = isAllSelected ? [] : selectedValues;
-    onChange(selectAll ? [...memoizedAllOptionsLabel] : selects);
-  }, [selectAll]);
+  const handleSelectAll = (newSelectAll: boolean) => {
+    if (newSelectAll) {
+      onChange(options);
+    } else {
+      onChange([]);
+    }
+  };
 
   return (
     <>
@@ -93,8 +80,8 @@ const MultiSelectSNCF = ({
       >
         <div className="select-control">
           <div className="input-group" data-role="select-toggle">
-            <div className="form-control">
-              {isSelectAll ? (
+            <div className="form-control is-placeholder">
+              {allowSelectAll ? (
                 <div className="custom-control custom-checkbox">
                   <button
                     type="button"
@@ -102,24 +89,18 @@ const MultiSelectSNCF = ({
                     role="checkbox"
                     aria-checked="false"
                     className={`custom-control-label font-weight-medium ${selectAll && 'active'}`}
-                    onClick={() => setSelectAll((prevState) => !prevState)}
+                    onClick={() => handleSelectAll(!selectAll)}
                   >
-                    {multiSelectSubTitle || multiSelectTitle}
+                    {selectedValues.join(', ') || multiSelectPlaceholder}
                   </button>
                 </div>
               ) : (
-                multiSelectSubTitle || multiSelectTitle
+                <div className="font-weight-medium">
+                  {selectedValues.join(', ') || multiSelectPlaceholder}
+                </div>
               )}
             </div>
-            <select
-              className="sr-only"
-              id={`multiSelect-${multiSelectTitle}`}
-              multiple
-              defaultValue={selectedValues}
-              aria-expanded="true"
-            >
-              {selectOptions && renderOptions(selectOptions)}
-            </select>
+
             <div className="input-group-append input-group-last">
               <button
                 className="btn btn-primary btn-only-icon"
@@ -136,7 +117,7 @@ const MultiSelectSNCF = ({
 
           <div id="multiselecttoggle" className="select-menu" data-role="menu">
             <div className="select-group" data-role="group" data-id="0" role="list">
-              {selectOptions && renderSelectToggles(selectOptions)}
+              {options && renderSelectToggles(options)}
             </div>
           </div>
         </div>

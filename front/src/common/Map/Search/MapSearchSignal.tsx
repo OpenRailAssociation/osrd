@@ -12,6 +12,7 @@ import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { setFailure } from 'reducers/main';
+import { sortBy } from 'lodash';
 import { ISignalSearchResult } from './searchTypes';
 import { searchPayloadType, signalAspects } from '../const';
 import SignalCard from './SignalCard';
@@ -114,32 +115,26 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       })
     );
   };
+  useEffect(() => {
+    const sortedResults = sortBy(searchResults, sortFilter.name);
+    if (sortFilter.asc) {
+      setSearchResults(sortedResults.reverse());
+    } else {
+      setSearchResults(sortedResults);
+    }
+  }, [sortFilter]);
 
-  const formatSearchResults = () => {
-    const searchResultsContent = searchResults.sort((a, b) => {
-      if (!a[sortFilter.name]) {
-        return sortFilter.asc ? 1 : -1;
-      } // To avoid null values
-      if (!b[sortFilter.name]) {
-        return sortFilter.asc ? -1 : 1;
-      }
-      return sortFilter.asc
-        ? String(b[sortFilter.name]).localeCompare(String(a[sortFilter.name]))
-        : String(a[sortFilter.name]).localeCompare(String(b[sortFilter.name]));
-    });
-
-    return (
-      <div className="search-results">
-        {searchResultsContent.map((result) => (
-          <SignalCard
-            signalSearchResult={result}
-            onResultClick={onResultClick}
-            key={`mapSearchSignal-${nextId()}-${result.line_name}`}
-          />
-        ))}
-      </div>
-    );
-  };
+  const formatSearchResults = () => (
+    <div className="search-results">
+      {searchResults.map((result) => (
+        <SignalCard
+          signalSearchResult={result}
+          onResultClick={onResultClick}
+          key={`mapSearchSignal-${nextId()}-${result.line_name}`}
+        />
+      ))}
+    </div>
+  );
 
   const orderDisplay = (name: string) => {
     if (name === sortFilter.name) {
@@ -153,11 +148,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   };
 
   const setSortName = (name: typeof sortFilter.name) => {
-    if (name === sortFilter.name) {
-      setSortFilter({ name, asc: !sortFilter.asc });
-    } else {
-      setSortFilter({ name, asc: false });
-    }
+    setSortFilter({ name, asc: name === sortFilter.name ? !sortFilter.asc : false });
   };
 
   return (
@@ -204,7 +195,8 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       <div>
         <MultiSelectSNCF
           multiSelectTitle={t('map-search:aspect')}
-          selectOptions={SIGNAL_ASPECTS}
+          multiSelectPlaceholder={t('map-search:noAspectSelected')}
+          options={SIGNAL_ASPECTS}
           onChange={setAspect}
           selectedValues={aspect}
         />

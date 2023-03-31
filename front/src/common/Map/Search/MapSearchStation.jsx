@@ -11,6 +11,7 @@ import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import getCoordinates from '../utils';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -101,25 +102,23 @@ export default function MapSearchStation(props) {
   const onResultClick = (result) => {
     setSearch(result.name);
 
-    const coordinates = map.mapTrackSources === 'schematic' ? result.schematic : result.geographic;
+    const coordinates = getCoordinates(result, map);
 
     const center = turfCenter(coordinates);
 
-    if (result.lon !== null && result.lat !== null) {
-      const newViewport = {
-        ...map.viewport,
-        longitude: center.geometry.coordinates[0],
-        latitude: center.geometry.coordinates[1],
-        zoom: 12,
-      };
-      updateExtViewport(newViewport);
-      dispatch(
-        updateMapSearchMarker({
-          title: result.name,
-          lonlat: [center.geometry.coordinates[0], center.geometry.coordinates[1]],
-        })
-      );
-    }
+    const newViewport = {
+      ...map.viewport,
+      longitude: center.geometry.coordinates[0],
+      latitude: center.geometry.coordinates[1],
+      zoom: 12,
+    };
+    updateExtViewport(newViewport);
+    dispatch(
+      updateMapSearchMarker({
+        title: result.name,
+        lonlat: [center.geometry.coordinates[0], center.geometry.coordinates[1]],
+      })
+    );
   };
 
   const clearSearchResult = () => {
