@@ -47,6 +47,11 @@ public class PowerPack implements EnergySource {
             storage.updateStateOfCharge(energyDelta);
     }
 
+    @Override
+    public int getPriority() {
+        return 1;
+    }
+
     public static PowerPack newPowerPackDiesel() {
         double pMin = 0;
         double pMax = 4e6;

@@ -12,4 +12,9 @@ public interface EnergySource {
      *  If energyDelta > 0 that means some energy has been taken from the source.
      *  If energyDelta < 0 that means some energy has been sent to the source.*/
     void consumeEnergy(double energyDelta);
+
+    /** Get the priority of the energySource.
+     *  The higher the priority, the more we want to save energy from this source, so we'll try to get
+     *  output power from lower priority sources first */
+    int getPriority();
 }

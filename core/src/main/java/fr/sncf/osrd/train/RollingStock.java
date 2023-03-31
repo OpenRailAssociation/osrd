@@ -15,9 +15,7 @@ import fr.sncf.osrd.envelope_sim.Utils.*;
 import fr.sncf.osrd.envelope_sim.power.EnergySource;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -150,6 +148,7 @@ public class RollingStock implements PhysicsRollingStock {
         if (speed == 0)
             return maxTractionForce;
         else {
+            // TODO: make sure in the case of a normal RS the maxtractionPower does not take over
             var maxTractionPower = getMaxTractionPower(speed, electrification);
             return Math.min(maxTractionForce, maxTractionPower / speed);
         }
@@ -171,9 +170,9 @@ public class RollingStock implements PhysicsRollingStock {
     @Override
     public void updateEnergyStorages(double tractionForce, double speed, double timeStep, boolean electrification) {
         // the total energy that will need to be used from the different energy sources
+        //TODO: take efficiencies into account
         var remainingEnergy = tractionForce * speed * timeStep;
         var leftOverEnergy = 0.;
-        // TODO: make sur this is ordered
         for (var source : energySources) {
             if (remainingEnergy > 0) { // if we still need some energy, get some from the source
                 var availableEnergy = source.getMaxOutputPower(speed, electrification) * timeStep;
@@ -187,9 +186,7 @@ public class RollingStock implements PhysicsRollingStock {
                 var inputEnergy = Math.max(receivableEnergy, -leftOverEnergy);
                 source.consumeEnergy(inputEnergy);
             }
-
         }
-
     }
 
     @Override
@@ -353,7 +350,7 @@ public class RollingStock implements PhysicsRollingStock {
                 break;
             }
         }
-        return energySources;
+        return orderByPriority(energySources);
     }
 
     /**
@@ -395,10 +392,16 @@ public class RollingStock implements PhysicsRollingStock {
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
         this.powerClass = powerClass;
-        this.energySources = energySources;
+        this.energySources = orderByPriority(energySources);
         //TODO: change this later
         this.motorEfficiency = 0.8;
         this.auxiliariesPower = 0;
+    }
+
+    private ArrayList<EnergySource> orderByPriority(ArrayList<EnergySource> energySources) {
+        var orderedEnergySource = energySources;
+        orderedEnergySource.sort(Comparator.comparing(EnergySource::getPriority));
+        return orderedEnergySource;
     }
 
     private Map<String, ModeEffortCurves> createModesFromEnergySources(ArrayList<EnergySource> energySources) {

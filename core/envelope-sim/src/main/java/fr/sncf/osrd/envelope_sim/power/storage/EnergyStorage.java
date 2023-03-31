@@ -29,12 +29,7 @@ public class EnergyStorage{
 
     public void updateStateOfCharge(double energy){
         soc += energy/capacity;
-        //TODO: make sure getPower = 0 at socMin
         soc = clamp(socMin, soc, socMax);
-    }
-
-    public double getSoc() {
-        return soc;
     }
 
     public double getPowerCoefficientFromSoc() {

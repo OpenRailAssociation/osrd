@@ -44,6 +44,11 @@ public class Catenary implements EnergySource {
     @Override
     public void consumeEnergy(double energyDelta) { }
 
+    @Override
+    public int getPriority() {
+        return 0;
+    }
+
     public static Catenary newCatenary() {
         CurvePoint[] curveLowValueOnLowSpeed = {
                 new CurvePoint(0.0,0.5),
