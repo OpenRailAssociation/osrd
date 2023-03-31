@@ -1,0 +1,6 @@
+.outline-btn {
+    background-color: transparent;
+    &:focus {
+        outline: none;
+    }
+}

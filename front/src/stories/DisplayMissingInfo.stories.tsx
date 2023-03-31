@@ -21,5 +21,4 @@ ActiveDisplayMissingInfo.args = {
     'fourth info is missing',
   ],
   isShowing: true,
-  isCorrect: true,
 };
