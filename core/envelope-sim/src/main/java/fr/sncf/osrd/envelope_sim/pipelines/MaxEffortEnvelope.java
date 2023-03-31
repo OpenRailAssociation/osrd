@@ -52,6 +52,7 @@ public class MaxEffortEnvelope {
 
         while (!cursor.hasReachedEnd()) {
             if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)){
+                int x = 0;
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
                 var startSpeed = cursor.getStepBeginSpeed();
@@ -94,6 +95,7 @@ public class MaxEffortEnvelope {
                         // and step 1m further
                         cursor.findPosition(cursor.getPosition() + 1);
                 }
+                System.out.println(x);
             }
             else if (cursor.checkPartTransition(MaxSpeedEnvelope::increase)){
                 var partBuilder = new EnvelopePartBuilder();
