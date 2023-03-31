@@ -127,7 +127,9 @@ export default function OSRDConfig({
                 {showMap && (
                   <div
                     className={`osrd-config-item-container osrd-config-item-container-map ${
-                      currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success ? 'open' : ''
+                      currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success
+                        ? 'stdcm-map-withSimulation'
+                        : 'stdcm-map-noSimulation'
                     }`}
                   >
                     <Map />
