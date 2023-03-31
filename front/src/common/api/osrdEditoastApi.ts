@@ -1216,8 +1216,8 @@ export type ScenarioRequest = {
   name: string;
   description?: string;
   tags?: string[];
-  infra?: number;
-  electrical_profile_set?: number | null;
+  infra_id: number;
+  electrical_profile_set_id?: number;
 };
 export type ScenarioListResult = {
   id?: number;

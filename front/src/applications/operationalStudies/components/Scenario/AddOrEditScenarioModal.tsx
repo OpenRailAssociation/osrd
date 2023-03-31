@@ -104,7 +104,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
       setDisplayErrors(true);
     } else {
       try {
-        const result = await post(`${rootURI}`, { ...currentScenario, infra: infraID });
+        const result = await post(`${rootURI}`, { ...currentScenario, infra_id: infraID });
         dispatch(updateScenarioID(result.id));
         navigate('/operational-studies/scenario');
         closeModal();
