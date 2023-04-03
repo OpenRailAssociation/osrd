@@ -1,4 +1,4 @@
-import React, { ComponentType, useState, useEffect, useRef } from 'react';
+import React, { ComponentType, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateSpeedLimitByTag } from 'reducers/osrdconf';
