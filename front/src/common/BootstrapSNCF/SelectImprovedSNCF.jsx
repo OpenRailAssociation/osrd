@@ -7,7 +7,7 @@ import nextId from 'react-id-generator';
 export default function SelectImprovedSNCF(props) {
   const { title, options, selectedValue, onChange, sm, withSearch } = props;
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(selectedValue);
+  const [selectedItem, setSelectedItem] = useState();
   const [filteredOptions, setFilteredOptions] = useState(options);
   const [filterText, setFilterText] = useState('');
 
@@ -44,6 +44,10 @@ export default function SelectImprovedSNCF(props) {
     );
     setFilteredOptions(text ? localFilteredOptions : options);
   };
+
+  useEffect(() => {
+    setSelectedItem(selectedValue);
+  }, [selectedValue]);
 
   useEffect(() => {
     filterOptions(filterText);
