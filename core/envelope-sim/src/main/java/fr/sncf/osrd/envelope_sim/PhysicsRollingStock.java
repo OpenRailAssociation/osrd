@@ -1,11 +1,8 @@
 package fr.sncf.osrd.envelope_sim;
 
 
-import fr.sncf.osrd.envelope_sim.power.EnergySource;
-
-import java.util.ArrayList;
-
-import static fr.sncf.osrd.envelope_sim.Utils.interpolate;
+import fr.sncf.osrd.envelope_utils.CurveUtils;
+import fr.sncf.osrd.envelope_utils.Point2d;
 
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
@@ -30,7 +27,7 @@ public interface PhysicsRollingStock {
     double getRollingResistanceDeriv(double speed);
 
     /** Get the effort the train can apply at a given speed, in newtons */
-    double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve, boolean electrification);
+    double getMaxTractionForce(double speed, Point2d[] tractiveEffortCurve, boolean electrification);
 
     /** The maximum constant deceleration, in m/s^2 */
     double getDeceleration();

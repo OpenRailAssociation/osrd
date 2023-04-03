@@ -1,9 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ModeAndProfile;
-import static fr.sncf.osrd.envelope_sim.Utils.interpolate;
-import static fr.sncf.osrd.envelope_sim.power.Catenary.newCatenary;
-import static fr.sncf.osrd.envelope_sim.power.PowerPack.newPowerPackDiesel;
+import static fr.sncf.osrd.envelope_utils.CurveUtils.interpolate;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
@@ -11,8 +9,8 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
-import fr.sncf.osrd.envelope_sim.Utils.*;
 import fr.sncf.osrd.envelope_sim.power.EnergySource;
+import fr.sncf.osrd.envelope_utils.Point2d;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 
 import java.util.*;
@@ -143,7 +141,7 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public double getMaxTractionForce(double speed, CurvePoint[] tractiveEffortCurve, boolean electrification) {
+    public double getMaxTractionForce(double speed, Point2d[] tractiveEffortCurve, boolean electrification) {
         var maxTractionForce = interpolate(speed, tractiveEffortCurve);
         if (speed == 0)
             return maxTractionForce;
@@ -194,11 +192,11 @@ public class RollingStock implements PhysicsRollingStock {
         return gammaType;
     }
 
-    public record ModeEffortCurves(boolean isElectric, CurvePoint[] defaultCurve,
+    public record ModeEffortCurves(boolean isElectric, Point2d[] defaultCurve,
                                    ConditionalEffortCurve[] curves) {
     }
 
-    public record ConditionalEffortCurve(EffortCurveConditions cond, CurvePoint[] curve) {
+    public record ConditionalEffortCurve(EffortCurveConditions cond, Point2d[] curve) {
     }
 
     public record EffortCurveConditions(Comfort comfort, String electricalProfile) {
@@ -218,10 +216,10 @@ public class RollingStock implements PhysicsRollingStock {
         AC,
     }
 
-    protected record CurveAndCondition(CurvePoint[] curve, ModeAndProfile modeAndProfile) {
+    protected record CurveAndCondition(Point2d[] curve, ModeAndProfile modeAndProfile) {
     }
 
-    public record CurvesAndConditions(RangeMap<Double, CurvePoint[]> curves,
+    public record CurvesAndConditions(RangeMap<Double, Point2d[]> curves,
                                       RangeMap<Double, ModeAndProfile> conditions) {
     }
 
@@ -264,7 +262,7 @@ public class RollingStock implements PhysicsRollingStock {
     public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, ModeAndProfile> modeAndProfileMap,
                                                        Comfort comfort, double pathLength) {
         TreeRangeMap<Double, ModeAndProfile> conditionsUsed = TreeRangeMap.create();
-        TreeRangeMap<Double, CurvePoint[]> res = TreeRangeMap.create();
+        TreeRangeMap<Double, Point2d[]> res = TreeRangeMap.create();
         var defaultCurve = findTractiveEffortCurve(defaultMode, null, comfort);
         res.put(Range.all(), defaultCurve.curve);
         conditionsUsed.put(Range.closed(0., pathLength), defaultCurve.modeAndProfile);
@@ -312,7 +310,8 @@ public class RollingStock implements PhysicsRollingStock {
             RJSLoadingGaugeType loadingGaugeType,
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
-            String powerClass) {
+            String powerClass,
+            ArrayList<EnergySource> energySources) {
         this.id = id;
         this.A = a;
         this.B = b;
@@ -331,32 +330,13 @@ public class RollingStock implements PhysicsRollingStock {
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
         this.powerClass = powerClass;
-        this.energySources = createEnergySourcesFromModes(modes);
+        this.energySources = orderByPriority(energySources);
         //TODO: change this later
         this.motorEfficiency = 0.8;
         this.auxiliariesPower = 0;
     }
 
-    //TODO: correct this method
-    private ArrayList<EnergySource> createEnergySourcesFromModes(Map<String, ModeEffortCurves> modes) {
-        var energySources = new ArrayList<EnergySource>();
-        for (var mode : modes.values()) {
-            if (mode.isElectric) {
-                energySources.add(newCatenary());
-                break;
-            }
-            else {
-                energySources.add(newPowerPackDiesel());
-                break;
-            }
-        }
-        return orderByPriority(energySources);
-    }
-
-    /**
-     * Creates a new qualesi rolling stock.
-     */
-    public RollingStock(
+    public RollingStock RollingStock(
             String id,
             double length,
             double mass,
@@ -371,40 +351,33 @@ public class RollingStock implements PhysicsRollingStock {
             double gamma,
             GammaType gammaType,
             RJSLoadingGaugeType loadingGaugeType,
+            Map<String, ModeEffortCurves> modes,
             String defaultMode,
-            String powerClass,
-            ArrayList<EnergySource> energySources) {
-        this.id = id;
-        this.A = a;
-        this.B = b;
-        this.C = c;
-        this.length = length;
-        this.maxSpeed = maxSpeed;
-        this.startUpTime = startUpTime;
-        this.startUpAcceleration = startUpAcceleration;
-        this.comfortAcceleration = comfortAcceleration;
-        this.gamma = gamma;
-        this.gammaType = gammaType;
-        this.mass = mass;
-        this.inertiaCoefficient = inertiaCoefficient;
-        this.modes = createModesFromEnergySources(energySources);
-        this.defaultMode = defaultMode;
-        this.inertia = mass * inertiaCoefficient;
-        this.loadingGaugeType = loadingGaugeType;
-        this.powerClass = powerClass;
-        this.energySources = orderByPriority(energySources);
-        //TODO: change this later
-        this.motorEfficiency = 0.8;
-        this.auxiliariesPower = 0;
+            String powerClass) {
+        return new RollingStock(
+                id,
+                length,
+                mass,
+                inertiaCoefficient,
+                a,
+                b,
+                c,
+                maxSpeed,
+                startUpTime,
+                startUpAcceleration,
+                comfortAcceleration,
+                gamma,
+                gammaType,
+                loadingGaugeType,
+                modes,
+                defaultMode,
+                powerClass,
+                null);
     }
 
     private ArrayList<EnergySource> orderByPriority(ArrayList<EnergySource> energySources) {
         var orderedEnergySource = energySources;
         orderedEnergySource.sort(Comparator.comparing(EnergySource::getPriority));
         return orderedEnergySource;
-    }
-
-    private Map<String, ModeEffortCurves> createModesFromEnergySources(ArrayList<EnergySource> energySources) {
-//TODO: implement this
     }
 }

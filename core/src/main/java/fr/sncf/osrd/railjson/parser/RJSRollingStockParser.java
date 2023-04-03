@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.envelope_sim.Utils.*;
+import fr.sncf.osrd.envelope_utils.Point2d;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingRollingStockField;
@@ -109,8 +109,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.loadingGauge,
                 modes,
                 rjsRollingStock.effortCurves.defaultMode,
-                rjsRollingStock.basePowerClass
-                //TODO: convert type from RJSEnergySource to EnergySource
+                rjsRollingStock.basePowerClass,
+                energySources
         );
     }
 
@@ -161,7 +161,7 @@ public class RJSRollingStockParser {
         return new RollingStock.ModeEffortCurves(rjsMode.isElectric, defaultCurve, curves);
     }
 
-    private static CurvePoint[] parseEffortCurve(
+    private static Point2d[] parseEffortCurve(
             RJSEffortCurves.RJSEffortCurve rjsEffortCurve,
             String fieldKey
     ) throws InvalidRollingStockField {
@@ -173,7 +173,7 @@ public class RJSRollingStockParser {
             throw new InvalidRollingStock(
                     "Invalid rolling stock effort curve, speeds and max_efforts should be same length");
 
-        var tractiveEffortCurve  = new CurvePoint[rjsEffortCurve.speeds.length];
+        var tractiveEffortCurve  = new Point2d[rjsEffortCurve.speeds.length];
         for (int i = 0; i < rjsEffortCurve.speeds.length; i++) {
             var speed = rjsEffortCurve.speeds[i];
             if (speed < 0)
@@ -181,7 +181,7 @@ public class RJSRollingStockParser {
             var maxEffort = rjsEffortCurve.maxEfforts[i];
             if (maxEffort < 0)
                 throw new InvalidRollingStockField(fieldKey, "negative max effort");
-            tractiveEffortCurve[i] = new CurvePoint(speed, maxEffort);
+            tractiveEffortCurve[i] = new Point2d(speed, maxEffort);
             assert i == 0 || tractiveEffortCurve[i - 1].x() < speed;
         }
         return tractiveEffortCurve;

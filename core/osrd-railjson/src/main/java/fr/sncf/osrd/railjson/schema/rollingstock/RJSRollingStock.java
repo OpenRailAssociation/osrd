@@ -95,6 +95,9 @@ public class RJSRollingStock implements Identified {
         MAX
     }
 
+    @Json(name = "energy_sources")
+    public ArrayList<RJSEnergySources> energySources = null;
+
     @SuppressFBWarnings("UWF_NULL_FIELD")
     public static final class RJSGamma {
         public double value = Double.NaN;

@@ -1,7 +1,5 @@
 package fr.sncf.osrd.envelope_sim.power;
 
-import fr.sncf.osrd.envelope_sim.Utils.*;
-
 public class Catenary implements EnergySource {
 
     /** Floor power limit : the max power the source can capture (<=0) */
@@ -50,11 +48,11 @@ public class Catenary implements EnergySource {
     }
 
     public static Catenary newCatenary() {
-        CurvePoint[] curveLowValueOnLowSpeed = {
-                new CurvePoint(0.0,0.5),
-                new CurvePoint(10.0,0.5),
-                new CurvePoint(20.0,1.0),
-                new CurvePoint(3000.0,1.0)
+        Point2d[] curveLowValueOnLowSpeed = {
+                new Point2d(0.0,0.5),
+                new Point2d(10.0,0.5),
+                new Point2d(20.0,1.0),
+                new Point2d(3000.0,1.0)
         };
 
         return new Catenary(

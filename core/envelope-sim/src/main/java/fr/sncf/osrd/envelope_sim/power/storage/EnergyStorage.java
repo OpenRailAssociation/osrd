@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim.power.storage;
 
-import static fr.sncf.osrd.envelope_sim.Utils.clamp;
+import fr.sncf.osrd.envelope_utils.DoubleUtils;
 
 public class EnergyStorage{
 
@@ -29,7 +29,7 @@ public class EnergyStorage{
 
     public void updateStateOfCharge(double energy){
         soc += energy/capacity;
-        soc = clamp(socMin, soc, socMax);
+        soc = DoubleUtils.clamp(socMin, soc, socMax);
     }
 
     public double getPowerCoefficientFromSoc() {

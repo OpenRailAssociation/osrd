@@ -1,6 +1,8 @@
 package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.RangeMap;
+import fr.sncf.osrd.envelope_utils.CurveUtils;
+import fr.sncf.osrd.envelope_utils.Point2d;
 
 /**
  * An utility class to help simulate the train, using numerical integration.
@@ -19,14 +21,14 @@ public final class TrainPhysicsIntegrator {
     private final Action action;
     private final double directionSign;
 
-    private final RangeMap<Double, Utils.CurvePoint[]> tractiveEffortCurveMap;
+    private final RangeMap<Double, Point2d[]> tractiveEffortCurveMap;
 
     private TrainPhysicsIntegrator(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             Action action,
             double directionSign,
-            RangeMap<Double, Utils.CurvePoint[]> tractiveEffortCurveMap
+            RangeMap<Double, Point2d[]> tractiveEffortCurveMap
     ) {
         this.rollingStock = rollingStock;
         this.path = path;
@@ -100,7 +102,7 @@ public final class TrainPhysicsIntegrator {
             else tractionForce = maxTractionForce;
         }
 
-        rollingStock.updateEnergyStorages(maxTractionForce, maxTractionForce, speed, timeStep);
+        rollingStock.updateEnergyStorages(maxTractionForce, speed, timeStep, electrification);
 
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);

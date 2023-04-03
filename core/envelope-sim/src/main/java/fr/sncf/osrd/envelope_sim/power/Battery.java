@@ -1,6 +1,5 @@
 package fr.sncf.osrd.envelope_sim.power;
 
-import fr.sncf.osrd.envelope_sim.Utils.*;
 import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 
@@ -54,13 +53,13 @@ public class Battery implements EnergySource {
     }
 
     public static Battery newBattery() {
-        CurvePoint[] curveHigherValueOnHighSpeed = {
-                new CurvePoint(0.0,0.1),
-                new CurvePoint(10.0,0.1),
-                new CurvePoint(20.0,1.0),
-                new CurvePoint(110.0,1.0),
-                new CurvePoint(120.0,1.5),
-                new CurvePoint(3000.0,1.5)
+        Point2d[] curveHigherValueOnHighSpeed = {
+                new Point2d(0.0,0.1),
+                new Point2d(10.0,0.1),
+                new Point2d(20.0,1.0),
+                new Point2d(110.0,1.0),
+                new Point2d(120.0,1.5),
+                new Point2d(3000.0,1.5)
         };
         double pMin = -400.;
         double pMax = 500;

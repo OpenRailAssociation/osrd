@@ -3,10 +3,12 @@ package fr.sncf.osrd.envelope_sim;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import fr.sncf.osrd.envelope_sim.power.EnergySource;
+import fr.sncf.osrd.envelope_utils.Point2d;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import static fr.sncf.osrd.envelope_sim.Utils.interpolate;
+import static fr.sncf.osrd.envelope_utils.CurveUtils.interpolate;
 import static fr.sncf.osrd.envelope_sim.power.PowerPack.newPowerPackDiesel;
 
 public class SimpleRollingStock implements PhysicsRollingStock {
@@ -124,7 +126,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public double getMaxTractionForce(double speed, Utils.CurvePoint[] tractiveEffortCurve, boolean electrification) {
+    public double getMaxTractionForce(double speed, Point2d[] tractiveEffortCurve, boolean electrification) {
         return interpolate(speed, tractiveEffortCurve);
     }
 
@@ -139,7 +141,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public void updateEnergyStorages(double maxAvailableForce, double usedForce, double speed, double timeStep) {
+    public void updateEnergyStorages(double tractionForce, double speed, double timeStep, boolean electrification) {
     }
 
 
@@ -163,19 +165,19 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         return maxEffort / Math.max(1, speed);
     }
 
-    public static Utils.CurvePoint[] createEffortSpeedCurve(double maxSpeed, CurveShape curveShape) {
-        var newEffortCurve = new ArrayList<Utils.CurvePoint>();
+    public static Point2d[] createEffortSpeedCurve(double maxSpeed, CurveShape curveShape) {
+        var newEffortCurve = new ArrayList<Point2d>();
 
         for (int speed = 0; speed < maxSpeed; speed += 1) {
             double effort = getEffort(curveShape, speed, maxSpeed);
-            newEffortCurve.add(new Utils.CurvePoint(speed, effort));
+            newEffortCurve.add(new Point2d(speed, effort));
         }
-        return newEffortCurve.toArray(new Utils.CurvePoint[0]);
+        return newEffortCurve.toArray(new Point2d[0]);
     }
 
-    public static ImmutableRangeMap<Double, Utils.CurvePoint[]> createEffortCurveMap(double maxSpeed,
-                                                                                        CurveShape curveShape) {
-        var builder = ImmutableRangeMap.<Double, Utils.CurvePoint[]>builder();
+    public static ImmutableRangeMap<Double, Point2d[]> createEffortCurveMap(double maxSpeed,
+                                                                                       CurveShape curveShape) {
+        var builder = ImmutableRangeMap.<Double, Point2d[]>builder();
         builder.put(Range.all(), createEffortSpeedCurve(maxSpeed, curveShape));
         return builder.build();
     }
@@ -205,10 +207,10 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         );
     }
 
-    static final public ImmutableRangeMap<Double, Utils.CurvePoint[]> LINEAR_EFFORT_CURVE_MAP =
+    static final public ImmutableRangeMap<Double, Point2d[]> LINEAR_EFFORT_CURVE_MAP =
             createEffortCurveMap(MAX_SPEED, CurveShape.LINEAR);
 
-    static final public ImmutableRangeMap<Double, Utils.CurvePoint[]> HYPERBOLIC_EFFORT_CURVE_MAP =
+    static final public ImmutableRangeMap<Double, Point2d[]> HYPERBOLIC_EFFORT_CURVE_MAP =
             createEffortCurveMap(MAX_SPEED, CurveShape.HYPERBOLIC);
 
     static final public SimpleRollingStock SHORT_TRAIN = SimpleRollingStock.build(1, .5, GammaType.CONST);

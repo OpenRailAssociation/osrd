@@ -1,10 +1,10 @@
 package fr.sncf.osrd.envelope_sim.power;
 
-import fr.sncf.osrd.envelope_sim.Utils.*;
+import fr.sncf.osrd.envelope_utils.Point2d;
 
-import static fr.sncf.osrd.envelope_sim.Utils.interpolate;
+import static fr.sncf.osrd.envelope_utils.CurveUtils.interpolate;
 
-public record SpeedDependantPowerCoefficient(CurvePoint[] curve){
+public record SpeedDependantPowerCoefficient(Point2d[] curve){
     /* Use cases :
      * you need to modulate power with speed to simulate catenary/pantograph limitation
      * you need to modulate power with speed to simulate a fuel cell behavior
@@ -13,6 +13,6 @@ public record SpeedDependantPowerCoefficient(CurvePoint[] curve){
 
     /** Return Power Coefficient at a given speed*/
     double getPowerCoefficientFromSpeed(double speed){
-        return interpolate(speed,this.curve);
+        return interpolate(speed, this.curve);
     }
 }
