@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 infra_name="${1:-small_infra}"
 
 echo "Loading $infra_name"
-python3 core/examples/generated/generate.py /tmp/generated_infras/
+python3 python/railjson_generator/railjson_generator/scripts/generate.py /tmp/generated_infras/
 docker cp "/tmp/generated_infras/${infra_name}/infra.json" osrd-api:/tmp/infra.json
 docker exec osrd-api python manage.py import_railjson "${infra_name}" /tmp/infra.json
 

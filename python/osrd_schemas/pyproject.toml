@@ -2,7 +2,7 @@
 name = "osrd_schemas"
 version = "0.1.0"
 description = ""
-authors = ["DGEX Solutions <contact@osrd.fr>"]
+authors = ["OSRD <contact@osrd.fr>"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"

@@ -29,12 +29,12 @@ jobs:
           virtualenvs-in-project: true
       - name: Load cached venv
         uses: actions/cache@v3
-        id: cached-poetry-integration-tests-dependencies
+        id: cached-poetry-integration-tests-dependencies-v1
         with:
           path: tests/.venv
           key: cached-poetry-integration-tests-dependencies-${{ hashFiles('tests/poetry.lock', 'python/osrd_schemas') }}
       - name: Install dependencies
-        if: steps.cached-poetry-integration-tests-dependencies.outputs.cache-hit != 'true'
+        if: steps.cached-poetry-integration-tests-dependencies-v1.outputs.cache-hit != 'true'
         run: |
           cd tests
           poetry install --only dev
