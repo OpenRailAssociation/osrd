@@ -7,7 +7,7 @@ import pytest
 @pytest.mark.e2e
 @pytest.mark.names_and_metadata(
     {
-        "BB 7200GVLOCOMOTIVES": {
+        "_@Test BB 7200GVLOCOMOTIVES": {
             "type": "Locomotives électriques",
             "unit": "US",
             "detail": "BB 7200",
@@ -18,7 +18,7 @@ import pytest
             "reference": "7200",
             "subseries": "GV",
         },
-        "Locomotives électriques": {
+        "_@Test Locomotives électriques": {
             "type": "Locomotives électriques",
             "unit": "US",
             "detail": "BB15000 US",
@@ -29,7 +29,7 @@ import pytest
             "reference": "15000",
             "subseries": "BB 15000",
         },
-        "Locomotives électriques courant continu7200GH": {
+        "_@Test Locomotives électriques courant continu7200GH": {
             "type": "Locomotives électriques",
             "unit": "US",
             "detail": "BB 22200",

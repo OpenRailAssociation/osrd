@@ -56,7 +56,7 @@ def foo_project_id() -> int:
     response = requests.post(
         EDITOAST_URL + "projects/",
         json={
-            "name": "Project test",
+            "name": "_@Test integration project",
             "description": "",
             "objectives": "",
             "funders": "",
@@ -72,7 +72,7 @@ def foo_project_id() -> int:
 @pytest.fixture
 def foo_study_id(foo_project_id: int) -> int:
     payload = {
-        "name": "Study test",
+        "name": "_@Test integration study",
         "service_code": "AAA",
         "business_code": "BBB",
         "tags": [],
