@@ -90,5 +90,5 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          cd tests
-          poetry run pytest -m e2e
+          cd front
+          yarn e2e-tests
