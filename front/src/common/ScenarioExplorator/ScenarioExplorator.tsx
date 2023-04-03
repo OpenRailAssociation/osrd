@@ -75,7 +75,7 @@ export default function ScenarioExplorator() {
   useEffect(() => {
     if (scenarioDetails?.timetable_id) {
       dispatch(updateTimetableID(scenarioDetails.timetable_id));
-      dispatch(updateInfraID(scenarioDetails.infra));
+      dispatch(updateInfraID(scenarioDetails.infra_id));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioDetails]);
