@@ -39,7 +39,7 @@ function displayCards(projectsList, setFilterChips) {
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
   const [projectsList, setProjectsList] = useState();
-  const [sortOption, setSortOption] = useState('-last_modification');
+  const [sortOption, setSortOption] = useState('LastModifiedDesc');
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const dispatch = useDispatch();
@@ -47,11 +47,11 @@ export default function Home() {
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
-      value: 'name',
+      value: 'NameAsc',
     },
     {
       label: t('sortOptions.byRecentDate'),
-      value: '-last_modification',
+      value: 'LastModifiedDesc',
     },
   ];
 

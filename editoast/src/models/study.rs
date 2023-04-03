@@ -18,6 +18,7 @@ use diesel::RunQueryDsl;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
+use super::projects::Ordering;
 use super::List;
 
 #[derive(
@@ -106,20 +107,21 @@ impl Study {
     }
 }
 
-impl List<i64> for StudyWithScenarios {
+impl List<(i64, Ordering)> for StudyWithScenarios {
     fn list_conn(
         conn: &mut diesel::PgConnection,
         page: i64,
         page_size: i64,
-        project_id: i64,
+        params: (i64, Ordering),
     ) -> Result<PaginatedResponse<Self>> {
-        sql_query(
-            "SELECT study.*, COALESCE(ARRAY_AGG(scenario.id) FILTER (WHERE scenario.id is not NULL), ARRAY[]::bigint[]) as scenarios FROM osrd_infra_study study
-            LEFT JOIN osrd_infra_scenario scenario ON scenario.study_id = study.id WHERE study.project_id = $1
-            GROUP BY study.id"
-        ).bind::<BigInt,_>(project_id)
-        .paginate(page, page_size)
-        .load_and_count(conn)
+        let project_id = params.0;
+        let ordering = params.1.to_sql();
+        sql_query(format!("SELECT t.*, COALESCE(ARRAY_AGG(scenario.id) FILTER (WHERE scenario.id is not NULL), ARRAY[]::bigint[]) as scenarios FROM osrd_infra_study t
+            LEFT JOIN osrd_infra_scenario scenario ON scenario.study_id = t.id WHERE t.project_id = $1
+            GROUP BY t.id ORDER BY {ordering} "))
+            .bind::<BigInt, _>(project_id)
+            .paginate(page, page_size)
+            .load_and_count(conn)
     }
 }
 
@@ -132,6 +134,7 @@ pub mod test {
     use crate::models::Create;
     use crate::models::Delete;
     use crate::models::List;
+    use crate::models::Ordering;
     use crate::models::Retrieve;
     use crate::models::StudyWithScenarios;
     use actix_web::test as actix_test;
@@ -200,14 +203,49 @@ pub mod test {
         assert!(Study::retrieve(pool.clone(), study.id.unwrap())
             .await
             .is_ok());
-        assert!(StudyWithScenarios::list(pool.clone(), 1, 25, project_id)
-            .await
-            .is_ok());
+        assert!(StudyWithScenarios::list(
+            pool.clone(),
+            1,
+            25,
+            (project_id, Ordering::LastModifiedAsc)
+        )
+        .await
+        .is_ok());
 
         // Delete the study
         Study::delete(pool.clone(), study.id.unwrap())
             .await
             .unwrap();
+        Project::delete(pool.clone(), project_id).await.unwrap();
+    }
+
+    #[actix_test]
+    async fn sort_model() {
+        let project = build_test_project();
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
+        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+
+        // Create a project
+        let project = project.clone().create(pool.clone()).await.unwrap();
+        let project_id = project.id.unwrap();
+
+        // Create first study
+        let mut study = build_test_study(project_id);
+        study.clone().create(pool.clone()).await.unwrap();
+
+        // Create second study
+        study.name = Some("study_test".into());
+        let study = build_test_study(project_id);
+        study.create(pool.clone()).await.unwrap();
+
+        let studies =
+            StudyWithScenarios::list(pool.clone(), 1, 25, (project_id, Ordering::NameDesc))
+                .await
+                .unwrap();
+        let name = studies.results.first().unwrap().study.name.clone();
+        assert_eq!(name, Some("test".into()));
+
+        // Delete the project
         Project::delete(pool.clone(), project_id).await.unwrap();
     }
 }
