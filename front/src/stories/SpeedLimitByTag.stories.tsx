@@ -1,6 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React from 'react';
-
-import { ComponentStory, ComponentMeta } from '@storybook/react';
 
 import { SpeedLimitByTagSelector } from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 
