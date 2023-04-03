@@ -17,22 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-      - name: Load cached venv
-        uses: actions/cache@v3
-        id: cached-poetry-osrd-schemas-only-dev-dependencies
-        with:
-          path: python/osrd_schemas/.venv
-          key: cached-poetry-osrd-schemas-only-dev-dependencies-${{ hashFiles('python/osrd_schemas/poetry.lock') }}
+          cache: "poetry"
       - name: Install dependencies
-        if: steps.cached-poetry-osrd-schemas-only-dev-dependencies.outputs.cache-hit != 'true'
         run: |
           cd python/osrd_schemas
           poetry install --only dev
