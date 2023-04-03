@@ -10,13 +10,13 @@ export default function TrainLabels() {
   const labels = useSelector(getLabels);
   const dispatch = useDispatch();
 
-  const removeTag = (idx) => {
+  const removeTag = (idx: number) => {
     const newTags = Array.from(labels);
     newTags.splice(idx, 1);
     dispatch(updateLabels(newTags));
   };
 
-  const addTag = (tag) => {
+  const addTag = (tag: string) => {
     const newTags = Array.from(labels);
     newTags.push(tag);
     dispatch(updateLabels(newTags));
@@ -25,7 +25,13 @@ export default function TrainLabels() {
   return (
     <div className="osrd-config-item" data-testid="add-train-labels">
       <div className="osrd-config-item-container mb-2">
-        <ChipsSNCF addTag={addTag} tags={labels} removeTag={removeTag} title={t('trainLabels')} />
+        <ChipsSNCF
+          addTag={addTag}
+          tags={labels}
+          removeTag={removeTag}
+          color="green"
+          title={t('trainLabels')}
+        />
       </div>
     </div>
   );
