@@ -113,7 +113,7 @@ sourceSets {
         resources {
             // TODO: figure out the proper way to add generated resources to a source set
             //  https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceSetOutput.html
-            srcDirs = ["examples", genExamplesDir]
+            srcDirs = ["../python/railjson_generator/railjson_generator/examples", genExamplesDir]
         }
     }
 }
@@ -135,10 +135,7 @@ test {
 }
 
 def genExamples = tasks.register("genExamples", Exec) {
-    inputs.files(fileTree('examples/generated/')).withPropertyName('sourceFiles')
-    outputs.dir(genExamplesDir).withPropertyName('outputDir')
-    def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
-    commandLine python, "examples/generated/generate.py", genExamplesDir
+    commandLine "poetry", "--directory", "../python/railjson_generator/",  "run", "python", "-m", "railjson_generator", genExamplesDir
 }
 
 genExamples.configure {
