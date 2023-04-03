@@ -55,13 +55,13 @@ export default function ScenarioExploratorModal() {
   };
 
   useEffect(() => {
-    grabItemsList(PROJECTS_URI, setProjectsList, { ordering: 'name' });
+    grabItemsList(PROJECTS_URI, setProjectsList, { ordering: 'NameAsc' });
   }, []);
 
   useEffect(() => {
     if (projectID) {
       grabItemsList(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, setStudiesList, {
-        ordering: 'name',
+        ordering: 'NameAsc',
       });
     }
   }, [projectID]);
@@ -76,7 +76,7 @@ export default function ScenarioExploratorModal() {
         `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
         setScenariosList,
         {
-          ordering: 'name',
+          ordering: 'NameAsc',
         }
       );
     }

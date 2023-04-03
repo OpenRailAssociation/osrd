@@ -15,7 +15,7 @@ use diesel::PgConnection;
 
 pub use self::pathfinding::*;
 pub use documents::Document;
-pub use projects::{Project, ProjectWithStudies};
+pub use projects::{Ordering, Project, ProjectWithStudies};
 pub use rolling_stock::{
     light_rolling_stock::LightRollingStockModel, rolling_stock_livery::RollingStockLiveryModel,
     RollingStockModel,
@@ -151,9 +151,6 @@ pub trait Update: Sized + 'static {
         .unwrap()
     }
 }
-
-/// Use this struct when you don't need to pass any parameters to the `list` method.
-pub struct NoParams;
 
 /// Trait to implement the `list` and `list_conn` methods.
 /// This trait is automatically implemented by the `#[derive(Model)]` macro.

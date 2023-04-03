@@ -1090,12 +1090,12 @@ paths:
             type: string
             enum:
               [
-                "name",
-                "-name",
-                "creation_date",
-                "-creation_date",
-                "last_modification",
-                "-last_modification",
+                "NameAsc",
+                "NameDesc",
+                "CreationDateAsc",
+                "CreationDateAsc",
+                "LastModifiedAsc",
+                "LastModifiedDesc",
               ]
         - in: query
           name: name
@@ -1276,6 +1276,19 @@ paths:
             type: integer
           required: true
         - in: query
+          name: ordering
+          schema:
+            type: string
+            enum:
+              [
+                "NameAsc",
+                "NameDesc",
+                "CreationDateAsc",
+                "CreationDateAsc",
+                "LastModifiedAsc",
+                "LastModifiedDesc",
+              ]
+        - in: query
           name: name
           schema:
             type: string
@@ -1443,6 +1456,19 @@ paths:
           name: study_id
           schema:
             type: integer
+        - in: query
+          name: ordering
+          schema:
+            type: string
+            enum:
+              [
+                "NameAsc",
+                "NameDesc",
+                "CreationDateAsc",
+                "CreationDateAsc",
+                "LastModifiedAsc",
+                "LastModifiedDesc",
+              ]
         - in: query
           name: page
           schema:
