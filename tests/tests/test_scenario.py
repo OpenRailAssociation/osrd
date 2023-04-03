@@ -30,7 +30,6 @@ def test_get_scenario(small_scenario: Scenario):
         EDITOAST_URL
         + f"projects/{small_scenario.project}/studies/{small_scenario.op_study}/scenarios/{small_scenario.scenario}/"
     )
-    print(response.content)
     assert response.status_code == 200
     body = _ScenarioResponse(**response.json())
-    assert body.name == "foo"
+    assert body.name == "Scenario test"
