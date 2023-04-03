@@ -9,6 +9,7 @@ use crate::models::StudyWithScenarios;
 use crate::models::Update;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::ProjectError;
+use crate::views::projects::QueryParams;
 use crate::views::scenario;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -143,11 +144,13 @@ async fn list(
     db_pool: Data<DbPool>,
     pagination_params: Query<PaginationQueryParam>,
     project: Path<i64>,
+    params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<StudyWithScenarios>>> {
     let project = project.into_inner();
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let studies = StudyWithScenarios::list(db_pool, page, per_page, project).await?;
+    let ordering = params.ordering.clone();
+    let studies = StudyWithScenarios::list(db_pool, page, per_page, (project, ordering)).await?;
 
     Ok(Json(studies))
 }
@@ -297,6 +300,7 @@ pub mod test {
         let req = TestRequest::get()
             .uri(format!("/projects/{project_id}/studies").as_str())
             .to_request();
+
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
     }
