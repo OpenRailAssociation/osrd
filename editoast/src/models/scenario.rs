@@ -16,6 +16,7 @@ use diesel::{ExpressionMethods, RunQueryDsl};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
+use super::projects::Ordering;
 use super::List;
 
 #[derive(
@@ -152,22 +153,23 @@ impl Delete for Scenario {
     }
 }
 
-impl List<i64> for ScenarioWithCountTrains {
+impl List<(i64, Ordering)> for ScenarioWithCountTrains {
     /// List all scenarios with the number of trains.
     /// This functions takes a study_id to filter scenarios.
     fn list_conn(
         conn: &mut diesel::PgConnection,
         page: i64,
         page_size: i64,
-        study_id: i64,
+        params: (i64, Ordering),
     ) -> Result<PaginatedResponse<Self>> {
-        sql_query(
-            "SELECT scenario.*,COUNT(trainschedule.id) as trains_count FROM osrd_infra_scenario scenario
-            LEFT JOIN osrd_infra_trainschedule trainschedule ON scenario.timetable_id = trainschedule.timetable_id WHERE scenario.study_id = $1
-            GROUP BY scenario.id"
-        ).bind::<BigInt,_>(study_id)
-        .paginate(page, page_size)
-        .load_and_count(conn)
+        let study_id = params.0;
+        let ordering = params.1.to_sql();
+        sql_query(format!("SELECT t.*,COUNT(trainschedule.id) as trains_count FROM osrd_infra_scenario t
+            LEFT JOIN osrd_infra_trainschedule trainschedule ON t.timetable_id = trainschedule.timetable_id WHERE t.study_id = $1
+            GROUP BY t.id ORDER BY {ordering}"))
+            .bind::<BigInt, _>(study_id)
+            .paginate(page, page_size)
+            .load_and_count(conn)
     }
 }
 
@@ -181,6 +183,7 @@ pub mod test {
     use crate::models::Create;
     use crate::models::Delete;
     use crate::models::List;
+    use crate::models::Ordering;
     use crate::models::Retrieve;
     use crate::models::ScenarioWithCountTrains;
     use crate::models::Timetable;
@@ -280,12 +283,70 @@ pub mod test {
 
         // Get a scenario
         assert!(Scenario::retrieve(pool.clone(), study_id).await.is_ok());
-        assert!(ScenarioWithCountTrains::list(pool.clone(), 1, 25, study_id)
-            .await
-            .is_ok());
+        assert!(ScenarioWithCountTrains::list(
+            pool.clone(),
+            1,
+            25,
+            (study_id, Ordering::LastModifiedAsc)
+        )
+        .await
+        .is_ok());
 
         // Delete the scenario
         Scenario::delete(pool.clone(), scenario_id).await.unwrap();
+        Project::delete(pool.clone(), project_id).await.unwrap();
+    }
+
+    #[actix_test]
+    async fn sort_scenario() {
+        let project = build_test_project();
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
+        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+
+        // Create a project
+        let project = project.clone().create(pool.clone()).await.unwrap();
+        let project_id = project.id.unwrap();
+
+        // Create a study
+        let study = build_test_study(project_id);
+        let study = study.clone().create(pool.clone()).await.unwrap();
+        let study_id = study.id.unwrap();
+
+        // Create an infra
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let infra: Infra = Infra::create("infra_test", &mut conn).unwrap();
+
+        // Create first timetable
+        let timetable = Timetable {
+            id: None,
+            name: Some("timetable_test".into()),
+        };
+        let timetable_1: Timetable = timetable.create(pool.clone()).await.unwrap();
+
+        // Create second timetable
+        let timetable = Timetable {
+            id: None,
+            name: Some("timetable_test_2".into()),
+        };
+        let timetable_2: Timetable = timetable.create(pool.clone()).await.unwrap();
+
+        // Create first scenario
+        let mut scenario = build_test_scenario(study_id, infra.id, timetable_1.id.unwrap());
+        scenario.clone().create(pool.clone()).await.unwrap();
+
+        // Create second scenario
+        scenario.name = Some("scenario_test".into());
+        let scenario = build_test_scenario(study_id, infra.id, timetable_2.id.unwrap());
+        scenario.create(pool.clone()).await.unwrap();
+
+        let scenarios =
+            ScenarioWithCountTrains::list(pool.clone(), 1, 25, (study_id, Ordering::NameDesc))
+                .await
+                .unwrap();
+        let name = scenarios.results.first().unwrap().scenario.name.clone();
+        assert_eq!(name, Some("test".into()));
+
+        // Delete the project
         Project::delete(pool.clone(), project_id).await.unwrap();
     }
 }

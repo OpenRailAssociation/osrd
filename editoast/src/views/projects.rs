@@ -3,7 +3,7 @@ use crate::models::Create;
 use crate::models::Delete;
 use crate::models::Document;
 use crate::models::List;
-use crate::models::NoParams;
+use crate::models::Ordering;
 use crate::models::Project;
 use crate::models::ProjectWithStudies;
 use crate::models::Retrieve;
@@ -58,6 +58,12 @@ impl From<ProjectWithStudies> for ProjectWithImageUrl {
         let image_url = project.project.image.unwrap().map(Document::get_url);
         ProjectWithImageUrl { project, image_url }
     }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct QueryParams {
+    #[serde(default = "Ordering::default")]
+    pub ordering: Ordering,
 }
 
 /// Creation form for a project
@@ -129,10 +135,12 @@ async fn create(
 async fn list(
     db_pool: Data<DbPool>,
     pagination_params: Query<PaginationQueryParam>,
+    params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<ProjectWithImageUrl>>> {
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let projects = ProjectWithStudies::list(db_pool, page, per_page, NoParams).await?;
+    let ordering = params.ordering.clone();
+    let projects = ProjectWithStudies::list(db_pool, page, per_page, ordering).await?;
 
     Ok(Json(projects.into()))
 }

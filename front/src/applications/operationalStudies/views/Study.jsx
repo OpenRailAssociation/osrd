@@ -50,7 +50,7 @@ export default function Study() {
   const [scenariosList, setScenariosList] = useState();
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
-  const [sortOption, setSortOption] = useState('-last_modification');
+  const [sortOption, setSortOption] = useState('LastModifiedDesc');
   const [studyStates, setStudyStates] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -69,11 +69,11 @@ export default function Study() {
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
-      value: 'name',
+      value: 'NameAsc',
     },
     {
       label: t('sortOptions.byRecentDate'),
-      value: '-last_modification',
+      value: 'LastModifiedDesc',
     },
   ];
 

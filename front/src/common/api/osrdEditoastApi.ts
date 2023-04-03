@@ -282,6 +282,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/projects/${queryArg.projectId}/studies/`,
         params: {
+          ordering: queryArg.ordering,
           name: queryArg.name,
           description: queryArg.description,
           tags: queryArg.tags,
@@ -333,7 +334,7 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
-        params: { page: queryArg.page, page_size: queryArg.pageSize },
+        params: { ordering: queryArg.ordering, page: queryArg.page, page_size: queryArg.pageSize },
       }),
     }),
     getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
@@ -679,12 +680,12 @@ export type GetProjectsApiResponse = /** status 200 the project list */ {
 };
 export type GetProjectsApiArg = {
   ordering?:
-    | 'name'
-    | '-name'
-    | 'creation_date'
-    | '-creation_date'
-    | 'last_modification'
-    | '-last_modification';
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateAsc'
+    | 'LastModifiedAsc'
+    | 'LastModifiedDesc';
   /** Filter projects by name */
   name?: string;
   /** Filter projects by description */
@@ -744,6 +745,13 @@ export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studie
 };
 export type GetProjectsByProjectIdStudiesApiArg = {
   projectId: number;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateAsc'
+    | 'LastModifiedAsc'
+    | 'LastModifiedDesc';
   /** Filter operational studies by name */
   name?: string;
   /** Filter operational studies by description */
@@ -799,6 +807,13 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   projectId: number;
   studyId: number;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateAsc'
+    | 'LastModifiedAsc'
+    | 'LastModifiedDesc';
   /** Page number */
   page?: number;
   /** Number of elements by page */

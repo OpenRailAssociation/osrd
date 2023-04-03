@@ -23,6 +23,8 @@ use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use super::projects::QueryParams;
+
 /// Returns `/projects/{project}/studies/{study}/scenarios` routes
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/scenarios")
@@ -227,12 +229,15 @@ async fn list(
     db_pool: Data<DbPool>,
     pagination_params: Query<PaginationQueryParam>,
     path: Path<(i64, i64)>,
+    params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<ScenarioWithCountTrains>>> {
     let (project_id, study_id) = path.into_inner();
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let scenarios = ScenarioWithCountTrains::list(db_pool, page, per_page, study_id).await?;
+    let ordering = params.ordering.clone();
+    let scenarios =
+        ScenarioWithCountTrains::list(db_pool, page, per_page, (study_id, ordering)).await?;
 
     Ok(Json(scenarios))
 }
