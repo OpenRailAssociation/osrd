@@ -488,6 +488,23 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "railjson-generator"
+version = "0.1.0"
+description = ""
+category = "dev"
+optional = false
+python-versions = ">=3.9,<3.11"
+files = []
+develop = false
+
+[package.dependencies]
+osrd-schemas = {path = "../osrd_schemas"}
+
+[package.source]
+type = "directory"
+url = "../python/railjson_generator"
+
+[[package]]
 name = "requests"
 version = "2.28.2"
 description = "Python HTTP for Humans."
@@ -553,4 +570,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "68c14a9c0c254144012f4cf41131a7f7b0e8ecab3b1460b1eea738757809f732"
+content-hash = "d6ca27a2d63ba55d9a5a6e4fb43aa890f03de08f9d14447eb63318a903decaaf"

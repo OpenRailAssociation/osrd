@@ -5,36 +5,40 @@
 
 ## Design Goals
 
-* **Microscopic**: The movement of trains should be accurately simulated, as well as their interactions with interlocking / signaling
-* **Readable**: The code must be kept to very high quality standards, so everyone can contribute
-* **Modular**: Users should be able to easily integrate their own hardware and behaviors
-* **Observable**: What happens in the simulation must be easy to monitor
-* **Fast**: Simulating a full day of operation for 500+ trains shouldn't take hours
+- **Microscopic**: The movement of trains should be accurately simulated, as well as their interactions with interlocking / signaling
+- **Readable**: The code must be kept to very high quality standards, so everyone can contribute
+- **Modular**: Users should be able to easily integrate their own hardware and behaviors
+- **Observable**: What happens in the simulation must be easy to monitor
+- **Fast**: Simulating a full day of operation for 500+ trains shouldn't take hours
 
 Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty slow, and the feature set is very limited.
 
 ## Simulation roadmap
 
- - [x] Reasonably accurate simulation of train movement
- - [x] Import of railML3 infrastructure
- - [x] Static speed restrictions
- - [x] Full history of internal simulation events
- - [x] Basic interlocking / signaling support
- - [X] Make the train react to signals
- - [X] pathfinding in the route graph
- - [X] API server mode
- - [ ] ERTMS support
- - [ ] Parallel integration of train movement
- - [X] Variable step integration
- - [ ] Driver behavior model
- - [ ] ~~Rewrite everything in Rust~~
+- [x] Reasonably accurate simulation of train movement
+- [x] Import of railML3 infrastructure
+- [x] Static speed restrictions
+- [x] Full history of internal simulation events
+- [x] Basic interlocking / signaling support
+- [x] Make the train react to signals
+- [x] pathfinding in the route graph
+- [x] API server mode
+- [ ] ERTMS support
+- [ ] Parallel integration of train movement
+- [x] Variable step integration
+- [ ] Driver behavior model
+- [ ] ~~Rewrite everything in Rust~~
 
 ## Getting Started
 
 You'll need:
- - Java 17
- - Python >= 3.9 (For generating example / test files)
- - Install python requirements here: [examples/generated/lib/requirements.txt](examples/generated/lib/requirements.txt)
+
+- Java 17
+- Python >= 3.9 (For generating example / test files)
+- Install the `python/railjson_generator` library using poetry:
+  ```sh
+  poetry --directory=../python/railjson_generator install
+  ```
 
 ```sh
 # on Linux / MacOS

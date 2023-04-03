@@ -1,23 +1,17 @@
 [tool.poetry]
-name = "tests"
+name = "railjson_generator"
 version = "0.1.0"
-description = "Integration tests"
+description = ""
 authors = ["OSRD <contact@osrd.fr>"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
-pydantic = "1.10.4"
-geojson-pydantic = "0.5.0"
+osrd-schemas = { path = "../osrd_schemas/", develop = false }
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
 isort = "^5.12.0"
 pyproject-flake8 = "^6.0.0.post1"
-requests = "^2.28.2"
-geojson-pydantic = "^0.5.0"
-pytest = "^7.2.2"
-osrd-schemas = { path = "../python/osrd_schemas/", develop = false }
-railjson-generator = { path = "../python/railjson_generator/", develop = false }
 
 [tool.flake8]
 ignore = "W503,E203"
