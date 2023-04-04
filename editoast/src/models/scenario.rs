@@ -173,10 +173,9 @@ impl List<i64> for ScenarioWithCountTrains {
 
 #[cfg(test)]
 pub mod test {
-
     use crate::client::PostgresConfig;
+    use crate::fixtures::tests::{db_pool, project, TestFixture};
     use crate::infra::Infra;
-    use crate::models::projects::test::build_test_project;
     use crate::models::study::test::build_test_study;
     use crate::models::Create;
     use crate::models::Delete;
@@ -185,12 +184,12 @@ pub mod test {
     use crate::models::ScenarioWithCountTrains;
     use crate::models::Timetable;
     use crate::models::{Project, Study};
-    use actix_web::test as actix_test;
     use actix_web::web::Data;
     use chrono::Utc;
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::Connection;
     use diesel::PgConnection;
+    use rstest::rstest;
 
     use super::Scenario;
 
@@ -208,19 +207,16 @@ pub mod test {
         }
     }
 
-    #[actix_test]
-    async fn create_delete_scenario() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
+    #[rstest]
+    async fn create_delete_scenario(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] project: TestFixture<Project>,
+    ) {
+        let project = project.await;
 
         // Create a study
-        let study = build_test_study(project_id);
-        let study: Study = study.create(pool.clone()).await.unwrap();
+        let study = build_test_study(project.id());
+        let study: Study = study.create(db_pool.clone()).await.unwrap();
         let study_id = study.id.unwrap();
 
         // Create an infra
@@ -232,34 +228,33 @@ pub mod test {
             id: None,
             name: Some("timetable_test".into()),
         };
-        let timetable: Timetable = timetable.create(pool.clone()).await.unwrap();
+        let timetable: Timetable = timetable.create(db_pool.clone()).await.unwrap();
 
         // Create a scenario
         let scenario = build_test_scenario(study_id, infra.id, timetable.id.unwrap());
-        let scenario: Scenario = scenario.create(pool.clone()).await.unwrap();
+        let scenario: Scenario = scenario.create(db_pool.clone()).await.unwrap();
         let scenario_id = scenario.id.unwrap();
 
         // Delete the scenario
-        Scenario::delete(pool.clone(), scenario_id).await.unwrap();
-        Project::delete(pool.clone(), project_id).await.unwrap();
+        Scenario::delete(db_pool.clone(), scenario_id)
+            .await
+            .unwrap();
 
         // Second delete should fail
-        assert!(!Scenario::delete(pool.clone(), scenario_id).await.unwrap());
+        assert!(!Scenario::delete(db_pool.clone(), scenario_id)
+            .await
+            .unwrap());
     }
 
-    #[actix_test]
-    async fn get_study() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
-
+    #[rstest]
+    async fn get_study(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] project: TestFixture<Project>,
+    ) {
+        let project = project.await;
         // Create a study
-        let study = build_test_study(project_id);
-        let study: Study = study.create(pool.clone()).await.unwrap();
+        let study = build_test_study(project.id());
+        let study: Study = study.create(db_pool.clone()).await.unwrap();
         let study_id = study.id.unwrap();
 
         // Create an infra
@@ -271,21 +266,24 @@ pub mod test {
             id: None,
             name: Some("timetable_test".into()),
         };
-        let timetable: Timetable = timetable.create(pool.clone()).await.unwrap();
+        let timetable: Timetable = timetable.create(db_pool.clone()).await.unwrap();
 
         // Create a scenario
         let scenario = build_test_scenario(study_id, infra.id, timetable.id.unwrap());
-        let scenario: Scenario = scenario.create(pool.clone()).await.unwrap();
+        let scenario: Scenario = scenario.create(db_pool.clone()).await.unwrap();
         let scenario_id = scenario.id.unwrap();
 
         // Get a scenario
-        assert!(Scenario::retrieve(pool.clone(), study_id).await.is_ok());
-        assert!(ScenarioWithCountTrains::list(pool.clone(), 1, 25, study_id)
-            .await
-            .is_ok());
+        assert!(Scenario::retrieve(db_pool.clone(), study_id).await.is_ok());
+        assert!(
+            ScenarioWithCountTrains::list(db_pool.clone(), 1, 25, study_id)
+                .await
+                .is_ok()
+        );
 
         // Delete the scenario
-        Scenario::delete(pool.clone(), scenario_id).await.unwrap();
-        Project::delete(pool.clone(), project_id).await.unwrap();
+        Scenario::delete(db_pool.clone(), scenario_id)
+            .await
+            .unwrap();
     }
 }

@@ -1,9 +1,10 @@
 #[cfg(test)]
 pub mod tests {
     use crate::client::PostgresConfig;
-    use crate::models::{Create, Delete, Identifiable, RollingStockModel};
+    use crate::models::{Create, Delete, Identifiable, Project, RollingStockModel};
 
     use actix_web::web::Data;
+    use chrono::Utc;
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::PgConnection;
     use futures::executor;
@@ -41,6 +42,28 @@ pub mod tests {
                 "./tests/example_rolling_stock.json"
             ))
             .expect("Unable to parse")
+            .create(db_pool.clone())
+            .await
+            .unwrap(),
+            db_pool,
+        }
+    }
+
+    #[fixture]
+    pub async fn project(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) -> TestFixture<Project> {
+        TestFixture {
+            model: Project {
+                name: Some("_@Test integration project".into()),
+                objectives: Some("".into()),
+                description: Some("".into()),
+                funders: Some("".into()),
+                budget: Some(0),
+                tags: Some(vec![]),
+                creation_date: Some(Utc::now().naive_utc()),
+                ..Default::default()
+            }
             .create(db_pool.clone())
             .await
             .unwrap(),

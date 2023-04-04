@@ -125,20 +125,17 @@ impl List<i64> for StudyWithScenarios {
 
 #[cfg(test)]
 pub mod test {
-
     use super::{Project, Study};
-    use crate::client::PostgresConfig;
-    use crate::models::projects::test::build_test_project;
+    use crate::fixtures::tests::{db_pool, project, TestFixture};
     use crate::models::Create;
     use crate::models::Delete;
     use crate::models::List;
     use crate::models::Retrieve;
     use crate::models::StudyWithScenarios;
-    use actix_web::test as actix_test;
     use actix_web::web::Data;
     use chrono::Utc;
     use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::rstest;
 
     pub fn build_test_study(project_id: i64) -> Study {
         Study {
@@ -156,58 +153,51 @@ pub mod test {
         }
     }
 
-    #[actix_test]
-    async fn create_delete_study() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
-
+    #[rstest]
+    async fn create_delete_study(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] project: TestFixture<Project>,
+    ) {
+        let project = project.await;
         // Create a study
-        let study = build_test_study(project_id);
-        let study: Study = study.create(pool.clone()).await.unwrap();
+        let study = build_test_study(project.id());
+        let study: Study = study.create(db_pool.clone()).await.unwrap();
 
         // Delete the study
-        Study::delete(pool.clone(), study.id.unwrap())
+        Study::delete(db_pool.clone(), study.id.unwrap())
             .await
             .unwrap();
-        Project::delete(pool.clone(), project_id).await.unwrap();
 
         // Second delete should fail
-        assert!(!Study::delete(pool.clone(), study.id.unwrap())
+        assert!(!Study::delete(db_pool.clone(), study.id.unwrap())
             .await
             .unwrap());
     }
 
-    #[actix_test]
-    async fn get_study() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
+    #[rstest]
+    async fn get_study(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] project: TestFixture<Project>,
+    ) {
+        let project = project.await;
 
         // Create a study
-        let study = build_test_study(project_id);
-        let study: Study = study.create(pool.clone()).await.unwrap();
+        let study = build_test_study(project.id());
+        let study: Study = study.create(db_pool.clone()).await.unwrap();
 
         // Get a study
-        assert!(Study::retrieve(pool.clone(), study.id.unwrap())
+        assert!(Study::retrieve(db_pool.clone(), study.id.unwrap())
             .await
             .is_ok());
-        assert!(StudyWithScenarios::list(pool.clone(), 1, 25, project_id)
-            .await
-            .is_ok());
+        assert!(
+            StudyWithScenarios::list(db_pool.clone(), 1, 25, project.id())
+                .await
+                .is_ok()
+        );
 
         // Delete the study
-        Study::delete(pool.clone(), study.id.unwrap())
+        Study::delete(db_pool.clone(), study.id.unwrap())
             .await
             .unwrap();
-        Project::delete(pool.clone(), project_id).await.unwrap();
     }
 }
