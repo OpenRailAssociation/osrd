@@ -71,7 +71,7 @@ export default function Scenario() {
       );
       setScenario(result);
       dispatch(updateTimetableID(result.timetable_id));
-      dispatch(updateInfraID(result.infra));
+      dispatch(updateInfraID(result.infra_id));
 
       const preferedTimetableID = result.timetable_id || timetableID;
 
