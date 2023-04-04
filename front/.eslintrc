@@ -15,6 +15,8 @@
     "ecmaVersion": "latest"
   },
   "rules": {
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "warn",
     "@typescript-eslint/no-use-before-define": ["error"],
     "arrow-body-style": ["error", "as-needed"],
     "global-require": "off",
