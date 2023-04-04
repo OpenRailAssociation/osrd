@@ -5,6 +5,7 @@ package fr.sncf.osrd.standalone_sim
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.sim_infra.api.*
@@ -70,9 +71,9 @@ fun run(
 
     // Compute signal updates
     val startOffset = trainPathBlockOffset(trainPath)
-    val pathSignals = pathSignals(startOffset, blockPath, blockInfra, envelope, rawInfra)
+    val pathSignals = pathSignals(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra)
     val zoneOccupationChangeEvents =
-        zoneOccupationChangeEvents(startOffset, blockPath, blockInfra, envelope, rawInfra, trainLength)
+        zoneOccupationChangeEvents(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra, trainLength)
 
     val zoneUpdates = zoneOccupationChangeEvents.map {
         ResultTrain.ZoneUpdate(rawInfra.getZoneName(it.zone), it.time / 1000.0, it.offset.meters, it.isEntry)
@@ -83,14 +84,14 @@ fun run(
         val sightOffset = max(0.0, (it.offset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
         ResultTrain.SignalSighting(
             rawInfra.getPhysicalSignalName(loadedSignalInfra.getPhysicalSignal(it.signal)),
-            envelope.interpolateTotalTime(sightOffset),
+            envelopeWithStops.interpolateTotalTime(sightOffset),
             sightOffset,
             "VL" // TODO: find out the real state
         )
     }
 
     // Compute route occupancies
-    val routeOccupancies = routeOccupancies(zoneOccupationChangeEvents, rawInfra, envelope)
+    val routeOccupancies = routeOccupancies(zoneOccupationChangeEvents, rawInfra, envelopeWithStops)
 
     // Compute energy consumed
     val envelopePath = EnvelopeTrainPath.from(trainPath)
@@ -103,7 +104,7 @@ fun run(
 }
 
 private fun routeOccupancies(
-    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>, rawInfra: SimInfraAdapter, envelope: Envelope
+    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>, rawInfra: SimInfraAdapter, envelope: EnvelopeTimeInterpolate
 ): Map<String, ResultOccupancyTiming> {
     val routeOccupancies = mutableMapOf<String, ResultOccupancyTiming>()
     val zoneOccupationChangeEventsByRoute = mutableMapOf<String, MutableList<ZoneOccupationChangeEvent>>()
@@ -139,7 +140,7 @@ private fun zoneOccupationChangeEvents(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
-    envelope: Envelope,
+    envelope: EnvelopeTimeInterpolate,
     rawInfra: SimInfraAdapter,
     trainLength: Double
 ): MutableList<ZoneOccupationChangeEvent> {
@@ -195,7 +196,7 @@ private fun pathSignals(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
-    envelope: Envelope,
+    envelope: EnvelopeTimeInterpolate,
     rawInfra: SimInfraAdapter
 ): MutableList<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
