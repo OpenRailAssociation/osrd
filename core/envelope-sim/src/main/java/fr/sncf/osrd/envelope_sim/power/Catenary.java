@@ -1,26 +1,24 @@
 package fr.sncf.osrd.envelope_sim.power;
 
+import fr.sncf.osrd.envelope_utils.Point2d;
+
 public class Catenary implements EnergySource {
 
     /** Floor power limit : the max power the source can capture (<=0) */
-    public double maxInputPower;
+    public SpeedDependantPower maxInputPower;
 
     /** Ceiling power limit : the max power the source can provide (>=0)*/
-    public double maxOutputPower;
-
-    public SpeedDependantPowerCoefficient speedCoef;
+    public SpeedDependantPower maxOutputPower;
 
     /** The efficiency of the catenary - pantograph transfer, between 0 and 1 */
     public final double efficiency;
 
-    public Catenary(double maxInputPower,
-                    double maxOutputPower,
-                    double efficiency,
-                    SpeedDependantPowerCoefficient speedCoef
+    public Catenary(SpeedDependantPower maxInputPower,
+                    SpeedDependantPower maxOutputPower,
+                    double efficiency
     ) {
         this.maxInputPower = maxInputPower;
         this.maxOutputPower = maxOutputPower;
-        this.speedCoef = speedCoef;
         this.efficiency = efficiency;
     }
 
@@ -28,15 +26,14 @@ public class Catenary implements EnergySource {
     public double getMaxOutputPower(double speed, boolean electrification){
         if (!electrification)
             return 0;
-        double availablePower = maxOutputPower;
-        availablePower *= speedCoef.getPowerCoefficientFromSpeed(speed);
+        double availablePower = maxOutputPower.get(speed);
         availablePower *= efficiency;
         return availablePower;
     }
 
     @Override
-    public double getMaxInputPower() {
-        return maxInputPower;
+    public double getMaxInputPower(double speed) {
+        return maxInputPower.get(speed);
     }
 
     @Override
@@ -48,18 +45,14 @@ public class Catenary implements EnergySource {
     }
 
     public static Catenary newCatenary() {
-        Point2d[] curveLowValueOnLowSpeed = {
-                new Point2d(0.0,0.5),
-                new Point2d(10.0,0.5),
-                new Point2d(20.0,1.0),
-                new Point2d(3000.0,1.0)
-        };
+        var speeds = new double[] {0., 10., 20., 30.};
+        var maxInputPowers = new double[] {0., 0., 0., 0.};
+        var maxOutputPowers = new double[] {200., 200., 400., 400.};
 
         return new Catenary(
-                0.,
-                400.0,
-                1.,
-                new SpeedDependantPowerCoefficient(curveLowValueOnLowSpeed)
+                new SpeedDependantPower(speeds, maxInputPowers),
+                new SpeedDependantPower(speeds, maxOutputPowers),
+                1.
         );
     }
 }

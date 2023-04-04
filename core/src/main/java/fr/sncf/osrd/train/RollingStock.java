@@ -97,7 +97,7 @@ public class RollingStock implements PhysicsRollingStock {
     public final double motorEfficiency;
 
     /** The different energy sources of the rollingStock */
-    public final ArrayList<EnergySource> energySources;
+    public final List<EnergySource> energySources;
 
     /** The power consumed by the auxiliaries */
     public final double auxiliariesPower;
@@ -311,7 +311,7 @@ public class RollingStock implements PhysicsRollingStock {
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
             String powerClass,
-            ArrayList<EnergySource> energySources) {
+            List<EnergySource> energySources) {
         this.id = id;
         this.A = a;
         this.B = b;
@@ -375,9 +375,8 @@ public class RollingStock implements PhysicsRollingStock {
                 null);
     }
 
-    private ArrayList<EnergySource> orderByPriority(ArrayList<EnergySource> energySources) {
-        var orderedEnergySource = energySources;
-        orderedEnergySource.sort(Comparator.comparing(EnergySource::getPriority));
-        return orderedEnergySource;
+    private List<EnergySource> orderByPriority(List<EnergySource> energySources) {
+        energySources.sort(Comparator.comparing(EnergySource::getPriority));
+        return energySources;
     }
 }

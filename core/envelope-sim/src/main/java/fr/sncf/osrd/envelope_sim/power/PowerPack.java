@@ -3,13 +3,15 @@ package fr.sncf.osrd.envelope_sim.power;
 import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 
+import static fr.sncf.osrd.envelope_sim.power.SpeedDependantPower.constantPower;
+
 public class PowerPack implements EnergySource {
 
     /** Floor power limit : the max power the source can capture (<=0) */
-    public double maxInputPower;
+    public SpeedDependantPower maxInputPower;
 
     /** Ceiling power limit : the max power the source can provide (>=0)*/
-    public double maxOutputPower;
+    public SpeedDependantPower maxOutputPower;
 
     /** The energy storage object of the power pack */
     public EnergyStorage storage;
@@ -17,8 +19,8 @@ public class PowerPack implements EnergySource {
     /** The efficiency of the power pack, between 0 and 1 */
     private final double efficiency;
 
-    public PowerPack(double maxInputPower,
-                     double maxOutputPower,
+    public PowerPack(SpeedDependantPower maxInputPower,
+                     SpeedDependantPower maxOutputPower,
                      EnergyStorage storage,
                      double efficiency
     ) {
@@ -30,14 +32,14 @@ public class PowerPack implements EnergySource {
 
     /** Return available power */
     public double getMaxOutputPower(double speed, boolean electrification){
-        double availablePower = maxOutputPower;
+        double availablePower = maxOutputPower.get(speed);
         availablePower *= storage.getPowerCoefficientFromSoc();
         availablePower *= efficiency;
         return availablePower;
     }
 
     @Override
-    public double getMaxInputPower() {
+    public double getMaxInputPower(double speed) {
         return 0; // can't refill some gas while the train is running
     }
 
@@ -53,8 +55,8 @@ public class PowerPack implements EnergySource {
     }
 
     public static PowerPack newPowerPackDiesel() {
-        double pMin = 0;
-        double pMax = 4e6;
+        var pMin = constantPower(0);
+        var pMax = constantPower(4e6);
         double volume = 4; // m^3
         double capacity = 10 * 3.6e6 * volume; // Joules
         var refillLaw = new RefillLaw(100,1,capacity);

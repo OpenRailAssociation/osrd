@@ -6,7 +6,7 @@ public class RJSEnergyStorage {
     public double capacity;
 
     /** The State of Charge of the EnergyStorage, soc * capacity = actual stock of energy */
-    public double soc;
+    public double initialSoc;
 
     public RJSRefillLaw refillLaw;
 

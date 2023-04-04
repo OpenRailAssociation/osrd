@@ -6,7 +6,7 @@ public interface EnergySource {
     double getMaxOutputPower(double speed, boolean electrification);
 
     /** Return the maximum refill power the source is capable of capturing */
-    double getMaxInputPower();
+    double getMaxInputPower(double speed);
 
     /** Consume an algebric amount of energy from the source.
      *  If energyDelta > 0 that means some energy has been taken from the source.

@@ -2,6 +2,15 @@ package fr.sncf.osrd.envelope_utils;
 
 public class CurveUtils {
 
+    public static Point2d[] generateCurve(double[] xs, double[] ys) {
+        assert xs.length == ys.length;
+        var res = new Point2d[xs.length];
+        for (var i = 0; i < xs.length; i++) {
+            res[i] = new Point2d(xs[i], ys[i]);
+        }
+        return res;
+    }
+
     /** Return Y=f(X) on the linear approximation (interpolation) of the curve*/
     public static double interpolate(double x, Point2d[] curvePointArray) {
         int index = 0;

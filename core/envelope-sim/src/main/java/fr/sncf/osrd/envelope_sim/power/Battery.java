@@ -3,13 +3,15 @@ package fr.sncf.osrd.envelope_sim.power;
 import fr.sncf.osrd.envelope_sim.power.storage.EnergyStorage;
 import fr.sncf.osrd.envelope_sim.power.storage.RefillLaw;
 
+import static fr.sncf.osrd.envelope_sim.power.SpeedDependantPower.constantPower;
+
 public class Battery implements EnergySource {
 
     /** Floor power limit : the max power the source can capture (<=0) */
-    public double maxInputPower;
+    public SpeedDependantPower maxInputPower;
 
     /** Ceiling power limit : the max power the source can provide (>=0)*/
-    public double maxOutputPower;
+    public SpeedDependantPower maxOutputPower;
 
     /** The energy storage object of the battery */
     public EnergyStorage storage;
@@ -17,8 +19,8 @@ public class Battery implements EnergySource {
     /** The efficiency of the battery, between 0 and 1 */
     public final double efficiency;
 
-    public Battery(double maxInputPower,
-                   double maxOutputPower,
+    public Battery(SpeedDependantPower maxInputPower,
+                   SpeedDependantPower maxOutputPower,
                    EnergyStorage storage,
                    double efficiency
     ) {
@@ -30,16 +32,16 @@ public class Battery implements EnergySource {
 
     /** Return available power based on contextual state of charge */
     public double getMaxOutputPower(double speed, boolean electrification){
-        double availablePower = maxOutputPower;
+        double availablePower = maxOutputPower.get(speed);
         availablePower *= storage.getPowerCoefficientFromSoc();
         availablePower *= efficiency;
         return availablePower;
     }
 
     @Override
-    public double getMaxInputPower() {
+    public double getMaxInputPower(double speed) {
         var maxStorageInputPower = storage.getRefillPower();
-        return Math.max(maxStorageInputPower, maxInputPower);
+        return Math.max(maxStorageInputPower, maxInputPower.get(speed));
     }
 
     @Override
@@ -53,16 +55,8 @@ public class Battery implements EnergySource {
     }
 
     public static Battery newBattery() {
-        Point2d[] curveHigherValueOnHighSpeed = {
-                new Point2d(0.0,0.1),
-                new Point2d(10.0,0.1),
-                new Point2d(20.0,1.0),
-                new Point2d(110.0,1.0),
-                new Point2d(120.0,1.5),
-                new Point2d(3000.0,1.5)
-        };
-        double pMin = -400.;
-        double pMax = 500;
+        var pMin = constantPower(-400.);
+        var pMax = constantPower(500);
         double capacity = 150 * 3.6e6;
         return new Battery(
                 pMin,
