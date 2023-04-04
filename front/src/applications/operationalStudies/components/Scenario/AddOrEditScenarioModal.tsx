@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { scenarioTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import scenarioLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -20,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { setSuccess } from 'reducers/main';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
+import { ScenarioListResult } from 'common/api/osrdEditoastApi';
 import {
   ELECTRICAL_PROFILE_SET_URI,
   PROJECTS_URI,
@@ -31,23 +31,26 @@ const scenarioTypesDefaults = {
   name: '',
   description: '',
   infra: undefined,
-  tags: [],
 };
 
 type Props = {
-  editionMode?: false;
-  scenario?: scenarioTypes;
-  getScenario?: (v: boolean) => void;
+  editionMode?: boolean;
+  scenario?: ScenarioListResult;
+  getScenarioTimetable?: (v: boolean) => void;
 };
 
-export default function AddOrEditScenarioModal({ editionMode, scenario, getScenario }: Props) {
+export default function AddOrEditScenarioModal({
+  editionMode = false,
+  scenario,
+  getScenarioTimetable,
+}: Props) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
   const noElectricalProfileSetOption = {
     key: undefined,
     value: t('noElectricalProfileSet'),
   };
-  const [currentScenario, setCurrentScenario] = useState<scenarioTypes>(
+  const [currentScenario, setCurrentScenario] = useState<ScenarioListResult>(
     scenario || scenarioTypesDefaults
   );
   const [displayErrors, setDisplayErrors] = useState(false);
@@ -88,13 +91,13 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
   const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`;
 
   const removeTag = (idx: number) => {
-    const newTags: string[] = Array.from(currentScenario.tags);
+    const newTags = currentScenario.tags ? Array.from(currentScenario.tags) : [];
     newTags.splice(idx, 1);
     setCurrentScenario({ ...currentScenario, tags: newTags });
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = Array.from(currentScenario.tags);
+    const newTags = currentScenario.tags ? Array.from(currentScenario.tags) : [];
     newTags.push(tag);
     setCurrentScenario({ ...currentScenario, tags: newTags });
   };
@@ -120,7 +123,7 @@ export default function AddOrEditScenarioModal({ editionMode, scenario, getScena
     } else if (scenario) {
       try {
         await patch(`${rootURI}${scenario.id}/`, currentScenario);
-        if (getScenario) getScenario(true);
+        if (getScenarioTimetable) getScenarioTimetable(true);
         closeModal();
       } catch (error) {
         console.error(error);

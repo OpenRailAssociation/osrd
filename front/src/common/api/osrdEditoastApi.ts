@@ -1198,7 +1198,7 @@ export type ScenarioResult = {
   id?: number;
   name?: string;
   study_id?: number;
-  description?: string[];
+  description?: string;
   tags?: string[];
   infra_id?: number;
   infra_name?: string;
@@ -1226,7 +1226,7 @@ export type ScenarioListResult = {
   id?: number;
   name?: string;
   study_id?: number;
-  description?: string[];
+  description?: string;
   tags?: string[];
   infra_id?: number;
   infra_name?: string;

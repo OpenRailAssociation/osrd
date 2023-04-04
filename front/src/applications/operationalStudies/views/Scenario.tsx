@@ -16,13 +16,13 @@ import {
   getStudyID,
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
-import { get } from 'common/requests';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { RootState } from 'reducers';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
 import getTimetable from '../components/Scenario/getTimetable';
 import ImportTrainSchedule from './ImportTrainSchedule';
@@ -32,71 +32,58 @@ import SimulationResults from './SimulationResults';
 export default function Scenario() {
   const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
-  const isUpdating = useSelector((state) => state.osrdsimulation.isUpdating);
-  const [project, setProject] = useState();
-  const [study, setStudy] = useState();
-  const [scenario, setScenario] = useState();
-  const [trainScheduleIDToModify, setTrainScheduleIDToModify] = useState();
-  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(
+  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
+  const [trainScheduleIDsToModify, setTrainScheduleIDsToModify] = useState<number[]>();
+  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
+
+  const [getProject, { data: project }] =
+    osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
+  const [getStudy, { data: study }] =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useLazyQuery({});
+  const [getScenario, { data: scenario }] =
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useLazyQuery(
+      {}
+    );
+
   const { openModal } = useModal();
   const navigate = useNavigate();
-  const projectID = useSelector(getProjectID);
-  const studyID = useSelector(getStudyID);
-  const scenarioID = useSelector(getScenarioID);
-  const timetableID = useSelector(getTimetableID);
+  const projectId = useSelector(getProjectID);
+  const studyId = useSelector(getStudyID);
+  const scenarioId = useSelector(getScenarioID);
+  const timetableId = useSelector(getTimetableID);
 
-  const getProject = async () => {
-    try {
-      const result = await get(`${PROJECTS_URI}${projectID}/`);
-      setProject(result);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const getScenarioTimetable = async (withNotification = false) => {
+    if (projectId && studyId && scenarioId) {
+      getScenario({ projectId, studyId, scenarioId })
+        .unwrap()
+        .then((result) => {
+          dispatch(updateTimetableID(result.timetable_id));
+          dispatch(updateInfraID(result.infra_id));
 
-  const getStudy = async () => {
-    try {
-      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
-      setStudy(result);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+          const preferedTimetableId = result.timetable_id || timetableId;
 
-  const getScenario = async (withNotification = false) => {
-    try {
-      const result = await get(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
-      );
-      setScenario(result);
-      dispatch(updateTimetableID(result.timetable_id));
-      dispatch(updateInfraID(result.infra_id));
-
-      const preferedTimetableID = result.timetable_id || timetableID;
-
-      getTimetable(preferedTimetableID);
-      if (withNotification) {
-        dispatch(
-          setSuccess({
-            title: t('scenarioUpdated'),
-            text: t('scenarioUpdatedDetails', { name: scenario.name }),
-          })
-        );
-      }
-    } catch (error) {
-      console.error(error);
+          getTimetable(preferedTimetableId);
+          if (withNotification) {
+            dispatch(
+              setSuccess({
+                title: t('scenarioUpdated'),
+                text: t('scenarioUpdatedDetails', { name: result.name }),
+              })
+            );
+          }
+        });
     }
   };
 
   useEffect(() => {
-    if (!scenarioID || !studyID || !projectID) {
+    if (!scenarioId || !studyId || !projectId) {
       navigate('/operational-studies/study');
     } else {
-      getProject();
-      getStudy();
-      getScenario();
+      getProject({ projectId });
+      getStudy({ projectId, studyId });
+      getScenarioTimetable();
       dispatch(updateMode(MODES.simulation));
     }
     return () => {
@@ -111,9 +98,9 @@ export default function Scenario() {
       <NavBarSNCF
         appName={
           <BreadCrumbs
-            projectName={project ? project.name : null}
-            studyName={study ? study.name : null}
-            scenarioName={scenario ? scenario.name : null}
+            projectName={project?.name}
+            studyName={study?.name}
+            scenarioName={scenario.name}
           />
         }
         logo={logo}
@@ -136,7 +123,7 @@ export default function Scenario() {
                             <AddAndEditScenarioModal
                               editionMode
                               scenario={scenario}
-                              getScenario={getScenario}
+                              getScenarioTimetable={getScenarioTimetable}
                             />
                           )
                         }
@@ -170,13 +157,12 @@ export default function Scenario() {
                 )}
                 {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
                   <TimetableManageTrainSchedule
-                    displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   />
                 )}
                 <Timetable
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  setTrainScheduleIDToModify={setTrainScheduleIDToModify}
+                  setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
                 />
               </div>
             </div>
@@ -185,9 +171,8 @@ export default function Scenario() {
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
                   <ManageTrainSchedule
-                    displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    trainScheduleIDToModify={trainScheduleIDToModify}
+                    trainScheduleIDsToModify={trainScheduleIDsToModify}
                   />
                 </div>
               )}
