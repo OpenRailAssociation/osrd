@@ -95,22 +95,16 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
             openModal(
               <ConfirmModal
                 title={t('Editor.tools.routes-edition.delete-route')}
-                onConfirm={async (setDisabled) => {
+                onConfirm={async () => {
                   setIsLoading(true);
-                  setDisabled(true);
-
-                  try {
-                    await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
-                    setIsLoading(false);
-                    addNotification({
-                      type: 'success',
-                      text: t('Editor.tools.routes-edition.delete-route-success'),
-                    });
-                    setState(getEmptyCreateRouteState());
-                    closeModal();
-                  } catch (e: unknown) {
-                    setDisabled(false);
-                  }
+                  await dispatch(save({ delete: [initialRouteEntity] as EditorEntity[] }));
+                  setIsLoading(false);
+                  addNotification({
+                    type: 'success',
+                    text: t('Editor.tools.routes-edition.delete-route-success'),
+                  });
+                  setState(getEmptyCreateRouteState());
+                  closeModal();
                 }}
               >
                 <p>{t('Editor.tools.routes-edition.confirm-delete-route')}</p>
