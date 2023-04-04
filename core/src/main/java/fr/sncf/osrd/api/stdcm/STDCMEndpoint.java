@@ -89,7 +89,6 @@ public class STDCMEndpoint implements Take {
             final var infra = fullInfra.java();
             final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
-            // TODO: handle more than 2 waypoints
             final var steps = parseSteps(infra, request.steps);
             final String tag = request.speedLimitComposition;
             var occupancies = request.routeOccupancies;
@@ -148,7 +147,7 @@ public class STDCMEndpoint implements Take {
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
-                    makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort),
+                    makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
                     fullInfra
             ));
             simResult.ecoSimulations.add(null);
@@ -226,11 +225,12 @@ public class STDCMEndpoint implements Take {
 
         var path = TrainPathBuilder.from(routes, startLocation, lastLocation);
         DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
+        var stops = List.of(new TrainStop(path.length(), 0.1));  // TODO: fix this
         var standaloneResult = StandaloneSim.run(
                 fullInfra,
                 path,
                 EnvelopeTrainPath.from(path),
-                List.of(makeTrainSchedule(path.length(), rollingStock, comfort)),
+                List.of(makeTrainSchedule(path.length(), rollingStock, comfort, stops)),
                 timeStep,
                 driverBehaviour
         );
@@ -245,9 +245,9 @@ public class STDCMEndpoint implements Take {
     private static StandaloneTrainSchedule makeTrainSchedule(
             double endPos,
             RollingStock rollingStock,
-            RollingStock.Comfort comfort
+            RollingStock.Comfort comfort,
+            List<TrainStop> trainStops
     ) {
-        List<TrainStop> trainStops = new ArrayList<>();
         trainStops.add(new TrainStop(endPos, 0.1));
         return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort, null, null);
     }
