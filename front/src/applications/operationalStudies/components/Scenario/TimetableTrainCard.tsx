@@ -23,7 +23,7 @@ type Props = {
   selectPathProjection: (train: ScheduledTrain) => void;
   duplicateTrain: (train: ScheduledTrain) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
-  setTrainScheduleIDToModify: (arg0: number | undefined) => void;
+  setTrainScheduleIDsToModify: (IDs: number[] | undefined) => void;
 };
 
 function TimetableTrainCard({
@@ -36,7 +36,7 @@ function TimetableTrainCard({
   selectPathProjection,
   duplicateTrain,
   setDisplayTrainScheduleManagement,
-  setTrainScheduleIDToModify,
+  setTrainScheduleIDsToModify,
 }: Props) {
   const [imageUrl, setImageUrl] = useState<string>();
   const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
@@ -44,7 +44,7 @@ function TimetableTrainCard({
   const { t } = useTranslation(['operationalStudies/scenario']);
 
   const editTrainSchedule = () => {
-    setTrainScheduleIDToModify(train.id);
+    setTrainScheduleIDsToModify([train.id]);
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import TrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/TrainLabels';
 import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
@@ -10,42 +10,79 @@ import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelect
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
 import submitConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConf';
-import { FaPlus } from 'react-icons/fa';
+import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
-import { updateRollingStockID, updateSpeedLimitByTag } from 'reducers/osrdconf';
+import { osrdMiddlewareApi, TrainSchedule } from 'common/api/osrdMiddlewareApi';
+import {
+  updateLabels,
+  updateRollingStockID,
+  updateSpeedLimitByTag,
+  toggleUsingElectricalProfiles,
+} from 'reducers/osrdconf';
+import { getUsingElectricalProfiles } from 'reducers/osrdconf/selectors';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 
 type Props = {
   setDisplayTrainScheduleManagement: (arg0: string) => void;
-  trainScheduleIDToModify?: number;
+  trainScheduleIDsToModify?: number[];
 };
 
 export default function ManageTrainSchedule({
   setDisplayTrainScheduleManagement,
-  trainScheduleIDToModify,
+  trainScheduleIDsToModify,
 }: Props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const [isWorking, setIsWorking] = useState(false);
   const [getTrainScheduleById, { data: trainScheduleToModify }] =
     osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
 
+  function confirmButton() {
+    return trainScheduleIDsToModify ? (
+      <button
+        className="btn btn-warning"
+        type="button"
+        onClick={() => submitConf(dispatch, t, setIsWorking)}
+      >
+        <span className="mr-2">
+          <FaPen />
+        </span>
+        {t('updateTrainSchedule')}
+      </button>
+    ) : (
+      <button
+        className="btn btn-primary"
+        type="button"
+        onClick={() => submitConf(dispatch, t, setIsWorking)}
+      >
+        <span className="mr-2">
+          <FaPlus />
+        </span>
+        {t('addTrainSchedule')}
+      </button>
+    );
+  }
+
   function ajustConf2TrainToModify(id: number) {
     getTrainScheduleById({ id })
       .unwrap()
-      .then((trainScheduleData) => {
+      .then((trainScheduleData: TrainSchedule) => {
         if (trainScheduleData.rolling_stock)
           dispatch(updateRollingStockID(trainScheduleData.rolling_stock));
+        if (trainScheduleData.options?.ignore_electrical_profiles === usingElectricalProfiles)
+          dispatch(toggleUsingElectricalProfiles());
 
         dispatch(updateSpeedLimitByTag(trainScheduleData.speed_limit_tags));
+        dispatch(updateLabels(trainScheduleData.labels));
       });
   }
 
   useEffect(() => {
-    if (trainScheduleIDToModify) ajustConf2TrainToModify(trainScheduleIDToModify);
-  }, [trainScheduleIDToModify]);
+    if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
+      ajustConf2TrainToModify(trainScheduleIDsToModify[0]);
+  }, [trainScheduleIDsToModify]);
 
   return (
     <>
@@ -78,7 +115,7 @@ export default function ManageTrainSchedule({
       </div>
       <div className="manage-train-schedule-title">3.&nbsp;{t('indications.configValidate')}</div>
       <TrainLabels />
-      {!trainScheduleIDToModify && <TrainSettings />}
+      {!trainScheduleIDsToModify && <TrainSettings />}
       <div className="osrd-config-item" data-testid="add-train-schedules">
         <div className="d-flex justify-content-end">
           <button
@@ -93,16 +130,7 @@ export default function ManageTrainSchedule({
               <DotsLoader />
             </button>
           ) : (
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={() => submitConf(dispatch, t, setIsWorking)}
-            >
-              <span className="mr-2">
-                <FaPlus />
-              </span>
-              {t('addTrainSchedule')}
-            </button>
+            confirmButton()
           )}
         </div>
       </div>
