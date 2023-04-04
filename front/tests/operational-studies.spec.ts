@@ -14,18 +14,16 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     // Real click on project, study, scenario
     await playwrightHomePage.goToOperationalStudiesPage();
     await playwrightHomePage.page
-      .locator('.projects-list-project-card-img')
-      .first()
+      .getByTestId('_@Test integration project')
+      .locator('div')
       .getByRole('button')
       .click();
     await playwrightHomePage.page
-      .locator('.studies-list-card-name')
-      .first()
+      .getByTestId('_@Test integration study')
       .getByRole('button')
       .click();
     await playwrightHomePage.page
-      .locator('.scenarios-list-card-name')
-      .first()
+      .getByTestId('_@Test integration scenario')
       .getByRole('button')
       .click();
 

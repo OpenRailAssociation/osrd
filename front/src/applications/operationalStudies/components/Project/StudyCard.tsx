@@ -45,7 +45,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
 
   return (
     <div className="studies-list-card">
-      <div className="studies-list-card-name">
+      <div className="studies-list-card-name" data-testid={study.name}>
         <span className="mr-2">
           <img src={studyLogo} alt="study logo" height="24" />
         </span>
