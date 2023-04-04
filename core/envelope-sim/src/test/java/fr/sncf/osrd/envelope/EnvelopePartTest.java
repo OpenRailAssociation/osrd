@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.getPartMechanicalEnergyConsumed;
+import static fr.sncf.osrd.envelope.EnvelopePhysics.interpolateStepSpeed;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
@@ -114,7 +115,7 @@ class EnvelopePartTest {
             switch (i) {
                 case 0:
                     expectedEnvelopePartEnergy =
-                            PhysicsRollingStock.getMaxEffort(1, testEffortCurveMap.get(0.))
+                            testRollingStock.getMaxTractionForce(1, testEffortCurveMap.get(0.), true)
                             * envelopePart.getTotalTimeMS() / 1000;
                     break;
                 case 1:

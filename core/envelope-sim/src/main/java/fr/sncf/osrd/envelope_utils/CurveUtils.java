@@ -19,10 +19,10 @@ public class CurveUtils {
         while (left <= right) {
             // this line is to calculate the mean of the two values
             int mid = (left + right) >>> 1;
-            if (Math.abs(curvePointArray[mid].x() - Math.abs(x)) < 0.000001) {
+            if (Math.abs(curvePointArray[mid].x() - x) < 0.000001) {
                 index = mid;
                 break;
-            } else if (curvePointArray[mid].x() < Math.abs(x)) {
+            } else if (curvePointArray[mid].x() < x) {
                 left = mid + 1;
                 index = left;
             } else {

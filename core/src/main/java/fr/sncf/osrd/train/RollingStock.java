@@ -143,7 +143,7 @@ public class RollingStock implements PhysicsRollingStock {
     @Override
     public double getMaxTractionForce(double speed, Point2d[] tractiveEffortCurve, boolean electrification) {
         var maxTractionForce = interpolate(speed, tractiveEffortCurve);
-        if (speed == 0)
+        if (speed == 0 || energySources == null)
             return maxTractionForce;
         else {
             // TODO: make sure in the case of a normal RS the maxtractionPower does not take over
@@ -167,6 +167,9 @@ public class RollingStock implements PhysicsRollingStock {
 
     @Override
     public void updateEnergyStorages(double tractionForce, double speed, double timeStep, boolean electrification) {
+        if (energySources == null)
+            return;
+
         // the total energy that will need to be used from the different energy sources
         //TODO: take efficiencies into account
         var remainingEnergy = tractionForce * speed * timeStep;
@@ -180,7 +183,7 @@ public class RollingStock implements PhysicsRollingStock {
                 leftOverEnergy = availableEnergy - consumedEnergy;
             }
             else { // otherwise that means we've got all the energy we need for traction, maybe we can recharge
-                var receivableEnergy = source.getMaxInputPower() * timeStep;
+                var receivableEnergy = source.getMaxInputPower(speed) * timeStep;
                 var inputEnergy = Math.max(receivableEnergy, -leftOverEnergy);
                 source.consumeEnergy(inputEnergy);
             }
@@ -336,47 +339,9 @@ public class RollingStock implements PhysicsRollingStock {
         this.auxiliariesPower = 0;
     }
 
-    public RollingStock RollingStock(
-            String id,
-            double length,
-            double mass,
-            double inertiaCoefficient,
-            double a,
-            double b,
-            double c,
-            double maxSpeed,
-            double startUpTime,
-            double startUpAcceleration,
-            double comfortAcceleration,
-            double gamma,
-            GammaType gammaType,
-            RJSLoadingGaugeType loadingGaugeType,
-            Map<String, ModeEffortCurves> modes,
-            String defaultMode,
-            String powerClass) {
-        return new RollingStock(
-                id,
-                length,
-                mass,
-                inertiaCoefficient,
-                a,
-                b,
-                c,
-                maxSpeed,
-                startUpTime,
-                startUpAcceleration,
-                comfortAcceleration,
-                gamma,
-                gammaType,
-                loadingGaugeType,
-                modes,
-                defaultMode,
-                powerClass,
-                null);
-    }
-
     private List<EnergySource> orderByPriority(List<EnergySource> energySources) {
-        energySources.sort(Comparator.comparing(EnergySource::getPriority));
+        if (energySources != null)
+            energySources.sort(Comparator.comparing(EnergySource::getPriority));
         return energySources;
     }
 }

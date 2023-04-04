@@ -8,6 +8,7 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.envelope_utils.Point2d;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class TestRollingStock {
 
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
-        RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> res = null;
+        RangeMap<Double, Point2d[]> res = null;
         for (var path : List.of(path1, path2, path3)) {
             var tractiveEffortCurveMap =
                     rollingStock.mapTractiveEffortCurves(path.getModeAndProfileMap(rollingStock.powerClass),

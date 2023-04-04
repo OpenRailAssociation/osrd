@@ -113,6 +113,11 @@ public class EnvelopeSimPath implements PhysicsPath {
         return (getCumGrade(end) - getCumGrade(begin)) / (end - begin);
     }
 
+    @Override
+    public boolean isElectrified(double position) {
+        return catenaryModeMap.get(position) != null;
+    }
+
     /**
      * Add electrical profile data to the path
      */
