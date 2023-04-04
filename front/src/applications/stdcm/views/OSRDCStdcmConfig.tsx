@@ -61,7 +61,7 @@ export default function OSRDConfig({
           {projectID && studyID && scenarioID && timetableID && infraID && (
             <>
               <RollingStockSelector condensed />
-              <SpeedLimitByTagSelector />
+              <SpeedLimitByTagSelector condensed />
               <Itinerary />
               <div className="row">
                 <div className="col-xl-6">

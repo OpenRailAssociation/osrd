@@ -1560,14 +1560,8 @@ body {
   background-color: #d7d7d7;
 }
 
-.flex-on-line {
-  display: flex;
-  align-items: center;
+.gap-10 {
   gap: 10px;
-}
-
-.flex-on-line .select-improved {
-  flex-grow: 4;
 }
 
 .osrd-config-centered-item {
@@ -1576,7 +1570,7 @@ body {
 
 .osrd-config-item-container-map {
   border-radius: 0 0 4px 4px;
-  height: 40vh;
+  height: 50vh;
 }
 .osrd-config-item-container-map .btn-map-container {
   top: 1.5rem;
@@ -3274,6 +3268,13 @@ select.sm {
 .station-card .station-card-footer .station-card-line-number {
   font-size: 0.6rem;
   color: var(--purple);
+}
+
+.stdcm-map-noSimulation {
+  height: 85vh;
+}
+.stdcm-map-withSimulation {
+  height: 40vh;
 }
 
 /*# sourceMappingURL=main.css.map */
