@@ -32,4 +32,4 @@ def test_get_scenario(small_scenario: Scenario):
     )
     assert response.status_code == 200
     body = _ScenarioResponse(**response.json())
-    assert body.name == "Scenario test"
+    assert body.name == "_@Test integration scenario"

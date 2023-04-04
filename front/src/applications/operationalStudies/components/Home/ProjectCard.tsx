@@ -56,7 +56,7 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
   }, []);
 
   return (
-    <div className="projects-list-project-card">
+    <div className="projects-list-project-card" data-testid={project.name}>
       <div className="projects-list-project-card-img">
         <LazyLoadImage src={imageUrl} alt="project logo" />
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
