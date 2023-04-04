@@ -14,7 +14,7 @@ import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { updateMode } from 'reducers/osrdconf';
-import { ProjectResult } from 'common/api/osrdEditoastApi';
+import { PostSearchApiArg, ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 function displayCards(
   projectsList: ProjectResult[],
@@ -42,11 +42,15 @@ function displayCards(
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
-  const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
   const [sortOption, setSortOption] = useState('LastModifiedDesc');
+  const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const dispatch = useDispatch();
+  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
+  const { data: projectsResponse } = osrdEditoastApi.useGetProjectsQuery({
+    ordering: 'LastModifiedDesc',
+  });
 
   const sortOptions = [
     {
@@ -59,18 +63,41 @@ export default function Home() {
     },
   ];
 
+  // const getProjectList = async () => {
+  //   try {
+  //     const params = {
+  //       ordering: sortOption,
+  //       name: filter,
+  //       description: filter,
+  //       tags: filter,
+  //     };
+  //     const data = await get(PROJECTS_URI, { params });
+  //     setProjectsList(data.results);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
   const getProjectList = async () => {
-    try {
-      const params = {
-        ordering: sortOption,
-        name: filter,
-        description: filter,
-        tags: filter,
+    if (filter) {
+      const payload: PostSearchApiArg = {
+        body: {
+          object: 'project',
+          query: ['and', ['or', ['search', ['name'], filter], ['search', ['description'], filter]]],
+        },
       };
-      const data = await get(PROJECTS_URI, { params });
-      setProjectsList(data.results);
-    } catch (error) {
-      console.error(error);
+      try {
+        const data: ProjectResult[] = await postSearch(payload).unwrap();
+        setProjectsList(data);
+      } catch (error) {
+        console.error('filter projetcs : ', error);
+      }
+    } else if (projectsResponse && projectsResponse.results) {
+      try {
+        setProjectsList(projectsResponse.results);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
