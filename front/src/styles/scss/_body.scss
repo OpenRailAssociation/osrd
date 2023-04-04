@@ -1,5 +1,5 @@
 body {
-  min-height: unset !important;
+  min-height: 100vh;
 }
 
 .mastcontainer-map {
@@ -7,12 +7,12 @@ body {
 }
 
 .no-mastnav {
-.actionbar {
-  width: 100%;
-}
-.mastcontainer {
-  padding-left: 0;
-}
+  .actionbar {
+    width: 100%;
+  }
+  .mastcontainer {
+    padding-left: 0;
+  }
 }
 
 .loader {
@@ -42,13 +42,17 @@ body {
 .version {
   position: absolute;
   right: 0;
-  font-size: .7rem;
+  font-size: 0.7rem;
 }
 
-
 /* Make cool transitions for fullscreen mode */
-.mastheader, .mastnav, .mastcontainer, .actionbar, .table-filters, .sideBar-container {
-transition: .4s ease-in-out;
+.mastheader,
+.mastnav,
+.mastcontainer,
+.actionbar,
+.table-filters,
+.sideBar-container {
+  transition: 0.4s ease-in-out;
 }
 
 .mastnav.fullscreen {
@@ -74,15 +78,15 @@ transition: .4s ease-in-out;
 }
 
 .sideBar-container.fullscreen {
-left: -6.5rem !important;
-top: -3.7rem !important;
-height: 109vh !important;
+  left: -6.5rem !important;
+  top: -3.7rem !important;
+  height: 109vh !important;
 }
 
 .navbar-breadcrumbs {
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
   font-size: 1.25rem;
   line-height: 1rem;
   a {
@@ -100,76 +104,77 @@ height: 109vh !important;
 
 /* lg breakpoint 1024 px */
 @media screen and (max-width: 1023px) {
-.btn-fullscreen {
-  bottom: 6rem;
-}
-.btn-resetviewport {
-  bottom: 9rem;
-}
+  .btn-fullscreen {
+    bottom: 6rem;
+  }
+  .btn-resetviewport {
+    bottom: 9rem;
+  }
 }
 
 @media screen and (max-width: 1023.98px) {
-.sideBar-container{
-  padding-left: 0;
-  bottom: 0;
-  max-width: 100vw;
-  width: 100vw;
-  top: 30%;
-}
-.sideBar-content {
-  max-width: 100vw;
-}
-.sideBar-container.fullscreen {
-  left: 0 !important;
-  top: 30% !important;
-}
+  .sideBar-container {
+    padding-left: 0;
+    bottom: 0;
+    max-width: 100vw;
+    width: 100vw;
+    top: 30%;
+  }
+  .sideBar-content {
+    max-width: 100vw;
+  }
+  .sideBar-container.fullscreen {
+    left: 0 !important;
+    top: 30% !important;
+  }
 }
 
 @media screen and (min-width: 1280px) {
-.sideBar-container{
-  margin-top: 9rem;
-}
-.sideBar-container.fullscreen {
-  top: -4.15rem;
-}
+  .sideBar-container {
+    margin-top: 9rem;
+  }
+  .sideBar-container.fullscreen {
+    top: -4.15rem;
+  }
 }
 
 .tab-content > .tab-pane {
-display: none;
+  display: none;
 }
 
 .tab-content > .active {
-display: block;
+  display: block;
 }
 
 .creation-sidebar.fullscreen {
-left: -6.25rem !important;
-top: -4.5rem !important;
-transition-delay: 0.2s;
+  left: -6.25rem !important;
+  top: -4.5rem !important;
+  transition-delay: 0.2s;
 }
 
 @media screen and (max-width: 1023.98px) {
-.creation-sidebar{
-  padding-left: 0.5rem !important;
-  padding-top: 17.8rem !important;
-  transition-delay: 0.11s;
-}
-.creation-sidebar.fullscreen {
-  transition-delay: 0.25s;
-  top: -4.25rem !important;
-  left: 0 !important;
-}
+  .creation-sidebar {
+    padding-left: 0.5rem !important;
+    padding-top: 17.8rem !important;
+    transition-delay: 0.11s;
+  }
+  .creation-sidebar.fullscreen {
+    transition-delay: 0.25s;
+    top: -4.25rem !important;
+    left: 0 !important;
+  }
 }
 
 .sentry-error-embed-wrapper {
-margin-top: 7.5% !important;
-z-index: 1051 !important;
+  margin-top: 7.5% !important;
+  z-index: 1051 !important;
 }
 
 .custom-control {
   padding-left: 1.625rem !important;
   .custom-control-label {
-    &::before, &::after {
+    &::before,
+    &::after {
       left: -1.625rem;
     }
   }
@@ -195,8 +200,14 @@ z-index: 1051 !important;
 
 .btn-map-infras-blinking {
   @keyframes blinking {
-    from {background-color: var(--orange); color: var(--white);}
-    to {background-color: var(--white); color: var(--orange);}
+    from {
+      background-color: var(--orange);
+      color: var(--white);
+    }
+    to {
+      background-color: var(--white);
+      color: var(--orange);
+    }
   }
   animation-name: blinking;
   animation-duration: 0.5s;
