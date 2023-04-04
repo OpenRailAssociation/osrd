@@ -68,7 +68,7 @@ const DropdownSNCF: FC<{
                 ref={targetRef}
                 className="dropdown-menu dropdown-menu-right show d-block position-static"
               >
-                <ul>{itemNode}</ul>
+                <ul className="dropdown-menu-list">{itemNode}</ul>
               </div>
             </div>
           )
