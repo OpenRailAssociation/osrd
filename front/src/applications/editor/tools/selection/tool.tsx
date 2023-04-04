@@ -163,16 +163,11 @@ const SelectionTool: Tool<SelectionState> = {
           openModal(
             <ConfirmModal
               title={t('Editor.tools.select-items.actions.delete-selection')}
-              onConfirm={async (setDisabled) => {
-                setDisabled(true);
-                try {
-                  await dispatch<ReturnType<typeof save>>(save({ delete: state.selection }));
-                  setState({ ...state, selection: [] });
-                  closeModal();
-                  forceRender();
-                } catch (e: unknown) {
-                  setDisabled(true);
-                }
+              onConfirm={async () => {
+                await dispatch<ReturnType<typeof save>>(save({ delete: state.selection }));
+                setState({ ...state, selection: [] });
+                closeModal();
+                forceRender();
               }}
             >
               <p>{t('Editor.tools.select-items.actions.confirm-delete-selection')}</p>
