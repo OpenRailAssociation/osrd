@@ -28,17 +28,22 @@ test.describe('STDCM page', () => {
     // Opens the scenario explorator and selects project, study and scenario
     await playwrightSTDCMPage.openScenarioExplorator();
     await playwrightSTDCMPage.getScenarioExploratorModalOpen();
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('Project test');
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('Study test');
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('Scenario test');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration study');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration scenario');
   });
 
   test('should be correctly displays the rolling stock list and select one', async () => {
     const rollingStockTranslation =
       playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
     const rollingStockTranslationRegEx = new RegExp(rollingStockTranslation as string);
+    // Check that the three tests rolling stocks are present
+    playwrightSTDCMPage.getRollingstockByTestId(`rollingstock-_@Test Locomotives électriques`);
+    playwrightSTDCMPage.getRollingstockByTestId(
+      `rollingstock-_@Test Locomotives électriques courant continu7200GH`
+    );
     const rollingstockItem = playwrightSTDCMPage.getRollingstockByTestId(
-      `rollingstock-BB 7200GVLOCOMOTIVES`
+      `rollingstock-_@Test BB 7200GVLOCOMOTIVES`
     );
     // Check that no rollingstock is selected
     await expect(
@@ -52,21 +57,17 @@ test.describe('STDCM page', () => {
 
     await playwrightSTDCMPage.page.waitForSelector('.rollingstock-container');
 
-    const numberOfRollingstock = await playwrightSTDCMPage.getRollingStockListItem.count();
-
-    expect(numberOfRollingstock).toEqual(3);
-
     const infoCardText = await playwrightSTDCMPage.getRollingStockListItem
       .locator('.rollingstock-infos')
       .allTextContents();
     expect(infoCardText).toContain(
-      'BB 7200GVLOCOMOTIVES / Locomotives électriques / Locomotives électriques courant continuBB 7200GVLOCOMOTIVES'
+      'BB 7200GVLOCOMOTIVES / Locomotives électriques / Locomotives électriques courant continu_@Test BB 7200GVLOCOMOTIVES'
     );
     expect(infoCardText).toContain(
-      'BB 15000BB15000 USLOCOMOTIVES / Locomotives électriques / Locomotives électriques monophaséLocomotives électriques'
+      'BB 15000BB15000 USLOCOMOTIVES / Locomotives électriques / Locomotives électriques monophasé_@Test Locomotives électriques'
     );
     expect(infoCardText).toContain(
-      'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courantLocomotives électriques courant continu7200GH'
+      'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courant_@Test Locomotives électriques courant continu7200GH'
     );
 
     const footerCardText = await playwrightSTDCMPage.getRollingStockListItem

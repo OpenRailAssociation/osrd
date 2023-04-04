@@ -39,7 +39,7 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
 
   return (
     <div className="scenarios-list-card">
-      <div className="scenarios-list-card-name">
+      <div className="scenarios-list-card-name" data-testid={scenario.name}>
         <span className="mr-2">
           <RiFolderChartLine />
         </span>
