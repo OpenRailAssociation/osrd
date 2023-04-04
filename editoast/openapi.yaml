@@ -2566,8 +2566,6 @@ components:
           type: integer
         description:
           type: string
-          items:
-            type: string
         tags:
           type: array
           items:
@@ -2616,8 +2614,6 @@ components:
           type: integer
         description:
           type: string
-          items:
-            type: string
         tags:
           type: array
           items:

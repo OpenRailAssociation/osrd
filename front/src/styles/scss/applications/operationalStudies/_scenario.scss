@@ -232,11 +232,15 @@
                 padding: 0 0.25rem;
                 overflow: auto;
                 .scenario-timetable-train-tags-tag {
-                  font-size: 0.9rem;
-                  background-color: var(--teal);
+                  font-size: 0.7rem;
+                  font-weight: 500;
+                  background-color: var(--green);
                   border-radius: 4px;
                   padding: 0 0.25rem;
                   margin-bottom: 0.25rem;
+                  &:hover {
+                    opacity: 0.5;
+                  }
                 }
               }
             }
@@ -249,7 +253,7 @@
           }
           &.selected {
             .scenario-timetable-train-header {
-              background-color: var(--teal);
+              background-color: var(--green);
             }
           }
           &:hover {

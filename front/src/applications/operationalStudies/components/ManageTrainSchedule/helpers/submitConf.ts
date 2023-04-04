@@ -7,9 +7,13 @@ import { setFailure, setSuccess } from 'reducers/main';
 import { store } from 'Store';
 import { post } from 'common/requests';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
+import { Dispatch } from 'redux';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const submitConf = async (dispatch: any, t: any, setIsWorking: (isWorking: boolean) => void) => {
+const submitConf = async (
+  dispatch: Dispatch,
+  t: (key: string) => string,
+  setIsWorking: (isWorking: boolean) => void
+) => {
   const { osrdconf } = store.getState();
   // First train tested, and next we put the other trains
   const osrdConfig = formatConf(dispatch, t, osrdconf.simulationConf);

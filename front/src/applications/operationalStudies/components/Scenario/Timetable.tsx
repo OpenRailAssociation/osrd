@@ -37,12 +37,12 @@ import TimetableTrainCard from './TimetableTrainCard';
 
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleIDToModify: (id?: number) => void;
+  setTrainScheduleIDsToModify: (IDs?: number[]) => void;
 };
 
 export default function Timetable({
   setDisplayTrainScheduleManagement,
-  setTrainScheduleIDToModify,
+  setTrainScheduleIDsToModify,
 }: Props) {
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
@@ -182,7 +182,7 @@ export default function Timetable({
           data-testid="scenarios-add-train-schedule-button"
           onClick={() => {
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
-            setTrainScheduleIDToModify(undefined);
+            setTrainScheduleIDsToModify(undefined);
           }}
         >
           <span className="mr-2">
@@ -231,7 +231,7 @@ export default function Timetable({
                 duplicateTrain={duplicateTrain}
                 selectPathProjection={selectPathProjection}
                 setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                setTrainScheduleIDToModify={setTrainScheduleIDToModify}
+                setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
               />
             ) : null
           )}
