@@ -7,6 +7,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +30,12 @@ public class STDCMStandardAllowance {
             double timeStep,
             RollingStock.Comfort comfort,
             RouteAvailabilityInterface routeAvailability,
-            double departureTime
+            double departureTime,
+            List<TrainStop> stops
     ) {
         if (standardAllowance == null)
             return envelope; // This isn't just an optimization, it avoids float inaccuracies
-        var rangeTransitions = new TreeSet<Double>();
+        var rangeTransitions = initRangeTransitions(stops);
         for (int i = 0; i < 10; i++) {
             var newEnvelope = applyAllowanceWithTransitions(
                     envelope,
@@ -53,6 +55,14 @@ public class STDCMStandardAllowance {
             rangeTransitions.add(conflictOffset);
         }
         throw new RuntimeException("Couldn't find an envelope that wouldn't cause a conflict");
+    }
+
+    /** Initiates the range transitions with one transition on each stop */
+    private static NavigableSet<Double> initRangeTransitions(List<TrainStop> stops) {
+        var res = new TreeSet<Double>();
+        for (var stop : stops)
+            res.add(stop.position);
+        return res;
     }
 
     /** Looks for the first detected conflict that would happen on the given envelope.
@@ -86,7 +96,7 @@ public class STDCMStandardAllowance {
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
-            TreeSet<Double> rangeTransitions
+            NavigableSet<Double> rangeTransitions
     ) {
 
         var allowance = new MarecoAllowance(

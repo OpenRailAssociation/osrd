@@ -80,14 +80,19 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
     @Override
     public Collection<STDCMEdge> getAdjacentEdges(STDCMNode node) {
-        var res = new ArrayList<STDCMEdge>();
-        var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector());
-        for (var neighbor : neighbors) {
-            res.addAll(
-                    STDCMEdgeBuilder.fromNode(this, node, neighbor)
-                            .makeAllEdges()
-            );
+        if (node.detector() == null)
+            return STDCMEdgeBuilder.fromNode(this, node, node.locationOnRoute().edge())
+                    .makeAllEdges();
+        else {
+            var res = new ArrayList<STDCMEdge>();
+            var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector());
+            for (var neighbor : neighbors) {
+                res.addAll(
+                        STDCMEdgeBuilder.fromNode(this, node, neighbor)
+                                .makeAllEdges()
+                );
+            }
+            return res;
         }
-        return res;
     }
 }

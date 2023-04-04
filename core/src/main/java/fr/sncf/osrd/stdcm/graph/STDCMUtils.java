@@ -1,9 +1,11 @@
 package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.computeAcceleration;
 
 import com.google.common.collect.Iterables;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeDebug;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
@@ -49,10 +51,16 @@ public class STDCMUtils {
     }
 
     /** Returns the offset of the stops on the given route, starting at startOffset*/
-    static Double getStopOnRoute(STDCMGraph graph, SignalingRoute route, double startOffset) {
+    static Double getStopOnRoute(STDCMGraph graph, SignalingRoute route, double startOffset, int waypointIndex) {
         var res = new ArrayList<Double>();
-        // FIXME: use more than the last step
-        for (var endLocation : Iterables.getLast(graph.steps).locations()) {
+        while (waypointIndex + 1 < graph.steps.size() && !graph.steps.get(waypointIndex + 1).stop())
+            waypointIndex++; // Only the next point where we actually stop matters here
+        if (waypointIndex + 1 >= graph.steps.size())
+            return null;
+        var nextStep = graph.steps.get(waypointIndex + 1);
+        if (!nextStep.stop())
+            return null;
+        for (var endLocation : nextStep.locations()) {
             if (endLocation.edge() == route) {
                 var offset = endLocation.offset() - startOffset;
                 if (offset >= 0)
@@ -94,9 +102,10 @@ public class STDCMUtils {
                 lastEdge.route().getInfraRoute().getTrackRanges(),
                 lastEdge.envelopeStartOffset() + lastRangeLength
         );
-        var routes = ranges.stream()
-                .map(range -> range.edge().route())
-                .toList();
+        var routes = new ArrayList<SignalingRoute>();
+        for (var range : ranges)
+            if (routes.isEmpty() || !Iterables.getLast(routes).equals(range.edge().route()))
+                routes.add(range.edge().route());
         return TrainPathBuilder.from(routes, start, end);
     }
 }
