@@ -15,7 +15,6 @@
   }
 }
 
-
 /*
 *
 *   DROPDOWN
@@ -26,6 +25,19 @@
   right: 0;
 }
 
+.dropdown-menu {
+  ul.dropdown-menu-list {
+    li.dropdown-item {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      > * {
+        width: 100%;
+        padding: 0.5em 1.5em;
+      }
+    }
+  }
+}
 /*
 *
 *   MODALS
@@ -41,7 +53,6 @@
   }
 }
 
-
 /*
 *
 *   CHIPS
@@ -55,7 +66,7 @@
 }
 
 .chips.chips-label {
-  font-size: .9rem;
+  font-size: 0.9rem;
   line-height: 1.2;
   height: 2rem;
 }
@@ -103,7 +114,7 @@ blockquote {
       left: 0;
       width: 100%;
       height: 0.3125rem;
-      content: "";
+      content: '';
       background-color: transparent;
       border-radius: 3px;
     }
@@ -117,7 +128,7 @@ blockquote {
       text-shadow: 0 0 0.65px var(--primary);
       color: var(--primary);
 
-      &::after {        
+      &::after {
         background-color: var(--primary);
       }
     }
