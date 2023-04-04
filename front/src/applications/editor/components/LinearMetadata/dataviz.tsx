@@ -213,7 +213,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   const [max, setMax] = useState<number>(0);
   // Computed data for the viz and the viewbox
   const [data4viz, setData4viz] = useState<Array<LinearMetadataItem & { index: number }>>([]);
-
+  const [hoverAtx, setHoverAtx] = useState<number | null>(null);
   /**
    * When data change (or the field)
    * => we recompute the min/max
@@ -331,6 +331,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     <div className={cx('linear-metadata-visualisation')}>
       <div
         ref={wrapper}
+        onMouseLeave={() => setHoverAtx(null)}
         className={cx(
           'data',
           highlighted.length > 0 && 'has-highlight',
@@ -346,6 +347,13 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         )}
         {/* Display the Y axis if there is one */}
         {field && min !== max && <Scale className="scale-y" begin={min} end={max} />}
+
+        {hoverAtx && (
+          <div
+            className="hover-x"
+            style={{ position: 'relative', left: `${hoverAtx}px`, borderLeft: '1px dotted' }}
+          />
+        )}
 
         {/* Create one div per item for the X axis */}
         {data4viz.map((segment) => (
@@ -377,16 +385,24 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
               }
             }}
             onMouseOver={(e) => {
-              if (!draginStartAt && onMouseOver && data[segment.index]) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onMouseOver(e, item, segment.index, point);
+              if (!draginStartAt) {
+                // handle mouse over
+                if (onMouseOver && data[segment.index]) {
+                  const item = data[segment.index];
+                  const point = getPositionFromMouseEvent(e, item);
+                  onMouseOver(e, item, segment.index, point);
+                }
               }
             }}
             onFocus={() => undefined}
             role="button"
             tabIndex={0}
             onMouseMove={(e) => {
+              // display vertical bar when hover element
+              setHoverAtx(
+                e.clientX - (wrapper.current ? wrapper.current.getBoundingClientRect().x : 0)
+              );
+
               if (!draginStartAt && onMouseMove && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
