@@ -71,6 +71,8 @@ public class STDCMSimulations {
     ) {
         if (stopPosition != null && stopPosition == 0)
             return makeSinglePointEnvelope(0);
+        if (start >= route.getInfraRoute().getLength())
+            return makeSinglePointEnvelope(initialSpeed);
         var context = makeSimContext(List.of(route), start, rollingStock, comfort, timeStep);
         double[] stops = new double[]{};
         double length = context.path.getLength();
@@ -106,13 +108,11 @@ public class STDCMSimulations {
     /** Returns the time at which the offset on the given route is reached */
     public static double interpolateTime(
             Envelope envelope,
-            SignalingRoute route,
+            double envelopeStartOffset,
             double routeOffset,
             double startTime,
             double speedRatio
     ) {
-        var routeLength = route.getInfraRoute().getLength();
-        var envelopeStartOffset = routeLength - envelope.getEndPos();
         var envelopeOffset = Math.max(0, routeOffset - envelopeStartOffset);
         assert envelopeOffset <= envelope.getEndPos();
         return startTime + (envelope.interpolateTotalTime(envelopeOffset) / speedRatio);

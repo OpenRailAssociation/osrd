@@ -64,6 +64,7 @@ public class STDCMPathfinding {
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(makeAStarHeuristic(remainingDistanceEstimators, rollingStock))
+                .setEdgeToLength(STDCMEdge::getLength)
                 .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.route()))
                 .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.route()))
                 .setTotalDistanceUntilEdgeLocation(range -> totalDistanceUntilEdgeLocation(range, maxDepartureDelay))
@@ -95,8 +96,11 @@ public class STDCMPathfinding {
             globalResult.add((edge) -> {
                 var res = new HashSet<Pathfinding.EdgeLocation<STDCMEdge>>();
                 for (var loc : step.locations())
-                    if (loc.edge().equals(edge.route()))
-                        res.add(new Pathfinding.EdgeLocation<>(edge, loc.offset()));
+                    if (loc.edge().equals(edge.route())) {
+                        var offsetOnEdge = loc.offset() - edge.envelopeStartOffset();
+                        if (offsetOnEdge >= 0 && offsetOnEdge <= edge.getLength())
+                            res.add(new Pathfinding.EdgeLocation<>(edge, offsetOnEdge));
+                    }
                 return res;
             });
         }
@@ -124,13 +128,12 @@ public class STDCMPathfinding {
         var envelope = range.edge().envelope();
         var timeEnd = STDCMSimulations.interpolateTime(
                 envelope,
-                range.edge().route(),
+                range.edge().envelopeStartOffset(),
                 range.offset(),
                 range.edge().timeStart(),
                 range.edge().standardAllowanceSpeedFactor()
         );
         var pathDuration = timeEnd - range.edge().totalDepartureTimeShift();
-        assert pathDuration >= 0;
         return pathDuration * searchTimeRange + range.edge().totalDepartureTimeShift();
     }
 
@@ -166,7 +169,7 @@ public class STDCMPathfinding {
                     .setPrevMaximumAddedDelay(maxDepartureDelay)
                     .makeAllEdges();
             for (var edge : edges)
-                res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
+                res.add(new Pathfinding.EdgeLocation<>(edge, 0));
         }
         return res;
     }

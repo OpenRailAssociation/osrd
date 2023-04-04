@@ -95,7 +95,7 @@ def parse_stdcm_steps(request, infra):
         res.append(
             {
                 "waypoints": step_waypoints,
-                "step_duration": duration,
+                "stop_duration": duration,
                 "stop": duration > 0,
             }
         )
@@ -106,7 +106,15 @@ def compute_stdcm(request, user):
     core_output = request_stdcm(make_stdcm_core_payload(request))
     path = PathModel()
     infra = request["infra"]
-    postprocess_path(path, core_output["path"], infra, user, [0, 0])
+    step_durations = [0]
+    for stop in core_output["simulation"]["base_simulations"][0]["stops"]:
+        step_durations.append(stop["duration"])
+
+    # Dummy values, we don't need actual stop values to be linked to the path,
+    # and it's difficult to sort out the waypoints where the train doesn't stop
+    step_durations = [0] * len(core_output["path"]["path_waypoints"])
+
+    postprocess_path(path, core_output["path"], infra, user, step_durations)
     path.save()
 
     schedule = TrainSchedule()

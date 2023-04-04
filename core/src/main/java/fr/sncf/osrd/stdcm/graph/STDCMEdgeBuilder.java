@@ -42,6 +42,9 @@ public class STDCMEdgeBuilder {
      * Used when computing allowances  */
     private boolean forceMaxDelay = false;
 
+    /** Index of the last waypoint passed by the train */
+    private int waypointIndex = 0;
+
     // region CONSTRUCTORS
 
     STDCMEdgeBuilder(SignalingRoute route, STDCMGraph graph) {
@@ -50,13 +53,18 @@ public class STDCMEdgeBuilder {
     }
 
     static STDCMEdgeBuilder fromNode(STDCMGraph graph, STDCMNode node, SignalingRoute route) {
-        assert route.getInfraRoute().getEntryDetector().equals(node.detector());
         var builder = new STDCMEdgeBuilder(route, graph);
+        if (node.locationOnRoute() != null) {
+            assert route.equals(node.locationOnRoute().edge());
+            builder.startOffset = node.locationOnRoute().offset();
+        } else
+            assert route.getInfraRoute().getEntryDetector().equals(node.detector());
         builder.startTime = node.time();
         builder.startSpeed = node.speed();
         builder.prevMaximumAddedDelay = node.maximumAddedDelay();
         builder.prevAddedDelay = node.totalPrevAddedDelay();
         builder.prevNode = node;
+        builder.waypointIndex = node.waypointIndex();
         return builder;
     }
 
@@ -113,6 +121,12 @@ public class STDCMEdgeBuilder {
         return this;
     }
 
+    /** Sets the waypoint index on the new edge (i.e. the index of the last waypoint passed by the train) */
+    public STDCMEdgeBuilder setWaypointIndex(int waypointIndex) {
+        this.waypointIndex = waypointIndex;
+        return this;
+    }
+
     // endregion SETTERS
 
     // region BUILDERS
@@ -127,7 +141,7 @@ public class STDCMEdgeBuilder {
                     graph.rollingStock,
                     graph.comfort,
                     graph.timeStep,
-                    STDCMUtils.getStopOnRoute(graph, route, startOffset),
+                    STDCMUtils.getStopOnRoute(graph, route, startOffset, waypointIndex),
                     graph.tag
             );
         if (envelope == null)
@@ -173,6 +187,7 @@ public class STDCMEdgeBuilder {
                 graph.delayManager.findMaximumAddedDelay(route, startTime + delayNeeded, startOffset, envelope)
         );
         var actualStartTime = startTime + delayNeeded;
+        var endAtStop = STDCMUtils.getStopOnRoute(graph, route, startOffset, waypointIndex) != null;
         var res = new STDCMEdge(
                 route,
                 envelope,
@@ -182,9 +197,11 @@ public class STDCMEdgeBuilder {
                 graph.delayManager.findNextOccupancy(route, startTime + delayNeeded, startOffset, envelope),
                 prevAddedDelay + delayNeeded,
                 prevNode,
-                route.getInfraRoute().getLength() - envelope.getEndPos(),
+                startOffset,
                 (int) (actualStartTime / 60),
-                graph.getStandardAllowanceSpeedRatio(envelope)
+                graph.getStandardAllowanceSpeedRatio(envelope),
+                waypointIndex,
+                endAtStop
         );
         if (res.maximumAddedDelayAfter() < 0)
             res = graph.allowanceManager.tryEngineeringAllowance(res);
