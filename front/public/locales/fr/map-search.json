@@ -17,7 +17,7 @@
   "type": "Type",
   "line": "Ligne",
   "reset": "Réinitialiser",
-  "aspect": "Aspect",
+  "aspects": "Aspects",
   "noAspectSelected": "Aucun aspect sélectionné",
   "errorMessages": {
     "unableToSearchSignal": "Recherche du signal impossible"

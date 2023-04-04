@@ -9,7 +9,7 @@ const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
   <div
     role="button"
     tabIndex={-1}
-    className="row search-result-table-item align-items-center justify-content-between px-3"
+    className="row search-result-table-item align-items-center justify-content-between px-3 w-100"
     onClick={() => onResultClick(signalSearchResult)}
   >
     <div className="col-1">

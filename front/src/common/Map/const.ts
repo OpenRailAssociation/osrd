@@ -1,3 +1,4 @@
+import { SearchQuery } from 'common/api/osrdEditoastApi';
 import config from 'config/config';
 
 export * from 'common/Map/Consts/SignalsNames';
@@ -105,7 +106,7 @@ export const SEARCH_URL = `/editoast/search`;
 
 export type searchPayloadType = {
   object: string;
-  query: (string | boolean | any[])[];
+  query: SearchQuery;
 };
 
 export const signalAspects = [

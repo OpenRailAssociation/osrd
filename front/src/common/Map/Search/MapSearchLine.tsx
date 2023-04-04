@@ -72,17 +72,15 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
     }
   };
 
-  const getPayload = (lineSearch: string) => {
+  const getPayload = (lineSearch: string, infraIDPayload: number): searchPayloadType => {
     const playloadQuery: (string | number | string[])[] = !Number.isNaN(Number(lineSearch))
       ? ['=', ['line_code'], Number(lineSearch)]
       : ['search', ['line_name'], lineSearch];
 
-    const payload = {
+    return {
       object: 'track',
-      query: ['and', ['=', ['infra_id'], infraID], playloadQuery],
+      query: ['and', ['=', ['infra_id'], infraIDPayload], playloadQuery],
     };
-
-    return payload;
   };
 
   const coordinates = (search: Zone) =>
@@ -99,8 +97,8 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   };
 
   useEffect(() => {
-    if (searchState) {
-      updateSearch(getPayload(searchState));
+    if (searchState && infraID) {
+      updateSearch(getPayload(searchState, infraID));
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

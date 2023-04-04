@@ -115,7 +115,7 @@ const MultiSelectSNCF = ({
             </div>
           </div>
 
-          <div id="multiselecttoggle" className="select-menu" data-role="menu">
+          <div id="multiselecttoggle" className="select-menu position-relative" data-role="menu">
             <div className="select-group" data-role="group" data-id="0" role="list">
               {options && renderSelectToggles(options)}
             </div>

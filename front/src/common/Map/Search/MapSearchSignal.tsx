@@ -35,6 +35,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   const [searchLineState, setSearchLine] = useState('');
   const [aspect, setAspect] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<ISignalSearchResult[]>([]);
+
   // Sort by, and order true = ASC, false = DESC
   const [sortFilter, setSortFilter] = useState<SortType>({
     name: 'label',
@@ -44,8 +45,12 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const { t } = useTranslation(['translation', 'map-search']);
 
-  const getPayload = (lineSearch: string, signalName: string) => {
-    const payloadQuery: (string | number | string[])[] = !Number.isNaN(Number(lineSearch))
+  const getPayload = (
+    lineSearch: string,
+    signalName: string,
+    infraIDPayload: number
+  ): searchPayloadType => {
+    const payloadQuery = !Number.isNaN(Number(lineSearch))
       ? ['=', ['line_code'], Number(lineSearch)]
       : ['search', ['line_name'], lineSearch];
 
@@ -54,16 +59,16 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       object: 'signal',
       query: [
         'and',
-        ['=', ['infra_id'], infraID],
-        payloadQuery,
+        ['=', ['infra_id'], infraIDPayload],
+        !lineSearch || payloadQuery,
         !aspectQuery || ['contains', ['list', aspectQuery], ['aspects']],
         ['search', ['label'], signalName],
       ],
     };
   };
 
-  const updateSearch = async () => {
-    const payload: searchPayloadType = getPayload(searchLineState, searchState);
+  const updateSearch = async (infraIDPayload: number) => {
+    const payload: searchPayloadType = getPayload(searchLineState, searchState, infraIDPayload);
     await postSearch({
       body: payload,
     })
@@ -87,12 +92,12 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   const debouncedSearchLine = useDebounce(searchLineState, 300);
 
   useEffect(() => {
-    if (searchLineState) {
-      updateSearch();
+    if ((searchLineState || searchState) && infraID) {
+      updateSearch(infraID);
     } else {
       setSearchResults([]);
     }
-  }, [debouncedSearchTerm, debouncedSearchLine, aspect]);
+  }, [debouncedSearchTerm, debouncedSearchLine, aspect, searchState]);
 
   const onResultClick = (result: ISignalSearchResult) =>
     onResultSearchClick({
@@ -141,7 +146,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
 
   return (
     <>
-      <div className="row mr-2">
+      <div className="row mr-2 mb-2">
         <div className="col-sm-6">
           <InputSNCF
             label={t('map-search:line')}
@@ -182,7 +187,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       </div>
       <div>
         <MultiSelectSNCF
-          multiSelectTitle={t('map-search:aspect')}
+          multiSelectTitle={t('map-search:aspects')}
           multiSelectPlaceholder={t('map-search:noAspectSelected')}
           options={SIGNAL_ASPECTS}
           onChange={setAspect}
