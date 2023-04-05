@@ -16404,4 +16404,12 @@ const ORSD_GRAPH_SAMPLE_DATA = {
   },
 };
 
+export const OSRD_ROLLINGSTOCKSELECTED_SAMPLE_DATA = {
+  name: 'XYZ77777',
+  metadata: {
+    series: 'XYZ 77777 ',
+    unit: 'XYZ',
+  },
+};
+
 export default ORSD_GRAPH_SAMPLE_DATA;

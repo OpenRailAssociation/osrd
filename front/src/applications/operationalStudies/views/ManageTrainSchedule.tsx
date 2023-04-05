@@ -6,7 +6,6 @@ import TrainSettings from 'applications/operationalStudies/components/ManageTrai
 import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
-import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
 import submitConfAddTrainSchedules from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConfAddTrainSchedules';
@@ -14,9 +13,10 @@ import adjustConfWithTrainToModify from 'applications/operationalStudies/compone
 import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { getShouldRunPathfinding } from 'reducers/osrdconf/selectors';
 import { updateShouldRunPathfinding } from 'reducers/osrdconf';
+import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
 
@@ -77,7 +77,7 @@ export default function ManageTrainSchedule({
     if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
       getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
         .unwrap()
-        .then((trainSchedule) => {
+        .then((trainSchedule: TrainSchedule) => {
           if (trainSchedule.path) {
             getPathfindingById({ id: trainSchedule.path })
               .unwrap()
