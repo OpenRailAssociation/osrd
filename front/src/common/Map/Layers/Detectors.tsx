@@ -7,6 +7,7 @@ import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 export function getDetectorsLayerProps(params: {
   colors: Theme;
@@ -60,7 +61,7 @@ interface DetectorsProps {
 }
 
 const Detectors: FC<DetectorsProps> = ({ geomType, colors, layerOrder }) => {
-  const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
   const { layersSettings } = useSelector((state: RootState) => state.map);
 
   const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors' });
