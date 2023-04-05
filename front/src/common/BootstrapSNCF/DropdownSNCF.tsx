@@ -42,7 +42,7 @@ const DropdownSNCF: FC<{
   return (
     <div className="btn-group dropdown">
       <TetherComponent
-        className="over-modal z-index-tooltip"
+        className="over-modal z-index-tooltip dropdown"
         attachment="top right"
         targetAttachment="bottom right"
         renderTarget={(ref) => (
@@ -66,6 +66,8 @@ const DropdownSNCF: FC<{
             <div ref={ref as LegacyRef<HTMLDivElement>}>
               <div
                 ref={targetRef}
+                // eslint-disable-next-line react/no-unknown-property
+                x-placement="bottom-end"
                 className="dropdown-menu dropdown-menu-right show d-block position-static"
               >
                 <ul className="dropdown-menu-list">{itemNode}</ul>

@@ -20,9 +20,16 @@
 *   DROPDOWN
 *
 */
-.dropdown-menu.dropdown-menu-right.osrd-dropdown-sncf.show {
-  top: 3rem !important;
-  right: 0;
+.dropdown.tether-element {
+  margin-top: 10px;
+  .dropdown-menu {
+    margin-top: 0;
+
+    &::after,
+    &::before {
+      bottom: calc(100% - 1px) !important;
+    }
+  }
 }
 
 .dropdown-menu {
@@ -38,6 +45,7 @@
     }
   }
 }
+
 /*
 *
 *   MODALS
