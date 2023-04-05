@@ -1,17 +1,21 @@
 use crate::error::Result;
 use crate::infra::RAILJSON_VERSION;
 use crate::infra_cache::InfraCache;
-use crate::schema::RailJson;
+use crate::schema::{ObjectType, RailJson};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
+use actix_web::http::header::ContentType;
 use actix_web::web::{block, Data, Json, Path, Query};
-use actix_web::{get, post, services};
+use actix_web::{get, post, services, HttpResponse, Responder};
 use chashmap::CHashMap;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel::{sql_query, RunQueryDsl};
 use editoast_derive::EditoastError;
+use enum_map::EnumMap;
+use futures::future::join_all;
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
 use thiserror::Error;
 
 /// Return `/infra/<infra_id>/railjson` routes
@@ -19,7 +23,7 @@ pub fn routes() -> impl HttpServiceFactory {
     services![get_railjson, post_railjson]
 }
 
-#[derive(QueryableByName)]
+#[derive(QueryableByName, Default)]
 struct RailJsonData {
     #[diesel(sql_type = Text)]
     railjson: String,
@@ -44,23 +48,73 @@ async fn get_railjson(
     infra: Path<i64>,
     params: Query<GetRailjsonQueryParam>,
     db_pool: Data<DbPool>,
-) -> Result<String> {
+) -> Result<impl Responder> {
     let infra = infra.into_inner();
-    let query = if params.exclude_extensions {
-        include_str!("sql/get_infra_no_ext.sql")
-    } else {
-        include_str!("sql/get_infra_with_ext.sql")
-    };
-    let railjson: RailJsonData = block::<_, Result<_>>(move || {
-        let mut conn = db_pool.get()?;
-        sql_query(query)
-            .bind::<BigInt, _>(infra)
-            .get_result(&mut conn)
-            .map_err(Into::into)
-    })
-    .await
-    .unwrap()?;
-    Ok(railjson.railjson)
+    let futures: Vec<_> = ObjectType::iter()
+        .map(|object_type| {
+            let table = object_type.get_table();
+            let query = if params.exclude_extensions {
+                format!(
+                    "SELECT coalesce(json_agg(x.data - 'extensions'), '[]'::json) AS railjson
+                    FROM (SELECT * FROM {table}) x
+                    WHERE x.infra_id = $1"
+                )
+            } else {
+                format!(
+                    "SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
+                    FROM (SELECT * FROM {table}) x
+                    WHERE x.infra_id = $1"
+                )
+            };
+            let db_pool_clone = db_pool.clone();
+            block::<_, Result<_>>(move || {
+                let mut conn = db_pool_clone.get()?;
+                Ok((
+                    object_type,
+                    sql_query(query)
+                        .bind::<BigInt, _>(infra)
+                        .get_result::<RailJsonData>(&mut conn)?,
+                ))
+            })
+        })
+        .collect();
+
+    let res = join_all(futures).await;
+    let res: Result<Vec<_>> = res.into_iter().map(|e| e.unwrap()).collect();
+    let res: EnumMap<ObjectType, RailJsonData> = res?.into_iter().collect();
+
+    // Here we avoid avoid the deserialization of the whole RailJson object
+    let railjson = format!(
+        r#"{{
+            "version": "{RAILJSON_VERSION}",
+            "track_sections": {track_sections},
+            "signals": {signals},
+            "speed_sections": {speed_sections},
+            "detectors": {detectors},
+            "track_section_links": {track_section_links},
+            "switches": {switches},
+            "switch_types": {switch_types},
+            "buffer_stops": {buffer_stops},
+            "routes": {routes},
+            "operational_points": {operational_points},
+            "catenaries": {catenaries}
+        }}"#,
+        track_sections = res[ObjectType::TrackSection].railjson,
+        signals = res[ObjectType::Signal].railjson,
+        speed_sections = res[ObjectType::SpeedSection].railjson,
+        detectors = res[ObjectType::Detector].railjson,
+        track_section_links = res[ObjectType::TrackSectionLink].railjson,
+        switches = res[ObjectType::Switch].railjson,
+        switch_types = res[ObjectType::SwitchType].railjson,
+        buffer_stops = res[ObjectType::BufferStop].railjson,
+        routes = res[ObjectType::Route].railjson,
+        operational_points = res[ObjectType::OperationalPoint].railjson,
+        catenaries = res[ObjectType::Catenary].railjson,
+    );
+
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .body(railjson))
 }
 
 #[derive(Debug, Clone, Deserialize)]
