@@ -111,6 +111,22 @@ class EnergySource(BaseModel, extra=Extra.forbid):
     efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the energy source")
 
 
+class SpeedDependantPower(BaseModel, extra=Extra.forbid):
+    """
+    A curve that account for speed-related power (output/availability) behavior of specific energy sources,
+    - the pantograph power is lowered at low speed to avoid welding the pantograph to the catenary
+    - the power outputted by Hydrogen fuel cells increases with speed
+    """
+
+    speeds: conlist(confloat(ge=0), min_items=1) = Field(description="speed values")
+    powers: conlist(confloat(ge=0), min_items=1) = Field(description="power values")
+
+    @root_validator(skip_on_failure=True)
+    def check_size(cls, v):
+        assert len(v["speeds"]) == len(v["powers"]), "speeds and powers must have the same length"
+        return v
+
+
 class EnergyStorage(BaseModel, extra=Extra.forbid):
     """If the EnergySource is capable of storing some energy"""
 
@@ -164,7 +180,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
-    energy_sources: Optional[conlist(EnergySource)]
+    energy_sources: Optional[List[EnergySource]]
 
 
 if __name__ == "__main__":
