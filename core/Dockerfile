@@ -1,4 +1,4 @@
-FROM gradle:7.5-jdk17 AS build
+FROM gradle:8.0-jdk17 AS build
 
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle . .
@@ -7,7 +7,7 @@ COPY --chown=gradle:gradle . .
 RUN gradle shadowJar --no-daemon && \
   rm  -rf /root/.kotlin/daemon/kotlin-daemon.* /tmp/hsperfdata_root/ /tmp/kotlin-daemon.*
 
-FROM amazoncorretto:19
+FROM eclipse-temurin:17
 
 COPY --from=build /home/gradle/src/build/libs/osrd-all.jar /app/osrd_core.jar
 
