@@ -9,6 +9,7 @@ from osrd_schemas.infra import LoadingGaugeType
 from osrd_schemas.rolling_stock import (
     RAILJSON_ROLLING_STOCK_VERSION,
     EffortCurves,
+    EnergySource,
     Gamma,
     PowerRestrictions,
     RollingResistance,
@@ -84,6 +85,11 @@ class RollingStock(models.Model):
             series, subseries, unit"
         ),
         default=dict,
+    )
+    energy_sources = models.JSONField(
+        help_text=_("A list of energy sources (e.g. catenaries, batteries, power packs)"),
+        validators=[PydanticValidator(EnergySource)],
+        null=True,
     )
 
     def __str__(self):
