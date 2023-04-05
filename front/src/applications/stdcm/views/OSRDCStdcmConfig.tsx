@@ -8,9 +8,7 @@ import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
-import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-
 import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
 import {
   getInfraID,
@@ -20,6 +18,7 @@ import {
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import OSRDStdcmResults from './OSRDStdcmResults';
 
 type OSRDStdcmConfigProps = {
