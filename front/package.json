@@ -168,13 +168,14 @@
     "start": "import-meta-env-prepare -x .env.example && vite",
     "build": "vite build",
     "test": "import-meta-env-prepare -x .env.example && vitest",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 140",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 124",
     "lint-fix": "eslint --ext .ts,.tsx,.js,.jsx src --fix",
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json"
+    "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
+    "e2e-tests": "cd ../tests && poetry install && poetry run pytest -m e2e -s"
   },
   "browserslist": {
     "production": [

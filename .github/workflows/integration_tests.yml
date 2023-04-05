@@ -18,27 +18,17 @@ jobs:
         with:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
-
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-      - name: Load cached venv
-        uses: actions/cache@v3
-        id: cached-poetry-integration-tests-dependencies
-        with:
-          path: tests/.venv
-          key: cached-poetry-integration-tests-dependencies-${{ hashFiles('tests/poetry.lock', 'python/osrd_schemas') }}
+          cache: "poetry"
       - name: Install dependencies
-        if: steps.cached-poetry-integration-tests-dependencies.outputs.cache-hit != 'true'
         run: |
           cd tests
           poetry install --only dev
-
       - name: Flake8
         run: |
           cd tests
@@ -90,5 +80,5 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          cd tests
-          poetry run pytest -m e2e
+          cd front
+          yarn e2e-tests

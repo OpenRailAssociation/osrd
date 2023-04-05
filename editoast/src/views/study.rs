@@ -9,13 +9,14 @@ use crate::models::StudyWithScenarios;
 use crate::models::Update;
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::views::projects::ProjectError;
+use crate::views::projects::QueryParams;
 use crate::views::scenario;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::patch;
 use actix_web::web::{self, Data, Json, Path, Query};
 use actix_web::{delete, get, post, HttpResponse};
-use chrono::NaiveDateTime;
+use chrono::NaiveDate;
 use chrono::Utc;
 use derivative::Derivative;
 use editoast_derive::EditoastError;
@@ -47,9 +48,9 @@ struct StudyCreateForm {
     pub name: String,
     #[serde(default)]
     pub description: String,
-    pub start_date: Option<NaiveDateTime>,
-    pub expected_end_date: Option<NaiveDateTime>,
-    pub actual_end_date: Option<NaiveDateTime>,
+    pub start_date: Option<NaiveDate>,
+    pub expected_end_date: Option<NaiveDate>,
+    pub actual_end_date: Option<NaiveDate>,
     #[serde(default)]
     pub business_code: String,
     #[serde(default)]
@@ -143,11 +144,13 @@ async fn list(
     db_pool: Data<DbPool>,
     pagination_params: Query<PaginationQueryParam>,
     project: Path<i64>,
+    params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<StudyWithScenarios>>> {
     let project = project.into_inner();
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let studies = StudyWithScenarios::list(db_pool, page, per_page, project).await?;
+    let ordering = params.ordering.clone();
+    let studies = StudyWithScenarios::list(db_pool, page, per_page, (project, ordering)).await?;
 
     Ok(Json(studies))
 }
@@ -180,9 +183,9 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
 struct StudyPatchForm {
     pub name: Option<String>,
     pub description: Option<String>,
-    pub start_date: Option<NaiveDateTime>,
-    pub expected_end_date: Option<NaiveDateTime>,
-    pub actual_end_date: Option<NaiveDateTime>,
+    pub start_date: Option<Option<NaiveDate>>,
+    pub expected_end_date: Option<Option<NaiveDate>>,
+    pub actual_end_date: Option<Option<NaiveDate>>,
     pub business_code: Option<String>,
     pub service_code: Option<String>,
     pub budget: Option<i32>,
@@ -196,9 +199,9 @@ impl From<StudyPatchForm> for Study {
         Study {
             name: form.name,
             description: form.description,
-            start_date: Some(form.start_date),
-            expected_end_date: Some(form.expected_end_date),
-            actual_end_date: Some(form.actual_end_date),
+            start_date: form.start_date,
+            expected_end_date: form.expected_end_date,
+            actual_end_date: form.actual_end_date,
             budget: form.budget,
             business_code: form.business_code,
             service_code: form.service_code,
@@ -297,6 +300,7 @@ pub mod test {
         let req = TestRequest::get()
             .uri(format!("/projects/{project_id}/studies").as_str())
             .to_request();
+
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
     }

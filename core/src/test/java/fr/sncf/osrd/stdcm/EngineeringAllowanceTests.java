@@ -5,7 +5,6 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -37,10 +36,10 @@ public class EngineeringAllowanceTests {
         var secondRoute = infraBuilder.addRoute("b", "c", 10_000, 30);
         var thirdRoute = infraBuilder.addRoute("c", "d", 100, 30);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMSimulations.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
-                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert secondRouteEnvelope != null;
         var timeThirdRouteFree = firstRouteEnvelope.getTotalTime() + secondRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
@@ -52,14 +51,13 @@ public class EngineeringAllowanceTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 1)))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run();
 
         assertNotNull(res);
         STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
-        assertEquals(10, res.departureTime(), 2 * timeStep);
     }
 
     /** Test that we can add an engineering allowance over several routes to avoid an occupied section */
@@ -91,10 +89,10 @@ public class EngineeringAllowanceTests {
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMSimulations.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
-                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
         var infra = infraBuilder.build();
@@ -150,10 +148,10 @@ public class EngineeringAllowanceTests {
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
         var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMSimulations.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
-                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
         var timeThirdRouteOccupied = firstRouteEnvelope.getTotalTime() + 5 + secondRouteEnvelope.getTotalTime() * 2;
@@ -211,7 +209,7 @@ public class EngineeringAllowanceTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
-                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 1)))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run();

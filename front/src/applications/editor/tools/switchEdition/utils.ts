@@ -29,13 +29,12 @@ export function isSwitchValid(entity: Partial<SwitchEntity>, type: SwitchType): 
  */
 export const FLAT_SWITCH_PORTS_PREFIX = 'port::' as const;
 
-export interface FlatSwitchEntity
-  extends EditorEntity<
-    Point,
-    { [key: `${typeof FLAT_SWITCH_PORTS_PREFIX}${string}`]: TrackEndpoint }
-  > {
+export type FlatSwitchEntity = Omit<
+  EditorEntity<Point, { [key: `${typeof FLAT_SWITCH_PORTS_PREFIX}${string}`]: TrackEndpoint }>,
+  'objType'
+> & {
   objType: 'FlatSwitch';
-}
+};
 
 export function getSwitchTypeJSONSchema(
   baseSchema: JSONSchema7,

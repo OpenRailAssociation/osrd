@@ -26,6 +26,10 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
         return stopTime + envelope.interpolateTotalTime(position);
     }
 
+    public long interpolateTotalTimeMS(double position) {
+        return (long) (this.interpolateTotalTime(position) * 1000);
+    }
+
     @Override
     public double interpolateTotalTimeClamp(double position) {
         position = Math.max(0, Math.min(envelope.getEndPos(), position));
@@ -35,6 +39,11 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
     @Override
     public double getEndPos() {
         return envelope.getEndPos();
+    }
+
+    @Override
+    public double getTotalTime() {
+        return envelope.getTotalTime() + stops.stream().mapToDouble(stop -> stop.duration).sum();
     }
 
     public record CurvePoint(double time, double speed, double position){}

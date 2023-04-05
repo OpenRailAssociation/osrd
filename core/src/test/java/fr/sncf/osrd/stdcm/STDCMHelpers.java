@@ -117,7 +117,7 @@ public class STDCMHelpers {
         double speed = 0;
         for (var route : routes) {
             var envelope = STDCMSimulations.simulateRoute(route, speed, 0,
-                    REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+                    REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
             assert envelope != null;
             time += envelope.getTotalTime();
             speed = envelope.getEndSpeed();

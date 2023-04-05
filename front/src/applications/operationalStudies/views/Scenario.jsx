@@ -22,12 +22,7 @@ import { FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
-import {
-  LEGACY_PROJECTS_URI,
-  PROJECTS_URI,
-  SCENARIOS_URI,
-  STUDIES_URI,
-} from '../components/operationalStudiesConsts';
+import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
 import getTimetable from '../components/Scenario/getTimetable';
 import ImportTrainSchedule from './ImportTrainSchedule';
@@ -62,7 +57,7 @@ export default function Scenario() {
 
   const getStudy = async () => {
     try {
-      const result = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
       setStudy(result);
     } catch (error) {
       console.error(error);
@@ -72,13 +67,13 @@ export default function Scenario() {
   const getScenario = async (withNotification = false) => {
     try {
       const result = await get(
-        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
+        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`
       );
       setScenario(result);
-      dispatch(updateTimetableID(result.timetable));
-      dispatch(updateInfraID(result.infra));
+      dispatch(updateTimetableID(result.timetable_id));
+      dispatch(updateInfraID(result.infra_id));
 
-      const preferedTimetableID = result.timetable || timetableID;
+      const preferedTimetableID = result.timetable_id || timetableID;
 
       getTimetable(preferedTimetableID);
       if (withNotification) {

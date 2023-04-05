@@ -23,6 +23,8 @@ use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use super::projects::QueryParams;
+
 /// Returns `/projects/{project}/studies/{study}/scenarios` routes
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/scenarios")
@@ -48,8 +50,8 @@ struct ScenarioCreateForm {
     pub name: String,
     #[serde(default)]
     pub description: String,
-    pub infra: i64,
-    pub electrical_profile_set: Option<i64>,
+    pub infra_id: i64,
+    pub electrical_profile_set_id: Option<i64>,
     #[serde(default)]
     pub tags: Vec<String>,
 }
@@ -58,10 +60,10 @@ impl ScenarioCreateForm {
     pub fn into_scenario(self, study_id: i64, timetable_id: i64) -> Scenario {
         Scenario {
             name: Some(self.name),
-            study: Some(study_id),
-            infra: Some(self.infra),
-            electrical_profile_set: Some(self.electrical_profile_set),
-            timetable: Some(timetable_id),
+            study_id: Some(study_id),
+            infra_id: Some(self.infra_id),
+            electrical_profile_set_id: Some(self.electrical_profile_set_id),
+            timetable_id: Some(timetable_id),
             description: Some(self.description),
             tags: Some(self.tags),
             creation_date: Some(Utc::now().naive_utc()),
@@ -156,7 +158,7 @@ async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<Ht
 struct ScenarioPatchForm {
     pub name: Option<String>,
     pub description: Option<String>,
-    pub electrical_profile_set: Option<Option<i64>>,
+    pub electrical_profile_set_id: Option<Option<i64>>,
     pub tags: Option<Vec<String>>,
 }
 
@@ -165,7 +167,7 @@ impl From<ScenarioPatchForm> for Scenario {
         Scenario {
             name: form.name,
             description: form.description,
-            electrical_profile_set: form.electrical_profile_set,
+            electrical_profile_set_id: form.electrical_profile_set_id,
             tags: form.tags,
             ..Default::default()
         }
@@ -184,7 +186,6 @@ async fn patch(
     let (project, study) = check_project_study(db_pool.clone(), project_id, study_id)
         .await
         .unwrap();
-
     // Update a scenario
     let scenario: Scenario = data.into_inner().into();
     let scenario = match scenario.update(db_pool.clone(), scenario_id).await? {
@@ -228,12 +229,15 @@ async fn list(
     db_pool: Data<DbPool>,
     pagination_params: Query<PaginationQueryParam>,
     path: Path<(i64, i64)>,
+    params: Query<QueryParams>,
 ) -> Result<Json<PaginatedResponse<ScenarioWithCountTrains>>> {
     let (project_id, study_id) = path.into_inner();
     let _ = check_project_study(db_pool.clone(), project_id, study_id).await?;
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let scenarios = ScenarioWithCountTrains::list(db_pool, page, per_page, study_id).await?;
+    let ordering = params.ordering.clone();
+    let scenarios =
+        ScenarioWithCountTrains::list(db_pool, page, per_page, (study_id, ordering)).await?;
 
     Ok(Json(scenarios))
 }
@@ -270,7 +274,7 @@ mod test {
         (
             TestRequest::post()
                 .uri(format!("/projects/{project_id}/studies/{study_id}/scenarios").as_str())
-                .set_json(json!({ "name": "scenario_test" ,"infra": infra.id }))
+                .set_json(json!({ "name": "scenario_test" ,"infra_id": infra.id }))
                 .to_request(),
             project_id,
         )
@@ -291,7 +295,7 @@ mod test {
         assert_eq!(scenario.name.unwrap(), "scenario_test");
         let response = call_service(
             &app,
-            delete_scenario_request(project_id, scenario.study.unwrap(), scenario.id.unwrap()),
+            delete_scenario_request(project_id, scenario.study_id.unwrap(), scenario.id.unwrap()),
         )
         .await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -299,7 +303,7 @@ mod test {
         let response = call_service(&app, delete_project_request(project_id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(&app, delete_infra_request(scenario.infra.unwrap())).await;
+        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
@@ -310,7 +314,7 @@ mod test {
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::OK);
         let scenario: Scenario = read_body_json(response).await;
-        let study_id = scenario.study.unwrap();
+        let study_id = scenario.study_id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/");
         let req = TestRequest::get().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
@@ -324,7 +328,7 @@ mod test {
         let app = create_test_service().await;
         let (request, project_id) = create_scenario_request().await;
         let scenario: Scenario = call_and_read_body_json(&app, request).await;
-        let study_id = scenario.study.unwrap();
+        let study_id = scenario.study_id.unwrap();
         let scenario_id = scenario.id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
         let req = TestRequest::get().uri(url.as_str()).to_request();
@@ -350,7 +354,7 @@ mod test {
         let app = create_test_service().await;
         let (request, project_id) = create_scenario_request().await;
         let scenario: Scenario = call_and_read_body_json(&app, request).await;
-        let study_id = scenario.study.unwrap();
+        let study_id = scenario.study_id.unwrap();
         let scenario_id = scenario.id.unwrap();
         let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
         let req = TestRequest::patch()

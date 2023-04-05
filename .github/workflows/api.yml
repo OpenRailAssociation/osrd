@@ -33,26 +33,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          cache: "poetry"
       - name: Init database
         run: psql postgresql://postgres:password@localhost -f init_db.sql
       - name: Install GDAL
         run: sudo apt-get install -y gdal-bin
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-      - name: Load cached venv
-        uses: actions/cache@v3
-        id: cached-poetry-dependencies
-        with:
-          path: python/api/.venv
-          key: osrd-api-venv-${{ hashFiles('python/api/poetry.lock', 'python/osrd_schemas') }}
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           cd python/api
           poetry install --no-interaction --no-root -E production
@@ -61,44 +53,33 @@ jobs:
           OSRD_DEV: "True"
         run: |
           cd python/api
-          source .venv/bin/activate
-          python manage.py makemigrations --check
+          poetry run python manage.py makemigrations --check
       - name: Run migrations
         env:
           OSRD_DEV: "True"
         run: |
           cd python/api
-          source .venv/bin/activate
-          python manage.py migrate
+          poetry run python manage.py migrate
       - name: Run Tests
         env:
           OSRD_DEV: "True"
         run: |
           cd python/api
-          source .venv/bin/activate
-          python manage.py test
+          poetry run python manage.py test
 
   linter-formatter:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-      - name: Load cached venv
-        uses: actions/cache@v3
-        id: cached-poetry-only-dev-dependencies
-        with:
-          path: python/api/.venv
-          key: cached-poetry-only-dev-dependencies-${{ hashFiles('python/api/poetry.lock') }}
+          cache: "poetry"
       - name: Install dependencies
-        if: steps.cached-poetry-only-dev-dependencies.outputs.cache-hit != 'true'
         run: |
           cd python/api
           poetry install --only dev

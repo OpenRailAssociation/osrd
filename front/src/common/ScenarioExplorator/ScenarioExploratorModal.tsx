@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  LEGACY_PROJECTS_URI,
   PROJECTS_URI,
   SCENARIOS_URI,
   STUDIES_URI,
@@ -56,13 +55,13 @@ export default function ScenarioExploratorModal() {
   };
 
   useEffect(() => {
-    grabItemsList(PROJECTS_URI, setProjectsList, { ordering: 'name' });
+    grabItemsList(PROJECTS_URI, setProjectsList, { ordering: 'NameAsc' });
   }, []);
 
   useEffect(() => {
     if (projectID) {
-      grabItemsList(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}`, setStudiesList, {
-        ordering: 'name',
+      grabItemsList(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, setStudiesList, {
+        ordering: 'NameAsc',
       });
     }
   }, [projectID]);
@@ -74,10 +73,10 @@ export default function ScenarioExploratorModal() {
   useEffect(() => {
     if (projectID && studyID) {
       grabItemsList(
-        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
+        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
         setScenariosList,
         {
-          ordering: 'name',
+          ordering: 'NameAsc',
         }
       );
     }

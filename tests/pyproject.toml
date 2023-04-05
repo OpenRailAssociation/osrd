@@ -17,6 +17,7 @@ requests = "^2.28.2"
 geojson-pydantic = "^0.5.0"
 pytest = "^7.2.2"
 osrd-schemas = { path = "../python/osrd_schemas/", develop = false }
+railjson-generator = { path = "../python/railjson_generator/", develop = false }
 
 [tool.flake8]
 ignore = "W503,E203"

@@ -7,7 +7,7 @@ from tests.utils.timetable import create_op_study, create_scenario
 from .infra import Infra
 from .path import Path
 from .scenario import Scenario
-from .services import API_URL
+from .services import API_URL, EDITOAST_URL
 
 _START = {"track_section": "TA2", "geo_coordinate": [-0.387122554630656, 49.4998]}
 _STOP = {"track_section": "TH1", "geo_coordinate": [-0.095104854807785, 49.484]}
@@ -37,8 +37,8 @@ def _add_train(base_url: str, scenario: Scenario, rolling_stock_id: int, path_id
 
 
 def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
-    op_study = create_op_study(API_URL, foo_project_id)
-    _, timetable = create_scenario(API_URL, small_infra.id, foo_project_id, op_study)
+    op_study = create_op_study(EDITOAST_URL, foo_project_id)
+    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
     payload = {
         "infra": small_infra.id,
         "rolling_stock": fast_rolling_stock,

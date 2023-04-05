@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
 import { getProjectID } from 'reducers/osrdconf/selectors';
-import { LEGACY_PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
 const currentStudyDefaults = {
   name: '',
@@ -56,7 +56,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const rootURI = `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}`;
+  const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}`;
 
   const createSelectOptions = async (
     translationList: string,

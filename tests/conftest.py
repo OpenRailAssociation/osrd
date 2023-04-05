@@ -1,11 +1,11 @@
 import json
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Optional
 
 import pytest
 import requests
+from railjson_generator.scripts.generate import main
 
 from tests import FAST_ROLLING_STOCK_JSON_PATH
 from tests.infra import Infra
@@ -16,10 +16,9 @@ from tests.utils.timetable import create_scenario
 
 
 def _load_generated_infra(name: str) -> int:
-    generator = Path(__file__).resolve().parents[1] / "core/examples/generated/generate.py"
     output = Path("/tmp/osrd-generated-examples")
     infra = output / f"{name}/infra.json"
-    subprocess.check_call([sys.executable, str(generator), str(output), name])
+    main([name], output)
     subprocess.check_call(["docker", "cp", str(infra), "osrd-api:/infra.json"])
     result = subprocess.check_output(
         [
@@ -55,30 +54,42 @@ def small_infra() -> Infra:
 @pytest.fixture
 def foo_project_id() -> int:
     response = requests.post(
-        API_URL + "projects/",
-        json={"name": "Project test 1", "description": "", "objectives": "", "funders": "", "tags": [], "budget": 0},
+        EDITOAST_URL + "projects/",
+        json={
+            "name": "_@Test integration project",
+            "description": "",
+            "objectives": "",
+            "funders": "",
+            "tags": [],
+            "budget": 0,
+        },
     )
     project_id = response.json()["id"]
     yield project_id
-    requests.delete(API_URL + f"projects/{project_id}/")
+    requests.delete(EDITOAST_URL + f"projects/{project_id}/")
 
 
 @pytest.fixture
 def foo_study_id(foo_project_id: int) -> int:
-    payload = {"name": "Study test 1", "service_code": "AAA", "business_code": "BBB", "tags": []}
-    res = requests.post(API_URL + f"projects/{foo_project_id}/studies/", json=payload)
+    payload = {
+        "name": "_@Test integration study",
+        "service_code": "AAA",
+        "business_code": "BBB",
+        "tags": [],
+    }
+    res = requests.post(EDITOAST_URL + f"projects/{foo_project_id}/studies/", json=payload)
     yield res.json()["id"]
 
 
 @pytest.fixture
 def tiny_scenario(tiny_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, tiny_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario(EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id)
 
 
 @pytest.fixture
 def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
-    scenario_id, timetable_id = create_scenario(API_URL, small_infra.id, foo_project_id, foo_study_id)
+    scenario_id, timetable_id = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id)
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
@@ -120,11 +131,21 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Trai
             "steps": [
                 {
                     "duration": 0,
-                    "waypoints": [{"track_section": "TA2", "geo_coordinate": [-0.387122554630656, 49.4998]}],
+                    "waypoints": [
+                        {
+                            "track_section": "TA2",
+                            "geo_coordinate": [-0.387122554630656, 49.4998],
+                        }
+                    ],
                 },
                 {
                     "duration": 1,
-                    "waypoints": [{"track_section": "TH1", "geo_coordinate": [-0.095104854807785, 49.484]}],
+                    "waypoints": [
+                        {
+                            "track_section": "TH1",
+                            "geo_coordinate": [-0.095104854807785, 49.484],
+                        }
+                    ],
                 },
             ],
             "rolling_stocks": [fast_rolling_stock],
@@ -135,7 +156,9 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Trai
 
 @pytest.fixture
 def west_to_south_east_simulation(
-    small_scenario: Scenario, west_to_south_east_path: TrainPath, fast_rolling_stock: int
+    small_scenario: Scenario,
+    west_to_south_east_path: TrainPath,
+    fast_rolling_stock: int,
 ) -> List[int]:
     response = requests.post(
         f"{API_URL}train_schedule/standalone_simulation/",

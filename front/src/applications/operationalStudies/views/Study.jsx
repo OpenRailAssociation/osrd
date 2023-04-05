@@ -19,12 +19,7 @@ import { setSuccess } from 'reducers/main';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import BreadCrumbs from '../components/BreadCrumbs';
-import {
-  LEGACY_PROJECTS_URI,
-  PROJECTS_URI,
-  SCENARIOS_URI,
-  STUDIES_URI,
-} from '../components/operationalStudiesConsts';
+import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import FilterTextField from '../components/FilterTextField';
 
@@ -55,7 +50,7 @@ export default function Study() {
   const [scenariosList, setScenariosList] = useState();
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
-  const [sortOption, setSortOption] = useState('-last_modification');
+  const [sortOption, setSortOption] = useState('LastModifiedDesc');
   const [studyStates, setStudyStates] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -74,11 +69,11 @@ export default function Study() {
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
-      value: 'name',
+      value: 'NameAsc',
     },
     {
       label: t('sortOptions.byRecentDate'),
-      value: '-last_modification',
+      value: 'LastModifiedDesc',
     },
   ];
 
@@ -97,7 +92,7 @@ export default function Study() {
   };
   const getStudy = async (withNotification = false) => {
     try {
-      const result = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
+      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
       setStudy(result);
       if (withNotification) {
         dispatch(
@@ -121,7 +116,7 @@ export default function Study() {
         tags: filter,
       };
       const data = await get(
-        `${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
+        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
         { params }
       );
       setScenariosList(data.results);

@@ -1,19 +1,37 @@
 use crate::error::Result;
-use crate::models::{Create, Retrieve, RollingStockModel};
-use crate::schema::rolling_stock_image::RollingStockCompoundImage;
-use crate::schema::rolling_stock_livery::RollingStockLivery;
-use crate::schema::rolling_stock_schema::rolling_stock::{
-    Gamma, RollingResistance, RollingStock, RollingStockError, RollingStockMetadata,
+use crate::models::{Create, Retrieve, RollingStockLiveryModel, RollingStockModel};
+use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+use crate::schema::rolling_stock::{
+    EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
+use crate::schema::rolling_stock_image::RollingStockCompoundImage;
 use crate::DbPool;
 use actix_http::StatusCode;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, Data, Json, Path};
 use actix_web::{get, post, HttpResponse};
 use diesel_json::Json as DieselJson;
+use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use thiserror::Error;
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "rollingstocks")]
+pub enum RollingStockError {
+    #[error("Rolling stock '{rolling_stock_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { rolling_stock_id: i64 },
+}
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "rollingstocks")]
+pub enum RollingStockLiveryError {
+    #[error("Rolling stock livery '{livery_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { livery_id: i64 },
+}
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/rolling_stock").service((get, get_livery, create))
@@ -34,7 +52,11 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
 #[get("/{rolling_stock_id}/livery/{livery_id}")]
 async fn get_livery(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<HttpResponse> {
     let (_rolling_stock_id, livery_id) = path.into_inner();
-    let livery = RollingStockLivery::retrieve(db_pool.clone(), livery_id).await?;
+    let livery: RollingStockLivery =
+        match RollingStockLiveryModel::retrieve(db_pool.clone(), livery_id).await? {
+            Some(livery) => livery.into(),
+            None => return Err(RollingStockLiveryError::NotFound { livery_id }.into()),
+        };
     if livery.compound_image_id.is_some() {
         let compound_image = RollingStockCompoundImage::retrieve(
             db_pool.clone(),
@@ -54,20 +76,20 @@ async fn get_livery(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Htt
 struct RollingStockCreateForm {
     pub name: String,
     pub version: String,
-    pub effort_curves: JsonValue,
+    pub effort_curves: EffortCurves,
     pub base_power_class: String,
     pub length: f64,
     pub max_speed: f64,
     pub startup_time: f64,
     pub startup_acceleration: f64,
     pub comfort_acceleration: f64,
-    pub gamma: DieselJson<Gamma>,
+    pub gamma: Gamma,
     pub inertia_coefficient: f64,
     pub features: Vec<String>,
     pub mass: f64,
-    pub rolling_resistance: DieselJson<RollingResistance>,
+    pub rolling_resistance: RollingResistance,
     pub loading_gauge: String,
-    pub metadata: DieselJson<RollingStockMetadata>,
+    pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<JsonValue>,
 }
 
@@ -76,20 +98,20 @@ impl From<RollingStockCreateForm> for RollingStockModel {
         RollingStockModel {
             name: Some(rolling_stock.name),
             version: Some(rolling_stock.version),
-            effort_curves: Some(rolling_stock.effort_curves),
+            effort_curves: Some(DieselJson(rolling_stock.effort_curves)),
             base_power_class: Some(rolling_stock.base_power_class),
             length: Some(rolling_stock.length),
             max_speed: Some(rolling_stock.max_speed),
             startup_time: Some(rolling_stock.startup_time),
             startup_acceleration: Some(rolling_stock.startup_acceleration),
             comfort_acceleration: Some(rolling_stock.comfort_acceleration),
-            gamma: Some(rolling_stock.gamma),
+            gamma: Some(DieselJson(rolling_stock.gamma)),
             inertia_coefficient: Some(rolling_stock.inertia_coefficient),
             features: Some(rolling_stock.features),
             mass: Some(rolling_stock.mass),
-            rolling_resistance: Some(rolling_stock.rolling_resistance),
+            rolling_resistance: Some(DieselJson(rolling_stock.rolling_resistance)),
             loading_gauge: Some(rolling_stock.loading_gauge),
-            metadata: Some(rolling_stock.metadata),
+            metadata: Some(DieselJson(rolling_stock.metadata)),
             power_restrictions: Some(rolling_stock.power_restrictions),
             ..Default::default()
         }
@@ -110,9 +132,9 @@ async fn create(
 #[cfg(test)]
 mod tests {
     use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
-    use crate::models::{Delete, RollingStockModel};
+    use crate::models::rolling_stock::rolling_stock_livery::tests::get_rolling_stock_livery_example;
+    use crate::models::{Create, Delete, RollingStockModel};
     use crate::schema::rolling_stock_image::RollingStockCompoundImage;
-    use crate::schema::rolling_stock_livery::{RollingStockLivery, RollingStockLiveryForm};
     use crate::views::rolling_stocks::RollingStock;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
@@ -154,14 +176,9 @@ mod tests {
             .await
             .unwrap();
 
-        let livery_form = RollingStockLiveryForm {
-            name: String::from("test_livery"),
-            rolling_stock_id: rolling_stock.id(),
-            compound_image_id: Some(image_id),
-        };
-        let livery_id = RollingStockLivery::create(db_pool.clone(), livery_form)
-            .await
-            .unwrap();
+        let livery = get_rolling_stock_livery_example(rolling_stock.id(), image_id);
+        let livery = livery.create(db_pool.clone()).await.unwrap();
+        let livery_id = livery.id.unwrap();
 
         // get - success
         let req = TestRequest::get()

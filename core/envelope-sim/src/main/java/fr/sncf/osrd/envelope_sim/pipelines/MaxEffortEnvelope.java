@@ -35,23 +35,11 @@ public class MaxEffortEnvelope {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
-        if (initialSpeed < maxSpeed) {
-            var partBuilder = new EnvelopePartBuilder();
-            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
-            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder,
-                    new SpeedConstraint(0, FLOOR),
-                    new EnvelopeConstraint(maxSpeedProfile, CEILING)
-            );
-            EnvelopeAcceleration.accelerate(context, 0, initialSpeed, overlayBuilder, 1);
-            cursor.findPosition(overlayBuilder.getLastPos());
-            if (partBuilder.isEmpty())
-                throw new ImpossibleSimulationError(); // Not enough traction to start
-            builder.addPart(partBuilder.build());
-        }
+        if (initialSpeed < maxSpeed)
+            accelerate(context, maxSpeedProfile, initialSpeed, 0, builder, cursor);
 
         while (!cursor.hasReachedEnd()) {
-            if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)){
+            if (cursor.checkPart(MaxEffortEnvelope::maxEffortPlateau)) {
                 var partBuilder = new EnvelopePartBuilder();
                 partBuilder.setAttr(EnvelopeProfile.CONSTANT_SPEED);
                 var startSpeed = cursor.getStepBeginSpeed();
@@ -89,32 +77,47 @@ public class MaxEffortEnvelope {
                     if (partBuilder.stepCount() > 1)
                         // if the part has more than one point, add it
                         builder.addPart(partBuilder.build());
-                    else
+                    else {
                         // otherwise skip this position as the train isn't really being slowed down
                         // and step 1m further
-                        cursor.findPosition(cursor.getPosition() + 1);
+                        var maxPosition = cursor.getPart().getEndPos(); // We don't want to skip further than the part
+                        if (cursor.getPosition() < maxPosition)
+                            cursor.findPosition(Math.min(maxPosition, cursor.getPosition() + 1));
+                    }
                 }
-            }
-            else if (cursor.checkPartTransition(MaxSpeedEnvelope::increase)){
-                var partBuilder = new EnvelopePartBuilder();
-                partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
-                var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                        partBuilder,
-                        new SpeedConstraint(0, FLOOR),
-                        new EnvelopeConstraint(maxSpeedProfile, CEILING)
-                );
-                var startPosition = cursor.getPosition();
-                var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
-                EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
-                cursor.findPosition(overlayBuilder.getLastPos());
-                if (partBuilder.isEmpty())
-                    throw new ImpossibleSimulationError(); // Not enough traction to restart
-                builder.addPart(partBuilder.build());
-            }
-            else
+            } else if (cursor.checkPartTransition(MaxSpeedEnvelope::increase)) {
+                var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(cursor.getPosition(), 1);
+                accelerate(context, maxSpeedProfile, startSpeed, cursor.getPosition(), builder, cursor);
+            } else
                 cursor.nextPart();
         }
         return builder.build();
+    }
+
+    /** Accelerates starting at the given speed and position.
+     * Simple code factorization, it's called when starting up and at part transitions. */
+    private static void accelerate(
+            EnvelopeSimContext context,
+            Envelope maxSpeedProfile,
+            double initialSpeed,
+            double startPosition,
+            OverlayEnvelopeBuilder builder,
+            EnvelopeCursor cursor
+    ) {
+        var partBuilder = new EnvelopePartBuilder();
+        partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
+        var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                partBuilder,
+                new SpeedConstraint(0, FLOOR),
+                new EnvelopeConstraint(maxSpeedProfile, CEILING)
+        );
+        EnvelopeAcceleration.accelerate(context, startPosition, initialSpeed, overlayBuilder, 1);
+        cursor.findPosition(overlayBuilder.getLastPos());
+        if (overlayBuilder.lastIntersection == 0) {
+            // The train stopped before reaching the end
+            throw new ImpossibleSimulationError();
+        }
+        builder.addPart(partBuilder.build());
     }
 
     /** Generate a max effort envelope given a max speed envelope */
@@ -124,10 +127,7 @@ public class MaxEffortEnvelope {
             Envelope maxSpeedProfile
     ) {
         var maxEffortEnvelope = addAccelerationAndConstantSpeedParts(context, maxSpeedProfile, initialSpeed);
-        if (!maxEffortEnvelope.continuous) {
-            // Discontinuity can happen when the train stops because of high slopes
-            throw new ImpossibleSimulationError();
-        }
+        assert maxEffortEnvelope.continuous : "Discontinuity in max effort envelope";
         assert maxEffortEnvelope.getBeginPos() == 0;
         return maxEffortEnvelope;
     }

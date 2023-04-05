@@ -2,6 +2,8 @@ import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
 import { isArray, isNil, isObject, uniq } from 'lodash';
 import bearing from '@turf/bearing';
+import { compare } from 'fast-json-patch';
+import { v4 as uuid } from 'uuid';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 import {
@@ -9,6 +11,12 @@ import {
   SIGNALS_TO_SYMBOLS,
   SignalType,
 } from '../../../common/Map/Consts/SignalsNames';
+import {
+  DeleteOperation,
+  UpdateOperation,
+  RailjsonObject,
+  PostInfraByIdObjectsAndObjectTypeApiResponse,
+} from '../../../common/api/osrdEditoastApi';
 import { EditoastType } from '../tools/types';
 
 // Quick helper to get a "promised" setTimeout:
@@ -139,4 +147,46 @@ export function nestEntity(entity: EditorEntity, type: EditoastType): EditorEnti
     objType: type,
     properties: newProperties,
   };
+}
+
+export function entityToCreateOperation(entity: EditorEntity): RailjsonObject {
+  return {
+    operation_type: 'CREATE',
+    obj_type: entity.objType,
+    railjson: {
+      ...entity.properties,
+      id: uuid(),
+    },
+  };
+}
+export function entityToUpdateOperation(entity: EditorEntity, prev: EditorEntity): UpdateOperation {
+  return {
+    operation_type: 'UPDATE',
+    obj_id: prev.properties.id,
+    obj_type: prev.objType,
+    railjson_patch: compare(
+      prev.properties || {},
+      entity.properties || {}
+      // the "as" is mandatory due to the json patch lib that has the not standard "_get" operation
+    ) as UpdateOperation['railjson_patch'],
+  };
+}
+export function entityToDeleteOperation(entity: EditorEntity): DeleteOperation {
+  return {
+    operation_type: 'DELETE',
+    obj_id: entity.properties.id,
+    obj_type: entity.objType,
+  };
+}
+
+export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
+  entity: PostInfraByIdObjectsAndObjectTypeApiResponse[0],
+  type: T['objType']
+): T {
+  return {
+    type: 'Feature',
+    properties: entity.railjson,
+    objType: type,
+    geometry: entity.geographic,
+  } as T;
 }

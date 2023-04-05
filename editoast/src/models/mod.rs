@@ -1,6 +1,7 @@
 mod documents;
+mod pathfinding;
 mod projects;
-pub mod rolling_stock_models;
+pub mod rolling_stock;
 mod scenario;
 mod study;
 mod timetable;
@@ -12,9 +13,13 @@ use actix_web::web::{block, Data};
 use async_trait::async_trait;
 use diesel::PgConnection;
 
+pub use self::pathfinding::*;
 pub use documents::Document;
-pub use projects::{Project, ProjectWithStudies};
-pub use rolling_stock_models::rolling_stock::RollingStockModel;
+pub use projects::{Ordering, Project, ProjectWithStudies};
+pub use rolling_stock::{
+    light_rolling_stock::LightRollingStockModel, rolling_stock_livery::RollingStockLiveryModel,
+    RollingStockModel,
+};
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules};
@@ -146,9 +151,6 @@ pub trait Update: Sized + 'static {
         .unwrap()
     }
 }
-
-/// Use this struct when you don't need to pass any parameters to the `list` method.
-pub struct NoParams;
 
 /// Trait to implement the `list` and `list_conn` methods.
 /// This trait is automatically implemented by the `#[derive(Model)]` macro.

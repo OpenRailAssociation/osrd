@@ -340,7 +340,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  id: { type: string }
+                  id:
+                    type: string
 
   /infra/{id}/errors/:
     get:
@@ -683,8 +684,6 @@ paths:
               schema:
                 type: array
                 items:
-                  discriminator:
-                    propertyName: type
                   oneOf:
                     - $ref: "#/components/schemas/RouteTrackRangesNotFoundError"
                     - $ref: "#/components/schemas/RouteTrackRangesCantComputePathError"
@@ -790,16 +789,20 @@ paths:
                 type: array
                 items:
                   type: object
+                  required:
+                    - railjson
+                    - geographic
+                    - schematic
                   properties:
                     railjson:
-                      type: object
                       description: Object properties in railjson format
+                      $ref: "#/components/schemas/Railjson"
                     geographic:
-                      type: object
                       description: object's geographic in geojson format
+                      $ref: "#/components/schemas/Geometry"
                     schematic:
-                      type: object
                       description: object's schematic in geojson format
+                      $ref: "#/components/schemas/Geometry"
   /infra/{id}/clone/:
     post:
       tags:
@@ -811,6 +814,12 @@ paths:
           schema:
             type: integer
           description: Infra id
+          required: true
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: New infra name
           required: true
       responses:
         201:
@@ -1009,7 +1018,7 @@ paths:
           required: true
       responses:
         200:
-          description: The rolling stock without effort curves nor rolling resistance
+          description: The rolling stock with their simplified effort curves
           content:
             application/json:
               schema:
@@ -1081,12 +1090,12 @@ paths:
             type: string
             enum:
               [
-                "name",
-                "-name",
-                "creation_date",
-                "-creation_date",
-                "last_modification",
-                "-last_modification",
+                "NameAsc",
+                "NameDesc",
+                "CreationDateAsc",
+                "CreationDateAsc",
+                "LastModifiedAsc",
+                "LastModifiedDesc",
               ]
         - in: query
           name: name
@@ -1267,6 +1276,19 @@ paths:
             type: integer
           required: true
         - in: query
+          name: ordering
+          schema:
+            type: string
+            enum:
+              [
+                "NameAsc",
+                "NameDesc",
+                "CreationDateAsc",
+                "CreationDateAsc",
+                "LastModifiedAsc",
+                "LastModifiedDesc",
+              ]
+        - in: query
           name: name
           schema:
             type: string
@@ -1434,6 +1456,19 @@ paths:
           name: study_id
           schema:
             type: integer
+        - in: query
+          name: ordering
+          schema:
+            type: string
+            enum:
+              [
+                "NameAsc",
+                "NameDesc",
+                "CreationDateAsc",
+                "CreationDateAsc",
+                "LastModifiedAsc",
+                "LastModifiedDesc",
+              ]
         - in: query
           name: page
           schema:
@@ -1724,31 +1759,37 @@ components:
         - $ref: "#/components/schemas/RailjsonObject"
         - $ref: "#/components/schemas/DeleteOperation"
         - $ref: "#/components/schemas/UpdateOperation"
-      discriminator:
-        propertyName: operation_type
 
     OperationResult:
       oneOf:
         - $ref: "#/components/schemas/DeleteOperation"
         - $ref: "#/components/schemas/OperationObject"
-      discriminator:
-        propertyName: operation_type
 
     RailjsonObject:
+      required:
+        - operation_type
+        - obj_type
+        - railjson
       properties:
         operation_type:
           type: string
-          enum: ["CREATE"]
+          enum:
+            - CREATE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         railjson:
           $ref: "#/components/schemas/Railjson"
 
     DeleteOperation:
+      required:
+        - operation_type
+        - obj_type
+        - obj_id
       properties:
         operation_type:
           type: string
-          enum: ["DELETE"]
+          enum:
+            - DELETE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         obj_id:
@@ -1756,10 +1797,15 @@ components:
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
 
     UpdateOperation:
+      required:
+        - operation_type
+        - obj_type
+        - railjson_patch
       properties:
         operation_type:
           type: string
-          enum: ["UPDATE"]
+          enum:
+            - UPDATE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         obj_id:
@@ -1769,10 +1815,16 @@ components:
           $ref: "#/components/schemas/Patches"
 
     OperationObject:
+      required:
+        - operation_type
+        - obj_type
+        - railjson
       properties:
         operation_type:
           type: string
-          enum: ["CREATE", "UPDATE"]
+          enum:
+            - CREATE
+            - UPDATE
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         railjson:
@@ -1813,6 +1865,12 @@ components:
     Railjson:
       type: object
       description: This field follows railjson format
+      additionalProperties: true
+      required:
+        - id
+      properties:
+        id:
+          type: string
       example:
         id: bd840b06-84ba-4566-98c1-ccf0196c5f16
         geo:
@@ -1961,6 +2019,11 @@ components:
     DirectionalTrackRange:
       type: object
       description: Track range associated with a direction
+      required:
+        - track
+        - begin
+        - end
+        - direction
       properties:
         track:
           type: string
@@ -2014,7 +2077,7 @@ components:
                     type: string
                 required: [id, name]
           required: [id, liveries]
-  
+
     RollingStockCreatePayload:
       properties:
         version:
@@ -2144,7 +2207,18 @@ components:
             subseries: "GV"
             type: "Locomotives électriques"
             unit: "US"
-          required: [detail, family, grouping, number, reference, series, subseries, type, unit]
+          required:
+            [
+              detail,
+              family,
+              grouping,
+              number,
+              reference,
+              series,
+              subseries,
+              type,
+              unit,
+            ]
       required:
         - version
         - name
@@ -2167,8 +2241,14 @@ components:
     RouteTrackRangesComputed:
       type: object
       description: Route track ranges successfully computed
+      required:
+        - type
+        - track_ranges
       properties:
-        type: { type: string, enum: ["Computed"] }
+        type:
+          type: string
+          enum:
+            - Computed
         track_ranges:
           type: array
           items:
@@ -2177,14 +2257,24 @@ components:
     RouteTrackRangesNotFoundError:
       type: object
       description: Error when the route id couldn't be found
+      required:
+        - type
       properties:
-        type: { type: string, enum: ["NotFound"] }
+        type:
+          type: string
+          enum:
+            - NotFound
 
     RouteTrackRangesCantComputePathError:
       type: object
       description: Error when the route path couldn't be computed
+      required:
+        - type
       properties:
-        type: { type: string, enum: ["CantComputePath"] }
+        type:
+          type: string
+          enum:
+            - CantComputePath
 
     ElectricalProfile:
       type: object
@@ -2419,6 +2509,8 @@ components:
           type: integer
         name:
           type: string
+        project_id:
+          type: integer
         description:
           type: string
         budget:
@@ -2476,14 +2568,14 @@ components:
           items:
             type: string
             maxLength: 255
-        infra:
+        infra_id:
           type: integer
-        electrical_profile_set:
+        electrical_profile_set_id:
           type: number
-          nullable: true
           description: Electrical profile set id (if any)
       required:
         - "name"
+        - "infra_id"
 
     ScenarioResult:
       properties:
@@ -2491,6 +2583,8 @@ components:
           type: integer
         name:
           type: string
+        study_id:
+          type: integer
         description:
           type: string
           items:
@@ -2499,11 +2593,11 @@ components:
           type: array
           items:
             type: string
-        infra:
+        infra_id:
           type: integer
         infra_name:
           type: string
-        electrical_profile_set:
+        electrical_profile_set_id:
           type: integer
           nullable: true
         electrical_profile_set_name:
@@ -2515,7 +2609,7 @@ components:
         last_modification:
           type: string
           format: date-time
-        timetable:
+        timetable_id:
           type: integer
         trains_count:
           type: integer
@@ -2539,6 +2633,8 @@ components:
           type: integer
         name:
           type: string
+        study_id:
+          type: integer
         description:
           type: string
           items:
@@ -2547,11 +2643,11 @@ components:
           type: array
           items:
             type: string
-        infra:
+        infra_id:
           type: integer
         infra_name:
           type: string
-        electrical_profile_set:
+        electrical_profile_set_id:
           type: integer
           nullable: true
         electrical_profile_set_name:
@@ -2563,7 +2659,7 @@ components:
         last_modification:
           type: string
           format: date-time
-        timetable:
+        timetable_id:
           type: integer
         trains_count:
           type: integer

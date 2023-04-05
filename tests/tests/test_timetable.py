@@ -87,7 +87,7 @@ def test_get_timetable(
         return
 
     timetable = _TimetableResponse(**response.json())
-    assert timetable.name == "timetable for Scenario test 1"
+    assert timetable.name == "timetable"
     assert len(timetable.train_schedules) == 0
 
     # add simulation
@@ -102,7 +102,7 @@ def test_get_timetable(
     response = requests.get(f"{service_url}timetable/{timetable_id}/")
     timetable = _TimetableResponse(**response.json())
     assert timetable.id == small_scenario.timetable
-    assert timetable.name == "timetable for Scenario test 1"
+    assert timetable.name == "timetable"
     assert len(timetable.train_schedules) == 2
     expected_schedules = [
         _TrainScheduleDetails(simulation.ids[0], "West to South East 1", 3600, west_to_south_east_path.id),

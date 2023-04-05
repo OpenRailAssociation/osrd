@@ -13,7 +13,7 @@ use diesel::{ExpressionMethods, PgConnection};
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
-use super::{List, NoParams, Update};
+use super::{List, Update};
 
 #[derive(
     Clone,
@@ -63,6 +63,30 @@ pub struct ProjectWithStudies {
     pub project: Project,
     #[diesel(sql_type = Array<BigInt>)]
     pub studies: Vec<i64>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub enum Ordering {
+    NameAsc,
+    NameDesc,
+    CreationDateAsc,
+    CreationDateDesc,
+    #[default]
+    LastModifiedDesc,
+    LastModifiedAsc,
+}
+
+impl Ordering {
+    pub fn to_sql(&self) -> &str {
+        match *self {
+            Ordering::NameAsc => "LOWER(t.name) ASC",
+            Ordering::NameDesc => " LOWER(t.name) DESC",
+            Ordering::CreationDateAsc => "creation_date",
+            Ordering::CreationDateDesc => "creation_date DESC",
+            Ordering::LastModifiedAsc => "last_modification",
+            Ordering::LastModifiedDesc => "last_modification DESC",
+        }
+    }
 }
 
 impl Project {
@@ -177,20 +201,19 @@ impl Update for Project {
     }
 }
 
-impl List<NoParams> for ProjectWithStudies {
+impl List<Ordering> for ProjectWithStudies {
     fn list_conn(
         conn: &mut PgConnection,
         page: i64,
         page_size: i64,
-        _: NoParams,
+        ordering: Ordering,
     ) -> Result<PaginatedResponse<Self>> {
-        sql_query(
-            "SELECT project.*, COALESCE(ARRAY_AGG(study.id) FILTER (WHERE study.id is not NULL), ARRAY[]::bigint[])  as studies FROM osrd_infra_project project
-            LEFT JOIN osrd_infra_study study ON study.project_id = project.id
-            GROUP BY project.id"
-        )
-        .paginate(page, page_size)
-        .load_and_count(conn)
+        let ordering = ordering.to_sql();
+        sql_query(format!("SELECT t.*, COALESCE(ARRAY_AGG(study.id) FILTER (WHERE study.id is not NULL), ARRAY[]::bigint[])  as studies FROM osrd_infra_project t
+            LEFT JOIN osrd_infra_study study ON study.project_id = t.id
+            GROUP BY t.id ORDER BY {ordering}"))
+            .paginate(page, page_size)
+            .load_and_count(conn)
     }
 }
 
@@ -198,7 +221,7 @@ impl List<NoParams> for ProjectWithStudies {
 pub mod test {
     use super::Project;
     use crate::client::PostgresConfig;
-    use crate::models::{Create, Delete, List, NoParams, ProjectWithStudies, Retrieve};
+    use crate::models::{Create, Delete, List, Ordering, ProjectWithStudies, Retrieve};
     use actix_web::test as actix_test;
     use actix_web::web::Data;
     use chrono::Utc;
@@ -248,12 +271,39 @@ pub mod test {
             .await
             .unwrap()
             .is_some());
-        assert!(ProjectWithStudies::list(pool.clone(), 1, 25, NoParams)
-            .await
-            .is_ok());
+        assert!(
+            ProjectWithStudies::list(pool.clone(), 1, 25, Ordering::LastModifiedAsc)
+                .await
+                .is_ok()
+        );
 
         // Delete the project
         assert!(Project::delete(pool.clone(), project_id).await.unwrap());
+    }
+
+    #[actix_test]
+    async fn sort_project() {
+        let mut project = build_test_project();
+        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
+        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+
+        // Create first project
+        let project_1 = project.clone().create(pool.clone()).await.unwrap();
+        let project_id_1 = project_1.id.unwrap();
+        // Create second project
+        project.name = Some("project_test".into());
+        let project_2 = project.create(pool.clone()).await.unwrap();
+        let project_id_2 = project_2.id.unwrap();
+
+        let projects = ProjectWithStudies::list(pool.clone(), 1, 25, Ordering::NameDesc)
+            .await
+            .unwrap();
+        let name = projects.results.first().unwrap().project.name.clone();
+        assert_eq!(name, Some("test".into()));
+
+        // Delete the projects
+        assert!(Project::delete(pool.clone(), project_id_1).await.unwrap());
+        assert!(Project::delete(pool.clone(), project_id_2).await.unwrap());
     }
 
     #[actix_test]

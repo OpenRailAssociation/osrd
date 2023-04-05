@@ -152,7 +152,11 @@ const injectedRtkApi = api.injectEndpoints({
       }),
     }),
     postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/clone/`, method: 'POST' }),
+      query: (queryArg) => ({
+        url: `/infra/${queryArg.id}/clone/`,
+        method: 'POST',
+        params: { name: queryArg.name },
+      }),
     }),
     getElectricalProfileSet: build.query<
       GetElectricalProfileSetApiResponse,
@@ -278,6 +282,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/projects/${queryArg.projectId}/studies/`,
         params: {
+          ordering: queryArg.ordering,
           name: queryArg.name,
           description: queryArg.description,
           tags: queryArg.tags,
@@ -329,7 +334,7 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
-        params: { page: queryArg.page, page_size: queryArg.pageSize },
+        params: { ordering: queryArg.ordering, page: queryArg.page, page_size: queryArg.pageSize },
       }),
     }),
     getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
@@ -542,15 +547,9 @@ export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
 };
 export type GetInfraByIdRoutesTrackRangesApiResponse =
   /** status 200 Foreach route, the track ranges through which it passes or an error */ (
-    | ({
-        type: 'RouteTrackRangesNotFoundError';
-      } & RouteTrackRangesNotFoundError)
-    | ({
-        type: 'RouteTrackRangesCantComputePathError';
-      } & RouteTrackRangesCantComputePathError)
-    | ({
-        type: 'RouteTrackRangesComputed';
-      } & RouteTrackRangesComputed)
+    | RouteTrackRangesNotFoundError
+    | RouteTrackRangesCantComputePathError
+    | RouteTrackRangesComputed
   )[];
 export type GetInfraByIdRoutesTrackRangesApiArg = {
   /** Infra ID */
@@ -579,9 +578,9 @@ export type PostInfraByIdPathfindingApiArg = {
   };
 };
 export type PostInfraByIdObjectsAndObjectTypeApiResponse = /** status 200 No content */ {
-  railjson?: object;
-  geographic?: object;
-  schematic?: object;
+  railjson: Railjson;
+  geographic: Geometry;
+  schematic: Geometry;
 }[];
 export type PostInfraByIdObjectsAndObjectTypeApiArg = {
   /** Infra id */
@@ -597,6 +596,8 @@ export type PostInfraByIdCloneApiResponse = /** status 201 The duplicated infra 
 export type PostInfraByIdCloneApiArg = {
   /** Infra id */
   id: number;
+  /** New infra name */
+  name: string;
 };
 export type GetElectricalProfileSetApiResponse =
   /** status 200 The list of ids and names of electrical profile sets available */ {
@@ -650,7 +651,7 @@ export type GetLightRollingStockApiArg = {
   pageSize?: number;
 };
 export type GetLightRollingStockByIdApiResponse =
-  /** status 200 The rolling stock without effort curves nor rolling resistance */ LightRollingStock;
+  /** status 200 The rolling stock with their simplified effort curves */ LightRollingStock;
 export type GetLightRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
@@ -679,12 +680,12 @@ export type GetProjectsApiResponse = /** status 200 the project list */ {
 };
 export type GetProjectsApiArg = {
   ordering?:
-    | 'name'
-    | '-name'
-    | 'creation_date'
-    | '-creation_date'
-    | 'last_modification'
-    | '-last_modification';
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateAsc'
+    | 'LastModifiedAsc'
+    | 'LastModifiedDesc';
   /** Filter projects by name */
   name?: string;
   /** Filter projects by description */
@@ -744,6 +745,13 @@ export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studie
 };
 export type GetProjectsByProjectIdStudiesApiArg = {
   projectId: number;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateAsc'
+    | 'LastModifiedAsc'
+    | 'LastModifiedDesc';
   /** Filter operational studies by name */
   name?: string;
   /** Filter operational studies by description */
@@ -799,6 +807,13 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   projectId: number;
   studyId: number;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateAsc'
+    | 'LastModifiedAsc'
+    | 'LastModifiedDesc';
   /** Page number */
   page?: number;
   /** Number of elements by page */
@@ -874,27 +889,24 @@ export type ObjectType =
   | 'OperationalPoint'
   | 'Catenary';
 export type DeleteOperation = {
-  operation_type?: 'DELETE';
-  obj_type?: ObjectType;
-  obj_id?: string;
+  operation_type: 'DELETE';
+  obj_type: ObjectType;
+  obj_id: string;
 };
-export type Railjson = object;
+export type Railjson = {
+  id: string;
+  [key: string]: any;
+};
 export type OperationObject = {
-  operation_type?: 'CREATE' | 'UPDATE';
-  obj_type?: ObjectType;
-  railjson?: Railjson;
+  operation_type: 'CREATE' | 'UPDATE';
+  obj_type: ObjectType;
+  railjson: Railjson;
 };
-export type OperationResult =
-  | ({
-      operation_type: 'DeleteOperation';
-    } & DeleteOperation)
-  | ({
-      operation_type: 'OperationObject';
-    } & OperationObject);
+export type OperationResult = DeleteOperation | OperationObject;
 export type RailjsonObject = {
-  operation_type?: 'CREATE';
-  obj_type?: ObjectType;
-  railjson?: Railjson;
+  operation_type: 'CREATE';
+  obj_type: ObjectType;
+  railjson: Railjson;
 };
 export type Patch = {
   op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test';
@@ -904,21 +916,12 @@ export type Patch = {
 };
 export type Patches = Patch[];
 export type UpdateOperation = {
-  operation_type?: 'UPDATE';
-  obj_type?: ObjectType;
+  operation_type: 'UPDATE';
+  obj_type: ObjectType;
   obj_id?: string;
-  railjson_patch?: Patches;
+  railjson_patch: Patches;
 };
-export type Operation =
-  | ({
-      operation_type: 'RailjsonObject';
-    } & RailjsonObject)
-  | ({
-      operation_type: 'DeleteOperation';
-    } & DeleteOperation)
-  | ({
-      operation_type: 'UpdateOperation';
-    } & UpdateOperation);
+export type Operation = RailjsonObject | DeleteOperation | UpdateOperation;
 export type RailjsonFile = {
   version?: string;
   operational_points?: any;
@@ -993,21 +996,21 @@ export type Zone = {
   sch?: BoundingBox;
 };
 export type RouteTrackRangesNotFoundError = {
-  type?: 'NotFound';
+  type: 'NotFound';
 };
 export type RouteTrackRangesCantComputePathError = {
-  type?: 'CantComputePath';
+  type: 'CantComputePath';
 };
 export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type DirectionalTrackRange = {
-  track?: string;
-  begin?: number;
-  end?: number;
-  direction?: Direction;
+  track: string;
+  begin: number;
+  end: number;
+  direction: Direction;
 };
 export type RouteTrackRangesComputed = {
-  type?: 'Computed';
-  track_ranges?: DirectionalTrackRange[];
+  type: 'Computed';
+  track_ranges: DirectionalTrackRange[];
 };
 export type TrackLocation = {
   track?: string;
@@ -1136,6 +1139,7 @@ export type ProjectPatchRequest = {
 export type StudyResult = {
   id?: number;
   name?: string;
+  project_id?: number;
   description?: string;
   budget?: number;
   service_code?: string;
@@ -1205,15 +1209,16 @@ export type StudyPatchRequest = {
 export type ScenarioResult = {
   id?: number;
   name?: string;
+  study_id?: number;
   description?: string[];
   tags?: string[];
-  infra?: number;
+  infra_id?: number;
   infra_name?: string;
-  electrical_profile_set?: number | null;
+  electrical_profile_set_id?: number | null;
   electrical_profile_set_name?: string | null;
   creation_date?: string;
   last_modification?: string;
-  timetable?: number;
+  timetable_id?: number;
   trains_count?: number;
   trains_schedules?: {
     id?: number;
@@ -1226,20 +1231,21 @@ export type ScenarioRequest = {
   name: string;
   description?: string;
   tags?: string[];
-  infra?: number;
-  electrical_profile_set?: number | null;
+  infra_id: number;
+  electrical_profile_set_id?: number;
 };
 export type ScenarioListResult = {
   id?: number;
   name?: string;
+  study_id?: number;
   description?: string[];
   tags?: string[];
-  infra?: number;
+  infra_id?: number;
   infra_name?: string;
-  electrical_profile_set?: number | null;
+  electrical_profile_set_id?: number | null;
   electrical_profile_set_name?: string | null;
   creation_date?: string;
   last_modification?: string;
-  timetable?: number;
+  timetable_id?: number;
   trains_count?: number;
 };

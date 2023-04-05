@@ -20,11 +20,7 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import DOCUMENT_URI from 'common/consts';
-import {
-  LEGACY_PROJECTS_URI,
-  PROJECTS_URI,
-  STUDIES_URI,
-} from '../components/operationalStudiesConsts';
+import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
@@ -54,7 +50,7 @@ export default function Project() {
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
-  const [sortOption, setSortOption] = useState('-last_modification');
+  const [sortOption, setSortOption] = useState('LastModifiedDesc');
   const [imageUrl, setImageUrl] = useState();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -63,11 +59,11 @@ export default function Project() {
   const sortOptions = [
     {
       label: t('sortOptions.byName'),
-      value: 'name',
+      value: 'NameAsc',
     },
     {
       label: t('sortOptions.byRecentDate'),
-      value: '-last_modification',
+      value: 'LastModifiedDesc',
     },
   ];
 
@@ -108,7 +104,7 @@ export default function Project() {
         description: filter,
         tags: filter,
       };
-      const data = await get(`${LEGACY_PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
+      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
       setStudiesList(data.results);
     } catch (error) {
       console.error(error);

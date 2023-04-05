@@ -2,7 +2,7 @@ import { LineString, Point, Position } from 'geojson';
 import length from '@turf/length';
 import { lineString } from '@turf/helpers';
 
-import { editoastToEditorEntity } from '../../data/api';
+import { editoastToEditorEntity } from '../../data/utils';
 import { computeRouteGeometry, removeDuplicatePoints } from './utils';
 import { DetectorEntity, TrackSectionEntity } from '../../../../types';
 

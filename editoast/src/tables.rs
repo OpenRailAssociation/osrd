@@ -226,9 +226,9 @@ table! {
         service_code -> Text,
         creation_date -> Timestamp,
         last_modification -> Timestamp,
-        start_date -> Nullable<Timestamp>,
-        expected_end_date -> Nullable<Timestamp>,
-        actual_end_date -> Nullable<Timestamp>,
+        start_date -> Nullable<Date>,
+        expected_end_date -> Nullable<Date>,
+        actual_end_date -> Nullable<Date>,
         budget -> Integer,
         tags -> Array<Text>,
         state -> Text,
@@ -330,3 +330,22 @@ table! {
 joinable!(  osrd_infra_trainschedule -> osrd_infra_timetable (timetable_id));
 
 allow_tables_to_appear_in_same_query!(osrd_infra_trainschedule, osrd_infra_timetable);
+
+table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    osrd_infra_pathmodel(id) {
+        id -> BigInt,
+        owner -> Uuid,
+        created -> Timestamp,
+        payload -> Jsonb,
+        slopes -> Jsonb,
+        curves -> Jsonb,
+        geographic -> Geometry,
+        schematic -> Geometry,
+        infra_id -> BigInt,
+    }
+}
+
+joinable!(osrd_infra_trainschedule -> osrd_infra_pathmodel (path_id));

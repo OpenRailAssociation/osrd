@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim.pipelines;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
@@ -64,11 +65,15 @@ public class MaxSpeedEnvelope {
             // if the stopPosition is zero, no need to build a deceleration curve
             if (stopPosition == 0.0)
                 continue;
-            if (stopPosition > curveWithDecelerations.getEndPos())
-                throw new RuntimeException(String.format(
-                        "Stop at index %d is out of bounds (position = %f, path length = %f)",
-                        i, stopPosition, curveWithDecelerations.getEndPos()
-                ));
+            if (stopPosition > curveWithDecelerations.getEndPos()) {
+                if (Math.abs(stopPosition - curveWithDecelerations.getEndPos()) < POSITION_EPSILON)
+                    stopPosition = curveWithDecelerations.getEndPos();
+                else
+                    throw new RuntimeException(String.format(
+                            "Stop at index %d is out of bounds (position = %f, path length = %f)",
+                            i, stopPosition, curveWithDecelerations.getEndPos()
+                    ));
+            }
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.BRAKING);
             partBuilder.setAttr(new StopMeta(i));

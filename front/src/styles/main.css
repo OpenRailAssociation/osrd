@@ -1,5 +1,5 @@
 :root {
-  --border-radius: .4375rem;
+  --border-radius: 0.4375rem;
   --breakpoint-lg: 1024px;
 }
 
@@ -129,7 +129,7 @@ blockquote {
 }
 
 body {
-  min-height: unset !important;
+  min-height: 100vh;
 }
 
 .mastcontainer-map {
@@ -174,7 +174,12 @@ body {
 }
 
 /* Make cool transitions for fullscreen mode */
-.mastheader, .mastnav, .mastcontainer, .actionbar, .table-filters, .sideBar-container {
+.mastheader,
+.mastnav,
+.mastcontainer,
+.actionbar,
+.table-filters,
+.sideBar-container {
   transition: 0.4s ease-in-out;
 }
 
@@ -293,7 +298,8 @@ body {
 .custom-control {
   padding-left: 1.625rem !important;
 }
-.custom-control .custom-control-label::before, .custom-control .custom-control-label::after {
+.custom-control .custom-control-label::before,
+.custom-control .custom-control-label::after {
   left: -1.625rem;
 }
 
@@ -332,7 +338,8 @@ body {
 }
 
 .maplibregl-map {
-  font-family: Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 .maplibregl-map .maplibregl-marker {
   display: flex;
@@ -417,13 +424,19 @@ body {
   border: 1px solid var(--coolgray3);
   height: 21rem;
 }
-.projects-list-project-card:hover, .projects-list-project-card:focus, .projects-list-project-card:active {
+.projects-list-project-card:hover,
+.projects-list-project-card:focus,
+.projects-list-project-card:active {
   border-color: var(--purple);
 }
-.projects-list-project-card:hover .projects-list-project-card-img::after, .projects-list-project-card:focus .projects-list-project-card-img::after, .projects-list-project-card:active .projects-list-project-card-img::after {
+.projects-list-project-card:hover .projects-list-project-card-img::after,
+.projects-list-project-card:focus .projects-list-project-card-img::after,
+.projects-list-project-card:active .projects-list-project-card-img::after {
   opacity: 1;
 }
-.projects-list-project-card:hover .projects-list-project-card-img button, .projects-list-project-card:focus .projects-list-project-card-img button, .projects-list-project-card:active .projects-list-project-card-img button {
+.projects-list-project-card:hover .projects-list-project-card-img button,
+.projects-list-project-card:focus .projects-list-project-card-img button,
+.projects-list-project-card:active .projects-list-project-card-img button {
   opacity: 1 !important;
 }
 .projects-list-project-card.empty {
@@ -461,7 +474,7 @@ body {
   object-fit: cover;
 }
 .projects-list-project-card .projects-list-project-card-img::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -532,7 +545,9 @@ body {
   transition: 0.2s;
   cursor: pointer;
 }
-.projects-list-project-card .projects-list-project-card-tags .projects-list-project-card-tags-tag:hover {
+.projects-list-project-card
+  .projects-list-project-card-tags
+  .projects-list-project-card-tags-tag:hover {
   opacity: 0.65;
 }
 
@@ -603,13 +618,19 @@ body {
   padding-bottom: 0.15rem;
   margin-bottom: 0.25rem;
 }
-.project-details .project-details-title .project-details-title-content .project-details-title-description {
+.project-details
+  .project-details-title
+  .project-details-title-content
+  .project-details-title-description {
   overflow: auto;
   max-height: 20vh;
   margin-bottom: 1rem;
   font-size: 1.25rem;
 }
-.project-details .project-details-title .project-details-title-content .project-details-title-objectives {
+.project-details
+  .project-details-title
+  .project-details-title-content
+  .project-details-title-objectives {
   overflow: auto;
   max-height: 20vh;
 }
@@ -643,7 +664,10 @@ body {
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
 }
-.project-details .project-details-financials .project-details-financials-amount .project-details-financials-amount-text {
+.project-details
+  .project-details-financials
+  .project-details-financials-amount
+  .project-details-financials-amount-text {
   line-height: 1rem;
   text-align: right;
   width: 4rem;
@@ -696,10 +720,14 @@ body {
   transition: 0.4s;
   height: 17rem;
 }
-.studies-list .studies-list-card:hover, .studies-list .studies-list-card:focus, .studies-list .studies-list-card:active {
+.studies-list .studies-list-card:hover,
+.studies-list .studies-list-card:focus,
+.studies-list .studies-list-card:active {
   border-color: var(--primary);
 }
-.studies-list .studies-list-card:hover button, .studies-list .studies-list-card:focus button, .studies-list .studies-list-card:active button {
+.studies-list .studies-list-card:hover button,
+.studies-list .studies-list-card:focus button,
+.studies-list .studies-list-card:active button {
   opacity: 1 !important;
 }
 .studies-list .studies-list-card.empty {
@@ -775,18 +803,30 @@ body {
   display: flex;
   gap: 1rem;
 }
-.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-infos .studies-list-card-financials-infos-item {
+.studies-list
+  .studies-list-card
+  .studies-list-card-financials
+  .studies-list-card-financials-infos
+  .studies-list-card-financials-infos-item {
   text-transform: uppercase;
   font-weight: 500;
   font-size: 0.9rem;
 }
-.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-infos .studies-list-card-financials-infos-item h3 {
+.studies-list
+  .studies-list-card
+  .studies-list-card-financials
+  .studies-list-card-financials-infos
+  .studies-list-card-financials-infos-item
+  h3 {
   font-size: 0.7rem;
   color: var(--coolgray9);
   margin: 0;
   text-transform: uppercase;
 }
-.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-amount {
+.studies-list
+  .studies-list-card
+  .studies-list-card-financials
+  .studies-list-card-financials-amount {
   display: flex;
   align-items: center;
   margin-left: auto;
@@ -798,7 +838,11 @@ body {
   border-radius: 4px;
   padding: 0.5rem;
 }
-.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-amount .studies-list-card-financials-amount-text {
+.studies-list
+  .studies-list-card
+  .studies-list-card-financials
+  .studies-list-card-financials-amount
+  .studies-list-card-financials-amount-text {
   font-size: 0.7rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -814,7 +858,12 @@ body {
   height: 2rem;
   overflow: auto;
 }
-.studies-list .studies-list-card .studies-list-card-tags .studies-list-card-tags-tag {
+
+.studies-list
+  .studies-list-card
+  .studies-list-card-footer
+  .studies-list-card-tags
+  .studies-list-card-tags-tag {
   font-size: 0.9rem;
   color: var(--white);
   background-color: var(--primary);
@@ -823,7 +872,11 @@ body {
   transition: 0.2s;
   cursor: pointer;
 }
-.studies-list .studies-list-card .studies-list-card-tags .studies-list-card-tags-tag:hover {
+.studies-list
+  .studies-list-card
+  .studies-list-card-footer
+  .studies-list-card-tags
+  .studies-list-card-tags-tag:hover {
   opacity: 0.65;
 }
 .studies-list .studies-list-card .studies-list-card-footer {
@@ -949,7 +1002,7 @@ body {
   top: 0.6rem;
   right: 1.5rem;
   display: inline-block;
-  content: " ";
+  content: ' ';
   width: 3rem;
   height: 0.3rem;
   background-color: var(--coolgray3);
@@ -981,7 +1034,10 @@ body {
   color: var(--coolgray7);
   transition: 0.2s;
 }
-.study-details .study-details-state .study-details-state-step.done .study-details-state-step-number {
+.study-details
+  .study-details-state
+  .study-details-state-step.done
+  .study-details-state-step-number {
   background-color: var(--coolgray11);
   color: var(--coolgray1);
 }
@@ -1054,13 +1110,20 @@ body {
   display: flex;
   gap: 1rem;
 }
-.study-details .study-details-financials .study-details-financials-infos .study-details-financials-infos-item {
+.study-details
+  .study-details-financials
+  .study-details-financials-infos
+  .study-details-financials-infos-item {
   text-transform: uppercase;
   font-weight: 500;
   font-size: 0.9rem;
   color: var(--white);
 }
-.study-details .study-details-financials .study-details-financials-infos .study-details-financials-infos-item h3 {
+.study-details
+  .study-details-financials
+  .study-details-financials-infos
+  .study-details-financials-infos-item
+  h3 {
   font-size: 0.7rem;
   color: var(--white);
   margin: 0;
@@ -1078,7 +1141,10 @@ body {
   border-radius: 4px;
   padding: 0.5rem;
 }
-.study-details .study-details-financials .study-details-financials-amount .study-details-financials-amount-text {
+.study-details
+  .study-details-financials
+  .study-details-financials-amount
+  .study-details-financials-amount-text {
   font-size: 0.7rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -1132,14 +1198,21 @@ body {
   transition: border-color 0.4s;
   height: 14rem;
 }
-.scenarios-list .scenarios-list-card:hover, .scenarios-list .scenarios-list-card:focus, .scenarios-list .scenarios-list-card:active {
+
+.scenarios-list-card:hover,
+.scenarios-list-card:focus,
+.scenarios-list-card:active {
   border-color: var(--coolgray11);
 }
-.scenarios-list .scenarios-list-card:hover .scenarios-list-card-name, .scenarios-list .scenarios-list-card:focus .scenarios-list-card-name, .scenarios-list .scenarios-list-card:active .scenarios-list-card-name {
+.scenarios-list-card:hover .scenarios-list-card-name,
+.scenarios-list-card:focus .scenarios-list-card-name,
+.scenarios-list-card:active .scenarios-list-card-name {
   color: var(--coolgray3);
   background-color: var(--coolgray11);
 }
-.scenarios-list .scenarios-list-card:hover button, .scenarios-list .scenarios-list-card:focus button, .scenarios-list .scenarios-list-card:active button {
+.scenarios-list-card:hover button,
+.scenarios-list-card:focus button,
+.scenarios-list-card:active button {
   opacity: 1 !important;
 }
 .scenarios-list .scenarios-list-card.empty {
@@ -1370,60 +1443,134 @@ body {
   overflow: auto;
   height: calc(var(--content-height) - 10.5rem);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train {
   position: relative;
   display: flex;
   margin-bottom: 0.5rem;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons {
   display: none;
   background-color: var(--coolgray3);
   border-radius: 0 4px 4px 0;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons button {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  button {
   background-color: transparent;
   border: none;
   padding: 0.25rem 0.5rem;
   transition: 0.2s;
   height: 100%;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-selectprojection {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-selectprojection {
   color: var(--cyan);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-selectprojection:hover {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-selectprojection:hover {
   background-color: var(--cyan);
   color: var(--white);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-duplicate {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-duplicate {
   color: var(--primary);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-duplicate:hover {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-duplicate:hover {
   background-color: var(--primary);
   color: var(--white);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-update {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-update {
   color: var(--orange);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-update:hover {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-update:hover {
   background-color: var(--orange);
   color: var(--white);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-delete {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-delete {
   border-radius: 0 4px 4px 0;
   color: var(--red);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-delete:hover {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-buttons
+  .scenario-timetable-train-buttons-delete:hover {
   background-color: var(--red);
   color: var(--white);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container {
   cursor: pointer;
   border: 1px solid var(--coolgray3);
   transition: border-color 0.2s;
   border-radius: 4px;
   flex-grow: 1;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container
+  .scenario-timetable-train-header {
   display: flex;
   align-items: center;
   flex-grow: 1;
@@ -1431,14 +1578,29 @@ body {
   background-color: var(--coolgray3);
   transition: background-color 0.2s;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-name {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container
+  .scenario-timetable-train-header
+  .scenario-timetable-train-name {
   display: flex;
   align-items: center;
   font-weight: bold;
   font-size: 1.25rem;
   width: 50%;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-name .scenario-timetable-train-idx {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container
+  .scenario-timetable-train-header
+  .scenario-timetable-train-name
+  .scenario-timetable-train-idx {
   display: inline-block;
   border-radius: 4px;
   color: var(--secondary);
@@ -1449,22 +1611,56 @@ body {
   min-width: 1.5rem;
   text-align: center;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-departure,
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-arrival {
+
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container
+  .scenario-timetable-train-header
+  .scenario-timetable-train-departure,
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container
+  .scenario-timetable-train-header
+  .scenario-timetable-train-arrival {
   width: 25%;
   text-align: right;
   font-weight: 500;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-body {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container.with-details
+  .scenario-timetable-train-body {
   display: flex;
   justify-content: space-between;
   padding: 0.25rem;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-body .scenario-timetable-train-duration {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container.with-details
+  .scenario-timetable-train-body
+  .scenario-timetable-train-duration {
   text-align: right;
   font-size: 0.8rem;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-tags {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container.with-details
+  .scenario-timetable-train-tags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1472,29 +1668,70 @@ body {
   padding: 0 0.25rem;
   overflow: auto;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-tags .scenario-timetable-train-tags-tag {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container.with-details
+  .scenario-timetable-train-tags
+  .scenario-timetable-train-tags-tag {
   font-size: 0.9rem;
   background-color: var(--teal);
   border-radius: 4px;
   padding: 0 0.25rem;
   margin-bottom: 0.25rem;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container:not(.with-details) .scenario-timetable-train-body,
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container:not(.with-details) .scenario-timetable-train-tags {
+
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container:not(.with-details)
+  .scenario-timetable-train-body,
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train
+  .scenario-timetable-train-container:not(.with-details)
+  .scenario-timetable-train-tags {
   display: none;
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train.selected .scenario-timetable-train-header {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train.selected
+  .scenario-timetable-train-header {
   background-color: var(--teal);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train:hover .scenario-timetable-train-container {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train:hover
+  .scenario-timetable-train-container {
   border-radius: 4px 0 0 4px;
   border-color: var(--secondary);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train:hover .scenario-timetable-train-container .scenario-timetable-train-header {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train:hover
+  .scenario-timetable-train-container
+  .scenario-timetable-train-header {
   background-color: var(--secondary);
   color: var(--white);
 }
-.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train:hover .scenario-timetable-train-buttons {
+.scenario
+  .scenario-sidemenu
+  .scenario-timetable
+  .scenario-timetable-trains
+  .scenario-timetable-train:hover
+  .scenario-timetable-train-buttons {
   display: flex;
 }
 .scenario .scenario-managetrainschedule {
@@ -1713,7 +1950,7 @@ body {
   display: block;
   width: 1rem;
   height: 2.5rem;
-  content: "";
+  content: '';
   background-color: #fff;
 }
 
@@ -1746,7 +1983,7 @@ body {
   display: block;
   width: 1rem;
   height: 2.8rem;
-  content: "";
+  content: '';
   background-color: #fff;
 }
 
@@ -1804,7 +2041,7 @@ body {
   outline: none;
 }
 .origin-name-and-time-container .toggle-button-container:before {
-  content: "";
+  content: '';
   position: absolute;
   top: 25%;
   left: 40%;
@@ -1814,7 +2051,7 @@ body {
   border-top: 2px solid gray;
 }
 .origin-name-and-time-container .toggle-button-container:after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 25%;
   left: 40%;
@@ -2002,7 +2239,8 @@ body {
 }
 
 svg text {
-  font-family: Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
 select.sm {
@@ -2094,12 +2332,18 @@ select.sm {
   width: 100%;
   transition: 0.2s;
 }
-.simulation-results .spacetimechart-container .dropdown .dropdown-menu:not(.dropdown-menu-right)::before {
+.simulation-results
+  .spacetimechart-container
+  .dropdown
+  .dropdown-menu:not(.dropdown-menu-right)::before {
   border-right-color: #d7d7d7;
   left: -0.625rem;
   top: 0;
 }
-.simulation-results .spacetimechart-container .dropdown .dropdown-menu:not(.dropdown-menu-right)::after {
+.simulation-results
+  .spacetimechart-container
+  .dropdown
+  .dropdown-menu:not(.dropdown-menu-right)::after {
   border-right-color: #fff;
   left: -0.525rem;
   top: 0;
@@ -2178,7 +2422,11 @@ select.sm {
   display: flex;
   align-items: center;
 }
-.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input .chart-modal-type-label {
+.simulation-results
+  .osrd-simulation-chart-modal
+  .chart-modal-box
+  .chart-modal-input
+  .chart-modal-type-label {
   color: #4d4f53;
   font-weight: bold;
   font-size: 3rem;
@@ -2198,8 +2446,12 @@ select.sm {
 .simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input input:focus {
   outline: none;
 }
-.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input .chart-modal-type-unit {
-  content: "s";
+.simulation-results
+  .osrd-simulation-chart-modal
+  .chart-modal-box
+  .chart-modal-input
+  .chart-modal-type-unit {
+  content: 's';
   color: #747678;
   font-weight: bold;
   font-size: 2rem;
@@ -2611,39 +2863,56 @@ select.sm {
   overflow: auto;
 }
 
-.table-drivertrainschedule, .table-drivertrainschedule th, .table-drivertrainschedule td {
+.table-drivertrainschedule,
+.table-drivertrainschedule th,
+.table-drivertrainschedule td {
   border: none !important;
   padding-right: 10px;
 }
-.table-drivertrainschedule .drivertrainschedule-pk, .table-drivertrainschedule th .drivertrainschedule-pk, .table-drivertrainschedule td .drivertrainschedule-pk {
+.table-drivertrainschedule .drivertrainschedule-pk,
+.table-drivertrainschedule th .drivertrainschedule-pk,
+.table-drivertrainschedule td .drivertrainschedule-pk {
   text-align: right;
   width: 2rem;
 }
-.table-drivertrainschedule .stoptime-container .box, .table-drivertrainschedule th .stoptime-container .box, .table-drivertrainschedule td .stoptime-container .box {
+.table-drivertrainschedule .stoptime-container .box,
+.table-drivertrainschedule th .stoptime-container .box,
+.table-drivertrainschedule td .stoptime-container .box {
   width: 100%;
   display: table;
 }
-.table-drivertrainschedule .stoptime-container .box .box-row, .table-drivertrainschedule th .stoptime-container .box .box-row, .table-drivertrainschedule td .stoptime-container .box .box-row {
+.table-drivertrainschedule .stoptime-container .box .box-row,
+.table-drivertrainschedule th .stoptime-container .box .box-row,
+.table-drivertrainschedule td .stoptime-container .box .box-row {
   display: table-row;
 }
-.table-drivertrainschedule .stoptime-container .box .box-cell, .table-drivertrainschedule th .stoptime-container .box .box-cell, .table-drivertrainschedule td .stoptime-container .box .box-cell {
+.table-drivertrainschedule .stoptime-container .box .box-cell,
+.table-drivertrainschedule th .stoptime-container .box .box-cell,
+.table-drivertrainschedule td .stoptime-container .box .box-cell {
   display: table-cell;
   width: 33.3333333333%;
   text-align: left;
   position: relative;
 }
-.table-drivertrainschedule .stoptime-container .box .box-cell .box-cell::after, .table-drivertrainschedule th .stoptime-container .box .box-cell .box-cell::after, .table-drivertrainschedule td .stoptime-container .box .box-cell .box-cell::after {
-  content: "+";
+.table-drivertrainschedule .stoptime-container .box .box-cell .box-cell::after,
+.table-drivertrainschedule th .stoptime-container .box .box-cell .box-cell::after,
+.table-drivertrainschedule td .stoptime-container .box .box-cell .box-cell::after {
+  content: '+';
   position: absolute;
 }
-.table-drivertrainschedule .drivertrainschedule-stop, .table-drivertrainschedule th .drivertrainschedule-stop, .table-drivertrainschedule td .drivertrainschedule-stop {
+.table-drivertrainschedule .drivertrainschedule-stop,
+.table-drivertrainschedule th .drivertrainschedule-stop,
+.table-drivertrainschedule td .drivertrainschedule-stop {
   font-weight: bold;
 }
-.table-drivertrainschedule .drivertrainschedule-stop small, .table-drivertrainschedule th .drivertrainschedule-stop small, .table-drivertrainschedule td .drivertrainschedule-stop small {
+.table-drivertrainschedule .drivertrainschedule-stop small,
+.table-drivertrainschedule th .drivertrainschedule-stop small,
+.table-drivertrainschedule td .drivertrainschedule-stop small {
   font-weight: bold;
 }
 
-.table-drivertrainschedule th, thead {
+.table-drivertrainschedule th,
+thead {
   position: sticky;
   top: 0;
   z-index: 1;
