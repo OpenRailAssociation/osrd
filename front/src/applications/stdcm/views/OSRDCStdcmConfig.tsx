@@ -63,29 +63,20 @@ export default function OSRDConfig({
               <RollingStockSelector condensed />
               <SpeedLimitByTagSelector />
               <Itinerary />
-              <div className="row">
-                <div className="col-xl-6">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:gridMarginBefore')}
-                      typeKey="gridMarginBefore"
-                    />
-                  </div>
+              <div className="osrd-config-item mb-2 osrd-config-item-container">
+                <div className="row mb-1 no-gutters">
+                  <div className="col-6">{t('allowances:gridMarginBeforeAfter')}</div>
+                  <div className="col-6">{t('allowances:standardAllowance')}</div>
                 </div>
-                <div className="col-xl-6">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:gridMarginAfter')}
-                      typeKey="gridMarginAfter"
-                    />
+                <div className="row no-gutters">
+                  <div className="col-3">
+                    <StdcmSingleAllowance typeKey="gridMarginBefore" />
                   </div>
-                </div>
-                <div className="col-xl-12">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:standardAllowance')}
-                      typeKey="standardStdcmAllowance"
-                    />
+                  <div className="col-3">
+                    <StdcmSingleAllowance typeKey="gridMarginAfter" />
+                  </div>
+                  <div className="col-6">
+                    <StdcmSingleAllowance typeKey="standardStdcmAllowance" />
                   </div>
                 </div>
               </div>

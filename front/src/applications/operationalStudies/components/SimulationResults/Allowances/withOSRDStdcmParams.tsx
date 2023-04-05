@@ -35,13 +35,11 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
     const standardAllowanceTypes = [
       {
         id: 'percentage',
-        label: t('allowanceTypes.percentage'),
-        unit: ALLOWANCE_UNITS_KEYS.percentage,
+        label: ALLOWANCE_UNITS_KEYS.percentage,
       },
       {
         id: 'time_per_distance',
-        label: t('allowanceTypes.time_per_distance'),
-        unit: ALLOWANCE_UNITS_KEYS.time_per_distance,
+        label: ALLOWANCE_UNITS_KEYS.time_per_distance,
       },
     ];
 

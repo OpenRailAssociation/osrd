@@ -4,7 +4,7 @@ import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 
 export default function InputGroupSNCF(props) {
-  const { id, handleType, options, placeholder, sm, title, value, type } = props;
+  const { id, handleType, options, orientation, placeholder, sm, title, value, type } = props;
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
     value
@@ -24,9 +24,25 @@ export default function InputGroupSNCF(props) {
     });
   }, [type, options]);
 
+  const inputField = (
+    <div className={`form-control-container ${selected.unit && 'has-right-icon'}`}>
+      <input
+        type="text"
+        className="form-control"
+        title={placeholder}
+        placeholder={placeholder}
+        onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
+        value={value}
+      />
+      <span className="form-control-state" />
+      {selected.unit && <span className="form-control-icon small">{selected.unit}</span>}
+    </div>
+  );
+
   return (
     <div className={`input-group ${sm && 'input-group-sm'}`}>
-      <div className="input-group-prepend">
+      {orientation === 'right' && inputField}
+      <div className={`input-group-${orientation === 'left' ? 'prepend' : 'append'}`}>
         <div className="btn-group dropdown">
           <button
             type="button"
@@ -77,18 +93,7 @@ export default function InputGroupSNCF(props) {
           </div>
         </div>
       </div>
-      <div className={`form-control-container ${selected.unit && 'has-right-icon'}`}>
-        <input
-          type="text"
-          className="form-control"
-          title={placeholder}
-          placeholder={placeholder}
-          onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
-          value={value}
-        />
-        <span className="form-control-state" />
-        {selected.unit && <span className="form-control-icon small">{selected.unit}</span>}
-      </div>
+      {orientation === 'left' && inputField}
       {isDropdownShown && (
         <div
           style={{
@@ -114,6 +119,7 @@ InputGroupSNCF.propTypes = {
   id: PropTypes.string.isRequired,
   options: PropTypes.array.isRequired,
   handleType: PropTypes.func.isRequired,
+  orientation: PropTypes.string,
   placeholder: PropTypes.string,
   sm: PropTypes.bool,
   title: PropTypes.string,
@@ -122,6 +128,7 @@ InputGroupSNCF.propTypes = {
 };
 
 InputGroupSNCF.defaultProps = {
+  orientation: 'left',
   placeholder: '',
   sm: false,
   title: undefined,

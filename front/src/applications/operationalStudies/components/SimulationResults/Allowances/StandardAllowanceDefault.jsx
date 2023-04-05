@@ -214,13 +214,14 @@ export default function StandardAllowanceDefault(props) {
 
   return (
     <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
-      <label
-        htmlFor={`standardAllowanceType-${title}`}
-        className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}
-      >
-        {title || t('sandardAllowancesWholePath')}
-      </label>
-
+      {title && (
+        <label
+          htmlFor={`standardAllowanceType-${title}`}
+          className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}
+        >
+          {title || t('sandardAllowancesWholePath')}
+        </label>
+      )}
       <div className="col">
         <div className="row">
           {options.setDistribution && (
@@ -247,6 +248,7 @@ export default function StandardAllowanceDefault(props) {
                 value={value.value}
                 type={value.type}
                 sm
+                orientation="right"
               />
             ) : (
               <InputSNCF

@@ -40,8 +40,7 @@
     "time_per_distance": "Temps/Distance"
   },
   "standardAllowance": "Marge de régularité",
-  "gridMarginBefore": "Marge grille avant",
-  "gridMarginAfter": "Marge grille après",
+  "gridMarginBeforeAfter": "Marge grille avant/après",
   "op": "pr",
   "to": "à",
   "trainSchedules": "Type de marche"
