@@ -167,10 +167,10 @@ paths:
                           speed:
                             type: number
                             format: double
-                  modes_and_profiles:
+                  electrification_conditions:
                     type: array
                     items:
-                      description: The catenary modes and electrical profiles used and seen along the path. <mode_seen> and <profile_seen> are filled only if they differ from those used.
+                      description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
                       type: array
                       items:
                         type: object
@@ -185,10 +185,17 @@ paths:
                             type: string
                           profile_used:
                             type: string
+                            nullable: true
+                          restriction_used:
+                            type: string
+                            nullable: true
                           mode_seen:
                             type: string
                             nullable: true
                           profile_seen:
+                            type: string
+                            nullable: true
+                          restriction_seen:
                             type: string
                             nullable: true
 

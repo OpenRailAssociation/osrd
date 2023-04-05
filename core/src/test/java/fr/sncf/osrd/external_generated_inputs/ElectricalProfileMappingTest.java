@@ -62,7 +62,7 @@ public class ElectricalProfileMappingTest {
                 "BAL3")));
         var path = TrainPathBuilder.from(infra, rjsPath);
 
-        var profiles = profileMap.getProfilesOnPath(path, new HashSet<>(asList("1", "2")));
+        var profiles = profileMap.getProfilesOnPath(path);
         assertEquals(profiles.keySet(), new HashSet<>(singletonList("1")));
         var profileRangeMap = profiles.get("1");
         assertEquals("22500", profileRangeMap.get(0.));
@@ -87,7 +87,7 @@ public class ElectricalProfileMappingTest {
         var rjsPath = smallInfraTrainPath();
         var path = TrainPathBuilder.from(infra, rjsPath);
 
-        var profiles = profileMap.getProfilesOnPath(path, new HashSet<>(asList("1", "2", "3", "4", "5")));
+        var profiles = profileMap.getProfilesOnPath(path);
         assertEquals(profiles.keySet(), new HashSet<>(asList("1", "2", "3", "4", "5")));
 
         var expectedResults = new ArrayList<HashSet<String>>();

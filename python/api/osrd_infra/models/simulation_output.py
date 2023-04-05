@@ -10,5 +10,5 @@ class SimulationOutput(models.Model):
     mrsp = models.JSONField(validators=[PydanticValidator(MRSP)])
     base_simulation = models.JSONField()
     eco_simulation = models.JSONField(null=True)
-    modes_and_profiles = models.JSONField(default=list)
+    electrification_conditions = models.JSONField(default=list)
     train_schedule = models.OneToOneField(TrainSchedule, on_delete=models.CASCADE, related_name="simulation_output")
