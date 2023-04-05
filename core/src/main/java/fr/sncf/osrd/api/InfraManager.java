@@ -117,7 +117,11 @@ public class InfraManager extends APIClient {
     }
 
     @ExcludeFromGeneratedCodeCoverage
-    @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"})
+    @SuppressFBWarnings({
+            "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+            "DM_GC"
+    })
     private FullInfra downloadInfra(
             InfraCacheEntry cacheEntry,
             String infraId,
@@ -151,11 +155,16 @@ public class InfraManager extends APIClient {
             // Parse railjson into a proper infra
             logger.info("parsing the infra of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
-            var infra = SignalingInfraBuilder.fromRJSInfra(
+            final var infra = SignalingInfraBuilder.fromRJSInfra(
                     rjsInfra,
                     Set.of(new BAL3(diagnosticRecorder)),
                     diagnosticRecorder
             );
+
+            // Attempt to ease memory pressure by making the RailJSON deserialized copy
+            // orphan, and calling the garbage collector.
+            rjsInfra = null;
+            System.gc();
 
             logger.info("adaptation to kotlin of {}", request.url());
             var rawInfra = adaptRawInfra(infra);
