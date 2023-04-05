@@ -977,13 +977,15 @@ export type TrainScheduleResult = {
     | {
         error?: string;
       };
-  modes_and_profiles?: {
+  electrification_conditions?: {
     start?: number;
     stop?: number;
     mode_used?: string;
     profile_used?: string | null;
+    restriction_used?: string | null;
     mode_seen?: string | null;
     profile_seen?: string | null;
+    restriction_seen?: string | null;
   }[][];
 };
 export type StdcmRequest = {
