@@ -38,21 +38,20 @@ public class ElectricalProfileMapping {
     /**
      * Returns the electrical profile values encountered along the train path, for each power class given.
      */
-    public HashMap<String, RangeMap<Double, String>> getProfilesOnPath(TrainPath trainPath, Set<String> powerClasses) {
+    public HashMap<String, RangeMap<Double, String>> getProfilesOnPath(TrainPath trainPath) {
         var res = new HashMap<String, RangeMap<Double, String>>();
-        for (var powerClass : powerClasses) {
-            if (!mapping.containsKey(powerClass))
-                continue;
-            var byTrackMapping = mapping.get(powerClass);
+        for (var entry : mapping.entrySet()) {
+            var powerClass = entry.getKey();
+            var byTrackMapping = entry.getValue();
             var rangeMap = new ImmutableRangeMap.Builder<Double, String>();
             double offset = 0;
             for (var trackRange : TrainPath.removeLocation(trainPath.trackRangePath())) {
                 var trackID = trackRange.track.getEdge().getID();
                 if (byTrackMapping.containsKey(trackID)) {
                     var pathRangeMapping = trackRange.convertMap(byTrackMapping.get(trackID));
-                    for (var entry : pathRangeMapping.asMapOfRanges().entrySet())
-                        rangeMap.put(Range.closedOpen(entry.getKey().lowerEndpoint() + offset,
-                                entry.getKey().upperEndpoint() + offset), entry.getValue());
+                    for (var rangeMapEntry : pathRangeMapping.asMapOfRanges().entrySet())
+                        rangeMap.put(Range.closedOpen(rangeMapEntry.getKey().lowerEndpoint() + offset,
+                                rangeMapEntry.getKey().upperEndpoint() + offset), rangeMapEntry.getValue());
                 }
                 offset += trackRange.getLength();
             }

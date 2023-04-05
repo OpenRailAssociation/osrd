@@ -76,11 +76,9 @@ public class StandaloneSimulationEndpoint implements Take {
             var electricalProfileMap = electricalProfileSetManager.getProfileMap(request.electricalProfileSet);
 
             // Parse rolling stocks
-            var powerClasses = new HashSet<String>();
             var rollingStocks = new HashMap<String, RollingStock>();
             for (var rjsRollingStock : request.rollingStocks) {
                 rollingStocks.put(rjsRollingStock.getID(), RJSRollingStockParser.parse(rjsRollingStock));
-                powerClasses.add(rjsRollingStock.basePowerClass);
             }
 
             // Parse trainPath
@@ -89,7 +87,7 @@ public class StandaloneSimulationEndpoint implements Take {
 
             if (electricalProfileMap.isPresent()) {
                 envelopePath.setElectricalProfiles(
-                        electricalProfileMap.get().getProfilesOnPath(trainPath, powerClasses));
+                        electricalProfileMap.get().getProfilesOnPath(trainPath));
             }
 
             // Parse train schedules
