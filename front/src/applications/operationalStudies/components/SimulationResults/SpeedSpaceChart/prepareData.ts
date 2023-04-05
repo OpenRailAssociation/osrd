@@ -1,7 +1,7 @@
 import { mergeDatasAreaConstant } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
-import { ModesAndProfiles, SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { ElectrificationConditions, SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import { SPEED_SPACE_CHART_KEY_VALUES } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 export interface GevPreparedata {
@@ -14,7 +14,7 @@ export interface GevPreparedata {
   slopesHistogram: Record<string, number>[];
   areaSlopesHistogram: Record<string, unknown>[];
   curvesHistogram: Record<string, unknown>[];
-  modesAndProfiles: ModesAndProfiles[];
+  electrificationConditions: ElectrificationConditions[];
 }
 
 /// SpeedSpaceChart only
@@ -29,15 +29,15 @@ function prepareData(simulation: SimulationSnapshot, selectedTrain: number): Gev
     slopesHistogram: [],
     areaSlopesHistogram: [],
     curvesHistogram: [],
-    modesAndProfiles: [],
+    electrificationConditions: [],
   };
   dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map((step) => ({
     ...step,
     speed: step.speed * 3.6,
   }));
 
-  if (simulation.trains[selectedTrain].modes_and_profiles) {
-    dataSimulation.modesAndProfiles = simulation.trains[selectedTrain].modes_and_profiles;
+  if (simulation.trains[selectedTrain].electrification_conditions) {
+    dataSimulation.electrificationConditions = simulation.trains[selectedTrain].electrification_conditions;
   }
 
   if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {

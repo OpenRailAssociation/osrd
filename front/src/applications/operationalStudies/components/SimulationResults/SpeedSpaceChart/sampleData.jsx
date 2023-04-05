@@ -3306,7 +3306,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
               mechanical_energy_consumed: 309482782.7153909,
             },
             speed_limit_tags: 'Marchandise - MA100',
-            modes_and_profiles: [
+            electrification_conditions: [
               {
                 stop: 50745.16179319808,
                 start: 0,
@@ -4940,7 +4940,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
               mechanical_energy_consumed: 309482782.7153909,
             },
             speed_limit_tags: 'Marchandise - MA100',
-            modes_and_profiles: [
+            electrification_conditions: [
               {
                 stop: 50745.16179319808,
                 start: 0,
@@ -6574,7 +6574,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
               mechanical_energy_consumed: 309482782.7153909,
             },
             speed_limit_tags: 'Marchandise - MA100',
-            modes_and_profiles: [
+            electrification_conditions: [
               {
                 stop: 50745.16179319808,
                 start: 0,
@@ -8212,7 +8212,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
               mechanical_energy_consumed: 309482782.7153909,
             },
             speed_limit_tags: 'Marchandise - MA100',
-            modes_and_profiles: [
+            electrification_conditions: [
               {
                 stop: 50745.16179319808,
                 start: 0,
@@ -9845,7 +9845,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
               ],
             },
             speed_limit_tags: 'Marchandise - MA100',
-            modes_and_profiles: [
+            electrification_conditions: [
               {
                 stop: 50745.16179319808,
                 start: 0,
@@ -11481,7 +11481,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
               mechanical_energy_consumed: 309482782.7153909,
             },
             speed_limit_tags: 'Marchandise - MA100',
-            modes_and_profiles: [
+            electrification_conditions: [
               {
                 stop: 50745.16179319808,
                 start: 0,
@@ -13119,7 +13119,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
             ],
           },
           speed_limit_tags: 'Marchandise - MA100',
-          modes_and_profiles: [
+          electrification_conditions: [
             {
               stop: 50745.16179319808,
               start: 0,
@@ -14754,7 +14754,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
             ],
           },
           speed_limit_tags: 'Marchandise - MA100',
-          modes_and_profiles: [
+          electrification_conditions: [
             {
               stop: 50745.16179319808,
               start: 0,
@@ -16390,7 +16390,7 @@ const ORSD_GRAPH_SAMPLE_DATA = {
             mechanical_energy_consumed: 309482782.7153909,
           },
           speed_limit_tags: 'Marchandise - MA100',
-          modes_and_profiles: [
+          electrification_conditions: [
             {
               stop: 50745.16179319808,
               start: 0,

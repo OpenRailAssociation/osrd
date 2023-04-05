@@ -180,9 +180,9 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
         rotate
       );
     }
-    if (dataSimulation.modesAndProfiles && speedSpaceSettings.electricalProfiles) {
-      dataSimulation.modesAndProfiles.forEach((source, index) => {
-        const segment = createProfileSegment(dataSimulation.modesAndProfiles, source);
+    if (dataSimulation.electrificationConditions && speedSpaceSettings.electricalProfiles) {
+      dataSimulation.electrificationConditions.forEach((source, index) => {
+        const segment = createProfileSegment(dataSimulation.electrificationConditions, source);
 
         drawElectricalProfile(
           chartLocal,
