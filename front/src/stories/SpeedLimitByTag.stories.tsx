@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React from 'react';
 
-import { IsolatedSpeedLimitByTagSelector } from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
+import { IsolatedSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
 export default {
   /* 👇 The title prop is optional.

@@ -10,6 +10,7 @@ import { Dispatch } from 'redux';
 import { noop } from 'lodash';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
+import './SpeedLimitByTagSelector.scss';
 
 type SpeedLimitByTagSelectorProps = {
   condensed?: boolean;
