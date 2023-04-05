@@ -32,7 +32,7 @@ actix-http = "3.3.1"
 actix-cors = "0.6.4"
 env_logger = "0.10.0"
 r2d2 = "~0.8.2"
-redis = { version = "0.22", features = [
+redis = { version = "0.23", features = [
     "tokio-comp",
     "connection-manager",
     "tokio-native-tls-comp",
