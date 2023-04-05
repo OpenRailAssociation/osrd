@@ -17,32 +17,6 @@ from .infra import LoadingGaugeType
 RAILJSON_ROLLING_STOCK_VERSION = "3.1"
 
 
-class EnergySource(BaseModel, extra=Extra.forbid):
-    """Energy sources used when simulating qualesi trains"""
-
-    max_input_power: SpeedDependantPower
-    max_output_power: SpeedDependantPower
-    optional_energy_storage: Optional[EnergyStorage]
-    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the energy source")
-
-
-class EnergyStorage(BaseModel, extra=Extra.forbid):
-    """If the EnergySource is capable of storing some energy"""
-
-    capacity: confloat(ge=0) = Field(description="How much energy the source can store (in Joules)")
-    soc: confloat(ge=0, le=1) = Field(description="The state of charge, SoC·capacity = actual stock of energy")
-    soc_min: confloat(ge=0, le=1) = Field(description="The minimum SoC, where the available energy is zero")
-    soc_max: confloat(ge=0, le=1) = Field(description="The maximum SoC, where the available energy is capacity")
-    optional_refill_law: Optional[RefillLaw]
-
-
-class RefillLaw(BaseModel, extra=Extra.forbid):
-    """The EnergyStorage refilling behavior"""
-
-    tau: confloat(ge=0) = Field(description="Time constant of the refill behavior (in seconds)")
-    soc_ref: confloat(ge=0, le=1) = Field(description="Reference (target) value of state of charge")
-
-
 class ComfortType(str, Enum):
     """
     This enum defines the comfort type that can take a train.
@@ -128,6 +102,32 @@ class PowerRestrictions(BaseModel):
     __root__: Mapping[str, str]
 
 
+class EnergySource(BaseModel, extra=Extra.forbid):
+    """Energy sources used when simulating qualesi trains"""
+
+    max_input_power: SpeedDependantPower
+    max_output_power: SpeedDependantPower
+    optional_energy_storage: Optional[EnergyStorage]
+    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the energy source")
+
+
+class EnergyStorage(BaseModel, extra=Extra.forbid):
+    """If the EnergySource is capable of storing some energy"""
+
+    capacity: confloat(ge=0) = Field(description="How much energy the source can store (in Joules)")
+    soc: confloat(ge=0, le=1) = Field(description="The state of charge, SoC·capacity = actual stock of energy")
+    soc_min: confloat(ge=0, le=1) = Field(description="The minimum SoC, where the available energy is zero")
+    soc_max: confloat(ge=0, le=1) = Field(description="The maximum SoC, where the available energy is capacity")
+    optional_refill_law: Optional[RefillLaw]
+
+
+class RefillLaw(BaseModel, extra=Extra.forbid):
+    """The EnergyStorage refilling behavior"""
+
+    tau: confloat(ge=0) = Field(description="Time constant of the refill behavior (in seconds)")
+    soc_ref: confloat(ge=0, le=1) = Field(description="Reference (target) value of state of charge")
+
+
 class RollingStock(BaseModel, extra=Extra.forbid):
     """Electrical profiles and power classes are used to model the power loss along a catenary:
     * Rolling stocks are attributed a power class depending on their power usage.
@@ -164,6 +164,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
+    energy_sources: Optional[conlist(EnergySource)]
 
 
 if __name__ == "__main__":
