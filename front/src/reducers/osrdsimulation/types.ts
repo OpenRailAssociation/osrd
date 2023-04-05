@@ -89,7 +89,7 @@ export interface Regime {
   error?: string;
 }
 
-export interface ModesAndProfiles {
+export interface ElectrificationConditions {
   start: number;
   stop: number;
   used_mode: string;
@@ -123,7 +123,7 @@ interface SpeedPosition {
 }
 
 export interface Train {
-  modes_and_profiles: ModesAndProfiles[];
+  electrification_conditions: ElectrificationConditions[];
   id: number;
   labels: string[];
   path: number;

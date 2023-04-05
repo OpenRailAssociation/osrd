@@ -2,7 +2,7 @@ import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-import { ModesAndProfiles } from 'reducers/osrdsimulation/types';
+import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
 
 export const BLOCKTYPES = [
   {
@@ -236,8 +236,8 @@ export const legend: Profile[] = [
 ];
 
 export const createProfileSegment = (
-  fullModesAndProfiles: ModesAndProfiles[],
-  modeAndProfile: ModesAndProfiles
+  fullElectrificationConditions: ElectrificationConditions[],
+  electrificationConditions: ElectrificationConditions
 ) => {
   const segment: Segment = {
     position_start: 0,
@@ -256,15 +256,15 @@ export const createProfileSegment = (
     isIncompatible: false,
   };
 
-  segment.position_start = modeAndProfile.start;
-  segment.position_end = modeAndProfile.stop;
-  segment.position_middle = (modeAndProfile.start + modeAndProfile.stop) / 2;
-  segment.lastPosition = fullModesAndProfiles.slice(-1)[0].stop;
+  segment.position_start = electrificationConditions.start;
+  segment.position_end = electrificationConditions.stop;
+  segment.position_middle = (electrificationConditions.start + electrificationConditions.stop) / 2;
+  segment.lastPosition = fullElectrificationConditions.slice(-1)[0].stop;
   segment.height_start = 4;
   segment.height_end = 24;
   segment.height_middle = (segment.height_start + segment.height_end) / 2;
-  segment.usedMode = modeAndProfile.used_mode;
-  segment.usedProfile = modeAndProfile.used_profile;
+  segment.usedMode = electrificationConditions.used_mode;
+  segment.usedProfile = electrificationConditions.used_profile;
 
   // prepare colors
   const electricalProfileColorsWithProfile: Mode = {
