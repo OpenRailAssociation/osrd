@@ -19,8 +19,8 @@ const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
       />
     </div>
     <div className="col-1 small">{signalSearchResult.label}</div>
-    <div className="col-2">{signalSearchResult.line_code}</div>
-    <div className="col-3 small">{signalSearchResult.line_name}</div>
+    <div className="col-3">{signalSearchResult.line_code}</div>
+    <div className="col-6 small">{signalSearchResult.line_name}</div>
   </div>
 );
 

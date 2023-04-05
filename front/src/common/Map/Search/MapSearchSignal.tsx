@@ -33,8 +33,9 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
 
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
-  const [aspect, setAspect] = useState<string[]>([]);
+  const [aspects, setAspects] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<ISignalSearchResult[]>([]);
+  const [autocompleteLineNames, setAutocompleteLineNames] = useState<string[]>([]);
 
   // Sort by, and order true = ASC, false = DESC
   const [sortFilter, setSortFilter] = useState<SortType>({
@@ -54,14 +55,13 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       ? ['=', ['line_code'], Number(lineSearch)]
       : ['search', ['line_name'], lineSearch];
 
-    const aspectQuery = aspect.join(' ');
     return {
       object: 'signal',
       query: [
         'and',
         ['=', ['infra_id'], infraIDPayload],
         !lineSearch || payloadQuery,
-        !aspectQuery || ['contains', ['list', aspectQuery], ['aspects']],
+        !aspects.length || ['contains', ['list', ...aspects], ['aspects']],
         ['search', ['label'], signalName],
       ],
     };
@@ -97,7 +97,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
     } else {
       setSearchResults([]);
     }
-  }, [debouncedSearchTerm, debouncedSearchLine, aspect, searchState]);
+  }, [debouncedSearchTerm, debouncedSearchLine, aspects]);
 
   const onResultClick = (result: ISignalSearchResult) =>
     onResultSearchClick({
@@ -116,6 +116,11 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
       setSearchResults(sortedResults);
     }
   }, [sortFilter]);
+
+  useEffect(() => {
+    const lineNames = searchResults.map((result) => result.line_name);
+    setAutocompleteLineNames([...new Set(lineNames)]);
+  }, [searchLineState]);
 
   const formatSearchResults = () => (
     <div className="search-results">
@@ -146,8 +151,8 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
 
   return (
     <>
-      <div className="row mr-2 mb-2">
-        <div className="col-sm-6">
+      <div className="row mr-2 mb-2 search-signal">
+        <div className="col-md-6">
           <InputSNCF
             label={t('map-search:line')}
             type="text"
@@ -163,9 +168,18 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
             clearButton
             noMargin
             sm
+            list="line"
           />
+          <datalist id="line" className="overflow-hidden">
+            {searchLineState &&
+              autocompleteLineNames.map((lineName) => (
+                <option value={lineName} key={lineName}>
+                  {lineName}
+                </option>
+              ))}
+          </datalist>
         </div>
-        <div className="col-sm-6">
+        <div className="col-md-6 mb-2">
           <InputSNCF
             label={t('map-search:signal')}
             type="text"
@@ -182,22 +196,34 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
             clearButton
             noMargin
             sm
+            list="signal"
+          />
+          <datalist id="signal">
+            {searchState &&
+              searchResults.map((result) => (
+                <option value={result.label} key={`${result.label}-${result.line_name}`}>
+                  {result.label}
+                </option>
+              ))}
+          </datalist>
+        </div>
+        <div className="col-md-6">
+          <MultiSelectSNCF
+            multiSelectTitle={t('map-search:aspects')}
+            multiSelectPlaceholder={t('map-search:noAspectSelected')}
+            options={SIGNAL_ASPECTS}
+            onChange={setAspects}
+            selectedValues={aspects}
           />
         </div>
       </div>
+      <h2 className="text-center mt-3">
+        {t('map-search:resultsCount', { count: searchResults ? searchResults.length : 0 })}
+      </h2>
       <div>
-        <MultiSelectSNCF
-          multiSelectTitle={t('map-search:aspects')}
-          multiSelectPlaceholder={t('map-search:noAspectSelected')}
-          options={SIGNAL_ASPECTS}
-          onChange={setAspect}
-          selectedValues={aspect}
-        />
-      </div>
-      <div>
-        {searchResults?.length > 0 ? (
+        {searchResults?.length > 0 && (
           <>
-            <div className="row mt-3 px-3 small no-gutters justify-content-between">
+            <div className="row mt-3 mb-2 px-3 small no-gutters justify-content-between">
               <div
                 className="col-1 search-results-label"
                 role="button"
@@ -217,7 +243,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
                 {orderDisplay('label')}
               </div>
               <div
-                className="col-2 search-results-label"
+                className="col-3 search-results-label"
                 role="button"
                 onClick={() => setSortName('line_code')}
                 tabIndex={-1}
@@ -226,7 +252,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
                 {orderDisplay('line_code')}
               </div>
               <div
-                className="col-3 search-results-label"
+                className="col-6 search-results-label"
                 role="button"
                 onClick={() => setSortName('line_name')}
                 tabIndex={-1}
@@ -237,8 +263,6 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
             </div>
             {formatSearchResults()}
           </>
-        ) : (
-          <h2 className="text-center mt-3">{t('map-search:noresult')}</h2>
         )}
       </div>
     </>

@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 type MultiSelectSNCFProps = {
   multiSelectTitle: string;
   multiSelectPlaceholder: string;
-  options: string[];
+  options: { label: string; signals: string[] }[];
+
   onChange: React.Dispatch<React.SetStateAction<string[]>>;
   selectedValues: string[];
   allowSelectAll?: boolean;
@@ -19,6 +20,7 @@ const MultiSelectSNCF = ({
 }: MultiSelectSNCFProps) => {
   const [multiSelectToggle, setMultiselectToggle] = useState<boolean>(false);
   const [selectAll, setSelectAll] = useState<boolean>(false);
+  const multiSelectOptions = options.map((optionGroup) => optionGroup.signals).flat();
 
   const renderSelectToggles = useCallback(
     (selectOptions: string[]) =>
@@ -55,7 +57,7 @@ const MultiSelectSNCF = ({
   );
 
   useEffect(() => {
-    const isAllSelected = options.length === selectedValues.length;
+    const isAllSelected = multiSelectOptions?.length === selectedValues.length;
     if (isAllSelected) {
       setSelectAll(true);
     } else if (selectAll && !isAllSelected) {
@@ -64,11 +66,18 @@ const MultiSelectSNCF = ({
   }, [selectedValues]);
 
   const handleSelectAll = (newSelectAll: boolean) => {
-    if (newSelectAll) {
-      onChange(options);
+    if (newSelectAll && multiSelectOptions) {
+      onChange(multiSelectOptions);
     } else {
       onChange([]);
     }
+  };
+
+  const formatSelectValues = (values: string[]) => {
+    const valuesLength = values.length;
+    return valuesLength < 5
+      ? values.join(', ')
+      : [...values.slice(0, 5), `+ ${valuesLength - 4}`].join(', ');
   };
 
   return (
@@ -80,7 +89,7 @@ const MultiSelectSNCF = ({
       >
         <div className="select-control">
           <div className="input-group" data-role="select-toggle">
-            <div className="form-control is-placeholder">
+            <div className="form-control form-control-sm is-placeholder">
               {allowSelectAll ? (
                 <div className="custom-control custom-checkbox">
                   <button
@@ -88,22 +97,22 @@ const MultiSelectSNCF = ({
                     data-role="value"
                     role="checkbox"
                     aria-checked="false"
-                    className={`custom-control-label font-weight-medium ${selectAll && 'active'}`}
+                    className={`custom-control-label font-weight-light ${selectAll && 'active'}`}
                     onClick={() => handleSelectAll(!selectAll)}
                   >
-                    {selectedValues.join(', ') || multiSelectPlaceholder}
+                    {formatSelectValues(selectedValues) || multiSelectPlaceholder}
                   </button>
                 </div>
               ) : (
-                <div className="font-weight-medium">
-                  {selectedValues.join(', ') || multiSelectPlaceholder}
+                <div className="font-weight-light">
+                  {formatSelectValues(selectedValues) || multiSelectPlaceholder}
                 </div>
               )}
             </div>
 
             <div className="input-group-append input-group-last">
               <button
-                className="btn btn-primary btn-only-icon"
+                className="btn btn-sm btn-primary btn-only-icon"
                 data-role="btn"
                 type="button"
                 aria-expanded="false"
@@ -116,9 +125,22 @@ const MultiSelectSNCF = ({
           </div>
 
           <div id="multiselecttoggle" className="select-menu position-relative" data-role="menu">
-            <div className="select-group" data-role="group" data-id="0" role="list">
-              {options && renderSelectToggles(options)}
-            </div>
+            {options.map((selectOption) =>
+              selectOption.label ? (
+                <div role="listitem" className="select-group">
+                  <div className="select-group-head">
+                    <span className="select-group-title text-uppercase">{selectOption.label}</span>
+                  </div>
+                  <div className="select-group-content" data-role="group" data-id="0" role="list">
+                    {renderSelectToggles(selectOption.signals)}
+                  </div>
+                </div>
+              ) : (
+                <div className="select-group-content" data-role="group" data-id="0" role="list">
+                  {renderSelectToggles(selectOption.signals)}
+                </div>
+              )
+            )}
           </div>
         </div>
       </div>
