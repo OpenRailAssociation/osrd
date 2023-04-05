@@ -37,7 +37,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
-use std::time::Duration;
 use views::electrical_profiles::ElectricalProfileSet;
 use views::search::config::Config as SearchConfig;
 
@@ -104,8 +103,6 @@ async fn runserver(
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
     let pool = Pool::builder()
         .max_size(pg_config.pool_size)
-        .min_idle(Some(0))
-        .idle_timeout(Some(Duration::from_micros(1)))
         .build(manager)
         .expect("Failed to create pool.");
     let redis = redis::Client::open(redis_config.redis_url.clone()).unwrap();
