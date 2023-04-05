@@ -55,16 +55,10 @@ async fn get_railjson(
             let table = object_type.get_table();
             let query = if params.exclude_extensions {
                 format!(
-                    "SELECT coalesce(json_agg(x.data - 'extensions'), '[]'::json) AS railjson
-                    FROM (SELECT * FROM {table}) x
-                    WHERE x.infra_id = $1"
+                    "SELECT (x.data - 'extensions')::text AS railjson FROM {table} x WHERE x.infra_id = $1"
                 )
             } else {
-                format!(
-                    "SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
-                    FROM (SELECT * FROM {table}) x
-                    WHERE x.infra_id = $1"
-                )
+                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1")
             };
             let db_pool_clone = db_pool.clone();
             block::<_, Result<_>>(move || {
@@ -73,7 +67,7 @@ async fn get_railjson(
                     object_type,
                     sql_query(query)
                         .bind::<BigInt, _>(infra)
-                        .get_result::<RailJsonData>(&mut conn)?,
+                        .load::<RailJsonData>(&mut conn)?,
                 ))
             })
         })
@@ -81,7 +75,17 @@ async fn get_railjson(
 
     let res = join_all(futures).await;
     let res: Result<Vec<_>> = res.into_iter().map(|e| e.unwrap()).collect();
-    let res: EnumMap<ObjectType, RailJsonData> = res?.into_iter().collect();
+    let res: EnumMap<_, _> = res?
+        .into_iter()
+        .map(|(obj_type, objects)| {
+            let obj_list = objects
+                .into_iter()
+                .map(|obj| obj.railjson)
+                .collect::<Vec<_>>()
+                .join(",");
+            (obj_type, format!("[{obj_list}]"))
+        })
+        .collect();
 
     // Here we avoid avoid the deserialization of the whole RailJson object
     let railjson = format!(
@@ -99,17 +103,17 @@ async fn get_railjson(
             "operational_points": {operational_points},
             "catenaries": {catenaries}
         }}"#,
-        track_sections = res[ObjectType::TrackSection].railjson,
-        signals = res[ObjectType::Signal].railjson,
-        speed_sections = res[ObjectType::SpeedSection].railjson,
-        detectors = res[ObjectType::Detector].railjson,
-        track_section_links = res[ObjectType::TrackSectionLink].railjson,
-        switches = res[ObjectType::Switch].railjson,
-        switch_types = res[ObjectType::SwitchType].railjson,
-        buffer_stops = res[ObjectType::BufferStop].railjson,
-        routes = res[ObjectType::Route].railjson,
-        operational_points = res[ObjectType::OperationalPoint].railjson,
-        catenaries = res[ObjectType::Catenary].railjson,
+        track_sections = res[ObjectType::TrackSection],
+        signals = res[ObjectType::Signal],
+        speed_sections = res[ObjectType::SpeedSection],
+        detectors = res[ObjectType::Detector],
+        track_section_links = res[ObjectType::TrackSectionLink],
+        switches = res[ObjectType::Switch],
+        switch_types = res[ObjectType::SwitchType],
+        buffer_stops = res[ObjectType::BufferStop],
+        routes = res[ObjectType::Route],
+        operational_points = res[ObjectType::OperationalPoint],
+        catenaries = res[ObjectType::Catenary],
     );
 
     Ok(HttpResponse::Ok()
