@@ -102,13 +102,21 @@ class PowerRestrictions(BaseModel):
     __root__: Mapping[str, str]
 
 
-class EnergySource(BaseModel, extra=Extra.forbid):
-    """Energy sources used when simulating qualesi trains"""
+class RefillLaw(BaseModel, extra=Extra.forbid):
+    """The EnergyStorage refilling behavior"""
 
-    max_input_power: SpeedDependantPower
-    max_output_power: SpeedDependantPower
-    optional_energy_storage: Optional[EnergyStorage]
-    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the energy source")
+    tau: confloat(ge=0) = Field(description="Time constant of the refill behavior (in seconds)")
+    soc_ref: confloat(ge=0, le=1) = Field(description="Reference (target) value of state of charge")
+
+
+class EnergyStorage(BaseModel, extra=Extra.forbid):
+    """If the EnergySource is capable of storing some energy"""
+
+    capacity: confloat(ge=0) = Field(description="How much energy the source can store (in Joules)")
+    soc: confloat(ge=0, le=1) = Field(description="The state of charge, SoC·capacity = actual stock of energy")
+    soc_min: confloat(ge=0, le=1) = Field(description="The minimum SoC, where the available energy is zero")
+    soc_max: confloat(ge=0, le=1) = Field(description="The maximum SoC, where the available energy is capacity")
+    optional_refill_law: Optional[RefillLaw]
 
 
 class SpeedDependantPower(BaseModel, extra=Extra.forbid):
@@ -127,21 +135,13 @@ class SpeedDependantPower(BaseModel, extra=Extra.forbid):
         return v
 
 
-class EnergyStorage(BaseModel, extra=Extra.forbid):
-    """If the EnergySource is capable of storing some energy"""
+class EnergySource(BaseModel, extra=Extra.forbid):
+    """Energy sources used when simulating qualesi trains"""
 
-    capacity: confloat(ge=0) = Field(description="How much energy the source can store (in Joules)")
-    soc: confloat(ge=0, le=1) = Field(description="The state of charge, SoC·capacity = actual stock of energy")
-    soc_min: confloat(ge=0, le=1) = Field(description="The minimum SoC, where the available energy is zero")
-    soc_max: confloat(ge=0, le=1) = Field(description="The maximum SoC, where the available energy is capacity")
-    optional_refill_law: Optional[RefillLaw]
-
-
-class RefillLaw(BaseModel, extra=Extra.forbid):
-    """The EnergyStorage refilling behavior"""
-
-    tau: confloat(ge=0) = Field(description="Time constant of the refill behavior (in seconds)")
-    soc_ref: confloat(ge=0, le=1) = Field(description="Reference (target) value of state of charge")
+    max_input_power: SpeedDependantPower
+    max_output_power: SpeedDependantPower
+    optional_energy_storage: Optional[EnergyStorage]
+    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the energy source")
 
 
 class RollingStock(BaseModel, extra=Extra.forbid):
