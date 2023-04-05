@@ -59,24 +59,6 @@ const InfraErrorComponent: React.FC<PropsWithChildren<{ error: InfraError; index
             items={[children]}
             type={DROPDOWN_STYLE_TYPES.transparent}
           />
-          {/*
-          <div className="btn-group dropdown">
-            <button
-              type="button"
-              className="btn btn-options dropdown-toggle"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              aria-controls="dropdown1"
-            >
-              <span className="sr-only">Actions</span>
-              <i className="icons-options icons-size-1x75" aria-hidden="true" />
-            </button>
-            <div id="dropdown1" className="dropdown-menu dropdown-menu-right">
-              {children}
-            </div>
-          </div>
-          */}
         </div>
       )}
     </div>
