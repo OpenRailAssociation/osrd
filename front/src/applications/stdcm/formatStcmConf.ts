@@ -11,6 +11,7 @@ import { makeEnumBooleans } from 'utils/constants';
 
 import { ActionFailure } from 'reducers/main';
 import { ThunkAction } from 'types';
+import { getOpenApiSteps } from 'common/Pathfinding/Pathfinding'
 
 export default function formatStdcmConf(
   dispatch: Dispatch,
@@ -113,18 +114,7 @@ export default function formatStdcmConf(
       timetable: osrdconf.timetableID,
       start_time: originDate, // Build a date
       end_time: destinationDate, // Build a date
-      start_points: [
-        {
-          track_section: osrdconf?.origin?.id,
-          geo_coordinate: osrdconf?.origin?.coordinates,
-        },
-      ],
-      end_points: [
-        {
-          track_section: osrdconf?.destination?.id,
-          geo_coordinate: osrdconf?.destination?.coordinates,
-        },
-      ],
+      steps: getOpenApiSteps(osrdconf),
       maximum_departure_delay: maximumDepartureDelay,
       maximum_relative_run_time: 2,
       speed_limit_tags: osrdconf.speedLimitByTag,
