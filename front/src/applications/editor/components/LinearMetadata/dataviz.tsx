@@ -153,12 +153,7 @@ export interface LinearMetadataDatavizProps<T> {
   /**
    * Event when mouse leave into data item
    */
-  onMouseLeave?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 
   /**
    * Event when mouse wheel on a data item
@@ -331,7 +326,10 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     <div className={cx('linear-metadata-visualisation')}>
       <div
         ref={wrapper}
-        onMouseLeave={() => setHoverAtx(null)}
+        onMouseLeave={(e) => {
+          setHoverAtx(null);
+          if (onMouseLeave) onMouseLeave(e);
+        }}
         className={cx(
           'data',
           highlighted.length > 0 && 'has-highlight',
@@ -348,7 +346,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         {/* Display the Y axis if there is one */}
         {field && min !== max && <Scale className="scale-y" begin={min} end={max} />}
 
-        {hoverAtx && (
+        {hoverAtx && !draginStartAt && (
           <div
             className="hover-x"
             style={{ position: 'relative', left: `${hoverAtx}px`, borderLeft: '1px dotted' }}
@@ -414,13 +412,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onMouseEnter(e, item, segment.index, point);
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (onMouseLeave && data[segment.index]) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onMouseLeave(e, item, segment.index, point);
               }
             }}
             onMouseDown={(e) => {
