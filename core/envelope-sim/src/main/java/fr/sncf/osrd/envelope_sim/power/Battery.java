@@ -8,10 +8,10 @@ import static fr.sncf.osrd.envelope_sim.power.SpeedDependantPower.constantPower;
 public class Battery implements EnergySource {
 
     /** Floor power limit : the max power the source can capture (<=0) */
-    public SpeedDependantPower maxInputPower;
+    private final SpeedDependantPower maxInputPower;
 
     /** Ceiling power limit : the max power the source can provide (>=0)*/
-    public SpeedDependantPower maxOutputPower;
+    private final SpeedDependantPower maxOutputPower;
 
     /** The energy storage object of the battery */
     public EnergyStorage storage;
@@ -41,7 +41,7 @@ public class Battery implements EnergySource {
     @Override
     public double getMaxInputPower(double speed) {
         var maxStorageInputPower = storage.getRefillPower();
-        return Math.max(maxStorageInputPower, maxInputPower.get(speed));
+        return Math.min(maxStorageInputPower, maxInputPower.get(speed));
     }
 
     @Override
@@ -54,20 +54,20 @@ public class Battery implements EnergySource {
         return 2;
     }
 
-    public static Battery newBattery() {
-        var pMin = constantPower(-400.);
-        var pMax = constantPower(500);
-        double capacity = 150 * 3.6e6;
+    public static Battery newBattery(double pInput, double pOutput, double efficiency, double initialSoc) {
+        var maxInputPower = constantPower(pInput);
+        var maxOutputPower = constantPower(pOutput);
+        double capacity = 300 * 3.6e6;
         return new Battery(
-                pMin,
-                pMax,
+                maxInputPower,
+                maxOutputPower,
                 new EnergyStorage(
                         capacity,
-                        0.8,
+                        initialSoc,
                         0.2, 0.9,
-                        new RefillLaw(97.6,0.8, capacity)
+                        new RefillLaw(1000,0.8, capacity)
                 ),
-                1.
+                efficiency
         );
     }
 
