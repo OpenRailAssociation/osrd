@@ -34,14 +34,14 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           java-version: 17
-          distribution: corretto
+          distribution: temurin
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
 
       - uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 7.5
+          gradle-executable: core/gradlew
           arguments: -p core -Pspotbugs_report_xml --continue check
 
       - name: Upload coverage to Codecov
