@@ -51,7 +51,7 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
   }, [onCancel, closeModal]);
 
   return (
-    <Modal title={title} withCloseButton={!disabled}>
+    <Modal title={title} withCloseButton>
       <>{children}</>
 
       <div className="text-right">
