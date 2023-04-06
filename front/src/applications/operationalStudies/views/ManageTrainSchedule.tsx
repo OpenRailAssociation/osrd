@@ -34,11 +34,7 @@ export default function ManageTrainSchedule({
 
   function confirmButton() {
     return trainScheduleIDsToModify ? (
-      <button
-        className="btn btn-warning"
-        type="button"
-        onClick={() => submitConf(dispatch, t, setIsWorking)}
-      >
+      <button className="btn btn-warning" type="button">
         <span className="mr-2">
           <FaPen />
         </span>
