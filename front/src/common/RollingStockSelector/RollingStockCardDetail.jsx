@@ -8,7 +8,7 @@ import { setFailure } from 'reducers/main';
 import RollingStock2Img from './RollingStock2Img';
 import RollingStockCurves from './RollingStockCurves';
 
-const ROLLING_STOCK_URL = '/rolling_stock/';
+const ROLLING_STOCK_URL = '/editoast/rolling_stock/';
 
 export default function RollingStockCardDetail(props) {
   const dispatch = useDispatch();
