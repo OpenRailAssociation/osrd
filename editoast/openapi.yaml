@@ -1098,7 +1098,7 @@ paths:
                 "NameAsc",
                 "NameDesc",
                 "CreationDateAsc",
-                "CreationDateAsc",
+                "CreationDateDesc",
                 "LastModifiedAsc",
                 "LastModifiedDesc",
               ]
@@ -1146,10 +1146,7 @@ paths:
                   results:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        schema:
-                          $ref: "#/components/schemas/ProjectResult"
+                      $ref: "#/components/schemas/ProjectResult"
 
   /projects/{project_id}/:
     get:
@@ -1289,7 +1286,7 @@ paths:
                 "NameAsc",
                 "NameDesc",
                 "CreationDateAsc",
-                "CreationDateAsc",
+                "CreationDateDesc",
                 "LastModifiedAsc",
                 "LastModifiedDesc",
               ]
@@ -1470,7 +1467,7 @@ paths:
                 "NameAsc",
                 "NameDesc",
                 "CreationDateAsc",
-                "CreationDateAsc",
+                "CreationDateDesc",
                 "LastModifiedAsc",
                 "LastModifiedDesc",
               ]
@@ -1503,10 +1500,7 @@ paths:
                   results:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        schema:
-                          $ref: "#/components/schemas/ScenarioListResult"
+                      $ref: "#/components/schemas/ScenarioListResult"
 
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     get:

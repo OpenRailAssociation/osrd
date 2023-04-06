@@ -59,3 +59,23 @@ signal:
       line_name: ts.data->'extensions'->'sncf'->>'line_name'
       geographic: ST_AsGeoJSON(ST_Transform(lay.geographic, 4326))::json
       schematic: ST_AsGeoJSON(ST_Transform(lay.schematic, 4326))::json
+
+project:
+  table: osrd_search_project
+  columns:
+    id: integer
+    name: string
+    description: string
+  result:
+    joins: |
+      INNER JOIN osrd_infra_project AS project ON project.id = osrd_search_project.id
+      LEFT JOIN osrd_infra_study AS study ON project.id = study.project_id
+    group_by: project.id
+    columns:
+      id: project.id
+      image: project.image_id
+      name: project.name
+      studies: COUNT(study.id)
+      description: project.description
+      last_modification: project.last_modification
+      tags: project.tags
