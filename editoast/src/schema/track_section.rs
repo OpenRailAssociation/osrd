@@ -12,7 +12,7 @@ use crate::map::BoundingBox;
 
 use derivative::Derivative;
 use editoast_derive::InfraModel;
-use postgis_diesel::types as postgis;
+use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
@@ -27,8 +27,10 @@ pub struct TrackSection {
     pub curves: Vec<Curve>,
     #[serde(default)]
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
-    pub geo: LineString,
-    pub sch: LineString,
+    #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
+    pub geo: Geometry,
+    #[derivative(Default(value = "Geometry::new(LineString(vec![]))"))]
+    pub sch: Geometry,
     #[serde(default)]
     pub extensions: TrackSectionExtensions,
 }
@@ -60,6 +62,21 @@ impl OSRDTyped for TrackSection {
 impl OSRDIdentified for TrackSection {
     fn get_id(&self) -> &String {
         &self.id
+    }
+}
+
+impl TrackSection {
+    fn bbox(geom: &Geometry) -> BoundingBox {
+        BoundingBox::from_geometry(geom.clone())
+            .expect("track sections can only be represented by LineStrings")
+    }
+
+    pub fn geo_bbox(&self) -> BoundingBox {
+        Self::bbox(&self.geo)
+    }
+
+    pub fn sch_bbox(&self) -> BoundingBox {
+        Self::bbox(&self.sch)
     }
 }
 
@@ -103,45 +120,8 @@ pub struct LoadingGaugeLimit {
     pub end: f64,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
-#[serde(tag = "type", deny_unknown_fields)]
-#[derivative(Default)]
-pub enum LineString {
-    #[derivative(Default)]
-    LineString {
-        #[derivative(Default(value = "vec![[0., 0.], [1., 1.]]"))]
-        coordinates: Vec<[f64; 2]>,
-    },
-}
-
-impl LineString {
-    pub fn get_bbox(&self) -> BoundingBox {
-        let coords = match self {
-            Self::LineString { coordinates } => coordinates,
-        };
-
-        let mut min: (f64, f64) = (f64::MAX, f64::MAX);
-        let mut max: (f64, f64) = (f64::MIN, f64::MIN);
-        for p in coords {
-            min.0 = min.0.min(p[0]);
-            max.0 = max.0.max(p[0]);
-            min.1 = min.1.min(p[1]);
-            max.1 = max.1.max(p[1]);
-        }
-        BoundingBox(min, max)
-    }
-}
-
-impl From<postgis::LineString<postgis::Point>> for LineString {
-    fn from(value: postgis::LineString<postgis::Point>) -> Self {
-        Self::LineString {
-            coordinates: value.points.into_iter().map(|p| [p.x, p.y]).collect(),
-        }
-    }
-}
-
-#[derive(Debug, Default, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
+#[derive(Debug, Clone, Derivative)]
+#[derivative(Hash, PartialEq, Default)]
 pub struct TrackSectionCache {
     pub obj_id: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
@@ -189,13 +169,13 @@ impl TrackSectionCache {
 impl From<TrackSection> for TrackSectionCache {
     fn from(track: TrackSection) -> Self {
         TrackSectionCache {
+            bbox_geo: track.geo_bbox(),
+            bbox_sch: track.sch_bbox(),
             obj_id: track.id.0,
             length: track.length,
             curves: track.curves,
             slopes: track.slopes,
             line_code: track.extensions.sncf.map(|scnf| scnf.line_code),
-            bbox_geo: track.geo.get_bbox(),
-            bbox_sch: track.sch.get_bbox(),
         }
     }
 }
@@ -213,9 +193,10 @@ impl Cache for TrackSectionCache {
 #[cfg(test)]
 mod test {
     use super::TrackSection;
-    use super::{LineString::LineString, TrackSectionExtensions};
+    use super::TrackSectionExtensions;
     use crate::infra::tests::test_infra_transaction;
     use crate::map::BoundingBox;
+    use geos::geojson;
     use serde_json::from_str;
 
     #[test]
@@ -232,18 +213,16 @@ mod test {
     /// Test bounding box from linestring
     #[test]
     fn test_line_string_bbox() {
-        let line_string = LineString {
-            coordinates: vec![
-                [2.4, 49.3],
-                [2.6, 49.1],
-                [2.8, 49.2],
-                [3.0, 49.1],
-                [2.6, 49.0],
-            ],
-        };
+        let line_string = geojson::Value::LineString(vec![
+            vec![2.4, 49.3],
+            vec![2.6, 49.1],
+            vec![2.8, 49.2],
+            vec![3.0, 49.1],
+            vec![2.6, 49.0],
+        ]);
 
         assert_eq!(
-            line_string.get_bbox(),
+            BoundingBox::from_geojson(line_string).unwrap(),
             BoundingBox((2.4, 49.0), (3.0, 49.3))
         );
     }

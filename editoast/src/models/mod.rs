@@ -1,4 +1,5 @@
 mod documents;
+pub mod infra_objects;
 mod pathfinding;
 mod projects;
 pub mod rolling_stock;

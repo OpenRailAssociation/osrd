@@ -2,6 +2,7 @@ mod graph;
 
 use crate::error::Result;
 use crate::infra::Infra;
+use crate::map::BoundingBox;
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
@@ -9,6 +10,7 @@ use diesel::sql_types::{BigInt, Double, Integer, Nullable, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use enum_map::EnumMap;
+use geos::geojson::Geometry;
 use std::collections::{HashMap, HashSet};
 
 pub use graph::Graph;
@@ -215,16 +217,20 @@ pub struct TrackQueryable {
 
 impl From<TrackQueryable> for TrackSectionCache {
     fn from(track: TrackQueryable) -> Self {
-        let geo: LineString = serde_json::from_str(&track.geo).unwrap();
-        let sch: LineString = serde_json::from_str(&track.sch).unwrap();
+        let geo: Geometry =
+            serde_json::from_str(&track.geo).expect("invalid track section geometry");
+        let sch: Geometry =
+            serde_json::from_str(&track.sch).expect("invalid track section geometry");
         Self {
             obj_id: track.obj_id,
             length: track.length,
             curves: serde_json::from_str(&track.curves).unwrap(),
             slopes: serde_json::from_str(&track.slopes).unwrap(),
             line_code: track.line_code,
-            bbox_geo: geo.get_bbox(),
-            bbox_sch: sch.get_bbox(),
+            bbox_geo: BoundingBox::from_geometry(geo)
+                .expect("tracksections' geometry must be LineStrings"),
+            bbox_sch: BoundingBox::from_geometry(sch)
+                .expect("tracksections' geometry must be LineStrings"),
         }
     }
 }
