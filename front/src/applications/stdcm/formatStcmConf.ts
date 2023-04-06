@@ -109,6 +109,7 @@ export default function formatStdcmConf(
 
     const osrdConfStdcm = {
       ...getOpenApiSteps(osrdconf),
+      rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
       timetable: osrdconf.timetableID,
       start_time: originDate, // Build a date
