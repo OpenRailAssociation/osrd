@@ -88,7 +88,7 @@ table! {
         id -> BigInt,
         obj_id -> Text,
         infra_id -> BigInt,
-        data -> Json,
+        data -> Jsonb,
     }
 }
 
@@ -98,7 +98,7 @@ table! {
     osrd_infra_tracksectionmodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -107,7 +107,7 @@ table! {
     osrd_infra_signalmodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -116,7 +116,7 @@ table! {
     osrd_infra_speedsectionmodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -125,7 +125,7 @@ table! {
     osrd_infra_tracksectionlinkmodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -134,7 +134,7 @@ table! {
     osrd_infra_switchmodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -143,7 +143,7 @@ table! {
     osrd_infra_switchtypemodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -152,7 +152,7 @@ table! {
     osrd_infra_detectormodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -170,7 +170,7 @@ table! {
     osrd_infra_routemodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -179,7 +179,7 @@ table! {
     osrd_infra_operationalpointmodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }
@@ -188,7 +188,7 @@ table! {
     osrd_infra_catenarymodel(id) {
         id -> BigInt,
         obj_id -> Text,
-        data -> Json,
+        data -> Jsonb,
         infra_id -> BigInt,
     }
 }

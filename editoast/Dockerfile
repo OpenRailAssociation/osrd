@@ -7,6 +7,9 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef as builder
 
+# geos crate requirement
+RUN apt update -yqq &&  apt install -yqq --no-install-recommends libgeos-dev
+
 COPY --from=planner /app/recipe.json recipe.json
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
@@ -19,7 +22,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 FROM debian:bullseye-slim as runner
 
 RUN apt update -yqq && \
-    apt install -yqq --no-install-recommends libpq-dev curl ca-certificates && \
+    apt install -yqq --no-install-recommends libpq-dev curl ca-certificates libgeos-dev && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
