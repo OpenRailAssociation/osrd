@@ -19,11 +19,11 @@ const submitConf = async (
   const osrdConfig = formatConf(dispatch, t, osrdconf.simulationConf);
   if (osrdConfig) {
     setIsWorking(true);
-    const originTime = time2sec(osrdconf.simulationConf.originTime);
+    const departureTime = time2sec(osrdconf.simulationConf.departureTime);
     const schedules = [];
     let actualTrainCount = 1;
     for (let nb = 1; nb <= osrdconf.simulationConf.trainCount; nb += 1) {
-      const newOriginTime = originTime + 60 * osrdconf.simulationConf.trainDelta * (nb - 1);
+      const newDepartureTime = departureTime + 60 * osrdconf.simulationConf.trainDelta * (nb - 1);
       const trainName = trainNameWithNum(
         osrdconf.simulationConf.name,
         actualTrainCount,
@@ -33,7 +33,7 @@ const submitConf = async (
         formatConf(dispatch, t, {
           ...osrdconf.simulationConf,
           name: trainName,
-          originTime: newOriginTime.toString(),
+          originTime: newDepartureTime.toString(),
         })
       );
       actualTrainCount += osrdconf.simulationConf.trainStep;
@@ -51,7 +51,7 @@ const submitConf = async (
       dispatch(
         setSuccess({
           title: t('trainAdded'),
-          text: `${osrdconf.simulationConf.name}: ${sec2time(originTime)}`,
+          text: `${osrdconf.simulationConf.name}: ${sec2time(departureTime)}`,
         })
       );
       setIsWorking(false);
