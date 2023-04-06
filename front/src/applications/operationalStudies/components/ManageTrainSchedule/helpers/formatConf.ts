@@ -1,5 +1,6 @@
 import { setFailure } from 'reducers/main';
 import { OsrdConfState } from 'applications/operationalStudies/consts';
+import { time2sec } from 'utils/timeManipulation';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfState) {
@@ -13,12 +14,12 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
       })
     );
   }
-  if (!osrdconf.originTime) {
+  if (!osrdconf.departureTime) {
     error = true;
     dispatch(
       setFailure({
         name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noOriginTime'),
+        message: t('errorMessages.noDepartureTime'),
       })
     );
   }
@@ -81,8 +82,8 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
     const osrdConfSchedule = {
       train_name: osrdconf.name,
       labels: osrdconf.labels,
-      departure_time: osrdconf.originTime,
-      initial_speed: Math.abs(osrdconf.initialSpeed / 3.6),
+      departure_time: time2sec(osrdconf.departureTime),
+      initial_speed: osrdconf.initialSpeed ? Math.abs(osrdconf.initialSpeed / 3.6) : 0,
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,

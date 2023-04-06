@@ -135,8 +135,8 @@ export interface OsrdConfState {
   speedLimitByTag?: string;
   powerRestriction?: PowerRestrictionRange;
   origin?: PointOnMap;
-  initialSpeed: number;
-  departureTime?: string;
+  initialSpeed?: number;
+  departureTime: string;
   destination?: PointOnMap;
   vias: PointOnMap[];
   suggeredVias: Path['steps'];
