@@ -82,7 +82,7 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
       train_name: osrdconf.name,
       labels: osrdconf.labels,
       departure_time: osrdconf.originTime,
-      initial_speed: Math.abs(osrdconf.originSpeed / 3.6),
+      initial_speed: Math.abs(osrdconf.initialSpeed / 3.6),
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,

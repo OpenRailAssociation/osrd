@@ -11,7 +11,12 @@ export default function TimetableManageTrainSchedule({ setDisplayTrainScheduleMa
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
 
   return (
-    <div className="scenario-timetable-managetrainschedule">
+    <div
+      className="scenario-timetable-managetrainschedule"
+      role="button"
+      tabIndex={0}
+      onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
+    >
       <div className="scenario-timetable-managetrainschedule-header">
         <div className="text-center mb-3">
           <span className="text-primary mr-2">
