@@ -8,16 +8,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BatteryTests {
 
+    double inputPower = 300e3;
+    double outputPower = 300e3;
+    double efficiency = 0.8;
+
+    double capacity = 300 * 3.6e6;
+
+    double[] initialSocValues = {0.2, 0.5, 0.79, 0.8};
+
+
     @Test
     public void getMaxOutputAndInputPowerTests() {
-        var inputPower = 300e3;
-        var outputPower = 300e3;
-        var efficiency = 0.8;
-
-        var initialSocValues = new double[]{0.2, 0.5, 0.79, 0.8};
 
         for (var initialSoc: initialSocValues) {
-            var battery = Battery.newBattery(inputPower, outputPower, efficiency, initialSoc);
+            var battery = Battery.newBattery(inputPower, outputPower, capacity, efficiency, initialSoc);
             double expectedOutputPower = outputPower * efficiency;
             if (initialSoc <= 0.2)
                 expectedOutputPower = 0.;
@@ -27,6 +31,19 @@ public class BatteryTests {
                 expectedInputPower = battery.storage.refillLaw.getRefillPower(initialSoc);
             assertEquals(expectedOutputPower, battery.getMaxOutputPower(0., false));
             assertEquals(expectedInputPower, battery.getMaxInputPower(0.));
+        }
+    }
+
+    @Test
+    public void consumeEnergyTest() {
+
+        for (var initialSoc: initialSocValues) {
+            var battery = Battery.newBattery(inputPower, outputPower, capacity, efficiency, initialSoc);
+            battery.consumeEnergy(capacity / 100);
+            double expectedSoc = initialSoc - 0.01; // we expect the SoC to drop by 1% if we consume 1% of the capacity
+            if (initialSoc <= 0.2)
+                expectedSoc = 0.2;
+            assertEquals(expectedSoc, battery.getSoc());
         }
     }
 }

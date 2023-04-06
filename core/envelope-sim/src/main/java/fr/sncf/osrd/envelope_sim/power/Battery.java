@@ -46,7 +46,7 @@ public class Battery implements EnergySource {
 
     @Override
     public void consumeEnergy(double energyDelta) {
-        storage.updateStateOfCharge(energyDelta);
+        storage.updateStateOfCharge(-energyDelta);
     }
 
     @Override
@@ -54,10 +54,14 @@ public class Battery implements EnergySource {
         return 2;
     }
 
-    public static Battery newBattery(double pInput, double pOutput, double efficiency, double initialSoc) {
+    public static Battery newBattery(
+            double pInput,
+            double pOutput,
+            double capacity,
+            double efficiency,
+            double initialSoc) {
         var maxInputPower = constantPower(pInput);
         var maxOutputPower = constantPower(pOutput);
-        double capacity = 300 * 3.6e6;
         return new Battery(
                 maxInputPower,
                 maxOutputPower,
@@ -71,8 +75,7 @@ public class Battery implements EnergySource {
         );
     }
 
-    public void sendPower(double powerSentToBattery, double timeDelta) {
-        var deltaSoc = powerSentToBattery * timeDelta;
-        storage.updateStateOfCharge(deltaSoc);
+    public double getSoc() {
+        return storage.getSoc();
     }
 }

@@ -41,4 +41,8 @@ public class EnergyStorage{
     public double getRefillPower() {
         return refillLaw.getRefillPower(soc);
     }
+
+    public double getSoc() {
+        return soc;
+    }
 }
