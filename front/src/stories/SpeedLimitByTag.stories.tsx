@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import React from 'react';
-
 import { IsolatedSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
 const SAMPLE_DATA = ['First Category of Speed Limits', 'Second Category of Speed Limits'];
