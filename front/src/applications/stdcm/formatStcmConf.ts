@@ -108,13 +108,11 @@ export default function formatStdcmConf(
     standardAllowance.value_type = standardAllowanceType;
 
     const osrdConfStdcm = {
-      infra: osrdconf.infraID,
-      rolling_stock: osrdconf.rollingStockID,
+      ...getOpenApiSteps(osrdconf),
       comfort: osrdconf.rollingStockComfort,
       timetable: osrdconf.timetableID,
       start_time: originDate, // Build a date
       end_time: destinationDate, // Build a date
-      steps: getOpenApiSteps(osrdconf),
       maximum_departure_delay: maximumDepartureDelay,
       maximum_relative_run_time: 2,
       speed_limit_tags: osrdconf.speedLimitByTag,
