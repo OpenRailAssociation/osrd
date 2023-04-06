@@ -54,9 +54,9 @@ paths:
               properties:
                 object:
                   type: string
-                  example: "operationalpoint"
+                  example: 'operationalpoint'
                 query:
-                  $ref: "#/components/schemas/SearchQuery"
+                  $ref: '#/components/schemas/SearchQuery'
                 page:
                   type: integer
                   default: 1
@@ -103,7 +103,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ViewMetadata"
+                $ref: '#/components/schemas/ViewMetadata'
 
   /layers/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
     get:
@@ -175,7 +175,7 @@ paths:
                   results:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Infra"
+                      $ref: '#/components/schemas/Infra'
                 required: [count, next, previous]
     post:
       tags:
@@ -196,7 +196,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Infra"
+                $ref: '#/components/schemas/Infra'
 
   /infra/{id}/:
     get:
@@ -216,7 +216,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Infra"
+                $ref: '#/components/schemas/Infra'
     delete:
       tags:
         - infra
@@ -250,7 +250,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: "#/components/schemas/Operation"
+                $ref: '#/components/schemas/Operation'
       responses:
         200:
           description: An array containing infos about the operations processed
@@ -259,7 +259,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/OperationResult"
+                  $ref: '#/components/schemas/OperationResult'
 
     put:
       tags:
@@ -287,7 +287,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Infra"
+                $ref: '#/components/schemas/Infra'
 
   /infra/{id}/railjson/:
     get:
@@ -307,7 +307,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RailjsonFile"
+                $ref: '#/components/schemas/RailjsonFile'
 
   /infra/railjson/:
     post:
@@ -332,7 +332,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RailjsonFile"
+              $ref: '#/components/schemas/RailjsonFile'
         required: true
       responses:
         201:
@@ -373,7 +373,7 @@ paths:
         - in: query
           name: error_type
           schema:
-            $ref: "#/components/schemas/InfraErrorType"
+            $ref: '#/components/schemas/InfraErrorType'
           description: The type of error to filter on
         - in: query
           name: object_id
@@ -412,7 +412,7 @@ paths:
                   results:
                     type: array
                     items:
-                      $ref: "#/components/schemas/InfraError"
+                      $ref: '#/components/schemas/InfraError'
 
   /infra/{id}/switch_types/:
     get:
@@ -497,7 +497,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Zone"
+                $ref: '#/components/schemas/Zone'
 
   /infra/{id}/lock/:
     post:
@@ -552,7 +552,7 @@ paths:
                 type: array
                 items:
                   type: string
-                example: ["freight", "heavy_load"]
+                example: ['freight', 'heavy_load']
 
   /infra/{id}/voltages/:
     get:
@@ -609,8 +609,8 @@ paths:
                     type: string
                     description: Object IDs
                 example:
-                  Switch: ["switch.0", "switch.1"]
-                  Detector: ["detector.0"]
+                  Switch: ['switch.0', 'switch.1']
+                  Detector: ['detector.0']
                   BufferStop: []
 
   /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
@@ -651,12 +651,12 @@ paths:
                     type: array
                     items:
                       type: string
-                    example: ["route1", "route2"]
+                    example: ['route1', 'route2']
                   ending:
                     type: array
                     items:
                       type: string
-                    example: ["route3", "route4"]
+                    example: ['route3', 'route4']
 
   /infra/{id}/routes/track_ranges/:
     get:
@@ -676,7 +676,7 @@ paths:
           schema:
             type: string
             description: A list of routes seperated by comma
-            example: "route1,route2,route3"
+            example: 'route1,route2,route3'
           required: true
       responses:
         200:
@@ -687,9 +687,9 @@ paths:
                 type: array
                 items:
                   oneOf:
-                    - $ref: "#/components/schemas/RouteTrackRangesNotFoundError"
-                    - $ref: "#/components/schemas/RouteTrackRangesCantComputePathError"
-                    - $ref: "#/components/schemas/RouteTrackRangesComputed"
+                    - $ref: '#/components/schemas/RouteTrackRangesNotFoundError'
+                    - $ref: '#/components/schemas/RouteTrackRangesCantComputePathError'
+                    - $ref: '#/components/schemas/RouteTrackRangesComputed'
 
   /infra/{id}/pathfinding/:
     post:
@@ -722,13 +722,13 @@ paths:
               properties:
                 starting:
                   allOf:
-                    - $ref: "#/components/schemas/TrackLocation"
+                    - $ref: '#/components/schemas/TrackLocation'
                     - type: object
                       properties:
                         direction:
-                          $ref: "#/components/schemas/Direction"
+                          $ref: '#/components/schemas/Direction'
                 ending:
-                  $ref: "#/components/schemas/TrackLocation"
+                  $ref: '#/components/schemas/TrackLocation'
       responses:
         200:
           description: Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned.
@@ -743,15 +743,15 @@ paths:
                       type: array
                       minItems: 1
                       items:
-                        $ref: "#/components/schemas/DirectionalTrackRange"
+                        $ref: '#/components/schemas/DirectionalTrackRange'
                     detectors:
                       type: array
                       items:
                         type: string
-                        example: "detector1"
+                        example: 'detector1'
                     switches_directions:
                       type: object
-                      example: { "switch1": "left", "switch2": "right" }
+                      example: { 'switch1': 'left', 'switch2': 'right' }
                       additionalProperties:
                         type: string
 
@@ -759,7 +759,7 @@ paths:
     post:
       tags:
         - infra
-      summary: "Retrieve a list of specific objects in railjson format"
+      summary: 'Retrieve a list of specific objects in railjson format'
       parameters:
         - in: path
           name: id
@@ -770,7 +770,7 @@ paths:
         - in: path
           name: object_type
           schema:
-            $ref: "#/components/schemas/ObjectType"
+            $ref: '#/components/schemas/ObjectType'
           description: The type of the object
           required: true
       requestBody:
@@ -798,13 +798,13 @@ paths:
                   properties:
                     railjson:
                       description: Object properties in railjson format
-                      $ref: "#/components/schemas/Railjson"
+                      $ref: '#/components/schemas/Railjson'
                     geographic:
                       description: object's geographic in geojson format
-                      $ref: "#/components/schemas/Geometry"
+                      $ref: '#/components/schemas/Geometry'
                     schematic:
                       description: object's schematic in geojson format
-                      $ref: "#/components/schemas/Geometry"
+                      $ref: '#/components/schemas/Geometry'
   /infra/{id}/clone/:
     post:
       tags:
@@ -852,7 +852,7 @@ paths:
                       type: integer
                     name:
                       type: string
-                      example: "France 2023"
+                      example: 'France 2023'
 
     post:
       tags:
@@ -870,7 +870,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ElectricalProfile"
+                $ref: '#/components/schemas/ElectricalProfile'
 
   /electrical_profile_set/{id}/:
     get:
@@ -892,7 +892,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ElectricalProfile"
+                  $ref: '#/components/schemas/ElectricalProfile'
 
   /electrical_profile_set/{id}/level_order/:
     get:
@@ -918,8 +918,8 @@ paths:
                   items:
                     type: string
                 example:
-                  "1500": ["A", "B", "C"]
-                  "25000": ["25000", "22500", "20000"]
+                  '1500': ['A', 'B', 'C']
+                  '25000': ['25000', '22500', '20000']
 
   /documents/{key}/:
     get:
@@ -1004,7 +1004,7 @@ paths:
                   results:
                     type: array
                     items:
-                      $ref: "#/components/schemas/LightRollingStock"
+                      $ref: '#/components/schemas/LightRollingStock'
 
   /light_rolling_stock/{id}/:
     get:
@@ -1024,7 +1024,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LightRollingStock"
+                $ref: '#/components/schemas/LightRollingStock'
 
   /rolling_stock/:
     post:
@@ -1035,14 +1035,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollingStockCreatePayload"
+              $ref: '#/components/schemas/RollingStockCreatePayload'
       responses:
         200:
           description: The rolling stock list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollingStock"
+                $ref: '#/components/schemas/RollingStock'
 
   /rolling_stock/{id}/:
     get:
@@ -1062,7 +1062,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollingStock"
+                $ref: '#/components/schemas/RollingStock'
 
   /projects/:
     post:
@@ -1073,14 +1073,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProjectCreateRequest"
+              $ref: '#/components/schemas/ProjectCreateRequest'
       responses:
         201:
           description: The created project
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProjectResult"
+                $ref: '#/components/schemas/ProjectResult'
     get:
       tags:
         - projects
@@ -1092,12 +1092,12 @@ paths:
             type: string
             enum:
               [
-                "NameAsc",
-                "NameDesc",
-                "CreationDateAsc",
-                "CreationDateAsc",
-                "LastModifiedAsc",
-                "LastModifiedDesc",
+                'NameAsc',
+                'NameDesc',
+                'CreationDateAsc',
+                'CreationDateAsc',
+                'LastModifiedAsc',
+                'LastModifiedDesc',
               ]
         - in: query
           name: name
@@ -1146,7 +1146,7 @@ paths:
                       type: object
                       properties:
                         schema:
-                          $ref: "#/components/schemas/ProjectResult"
+                          $ref: '#/components/schemas/ProjectResult'
 
   /projects/{project_id}/:
     get:
@@ -1166,7 +1166,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProjectResult"
+                $ref: '#/components/schemas/ProjectResult'
     patch:
       tags:
         - projects
@@ -1183,14 +1183,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProjectPatchRequest"
+              $ref: '#/components/schemas/ProjectPatchRequest'
       responses:
         200:
           description: The project updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProjectResult"
+                $ref: '#/components/schemas/ProjectResult'
     delete:
       tags:
         - projects
@@ -1259,14 +1259,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StudyCreateRequest"
+              $ref: '#/components/schemas/StudyCreateRequest'
       responses:
         201:
           description: The created operational study
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StudyResult"
+                $ref: '#/components/schemas/StudyResult'
     get:
       tags:
         - studies
@@ -1283,12 +1283,12 @@ paths:
             type: string
             enum:
               [
-                "NameAsc",
-                "NameDesc",
-                "CreationDateAsc",
-                "CreationDateAsc",
-                "LastModifiedAsc",
-                "LastModifiedDesc",
+                'NameAsc',
+                'NameDesc',
+                'CreationDateAsc',
+                'CreationDateAsc',
+                'LastModifiedAsc',
+                'LastModifiedDesc',
               ]
         - in: query
           name: name
@@ -1337,7 +1337,7 @@ paths:
                       type: object
                       properties:
                         schema:
-                          $ref: "#/components/schemas/StudyResult"
+                          $ref: '#/components/schemas/StudyResult'
 
   /projects/{project_id}/studies/{study_id}/:
     get:
@@ -1363,7 +1363,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StudyResult"
+                $ref: '#/components/schemas/StudyResult'
     patch:
       tags:
         - studies
@@ -1386,14 +1386,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StudyPatchRequest"
+              $ref: '#/components/schemas/StudyPatchRequest'
       responses:
         200:
           description: The operational study updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StudyResult"
+                $ref: '#/components/schemas/StudyResult'
     delete:
       tags:
         - studies
@@ -1435,14 +1435,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ScenarioRequest"
+              $ref: '#/components/schemas/ScenarioRequest'
       responses:
         201:
           description: The created scenario
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ScenarioResult"
+                $ref: '#/components/schemas/ScenarioResult'
     get:
       tags:
         - scenarios
@@ -1464,12 +1464,12 @@ paths:
             type: string
             enum:
               [
-                "NameAsc",
-                "NameDesc",
-                "CreationDateAsc",
-                "CreationDateAsc",
-                "LastModifiedAsc",
-                "LastModifiedDesc",
+                'NameAsc',
+                'NameDesc',
+                'CreationDateAsc',
+                'CreationDateAsc',
+                'LastModifiedAsc',
+                'LastModifiedDesc',
               ]
         - in: query
           name: page
@@ -1503,7 +1503,7 @@ paths:
                       type: object
                       properties:
                         schema:
-                          $ref: "#/components/schemas/ScenarioListResult"
+                          $ref: '#/components/schemas/ScenarioListResult'
 
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     get:
@@ -1534,7 +1534,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ScenarioResult"
+                $ref: '#/components/schemas/ScenarioResult'
     delete:
       tags:
         - scenarios
@@ -1589,14 +1589,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ScenarioRequest"
+              $ref: '#/components/schemas/ScenarioRequest'
       responses:
         200:
           description: The scenario updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ScenarioResult"
+                $ref: '#/components/schemas/ScenarioResult'
 
 components:
   schemas:
@@ -1615,8 +1615,8 @@ components:
     Comfort:
       description: Train comfort that will be used for the simulation
       type: string
-      enum: ["AC", "HEATING", "STANDARD"]
-      default: "STANDARD"
+      enum: ['AC', 'HEATING', 'STANDARD']
+      default: 'STANDARD'
 
     ConditionalEffortCurve:
       type: object
@@ -1626,7 +1626,7 @@ components:
           nullable: true
           properties:
             comfort:
-              $ref: "#/components/schemas/Comfort"
+              $ref: '#/components/schemas/Comfort'
               nullable: true
             electrical_profile_level:
               type: string
@@ -1635,7 +1635,7 @@ components:
               type: string
               nullable: true
         curve:
-          $ref: "#/components/schemas/EffortCurve"
+          $ref: '#/components/schemas/EffortCurve'
 
     EffortCurve:
       type: object
@@ -1663,11 +1663,11 @@ components:
           type: string
         version:
           type: string
-          example: "1"
+          example: '1'
         generated_version:
           type: string
           nullable: true
-          example: "1"
+          example: '1'
         created:
           type: string
           format: date
@@ -1683,9 +1683,9 @@ components:
       type: object
       properties:
         geo:
-          $ref: "#/components/schemas/BoundingBox"
+          $ref: '#/components/schemas/BoundingBox'
         sch:
-          $ref: "#/components/schemas/BoundingBox"
+          $ref: '#/components/schemas/BoundingBox'
 
     ObjectType:
       type: string
@@ -1732,14 +1732,14 @@ components:
 
     Operation:
       oneOf:
-        - $ref: "#/components/schemas/RailjsonObject"
-        - $ref: "#/components/schemas/DeleteOperation"
-        - $ref: "#/components/schemas/UpdateOperation"
+        - $ref: '#/components/schemas/RailjsonObject'
+        - $ref: '#/components/schemas/DeleteOperation'
+        - $ref: '#/components/schemas/UpdateOperation'
 
     OperationResult:
       oneOf:
-        - $ref: "#/components/schemas/DeleteOperation"
-        - $ref: "#/components/schemas/OperationObject"
+        - $ref: '#/components/schemas/DeleteOperation'
+        - $ref: '#/components/schemas/OperationObject'
 
     RailjsonObject:
       required:
@@ -1752,9 +1752,9 @@ components:
           enum:
             - CREATE
         obj_type:
-          $ref: "#/components/schemas/ObjectType"
+          $ref: '#/components/schemas/ObjectType'
         railjson:
-          $ref: "#/components/schemas/Railjson"
+          $ref: '#/components/schemas/Railjson'
 
     DeleteOperation:
       required:
@@ -1767,7 +1767,7 @@ components:
           enum:
             - DELETE
         obj_type:
-          $ref: "#/components/schemas/ObjectType"
+          $ref: '#/components/schemas/ObjectType'
         obj_id:
           type: string
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
@@ -1783,12 +1783,12 @@ components:
           enum:
             - UPDATE
         obj_type:
-          $ref: "#/components/schemas/ObjectType"
+          $ref: '#/components/schemas/ObjectType'
         obj_id:
           type: string
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
         railjson_patch:
-          $ref: "#/components/schemas/Patches"
+          $ref: '#/components/schemas/Patches'
 
     OperationObject:
       required:
@@ -1802,26 +1802,26 @@ components:
             - CREATE
             - UPDATE
         obj_type:
-          $ref: "#/components/schemas/ObjectType"
+          $ref: '#/components/schemas/ObjectType'
         railjson:
-          $ref: "#/components/schemas/Railjson"
+          $ref: '#/components/schemas/Railjson'
 
     Patch:
       description: A JSONPatch document as defined by RFC 6902
       required:
-        - "op"
-        - "path"
+        - 'op'
+        - 'path'
       properties:
         op:
           type: string
           description: The operation to be performed
           enum:
-            - "add"
-            - "remove"
-            - "replace"
-            - "move"
-            - "copy"
-            - "test"
+            - 'add'
+            - 'remove'
+            - 'replace'
+            - 'move'
+            - 'copy'
+            - 'test'
         path:
           type: string
           description: A JSON-Pointer
@@ -1836,7 +1836,7 @@ components:
       type: array
       description: A list of Patch
       items:
-        $ref: "#/components/schemas/Patch"
+        $ref: '#/components/schemas/Patch'
 
     Railjson:
       type: object
@@ -1885,10 +1885,10 @@ components:
           example: track_sections
         promotedId:
           type: object
-          example: { track_sections: "id" }
+          example: { track_sections: 'id' }
         scheme:
           type: string
-          example: "xyz"
+          example: 'xyz'
         tiles:
           type: array
           items:
@@ -1931,7 +1931,7 @@ components:
         geographic:
           nullable: true
           description: Geojson of the geographic geometry of the error
-          $ref: "#/components/schemas/Geometry"
+          $ref: '#/components/schemas/Geometry'
         schematic:
           nullable: true
           type: object
@@ -1953,7 +1953,7 @@ components:
                 - Switch
                 - Route
             error_type:
-              $ref: "#/components/schemas/InfraErrorType"
+              $ref: '#/components/schemas/InfraErrorType'
             field:
               type: string
             is_warning:
@@ -2012,11 +2012,11 @@ components:
           format: float
           example: 100.
         direction:
-          $ref: "#/components/schemas/Direction"
+          $ref: '#/components/schemas/Direction'
 
     LightRollingStock:
       allOf:
-        - $ref: "#/components/schemas/RollingStock"
+        - $ref: '#/components/schemas/RollingStock'
         - type: object
           properties:
             effort_curves:
@@ -2037,7 +2037,7 @@ components:
 
     RollingStock:
       allOf:
-        - $ref: "#/components/schemas/RollingStockCreatePayload"
+        - $ref: '#/components/schemas/RollingStockCreatePayload'
         - type: object
           properties:
             id:
@@ -2061,7 +2061,7 @@ components:
       properties:
         version:
           type: string
-          example: "3.0"
+          example: '3.0'
         name:
           type: string
         length:
@@ -2084,7 +2084,7 @@ components:
           properties:
             type:
               type: string
-              enum: ["CONST", "MAX"]
+              enum: ['CONST', 'MAX']
             value:
               type: number
               format: float
@@ -2110,20 +2110,20 @@ components:
               type: number
             type:
               type: string
-              enum: ["davis"]
+              enum: ['davis']
           required: [A, B, C, type]
         loading_gauge:
           type: string
           enum:
-            - "G1"
-            - "G2"
-            - "GA"
-            - "GB"
-            - "GB1"
-            - "GC"
-            - "FR3.3"
-            - "FR3.3/GB/G2"
-            - "GLOTT"
+            - 'G1'
+            - 'G2'
+            - 'GA'
+            - 'GB'
+            - 'GB1'
+            - 'GC'
+            - 'FR3.3'
+            - 'FR3.3/GB/G2'
+            - 'GLOTT'
         effort_curves:
           type: object
           properties:
@@ -2137,24 +2137,24 @@ components:
                   curves:
                     type: array
                     items:
-                      $ref: "#/components/schemas/ConditionalEffortCurve"
+                      $ref: '#/components/schemas/ConditionalEffortCurve'
                   default_curve:
-                    $ref: "#/components/schemas/EffortCurve"
+                    $ref: '#/components/schemas/EffortCurve'
                   is_electric:
                     type: boolean
                 required: [curves, default_curve, is_electric]
           required: [default_mode, modes]
         base_power_class:
           type: string
-          example: "5"
+          example: '5'
         power_restrictions:
           type: object
           description: Mapping of power restriction code to power class
           additionalProperties:
             type: string
           example:
-            "C1US": "4"
-            "C2US": "3"
+            'C1US': '4'
+            'C2US': '3'
         metadata:
           type: object
           properties:
@@ -2177,15 +2177,15 @@ components:
             unit:
               type: string
           example:
-            detail: "BB 7200"
-            family: "LOCOMOTIVES"
-            grouping: "Locomotives électriques courant continu"
-            number: "1"
-            reference: "7200"
-            series: "BB 7200"
-            subseries: "GV"
-            type: "Locomotives électriques"
-            unit: "US"
+            detail: 'BB 7200'
+            family: 'LOCOMOTIVES'
+            grouping: 'Locomotives électriques courant continu'
+            number: '1'
+            reference: '7200'
+            series: 'BB 7200'
+            subseries: 'GV'
+            type: 'Locomotives électriques'
+            unit: 'US'
           required:
             [
               detail,
@@ -2231,7 +2231,7 @@ components:
         track_ranges:
           type: array
           items:
-            $ref: "#/components/schemas/DirectionalTrackRange"
+            $ref: '#/components/schemas/DirectionalTrackRange'
 
     RouteTrackRangesNotFoundError:
       type: object
@@ -2260,14 +2260,14 @@ components:
       properties:
         value:
           type: string
-          example: "A"
+          example: 'A'
         power_class:
           type: string
-          example: "1"
+          example: '1'
         track_ranges:
           type: array
           items:
-            $ref: "#/components/schemas/TrackRange"
+            $ref: '#/components/schemas/TrackRange'
 
     SearchQuery:
       type: array
@@ -2279,16 +2279,16 @@ components:
           - type: number
           - type: integer
           - type: string
-          - $ref: "#/components/schemas/SearchQuery"
+          - $ref: '#/components/schemas/SearchQuery'
       example:
         [
-          "and",
+          'and',
           [
-            "or",
-            ["search", ["name"], "mich st"],
-            ["search", ["trigram"], null],
+            'or',
+            ['search', ['name'], 'mich st'],
+            ['search', ['trigram'], null],
           ],
-          ["=", ["infra_id"], 2],
+          ['=', ['infra_id'], 2],
         ]
 
     ProjectCreateRequest:
@@ -2299,15 +2299,15 @@ components:
         objectives:
           type: string
           maxLength: 4096
-          default: ""
+          default: ''
         description:
           type: string
           maxLength: 1024
-          default: ""
+          default: ''
         funders:
           type: string
           maxLength: 1024
-          default: ""
+          default: ''
         budget:
           type: integer
         image:
@@ -2357,9 +2357,7 @@ components:
         description:
           type: string
         funders:
-          type: array
-          items:
-            type: string
+          type: string
         budget:
           type: integer
         image:
@@ -2416,23 +2414,23 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["started", "inProgress", "finish"]
+          enum: ['started', 'inProgress', 'finish']
         study_type:
           type: string
           enum:
             [
-              "timeTables",
-              "flowRate",
-              "parkSizing",
-              "garageRequirement",
-              "operationOrSizing",
-              "operability",
-              "strategicPlanning",
-              "chartStability",
-              "disturbanceTests",
+              'timeTables',
+              'flowRate',
+              'parkSizing',
+              'garageRequirement',
+              'operationOrSizing',
+              'operability',
+              'strategicPlanning',
+              'chartStability',
+              'disturbanceTests',
             ]
       required:
-        - "name"
+        - 'name'
 
     StudyPatchRequest:
       properties:
@@ -2466,20 +2464,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["started", "inProgress", "finish"]
+          enum: ['started', 'inProgress', 'finish']
         study_type:
           type: string
           enum:
             [
-              "timeTables",
-              "flowRate",
-              "parkSizing",
-              "garageRequirement",
-              "operationOrSizing",
-              "operability",
-              "strategicPlanning",
-              "chartStability",
-              "disturbanceTests",
+              'timeTables',
+              'flowRate',
+              'parkSizing',
+              'garageRequirement',
+              'operationOrSizing',
+              'operability',
+              'strategicPlanning',
+              'chartStability',
+              'disturbanceTests',
             ]
 
     StudyResult:
@@ -2494,6 +2492,10 @@ components:
           type: string
         budget:
           type: integer
+        tags:
+          type: array
+          items:
+            type: string
         service_code:
           type: string
         business_code:
@@ -2519,20 +2521,20 @@ components:
           format: date-time
         state:
           type: string
-          enum: ["started", "inProgress", "finish"]
+          enum: ['started', 'inProgress', 'finish']
         study_type:
           type: string
           enum:
             [
-              "timeTables",
-              "flowRate",
-              "parkSizing",
-              "garageRequirement",
-              "operationOrSizing",
-              "operability",
-              "strategicPlanning",
-              "chartStability",
-              "disturbanceTests",
+              'timeTables',
+              'flowRate',
+              'parkSizing',
+              'garageRequirement',
+              'operationOrSizing',
+              'operability',
+              'strategicPlanning',
+              'chartStability',
+              'disturbanceTests',
             ]
     ScenarioRequest:
       properties:
@@ -2553,8 +2555,8 @@ components:
           type: number
           description: Electrical profile set id (if any)
       required:
-        - "name"
-        - "infra_id"
+        - 'name'
+        - 'infra_id'
 
     ScenarioResult:
       properties:
@@ -2647,12 +2649,12 @@ components:
       type: object
       description: Definition of a GeoJSON geometry
       oneOf:
-        - $ref: "#/components/schemas/Point"
-        - $ref: "#/components/schemas/LineString"
-        - $ref: "#/components/schemas/Polygon"
-        - $ref: "#/components/schemas/MultiPoint"
-        - $ref: "#/components/schemas/MultiLineString"
-        - $ref: "#/components/schemas/MultiPolygon"
+        - $ref: '#/components/schemas/Point'
+        - $ref: '#/components/schemas/LineString'
+        - $ref: '#/components/schemas/Polygon'
+        - $ref: '#/components/schemas/MultiPoint'
+        - $ref: '#/components/schemas/MultiLineString'
+        - $ref: '#/components/schemas/MultiPolygon'
 
     Point3D:
       type: array
@@ -2674,7 +2676,7 @@ components:
           enum:
             - Point
         coordinates:
-          $ref: "#/components/schemas/Point3D"
+          $ref: '#/components/schemas/Point3D'
 
     LineString:
       type: object
@@ -2690,7 +2692,7 @@ components:
         coordinates:
           type: array
           items:
-            $ref: "#/components/schemas/Point3D"
+            $ref: '#/components/schemas/Point3D'
 
     Polygon:
       type: object
@@ -2708,7 +2710,7 @@ components:
           items:
             type: array
             items:
-              $ref: "#/components/schemas/Point3D"
+              $ref: '#/components/schemas/Point3D'
 
     MultiPoint:
       type: object
@@ -2724,7 +2726,7 @@ components:
         coordinates:
           type: array
           items:
-            $ref: "#/components/schemas/Point3D"
+            $ref: '#/components/schemas/Point3D'
 
     MultiLineString:
       type: object
@@ -2742,7 +2744,7 @@ components:
           items:
             type: array
             items:
-              $ref: "#/components/schemas/Point3D"
+              $ref: '#/components/schemas/Point3D'
 
     MultiPolygon:
       type: object
@@ -2762,4 +2764,4 @@ components:
             items:
               type: array
               items:
-                $ref: "#/components/schemas/Point3D"
+                $ref: '#/components/schemas/Point3D'

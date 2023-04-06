@@ -9,27 +9,34 @@ import { TbCheese } from 'react-icons/tb';
 import { FaCat, FaDog } from 'react-icons/fa';
 import logoSNCF from 'assets/logo_sncf_bw.png';
 import logoGhibli from 'assets/pictures/misc/ghibli.svg';
-import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 
-type PropsPlaceholder = {
-  currentProject: projectTypes;
+type PicturePlaceholderProps = {
+  currentProjectImageUrl: string | undefined;
+  blobImage: Blob | undefined;
   isValid: boolean;
 };
 
-type Props = {
-  currentProject: projectTypes;
-  setCurrentProject: (currentProject: projectTypes) => void;
+type PictureUploaderProps = {
+  currentProjectImageUrl: string | undefined;
+  blobImage: Blob | undefined;
+  setBlobImage: (blob: Blob | undefined) => void;
 };
 
-function PicturePlaceholder({ currentProject, isValid }: PropsPlaceholder) {
+type PicturePlaceholderButtonsProps = {
+  setBlobImage: (blob: Blob | undefined) => void;
+};
+
+function PicturePlaceholder({
+  currentProjectImageUrl,
+  blobImage,
+  isValid,
+}: PicturePlaceholderProps) {
   const { t } = useTranslation('operationalStudies/project');
-  if (currentProject.currentImage) {
-    return (
-      <img src={URL.createObjectURL(currentProject.currentImage)} alt="Project illustration" />
-    );
+  if (blobImage) {
+    return <img src={URL.createObjectURL(blobImage)} alt="Project illustration" />;
   }
-  if (currentProject.image_url) {
-    return <img src={currentProject.image_url} alt="Project illustration" />;
+  if (currentProjectImageUrl) {
+    return <img src={currentProjectImageUrl} alt="Project illustration" />;
   }
   return (
     <>
@@ -47,11 +54,11 @@ function PicturePlaceholder({ currentProject, isValid }: PropsPlaceholder) {
   );
 }
 
-function PicturePlaceholderButtons({ currentProject, setCurrentProject }: Props) {
+function PicturePlaceholderButtons({ setBlobImage }: PicturePlaceholderButtonsProps) {
   async function getRandomImage(url: string) {
     try {
       const currentImage = await fetch(url).then((res) => res.blob());
-      setCurrentProject({ ...currentProject, currentImage });
+      setBlobImage(currentImage);
     } catch (error) {
       console.error(error);
     }
@@ -122,40 +129,37 @@ function PicturePlaceholderButtons({ currentProject, setCurrentProject }: Props)
       >
         <img src={logoSNCF} alt="SNCF BW LOGO" />
       </button>
-      <button
-        className="remove"
-        type="button"
-        onClick={() =>
-          setCurrentProject({
-            ...currentProject,
-            image: null,
-            image_url: undefined,
-            currentImage: null,
-          })
-        }
-      >
+      <button className="remove" type="button" onClick={() => setBlobImage(undefined)}>
         <TiDelete />
       </button>
     </div>
   );
 }
 
-export default function PictureUploader({ currentProject, setCurrentProject }: Props) {
+export default function PictureUploader({
+  currentProjectImageUrl,
+  blobImage,
+  setBlobImage,
+}: PictureUploaderProps) {
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const handleUpload = async (file?: File) => {
     if (file && file.type.startsWith('image/')) {
-      setCurrentProject({ ...currentProject, currentImage: file });
+      setBlobImage(file);
       setIsValid(true);
     } else {
-      setCurrentProject({ ...currentProject, currentImage: undefined });
+      setBlobImage(undefined);
       setIsValid(false);
     }
   };
   return (
     <div className="project-edition-modal-picture-placeholder">
       <label htmlFor="picture-upload">
-        <PicturePlaceholder currentProject={currentProject} isValid={isValid} />
+        <PicturePlaceholder
+          currentProjectImageUrl={currentProjectImageUrl}
+          blobImage={blobImage}
+          isValid={isValid}
+        />
         <input
           id="picture-upload"
           type="file"
@@ -165,10 +169,7 @@ export default function PictureUploader({ currentProject, setCurrentProject }: P
           className="d-none"
         />
       </label>
-      <PicturePlaceholderButtons
-        currentProject={currentProject}
-        setCurrentProject={setCurrentProject}
-      />
+      <PicturePlaceholderButtons setBlobImage={setBlobImage} />
     </div>
   );
 }

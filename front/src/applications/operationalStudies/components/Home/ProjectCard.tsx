@@ -10,19 +10,11 @@ import { useDispatch } from 'react-redux';
 import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { get } from 'common/requests';
 import DOCUMENT_URI from 'common/consts';
+import { ProjectResult } from 'common/api/osrdEditoastApi';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  project: {
-    id: number;
-    name: string;
-    description: string;
-    image_url: string;
-    image: number;
-    last_modification: Date;
-    studies: Array<1>;
-    tags: string[];
-  };
+  project: ProjectResult;
 };
 
 export default function ProjectCard({ setFilterChips, project }: Props) {
@@ -69,13 +61,14 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
           <span className="mr-1">
             <RiCalendarLine />
           </span>
-          {dateTimeFrenchFormatting(project.last_modification)}
+          {project.last_modification &&
+            dateTimeFrenchFormatting(new Date(project.last_modification))}
         </div>
         <div>
           <span className="mr-1">
             <RiFoldersLine />
           </span>
-          {t('studiesCount', { count: project.studies.length })}
+          {t('studiesCount', { count: project.studies?.length })}
         </div>
       </div>
       <div className="projects-list-project-card-name">{project.name}</div>
