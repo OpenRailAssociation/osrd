@@ -45,8 +45,7 @@ public class PowerPack implements EnergySource {
 
     @Override
     public void consumeEnergy(double energyDelta) {
-        if (energyDelta <= 0)
-            storage.updateStateOfCharge(energyDelta);
+        storage.updateStateOfCharge(-energyDelta);
     }
 
     @Override
@@ -54,14 +53,21 @@ public class PowerPack implements EnergySource {
         return 1;
     }
 
-    public static PowerPack newPowerPackDiesel() {
-        var pMin = constantPower(0);
-        var pMax = constantPower(4e6);
-        double volume = 4; // m^3
-        double capacity = 10 * 3.6e6 * volume; // Joules
+    public double getSoc() {
+        return storage.getSoc();
+    }
+
+    public static PowerPack newPowerPackDiesel(
+            double pInput,
+            double pOutput,
+            double capacity,
+            double efficiency,
+            double initialSoc
+    ) {
+        var maxInputPower = constantPower(pInput);
+        var maxOutputPower = constantPower(pOutput);
         var refillLaw = new RefillLaw(100,1,capacity);
-        var storage = new EnergyStorage(capacity, 1, 0, 1, refillLaw);
-        double efficiency = 1;
-        return new PowerPack(pMin, pMax, storage, efficiency);
+        var storage = new EnergyStorage(capacity, initialSoc, 0, 1, refillLaw);
+        return new PowerPack(maxInputPower, maxOutputPower, storage, efficiency);
     }
 }

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BatteryTests {
@@ -40,9 +42,8 @@ public class BatteryTests {
         for (var initialSoc: initialSocValues) {
             var battery = Battery.newBattery(inputPower, outputPower, capacity, efficiency, initialSoc);
             battery.consumeEnergy(capacity / 100);
-            double expectedSoc = initialSoc - 0.01; // we expect the SoC to drop by 1% if we consume 1% of the capacity
-            if (initialSoc <= 0.2)
-                expectedSoc = 0.2;
+            // we expect the SoC to drop by 1% if we consume 1% of the capacity
+            double expectedSoc = max(initialSoc - 0.01, battery.storage.socMin);
             assertEquals(expectedSoc, battery.getSoc());
         }
     }

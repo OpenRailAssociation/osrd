@@ -4,12 +4,9 @@ import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import fr.sncf.osrd.envelope_sim.power.EnergySource;
 import fr.sncf.osrd.envelope_utils.Point2d;
-
 import java.util.ArrayList;
-import java.util.List;
 
 import static fr.sncf.osrd.envelope_utils.CurveUtils.interpolate;
-import static fr.sncf.osrd.envelope_sim.power.PowerPack.newPowerPackDiesel;
 
 public class SimpleRollingStock implements PhysicsRollingStock {
 
@@ -203,7 +200,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
                 MAX_SPEED,
                 gamma,
                 gammaType,
-                new ArrayList<>(List.of(newPowerPackDiesel()))
+                null
         );
     }
 

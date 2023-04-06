@@ -54,12 +54,17 @@ public class Battery implements EnergySource {
         return 2;
     }
 
+    public double getSoc() {
+        return storage.getSoc();
+    }
+
     public static Battery newBattery(
             double pInput,
             double pOutput,
             double capacity,
             double efficiency,
-            double initialSoc) {
+            double initialSoc
+    ) {
         var maxInputPower = constantPower(pInput);
         var maxOutputPower = constantPower(pOutput);
         return new Battery(
@@ -73,9 +78,5 @@ public class Battery implements EnergySource {
                 ),
                 efficiency
         );
-    }
-
-    public double getSoc() {
-        return storage.getSoc();
     }
 }
