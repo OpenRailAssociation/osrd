@@ -178,13 +178,14 @@
             .scenario-timetable-train-header {
               display: flex;
               align-items: center;
-              flex-grow: 1;
               padding: 0 0.25rem;
               background-color: var(--coolgray3);
               transition: background-color 0.2s;
               .scenario-timetable-train-name {
+                position: relative;
                 display: flex;
                 align-items: center;
+                overflow: hidden;
                 .scenario-timetable-train-idx {
                   display: inline-block;
                   border-radius: 4px;
@@ -200,10 +201,13 @@
                     background-color: var(--cyan);
                   }
                 }
-                img {
+                .img-container {
+                  height: 0.75rem;
                   margin-left: 0.25rem;
-                  height: 0.5rem;
-                  overflow: hidden;
+                  img {
+                    position: absolute;
+                    height: 0.5rem;
+                  }
                 }
                 font-weight: bold;
                 font-size: 1rem;

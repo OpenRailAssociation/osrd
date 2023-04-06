@@ -86,7 +86,7 @@ const defaultCommonConf = {
   initialSpeed: 0,
   departureTime: '08:00:00',
   originDate: formatIsoDate(new Date()),
-  originTime: undefined,
+  originTime: '08:00:00',
   originUpperBoundDate: formatIsoDate(new Date()),
   originUpperBoundTime: undefined,
   originLinkedBounds: true,
