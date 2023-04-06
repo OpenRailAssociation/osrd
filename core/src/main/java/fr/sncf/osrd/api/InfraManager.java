@@ -126,7 +126,7 @@ public class InfraManager extends APIClient {
     ) throws InfraLoadException {
         // create a request
         var endpointPath = String.format("infra/%s/railjson/", infraId);
-        var request = buildRequest(endpointPath, "exclude_extensions=true");
+        var request = buildRequest(endpointPath);
 
         try {
             // use the client to send the request

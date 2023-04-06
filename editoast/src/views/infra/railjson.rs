@@ -43,9 +43,8 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| {
             let table = object_type.get_table();
-            let query = format!(
-                    "SELECT (x.data - 'extensions')::text AS railjson FROM {table} x WHERE x.infra_id = $1"
-                );
+            let query =
+                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1");
             let db_pool_clone = db_pool.clone();
             block::<_, Result<_>>(move || {
                 let mut conn = db_pool_clone.get()?;
