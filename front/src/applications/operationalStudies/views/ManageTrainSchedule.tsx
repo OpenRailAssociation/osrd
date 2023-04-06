@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
 import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
@@ -10,22 +10,11 @@ import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelect
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
 import submitConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConf';
+import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
-import { osrdMiddlewareApi, TrainSchedule } from 'common/api/osrdMiddlewareApi';
-import {
-  updateLabels,
-  updateRollingStockID,
-  updateSpeedLimitByTag,
-  toggleUsingElectricalProfiles,
-  updateName,
-  updateDepartureTime,
-  updateInitialSpeed,
-  updatePathfindingID,
-} from 'reducers/osrdconf';
-import { getUsingElectricalProfiles } from 'reducers/osrdconf/selectors';
-import { sec2time } from 'utils/timeManipulation';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 
 type Props = {
@@ -39,7 +28,6 @@ export default function ManageTrainSchedule({
 }: Props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const [isWorking, setIsWorking] = useState(false);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
 
@@ -69,30 +57,13 @@ export default function ManageTrainSchedule({
     );
   }
 
-  function ajustConf2TrainToModify(id: number) {
-    getTrainScheduleById({ id })
-      .unwrap()
-      .then((trainScheduleData: TrainSchedule) => {
-        if (trainScheduleData.rolling_stock)
-          dispatch(updateRollingStockID(trainScheduleData.rolling_stock));
-        if (trainScheduleData.options?.ignore_electrical_profiles === usingElectricalProfiles)
-          dispatch(toggleUsingElectricalProfiles());
-
-        dispatch(updateSpeedLimitByTag(trainScheduleData.speed_limit_tags));
-        dispatch(updateLabels(trainScheduleData.labels));
-
-        if (trainScheduleData.train_name) dispatch(updateName(trainScheduleData.train_name));
-        if (trainScheduleData.departure_time)
-          dispatch(updateDepartureTime(sec2time(trainScheduleData.departure_time)));
-        dispatch(updateInitialSpeed(trainScheduleData.initial_speed || 0));
-
-        dispatch(updatePathfindingID(trainScheduleData.path));
-      });
-  }
-
   useEffect(() => {
     if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
-      ajustConf2TrainToModify(trainScheduleIDsToModify[0]);
+      getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
+        .unwrap()
+        .then((trainSchedule) => {
+          adjustConfWithTrainToModify(trainSchedule, dispatch);
+        });
   }, [trainScheduleIDsToModify]);
 
   return (
