@@ -13,7 +13,7 @@ import {
 import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
-const ROLLINGSTOCK_URL = '/rolling_stock';
+const ROLLINGSTOCK_URL = '/editoast/rolling_stock';
 
 export default function RollingStockSelector({ condensed }) {
   const { openModal } = useModal();
