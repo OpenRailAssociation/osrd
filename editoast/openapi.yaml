@@ -293,12 +293,6 @@ paths:
             type: integer
           description: Infra ID
           required: true
-        - in: query
-          name: exclude_extensions
-          schema:
-            type: boolean
-            default: false
-          description: Whether the railjson should contain extensions
       responses:
         200:
           description: The infra in railjson format
