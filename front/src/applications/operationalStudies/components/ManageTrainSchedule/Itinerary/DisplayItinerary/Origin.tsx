@@ -54,7 +54,7 @@ interface OriginProps {
 }
 
 export function withOSRDData<T>(Component: ComponentType<T>) {
-  return (hocProps: T) => {
+  return function composedOrigin(hocProps: T) {
     const dispatch = useDispatch();
     const stdcmMode = useSelector(getStdcmMode);
     const mode = useSelector(getMode);

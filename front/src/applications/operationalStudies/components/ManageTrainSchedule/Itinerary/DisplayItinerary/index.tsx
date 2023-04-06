@@ -24,7 +24,7 @@ interface DisplayItineraryProps {
 }
 
 export function withOSRDData<T>(Component: ComponentType<T>) {
-  return (hocProps: T) => {
+  return function composedDisplayItinerary(hocProps: T) {
     const origin = useSelector(getOrigin);
     const destination = useSelector(getDestination);
     const vias = useSelector(getVias);

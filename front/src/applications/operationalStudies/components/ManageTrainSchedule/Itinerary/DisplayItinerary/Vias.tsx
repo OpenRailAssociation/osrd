@@ -19,7 +19,7 @@ interface ViasProps {
 }
 
 export function withOSRDData<T>(Component: ComponentType<T>) {
-  return (hocProps: T) => {
+  return function composedVias(hocProps: T) {
     const vias = useSelector(getVias);
     const geojson = useSelector(getGeojson);
     return <Component {...(hocProps as T)} vias={vias} geojson={geojson} />;
