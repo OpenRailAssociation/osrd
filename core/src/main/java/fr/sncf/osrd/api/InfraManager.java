@@ -97,7 +97,7 @@ public class InfraManager extends APIClient {
         public InfraStatus lastStatus = null;
         public Throwable lastError = null;
         public FullInfra infra = null;
-        public String expectedVersion = null;
+        public String version = null;
 
         void transitionTo(InfraStatus newStatus) {
             transitionTo(newStatus, null);
@@ -125,7 +125,6 @@ public class InfraManager extends APIClient {
     private FullInfra downloadInfra(
             InfraCacheEntry cacheEntry,
             String infraId,
-            String expectedVersion,
             DiagnosticRecorder diagnosticRecorder
     ) throws InfraLoadException {
         // create a request
@@ -138,6 +137,7 @@ public class InfraManager extends APIClient {
             cacheEntry.transitionTo(InfraStatus.DOWNLOADING);
 
             RJSInfra rjsInfra;
+            String version;
             try (var response = httpClient.newCall(request).execute()) {
                 if (!response.isSuccessful())
                     throw new UnexpectedHttpResponse(response);
@@ -145,7 +145,8 @@ public class InfraManager extends APIClient {
                 // Parse the response
                 logger.info("parsing the JSON of {}", request.url());
                 cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
-
+                version = response.header("x-infra-version");
+                assert version != null : "missing x-infra-version header in railjson response";
                 rjsInfra = RJSInfra.adapter.fromJson(response.body().source());
             }
 
@@ -176,7 +177,7 @@ public class InfraManager extends APIClient {
             // Cache the infra
             logger.info("successfully cached {}", request.url());
             cacheEntry.infra = new FullInfra(infra, rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
-            cacheEntry.expectedVersion = expectedVersion;
+            cacheEntry.version = version;
             cacheEntry.transitionTo(InfraStatus.CACHED);
             return cacheEntry.infra;
         } catch (IOException | UnexpectedHttpResponse | VirtualMachineError e) {
@@ -204,9 +205,9 @@ public class InfraManager extends APIClient {
                 // try downloading the infra again if:
                 //  - the existing cache entry hasn't reached a stable state
                 //  - we don't have the right version
-                var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.expectedVersion);
+                var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
                 if (!cacheEntry.status.isStable || obsoleteVersion)
-                    return downloadInfra(cacheEntry, infraId, expectedVersion, diagnosticRecorder);
+                    return downloadInfra(cacheEntry, infraId, diagnosticRecorder);
 
                 // otherwise, wait for the infra to reach a stable state
                 if (cacheEntry.status == InfraStatus.CACHED)

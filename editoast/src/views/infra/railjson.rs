@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::infra::RAILJSON_VERSION;
-use crate::models::Infra;
+use crate::models::{Infra, Retrieve};
 use crate::schema::{ObjectType, RailJson};
 use crate::views::infra::{InfraApiError, InfraForm};
 use crate::DbPool;
@@ -42,6 +42,9 @@ enum ListErrorsRailjson {
 #[get("/{infra}/railjson")]
 async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
     let infra = infra.into_inner();
+
+    let infra_meta = Infra::retrieve(db_pool.clone(), infra).await?.unwrap();
+
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| {
             let table = object_type.get_table();
@@ -77,7 +80,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
     // Here we avoid avoid the deserialization of the whole RailJson object
     let railjson = format!(
         r#"{{
-            "version": "{RAILJSON_VERSION}",
+            "version": "{version}",
             "track_sections": {track_sections},
             "signals": {signals},
             "speed_sections": {speed_sections},
@@ -90,6 +93,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             "operational_points": {operational_points},
             "catenaries": {catenaries}
         }}"#,
+        version = infra_meta.railjson_version,
         track_sections = res[ObjectType::TrackSection],
         signals = res[ObjectType::Signal],
         speed_sections = res[ObjectType::SpeedSection],
@@ -105,6 +109,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
 
     Ok(HttpResponse::Ok()
         .content_type(ContentType::json())
+        .append_header(("x-infra-version", infra_meta.version))
         .body(railjson))
 }
 
