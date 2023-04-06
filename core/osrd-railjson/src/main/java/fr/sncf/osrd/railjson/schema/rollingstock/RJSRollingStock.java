@@ -8,7 +8,6 @@ import fr.sncf.osrd.railjson.schema.common.Identified;
 import java.util.Map;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
@@ -96,7 +95,7 @@ public class RJSRollingStock implements Identified {
     }
 
     @Json(name = "energy_sources")
-    public ArrayList<RJSEnergySources> energySources = null;
+    public ArrayList<RJSEnergySource> energySources = null;
 
     @SuppressFBWarnings("UWF_NULL_FIELD")
     public static final class RJSGamma {

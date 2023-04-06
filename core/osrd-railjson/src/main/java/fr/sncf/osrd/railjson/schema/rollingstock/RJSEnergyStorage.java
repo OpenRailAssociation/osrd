@@ -1,16 +1,23 @@
 package fr.sncf.osrd.railjson.schema.rollingstock;
 
+import com.squareup.moshi.Json;
+
 public class RJSEnergyStorage {
 
     /** How much energy the object can store (in Joules or Watts·Seconds) */
-    public double capacity;
+    @Json(name = "capacity")
+    public double capacity = Double.NaN;
 
     /** The State of Charge of the EnergyStorage, soc * capacity = actual stock of energy */
-    public double initialSoc;
+    @Json(name = "soc")
+    public double initialSoc = Double.NaN;
 
-    public RJSRefillLaw refillLaw;
+    @Json(name = "refill_law")
+    public RJSRefillLaw refillLaw = null;
 
-    public double socMin;
+    @Json(name = "soc_min")
+    public double socMin = Double.NaN;
 
-    public double socMax;
+    @Json(name = "soc_max")
+    public double socMax = Double.NaN;
 }

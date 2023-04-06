@@ -120,13 +120,13 @@ public class RJSRollingStockParser {
         );
     }
 
-    private static List<EnergySource> parseEnergySources(ArrayList<RJSEnergySources> rjsEnergySources) {
+    private static List<EnergySource> parseEnergySources(ArrayList<RJSEnergySource> rjsEnergySources) {
         return rjsEnergySources.stream().map(
                 RJSRollingStockParser::parseEnergySource
         ).collect(Collectors.toList());
     }
 
-    private static EnergySource parseEnergySource(RJSEnergySources rjsEnergySource) {
+    private static EnergySource parseEnergySource(RJSEnergySource rjsEnergySource) {
         var maxInputPower =
                 new SpeedDependantPower(rjsEnergySource.maxInputPower.speeds, rjsEnergySource.maxInputPower.powers);
         var maxOutputPower =
