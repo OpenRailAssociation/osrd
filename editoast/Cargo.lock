@@ -1129,6 +1129,7 @@ dependencies = [
  "rand 0.8.5",
  "rangemap",
  "redis",
+ "reqwest",
  "rstest",
  "sentry",
  "sentry-actix",

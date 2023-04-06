@@ -17,8 +17,8 @@ use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
 use image::{DynamicImage, GenericImage, ImageBuffer, ImageOutputFormat};
-use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
+
+use serde_derive::{Deserialize, Serialize};
 use std::io::{BufReader, Cursor, Read};
 use thiserror::Error;
 
@@ -59,8 +59,8 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
     Ok(Json(rolling_stock_with_liveries))
 }
 
-#[derive(Deserialize, Serialize)]
-struct RollingStockForm {
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RollingStockForm {
     pub name: String,
     pub version: String,
     pub effort_curves: EffortCurves,
@@ -77,7 +77,7 @@ struct RollingStockForm {
     pub rolling_resistance: RollingResistance,
     pub loading_gauge: String,
     pub metadata: RollingStockMetadata,
-    pub power_restrictions: Option<JsonValue>,
+    pub power_restrictions: Option<geos::geojson::JsonValue>,
 }
 
 impl From<RollingStockForm> for RollingStockModel {
@@ -101,6 +101,30 @@ impl From<RollingStockForm> for RollingStockModel {
             metadata: Some(DieselJson(rolling_stock.metadata)),
             power_restrictions: Some(rolling_stock.power_restrictions),
             ..Default::default()
+        }
+    }
+}
+
+impl From<RollingStock> for RollingStockForm {
+    fn from(value: RollingStock) -> Self {
+        Self {
+            name: value.name,
+            version: value.version,
+            effort_curves: value.effort_curves,
+            base_power_class: value.base_power_class,
+            length: value.length,
+            max_speed: value.max_speed,
+            startup_time: value.startup_time,
+            startup_acceleration: value.startup_acceleration,
+            comfort_acceleration: value.comfort_acceleration,
+            gamma: value.gamma,
+            inertia_coefficient: value.inertia_coefficient,
+            features: value.features,
+            mass: value.mass,
+            rolling_resistance: value.rolling_resistance,
+            loading_gauge: value.loading_gauge,
+            metadata: value.metadata,
+            power_restrictions: value.power_restrictions,
         }
     }
 }

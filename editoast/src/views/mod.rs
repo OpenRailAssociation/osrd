@@ -73,6 +73,7 @@ mod tests {
     use std::collections::HashMap;
 
     use crate::client::{MapLayersConfig, PostgresConfig, RedisConfig};
+    use crate::core::CoreClient;
     use crate::infra_cache::InfraCache;
     use crate::map::MapLayers;
 
@@ -89,9 +90,9 @@ mod tests {
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::PgConnection;
 
-    /// Create a test editoast client
-    /// This client create a single new connection to the database
-    pub async fn create_test_service(
+    /// Creates a test client with 1 pg connection and a given [CoreClient]
+    pub async fn create_test_service_with_core_client(
+        core: CoreClient,
     ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
         let pg_config = PostgresConfig::default();
         let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
@@ -114,8 +115,16 @@ mod tests {
             .app_data(Data::new(CHashMap::<i64, InfraCache>::default()))
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(MapLayersConfig::default()))
+            .app_data(Data::new(core))
             .service((routes(), study_routes()));
         init_service(app).await
+    }
+
+    /// Create a test editoast client
+    /// This client create a single new connection to the database
+    pub async fn create_test_service(
+    ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
+        create_test_service_with_core_client(CoreClient::default()).await
     }
 
     #[actix_test]
