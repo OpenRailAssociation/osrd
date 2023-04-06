@@ -672,16 +672,14 @@ export type GetProjectsApiResponse = /** status 200 the project list */ {
   count?: number;
   next?: any;
   previous?: any;
-  results?: {
-    schema?: ProjectResult;
-  }[];
+  results?: ProjectResult[];
 };
 export type GetProjectsApiArg = {
   ordering?:
     | 'NameAsc'
     | 'NameDesc'
     | 'CreationDateAsc'
-    | 'CreationDateAsc'
+    | 'CreationDateDesc'
     | 'LastModifiedAsc'
     | 'LastModifiedDesc';
   /** Filter projects by name */
@@ -747,7 +745,7 @@ export type GetProjectsByProjectIdStudiesApiArg = {
     | 'NameAsc'
     | 'NameDesc'
     | 'CreationDateAsc'
-    | 'CreationDateAsc'
+    | 'CreationDateDesc'
     | 'LastModifiedAsc'
     | 'LastModifiedDesc';
   /** Filter operational studies by name */
@@ -798,9 +796,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
     count?: number;
     next?: any;
     previous?: any;
-    results?: {
-      schema?: ScenarioListResult;
-    }[];
+    results?: ScenarioListResult[];
   };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   projectId: number;
@@ -809,7 +805,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
     | 'NameAsc'
     | 'NameDesc'
     | 'CreationDateAsc'
-    | 'CreationDateAsc'
+    | 'CreationDateDesc'
     | 'LastModifiedAsc'
     | 'LastModifiedDesc';
   /** Page number */

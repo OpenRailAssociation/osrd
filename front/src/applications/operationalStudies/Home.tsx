@@ -16,6 +16,14 @@ import nextId from 'react-id-generator';
 import { updateMode } from 'reducers/osrdconf';
 import { PostSearchApiArg, ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
+type SortOptions =
+  | 'NameAsc'
+  | 'NameDesc'
+  | 'CreationDateAsc'
+  | 'CreationDateDesc'
+  | 'LastModifiedAsc'
+  | 'LastModifiedDesc';
+
 function displayCards(
   projectsList: ProjectResult[],
   setFilterChips: (filterChips: string) => void
@@ -42,15 +50,13 @@ function displayCards(
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
-  const [sortOption, setSortOption] = useState('LastModifiedDesc');
+  const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const dispatch = useDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
-  const { data: projectsResponse } = osrdEditoastApi.useGetProjectsQuery({
-    ordering: 'LastModifiedDesc',
-  });
+  const [getProjects] = osrdEditoastApi.useLazyGetProjectsQuery();
 
   const sortOptions = [
     {
@@ -62,21 +68,6 @@ export default function Home() {
       value: 'LastModifiedDesc',
     },
   ];
-
-  // const getProjectList = async () => {
-  //   try {
-  //     const params = {
-  //       ordering: sortOption,
-  //       name: filter,
-  //       description: filter,
-  //       tags: filter,
-  //     };
-  //     const data = await get(PROJECTS_URI, { params });
-  //     setProjectsList(data.results);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
 
   const getProjectList = async () => {
     if (filter) {
@@ -90,19 +81,22 @@ export default function Home() {
         const data: ProjectResult[] = await postSearch(payload).unwrap();
         setProjectsList(data);
       } catch (error) {
-        console.error('filter projetcs : ', error);
+        console.error('filter projetcs error : ', error);
       }
-    } else if (projectsResponse && projectsResponse.results) {
+    } else {
       try {
-        setProjectsList(projectsResponse.results);
+        const projects = await getProjects({ ordering: sortOption });
+        if (projects.data?.results) {
+          setProjectsList(projects.data.results);
+        }
       } catch (error) {
-        console.error(error);
+        console.error('get Projetcs error : ', error);
       }
     }
   };
 
   const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSortOption(e.target.value);
+    setSortOption(e.target.value as SortOptions);
   };
 
   useEffect(() => {
