@@ -49,15 +49,6 @@ function Origin(props: OriginProps) {
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
   const { isStdcm } = makeEnumBooleans(MODES, mode);
 
-  const originTitle = (
-    <h2 className="d-flex align-items-center mb-0 pl-4">
-      <span className="mr-1 h2 text-success">
-        <RiMapPin2Fill />
-      </span>
-      <span>{t('origin')}</span>
-    </h2>
-  );
-
   const originPointName = (
     <div
       onClick={() => {
@@ -101,83 +92,80 @@ function Origin(props: OriginProps) {
     </div>
   );
   return (
-    <>
-      {originTitle}
-      <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
-        {origin !== undefined ? (
-          <>
-            <i className="text-success icons-itinerary-bullet mr-2" />
-            <div className="pl-1 hover w-100 origin-name-and-time-container">
-              {originPointName}
-              {isStdcm && (
-                <>
-                  <div className="ml-auto d-flex mr-1">
-                    {radioButton}
-                    <div className="d-flex flex-column">
-                      <div className="d-flex">
-                        <input
-                          type="date"
-                          className="form-control form-control-sm mx-1"
-                          onChange={(e) => dispatch(updateOriginDate(e.target.value))}
-                          value={originDate}
-                          disabled
-                        />
-                        <InputSNCF
-                          type="time"
-                          id="osrd-config-time-origin"
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            dispatch(updateOriginTime(e.target.value))
-                          }
-                          value={originTime}
-                          sm
-                          noMargin
-                          readonly={isByDestination}
-                        />
-                      </div>
-                      <div className="d-flex my-1">
-                        <input
-                          type="date"
-                          className="form-control form-control-sm mx-1"
-                          onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
-                          value={originUpperBoundDate}
-                          disabled
-                        />
-                        <InputSNCF
-                          type="time"
-                          id="osrd-config-time-origin"
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            dispatch(updateOriginUpperBoundTime(e.target.value))
-                          }
-                          value={originUpperBoundTime}
-                          sm
-                          noMargin
-                          readonly={isByDestination}
-                        />
-                      </div>
-                    </div>
+    <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
+      <span className="text-success mr-2">
+        <RiMapPin2Fill />
+      </span>
+      {origin !== undefined ? (
+        <div className="pl-1 hover w-100 origin-name-and-time-container">
+          {originPointName}
+          {isStdcm && (
+            <>
+              <div className="ml-auto d-flex mr-1">
+                {radioButton}
+                <div className="d-flex flex-column">
+                  <div className="d-flex">
+                    <input
+                      type="date"
+                      className="form-control form-control-sm mx-1"
+                      onChange={(e) => dispatch(updateOriginDate(e.target.value))}
+                      value={originDate}
+                      disabled
+                    />
+                    <InputSNCF
+                      type="time"
+                      id="osrd-config-time-origin"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        dispatch(updateOriginTime(e.target.value))
+                      }
+                      value={originTime}
+                      sm
+                      noMargin
+                      readonly={isByDestination}
+                    />
                   </div>
-                  {toggleButton}
-                </>
-              )}
-              <button
-                className="btn btn-sm btn-only-icon btn-white ml-auto"
-                type="button"
-                onClick={() => {
-                  dispatch(updateOrigin(undefined));
-                }}
-              >
-                <i className="icons-circle-delete" />
-                <span className="sr-only" aria-hidden="true">
-                  Delete
-                </span>
-              </button>
-            </div>
-          </>
-        ) : (
-          <small className="ml-4">{t('noplacechosen')}</small>
-        )}
-      </div>
-    </>
+                  <div className="d-flex my-1">
+                    <input
+                      type="date"
+                      className="form-control form-control-sm mx-1"
+                      onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
+                      value={originUpperBoundDate}
+                      disabled
+                    />
+                    <InputSNCF
+                      type="time"
+                      id="osrd-config-time-origin"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        dispatch(updateOriginUpperBoundTime(e.target.value))
+                      }
+                      value={originUpperBoundTime}
+                      sm
+                      noMargin
+                      readonly={isByDestination}
+                    />
+                  </div>
+                </div>
+              </div>
+              {toggleButton}
+            </>
+          )}
+          <button
+            className="btn btn-sm btn-only-icon btn-white ml-auto"
+            type="button"
+            onClick={() => {
+              dispatch(updateOrigin(undefined));
+            }}
+          >
+            <i className="icons-circle-delete" />
+            <span className="sr-only" aria-hidden="true">
+              Delete
+            </span>
+          </button>
+        </div>
+      ) : (
+        <small>{t('noOriginChosen')}</small>
+      )}
+    </div>
   );
 }
 
