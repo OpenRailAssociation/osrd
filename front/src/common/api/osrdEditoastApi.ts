@@ -48,10 +48,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'PUT', body: queryArg.body }),
     }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/railjson/`,
-        params: { exclude_extensions: queryArg.excludeExtensions },
-      }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
     }),
     postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
       query: (queryArg) => ({
@@ -448,8 +445,6 @@ export type GetInfraByIdRailjsonApiResponse =
 export type GetInfraByIdRailjsonApiArg = {
   /** Infra ID */
   id: number;
-  /** Whether the railjson should contain extensions */
-  excludeExtensions?: boolean;
 };
 export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
   id?: string;
