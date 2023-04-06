@@ -137,9 +137,16 @@ class SpeedDependantPower(BaseModel, extra=Extra.forbid):
         return v
 
 
+class EnergySourceType(str, Enum):
+    CATENARY = "CATENARY"
+    POWER_PACK = "POWER_PACK"
+    BATTERY = "BATTERY"
+
+
 class EnergySource(BaseModel, extra=Extra.forbid):
     """Energy sources used when simulating qualesi trains"""
 
+    type: EnergySourceType
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
     optional_energy_storage: Optional[EnergyStorage]
