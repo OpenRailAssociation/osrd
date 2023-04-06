@@ -43,7 +43,7 @@ function Vias(props: ViasProps) {
         {vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (
-          <small className="ml-4">{t('noplacechosen')}</small>
+          <small className="ml-4">{t('noPlaceChosen')}</small>
         )}
       </div>
     </>
