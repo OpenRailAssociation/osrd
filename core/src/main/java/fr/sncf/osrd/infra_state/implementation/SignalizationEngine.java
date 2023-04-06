@@ -2,6 +2,7 @@ package fr.sncf.osrd.infra_state.implementation;
 
 import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.reporting.ErrorContext;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
@@ -117,10 +118,7 @@ public class SignalizationEngine implements SignalizationState {
             var newSignalState = signal.processDependencyUpdate(infraState, this);
             if (!newSignalState.equals(signalStates.get(signal))) {
                 if (modifiedSignalsInCurrentUpdate.contains(signal))
-                    throw new SignalizationError(
-                            "Infinite loop in signal dependency updates",
-                            OSRDError.ErrorCause.USER // This would be caused by invalid infrastructures
-                    );
+                    throw new OSRDError(ErrorType.SignalizationError);
                 modifiedSignalsInCurrentUpdate.add(signal);
                 updated.add(signal);
                 signalStates.put(signal, newSignalState);
@@ -128,7 +126,7 @@ public class SignalizationEngine implements SignalizationState {
                     updateSignal(otherSignal, modifiedSignalsInCurrentUpdate, updated);
             }
         } catch (OSRDError e) {
-            throw e.withContext(new ErrorContext.Signal(signal.getID()));
+            throw e.withStackTrace(new ErrorContext.Signal(signal.getID()));
         }
     }
 

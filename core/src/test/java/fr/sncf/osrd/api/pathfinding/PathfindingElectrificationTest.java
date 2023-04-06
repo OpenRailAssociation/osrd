@@ -6,13 +6,14 @@ import com.google.common.collect.Range;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.ApiTest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
@@ -104,14 +105,12 @@ public class PathfindingElectrificationTest extends ApiTest {
         }
 
         var exception = assertThrows(
-                NoPathFoundError.class,
+                OSRDError.class,
                 () -> PathfindingRoutesEndpoint.runPathfinding(
                         infra,
                         waypoints,
-                        List.of(TestTrains.FAST_ELECTRIC_TRAIN)
-                )
-        );
-        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR, exception.message);
+                        List.of(TestTrains.FAST_ELECTRIC_TRAIN)));
+        assertEquals(exception.osrdErrorType, ErrorType.PathfindingElectrificationError);
     }
 
     static Stream<Arguments> testDeadSectionArgs() {
@@ -177,14 +176,12 @@ public class PathfindingElectrificationTest extends ApiTest {
             assertNotNull(electricPath);
         } else {
             var exception = assertThrows(
-                    NoPathFoundError.class,
+                    OSRDError.class,
                     () -> PathfindingRoutesEndpoint.runPathfinding(
                             infra,
                             waypoints,
-                            List.of(TestTrains.FAST_ELECTRIC_TRAIN)
-                    )
-            );
-            assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR, exception.message);
+                            List.of(TestTrains.FAST_ELECTRIC_TRAIN)));
+            assertEquals(exception.osrdErrorType, ErrorType.PathfindingElectrificationError);
         }
     }
 }

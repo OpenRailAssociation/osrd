@@ -11,9 +11,10 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.reporting.exceptions.ErrorCause;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -309,9 +310,14 @@ public class AllowanceRangesTests {
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var testPath = new FlatPath(10_000, 0);
         var stops = new double[]{300};
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
-        var allowance = new LinearAllowance(0,
+        var testContext = new EnvelopeSimContext(
+                testRollingStock, 
+                testPath, 
+                TIME_STEP,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+        );
+        var allowance = new LinearAllowance(
+                0,
                 testPath.getLength(),
                 1.5,
                 List.of(
@@ -320,17 +326,21 @@ public class AllowanceRangesTests {
                 )
         );
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 80, stops);
-        var err = assertThrows(AllowanceConvergenceException.class,
-                () -> allowance.apply(maxEffortEnvelope, testContext));
-        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, err.errorType);
+        var err = assertThrows(
+                OSRDError.class,
+                () -> allowance.apply(maxEffortEnvelope, testContext)
+        );
+        assertEquals(err.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
     }
 
     /** Applies the allowance to the envelope. Any user error (impossible margin) is ignored */
     private void applyAllowanceIgnoringUserError(Allowance allowance, Envelope envelope, EnvelopeSimContext context) {
         try {
             allowance.apply(envelope, context);
-        } catch (AllowanceConvergenceException e) {
-            assertEquals(OSRDError.ErrorCause.USER, e.cause);
+        } catch (OSRDError e) {
+            if (e.osrdErrorType != ErrorType.AllowanceConvergenceTooMuchTime) {
+                throw e;
+            }
         }
     }
 }

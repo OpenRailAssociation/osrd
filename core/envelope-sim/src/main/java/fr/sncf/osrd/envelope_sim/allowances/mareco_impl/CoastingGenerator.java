@@ -11,6 +11,8 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 
 public final class CoastingGenerator {
     /** Generate a coasting envelope part which starts at startPos */
@@ -29,7 +31,7 @@ public final class CoastingGenerator {
         var speed = envelope.interpolateSpeed(startPos);
         EnvelopeCoasting.coast(context, startPos, speed, constrainedBuilder, 1);
         if (constrainedBuilder.lastIntersection == 0)
-            throw new ImpossibleSimulationError(); // We reached a stop while coasting
+            throw new OSRDError(ErrorType.ImpossibleSimulationError); // We reached a stop while coasting
         if (partBuilder.isEmpty())
             return null;
         return partBuilder.build();

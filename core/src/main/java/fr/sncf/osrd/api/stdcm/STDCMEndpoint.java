@@ -6,7 +6,6 @@ import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.STDCMStep;
 import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
@@ -19,8 +18,8 @@ import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
@@ -67,7 +66,7 @@ public class STDCMEndpoint implements Take {
     }
 
     @Override
-    public Response act(Request req) throws InvalidRollingStock, InvalidSchedule {
+    public Response act(Request req) throws OSRDError {
         var recorder = new DiagnosticRecorderImpl(false);
         try {
             // Parse request input
@@ -80,11 +79,9 @@ public class STDCMEndpoint implements Take {
             var startTime = request.startTime;
             var endTime = request.endTime;
             if (Double.isNaN(startTime) && Double.isNaN(endTime))
-                throw new RuntimeException(
-                        "Invalid STDCM request: both end time and start time are unspecified, at least one must be set"
-                );
+                throw new OSRDError(ErrorType.InvalidSTDCMUnspecifiedStartAndEndTime);
             if (Double.isNaN(startTime))
-                throw new RuntimeException("STDCM requests with unspecified start time are not supported yet");
+                throw new OSRDError(ErrorType.InvalidSTDCMUnspecifiedStartTime);
             // TODO : change with get infra when the front is ready
             final var fullInfra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
             final var infra = fullInfra.java();
@@ -128,7 +125,7 @@ public class STDCMEndpoint implements Take {
                     standardAllowance
             );
             if (res == null) {
-                var error = new NoPathFoundError("No path could be found");
+                var error = new OSRDError(ErrorType.PathfindingGenericError);
                 return ExceptionHandler.toResponse(error);
             }
 

@@ -8,7 +8,6 @@ import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -16,8 +15,9 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.GraphAdapter;
@@ -38,15 +38,11 @@ import java.util.stream.Collectors;
 
 public class PathfindingRoutesEndpoint implements Take {
     private final InfraManager infraManager;
-    private static final HashMap<Class<?>, String> constraints = new HashMap<>();
-    public static final String PATH_FINDING_GENERIC_ERROR = "No path could be found";
-    public static final String PATH_FINDING_GAUGE_ERROR = "No path could be found after loading Gauge constraints";
-    public static final String PATH_FINDING_ELECTRIFICATION_ERROR =
-            "No path could be found after loading Electrification constraints";
+    private static final HashMap<Class<?>, ErrorType> constraints = new HashMap<>();
 
     static {
-        constraints.put(LoadingGaugeConstraints.class, PATH_FINDING_GAUGE_ERROR);
-        constraints.put(ElectrificationConstraints.class, PATH_FINDING_ELECTRIFICATION_ERROR);
+        constraints.put(LoadingGaugeConstraints.class, ErrorType.PathfindingGaugeError);
+        constraints.put(ElectrificationConstraints.class, ErrorType.PathfindingElectrificationError);
     }
 
     /**
@@ -97,7 +93,7 @@ public class PathfindingRoutesEndpoint implements Take {
             SignalingInfra infra,
             PathfindingWaypoint[][] reqWaypoints,
             Collection<RollingStock> rollingStocks
-    ) throws NoPathFoundError {
+    ) throws OSRDError {
         // parse the waypoints
         var waypoints = new ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>>();
         for (var step : reqWaypoints) {
@@ -147,7 +143,7 @@ public class PathfindingRoutesEndpoint implements Take {
             ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
             List<EdgeToRanges<SignalingRoute>> constraintsList,
             List<AStarHeuristic<SignalingRoute>> remainingDistanceEstimators
-    ) throws NoPathFoundError {
+    ) throws OSRDError {
         var pathFound = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimators)
@@ -164,7 +160,7 @@ public class PathfindingRoutesEndpoint implements Take {
                     .setRemainingDistanceEstimator(remainingDistanceEstimators)
                     .runPathfinding(waypoints);
         if (possiblePathWithoutErrorNoConstraints == null) {
-            throw new NoPathFoundError(PATH_FINDING_GENERIC_ERROR);
+            throw new OSRDError(ErrorType.PathfindingGenericError);
         }
         // handling errors
         for (EdgeToRanges<SignalingRoute> currentConstraint : constraintsList) {
@@ -174,10 +170,10 @@ public class PathfindingRoutesEndpoint implements Take {
                     .setRemainingDistanceEstimator(remainingDistanceEstimators)
                     .runPathfinding(waypoints);
             if (possiblePathWithoutError == null) {
-                throw new NoPathFoundError(constraints.get(currentConstraint.getClass()));
+                throw new OSRDError(constraints.get(currentConstraint.getClass()));
             }
         }
-        throw new NoPathFoundError(PATH_FINDING_GENERIC_ERROR);
+        throw new OSRDError(ErrorType.PathfindingGenericError);
     }
 
     /**
@@ -224,8 +220,9 @@ public class PathfindingRoutesEndpoint implements Take {
         var res = new HashSet<Pathfinding.EdgeLocation<SignalingRoute>>();
         var edge = infra.getEdge(waypoint.trackSection, Direction.fromEdgeDir(waypoint.direction));
         if (edge == null)
-            throw new InvalidSchedule(
-                    String.format("Track %s referenced in path step does not exist", waypoint.trackSection)
+            throw OSRDError.newInvalidScheduleError(
+                ErrorType.InvalidScheduleTrackDoesNotExist,
+                waypoint.trackSection
             );
         for (var entry : infra.getRoutesOnEdges().get(edge)) {
             var signalingRoutes = infra.getRouteMap().get(entry.route());

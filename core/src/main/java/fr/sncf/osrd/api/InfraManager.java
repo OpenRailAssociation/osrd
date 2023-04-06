@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.signaling.SignalingSimulator;
@@ -30,38 +31,6 @@ public class InfraManager extends APIClient {
     public void forEach(BiConsumer<String, InfraCacheEntry> action) {
         infraCache.forEach(action);
     }
-
-    public static final class InfraLoadException extends OSRDError {
-        private static final long serialVersionUID = 4291184310194002894L;
-        public static final String osrdErrorType = "infra_loading";
-
-        public final InfraStatus sourceOperation;
-
-        InfraLoadException(String message, InfraStatus sourceOperation, Throwable cause) {
-            super(message, ErrorCause.USER, cause);
-            this.sourceOperation = sourceOperation;
-        }
-
-        InfraLoadException(String message, InfraStatus sourceOperation) {
-            super(message, ErrorCause.USER);
-            this.sourceOperation = sourceOperation;
-        }
-
-        @Override
-        public String toString() {
-            return getMessage() + " in state " + sourceOperation.name() + ": " + super.getCause();
-        }
-    }
-
-    public static final class InfraGetException extends OSRDError {
-        private static final long serialVersionUID = 4291184310194002894L;
-        public static final String osrdErrorType = "get_infra";
-
-        InfraGetException(String message) {
-            super(message, ErrorCause.USER);
-        }
-    }
-
 
     public enum InfraStatus {
         INITIALIZING(false),
@@ -143,7 +112,7 @@ public class InfraManager extends APIClient {
             InfraCacheEntry cacheEntry,
             String infraId,
             DiagnosticRecorder diagnosticRecorder
-    ) throws InfraLoadException {
+    ) throws OSRDError {
         // create a request
         var endpointPath = String.format("infra/%s/railjson/", infraId);
         var request = buildRequest(endpointPath);
@@ -202,10 +171,18 @@ public class InfraManager extends APIClient {
             return cacheEntry.infra;
         } catch (IOException | UnexpectedHttpResponse | VirtualMachineError e) {
             cacheEntry.transitionTo(InfraStatus.TRANSIENT_ERROR, e);
-            throw new InfraLoadException("soft error while loading new infra", cacheEntry.lastStatus, e);
+            throw OSRDError.newInfraLoadingError(
+                ErrorType.InfraSoftLoadingError, 
+                cacheEntry.lastStatus.name(), 
+                e
+            );
         } catch (Throwable e) {
             cacheEntry.transitionTo(InfraStatus.ERROR, e);
-            throw new InfraLoadException("hard error while loading new infra", cacheEntry.lastStatus, e);
+            throw OSRDError.newInfraLoadingError(
+                ErrorType.InfraHardLoadingError, 
+                cacheEntry.lastStatus.name(), 
+                e
+            );
         }
     }
 
@@ -215,7 +192,7 @@ public class InfraManager extends APIClient {
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
     public FullInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
-            throws InfraLoadException, InterruptedException {
+            throws OSRDError, InterruptedException {
         try {
             infraCache.putIfAbsent(infraId, new InfraCacheEntry());
             var cacheEntry = infraCache.get(infraId);
@@ -233,8 +210,15 @@ public class InfraManager extends APIClient {
                 if (cacheEntry.status == InfraStatus.CACHED)
                     return cacheEntry.infra;
                 if (cacheEntry.status == InfraStatus.ERROR)
-                    throw new InfraLoadException("cached exception", cacheEntry.lastStatus, cacheEntry.lastError);
-                throw new InfraLoadException("invalid status after waitUntilStable", cacheEntry.status);
+                    throw OSRDError.newInfraLoadingError(
+                        ErrorType.InfraLoadingCacheException, 
+                        cacheEntry.lastStatus.name(), 
+                        cacheEntry.lastError
+                    );
+                throw OSRDError.newInfraLoadingError(
+                    ErrorType.InfraInvalidStatusWhileWaitingStable, 
+                    cacheEntry.status.name()
+                );
             }
         } catch (Exception e) {
             logger.error("exception while loading infra", e);
@@ -254,7 +238,7 @@ public class InfraManager extends APIClient {
      * Get an infra given an id
      */
     public FullInfra getInfra(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
-            throws InfraLoadException, InterruptedException {
+            throws OSRDError, InterruptedException {
         try {
             infraCache.putIfAbsent(infraId, new InfraCacheEntry());
             var cacheEntry = infraCache.get(infraId);
@@ -264,14 +248,14 @@ public class InfraManager extends APIClient {
             }
             var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
             if (!cacheEntry.status.isStable)
-                throw new InfraGetException("Infra not loaded");
+                throw new OSRDError(ErrorType.InfraNotLoadedException);
             if (obsoleteVersion) {
                 deleteFromInfraCache(infraId);
-                throw new InfraGetException("Invalid version");
+                throw new OSRDError(ErrorType.InfraInvalidVersionException);
             }
             if (cacheEntry.status == InfraStatus.CACHED)
                 return cacheEntry.infra;
-            throw new InfraLoadException("invalid status", cacheEntry.status);
+            throw OSRDError.newInfraLoadingError(ErrorType.InfraLoadingInvalidStatusException, cacheEntry.status);
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

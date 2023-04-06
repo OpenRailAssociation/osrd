@@ -7,10 +7,10 @@ import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.io.File;
@@ -25,7 +25,7 @@ import java.util.*;
 
 public class Helpers {
     /** Parse all serialized .json rolling stock files and add these to the given map */
-    public static List<RJSRollingStock> parseRollingStockDir(Path dirPath) throws IOException, InvalidRollingStock {
+    public static List<RJSRollingStock> parseRollingStockDir(Path dirPath) throws IOException, OSRDError {
         var jsonMatcher = FileSystems.getDefault().getPathMatcher("glob:**.json");
         var rollingStocksPaths = Files.list(dirPath)
                 .filter((path) -> path.toFile().isFile())
@@ -39,11 +39,11 @@ public class Helpers {
         return res;
     }
 
-    public static List<RJSRollingStock> getExampleRollingStocks() throws InvalidRollingStock, IOException {
+    public static List<RJSRollingStock> getExampleRollingStocks() throws OSRDError, IOException {
         return parseRollingStockDir(getResourcePath("rolling_stocks/"));
     }
 
-    public static RJSRollingStock getExampleRollingStock(String fileName) throws IOException, InvalidRollingStock {
+    public static RJSRollingStock getExampleRollingStock(String fileName) throws IOException, OSRDError {
         return MoshiUtils.deserialize(RJSRollingStock.adapter, getResourcePath("rolling_stocks/" + fileName));
     }
 

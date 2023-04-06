@@ -8,7 +8,8 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,7 +74,9 @@ public record TrainPath(
         for (var track : trackRangePath)
             if (track.element.contains(location))
                 return track.pathOffset + track.element.offsetOf(location);
-        throw new InvalidSchedule("TrackLocation isn't included in the path");
+        throw new OSRDError(
+            ErrorType.InvalidScheduleTrackLocationNotIncludedInPath
+        );
     }
 
     /** Returns the location at the given offset */

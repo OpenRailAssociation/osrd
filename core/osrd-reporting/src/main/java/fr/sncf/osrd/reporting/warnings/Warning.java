@@ -1,10 +1,9 @@
 package fr.sncf.osrd.reporting.warnings;
 
 import com.squareup.moshi.JsonAdapter;
-import fr.sncf.osrd.reporting.Reflection;
+import com.squareup.moshi.Moshi;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.List;
 
 public class Warning implements Serializable {
     @Serial
@@ -19,6 +18,10 @@ public class Warning implements Serializable {
         this.message = message;
     }
 
-    public static final JsonAdapter<Warning> adapter = Reflection.makeJsonAdapterFromSubtypes(
-            Warning.class, "type", List.of(), "osrdWarningType");
+    public static final JsonAdapter<Warning> adapter;
+
+    static {
+        Moshi moshi = new Moshi.Builder().build();
+        adapter = moshi.adapter(Warning.class);
+    }
 }

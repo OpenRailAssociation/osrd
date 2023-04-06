@@ -2,6 +2,8 @@ package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -40,7 +42,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         boolean continuous = true;
         for (int i = 0; i < parts.length - 1; i++) {
             if (parts[i].getEndPos() != parts[i + 1].getBeginPos())
-                throw new RuntimeException("invalid envelope, envelope parts are not contiguous");
+                throw new OSRDError(ErrorType.EnvelopePartsNotContiguous);
             if (parts[i].getEndSpeed() != parts[i + 1].getBeginSpeed())
                 continuous = false;
         }

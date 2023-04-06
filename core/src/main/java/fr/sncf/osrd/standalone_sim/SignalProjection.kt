@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.SignalProjectionEndpoint
 import fr.sncf.osrd.api.SignalProjectionEndpoint.SignalProjectionResult
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.infra_state.api.TrainPath
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
@@ -170,7 +171,7 @@ private fun signalUpdates(
             "A" -> Color.YELLOW.rgb
             "S" -> Color.RED.rgb
             "C" -> Color.RED.rgb
-            else -> throw RuntimeException("unknown aspect: $aspect")
+            else -> throw OSRDError.newAspectError(aspect)
         }
     }
 

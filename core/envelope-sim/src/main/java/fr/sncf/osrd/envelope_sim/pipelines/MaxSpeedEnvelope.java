@@ -15,6 +15,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.StopMeta;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 
 /** Max speed envelope = MRSP + braking curves
  * It is the max speed allowed at any given point, ignoring allowances
@@ -69,10 +70,7 @@ public class MaxSpeedEnvelope {
                 if (Math.abs(stopPosition - curveWithDecelerations.getEndPos()) < POSITION_EPSILON)
                     stopPosition = curveWithDecelerations.getEndPos();
                 else
-                    throw new RuntimeException(String.format(
-                            "Stop at index %d is out of bounds (position = %f, path length = %f)",
-                            i, stopPosition, curveWithDecelerations.getEndPos()
-                    ));
+                    throw OSRDError.newEnvelopeError(i, stopPosition, curveWithDecelerations.getEndPos());
             }
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.BRAKING);

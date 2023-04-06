@@ -1,5 +1,7 @@
 package fr.sncf.osrd.signaling.bal
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.signaling.ProtectionStatus.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
@@ -21,7 +23,7 @@ object BALtoBAPR : SignalDriver {
             // (as the BAPR signal should not be distant), we still have to handle it
             // until the infrastructure gets a fix
             "A" -> "VL"
-            else -> throw RuntimeException("unknown aspect: $aspect")
+            else -> throw OSRDError.newAspectError(aspect)
         }
     }
 
@@ -31,7 +33,7 @@ object BALtoBAPR : SignalDriver {
         return stateSchema {
             assert(maView!!.hasNextSignal)
             when (maView.protectionStatus) {
-                NO_PROTECTED_ZONES -> throw RuntimeException("BAL signals always protect zones")
+                NO_PROTECTED_ZONES -> throw OSRDError(ErrorType.BALUnprotectedZones)
                 INCOMPATIBLE -> value("aspect", "C")
                 OCCUPIED -> value("aspect", "S")
                 CLEAR -> {
