@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
-import TrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/TrainLabels';
 import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
+import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
@@ -19,8 +19,13 @@ import {
   updateRollingStockID,
   updateSpeedLimitByTag,
   toggleUsingElectricalProfiles,
+  updateName,
+  updateDepartureTime,
+  updateInitialSpeed,
+  updatePathfindingID,
 } from 'reducers/osrdconf';
 import { getUsingElectricalProfiles } from 'reducers/osrdconf/selectors';
+import { sec2time } from 'utils/timeManipulation';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 
 type Props = {
@@ -36,8 +41,7 @@ export default function ManageTrainSchedule({
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const usingElectricalProfiles = useSelector(getUsingElectricalProfiles);
   const [isWorking, setIsWorking] = useState(false);
-  const [getTrainScheduleById, { data: trainScheduleToModify }] =
-    osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
 
   function confirmButton() {
     return trainScheduleIDsToModify ? (
@@ -76,6 +80,13 @@ export default function ManageTrainSchedule({
 
         dispatch(updateSpeedLimitByTag(trainScheduleData.speed_limit_tags));
         dispatch(updateLabels(trainScheduleData.labels));
+
+        if (trainScheduleData.train_name) dispatch(updateName(trainScheduleData.train_name));
+        if (trainScheduleData.departure_time)
+          dispatch(updateDepartureTime(sec2time(trainScheduleData.departure_time)));
+        dispatch(updateInitialSpeed(trainScheduleData.initial_speed || 0));
+
+        dispatch(updatePathfindingID(trainScheduleData.path));
       });
   }
 
@@ -86,21 +97,21 @@ export default function ManageTrainSchedule({
 
   return (
     <>
-      {trainScheduleToModify && <h1>Coucou {trainScheduleToModify.train_name}</h1>}
-      <div className="manage-train-schedule-title">
-        1.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.chooseRollingStock')}
+      <div className="osrd-config-item-container mb-4">
+        <TrainSettings />
       </div>
+
       <div className="row no-gutters">
-        <div className="col-xl-6 pr-xl-2">
+        <div className="col-lg-6 pr-lg-2">
           <RollingStockSelector />
           <ElectricalProfiles />
         </div>
-        <div className="col-xl-6">
+        <div className="col-lg-6">
           <SpeedLimitByTagSelector />
           <PowerRestrictionSelector />
         </div>
       </div>
-      <div className="manage-train-schedule-title">2.&nbsp;{t('indications.choosePath')}</div>
+
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
           <Itinerary />
@@ -113,9 +124,8 @@ export default function ManageTrainSchedule({
           </div>
         </div>
       </div>
-      <div className="manage-train-schedule-title">3.&nbsp;{t('indications.configValidate')}</div>
-      <TrainLabels />
-      {!trainScheduleIDsToModify && <TrainSettings />}
+
+      {!trainScheduleIDsToModify && <TrainAddingSettings />}
       <div className="osrd-config-item" data-testid="add-train-schedules">
         <div className="d-flex justify-content-end">
           <button

@@ -90,12 +90,11 @@ function TimetableTrainCard({
               {idx + 1}
             </div>
             {train.name}
-            {projectionPathIsUsed && (
-              <span className="mx-1">
-                <GiPathDistance />
+            {imageUrl && (
+              <span className="img-container">
+                <img src={imageUrl} alt="rollingstock livery" />
               </span>
             )}
-            {imageUrl && <img src={imageUrl} alt="rollingstock livery" />}
           </div>
           <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
           <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
