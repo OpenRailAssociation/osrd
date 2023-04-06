@@ -27,12 +27,12 @@ public class BatteryTests {
             double expectedOutputPower = outputPower * efficiency;
             if (initialSoc <= 0.2)
                 expectedOutputPower = 0.;
-            double expectedInputPower = inputPower;
+            double expectedInputPower = inputPower / efficiency;
             if (initialSoc > 0.7)
                 // if the initial soc is too high, we expect the max input power to be capped by the refill law
-                expectedInputPower = battery.storage.refillLaw.getRefillPower(initialSoc);
+                expectedInputPower = battery.storage.refillLaw.getRefillPower(initialSoc) / efficiency;
             assertEquals(expectedOutputPower, battery.getMaxOutputPower(0., false));
-            assertEquals(expectedInputPower, battery.getMaxInputPower(0.));
+            assertEquals(expectedInputPower, battery.getMaxInputPower(0., false));
         }
     }
 

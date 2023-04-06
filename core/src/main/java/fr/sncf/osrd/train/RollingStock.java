@@ -183,7 +183,7 @@ public class RollingStock implements PhysicsRollingStock {
                 leftOverEnergy = availableEnergy - consumedEnergy;
             }
             else { // otherwise that means we've got all the energy we need for traction, maybe we can recharge
-                var receivableEnergy = source.getMaxInputPower(speed) * timeStep;
+                var receivableEnergy = source.getMaxInputPower(speed, electrification) * timeStep;
                 var inputEnergy = Math.max(receivableEnergy, -leftOverEnergy);
                 source.consumeEnergy(inputEnergy);
             }

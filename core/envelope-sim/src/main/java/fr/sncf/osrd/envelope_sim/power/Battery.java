@@ -39,9 +39,9 @@ public class Battery implements EnergySource {
     }
 
     @Override
-    public double getMaxInputPower(double speed) {
+    public double getMaxInputPower(double speed, boolean electrification) {
         var maxStorageInputPower = storage.getRefillPower();
-        return Math.min(maxStorageInputPower, maxInputPower.get(speed));
+        return Math.min(maxStorageInputPower, maxInputPower.get(speed)) / efficiency;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class Battery implements EnergySource {
     @Override
     public void sendEnergy(double energyDelta) {
         assert energyDelta > 0;
-        storage.updateStateOfCharge(energyDelta);
+        storage.updateStateOfCharge(energyDelta * efficiency);
     }
 
     @Override

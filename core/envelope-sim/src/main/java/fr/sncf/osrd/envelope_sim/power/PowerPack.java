@@ -39,8 +39,8 @@ public class PowerPack implements EnergySource {
     }
 
     @Override
-    public double getMaxInputPower(double speed) {
-        return 0; // can't refill some gas while the train is running
+    public double getMaxInputPower(double speed, boolean electrification) {
+        return 0; // can't refill gas while the train is running
     }
 
     @Override

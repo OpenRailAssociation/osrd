@@ -29,9 +29,9 @@ public class PowerPackTests {
             double expectedOutputPower = outputPower * efficiency;
             if (initialSoc <= 0.)
                 expectedOutputPower = 0.;
-            double expectedInputPower = inputPower;
+            double expectedInputPower = inputPower / efficiency;
             assertEquals(expectedOutputPower, powerPack.getMaxOutputPower(0., false));
-            assertEquals(expectedInputPower, powerPack.getMaxInputPower(0.));
+            assertEquals(expectedInputPower, powerPack.getMaxInputPower(0., false));
         }
     }
 

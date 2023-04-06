@@ -26,14 +26,14 @@ public class Catenary implements EnergySource {
     public double getMaxOutputPower(double speed, boolean electrification){
         if (!electrification)
             return 0;
-        double availablePower = maxOutputPower.get(speed);
-        availablePower *= efficiency;
-        return availablePower;
+        return maxOutputPower.get(speed) * efficiency;
     }
 
     @Override
-    public double getMaxInputPower(double speed) {
-        return maxInputPower.get(speed);
+    public double getMaxInputPower(double speed, boolean electrification) {
+        if (!electrification)
+            return 0;
+        return maxInputPower.get(speed) / efficiency;
     }
 
     @Override
@@ -47,15 +47,22 @@ public class Catenary implements EnergySource {
         return 0;
     }
 
-    public static Catenary newCatenary() {
-        var speeds = new double[] {0., 10., 20., 30.};
-        var maxInputPowers = new double[] {0., 0., 0., 0.};
-        var maxOutputPowers = new double[] {200., 200., 400., 400.};
+    /** Create a simple instance of Catenary with a speed dependancy (constant - incresing linearly - constant) */
+    public static Catenary newCatenary(
+            double pInput,
+            double pOutput,
+            double speedTransLow,
+            double speedTransHigh,
+            double efficiency
+    ) {
+        var speeds = new double[] {speedTransLow, speedTransHigh};
+        var maxInputPowers = new double[] {pInput / 2, pInput};
+        var maxOutputPowers = new double[] {pOutput / 2, pOutput};
 
         return new Catenary(
                 new SpeedDependantPower(speeds, maxInputPowers),
                 new SpeedDependantPower(speeds, maxOutputPowers),
-                1.
+                efficiency
         );
     }
 }
