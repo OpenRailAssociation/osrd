@@ -36,30 +36,16 @@ enum ListErrorsRailjson {
     WrongRailjsonVersionProvided,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize)]
-struct GetRailjsonQueryParam {
-    #[serde(default)]
-    exclude_extensions: bool,
-}
-
 /// Serialize an infra
 #[get("/{infra}/railjson")]
-async fn get_railjson(
-    infra: Path<i64>,
-    params: Query<GetRailjsonQueryParam>,
-    db_pool: Data<DbPool>,
-) -> Result<impl Responder> {
+async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
     let infra = infra.into_inner();
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| {
             let table = object_type.get_table();
-            let query = if params.exclude_extensions {
-                format!(
+            let query = format!(
                     "SELECT (x.data - 'extensions')::text AS railjson FROM {table} x WHERE x.infra_id = $1"
-                )
-            } else {
-                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1")
-            };
+                );
             let db_pool_clone = db_pool.clone();
             block::<_, Result<_>>(move || {
                 let mut conn = db_pool_clone.get()?;
