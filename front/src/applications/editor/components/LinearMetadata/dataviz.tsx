@@ -349,7 +349,12 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         {hoverAtx && !draginStartAt && (
           <div
             className="hover-x"
-            style={{ position: 'relative', left: `${hoverAtx}px`, borderLeft: '1px dotted' }}
+            style={{
+              position: 'absolute',
+              height: '100%',
+              left: `${hoverAtx}px`,
+              borderLeft: '1px dotted',
+            }}
           />
         )}
 
