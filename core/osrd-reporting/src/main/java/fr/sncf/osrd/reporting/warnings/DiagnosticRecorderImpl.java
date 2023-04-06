@@ -1,5 +1,6 @@
 package fr.sncf.osrd.reporting.warnings;
 
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class DiagnosticRecorderImpl implements DiagnosticRecorder {
     public void register(Warning warning) {
         warnings.add(warning);
         if (strict)
-            throw new StrictWarningError(warning);
+            throw OSRDError.newStrictWarningError(warning);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class DiagnosticRecorderImpl implements DiagnosticRecorder {
     public void verify() {
         if (errors.isEmpty())
             return;
-        throw new DiagnosticError(this);
+        throw OSRDError.newDiagnosticError(this);
     }
 
     /** Prints the warnings on the given stream */

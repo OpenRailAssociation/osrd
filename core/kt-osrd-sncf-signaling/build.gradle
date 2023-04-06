@@ -16,6 +16,7 @@ java {
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api project(':kt-osrd-signaling')
+    api project(':osrd-reporting')
 
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test

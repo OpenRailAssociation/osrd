@@ -108,10 +108,6 @@ enum class ZoneReservationStatus {
 
 class ActionLockRequired() : Exception("")
 
-class UnexpectedReservationStatus(
-    val expected: ZoneReservationStatus,
-    val got: ZoneReservationStatus
-) : Exception("")
 class IncompatibleZoneRequirements(
     val currentRequirements: ZoneRequirements,
     val newRequirements: ZoneRequirements

@@ -4,6 +4,7 @@ import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 
 class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSettingsSchema) : SigSystemManager {
     override fun checkSignalingSystemBlock(reporter: BlockDiagReporter, sigSystem: SignalingSystemId, block: SigBlock) {
@@ -24,7 +25,7 @@ class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSetting
 
     override fun findSignalingSystem(sigSystem: String): SignalingSystemId {
         if (sigSystem != this.sigSystem)
-            throw RuntimeException("Unknown signaling system: $sigSystem") //TODO
+            throw OSRDError.newSignalingError(sigSystem)
         return SignalingSystemId(0u)
     }
 

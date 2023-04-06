@@ -1,5 +1,7 @@
 package fr.sncf.osrd.signaling.bal
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.signaling.ProtectionStatus.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
@@ -18,7 +20,7 @@ object BALtoBAL : SignalDriver {
             "A" -> "VL"
             "S" -> "A"
             "C" -> "A"
-            else -> throw RuntimeException("unknown aspect: $aspect")
+            else -> throw OSRDError.newAspectError(aspect)
         }
     }
 
@@ -30,7 +32,7 @@ object BALtoBAL : SignalDriver {
     ): SigState {
         return stateSchema {
             when (maView!!.protectionStatus) {
-                NO_PROTECTED_ZONES -> throw RuntimeException("BAL signals always protect zones")
+                NO_PROTECTED_ZONES -> throw OSRDError(ErrorType.BALUnprotectedZones)
                 INCOMPATIBLE -> {
                     if (!signal.getFlag("Nf"))  // This can happen when doing partial simulation.
                         value("aspect", "S") // We take the most restrictive available aspect

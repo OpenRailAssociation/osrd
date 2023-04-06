@@ -15,13 +15,13 @@ import fr.sncf.osrd.infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
-import fr.sncf.osrd.infra.errors.MissingDetectorsRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.reporting.warnings.Warning;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,6 +39,35 @@ public class ReservationInfraBuilder {
         this.diagnosticRecorder = diagnosticRecorder;
     }
 
+    /**
+     * Creates a new OSRDError for an invalid infrastructure error.
+     *
+     * @param routeId        the ID associated with the error
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newDiscontinuousRouteError(String routeId) {
+        var error = new OSRDError(ErrorType.InvalidInfraDiscontinuousRoute);
+        error.context.put("route_id", routeId);
+        return error;
+    }
+
+    /**
+     * Creates a new OSRDError for an invalid infrastructure error with the number of detectors.
+     *
+     * @param routeID      the route ID associated with the error
+     * @param nbDetectors  the number of detectors
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newInvalidInfraMissingDetectorsError(
+            String routeID, 
+            int nbDetectors
+    ) {
+        var error = new OSRDError(ErrorType.InvalidInfraMissingDetectorsRoute);
+        error.context.put("route_id", routeID);
+        error.context.put("nb_detectors", nbDetectors);
+        return error;
+    }
+    
     /** Builds a ReservationInfra from railjson data and a DiTrackInfra */
     public static ReservationInfra fromDiTrackInfra(
             RJSInfra rjsInfra,
@@ -150,7 +179,11 @@ public class ReservationInfraBuilder {
     /** Checks that the route makes sense, reports any relevant warning or error otherwise */
     private void validateRoute(ReservationRouteImpl route, RJSRoute rjsRoute) {
         if (route.getDetectorPath().size() < 2)
-            diagnosticRecorder.register(new MissingDetectorsRoute(rjsRoute.id, route.getDetectorPath().size()));
+            diagnosticRecorder.register(
+                newInvalidInfraMissingDetectorsError(
+                    rjsRoute.id,
+                    route.getDetectorPath().size()
+            ));
 
         var detectorIDs = route.getDetectorPath().stream()
                         .map(x -> x.detector().getID())
@@ -238,7 +271,7 @@ public class ReservationInfraBuilder {
             var neighbors = g.outEdges(endpointPair.target());
 
             if (neighbors.isEmpty())
-                throw new DiscontinuousRoute(rjsRoute.id);
+                throw newDiscontinuousRouteError(rjsRoute.id);
 
             var firstNeighbor = neighbors.iterator().next();
             if (!(firstNeighbor.getEdge() instanceof SwitchBranch)) {
@@ -259,7 +292,7 @@ public class ReservationInfraBuilder {
                 }
                 // We didn't find a next edge
                 if (newEdge == edge)
-                    throw new DiscontinuousRoute(rjsRoute.id);
+                    throw newDiscontinuousRouteError(rjsRoute.id);
             }
             position = edge.getDirection() == FORWARD ? 0 : edge.getEdge().getLength();
         }

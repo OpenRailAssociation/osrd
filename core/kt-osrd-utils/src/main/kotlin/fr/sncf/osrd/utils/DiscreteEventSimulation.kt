@@ -6,6 +6,8 @@ import kotlin.collections.ArrayDeque
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.reporting.exceptions.ErrorType 
 
 private class TimedRunnable(
     @JvmField val time: Long,
@@ -82,5 +84,5 @@ fun <T> runSimulation(
 
     if (deferred.isCompleted)
         return deferred.getCompleted()
-    throw BlockedSimulationException("the discrete simulation blocked without completing")
+    throw OSRDError(ErrorType.BlockedSimulationException)
 }

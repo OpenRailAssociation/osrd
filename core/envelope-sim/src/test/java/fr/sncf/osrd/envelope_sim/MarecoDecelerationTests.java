@@ -12,10 +12,11 @@ import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 
@@ -45,8 +46,8 @@ public class MarecoDecelerationTests {
                 List.of(new AllowanceRange(startOffset, endOffset, new AllowanceValue.Percentage(50))));
         try {
             allowance.apply(envelope, context);
-        } catch (AllowanceConvergenceException err) {
-            assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, err.errorType);
+        } catch (OSRDError err) {
+            assertEquals(err.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
         }
     }
 

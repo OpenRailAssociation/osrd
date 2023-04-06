@@ -13,9 +13,9 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.ScheduledPoint;
@@ -31,15 +31,15 @@ public class RJSStandaloneTrainScheduleParser {
             RJSStandaloneTrainSchedule rjsTrainSchedule,
             TrainPath trainPath,
             EnvelopeSimPath envelopeSimPath
-    ) throws InvalidSchedule {
+    ) throws OSRDError {
         var rollingStockID = rjsTrainSchedule.rollingStock;
         var rollingStock = rollingStockGetter.apply(rollingStockID);
         if (rollingStock == null)
-            throw new UnknownRollingStock(rollingStockID);
+            throw OSRDError.newUnknownRollingStockError(rollingStockID);
 
         var initialSpeed = rjsTrainSchedule.initialSpeed;
         if (Double.isNaN(initialSpeed) || initialSpeed < 0)
-            throw new InvalidSchedule("invalid initial speed");
+            throw new OSRDError(ErrorType.InvalidScheduleInvalidInitialSpeed);
 
         // Parse comfort
         var comfort = parseComfort(rjsTrainSchedule.comfort);
@@ -65,7 +65,7 @@ public class RJSStandaloneTrainScheduleParser {
                 if (rjsSchedulePoints.position < 0)
                     scheduledPoints.add(new ScheduledPoint(trainPath.length(), rjsSchedulePoints.time));
                 else if (rjsSchedulePoints.position > trainPath.length())
-                    throw new InvalidSchedule("invalid scheduled point: position greater that path length");
+                    throw new OSRDError(ErrorType.InvalidSchedulePoint);
                 else
                     scheduledPoints.add(new ScheduledPoint(rjsSchedulePoints.position, rjsSchedulePoints.time));
             }
@@ -87,7 +87,7 @@ public class RJSStandaloneTrainScheduleParser {
     private static Allowance parseAllowance(
             EnvelopeSimPath envelopeSimPath,
             RJSAllowance rjsAllowance
-    ) throws InvalidSchedule {
+    ) throws OSRDError {
 
         var allowanceDistribution = rjsAllowance.distribution;
         double beginPos;
@@ -103,7 +103,7 @@ public class RJSStandaloneTrainScheduleParser {
             endPos = envelopeSimPath.getLength();
             ranges = parseAllowanceRanges(envelopeSimPath, standardAllowance.defaultValue, standardAllowance.ranges);
         } else {
-            throw new RuntimeException("unknown allowance type");
+            throw new OSRDError(ErrorType.UnknownAllowanceType);
         }
         // parse allowance distribution
         return switch (allowanceDistribution) {
@@ -126,7 +126,7 @@ public class RJSStandaloneTrainScheduleParser {
             EnvelopeSimPath envelopeSimPath,
             RJSAllowanceValue defaultValue,
             RJSAllowanceRange[] ranges
-    ) throws InvalidSchedule {
+    ) throws OSRDError {
         var value = parseAllowanceValue(defaultValue);
         // if no ranges have been defined, just return the default value
         if (ranges == null || ranges.length == 0) {
@@ -142,7 +142,7 @@ public class RJSStandaloneTrainScheduleParser {
         for (var range : sortedRanges) {
             // if some ranges are overlapping, return an error
             if (range.beginPos < lastEndPos)
-                throw new InvalidSchedule("overlapping allowance ranges");
+                throw new OSRDError(ErrorType.InvalidScheduleOverlappingAllowanceRanges);
             // if there is a gap between two ranges, fill it with default value
             if (range.beginPos > lastEndPos) {
                 res.add(new AllowanceRange(lastEndPos, range.beginPos, value));
@@ -155,33 +155,33 @@ public class RJSStandaloneTrainScheduleParser {
         return res;
     }
 
-    private static AllowanceRange parseAllowanceRange(RJSAllowanceRange range) throws InvalidSchedule {
+    private static AllowanceRange parseAllowanceRange(RJSAllowanceRange range) throws OSRDError {
         return new AllowanceRange(range.beginPos, range.endPos, parseAllowanceValue(range.value));
     }
 
     /** Parses the RJSAllowanceValue into an AllowanceValue */
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    public static AllowanceValue parseAllowanceValue(RJSAllowanceValue rjsValue) throws InvalidSchedule {
+    public static AllowanceValue parseAllowanceValue(RJSAllowanceValue rjsValue) throws OSRDError {
         if (rjsValue.getClass() == RJSAllowanceValue.TimePerDistance.class) {
             var rjsTimePerDist = (RJSAllowanceValue.TimePerDistance) rjsValue;
             if (Double.isNaN(rjsTimePerDist.minutes))
-                throw new InvalidSchedule("missing minutes in time per distance allowance");
+                throw new OSRDError(ErrorType.InvalidScheduleMissingMinute);
             return new AllowanceValue.TimePerDistance(rjsTimePerDist.minutes);
         }
         if (rjsValue.getClass() == RJSAllowanceValue.Time.class) {
             var rjsFixedTime = (RJSAllowanceValue.Time) rjsValue;
             if (Double.isNaN(rjsFixedTime.seconds))
-                throw new InvalidSchedule("missing seconds in time allowance");
+                throw new OSRDError(ErrorType.InvalidScheduleMissingSeconds);
             return new AllowanceValue.FixedTime(rjsFixedTime.seconds);
         }
         if (rjsValue.getClass() == RJSAllowanceValue.Percent.class) {
             var rjsPercentage = (RJSAllowanceValue.Percent) rjsValue;
             if (Double.isNaN(rjsPercentage.percentage))
-                throw new InvalidSchedule("missing percentage in percentage allowance");
+                throw new OSRDError(ErrorType.InvalidScheduleMissingPercentage);
             return new AllowanceValue.Percentage(rjsPercentage.percentage);
         }
 
-        throw new RuntimeException("unknown allowance value type");
+        throw new OSRDError(ErrorType.UnknownAllowanceValueType);
     }
 
     private static ImmutableRangeMap<Double, String> parsePowerRestrictionRanges(RJSPowerRestrictionRange[] ranges) {

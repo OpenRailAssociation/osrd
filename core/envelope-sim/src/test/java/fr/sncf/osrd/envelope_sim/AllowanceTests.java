@@ -23,9 +23,10 @@ import fr.sncf.osrd.envelope_sim.allowances.AbstractAllowanceWithRanges;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.reporting.exceptions.ErrorCause;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -329,17 +330,19 @@ public class AllowanceTests {
 
         // test mareco distribution
         var marecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, allowanceValue);
-        var marecoThrown =
-                assertThrows(AllowanceConvergenceException.class,
-                        () -> marecoAllowance.apply(maxEffortEnvelope, testContext));
-        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, marecoThrown.errorType);
+        var marecoThrown = assertThrows(
+                OSRDError.class,
+                () -> marecoAllowance.apply(maxEffortEnvelope, testContext)
+            );
+        assertEquals(marecoThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(begin, end, 8.33, allowanceValue);
-        var linearThrown =
-                assertThrows(AllowanceConvergenceException.class,
-                        () -> linearAllowance.apply(maxEffortEnvelope, testContext));
-        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, linearThrown.errorType);
+        var linearThrown = assertThrows(
+                OSRDError.class,
+                () -> linearAllowance.apply(maxEffortEnvelope, testContext)
+            );
+        assertEquals(linearThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
     }
 
     /** Test the engineering allowance with a very short segment, to trigger intersectLeftRightParts method */
@@ -355,17 +358,18 @@ public class AllowanceTests {
 
         // test mareco distribution
         var marecoAllowance = makeStandardMarecoAllowance(begin, end, 8.33, allowanceValue);
-        var marecoThrown =
-                assertThrows(AllowanceConvergenceException.class,
-                        () -> marecoAllowance.apply(maxEffortEnvelope, testContext));
-        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, marecoThrown.errorType);
+        var marecoThrown = assertThrows(
+                OSRDError.class,
+                () -> marecoAllowance.apply(maxEffortEnvelope, testContext)
+            );
+        assertEquals(marecoThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(begin, end, 8.33, allowanceValue);
         var linearThrown =
-                assertThrows(AllowanceConvergenceException.class,
+                assertThrows(OSRDError.class,
                         () -> linearAllowance.apply(maxEffortEnvelope, testContext));
-        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, linearThrown.errorType);
+        assertEquals(linearThrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
     }
 
     private void testEngineeringOnStandardAllowance(Envelope maxEffortEnvelope,
@@ -683,18 +687,19 @@ public class AllowanceTests {
 
         // test mareco distribution
         var marecoAllowance = makeStandardMarecoAllowance(0, length, 0, allowanceValue);
-        var marecoException = assertThrows(AllowanceConvergenceException.class, () ->
-                makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, true)
-        );
-        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, marecoException.errorType);
+        var marecoException = assertThrows(
+                OSRDError.class, 
+                () -> makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, true)
+            );
+        assertEquals(marecoException.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
 
         // test linear distribution
         var linearAllowance = makeStandardLinearAllowance(0, length, 0, allowanceValue);
-        var linearException = assertThrows(AllowanceConvergenceException.class, () ->
+        var linearException = assertThrows(OSRDError.class, () ->
                 makeSimpleAllowanceEnvelope(testContext, linearAllowance, 44.4, true)
         );
-        assertEquals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME, linearException.errorType);
-        assert linearException.cause == OSRDError.ErrorCause.USER;
+        assertEquals(linearException.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
+        assert linearException.cause == ErrorCause.USER;
     }
 
     @Test
@@ -713,7 +718,8 @@ public class AllowanceTests {
                         new AllowanceRange(800, 810, new AllowanceValue.Percentage(10))
                 )
         );
-        assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope, testContext));
+        var thrown = assertThrows(OSRDError.class, () -> allowance.apply(maxEffortEnvelope, testContext));
+        assertEquals(thrown.osrdErrorType, ErrorType.AllowanceConvergenceTooMuchTime);
     }
 
     @Test

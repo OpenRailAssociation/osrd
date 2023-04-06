@@ -7,14 +7,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.Iterables;
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.standalone_sim.result.ElectrificationConditionsRange;
 import fr.sncf.osrd.standalone_sim.result.ResultPosition;
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed;
@@ -77,8 +76,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
     /**  */
     public StandaloneSimResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
-            InvalidRollingStock,
-            InvalidSchedule,
+            OSRDError,
             IOException {
         // serialize the request
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(request);

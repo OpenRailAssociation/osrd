@@ -10,7 +10,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
-import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
@@ -22,10 +21,12 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDeadSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.*;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
@@ -44,6 +45,62 @@ public class UndirectedInfraBuilder {
         builder = NetworkBuilder
                 .directed()
                 .immutable();
+    }
+
+    /**
+     * Creates a new OSRDError for an invalid infrastructure error.
+     *
+     * @param errorType the error type
+     * @param id        the ID associated with the error
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newInvalidRangeError(ErrorType errorType, String id) {
+        var error = new OSRDError(errorType);
+        error.context.put("track_id", id);
+        return error;
+    }
+
+    /**
+     * Creates a new OSRDError for an invalid infrastructure error with a link ID and source/destination nodes.
+     *
+     * @param linkID             the link ID associated with the error
+     * @param sourceNode         the source node
+     * @param destinationNode    the destination node
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newEndpointAlreadyLinkedError(
+            String linkID,
+            Object sourceNode,
+            Object destinationNode
+    ) {
+        var error = new OSRDError(ErrorType.InvalidInfraEndpointAlreadyLinked);
+        error.context.put("link_id", linkID);
+        error.context.put("source_node", sourceNode);
+        error.context.put("destination_node", destinationNode);
+        return error;
+    }
+
+    /**
+     * Creates a new OSRDError for an invalid infrastructure error with an RJS switch ID, switch type, and switch ports.
+     *
+     * @param rjsSwitchID         the RJS switch ID associated with the error
+     * @param switchType          the switch type
+     * @param switchTypePorts     the expected switch ports
+     * @param switchPorts         the received switch ports
+     * @return a new OSRDError instance
+     */
+    public static OSRDError newWrongSwitchPortsError(
+            String rjsSwitchID,
+            String switchType,
+            Object switchTypePorts,
+            Object switchPorts
+    ) {
+        var error = new OSRDError(ErrorType.InvalidInfraWrongSwitchPorts);
+        error.context.put("rjs_switch_id", rjsSwitchID);
+        error.context.put("switch_type", switchType);
+        error.context.put("expected_switch_ports", switchTypePorts);
+        error.context.put("got_switch_ports", switchPorts);
+        return error;
     }
 
     /** Creates a TrackInfra from a railjson infra */
@@ -141,12 +198,11 @@ public class UndirectedInfraBuilder {
                                 && oldDstNode instanceof SwitchPort dstSwitchPort
                                 && srcSwitchPort.getSwitch().getID().equals(dstSwitchPort.getSwitch().getID()))
                     continue;
-                throw new InvalidInfraError(String.format(
-                        "Error in track link %s: at least one endpoint is already linked (src=%s, dst=%s)",
-                        link.id,
-                        oldSrcNode,
-                        oldDstNode
-                ));
+                throw newEndpointAlreadyLinkedError(
+                    link.id,
+                    oldSrcNode,
+                    oldDstNode
+                );
             }
             if (link.id == null || link.id.equals("")) {
                 // Forcing a unique ID avoids node equality troubles, and makes debugging easier
@@ -314,8 +370,10 @@ public class UndirectedInfraBuilder {
             for (var rjsCurve : track.curves) {
                 rjsCurve.simplify();
                 if (rjsCurve.begin < 0 || rjsCurve.end > track.length)
-                    throw new InvalidInfraError(
-                            String.format("Track '%s' has a curve with an invalid range", track.id));
+                    throw newInvalidRangeError(
+                            ErrorType.InvalidInfraTrackCurveWithInvalidRange,
+                            track.id
+                    );
                 if (rjsCurve.radius != 0.) {
                     for (var dir : Direction.values())
                         curves.get(dir).putCoalescing(
@@ -342,8 +400,10 @@ public class UndirectedInfraBuilder {
             for (var rjsSlope : track.slopes) {
                 rjsSlope.simplify();
                 if (rjsSlope.begin < 0 || rjsSlope.end > track.length)
-                    throw new InvalidInfraError(
-                            String.format("Track '%s' has a slope with an invalid range", track.id));
+                    throw newInvalidRangeError(
+                        ErrorType.InvalidInfraTrackSlopeWithInvalidRange,
+                        track.id
+                    );
                 if (rjsSlope.gradient != 0.) {
                     for (var dir : Direction.values())
                         slopes.get(dir).putCoalescing(
@@ -427,10 +487,12 @@ public class UndirectedInfraBuilder {
         var switchTypePorts = new HashSet<>(switchType.ports);
         var switchPorts = rjsSwitch.ports.keySet();
         if (!switchTypePorts.equals(switchPorts))
-            throw new InvalidInfraError(String.format(
-                    "Switch %s doesn't have the right ports for type %s (expected %s, got %s)",
-                    rjsSwitch.id, switchType.id, switchTypePorts, switchPorts
-            ));
+            throw newWrongSwitchPortsError(
+                rjsSwitch.id,
+                switchType.id,
+                switchTypePorts,
+                switchPorts
+            );
 
         var groupChangeDelay = rjsSwitch.groupChangeDelay;
         if (Double.isNaN(groupChangeDelay))

@@ -8,7 +8,10 @@ import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -130,10 +133,11 @@ public class MaxEffortEnvelopeTest {
         var testContext = new EnvelopeSimContext(SimpleRollingStock.STANDARD_TRAIN, path, 2.,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] {length};
-        assertThrows(
-                ImpossibleSimulationError.class,
+        OSRDError osrdError = assertThrows(
+                OSRDError.class,
                 () -> makeSimpleMaxEffortEnvelope(testContext, 44.4, stops)
         );
+        assertEquals(osrdError.osrdErrorType, ErrorType.ImpossibleSimulationError);
     }
 
     @Test
@@ -143,10 +147,11 @@ public class MaxEffortEnvelopeTest {
         var testContext = new EnvelopeSimContext(SimpleRollingStock.STANDARD_TRAIN, path, 2.,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] {5_100, length};
-        assertThrows(
-                ImpossibleSimulationError.class,
+        OSRDError osrdError = assertThrows(
+                OSRDError.class,
                 () -> makeSimpleMaxEffortEnvelope(testContext, 44.4, stops)
         );
+        assertEquals(osrdError.osrdErrorType, ErrorType.ImpossibleSimulationError);
     }
 
     /** Reproduces a bug where the train would "miss" accelerations when there are many small plateau with
