@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.preprocessing.interfaces;
 
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 
 /** Abstract interface used to request the availability of path sections */
@@ -32,7 +33,7 @@ public interface RouteAvailabilityInterface {
             TrainPath path,
             double startOffset,
             double endOffset,
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             double startTime
     );
 

@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainStop;
@@ -47,7 +48,7 @@ public class STDCMStandardAllowance {
                     rangeTransitions
             );
             var conflictOffset = findConflictOffsets(
-                    newEnvelope, routeAvailability, ranges, departureTime);
+                    newEnvelope, routeAvailability, ranges, departureTime, stops);
             if (Double.isNaN(conflictOffset))
                 return newEnvelope;
             assert !rangeTransitions.contains(conflictOffset) : "conflict offset is already on a range transition";
@@ -72,14 +73,16 @@ public class STDCMStandardAllowance {
             Envelope envelope,
             RouteAvailabilityInterface routeAvailability,
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
-            double departureTime
+            double departureTime,
+            List<TrainStop> stops
     ) {
         var path = STDCMUtils.makePathFromRanges(ranges);
+        var envelopeWithStops = new EnvelopeStopWrapper(envelope, stops);
         var availability = routeAvailability.getAvailability(
                 path,
                 0,
                 envelope.getEndPos(),
-                envelope,
+                envelopeWithStops,
                 departureTime
         );
         assert !(availability.getClass() == RouteAvailabilityInterface.NotEnoughLookahead.class);
