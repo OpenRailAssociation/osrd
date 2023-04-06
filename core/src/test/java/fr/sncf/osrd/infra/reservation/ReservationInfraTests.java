@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
+import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
@@ -32,6 +33,10 @@ public class ReservationInfraTests {
         for (var route : reservationInfra.getInfraRouteGraph().edges()) {
             double offset = 0;
             for (var range : route.getTrackRanges()) {
+                if (range.track.getEdge() instanceof SwitchBranch) {
+                    assertEquals(0., range.getLength());
+                    continue;
+                }
                 double trackOffset;
                 if (offset > 0)
                     trackOffset = -offset;
