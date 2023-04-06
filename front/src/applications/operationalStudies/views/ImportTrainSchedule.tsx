@@ -4,7 +4,7 @@ import ImportTrainScheduleTrainsList from 'applications/operationalStudies/compo
 import { get } from 'common/requests';
 import Loader from 'common/Loader';
 
-const ROLLING_STOCK_URL = '/light_rolling_stock/';
+const ROLLING_STOCK_URL = '/editoast/light_rolling_stock/';
 
 export default function ImportTrainSchedule() {
   const [config, setConfig] = useState();

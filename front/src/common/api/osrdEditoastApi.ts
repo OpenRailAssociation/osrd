@@ -364,12 +364,6 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.scenarioRequest,
       }),
     }),
-    getRollingStockByIdLiveryAndLiveryId: build.query<
-      GetRollingStockByIdLiveryAndLiveryIdApiResponse,
-      GetRollingStockByIdLiveryAndLiveryIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/livery/${queryArg.liveryId}/` }),
-    }),
   }),
   overrideExisting: false,
 });
@@ -849,13 +843,6 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
   /** The fields you want to update */
   scenarioRequest: ScenarioRequest;
 };
-export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
-export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {
-  /** Rolling Stock ID */
-  id: number;
-  /** Rolling Stock Livery ID */
-  liveryId: number;
-};
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {
   type?: string;
@@ -1092,6 +1079,7 @@ export type RollingStock = RollingStockCreatePayload & {
   liveries: {
     id: number;
     name: string;
+    compound_image_id: number | null;
   }[];
 };
 export type LightRollingStock = RollingStock & {
