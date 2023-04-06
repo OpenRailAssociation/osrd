@@ -42,7 +42,7 @@ interface DestinationProps {
 }
 
 export function withOSRDData<T>(Component: ComponentType<T>) {
-  return (hocProps: T) => {
+  return function composedDestination(hocProps: T) {
     const stdcmMode = useSelector(getStdcmMode);
     const mode = useSelector(getMode);
     const destination = useSelector(getDestination);
