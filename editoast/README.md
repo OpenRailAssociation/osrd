@@ -13,6 +13,7 @@ It will apply modification and update generated data such as object geometry.
 - [rustup](https://rustup.rs/)
 - [libpq](https://www.postgresql.org/docs/current/libpq.html)
 - [openssl](https://www.openssl.org)
+- [libgeos](https://libgeos.org/usage/install/)
 
 ## Steps
 
