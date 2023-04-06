@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import * as Sentry from '@sentry/react';
@@ -39,4 +39,5 @@ export default function Container() {
   );
 }
 
-ReactDOM.render(<Container />, document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(<Container />);
