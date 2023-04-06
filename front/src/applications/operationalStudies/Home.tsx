@@ -14,8 +14,12 @@ import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import { updateMode } from 'reducers/osrdconf';
+import { ProjectResult } from 'common/api/osrdEditoastApi';
 
-function displayCards(projectsList, setFilterChips) {
+function displayCards(
+  projectsList: ProjectResult[],
+  setFilterChips: (filterChips: string) => void
+) {
   return projectsList ? (
     <div className="projects-list">
       <div className="row">
@@ -38,7 +42,7 @@ function displayCards(projectsList, setFilterChips) {
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
-  const [projectsList, setProjectsList] = useState();
+  const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
   const [sortOption, setSortOption] = useState('LastModifiedDesc');
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
@@ -70,7 +74,7 @@ export default function Home() {
     }
   };
 
-  const handleSortOptions = (e) => {
+  const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSortOption(e.target.value);
   };
 
