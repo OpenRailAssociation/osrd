@@ -69,14 +69,8 @@
 .form-control-container .chips-input {
   width: auto !important;
   flex-grow: 1;
-  min-height: 2rem;
+  min-height: 2.45rem;
   line-height: 1;
-}
-
-.chips.chips-label {
-  font-size: 0.9rem;
-  line-height: 1.2;
-  height: 2rem;
 }
 
 button.chips.chips-btn {
@@ -90,6 +84,24 @@ button.chips.chips-btn {
 
 .chips {
   border: none !important;
+  &.chips-label {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    height: 2.2rem;
+  }
+}
+
+/*
+*
+*   LABELS
+*
+*/
+label, .labels {
+  display: flex !important;
+  align-items: center !important;
+  white-space: nowrap;
+  height: 1.4rem;
+  gap: 0.5rem;
 }
 
 /*

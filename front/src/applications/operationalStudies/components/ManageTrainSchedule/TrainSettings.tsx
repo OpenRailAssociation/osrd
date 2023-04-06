@@ -1,87 +1,131 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateName, updateTrainStep, updateTrainCount, updateTrainDelta } from 'reducers/osrdconf';
+import {
+  updateLabels,
+  updateDepartureTime,
+  updateInitialSpeed,
+  updateName,
+} from 'reducers/osrdconf';
+import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
+import { getLabels, getDepartureTime, getInitialSpeed, getName } from 'reducers/osrdconf/selectors';
+import { AiOutlineTags } from 'react-icons/ai';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
-import { getName, getTrainStep, getTrainCount, getTrainDelta } from 'reducers/osrdconf/selectors';
 import { useDebounce } from 'utils/helpers';
+import { SlSpeedometer } from 'react-icons/sl';
+import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icons/md';
 
 export default function TrainSettings() {
-  const [name, setName] = useState(useSelector(getName));
-  const [trainStep, setTrainStep] = useState(useSelector(getTrainStep));
-  const [trainCount, setTrainCount] = useState(useSelector(getTrainCount));
-  const [trainDelta, setTrainDelta] = useState(useSelector(getTrainDelta));
+  const nameFromStore = useSelector(getName);
+  const departureTimeFromStore = useSelector(getDepartureTime);
+  const initialSpeedFromStore = useSelector(getInitialSpeed);
+  const labels = useSelector(getLabels);
+  const [name, setName] = useState<string>(nameFromStore);
+  const [departureTime, setDepartureTime] = useState<string>(departureTimeFromStore);
+  const [initialSpeed, setInitialSpeed] = useState<number | undefined>(initialSpeedFromStore);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
   const debouncedName = useDebounce(name, 500);
-  const debouncedTrainStep = useDebounce(trainStep, 500);
-  const debouncedTrainCount = useDebounce(trainCount, 500);
-  const debouncedTrainDelta = useDebounce(trainDelta, 500);
+  const debouncedDepartureTime = useDebounce(departureTime, 500);
+  const debouncedInitialSpeed = useDebounce(initialSpeed, 500);
+
+  const removeTag = (idx: number) => {
+    const newTags = Array.from(labels);
+    newTags.splice(idx, 1);
+    dispatch(updateLabels(newTags));
+  };
+
+  const addTag = (tag: string) => {
+    const newTags = Array.from(labels);
+    newTags.push(tag);
+    dispatch(updateLabels(newTags));
+  };
 
   useEffect(() => {
     dispatch(updateName(debouncedName));
   }, [debouncedName]);
 
   useEffect(() => {
-    dispatch(updateTrainStep(debouncedTrainStep));
-  }, [debouncedTrainStep]);
+    dispatch(updateDepartureTime(debouncedDepartureTime));
+  }, [debouncedDepartureTime]);
 
   useEffect(() => {
-    dispatch(updateTrainCount(debouncedTrainCount));
-  }, [debouncedTrainCount]);
+    dispatch(updateInitialSpeed(debouncedInitialSpeed));
+  }, [debouncedInitialSpeed]);
 
   useEffect(() => {
-    dispatch(updateTrainDelta(debouncedTrainDelta));
-  }, [debouncedTrainDelta]);
+    setName(nameFromStore);
+    setDepartureTime(departureTimeFromStore);
+    setInitialSpeed(initialSpeedFromStore);
+  }, [nameFromStore, departureTimeFromStore, initialSpeedFromStore]);
 
   return (
-    <div className="osrd-config-item-container d-flex align-items-end mb-2">
-      <span className="mr-2 flex-grow-1">
+    <div className="row no-gutters">
+      <div className="col-xl-2 col-lg-4 pr-2">
         <InputSNCF
           type="text"
-          label={t('trainScheduleName')}
-          id="osrdconf-name"
+          label={
+            <>
+              <MdOutlineDriveFileRenameOutline />
+              <span className="text-nowrap">{t('trainScheduleName')}</span>
+            </>
+          }
+          id="trainSchedule-name"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           value={name}
+          isInvalid={!name}
+          errorMsg={t('errorMessages.mandatoryField')}
           noMargin
-          sm
         />
-      </span>
-      <span className="mr-2">
+      </div>
+      <div className="col-xl-2 col-lg-4 pr-2">
+        <InputSNCF
+          type="time"
+          label={
+            <>
+              <MdOutlineAccessTime />
+              <small className="text-nowrap">{t('trainScheduleDepartureTime')}</small>
+            </>
+          }
+          id="trainSchedule-departureTime"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDepartureTime(e.target.value)}
+          value={departureTime}
+          isInvalid={!departureTime}
+          errorMsg={t('errorMessages.mandatoryField')}
+          noMargin
+        />
+      </div>
+      <div className="col-xl-2 col-lg-4 pr-xl-2">
         <InputSNCF
           type="number"
-          label={t('trainScheduleStep')}
-          id="osrdconf-traincount"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainStep(+e.target.value)}
-          value={trainStep}
+          label={
+            <>
+              <SlSpeedometer />
+              <small className="text-nowrap">{t('trainScheduleInitialSpeed')}</small>
+            </>
+          }
+          id="trainSchedule-initialSpeed"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInitialSpeed(+e.target.value)}
+          value={initialSpeed}
           noMargin
-          sm
+          unit="km/h"
         />
-      </span>
-      <span className="mr-2">
-        <InputSNCF
-          type="number"
-          label={t('trainScheduleCount')}
-          id="osrdconf-traincount"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainCount(+e.target.value)}
-          value={trainCount}
-          noMargin
-          sm
+      </div>
+      <div className="col-xl-6 col-lg-12 mt-xl-0 mt-lg-3">
+        <ChipsSNCF
+          addTag={addTag}
+          tags={labels}
+          removeTag={removeTag}
+          color="green"
+          title={
+            <>
+              <AiOutlineTags />
+              <small className="text-nowrap">{t('trainLabels')}</small>
+            </>
+          }
         />
-      </span>
-      <span className="">
-        <InputSNCF
-          type="number"
-          label={t('trainScheduleDelta')}
-          id="osrdconf-delta"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainDelta(+e.target.value)}
-          value={trainDelta}
-          unit="min"
-          noMargin
-          sm
-        />
-      </span>
+      </div>
     </div>
   );
 }
