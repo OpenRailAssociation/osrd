@@ -8,10 +8,11 @@ public interface EnergySource {
     /** Return the maximum refill power the source is capable of capturing */
     double getMaxInputPower(double speed);
 
-    /** Consume an algebric amount of energy from the source.
-     *  If energyDelta > 0 that means some energy has been taken from the source.
-     *  If energyDelta < 0 that means some energy has been sent to the source.*/
+    /** Consume a given amount of energy from the source.*/
     void consumeEnergy(double energyDelta);
+
+    /** Send a given amount of energy to the source.*/
+    void sendEnergy(double energyDelta);
 
     /** Get the priority of the energySource.
      *  The higher the priority, the more we want to save energy from this source, so we'll try to get

@@ -29,7 +29,7 @@ public class EnergyStorage{
 
     public void updateStateOfCharge(double energy){
         soc += energy/capacity;
-        soc = DoubleUtils.clamp(socMin, soc, socMax);
+        soc = DoubleUtils.clamp(soc, socMin, socMax);
     }
 
     public double getPowerCoefficientFromSoc() {

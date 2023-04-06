@@ -47,4 +47,17 @@ public class PowerPackTests {
             assertEquals(expectedSoc, powerPack.getSoc());
         }
     }
+
+    @Test
+    public void sendEnergyTest() {
+
+        for (var initialSoc : initialSocValues) {
+            var powerPack =
+                    PowerPack.newPowerPackDiesel(inputPower, outputPower, capacity, efficiency, initialSoc);
+            powerPack.sendEnergy(capacity / 100);
+            // we expect the SoC to increase by 1% if we send 1% of the capacity
+            double expectedSoc = min(initialSoc + 0.01, powerPack.storage.socMax);
+            assertEquals(expectedSoc, powerPack.getSoc());
+        }
+    }
 }

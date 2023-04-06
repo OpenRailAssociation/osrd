@@ -45,7 +45,14 @@ public class PowerPack implements EnergySource {
 
     @Override
     public void consumeEnergy(double energyDelta) {
+        assert energyDelta > 0;
         storage.updateStateOfCharge(-energyDelta);
+    }
+
+    @Override
+    public void sendEnergy(double energyDelta) {
+        assert energyDelta > 0;
+        storage.updateStateOfCharge(energyDelta);
     }
 
     @Override

@@ -37,7 +37,10 @@ public class Catenary implements EnergySource {
     }
 
     @Override
-    public void consumeEnergy(double energyDelta) { }
+    public void consumeEnergy(double energyDelta) {}
+
+    @Override
+    public void sendEnergy(double energyDelta) {}
 
     @Override
     public int getPriority() {
