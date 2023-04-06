@@ -9,7 +9,7 @@ import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import { RouteEditionState } from './types';
 import { EditRoutePathEditionLayers, EditRoutePathLeftPanel } from './components/EditRoutePath';
 import { EditRouteMetadataLayers, EditRouteMetadataPanel } from './components/EditRouteMetadata';
-import { getMapStyle } from '../../../../reducers/map/selectors';
+import { getMap } from '../../../../reducers/map/selectors';
 
 export const RouteEditionLeftPanel: FC = () => {
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
@@ -31,20 +31,17 @@ export const RouteEditionLayers: FC = () => {
     renderingFingerprint,
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
-  const mapStyle = useSelector(getMapStyle);
+  const { mapStyle, layersSettings } = useSelector(getMap);
 
   return (
     <>
       {/* Editor data layer */}
-      {/*
-       (a fake selection must be given to grey everything, else the component
-       will consider nothing is selected and nothing must be greyed)
-       */}
       <GeoJSONs
         selection={['placeholder']}
         colors={colors[mapStyle]}
         layers={editorLayers}
         fingerprint={renderingFingerprint}
+        layersSettings={layersSettings}
       />
       {state.type === 'editRoutePath' ? (
         <EditRoutePathEditionLayers key="editRoutePath" state={state} />

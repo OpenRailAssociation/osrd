@@ -9,11 +9,13 @@ import {
   SignalEditionTool,
 } from './pointEdition/tools';
 import RouteEditionTool from './routeEdition/tool';
+import SpeedSectionEditionTool from './speedSectionEdition/tool';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TOOLS: Tool<any>[] = [
   SelectionTool,
   TrackEditionTool,
+  SpeedSectionEditionTool,
   SwitchEditionTool,
   SignalEditionTool,
   DetectorEditionTool,

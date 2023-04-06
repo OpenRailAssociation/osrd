@@ -89,7 +89,8 @@
       "routes": "Itinéraires",
       "signals": "Signaux",
       "switches": "Aiguillages",
-      "track_sections": "Sections de lignes"
+      "track_sections": "Sections de lignes",
+      "speed_sections": "Sections de vitesses"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
@@ -118,7 +119,8 @@
       "Route": "Itinéraire",
       "Signal": "Signal",
       "Switch": "Aiguillage",
-      "TrackSection": "Section de ligne"
+      "TrackSection": "Section de ligne",
+      "SpeedSection": "Section de vitesse"
     },
     "title": "Éditeur",
     "tool-help": "Voir la description de l'outil actif",
@@ -227,6 +229,9 @@
         "label": "Outil \"Sélection\"",
         "linked-to-line_one": "lié à la ligne",
         "linked-to-line_other": "lié aux lignes",
+        "linked-to-n-lines_zero": "relatif à aucune ligne",
+        "linked-to-n-lines_one": "relatif à une ligne",
+        "linked-to-n-lines_other": "relatif à {{count}} lignes",
         "no-selection": "Aucun élément sélectionné",
         "of-type": "de type",
         "selection": "{{count}} élément sélectionné",
