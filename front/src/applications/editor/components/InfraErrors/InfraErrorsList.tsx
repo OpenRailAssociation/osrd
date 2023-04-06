@@ -4,7 +4,6 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { LoaderFill, Spinner } from '../../../../common/Loader';
 import { osrdEditoastApi } from '../../../../common/api/osrdEditoastApi';
-// import useInfraErrors from './useInfraErrors';
 import InfraErrorComponent from './InfraError';
 import {
   InfraError,
@@ -30,7 +29,7 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
     osrdEditoastApi.endpoints.getInfraByIdErrors.useLazyQuery({});
 
   const fetch = useCallback(
-    async (id, page, errorType, level) => {
+    async (id: number, page: number, errorType: InfraErrorType, level: InfraErrorLevel) => {
       const response = await getInfraErrors({
         id,
         page,

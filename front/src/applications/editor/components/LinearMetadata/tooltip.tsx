@@ -39,7 +39,7 @@ export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
             <span className="mr-3">
               {((schema.properties || {})[k] as JSONSchema7 | undefined)?.title || k}
             </span>
-            {item[k] !== undefined ? item[k] : '-'}
+            {`${item[k] || '-'}`}
           </div>
         ))}
       </div>

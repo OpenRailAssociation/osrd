@@ -170,7 +170,7 @@ const SelectionTool: Tool<SelectionState> = {
                 forceRender();
               }}
             >
-              <p>{t('Editor.tools.select-items.actions.confirm-delete-selection')}</p>
+              <p>{t('Editor.tools.select-items.actions.confirm-delete-selection').toString()}</p>
             </ConfirmModal>
           );
         },

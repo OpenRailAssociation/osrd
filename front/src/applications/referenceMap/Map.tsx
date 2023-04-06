@@ -51,7 +51,7 @@ function Map() {
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value, updateRouter = false) => {
+    (value: Partial<Viewport>, updateRouter = false) => {
       dispatch(updateViewport(value, `/map`, updateRouter));
     },
     [dispatch]

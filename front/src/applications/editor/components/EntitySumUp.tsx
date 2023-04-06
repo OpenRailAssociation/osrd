@@ -130,7 +130,7 @@ function getSumUpContent(
         subtexts.push(
           <>
             <span className={classes.muted}>
-              {t('Editor.tools.select-items.linked-to-line', { count: 1 })}
+              {t('Editor.tools.select-items.linked-to-line', { count: 1 }).toString()}
             </span>{' '}
             <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
           </>
@@ -159,7 +159,9 @@ function getSumUpContent(
         subtexts.push(
           <>
             <span className={classes.muted}>
-              {t('Editor.tools.select-items.linked-to-line', { count: trackNames.length })}
+              {t('Editor.tools.select-items.linked-to-line', {
+                count: trackNames.length,
+              }).toString()}
             </span>{' '}
             <span>{prettifyStringsArray(trackNames, ` ${t('common.and')} `)}</span>
           </>
@@ -176,11 +178,11 @@ function getSumUpContent(
             {additionalEntities.entryPoint && (
               <>
                 <span className={cx(classes.muted, 'mr-2')}>
-                  {t('Editor.tools.routes-edition.from')}
+                  {t('Editor.tools.routes-edition.from').toString()}
                 </span>{' '}
                 <div>
                   <span className={cx(classes.muted, classes.small)}>
-                    {t(`Editor.obj-types.${additionalEntities.entryPoint.objType}`)}
+                    {t(`Editor.obj-types.${additionalEntities.entryPoint.objType}`).toString()}
                   </span>
                   <div>{additionalEntities.entryPoint.properties.id}</div>
                 </div>
@@ -192,11 +194,11 @@ function getSumUpContent(
             {additionalEntities.exitPoint && (
               <>
                 <span className={cx(classes.muted, 'mr-2')}>
-                  {t('Editor.tools.routes-edition.to')}
+                  {t('Editor.tools.routes-edition.to').toString()}
                 </span>{' '}
                 <div>
                   <span className={cx(classes.muted, classes.small)}>
-                    {t(`Editor.obj-types.${additionalEntities.exitPoint.objType}`)}
+                    {t(`Editor.obj-types.${additionalEntities.exitPoint.objType}`).toString()}
                   </span>
                   <div>{additionalEntities.exitPoint.properties.id}</div>
                 </div>

@@ -1,7 +1,6 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { TFunction } from 'i18next';
-import { withTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import cx from 'classnames';
 import { isNil, toInteger } from 'lodash';
@@ -28,7 +27,8 @@ import {
 import TOOLS from './tools/list';
 import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
 
-const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
+const Editor: FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
@@ -340,7 +340,5 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     </EditorContext.Provider>
   );
 };
-
-const Editor = withTranslation()(EditorUnplugged);
 
 export default Editor;
