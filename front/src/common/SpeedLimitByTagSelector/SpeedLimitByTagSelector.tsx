@@ -13,8 +13,8 @@ import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import './SpeedLimitByTagSelector.scss';
 
 type SpeedLimitByTagSelectorProps = {
+  t?: (key: string) => string;
   condensed?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   speedLimitByTag?: string;
   speedLimitsByTagsFromApi?: string[];
   dispatchUpdateSpeedLimitByTag?: (tag: string) => Dispatch | void;
@@ -53,6 +53,7 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
     return (
       <Component
         {...(hocProps as T)}
+        t={t}
         dispatch={dispatch}
         speedLimitsByTagsFromApi={data}
         speedLimitByTag={speedLimitByTag}
@@ -67,18 +68,16 @@ export function IsolatedSpeedLimitByTagSelector({
   condensed = false,
   speedLimitsByTagsFromApi = [],
   dispatchUpdateSpeedLimitByTag = noop,
+  t = (key) => key,
 }: SpeedLimitByTagSelectorProps) {
-  const [speedLimitsTags, setSpeedLimitByTags] = useState<string[] | undefined>(
-    speedLimitsByTagsFromApi
-  );
-  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const [speedLimitsTags, setSpeedLimitByTags] = useState<string[]>(speedLimitsByTagsFromApi);
 
   useEffect(() => {
     // Update the document title using the browser API
     setSpeedLimitByTags(speedLimitsByTagsFromApi);
   }, [speedLimitsByTagsFromApi]);
 
-  return speedLimitsTags ? (
+  return speedLimitsTags.length > 0 ? (
     <div className="osrd-config-item mb-2">
       <div
         className={`osrd-config-item-container ${

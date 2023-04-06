@@ -3,6 +3,8 @@ import React from 'react';
 
 import { IsolatedSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
+const SAMPLE_DATA = ['First Category of Speed Limits', 'Second Category of Speed Limits'];
+
 export default {
   /* 👇 The title prop is optional.
    * See https://storybook.js.org/docs/react/configure/overview#configure-story-loading
@@ -12,6 +14,6 @@ export default {
   title: 'TrainSimulation/SpeedLimitByTagSelector',
 };
 
-export const Plain = { args: { condensed: false } };
+export const Plain = { args: { condensed: false, speedLimitsByTagsFromApi: SAMPLE_DATA } };
 
-export const Condensed = { args: { condensed: true } };
+export const Condensed = { args: { condensed: true, speedLimitsByTagsFromApi: SAMPLE_DATA } };
