@@ -18,7 +18,7 @@ enum colorClasses {
 type Props = {
   addTag: (tag: string) => void;
   tags?: string[];
-  title?: string;
+  title?: JSX.Element | string;
   removeTag: (tagIdx: number) => void;
   color?: string;
 };
