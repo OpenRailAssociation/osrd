@@ -1097,7 +1097,7 @@ export type ProjectResult = {
   name?: string;
   objectives?: string;
   description?: string;
-  funders?: string[];
+  funders?: string;
   budget?: number;
   image?: number;
   image_url?: string;
@@ -1130,6 +1130,7 @@ export type StudyResult = {
   project_id?: number;
   description?: string;
   budget?: number;
+  tags?: string[];
   service_code?: string;
   business_code?: string;
   creation_date?: string;

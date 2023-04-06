@@ -23,8 +23,12 @@ import DOCUMENT_URI from 'common/consts';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
+import { ProjectResult, StudyResult } from 'common/api/osrdEditoastApi';
 
-function displayStudiesList(studiesList, setFilterChips) {
+function displayStudiesList(
+  studiesList: StudyResult[],
+  setFilterChips: (filterchips: string) => void
+) {
   return studiesList ? (
     <div className="row no-gutters">
       <div className="col-xl-4 col-lg-6" key={nextId()}>
@@ -46,12 +50,12 @@ function displayStudiesList(studiesList, setFilterChips) {
 export default function Project() {
   const { t } = useTranslation('operationalStudies/project');
   const { openModal } = useModal();
-  const [project, setProject] = useState();
-  const [studiesList, setStudiesList] = useState();
+  const [project, setProject] = useState<ProjectResult>();
+  const [studiesList, setStudiesList] = useState<StudyResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState('LastModifiedDesc');
-  const [imageUrl, setImageUrl] = useState();
+  const [imageUrl, setImageUrl] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
@@ -67,9 +71,9 @@ export default function Project() {
     },
   ];
 
-  const getProjectImage = async (url) => {
+  const getProjectImage = async (url: string) => {
     try {
-      const image = await get(url, { responseType: 'blob' });
+      const image: Blob = await get(url, { responseType: 'blob' });
       setImageUrl(URL.createObjectURL(image));
     } catch (error) {
       console.error(error);
@@ -87,7 +91,7 @@ export default function Project() {
         dispatch(
           setSuccess({
             title: t('projectUpdated'),
-            text: t('projectUpdatedDetails', { name: project.name }),
+            text: t('projectUpdatedDetails', { name: project?.name }),
           })
         );
       }
@@ -111,7 +115,7 @@ export default function Project() {
     }
   };
 
-  const handleSortOptions = (e) => {
+  const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSortOption(e.target.value);
   };
 
@@ -153,7 +157,7 @@ export default function Project() {
                           onClick={() =>
                             openModal(
                               <AddOrEditProjectModal
-                                editionMode
+                                editionMode={true}
                                 project={project}
                                 getProject={getProject}
                               />,
@@ -181,9 +185,11 @@ export default function Project() {
                             {t('objectives')}
                           </h3>
                           <div className="project-details-title-objectives">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {project.objectives}
-                            </ReactMarkdown>
+                            {project.objectives && (
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {project.objectives}
+                              </ReactMarkdown>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -198,7 +204,7 @@ export default function Project() {
                 </div>
                 <div className="project-details-financials-amount">
                   <span className="project-details-financials-amount-text">{t('totalBudget')}</span>
-                  {budgetFormat(project.budget)}
+                  {project.budget && budgetFormat(project.budget)}
                 </div>
               </div>
               <div className="project-details-tags">
