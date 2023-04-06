@@ -118,7 +118,7 @@ class EnergyStorage(BaseModel, extra=Extra.forbid):
     soc: confloat(ge=0, le=1) = Field(description="The state of charge, SoC·capacity = actual stock of energy")
     soc_min: confloat(ge=0, le=1) = Field(description="The minimum SoC, where the available energy is zero")
     soc_max: confloat(ge=0, le=1) = Field(description="The maximum SoC, where the available energy is capacity")
-    optional_refill_law: Optional[RefillLaw]
+    refill_law: Optional[RefillLaw]
 
 
 class SpeedDependantPower(BaseModel, extra=Extra.forbid):
@@ -146,10 +146,10 @@ class EnergySourceType(str, Enum):
 class EnergySource(BaseModel, extra=Extra.forbid):
     """Energy sources used when simulating qualesi trains"""
 
-    type: EnergySourceType
+    energy_source_type: EnergySourceType
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
-    optional_energy_storage: Optional[EnergyStorage]
+    energy_storage: Optional[EnergyStorage]
     efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the energy source")
 
 

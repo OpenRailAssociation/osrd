@@ -805,8 +805,29 @@ export type ConditionalEffortCurve = {
   } | null;
   curve?: EffortCurve;
 };
+export type SpeedDependantPower = {
+  speeds: number[];
+  powers: number[];
+};
+export type EnergyStorage = {
+  capacity: number;
+  soc: number;
+  soc_min: number;
+  soc_max: number;
+  refill_law: {
+    tau: number;
+    soc_ref: number;
+  } | null;
+};
+export type EnergySource = {
+  energy_source_type: string;
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage | null;
+  efficiency: number;
+};
 export type RollingStock = LightRollingStock & {
-  effort_curves?: {
+  effort_curves: {
     default_mode?: string;
     modes?: {
       [key: string]: {
@@ -816,6 +837,7 @@ export type RollingStock = LightRollingStock & {
       };
     };
   };
+  energy_sources: EnergySource[] | null;
 };
 export type AllowanceTimePerDistanceValue = {
   value_type?: 'time_per_distance';

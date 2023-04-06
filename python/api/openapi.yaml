@@ -1683,6 +1683,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/LightRollingStock"
         - type: object
+          required: [effort_curves, energy_sources]
           properties:
             effort_curves:
               type: object
@@ -1702,6 +1703,68 @@ components:
                         $ref: "#/components/schemas/EffortCurve"
                       is_electric:
                         type: boolean
+            energy_sources:
+              type: array
+              nullable: true
+              items:
+                $ref: "#/components/schemas/EnergySource"
+    EnergySource:
+      type: object
+      required: [energy_source_type, max_input_power, max_output_power, energy_storage, efficiency]
+      properties:
+        energy_source_type:
+          type: string
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          nullable: true
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+    EnergyStorage:
+      type: object
+      required: [capacity, soc, soc_min, soc_max, refill_law]
+      properties:
+        capacity:
+          type: number
+          format: float
+        soc:
+          type: number
+          format: float
+        soc_min:
+          type: number
+          format: float
+        soc_max:
+          type: number
+          format: float
+        refill_law:
+          type: object
+          nullable: true
+          properties:
+            tau:
+              type: number
+              format: float
+            soc_ref:
+              type: number
+              format: float
+          required: [tau, soc_ref]
+    SpeedDependantPower:
+      type: object
+      required: [speeds, powers]
+      properties:
+        speeds:
+          type: array
+          items:
+            type: number
+            format: float
+        powers:
+          type: array
+          items:
+            type: number
+            format: float
     ConditionalEffortCurve:
       type: object
       properties:

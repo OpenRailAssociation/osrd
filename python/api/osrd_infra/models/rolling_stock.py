@@ -86,10 +86,13 @@ class RollingStock(models.Model):
         ),
         default=dict,
     )
-    energy_sources = models.JSONField(
-        help_text=_("A list of energy sources (e.g. catenaries, batteries, power packs)"),
-        validators=[PydanticValidator(EnergySource)],
-        null=True,
+    energy_sources = ArrayField(
+        models.JSONField(
+            help_text=_("A list of energy sources (e.g. catenaries, batteries, power packs)"),
+            validators=[PydanticValidator(EnergySource)],
+            null=True,
+        ),
+        default=list,
     )
 
     def __str__(self):
