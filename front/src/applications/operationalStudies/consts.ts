@@ -117,7 +117,7 @@ export interface PointOnMap {
 }
 
 export interface OsrdConfState {
-  rollingStockComfort: any;
+  rollingStockComfort: string;
   name: string;
   trainCount: number;
   trainStep: number;
@@ -132,10 +132,11 @@ export interface OsrdConfState {
   pathfindingID?: number;
   timetableID?: number;
   rollingStockID?: number;
-  speedLimitByTag?: any;
+  speedLimitByTag?: string;
   powerRestriction?: PowerRestrictionRange;
   origin?: PointOnMap;
-  originSpeed: number;
+  initialSpeed: number;
+  departureTime?: string;
   destination?: PointOnMap;
   vias: PointOnMap[];
   suggeredVias: Path['steps'];

@@ -40,7 +40,7 @@ export const getRollingStockID = (state: RootState) => getSection(state).rolling
 export const getRollingStockComfort = (state: RootState) => getSection(state).rollingStockComfort;
 export const getSpeedLimitByTag = (state: RootState) => getSection(state).speedLimitByTag;
 export const getOrigin = (state: RootState) => getSection(state).origin;
-export const getOriginSpeed = (state: RootState) => getSection(state).originSpeed;
+export const getInitialSpeed = (state: RootState) => getSection(state).initialSpeed;
 export const getOriginDate = (state: RootState) => getSection(state).originDate;
 export const getOriginTime = (state: RootState) => getSection(state).originTime;
 export const getOriginUpperBoundDate = (state: RootState) => getSection(state).originUpperBoundDate;

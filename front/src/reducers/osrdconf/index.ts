@@ -38,7 +38,8 @@ export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
 export const UPDATE_ROLLINGSTOCK_COMFORT = 'osrdconf/UPDATE_ROLLINGSTOCK_COMFORT';
 export const UPDATE_SPEED_LIMIT_BY_TAG = 'osrdconf/UPDATE_SPEED_LIMIT_BY_TAG';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
-export const UPDATE_ORIGIN_SPEED = 'osrdconf/UPDATE_ORIGIN_SPEED';
+export const UPDATE_DEPARTURE_TIME = 'osrdconf/UPDATE_DEPARTURE_TIME';
+export const UPDATE_INITIAL_SPEED = 'osrdconf/UPDATE_INITIAL_SPEED';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
 export const UPDATE_ORIGIN_DATE = 'osrdconf/UPDATE_ORIGIN_DATE';
 export const UPDATE_ORIGIN_UPPER_BOUND_DATE = 'osrdconf/UPDATE_ORIGIN_UPPER_BOUND_DATE';
@@ -82,7 +83,8 @@ const defaultCommonConf = {
   powerRestriction: undefined,
   speedLimitByTag: undefined,
   origin: undefined,
-  originSpeed: 0,
+  initialSpeed: 0,
+  departureTime: '08:00:00',
   originDate: formatIsoDate(new Date()),
   originTime: undefined,
   originUpperBoundDate: formatIsoDate(new Date()),
@@ -185,8 +187,11 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
       case UPDATE_ORIGIN:
         draft[section].origin = action.origin;
         break;
-      case UPDATE_ORIGIN_SPEED:
-        draft[section].originSpeed = action.originSpeed;
+      case UPDATE_INITIAL_SPEED:
+        draft[section].initialSpeed = action.initialSpeed;
+        break;
+      case UPDATE_DEPARTURE_TIME:
+        draft[section].departureTime = action.departureTime;
         break;
       case UPDATE_ORIGIN_TIME: {
         const newOriginTimeSeconds = time2sec(action.originTime);
@@ -463,11 +468,19 @@ export function updateOrigin(origin: PointOnMap | undefined) {
     });
   };
 }
-export function updateOriginSpeed(originSpeed: number) {
+export function updateInitialSpeed(initialSpeed: number) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_ORIGIN_SPEED,
-      originSpeed,
+      type: UPDATE_INITIAL_SPEED,
+      initialSpeed,
+    });
+  };
+}
+export function updateDepartureTime(departureTime: string) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_DEPARTURE_TIME,
+      departureTime,
     });
   };
 }

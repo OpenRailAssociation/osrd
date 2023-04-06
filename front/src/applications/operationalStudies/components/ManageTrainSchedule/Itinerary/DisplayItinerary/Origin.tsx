@@ -11,9 +11,9 @@ import {
   updateOriginTime,
   updateOriginUpperBoundDate,
   updateOriginUpperBoundTime,
-  updateOriginSpeed,
   updateStdcmMode,
   toggleOriginLinkedBounds,
+  updateInitialSpeed,
 } from 'reducers/osrdconf';
 import {
   getStdcmMode,
@@ -21,10 +21,10 @@ import {
   getOrigin,
   getOriginDate,
   getOriginTime,
-  getOriginSpeed,
   getOriginLinkedBounds,
   getOriginUpperBoundDate,
   getOriginUpperBoundTime,
+  getInitialSpeed,
 } from 'reducers/osrdconf/selectors';
 import { makeEnumBooleans } from 'utils/constants';
 
@@ -42,7 +42,7 @@ function Origin(props: OriginProps) {
   const origin = useSelector(getOrigin);
   const originDate = useSelector(getOriginDate);
   const originTime = useSelector(getOriginTime);
-  const originSpeed = useSelector(getOriginSpeed);
+  const initialSpeed = useSelector(getInitialSpeed);
   const originLinkedBounds = useSelector(getOriginLinkedBounds);
   const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
   const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
@@ -167,9 +167,9 @@ function Origin(props: OriginProps) {
                     type="number"
                     id="osrd-config-speed-origin"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      dispatch(updateOriginSpeed(+e.target.value));
+                      dispatch(updateInitialSpeed(+e.target.value));
                     }}
-                    value={originSpeed}
+                    value={initialSpeed}
                     unit="km/h"
                     min={0}
                     max={1000}
