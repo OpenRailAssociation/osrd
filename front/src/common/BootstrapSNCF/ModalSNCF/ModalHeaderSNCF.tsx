@@ -11,14 +11,20 @@ const ModalHeaderSNCF: FC<PropsWithChildren<ModalHeaderSNCFProps>> = ({
   withCloseButton = false,
   withBorderBottom = false,
 }) => {
-  const { closeModal } = useContext(ModalContext);
+  const { isDisabled, closeModal } = useContext(ModalContext);
 
   return (
     <>
       <div className="modal-header">
         {children}
         {withCloseButton && (
-          <button type="button" className="close" aria-label="Close" onClick={closeModal}>
+          <button
+            type="button"
+            disabled={isDisabled}
+            className="close"
+            aria-label="Close"
+            onClick={closeModal}
+          >
             <span aria-hidden="true">&times;</span>
           </button>
         )}

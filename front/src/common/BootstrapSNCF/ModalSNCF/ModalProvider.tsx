@@ -19,6 +19,7 @@ import cx from 'classnames';
 export interface ModalContextType {
   isOpen: boolean;
   size?: string;
+  isDisabled?: boolean;
   className?: string;
   content: ReactNode | JSX.Element | null;
   openModal: (
@@ -27,6 +28,7 @@ export interface ModalContextType {
     optionalClasses?: string
   ) => void;
   closeModal: () => void;
+  disableModal: (disable: boolean) => void;
 }
 
 /**
@@ -37,6 +39,7 @@ const initialModalContext: ModalContextType = {
   content: null,
   openModal: noop,
   closeModal: noop,
+  disableModal: noop,
 };
 
 /**
@@ -46,7 +49,7 @@ export const ModalContext = createContext(initialModalContext);
 
 export const ModalSNCF: FC = () => {
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const { isOpen, content, closeModal, size, className } = useContext(ModalContext);
+  const { isOpen, isDisabled, content, closeModal, size, className } = useContext(ModalContext);
 
   /**
    * Register click outside event to close the modal.
@@ -56,6 +59,7 @@ export const ModalSNCF: FC = () => {
       if (
         event.target &&
         isOpen &&
+        !isDisabled &&
         modalRef.current &&
         !modalRef.current.contains(event.target as HTMLElement)
       ) {
@@ -67,7 +71,7 @@ export const ModalSNCF: FC = () => {
     return function cleanup() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen, closeModal]);
+  }, [isOpen, closeModal, isDisabled]);
 
   return (
     <>
@@ -109,6 +113,7 @@ export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
       size,
       className,
       content,
+      isDisabled: undefined,
     }));
     setTimeout(
       () =>
@@ -124,6 +129,7 @@ export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
     setModalContext((prev) => ({
       ...prev,
       isOpen: false,
+      isDisabled: undefined,
     }));
     setTimeout(() => {
       document.body.classList.remove('modal-open');
@@ -137,13 +143,20 @@ export const ModalProvider: FC<PropsWithChildren<unknown>> = ({ children }) => {
     }, 0);
   }, []);
 
+  const disableModal = useCallback((disable: boolean) => {
+    setModalContext((prev) => ({
+      ...prev,
+      isDisabled: disable,
+    }));
+  }, []);
+
   /**
    * When functions changes
    * => update the modal context with their new definition
    */
   useEffect(() => {
-    setModalContext((prev) => ({ ...prev, closeModal, openModal }));
-  }, [closeModal, openModal]);
+    setModalContext((prev) => ({ ...prev, closeModal, openModal, disableModal }));
+  }, [closeModal, openModal, disableModal]);
 
   /**
    * When route change

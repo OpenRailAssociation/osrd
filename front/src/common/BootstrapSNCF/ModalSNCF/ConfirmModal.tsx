@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useContext, useState, useCallback } from 'react';
+import React, { FC, PropsWithChildren, useContext, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ModalContext } from './ModalProvider';
@@ -21,34 +21,33 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
   children,
 }) => {
   const { t } = useTranslation();
-  const { closeModal } = useContext(ModalContext);
-  const [disabled, setDisabled] = useState(false);
+  const { closeModal, isDisabled, disableModal } = useContext(ModalContext);
 
   const confirm = useCallback(async () => {
-    setDisabled(true);
+    disableModal(true);
     try {
       await onConfirm();
     } catch (e) {
       console.error(e);
     } finally {
-      setDisabled(false);
+      disableModal(false);
     }
-  }, [onConfirm]);
+  }, [onConfirm, disableModal]);
 
   const cancel = useCallback(async () => {
     if (onCancel) {
-      setDisabled(true);
+      disableModal(true);
       try {
         await onCancel();
       } catch (e) {
         console.error(e);
       } finally {
-        setDisabled(false);
+        disableModal(false);
       }
     } else {
       closeModal();
     }
-  }, [onCancel, closeModal]);
+  }, [onCancel, closeModal, disableModal]);
 
   return (
     <Modal title={title} withCloseButton>
@@ -59,7 +58,7 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
           type="button"
           className="btn btn-danger mr-2"
           onClick={() => cancel()}
-          disabled={disabled}
+          disabled={isDisabled}
         >
           {cancelLabel || t('common.cancel')}
         </button>
@@ -67,7 +66,7 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
           type="button"
           className="btn btn-primary"
           onClick={() => confirm()}
-          disabled={disabled}
+          disabled={isDisabled}
         >
           {confirmLabel || t('common.confirm')}
         </button>
