@@ -76,6 +76,9 @@ public class ReservationInfraBuilder {
         for (var route : routes) {
             double offset = 0.;
             for (var range : route.getTrackRanges()) {
+                // skip switch branch
+                if (range.track.getEdge() instanceof SwitchBranch)
+                    continue;
                 double rangeOffset; // Offset from the start of the track to the start of the range
                 if (range.track.getDirection().equals(FORWARD))
                     rangeOffset = range.begin;
