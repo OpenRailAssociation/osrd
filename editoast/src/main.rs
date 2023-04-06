@@ -3,6 +3,7 @@ extern crate diesel;
 
 mod client;
 mod converters;
+mod core;
 mod error;
 mod fixtures;
 mod generated_data;
@@ -13,6 +14,7 @@ mod schema;
 mod tables;
 mod views;
 
+use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
@@ -152,6 +154,10 @@ async fn runserver(
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
             .app_data(Data::new(SearchConfig::parse()))
+            .app_data(Data::new(CoreClient::new(
+                args.backend_url.clone(),
+                args.backend_token.clone(),
+            )))
             .service((views::routes(), views::study_routes()))
     });
 
