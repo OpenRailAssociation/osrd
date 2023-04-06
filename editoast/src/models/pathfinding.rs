@@ -30,7 +30,7 @@ pub struct Pathfinding {
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub created: NaiveDateTime,
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
-    pub payload: diesel_json::Json<PathfindingCorePayload>,
+    pub payload: diesel_json::Json<PathfindingPayload>,
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
     pub slopes: diesel_json::Json<SlopeGraph>,
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
@@ -59,14 +59,9 @@ pub struct Curve {
 
 #[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
 #[derivative(Default)]
-pub struct PathfindingCorePayload {
-    #[derivative(Default(value = "LineString { points: vec![], srid: None }"))]
-    pub geographic: LineString<Point>,
-    #[derivative(Default(value = "LineString { points: vec![], srid: None }"))]
-    pub schematic: LineString<Point>,
+pub struct PathfindingPayload {
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
-    pub warnings: Vec<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]

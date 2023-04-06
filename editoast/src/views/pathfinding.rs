@@ -1,16 +1,22 @@
-use actix_web::web::{Data, Json, Path};
-use actix_web::{delete, get};
-use actix_web::{dev::HttpServiceFactory, web, HttpResponse, Responder};
+use actix_web::{
+    delete,
+    dev::HttpServiceFactory,
+    get,
+    web::{self, Data, Json, Path},
+    HttpResponse, Responder,
+};
 use chrono::NaiveDateTime;
 use editoast_derive::EditoastError;
+use geos::geojson::{self, Geometry};
+use postgis_diesel::types::{LineString, Point};
 use serde::Serialize;
 use thiserror::Error;
 
-use crate::error::Result;
-use crate::models::{CurveGraph, Delete, Retrieve};
-use crate::models::{PathWaypoint, Pathfinding, SlopeGraph};
-use crate::schema::LineString;
-use crate::DbPool;
+use crate::{
+    error::Result,
+    models::{CurveGraph, Delete, PathWaypoint, Pathfinding, Retrieve, SlopeGraph},
+    DbPool,
+};
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pathfinding")]
@@ -32,9 +38,15 @@ struct Response {
     pub created: NaiveDateTime,
     pub slopes: SlopeGraph,
     pub curves: CurveGraph,
-    pub geographic: LineString,
-    pub schematic: LineString,
+    pub geographic: Geometry,
+    pub schematic: Geometry,
     pub steps: Vec<PathWaypoint>,
+}
+
+fn diesel_linestring_to_geojson(ls: LineString<Point>) -> Geometry {
+    Geometry::new(geojson::Value::LineString(
+        ls.points.into_iter().map(|p| vec![p.x, p.y]).collect(),
+    ))
 }
 
 impl From<Pathfinding> for Response {
@@ -56,8 +68,8 @@ impl From<Pathfinding> for Response {
             created,
             slopes: slopes.0,
             curves: curves.0,
-            geographic: geographic.into(),
-            schematic: schematic.into(),
+            geographic: diesel_linestring_to_geojson(geographic),
+            schematic: diesel_linestring_to_geojson(schematic),
             steps: payload.0.path_waypoints,
         }
     }
