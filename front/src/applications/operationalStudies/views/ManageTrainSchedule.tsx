@@ -30,6 +30,7 @@ export default function ManageTrainSchedule({
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getPathfindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
 
   function confirmButton() {
     return trainScheduleIDsToModify ? (
@@ -62,7 +63,13 @@ export default function ManageTrainSchedule({
       getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
         .unwrap()
         .then((trainSchedule) => {
-          adjustConfWithTrainToModify(trainSchedule, dispatch);
+          if (trainSchedule.path) {
+            getPathfindingById({ id: trainSchedule.path })
+              .unwrap()
+              .then((path) => {
+                adjustConfWithTrainToModify(trainSchedule, path, dispatch);
+              });
+          }
         });
   }, [trainScheduleIDsToModify]);
 
