@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { flatMap, uniq } from 'lodash';
+import { flatMap, forEach, uniq } from 'lodash';
 import { useSelector } from 'react-redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
@@ -12,12 +12,14 @@ import {
   EditorEntity,
   RouteEntity,
   SignalEntity,
+  SpeedSectionEntity,
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../types';
 import { EditoastType } from '../tools/types';
 import { getEntities, getEntity } from '../data/api';
 import { getInfraID } from '../../../reducers/osrdconf/selectors';
+import { getSpeedSectionsNameString } from '../../../common/Map/Layers/SpeedLimits';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {
@@ -206,6 +208,26 @@ function getSumUpContent(
             )}
           </div>
         );
+      break;
+    }
+    case 'SpeedSection': {
+      const speedSection = entity as SpeedSectionEntity;
+      text = speedSection.properties.id;
+      subtexts.push(
+        <span className={classes.muted}>
+          {t('Editor.tools.select-items.linked-to-n-lines', {
+            count: speedSection.properties.track_ranges?.length || 0,
+          })}
+        </span>
+      );
+      forEach(speedSection.properties.speed_limit_by_tag, (limit, tag) => {
+        subtexts.push(
+          <>
+            <span className={cx(classes.muted, 'mr-2')}>{tag} -</span>{' '}
+            <span>{getSpeedSectionsNameString(limit)}</span>
+          </>
+        );
+      });
       break;
     }
     default: {

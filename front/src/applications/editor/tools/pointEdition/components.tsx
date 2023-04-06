@@ -31,7 +31,7 @@ import { getEntities, getEntity, getRoutesFromWaypoint } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import RouteEditionTool from '../routeEdition/tool';
 import { getEditRouteState } from '../routeEdition/utils';
-import { getMapStyle } from '../../../../reducers/map/selectors';
+import { getMap } from '../../../../reducers/map/selectors';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -302,7 +302,7 @@ export const BasePointEditionLayers: FC<{
     state: { nearestPoint, mousePosition, entity, objType },
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
-  const mapStyle = useSelector(getMapStyle);
+  const { mapStyle, layersSettings } = useSelector(getMap);
 
   const [showPopup, setShowPopup] = useState(true);
 
@@ -344,6 +344,7 @@ export const BasePointEditionLayers: FC<{
           sourceLayer: 'geo',
           isEmphasized: true,
           showIGNBDORTHO: false,
+          layersSettings,
         },
         `editor/${objType}/`
       ).map((layer) =>
@@ -363,6 +364,7 @@ export const BasePointEditionLayers: FC<{
         hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
         layers={editorLayers}
         fingerprint={renderingFingerprint}
+        layersSettings={layersSettings}
       />
 
       {/* Edited entity */}
