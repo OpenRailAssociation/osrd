@@ -45,7 +45,7 @@ import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntity } from '../../data/api';
 import { getInfraID, getSwitchTypes } from '../../../../reducers/osrdconf/selectors';
-import { getMapStyle } from '../../../../reducers/map/selectors';
+import { getMap } from '../../../../reducers/map/selectors';
 
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
@@ -314,7 +314,7 @@ export const SwitchEditionLayers: FC = () => {
     () => (entity.properties?.switch_type ? switchTypesDict[entity.properties.switch_type] : null),
     [entity.properties?.switch_type, switchTypesDict]
   );
-  const mapStyle = useSelector(getMapStyle);
+  const { mapStyle, layersSettings } = useSelector(getMap);
   const layerProps = useMemo(
     () =>
       getSwitchesLayerProps({
@@ -438,6 +438,7 @@ export const SwitchEditionLayers: FC = () => {
         hidden={entity?.properties?.id ? [entity.properties.id] : undefined}
         layers={editorLayers}
         fingerprint={renderingFingerprint}
+        layersSettings={layersSettings}
       />
 
       {/* Edited switch */}

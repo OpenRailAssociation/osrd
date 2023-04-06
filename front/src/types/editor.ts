@@ -35,6 +35,30 @@ export interface TrackSectionEntity
   > {
   objType: 'TrackSection';
 }
+
+export interface SpeedSectionEntity
+  extends EditorEntity<
+    LineString,
+    {
+      speed_limit?: number;
+      speed_limit_by_tag?: Record<string, number>;
+      track_ranges?: {
+        applicable_directions: 'BOTH' | 'START_TO_STOP' | 'STOP_TO_START';
+        begin: number;
+        end: number;
+        track: string;
+      }[];
+      extensions?: {
+        lpv_sncf: null | {
+          announcement: unknown;
+          z: unknown;
+          r: unknown;
+        };
+      };
+    }
+  > {
+  objType: 'SpeedSection';
+}
 export interface SignalEntity
   extends EditorEntity<
     Point | NullGeometry,

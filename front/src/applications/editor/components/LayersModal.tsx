@@ -2,13 +2,14 @@ import React, { FC, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { groupBy, mapKeys, mapValues, sum, isString } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { BsFillExclamationOctagonFill } from 'react-icons/bs';
+import { MdSpeed } from 'react-icons/md';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
-import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -23,6 +24,7 @@ const LAYERS: Array<{ id: LayerType; icon: string | JSX.Element }> = [
   { id: 'buffer_stops', icon: bufferStopIcon },
   { id: 'detectors', icon: detectorsIcon },
   { id: 'switches', icon: switchesIcon },
+  { id: 'speed_sections', icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   {
     id: 'errors',
     icon: <BsFillExclamationOctagonFill style={{ width: '20px' }} className="mx-2 text-danger" />,

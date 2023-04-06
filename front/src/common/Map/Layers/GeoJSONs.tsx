@@ -29,6 +29,13 @@ import {
 import { LayerType } from '../../../applications/editor/tools/types';
 import { ALL_SIGNAL_LAYERS, SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
 import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
+import {
+  getSpeedSectionsFilter,
+  getSpeedSectionsLineLayerProps,
+  getSpeedSectionsPointLayerProps,
+  getSpeedSectionsTextLayerProps,
+} from './SpeedLimits';
+import { MapState } from '../../../reducers/map';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
@@ -39,6 +46,7 @@ interface LayerContext extends SignalContext {
   symbolsList: string[];
   isEmphasized: boolean;
   showIGNBDORTHO: boolean;
+  layersSettings: MapState['layersSettings'];
 }
 
 /**
@@ -185,6 +193,27 @@ function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
+function getSpeedSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
+  const filter = getSpeedSectionsFilter(context.layersSettings);
+  return [
+    {
+      ...getSpeedSectionsLineLayerProps(context),
+      id: `${prefix}geo/speed-sections-line`,
+      filter,
+    },
+    {
+      ...getSpeedSectionsPointLayerProps(context),
+      id: `${prefix}geo/speed-sections-point`,
+      filter,
+    },
+    {
+      ...getSpeedSectionsTextLayerProps(context),
+      id: `${prefix}geo/speed-sections-text`,
+      filter,
+    },
+  ];
+}
+
 function getErrorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     {
@@ -217,6 +246,7 @@ const SOURCES_DEFINITION: {
   { entityType: 'buffer_stops', getLayers: getBufferStopsLayers },
   { entityType: 'detectors', getLayers: getDetectorsLayers },
   { entityType: 'switches', getLayers: getSwitchesLayers },
+  { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
   { entityType: 'errors', getLayers: getErrorsLayers },
 ];
 
@@ -239,12 +269,13 @@ export const EditorSource: FC<{
 
 const GeoJSONs: FC<{
   colors: Theme;
+  layersSettings: MapState['layersSettings'];
   hidden?: string[];
   selection?: string[];
   prefix?: string;
   layers?: Set<LayerType>;
   fingerprint?: string | number;
-}> = ({ colors, hidden, selection, layers, fingerprint, prefix = 'editor/' }) => {
+}> = ({ colors, layersSettings, hidden, selection, layers, fingerprint, prefix = 'editor/' }) => {
   const infraID = useSelector(getInfraID);
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
@@ -274,6 +305,7 @@ const GeoJSONs: FC<{
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       isEmphasized: true,
       showIGNBDORTHO,
+      layersSettings,
     }),
     [colors, mapStyle, showIGNBDORTHO]
   );
