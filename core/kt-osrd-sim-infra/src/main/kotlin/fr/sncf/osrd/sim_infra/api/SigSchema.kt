@@ -1,5 +1,8 @@
 package fr.sncf.osrd.sim_infra.api
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+
 
 sealed interface SigField {
     val name: String
@@ -17,7 +20,7 @@ data class SigEnumField(override val name: String, val values: List<String>, val
     override fun encode(value: String): Int {
         val index = values.indexOf(value)
         if (index == -1)
-            throw RuntimeException("unknown enum field: $value")
+            throw OSRDError.newSigSchemaUnknownFieldError(value)
         return index
     }
 
@@ -42,7 +45,7 @@ data class SigFlagField(override val name: String, val default: Boolean?) : SigF
         return when (value) {
             1 -> true
             0 -> false
-            else -> throw RuntimeException("invalid boolean value: $value")
+            else -> throw OSRDError.newSigSchemaInvalidFieldError(value, "expected true or false")
         }
     }
 
@@ -50,7 +53,7 @@ data class SigFlagField(override val name: String, val default: Boolean?) : SigF
         return encodeBool(when (value) {
             "true" -> true
             "false" -> false
-            else -> throw RuntimeException("flags must be true or false, found $value")
+            else -> throw OSRDError.newSigSchemaInvalidFieldError(value, "expected true or false")
         })
     }
 
@@ -105,7 +108,7 @@ class SigSchema<MarkerT>(
 
         val builder = object : SigDataBuilder {
             override fun value(name: String, value: String) {
-                val fieldIndex = fieldIndexMap[name] ?: throw RuntimeException("unknown field $name")
+                val fieldIndex = fieldIndexMap[name] ?: throw OSRDError.newSigSchemaUnknownFieldError(name)
                 val field = sortedFields[fieldIndex]
                 data[fieldIndex] = field.encode(value)
                 initializedFields[fieldIndex] = true
@@ -118,7 +121,7 @@ class SigSchema<MarkerT>(
                 continue
             val field = sortedFields[fieldIndex]
             if (!field.hasDefault)
-                throw RuntimeException("uninitialized field: ${field.name}")
+                throw OSRDError.newSigSchemaInvalidFieldError(field.name, "uninitialized field")
             data[fieldIndex] = field.encodedDefault
         }
         return SigData(this, data)
@@ -154,20 +157,20 @@ data class SigData<MarkerT>(val schema: SigSchema<MarkerT>, private val data: In
     fun getFlag(fieldName: String): Boolean {
         val fieldIndex = schema.find(fieldName)
         if (fieldIndex == -1)
-            throw RuntimeException("Unknown field: $fieldName")
+            throw OSRDError.newSigSchemaUnknownFieldError(fieldName)
         val field = schema.sortedFields[fieldIndex]
         if (field !is SigFlagField)
-            throw RuntimeException("Field $fieldName is not a flag")
+            throw OSRDError.newSigSchemaInvalidFieldError(fieldName, "expected a flag")
         return field.decodeBool(data[fieldIndex])
     }
 
     fun getEnum(fieldName: String): String {
         val fieldIndex = schema.find(fieldName)
         if (fieldIndex == -1)
-            throw RuntimeException("Unknown field: $fieldName")
+            throw OSRDError.newSigSchemaUnknownFieldError(fieldName)
         val field = schema.sortedFields[fieldIndex]
         if (field !is SigEnumField)
-            throw RuntimeException("Field $fieldName is not an enum")
+            throw OSRDError.newSigSchemaInvalidFieldError(fieldName, "expected an enum")
         return field.decode(data[fieldIndex])
     }
 

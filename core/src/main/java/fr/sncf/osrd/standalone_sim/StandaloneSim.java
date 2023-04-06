@@ -160,7 +160,7 @@ public class StandaloneSim {
             try {
                 result = allowances.get(i).apply(result, context);
             } catch (OSRDError e) {
-                throw e.withContext(new ErrorContext.Allowance(i));
+                throw e.withStackTrace(new ErrorContext.Allowance(i));
             }
         }
         return result;

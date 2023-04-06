@@ -2,8 +2,9 @@ package fr.sncf.osrd.railjson.parser;
 
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.train.TrainStop;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,14 +14,14 @@ public class RJSStopsParser {
 
     /** Parse a list of RJS stops given an infra and a path */
     public static List<TrainStop> parse(RJSTrainStop[] stops, SignalingInfra infra, TrainPath path)
-            throws InvalidSchedule {
+            throws OSRDError {
         var res = new ArrayList<TrainStop>();
         if (stops == null) {
-            throw new InvalidSchedule("The train schedule must have at least one train stop");
+            throw new OSRDError(ErrorType.InvalidScheduleNoTrainStop);
         }
         for (var stop : stops) {
             if ((stop.position == null) == (stop.location == null))
-                throw new InvalidSchedule("Train stop must specify exactly one of position or location");
+                throw new OSRDError(ErrorType.InvalidScheduleMissingTrainStopLocation);
             double position;
             if (stop.position != null)
                 position = stop.position;
@@ -34,7 +35,7 @@ public class RJSStopsParser {
                 if (position <= path.length() + 1e-5)
                     position = path.length();
                 else
-                    throw new InvalidSchedule("Stop position is outside of the path");
+                    throw new OSRDError(ErrorType.InvalidScheduleOutsideTrainStopPosition);
             }
 
             res.add(new TrainStop(position, stop.duration));

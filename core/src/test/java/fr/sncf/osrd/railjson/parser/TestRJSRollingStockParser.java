@@ -1,10 +1,12 @@
 package fr.sncf.osrd.railjson.parser;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 import java.io.IOException;
 
 public class TestRJSRollingStockParser {
@@ -18,7 +20,8 @@ public class TestRJSRollingStockParser {
     public void testWrongMajorVersion() throws IOException {
         RJSRollingStock rjsRollingStock = Helpers.getExampleRollingStock("fast_rolling_stock.json");
         rjsRollingStock.version = "0.0.0";
-        Assertions.assertThrows(InvalidRollingStock.class, () -> RJSRollingStockParser.parse(rjsRollingStock));
+        var thrown = assertThrows(OSRDError.class, () -> RJSRollingStockParser.parse(rjsRollingStock));
+        assertEquals(thrown.osrdErrorType, ErrorType.InvalidRollingStockMajorVersionMismatch);
     }
 
     @Test

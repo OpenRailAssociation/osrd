@@ -1,9 +1,9 @@
 package fr.sncf.osrd.utils.attrs;
 
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import java.io.Serial;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -33,7 +33,7 @@ abstract class BaseAttrMap<B> implements AttrMap<B> {
     public <T extends B> T getAttrOrThrow(Attr<T> attr) {
         if (attrs.containsKey(attr))
             return (T) attrs.get(attr);
-        throw new MissingAttributeError();
+        throw new OSRDError(ErrorType.MissingAttributeError);
     }
 
     @Override
@@ -57,16 +57,5 @@ abstract class BaseAttrMap<B> implements AttrMap<B> {
         for (var entry : attrs.entrySet())
             builder.add(String.format("%s: %s", entry.getKey(), entry.getValue()));
         return builder.toString();
-    }
-
-    public static class MissingAttributeError extends OSRDError {
-        @Serial
-        private static final long serialVersionUID = -5910731445080615975L;
-        public static final String osrdErrorType = "missing_attribute";
-
-        protected MissingAttributeError() {
-            super("referencing missing attribute", ErrorCause.INTERNAL);
-            // We can't properly serialize Attr instances, we would need the original variable name
-        }
     }
 }

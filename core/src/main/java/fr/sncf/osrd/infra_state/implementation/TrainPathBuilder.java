@@ -1,9 +1,9 @@
 package fr.sncf.osrd.infra_state.implementation;
 
 import com.google.common.collect.ImmutableList;
-import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.Direction;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
@@ -12,7 +12,6 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +23,9 @@ public class TrainPathBuilder {
             List<SignalingRoute> routePath,
             TrackLocation startLocation,
             TrackLocation endLocation
-    ) throws InvalidSchedule {
+    ) throws OSRDError {
         ImmutableList<TrainPath.LocatedElement<TrackRangeView>> trackSectionPath;
-        try {
-            trackSectionPath = createTrackRangePath(routePath, startLocation, endLocation);
-        } catch (RuntimeException e) {
-            throw new InvalidSchedule(e.getMessage());
-        }
+        trackSectionPath = createTrackRangePath(routePath, startLocation, endLocation);
         var detectors = createDetectorPath(trackSectionPath);
         double length = 0;
         for (var track : trackSectionPath)
@@ -48,36 +43,33 @@ public class TrainPathBuilder {
     }
 
     /** Build Train Path from an RailJSON train path */
-    public static TrainPath from(SignalingInfra infra, RJSTrainPath rjsTrainPath) throws InvalidSchedule {
-        try {
-            var routePath = new ArrayList<SignalingRoute>();
-            for (var rjsRoutePath : rjsTrainPath.routePath) {
-                var route = infra.findSignalingRoute(rjsRoutePath.route, rjsRoutePath.signalingType);
-                if (route == null)
-                    throw new InvalidSchedule(String.format(
-                            "Can't find route %s (type %s)",
-                            rjsRoutePath.route,
-                            rjsRoutePath.signalingType));
-                routePath.add(route);
-            }
-
-            var rjsStartTrackRange = rjsTrainPath.routePath.get(0).trackSections.get(0);
-            var startLocation = new TrackLocation(
-                    infra.getTrackSection(rjsStartTrackRange.trackSectionID),
-                    rjsStartTrackRange.getBegin()
-            );
-
-            var rjsEndRoutePath = rjsTrainPath.routePath.get(rjsTrainPath.routePath.size() - 1);
-            var rjsEndTrackRange = rjsEndRoutePath.trackSections.get(rjsEndRoutePath.trackSections.size() - 1);
-            var endLocation = new TrackLocation(
-                    infra.getTrackSection(rjsEndTrackRange.trackSectionID),
-                    rjsEndTrackRange.getEnd()
-            );
-
-            return from(routePath, startLocation, endLocation);
-        } catch (OSRDError e) {
-            throw new InvalidSchedule(e.getMessage());
+    public static TrainPath from(SignalingInfra infra, RJSTrainPath rjsTrainPath) throws OSRDError {
+        var routePath = new ArrayList<SignalingRoute>();
+        for (var rjsRoutePath : rjsTrainPath.routePath) {
+            var route = infra.findSignalingRoute(rjsRoutePath.route, rjsRoutePath.signalingType);
+            if (route == null)
+                throw OSRDError.newInvalidScheduleError(
+                    ErrorType.InvalidScheduleRouteNotFound,
+                    rjsRoutePath.route,
+                    rjsRoutePath.signalingType
+                );
+            routePath.add(route);
         }
+
+        var rjsStartTrackRange = rjsTrainPath.routePath.get(0).trackSections.get(0);
+        var startLocation = new TrackLocation(
+                infra.getTrackSection(rjsStartTrackRange.trackSectionID),
+                rjsStartTrackRange.getBegin()
+        );
+
+        var rjsEndRoutePath = rjsTrainPath.routePath.get(rjsTrainPath.routePath.size() - 1);
+        var rjsEndTrackRange = rjsEndRoutePath.trackSections.get(rjsEndRoutePath.trackSections.size() - 1);
+        var endLocation = new TrackLocation(
+                infra.getTrackSection(rjsEndTrackRange.trackSectionID),
+                rjsEndTrackRange.getEnd()
+        );
+
+        return from(routePath, startLocation, endLocation);
     }
 
     /** check that everything make sense */
@@ -115,10 +107,10 @@ public class TrainPathBuilder {
     private static void checkDetectorOverlap(ImmutableList<TrainPath.LocatedElement<DiDetector>> detectors) {
         for (int i = 1; i < detectors.size(); i++)
             if (detectors.get(i - 1).pathOffset() >= detectors.get(i).pathOffset())
-                throw new InvalidPathError(String.format(
-                        "Detector offsets must be strictly increasing (prev = %s, next = %s)",
-                        detectors.get(i - 1), detectors.get(i)
-                ));
+                throw OSRDError.newInvalidPathError(
+                    detectors.get(i - 1),
+                    detectors.get(i)
+                );
     }
 
     /** Checks that the detectors and detection section transitions are consistent */
@@ -172,7 +164,7 @@ public class TrainPathBuilder {
                 return offset + range.offsetOf(location);
             offset += range.getLength();
         }
-        throw new RuntimeException("Location isn't in the given path");
+        throw new OSRDError(ErrorType.InvalidScheduleTrackLocationNotIncludedInPath);
     }
 
     /** Creates a list of located directed detectors on the path */
@@ -251,8 +243,12 @@ public class TrainPathBuilder {
                     break;
             }
         }
-        assert reachedStart : "Start location isn't included in the route graph";
-        assert reachedEnd : "End location isn't included in the route graph";
+        if (!reachedStart) {
+            throw new OSRDError(ErrorType.InvalidScheduleStartLocationNotIncluded);
+        }
+        if (!reachedEnd) {
+            throw new OSRDError(ErrorType.InvalidScheduleEndLocationNotIncluded);
+        }
         return ImmutableList.copyOf(res);
     }
 

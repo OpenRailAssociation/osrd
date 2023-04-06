@@ -15,11 +15,12 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
-import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
 import java.util.EnumMap;
 import java.util.List;
@@ -183,12 +184,14 @@ public class TrainPathTests {
         var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         var route = getSignalingRoute(infra, "route_forward");
-        assertThrows(InvalidPathError.class,
+        var thrown = assertThrows(
+                OSRDError.class,
                 () -> TrainPathBuilder.from(
-                        List.of(route, route),
-                        new TrackLocation(track, 0),
-                        new TrackLocation(track, 100)
+                    List.of(route, route),
+                    new TrackLocation(track, 0),
+                    new TrackLocation(track, 100)
                 )
         );
+        assertEquals(thrown.osrdErrorType, ErrorType.InvalidPathError);
     }
 }

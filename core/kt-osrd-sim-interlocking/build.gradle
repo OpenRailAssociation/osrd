@@ -19,6 +19,7 @@ dependencies {
     api project(":kt-osrd-utils")
     api project(':kt-osrd-sim-infra')
     api libs.kotlinx.coroutines.core
+    api project(":osrd-reporting")
 
     implementation libs.kotlin.logging
     implementation libs.kotlin.stdlib

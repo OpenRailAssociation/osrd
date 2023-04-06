@@ -15,6 +15,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
@@ -273,6 +274,6 @@ public class TrackRangeView {
                 return range.offsetLocation(iterOffset);
             iterOffset -= range.getLength();
         }
-        throw new RuntimeException(String.format("Offset %f is not contained in the track ranges view", offset));
+        throw OSRDError.newInvalidTrackRangeError(offset);
     }
 }

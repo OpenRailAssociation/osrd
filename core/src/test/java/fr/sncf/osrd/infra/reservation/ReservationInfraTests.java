@@ -7,9 +7,10 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
-import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.Test;
 
@@ -60,7 +61,11 @@ public class ReservationInfraTests {
             if (route.getID().equals("rt.tde.foo_b-switch_foo->buffer_stop_c"))
                 route.switchesDirections.remove("il.switch_foo");
         var wr = new DiagnosticRecorderImpl(false);
-        assertThrows(DiscontinuousRoute.class, () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr));
+        var thrown = assertThrows(
+                OSRDError.class,
+                () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr)
+        );
+        assertEquals(thrown.osrdErrorType, ErrorType.InvalidInfraDiscontinuousRoute);
         assertTrue(wr.warnings.isEmpty());
     }
 
@@ -71,7 +76,12 @@ public class ReservationInfraTests {
             if (route.getID().equals("rt.tde.foo_b-switch_foo->buffer_stop_c"))
                 route.entryPointDirection = EdgeDirection.STOP_TO_START;
         var wr = new DiagnosticRecorderImpl(false);
-        assertThrows(DiscontinuousRoute.class, () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr));
+        var thrown = assertThrows(
+                OSRDError.class,
+                () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr)
+        );
+        assertEquals(thrown.osrdErrorType, ErrorType.InvalidInfraDiscontinuousRoute);
+
         assertTrue(wr.warnings.isEmpty());
     }
 }

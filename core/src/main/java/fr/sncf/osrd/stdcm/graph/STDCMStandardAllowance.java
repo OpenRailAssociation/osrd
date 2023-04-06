@@ -5,6 +5,8 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
@@ -55,7 +57,7 @@ public class STDCMStandardAllowance {
             logger.info("Conflict in new envelope at offset {}, splitting mareco ranges", conflictOffset);
             rangeTransitions.add(conflictOffset);
         }
-        throw new RuntimeException("Couldn't find an envelope that wouldn't cause a conflict");
+        throw new OSRDError(ErrorType.NoCompatibleEnvelopeFound);
     }
 
     /** Initiates the range transitions with one transition on each stop */

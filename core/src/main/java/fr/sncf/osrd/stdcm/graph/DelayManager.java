@@ -4,6 +4,8 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import java.util.NavigableSet;
 import java.util.TreeSet;
@@ -61,7 +63,7 @@ public class DelayManager {
             } else if (availability instanceof RouteAvailabilityInterface.Unavailable unavailable) {
                 time += unavailable.duration + margin;
             } else
-                throw new RuntimeException("STDCM lookahead isn't supported yet");
+                throw new OSRDError(ErrorType.InvalidSTDCMDelayError);
         }
         return res;
     }

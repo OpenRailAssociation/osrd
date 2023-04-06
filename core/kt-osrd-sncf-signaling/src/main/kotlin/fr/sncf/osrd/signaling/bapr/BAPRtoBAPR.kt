@@ -1,5 +1,7 @@
 package fr.sncf.osrd.signaling.bapr
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.signaling.ProtectionStatus.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
@@ -21,7 +23,7 @@ object BAPRtoBAPR : SignalDriver {
             // which never display "Avertissement". Even though it should never happen in a valid infrastructure,
             // we cannot be sure it won't happen, and still have to do something.
             "A" -> "VL"
-            else -> throw RuntimeException("unknown aspect: $aspect")
+            else -> throw OSRDError.newAspectError(aspect)
         }
     }
 
@@ -36,7 +38,7 @@ object BAPRtoBAPR : SignalDriver {
                     value("aspect", "A")
             } else {
                 when (maView!!.protectionStatus) {
-                    NO_PROTECTED_ZONES -> throw RuntimeException("BAPR signals always protect zones")
+                    NO_PROTECTED_ZONES -> throw OSRDError(ErrorType.BAPRUnprotectedZones)
                     INCOMPATIBLE -> value("aspect", "C")
                     OCCUPIED -> value("aspect", "S")
                     CLEAR -> value("aspect", "VL")

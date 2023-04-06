@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope_sim.allowances;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
-import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException.tooMuchTime;
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
@@ -16,12 +15,13 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
@@ -102,11 +102,11 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
     private static RuntimeException makeError(DoubleBinarySearch search) {
         if (!search.hasRaisedLowBound())
-            throw tooMuchTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         else if (!search.hasLoweredHighBound())
-            throw AllowanceConvergenceException.notEnoughTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceNotEnoughTime);
         else
-            throw AllowanceConvergenceException.discontinuity();
+            throw new OSRDError(ErrorType.AllowanceConvergenceDiscontinuity);
     }
 
     /** Apply the allowance to a given envelope. */
@@ -219,7 +219,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         }
         // if the total target time isn't actually reachable, throw error
         if (totalTargetTime > slowestRunningTime)
-            throw tooMuchTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
 
         var rangeBeginPos = envelopeRange.getBeginPos();
         var rangeEndPos = envelopeRange.getEndPos();
@@ -267,13 +267,18 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var initialHighBound = computeInitialHighBound(envelopeSection, context.rollingStock);
         if (initialLowBound > initialHighBound) {
             // This can happen when capacity speed limit > max speed. We know in advance no solution can be found.
-            throw AllowanceConvergenceException.tooMuchTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
 
         Envelope res = null;
-        AllowanceConvergenceException lastError = null;
-        var search =
-                new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, context.timeStep, true);
+        OSRDError lastError = null;
+        var search = new DoubleBinarySearch(
+                initialLowBound,
+                initialHighBound,
+                targetTime,
+                context.timeStep,
+                true
+        );
         logger.debug("  target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var input = search.getInput();
@@ -283,13 +288,13 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
                 var regionTime = res.getTotalTime();
                 logger.debug("    envelope time {}", regionTime);
                 search.feedback(regionTime);
-            } catch (AllowanceConvergenceException allowanceError) {
-                logger.debug("    couldn't build an envelope ({})", allowanceError.errorType);
+            } catch (OSRDError allowanceError) {
+                logger.debug("    couldn't build an envelope ({})", allowanceError);
                 lastError = allowanceError;
-                if (allowanceError.errorType.equals(AllowanceConvergenceException.ErrorType.TOO_MUCH_TIME))
+                if (allowanceError.osrdErrorType.equals(ErrorType.AllowanceConvergenceTooMuchTime))
                     // Can't go slow enough to even build a valid envelope: we need to go faster
                     search.feedback(Double.POSITIVE_INFINITY);
-                else if (allowanceError.errorType.equals(AllowanceConvergenceException.ErrorType.NOT_ENOUGH_TIME))
+                else if (allowanceError.osrdErrorType.equals(ErrorType.AllowanceConvergenceNotEnoughTime))
                     // Can't go fast enough to even build a valid envelope: we need to go slower
                     search.feedback(0);
                 else
@@ -411,7 +416,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         if (lastIntersection == 0) {
             // The end of the part has been reached without crossing the target envelope
             // The resulting envelope won't be continuous in this case, the allowance is too restrictive
-            throw tooMuchTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
         if (partBuilder.isEmpty())
             return null;
@@ -458,7 +463,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         if (lastIntersection == 0) {
             // The end of the part has been reached without crossing the target envelope
             // The resulting envelope won't be continuous in this case, the allowance is too restrictive
-            throw tooMuchTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
         if (partBuilder.isEmpty())
             return null;
@@ -482,7 +487,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     /** If the left and right part intersect, build an envelope with the intersection */
     private Envelope intersectLeftRightParts(EnvelopePart leftPart, EnvelopePart rightPart) {
         if (rightPart == null || leftPart == null)
-            throw tooMuchTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         var slicedLeftPart = leftPart.sliceWithSpeeds(
                 Double.NEGATIVE_INFINITY, NaN,
                 rightPart.getBeginPos(), rightPart.getBeginSpeed()
@@ -491,7 +496,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             // The curves don't intersect at all
             // This sometimes happens when one part is very short compared to the time step
             // When it happens we have very little margin to add time, so we throw a `tooMuchTime` error
-            throw tooMuchTime();
+            throw new OSRDError(ErrorType.AllowanceConvergenceTooMuchTime);
         }
         return Envelope.make(slicedLeftPart, rightPart);
     }

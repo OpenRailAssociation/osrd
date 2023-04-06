@@ -13,9 +13,10 @@ import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeMaintain;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
  * It is the max physical speed at any given point, ignoring allowances */
@@ -115,7 +116,7 @@ public class MaxEffortEnvelope {
         cursor.findPosition(overlayBuilder.getLastPos());
         if (overlayBuilder.lastIntersection == 0) {
             // The train stopped before reaching the end
-            throw new ImpossibleSimulationError();
+            throw new OSRDError(ErrorType.ImpossibleSimulationError);
         }
         builder.addPart(partBuilder.build());
     }

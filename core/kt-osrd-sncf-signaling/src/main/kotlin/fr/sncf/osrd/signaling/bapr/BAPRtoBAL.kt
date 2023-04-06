@@ -1,5 +1,6 @@
 package fr.sncf.osrd.signaling.bapr
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
@@ -17,7 +18,7 @@ object BAPRtoBAL : SignalDriver {
             "S" -> "A"
             "C" -> "A"
             "A" -> "VL"
-            else -> throw RuntimeException("unknown aspect: $aspect")
+            else -> throw OSRDError.newAspectError(aspect)
         }
     }
 

@@ -15,7 +15,8 @@ import fr.sncf.osrd.infra.api.signaling.SignalingModule;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
-import fr.sncf.osrd.reporting.warnings.StrictWarningError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
@@ -59,10 +60,11 @@ public class SignalingInfraTests {
     @Test
     public void testErrorMissingSignaling() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        assertThrows(
-                StrictWarningError.class,
+        var thrown = assertThrows(
+                OSRDError.class,
                 () -> SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(), new DiagnosticRecorderImpl(true))
         );
+        assertEquals(thrown.osrdErrorType, ErrorType.StrictWarningError);
     }
 
     @Test

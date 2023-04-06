@@ -21,6 +21,8 @@ dependencies {
     ksp project(':kt-fast-collections-generator')
 
     api project(":kt-osrd-utils")
+    api project(":osrd-railjson")
+    api project(":osrd-reporting")
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
 }

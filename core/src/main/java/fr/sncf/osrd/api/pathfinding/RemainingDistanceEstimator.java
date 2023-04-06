@@ -2,6 +2,8 @@ package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.geom.Point;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ public class RemainingDistanceEstimator implements AStarHeuristic<SignalingRoute
             }
             pointOffset -= trackRange.getLength();
         }
-        throw new RuntimeException("Couldn't find offset on route");
+        throw new OSRDError(ErrorType.InvalidRouteNoOffset);
     }
 
     /** Compute the minimum geo distance between two steps */

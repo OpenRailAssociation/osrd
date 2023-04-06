@@ -9,6 +9,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.reporting.exceptions.ErrorType
 
 import kotlinx.coroutines.sync.Mutex
 import mu.KotlinLogging
@@ -127,7 +129,7 @@ internal class ReservationSimImpl(
             logger.debug {"updating reservation status of zone $zone to OCCUPIED" }
             updateReservation(zone, reservation) { prevReservation ->
                 if (prevReservation.status != RESERVED)
-                    throw RuntimeException("unexpected reservation status when a train entered a zone")
+                    throw OSRDError.newUnexpectedReservationStatusError("train entered a zone")
                 ZoneReservationImpl(prevReservation.train, prevReservation.requirements, OCCUPIED)
             }
 
@@ -137,7 +139,7 @@ internal class ReservationSimImpl(
             logger.debug { "updating the reservation status of zone $zone to PENDING_RELEASE" }
             updateReservation(zone, reservation) { prevReservation ->
                 if (prevReservation.status != OCCUPIED)
-                    throw RuntimeException("unexpected reservation status when a train left a zone")
+                    throw OSRDError.newUnexpectedReservationStatusError("train left a zone")
                 ZoneReservationImpl(prevReservation.train, prevReservation.requirements, PENDING_RELEASE)
             }
         }
@@ -151,14 +153,14 @@ internal class ReservationSimImpl(
 
     override fun preReserve(zone: ZoneId, zonePath: ZonePathId, train: TrainId): ZoneReservationId {
         if (!locks[zone.index].isLocked)
-            throw ActionLockRequired()
+            throw OSRDError(ErrorType.ActionLockRequired)
 
         var reservationIndex: ZoneReservationId? = null
         states[zone.index].update { prevState ->
             val curRequirements = prevState.requirements()
             val newRequirements = infra.getRequirements(zonePath)
             if (curRequirements != null && !curRequirements.compatibleWith(newRequirements))
-                throw IncompatibleZoneRequirements(curRequirements, newRequirements)
+                throw OSRDError.newIncompatibleZoneRequirementsError(curRequirements, newRequirements)
 
             val newReservation = zoneReservation(train, newRequirements, PRE_RESERVED)
             ZoneStateImpl(prevState.reservations.update {
@@ -171,7 +173,7 @@ internal class ReservationSimImpl(
     override fun confirm(zone: ZoneId, reservation: ZoneReservationId) {
         updateReservation(zone, reservation) { prevReservation ->
             if (prevReservation.status != PRE_RESERVED)
-                throw UnexpectedReservationStatus(PRE_RESERVED, prevReservation.status)
+                throw OSRDError.newUnexpectedReservationStatusError(PRE_RESERVED, prevReservation.status)
             startReservationStatusUpdater(zone, reservation, prevReservation.train)
             ZoneReservationImpl(prevReservation.train, prevReservation.requirements, RESERVED)
         }
@@ -188,7 +190,7 @@ internal class ReservationSimImpl(
             ZoneStateImpl(prevState.reservations.update { arena ->
                 val reservationData = arena[reservation]
                 if (reservationData.status != PENDING_RELEASE)
-                    throw UnexpectedReservationStatus(PENDING_RELEASE, reservationData.status)
+                    throw OSRDError.newUnexpectedReservationStatusError(PENDING_RELEASE, reservationData.status)
                 arena.release(reservation)
             })
         }

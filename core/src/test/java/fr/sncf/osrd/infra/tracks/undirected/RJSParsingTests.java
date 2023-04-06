@@ -11,7 +11,6 @@ import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
-import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
@@ -19,7 +18,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.reporting.warnings.StrictWarningError;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
@@ -48,10 +48,11 @@ public class RJSParsingTests {
     public void testDuplicatedSwitch() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         rjsInfra.switches.add(rjsInfra.switches.iterator().next());
-        assertThrows(
-                StrictWarningError.class,
+        var thrown = assertThrows(
+                OSRDError.class,
                 () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
         );
+        assertEquals(thrown.osrdErrorType, ErrorType.StrictWarningError);
     }
 
     @Test
@@ -64,20 +65,22 @@ public class RJSParsingTests {
                 ports.get(0),
                 new RJSTrackEndpoint("ne.micro.bar_a", EdgeEndpoint.END)
         ));
-        assertThrows(
-                InvalidInfraError.class,
+        var thrown = assertThrows(
+                OSRDError.class,
                 () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
         );
+        assertEquals(thrown.osrdErrorType, ErrorType.InvalidInfraEndpointAlreadyLinked);
     }
 
     @Test
     public void testDuplicateDetector() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         rjsInfra.detectors.add(rjsInfra.detectors.get(0));
-        assertThrows(
-                StrictWarningError.class,
+        var thrown = assertThrows(
+                OSRDError.class,
                 () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
         );
+        assertEquals(thrown.osrdErrorType, ErrorType.StrictWarningError);
     }
 
     @Test

@@ -13,9 +13,7 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
@@ -25,6 +23,7 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.train.RollingStock;
 import java.util.ArrayList;
@@ -90,7 +89,7 @@ public class STDCMSimulations {
         try {
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
             return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
-        } catch (ImpossibleSimulationError e) {
+        } catch (OSRDError e) {
             // The train can't reach its destination, for example because of high slopes
             return null;
         }
@@ -130,7 +129,7 @@ public class STDCMSimulations {
         var allowance = new MarecoAllowance(0, oldEnvelope.getEndPos(), capacitySpeedLimit, ranges);
         try {
             return allowance.apply(oldEnvelope, context);
-        } catch (AllowanceConvergenceException e) {
+        } catch (OSRDError e) {
             return null;
         }
     }
