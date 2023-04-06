@@ -17,3 +17,9 @@ class OsrdSearchSignal(models.Model):
     class Meta:
         db_table = "osrd_search_signal"
         managed = False
+
+
+class OsrdSearchProject(models.Model):
+    class Meta:
+        db_table = "osrd_search_project"
+        managed = False
