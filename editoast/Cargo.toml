@@ -25,7 +25,7 @@ diesel = { version = "2.0", features = [
 ] }
 diesel_json = "0.2.0"
 image = "0.24"
-json-patch = "0.3.0"
+json-patch = "1.0"
 pathfinding = "4.2.1"
 rand = "0.8.5"
 actix-web = "4"
@@ -33,7 +33,7 @@ actix-http = "3.3.1"
 actix-cors = "0.6.4"
 env_logger = "0.10.0"
 r2d2 = "~0.8.2"
-redis = { version = "0.22", features = [
+redis = { version = "0.23", features = [
     "tokio-comp",
     "connection-manager",
     "tokio-native-tls-comp",
