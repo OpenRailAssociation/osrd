@@ -33,6 +33,7 @@ export type InputSNCFProps = {
   inputProps?: Partial<InputHTMLAttributes<HTMLInputElement>>;
   min?: number;
   max?: number;
+  list?: string;
   // Error handling
   isInvalid?: boolean;
   errorMsg?: string;
@@ -67,6 +68,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     value: undefined,
     readonly: false,
     inputProps: {},
+    list: undefined,
     // Error handling
     isInvalid: false,
     errorMsg: undefined,
@@ -152,6 +154,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
       max,
       selectAllOnFocus,
       step,
+      list,
     } = this.props;
 
     // Build custom classes
@@ -201,6 +204,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
               {...inputProps}
               step={step}
               onFocus={(e) => selectAllOnFocus && e.target.select()}
+              list={list}
             />
             <span className="form-control-state" />
             {unit ? <span className="form-control-icon small">{unit}</span> : null}

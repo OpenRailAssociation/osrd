@@ -8,6 +8,7 @@ import Tabs from 'common/Tabs';
 import { getMap } from 'reducers/map/selectors';
 import MapSearchLine from './MapSearchLine';
 import HearderPopUp from '../HeaderPopUp';
+import MapSearchSignal from './MapSearchSignal';
 
 export default function MapSearch(props) {
   const { closeMapSearchPopUp } = props;
@@ -53,15 +54,15 @@ export default function MapSearch(props) {
             label: t('map-search:line'),
             content: <MapSearchLine updateExtViewport={updateViewportChange} />,
           },
+          {
+            label: t('map-search:signal'),
+            content: <MapSearchSignal updateExtViewport={updateViewportChange} />,
+          },
           /* For future implementation
           {
             label: t('map-search:signalbox'),
             content: <MapSearchSignalBox updateExtViewport={updateViewportChange} />,
           },
-          {
-            label: t('map-search:signal'),
-            content: <MapSearchSignal updateExtViewport={updateViewportChange} />,
-          }, 
           */
         ]}
       />

@@ -15,5 +15,10 @@
   "trackname": "Track",
   "type": "Type",
   "line": "Line",
-  "reset": "Reset"
+  "reset": "Reset",
+  "aspect": "Aspect",
+  "noAspectSelected": "No selected aspect",
+  "errorMessages": {
+    "unableToSearchSignal": "Impossible to search signal"
+  }
 }
