@@ -40,7 +40,7 @@
     "@vitejs/plugin-react-swc": "^3.1.0",
     "are-we-there-yet": "^4.0.0",
     "axios": "^0.27.2",
-    "babel-loader": "8.1.0",
+    "babel-loader": "9.1.2",
     "chroma-js": "^2.4.2",
     "classnames": "^2.3.2",
     "country-flag-icons": "^1.5.7",
