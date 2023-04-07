@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './SelectImprovedSNCF.scss';
 
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
