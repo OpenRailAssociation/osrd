@@ -6,12 +6,15 @@ import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxE
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
+import static fr.sncf.osrd.envelope_sim.TestMRSPBuilder.makeSimpleMRSP;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import com.google.common.collect.Range;
+import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -177,5 +180,23 @@ public class MaxEffortEnvelopeTest {
         var mrsp = mrspBuilder.build();
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(testContext, stops, mrsp);
         MaxEffortEnvelope.from(testContext, 0, maxSpeedEnvelope);
+    }
+
+    /** The speed can't be maintained, just one time step before the last one. The MRSP also increases during that
+     * last step. Reproduces a bug. */
+    @Test
+    public void testSingleStepDeclivity() {
+        var testRollingStock = SimpleRollingStock.SHORT_TRAIN;
+        var testPath = new FlatPath(10, 1_000);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP * 10,
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
+        var stops = new double[] {};
+        var speeds = TreeRangeMap.<Double, Double>create();
+        speeds.put(Range.open(0., 9.), 40.);
+        speeds.put(Range.open(9., 10.), 60.);
+        var mrsp = makeSimpleMRSP(testContext, speeds);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(testContext, stops, mrsp);
+        var maxEffortEnvelope = MaxEffortEnvelope.from(testContext, 40, maxSpeedEnvelope);
+        assertTrue(maxEffortEnvelope.continuous);
     }
 }
