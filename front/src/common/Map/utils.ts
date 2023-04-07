@@ -1,14 +1,14 @@
 import { AllGeoJSON } from '@turf/helpers';
 import turfCenter from '@turf/center';
 import { AnyAction, Dispatch } from 'redux';
+import { SearchSignalResult } from 'common/api/osrdEditoastApi';
 import { MapState, Viewport, updateMapSearchMarker } from '../../reducers/map/index';
-import { ISignalSearchResult } from './Search/searchTypes';
 
-export const getCoordinates = (result: ISignalSearchResult, map: MapState) =>
+export const getCoordinates = (result: SearchSignalResult, map: MapState) =>
   map.mapTrackSources === 'schematic' ? result.schematic : result.geographic;
 
 type OnResultSearchClickType = {
-  result: ISignalSearchResult;
+  result: SearchSignalResult;
   map: MapState;
   updateExtViewport: (viewport: Partial<Viewport>) => void;
   dispatch: Dispatch<AnyAction>;

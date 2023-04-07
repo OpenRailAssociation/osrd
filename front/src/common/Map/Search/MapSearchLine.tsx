@@ -10,10 +10,9 @@ import { BBox } from '@turf/helpers';
 import bbox from '@turf/bbox';
 import WebMercatorViewport from 'viewport-mercator-project';
 import { getMap } from 'reducers/map/selectors';
-import { Zone, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Zone, osrdEditoastApi, SearchTrackResult } from 'common/api/osrdEditoastApi';
 import { searchPayloadType } from '../const';
 import LineCard from './LineCard';
-import { ILineSearchResult } from './searchTypes';
 
 type MapSearchLineProps = {
   updateExtViewport: (viewport: Partial<Viewport>) => void;
@@ -26,7 +25,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const dispatch = useDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [searchState, setSearchState] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<ILineSearchResult[] | undefined>(undefined);
+  const [searchResults, setSearchResults] = useState<SearchTrackResult[] | undefined>(undefined);
   const [dataTrackZone, setDataTrackZone] = useState<{ id: number; lineCode: number }>({
     id: 0,
     lineCode: 0,
@@ -65,7 +64,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
       const results = await postSearch({
         body: { object: params.object, query: params.query },
       }).unwrap();
-      setSearchResults(results as ILineSearchResult[]);
+      setSearchResults(results as SearchTrackResult[]);
     } catch (e) {
       console.error(e);
       setSearchResults(undefined);
@@ -86,7 +85,7 @@ const MapSearchLine: React.FC<MapSearchLineProps> = ({ updateExtViewport }) => {
   const coordinates = (search: Zone) =>
     map.mapTrackSources === 'schematic' ? search.sch : search.geo;
 
-  const onResultClick = async (searchResultItem: ILineSearchResult) => {
+  const onResultClick = async (searchResultItem: SearchTrackResult) => {
     if (map.mapSearchMarker) {
       dispatch(updateMapSearchMarker(undefined));
     }

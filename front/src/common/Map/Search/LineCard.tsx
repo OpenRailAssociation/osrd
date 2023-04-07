@@ -1,9 +1,9 @@
 import React from 'react';
-import { ILineSearchResult } from './searchTypes';
+import { SearchTrackResult } from 'common/api/osrdEditoastApi';
 
 type LineCardProps = {
-  resultSearchItem: ILineSearchResult;
-  onResultClick: (result: ILineSearchResult) => void;
+  resultSearchItem: SearchTrackResult;
+  onResultClick: (result: SearchTrackResult) => void;
 };
 
 const LineCard = ({ resultSearchItem, onResultClick }: LineCardProps) => (

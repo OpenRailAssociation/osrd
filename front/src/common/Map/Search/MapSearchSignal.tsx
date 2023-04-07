@@ -7,11 +7,10 @@ import { useDebounce } from 'utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { getMap } from 'reducers/map/selectors';
 import MultiSelectSNCF from 'common/BootstrapSNCF/MultiSelectSNCF';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { SearchSignalResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { setFailure } from 'reducers/main';
 import { sortBy } from 'lodash';
-import { ISignalSearchResult } from './searchTypes';
 import { searchPayloadType, signalAspects } from '../const';
 import SignalCard from './SignalCard';
 import { onResultSearchClick } from '../utils';
@@ -34,7 +33,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   const [searchState, setSearch] = useState('');
   const [searchLineState, setSearchLine] = useState('');
   const [aspects, setAspects] = useState<string[]>([]);
-  const [searchResults, setSearchResults] = useState<ISignalSearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchSignalResult[]>([]);
   const [autocompleteLineNames, setAutocompleteLineNames] = useState<string[]>([]);
 
   // Sort by, and order true = ASC, false = DESC
@@ -74,7 +73,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
     })
       .unwrap()
       .then((results) => {
-        setSearchResults([...results] as ISignalSearchResult[]);
+        setSearchResults([...results] as SearchSignalResult[]);
       })
       .catch((e) => {
         console.error(e);
@@ -99,7 +98,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
     }
   }, [debouncedSearchTerm, debouncedSearchLine, aspects]);
 
-  const onResultClick = (result: ISignalSearchResult) =>
+  const onResultClick = (result: SearchSignalResult) =>
     onResultSearchClick({
       result,
       map,

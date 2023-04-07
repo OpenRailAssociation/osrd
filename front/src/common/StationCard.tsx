@@ -7,7 +7,7 @@ type StationTypes = {
   town?: string;
   department?: string;
   region?: string;
-  uic?: string;
+  uic?: number;
   linename?: string;
   pk?: string;
   linecode?: string;
