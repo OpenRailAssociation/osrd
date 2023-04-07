@@ -1,14 +1,17 @@
+import React from 'react';
 import cx from 'classnames';
 import { patch } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+
+type StateType = 'started' | 'inProgress' | 'finish';
 
 type Props = {
   projectID: number;
   studyID: number;
   getStudy: (withNotification: boolean) => void;
   number: number;
-  state: string;
+  state: StateType;
   done: boolean;
 };
 

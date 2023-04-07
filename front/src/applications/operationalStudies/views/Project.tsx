@@ -20,10 +20,10 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import DOCUMENT_URI from 'common/consts';
+import { ProjectResult, StudyResult } from 'common/api/osrdEditoastApi';
 import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
-import { ProjectResult, StudyResult } from 'common/api/osrdEditoastApi';
 
 function displayStudiesList(
   studiesList: StudyResult[],
@@ -157,7 +157,7 @@ export default function Project() {
                           onClick={() =>
                             openModal(
                               <AddOrEditProjectModal
-                                editionMode={true}
+                                editionMode
                                 project={project}
                                 getProject={getProject}
                               />,

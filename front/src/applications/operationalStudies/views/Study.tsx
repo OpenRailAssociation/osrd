@@ -18,12 +18,27 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
+import { ProjectResult, ScenarioResult, StudyResult } from 'common/api/osrdEditoastApi';
 import BreadCrumbs from '../components/BreadCrumbs';
 import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import FilterTextField from '../components/FilterTextField';
 
-function displayScenariosList(scenariosList, setFilterChips) {
+type StateType = 'started' | 'inProgress' | 'finish';
+
+// While files property is not implemented in studies
+type StudyWithFileType = StudyResult & {
+  files: {
+    filename: string;
+    url: string;
+    name: string;
+  }[];
+};
+
+function displayScenariosList(
+  scenariosList: ScenarioResult[],
+  setFilterChips: (filterChips: string) => void
+) {
   return scenariosList ? (
     <div className="row no-gutters">
       <div className="col-xl-4 col-lg-6" key={nextId()}>
@@ -45,19 +60,19 @@ function displayScenariosList(scenariosList, setFilterChips) {
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
   const { openModal } = useModal();
-  const [project, setProject] = useState();
-  const [study, setStudy] = useState();
-  const [scenariosList, setScenariosList] = useState();
+  const [project, setProject] = useState<ProjectResult>();
+  const [study, setStudy] = useState<StudyWithFileType>();
+  const [scenariosList, setScenariosList] = useState<ScenarioResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState('LastModifiedDesc');
-  const [studyStates, setStudyStates] = useState([]);
+  const [studyStates, setStudyStates] = useState<StateType[]>([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
 
-  const getStudyStates = async (id) => {
+  const getStudyStates = async (id: number) => {
     try {
       const list = await get(`/projects/${id}/study_states/`);
       setStudyStates(list);
@@ -77,7 +92,7 @@ export default function Study() {
     },
   ];
 
-  const handleSortOptions = (e) => {
+  const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSortOption(e.target.value);
   };
 
@@ -98,7 +113,7 @@ export default function Study() {
         dispatch(
           setSuccess({
             title: t('studyUpdated'),
-            text: t('studyUpdatedDetails', { name: study.name }),
+            text: t('studyUpdatedDetails', { name: study?.name }),
           })
         );
       }
@@ -145,8 +160,8 @@ export default function Study() {
       <NavBarSNCF
         appName={
           <BreadCrumbs
-            projectName={project ? project.name : null}
-            studyName={study ? study.name : null}
+            projectName={project?.name && project.name}
+            studyName={study?.name && study.name}
           />
         }
         logo={logo}
@@ -156,19 +171,41 @@ export default function Study() {
           {project && study ? (
             <div className="study-details">
               <div className="study-details-dates">
-                <DateBox date={study.creation_date} className="creation" translation="creation" />
-                <DateBox date={study.start_date} className="start" translation="start" />
-                <DateBox
-                  date={study.expected_end_date}
-                  className="estimatedend"
-                  translation="estimatedend"
-                />
-                <DateBox date={study.actual_end_date} className="realend" translation="realend" />
-                <DateBox
-                  date={study.last_modification}
-                  className="modified"
-                  translation="modified"
-                />
+                {study.creation_date && (
+                  <DateBox
+                    date={new Date(study.creation_date)}
+                    className="creation"
+                    translation="creation"
+                  />
+                )}
+                {study.start_date_study && (
+                  <DateBox
+                    date={new Date(study.start_date_study)}
+                    className="start"
+                    translation="start"
+                  />
+                )}
+                {study.expected_end_date_study && (
+                  <DateBox
+                    date={new Date(study.expected_end_date_study)}
+                    className="estimatedend"
+                    translation="estimatedend"
+                  />
+                )}
+                {study.actual_end_date_study && (
+                  <DateBox
+                    date={new Date(study.actual_end_date_study)}
+                    className="realend"
+                    translation="realend"
+                  />
+                )}
+                {study.last_modification && (
+                  <DateBox
+                    date={new Date(study.last_modification)}
+                    className="modified"
+                    translation="modified"
+                  />
+                )}
               </div>
               <div className="row">
                 <div className="col-xl-9 col-lg-8 col-md-7">
@@ -196,17 +233,22 @@ export default function Study() {
                   <div className="study-details-description">{study.description}</div>
                   {study.state && (
                     <div className="study-details-state">
-                      {studyStates.map((state, idx) => (
-                        <StateStep
-                          key={nextId()}
-                          projectID={project.id}
-                          studyID={study.id}
-                          getStudy={getStudy}
-                          number={idx + 1}
-                          state={state}
-                          done={idx <= studyStates.indexOf(study.state)}
-                        />
-                      ))}
+                      {studyStates.map(
+                        (state, idx) =>
+                          project.id &&
+                          study.id &&
+                          study.state && (
+                            <StateStep
+                              key={nextId()}
+                              projectID={project.id}
+                              studyID={study.id}
+                              getStudy={getStudy}
+                              number={idx + 1}
+                              state={state}
+                              done={idx <= studyStates.indexOf(study.state)}
+                            />
+                          )
+                      )}
                     </div>
                   )}
                 </div>
@@ -258,7 +300,7 @@ export default function Study() {
                 </div>
                 <div className="study-details-financials-amount">
                   <span className="study-details-financials-amount-text">{t('budget')}</span>
-                  {budgetFormat(study.budget)}
+                  {study.budget && budgetFormat(study.budget)}
                 </div>
               </div>
 

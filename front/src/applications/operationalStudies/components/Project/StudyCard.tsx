@@ -70,6 +70,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
 
       <div className="studies-list-card-tags">
         {study.tags &&
+          study.tags.length > 0 &&
           study.tags.map((tag) => (
             <div
               className="studies-list-card-tags-tag"
