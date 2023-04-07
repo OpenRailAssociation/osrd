@@ -2,7 +2,8 @@
   "linecode": "Code ligne",
   "name": "Nom",
   "noresult": "Aucun résultat",
-  "placeholderline": "Numéro de ligne",
+  "placeholderline": "Nom ou numéro de ligne",
+  "placeholdersignal": "Nom du signal",
   "placeholdername": "Nom, appelation, libellé",
   "pk": "PK",
   "resultsCount_zero": "Aucun résultat",
@@ -15,5 +16,10 @@
   "trackname": "Voie",
   "type": "Type",
   "line": "Ligne",
-  "reset": "Réinitialiser"
+  "reset": "Réinitialiser",
+  "aspects": "Aspects",
+  "noAspectSelected": "Aucun aspect sélectionné",
+  "errorMessages": {
+    "unableToSearchSignal": "Recherche du signal impossible"
+  }
 }

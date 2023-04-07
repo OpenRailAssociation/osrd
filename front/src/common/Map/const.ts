@@ -1,3 +1,4 @@
+import { SearchQuery } from 'common/api/osrdEditoastApi';
 import config from 'config/config';
 
 export * from 'common/Map/Consts/SignalsNames';
@@ -101,9 +102,56 @@ export const catenaryMapKey: CatenaryKey[] = [
 ];
 
 // Search
-export const SEARCH_URL = `/editoast/search`;
-
 export type searchPayloadType = {
   object: string;
-  query: (string | any[])[];
+  query: SearchQuery;
 };
+
+export const signalAspects = [
+  {
+    label: 'BAL',
+    signals: [
+      'Avertissement',
+      'Carré',
+      'Carré Violet',
+      'Croix Blanche Lumineuse',
+      'Disque',
+      'Feu Blanc',
+      'Feu Blanc Clignotant',
+      'Feu Jaune Clignotant',
+      'Feu Rouge Clignotant',
+      'Feu Vert',
+      'Feu Vert Clignotant',
+      'R Blanc',
+      'Ralentissement 30',
+      'Ralentissement 60',
+      'Rappel 30',
+      'Rappel 60',
+      'Sémaphore',
+    ],
+  },
+  {
+    label: 'LGV',
+    signals: [
+      '80',
+      '60',
+      '130',
+      '160',
+      '170',
+      '200',
+      '220',
+      '230',
+      '270',
+      '300',
+      '320',
+      'Bande Blanche Vertical',
+      'Bande bl/jau Vertical',
+      'Feu blanc franchissement',
+    ],
+  },
+  {
+    label: 'Signaux "Ex"',
+    signals: ['Bande Jaune Inclinee', 'Bande Rouge Horizontal', 'Bande Verte Vertical'],
+  },
+  { label: 'Signaux "ID"', signals: ['1 Feu', '2 Feux', '3 Feux', '4 Feux', '5 Feux'] },
+];

@@ -34,7 +34,7 @@ export type Viewport = ViewState & {
 
 export interface MapSearchMarker {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   lonlat: [number, number];
 }
 export interface MapState {
