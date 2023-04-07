@@ -1334,10 +1334,7 @@ paths:
                   results:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        schema:
-                          $ref: "#/components/schemas/StudyResult"
+                      $ref: "#/components/schemas/StudyResult"
 
   /projects/{project_id}/studies/{study_id}/:
     get:
@@ -1594,6 +1591,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ScenarioResult"
+
+  /rolling_stock/{id}/livery/{livery_id}/:
+    get:
+      tags:
+        - rolling_stock
+        - livery
+      summary: Retrieve the compound image of a rolling stock livery
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+        - in: path
+          name: livery_id
+          schema:
+            type: integer
+          description: Rolling Stock Livery ID
+          required: true
+      responses:
+        200:
+          description: The livery compound image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
 
 components:
   schemas:
@@ -2437,7 +2462,7 @@ components:
         last_modification:
           type: string
           format: date-time
-        studies:
+        studies_count:
           type: integer
         tags:
           type: array
@@ -2574,11 +2599,9 @@ components:
         last_modification:
           type: string
           format: date-time
-        scenarios:
-          type: array
-          items:
-            type: integer
-        start_date:
+        scenarios_count:
+          type: integer
+        start_date_study:
           type: string
           nullable: true
           format: date-time

@@ -19,8 +19,10 @@ class Migration(migrations.Migration):
                 "name": "{source}.name",
                 "description": "{source}.description",
             },
+            extra_columns={ 
+                "tags": ("{source}.tags", "TEXT[]"), 
+                },
             triggers=True,
             phony_model_name="OsrdSearchProject",
-            joins="LEFT JOIN osrd_infra_study AS study ON study.project_id = {source}.id",
         ),
     ]

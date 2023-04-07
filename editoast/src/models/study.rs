@@ -10,7 +10,7 @@ use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
-use diesel::sql_types::{Array, BigInt};
+use diesel::sql_types::BigInt;
 use diesel::Associations;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -77,8 +77,8 @@ pub struct StudyWithScenarios {
     #[serde(flatten)]
     #[diesel(embed)]
     pub study: Study,
-    #[diesel(sql_type = Array<BigInt>)]
-    pub scenarios: Vec<i64>,
+    #[diesel(sql_type = BigInt)]
+    pub scenarios_count: i64,
 }
 
 impl Study {
@@ -93,13 +93,13 @@ impl Study {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
             let mut conn = db_pool.get()?;
-            let scenarios = scenario_dsl::osrd_infra_scenario
+            let scenarios_count = scenario_dsl::osrd_infra_scenario
                 .filter(scenario_dsl::study_id.eq(self.id.unwrap()))
-                .select(scenario_dsl::id)
-                .load(&mut conn)?;
+                .count()
+                .get_result(&mut conn)?;
             Ok(StudyWithScenarios {
                 study: self,
-                scenarios,
+                scenarios_count,
             })
         })
         .await
@@ -116,7 +116,7 @@ impl List<(i64, Ordering)> for StudyWithScenarios {
     ) -> Result<PaginatedResponse<Self>> {
         let project_id = params.0;
         let ordering = params.1.to_sql();
-        sql_query(format!("SELECT t.*, COALESCE(ARRAY_AGG(scenario.id) FILTER (WHERE scenario.id is not NULL), ARRAY[]::bigint[]) as scenarios FROM osrd_infra_study t
+        sql_query(format!("SELECT t.*, COUNT(scenario.*) as scenarios_count FROM osrd_infra_study t
             LEFT JOIN osrd_infra_scenario scenario ON scenario.study_id = t.id WHERE t.project_id = $1
             GROUP BY t.id ORDER BY {ordering} "))
             .bind::<BigInt, _>(project_id)

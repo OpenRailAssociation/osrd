@@ -735,9 +735,7 @@ export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studie
   count?: number;
   next?: any;
   previous?: any;
-  results?: {
-    schema?: StudyResult;
-  }[];
+  results?: StudyResult[];
 };
 export type GetProjectsByProjectIdStudiesApiArg = {
   projectId: number;
@@ -1128,7 +1126,7 @@ export type ProjectResult = {
   image?: number | null;
   creation_date?: string;
   last_modification?: string;
-  studies?: number;
+  studies_count?: number;
   tags?: string[];
 };
 export type ProjectCreateRequest = {
@@ -1160,10 +1158,10 @@ export type StudyResult = {
   business_code?: string;
   creation_date?: string;
   last_modification?: string;
-  scenarios?: number[];
-  start_date?: string | null;
-  expected_end_date?: string | null;
-  actual_end_date?: string | null;
+  scenarios_count?: number;
+  start_date_study?: string;
+  expected_end_date_study?: string;
+  actual_end_date_study?: string;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'

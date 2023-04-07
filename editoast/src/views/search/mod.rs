@@ -288,28 +288,20 @@ fn create_sql_query(
         .as_ref()
         .cloned()
         .unwrap_or_default();
-    let group_by = search_entry.result.group_by.as_ref().cloned();
     let result_columns = search_entry.result_columns();
     let mut bindings = Default::default();
     let constraints = where_expression.to_sql(&mut bindings);
-    let mut sql_code = format!(
+    let sql_code = format!(
         "WITH _RESULT AS (
             SELECT {result_columns}
             FROM {table}
             {joins}
-            WHERE {constraints}"
+            WHERE {constraints}
+            LIMIT {limit} OFFSET {offset}
+        )
+        SELECT to_jsonb(_RESULT) AS result
+        FROM _RESULT"
     );
-
-    if let Some(group) = group_by {
-        sql_code += &format!(" GROUP BY {group}");
-    }
-
-    sql_code += &format!(
-        " LIMIT {limit} OFFSET {offset})
-    SELECT to_jsonb(_RESULT) AS result
-    FROM _RESULT"
-    );
-    println!("{}", sql_code);
     let mut sql_query = sql_query(sql_code).into_boxed();
     for string in bindings {
         sql_query = sql_query.bind::<Text, _>(string.to_owned());
