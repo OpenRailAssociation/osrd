@@ -2438,9 +2438,7 @@ components:
           type: string
           format: date-time
         studies:
-          type: array
-          items:
-            type: integer
+          type: integer
         tags:
           type: array
           items:

@@ -1128,7 +1128,7 @@ export type ProjectResult = {
   image?: number | null;
   creation_date?: string;
   last_modification?: string;
-  studies?: number[];
+  studies?: number;
   tags?: string[];
 };
 export type ProjectCreateRequest = {
