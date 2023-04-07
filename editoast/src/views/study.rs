@@ -110,7 +110,7 @@ async fn create(
     // Return study with list of scenarios
     let study_with_scenarios = StudyWithScenarios {
         study,
-        scenarios: vec![],
+        scenarios_count: 0,
     };
 
     Ok(Json(study_with_scenarios))

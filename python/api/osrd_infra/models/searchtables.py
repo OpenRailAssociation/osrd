@@ -23,3 +23,15 @@ class OsrdSearchProject(models.Model):
     class Meta:
         db_table = "osrd_search_project"
         managed = False
+
+
+class OsrdSearchStudy(models.Model):
+    class Meta:
+        db_table = "osrd_search_study"
+        managed = False
+
+
+class OsrdSearchScenario(models.Model):
+    class Meta:
+        db_table = "osrd_search_project"
+        managed = False

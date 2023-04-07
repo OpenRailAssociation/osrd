@@ -66,16 +66,61 @@ project:
     id: integer
     name: string
     description: string
+    tags:
+      array: string
   result:
     joins: |
       INNER JOIN osrd_infra_project AS project ON project.id = osrd_search_project.id
-      LEFT JOIN osrd_infra_study AS study ON project.id = study.project_id
-    group_by: project.id
     columns:
       id: project.id
       image: project.image_id
       name: project.name
-      studies: COUNT(study.id)
+      studies_count: (SELECT COUNT(study.id) FROM osrd_infra_study AS study WHERE osrd_search_project.id = study.project_id)
       description: project.description
       last_modification: project.last_modification
       tags: project.tags
+
+study:
+  table: osrd_search_study
+  columns:
+    id: integer
+    name: string
+    description: string
+  result:
+    joins: |
+      INNER JOIN osrd_infra_study AS study ON study.id = osrd_search_study.id
+    columns:
+      id: study.id
+      project_id: study.project_id
+      name: study.name
+      start_date_study: study.start_date_study
+      expected_end_date_study: study.expected_end_date_study
+      actual_end_date_study: study.actual_end_date_study
+      state: study.state
+      study_type: study.study_type
+      scenarios_count: (SELECT COUNT(scenario.id) FROM osrd_infra_scenario AS scenario WHERE osrd_search_study.id = scenario.study_id)
+      description: study.description
+      last_modification: study.last_modification
+      tags: study.tags
+
+scenario:
+  table: osrd_search_scenario
+  columns:
+    id: integer
+    name: string
+    description: string
+  result:
+    joins: |
+      INNER JOIN osrd_infra_scenario AS scenario ON scenario.id = osrd_search_scenario.id
+    columns:
+      id: scenario.id
+      study_id: scenario.study_id
+      name: scenario.name
+      infra_name: scenario.infra_name
+      electrical_profile_set_id: scenario.electrical_profile_set_id
+      electrical_profile_set_name: scenario.electrical_profile_set_name
+      infra_id: scenario.infra_id
+      timetable_id: scenario.timetable_id
+      description: study.description
+      last_modification: study.last_modification
+      tags: study.tags
