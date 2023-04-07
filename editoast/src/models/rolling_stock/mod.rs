@@ -77,6 +77,7 @@ pub struct RollingStockModel {
     pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = Option<JsonValue>)]
     pub power_restrictions: Option<Option<JsonValue>>,
+    pub energy_sources: Vec<EnergySource>,
 }
 
 impl Identifiable for RollingStockModel {
@@ -153,6 +154,7 @@ impl From<RollingStockModel> for RollingStock {
             loading_gauge: rolling_stock_model.loading_gauge.unwrap(),
             metadata: rolling_stock_model.metadata.unwrap().0,
             power_restrictions: rolling_stock_model.power_restrictions.unwrap(),
+            energy_sources: rolling_stock_model.energy_sources.unwrap(),
         }
     }
 }

@@ -2254,6 +2254,11 @@ components:
           example:
             "C1US": "4"
             "C2US": "3"
+        energy_sources:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/EnergySource"
         metadata:
           type: object
           properties:
