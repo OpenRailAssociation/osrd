@@ -81,7 +81,7 @@ public record STDCMEdge(
                 newWaypointIndex++; // Skip waypoints where we don't stop (not handled here)
             return new STDCMNode(
                     getTotalTime() + timeStart() + stopDuration,
-                    0,
+                    envelope.getEndSpeed(),
                     null,
                     totalDepartureTimeShift(),
                     maximumAddedDelayAfter(),
