@@ -1,5 +1,8 @@
 package fr.sncf.osrd.envelope_sim;
 
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -10,6 +13,12 @@ public class TestMRSPBuilder {
     /** Builds a constant speed MRSP for a given path */
     public static Envelope makeSimpleMRSP(EnvelopeSimContext context,
                                           double speed) {
+        return makeSimpleMRSP(context, ImmutableRangeMap.of(Range.open(0., context.path.getLength()), speed));
+    }
+
+    /** Builds an MRSP for a given path, with speeds given as ranges */
+    public static Envelope makeSimpleMRSP(EnvelopeSimContext context,
+                                          RangeMap<Double, Double> speeds) {
         var builder = new MRSPEnvelopeBuilder();
         var maxSpeedRS = context.rollingStock.getMaxSpeed();
         builder.addPart(EnvelopePart.generateTimes(
@@ -17,11 +26,12 @@ public class TestMRSPBuilder {
                 new double[] {0, context.path.getLength()},
                 new double[] {maxSpeedRS, maxSpeedRS}
         ));
-        builder.addPart(EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.CONSTANT_SPEED),
-                new double[] {0, context.path.getLength()},
-                new double[] {speed, speed}
-        ));
+        for (var entry : speeds.asMapOfRanges().entrySet())
+            builder.addPart(EnvelopePart.generateTimes(
+                    List.of(EnvelopeProfile.CONSTANT_SPEED),
+                    new double[] {entry.getKey().lowerEndpoint(), entry.getKey().upperEndpoint()},
+                    new double[] {entry.getValue(), entry.getValue()}
+            ));
         return builder.build();
     }
 
