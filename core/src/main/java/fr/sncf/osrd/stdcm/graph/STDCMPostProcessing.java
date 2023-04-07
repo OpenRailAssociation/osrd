@@ -1,5 +1,7 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+
 import com.google.common.collect.Iterables;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.stdcm.STDCMResult;
@@ -97,7 +99,11 @@ public class STDCMPostProcessing {
                 length += nextRange.end() - nextRange.start();
                 i++;
             }
-            res.add(new Pathfinding.EdgeRange<>(range.edge().route(), start, start + length));
+            var end = start + length;
+            var routeLength = range.edge().route().getInfraRoute().getLength();
+            if (Math.abs(end - routeLength) < POSITION_EPSILON)
+                end = routeLength;
+            res.add(new Pathfinding.EdgeRange<>(range.edge().route(), start, end));
             i++;
         }
         return res;
