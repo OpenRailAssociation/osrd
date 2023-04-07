@@ -11,19 +11,19 @@ import logoSNCF from 'assets/logo_sncf_bw.png';
 import logoGhibli from 'assets/pictures/misc/ghibli.svg';
 
 type PicturePlaceholderProps = {
-  currentProjectImageUrl: string | undefined;
-  blobImage: Blob | undefined;
+  currentProjectImageUrl?: string;
+  blobImage?: Blob;
   isValid: boolean;
 };
 
 type PictureUploaderProps = {
-  currentProjectImageUrl: string | undefined;
-  blobImage: Blob | undefined;
-  setBlobImage: (blob: Blob | undefined) => void;
+  currentProjectImageUrl?: string;
+  blobImage?: Blob;
+  setBlobImage: (blob?: Blob) => void;
 };
 
 type PicturePlaceholderButtonsProps = {
-  setBlobImage: (blob: Blob | undefined) => void;
+  setBlobImage: (blob?: Blob) => void;
 };
 
 function PicturePlaceholder({

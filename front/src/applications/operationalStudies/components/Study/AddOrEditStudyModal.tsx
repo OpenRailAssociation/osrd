@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { studyTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import studyLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -20,25 +19,12 @@ import { useNavigate } from 'react-router-dom';
 import { setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
 import { getProjectID } from 'reducers/osrdconf/selectors';
+import { StudyResult } from 'common/api/osrdEditoastApi';
 import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
 
-const currentStudyDefaults = {
-  name: '',
-  study_type: '',
-  description: '',
-  service_code: '',
-  business_code: '',
-  start_date: null,
-  expected_end_date: null,
-  actual_end_date: null,
-  state: '',
-  tags: [],
-  budget: 0,
-};
-
 type Props = {
-  editionMode?: false;
-  study?: studyTypes;
+  editionMode?: boolean;
+  study?: StudyResult;
   getStudy?: (v: boolean) => void;
 };
 
@@ -47,7 +33,7 @@ type SelectOptions = { key: string | null; value: string }[];
 export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [currentStudy, setCurrentStudy] = useState<studyTypes>(study || currentStudyDefaults);
+  const [currentStudy, setCurrentStudy] = useState<StudyResult | undefined>(study);
   const [displayErrors, setDisplayErrors] = useState(false);
   const emptyOptions = [{ key: null, value: t('nothingSelected') }];
   const [studyCategories, setStudyCategories] = useState<SelectOptions>(emptyOptions);
@@ -80,19 +66,23 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   const formatDateForInput = (date: string | null) => (date === null ? '' : date.substr(0, 10));
 
   const removeTag = (idx: number) => {
-    const newTags: string[] = Array.from(currentStudy.tags);
-    newTags.splice(idx, 1);
-    setCurrentStudy({ ...currentStudy, tags: newTags });
+    if (currentStudy?.tags) {
+      const newTags: string[] = Array.from(currentStudy.tags);
+      newTags.splice(idx, 1);
+      setCurrentStudy({ ...currentStudy, tags: newTags });
+    }
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = Array.from(currentStudy.tags);
-    newTags.push(tag);
-    setCurrentStudy({ ...currentStudy, tags: newTags });
+    if (currentStudy?.tags) {
+      const newTags: string[] = Array.from(currentStudy.tags);
+      newTags.push(tag);
+      setCurrentStudy({ ...currentStudy, tags: newTags });
+    }
   };
 
   const createStudy = async () => {
-    if (!currentStudy.name) {
+    if (!currentStudy?.name) {
       setDisplayErrors(true);
     } else {
       try {
@@ -107,7 +97,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   };
 
   const updateStudy = async () => {
-    if (!currentStudy.name) {
+    if (!currentStudy?.name) {
       setDisplayErrors(true);
     } else if (study) {
       try {
@@ -142,12 +132,12 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   useEffect(() => {
     createSelectOptions(
       'studyCategories',
-      `/projects/${currentStudy.id}/study_types/`,
+      `/projects/${currentStudy?.id}/study_types/`,
       setStudyCategories
     );
     createSelectOptions(
       'studyStates',
-      `/projects/${currentStudy.id}/study_states/`,
+      `/projects/${currentStudy?.id}/study_states/`,
       setStudyStates
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,10 +165,10 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                 <span className="font-weight-bold">{t('studyName')}</span>
               </div>
             }
-            value={currentStudy.name}
+            value={currentStudy?.name}
             onChange={(e) => setCurrentStudy({ ...currentStudy, name: e.target.value })}
-            isInvalid={displayErrors && !currentStudy.name}
-            errorMsg={displayErrors && !currentStudy.name ? t('studyNameMissing') : undefined}
+            isInvalid={displayErrors && !currentStudy?.name}
+            errorMsg={displayErrors && !currentStudy?.name ? t('studyNameMissing') : undefined}
           />
         </div>
         <div className="row">
@@ -196,8 +186,8 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       </div>
                     }
                     selectedValue={{
-                      key: currentStudy.study_type,
-                      value: t(`studyCategories.${currentStudy.study_type || 'nothingSelected'}`),
+                      key: currentStudy?.study_type,
+                      value: t(`studyCategories.${currentStudy?.study_type || 'nothingSelected'}`),
                     }}
                     options={studyCategories}
                     onChange={(e) => setCurrentStudy({ ...currentStudy, study_type: e.key })}
@@ -216,8 +206,8 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       </div>
                     }
                     selectedValue={{
-                      key: currentStudy.state,
-                      value: t(`studyStates.${currentStudy.state || 'nothingSelected'}`),
+                      key: currentStudy?.state,
+                      value: t(`studyStates.${currentStudy?.state || 'nothingSelected'}`),
                     }}
                     options={studyStates}
                     onChange={(e) => setCurrentStudy({ ...currentStudy, state: e.key })}
@@ -236,61 +226,69 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                     {t('studyDescription')}
                   </div>
                 }
-                value={currentStudy.description}
+                value={currentStudy?.description}
                 onChange={(e) => setCurrentStudy({ ...currentStudy, description: e.target.value })}
               />
             </div>
           </div>
           <div className="col-lg-4">
-            <InputSNCF
-              id="studyInputStartDate"
-              type="date"
-              name="studyInputStartDate"
-              label={
-                <div className="d-flex align-items-center">
-                  <span className="mr-2 text-success">
-                    <RiCalendarLine />
-                  </span>
-                  {t('studyStartDate')}
-                </div>
-              }
-              value={formatDateForInput(currentStudy.start_date)}
-              onChange={(e) => setCurrentStudy({ ...currentStudy, start_date: e.target.value })}
-            />
-            <InputSNCF
-              id="studyInputEstimatedEndingDate"
-              type="date"
-              name="studyInputEstimatedEndingDate"
-              label={
-                <div className="d-flex align-items-center">
-                  <span className="mr-2 text-warning">
-                    <RiCalendarLine />
-                  </span>
-                  {t('studyEstimatedEndingDate')}
-                </div>
-              }
-              value={formatDateForInput(currentStudy.expected_end_date)}
-              onChange={(e) =>
-                setCurrentStudy({ ...currentStudy, expected_end_date: e.target.value })
-              }
-            />
-            <InputSNCF
-              id="studyInputRealEndingDate"
-              type="date"
-              name="studyInputRealEndingDate"
-              label={
-                <div className="d-flex align-items-center">
-                  <span className="mr-2 text-danger">
-                    <RiCalendarLine />
-                  </span>
-                  {t('studyRealEndingDate')}
-                </div>
-              }
-              value={formatDateForInput(currentStudy.actual_end_date)}
-              onChange={(e) =>
-                setCurrentStudy({ ...currentStudy, actual_end_date: e.target.value })
-              }
-            />
+            {currentStudy?.start_date_study && (
+              <InputSNCF
+                id="studyInputStartDate"
+                type="date"
+                name="studyInputStartDate"
+                label={
+                  <div className="d-flex align-items-center">
+                    <span className="mr-2 text-success">
+                      <RiCalendarLine />
+                    </span>
+                    {t('studyStartDate')}
+                  </div>
+                }
+                value={formatDateForInput(currentStudy.start_date_study)}
+                onChange={(e) =>
+                  setCurrentStudy({ ...currentStudy, start_date_study: e.target.value })
+                }
+              />
+            )}
+            {currentStudy?.expected_end_date_study && (
+              <InputSNCF
+                id="studyInputEstimatedEndingDate"
+                type="date"
+                name="studyInputEstimatedEndingDate"
+                label={
+                  <div className="d-flex align-items-center">
+                    <span className="mr-2 text-warning">
+                      <RiCalendarLine />
+                    </span>
+                    {t('studyEstimatedEndingDate')}
+                  </div>
+                }
+                value={formatDateForInput(currentStudy?.expected_end_date_study)}
+                onChange={(e) =>
+                  setCurrentStudy({ ...currentStudy, expected_end_date_study: e.target.value })
+                }
+              />
+            )}
+            {currentStudy?.actual_end_date_study && (
+              <InputSNCF
+                id="studyInputRealEndingDate"
+                type="date"
+                name="studyInputRealEndingDate"
+                label={
+                  <div className="d-flex align-items-center">
+                    <span className="mr-2 text-danger">
+                      <RiCalendarLine />
+                    </span>
+                    {t('studyRealEndingDate')}
+                  </div>
+                }
+                value={formatDateForInput(currentStudy.actual_end_date_study)}
+                onChange={(e) =>
+                  setCurrentStudy({ ...currentStudy, actual_end_date_study: e.target.value })
+                }
+              />
+            )}
           </div>
         </div>
         <div className="row">
@@ -307,7 +305,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyServiceCode')}
                 </div>
               }
-              value={currentStudy.service_code}
+              value={currentStudy?.service_code}
               onChange={(e) => setCurrentStudy({ ...currentStudy, service_code: e.target.value })}
             />
           </div>
@@ -324,7 +322,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyBusinessCode')}
                 </div>
               }
-              value={currentStudy.business_code}
+              value={currentStudy?.business_code}
               onChange={(e) => setCurrentStudy({ ...currentStudy, business_code: e.target.value })}
             />
           </div>
@@ -342,14 +340,14 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                   {t('studyBudget')}
                 </div>
               }
-              value={currentStudy.budget}
+              value={currentStudy?.budget}
               onChange={(e) => setCurrentStudy({ ...currentStudy, budget: +e.target.value })}
             />
           </div>
         </div>
         <ChipsSNCF
           addTag={addTag}
-          tags={currentStudy.tags}
+          tags={currentStudy?.tags}
           removeTag={removeTag}
           title={t('studyTags')}
           color="primary"
