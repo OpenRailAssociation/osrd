@@ -1,7 +1,7 @@
 import { Feature, Point, LineString, Position } from 'geojson';
 import { last, differenceWith, cloneDeep, isEqual, sortBy, isArray, isNil, isObject } from 'lodash';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { utils } from '@rjsf/core';
+import { retrieveSchema, ValidatorType } from '@rjsf/utils';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
 
@@ -599,13 +599,14 @@ export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: Li
  * For a linear Metadata
  */
 export function getFieldJsonSchema(
+  validator: ValidatorType,
   fieldSchema: JSONSchema7,
   rootSchema: JSONSchema7,
   enhancement: { [key: string]: JSONSchema7Definition } = {}
 ): JSONSchema7 {
   let result = { ...fieldSchema };
   if (fieldSchema.items) {
-    const itemsSchema = utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
+    const itemsSchema = retrieveSchema(validator, fieldSchema.items as JSONSchema7, rootSchema);
     if (itemsSchema.properties?.begin && itemsSchema.properties?.end) {
       result = {
         ...result,

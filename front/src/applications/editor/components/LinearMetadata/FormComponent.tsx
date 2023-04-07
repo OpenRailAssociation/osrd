@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import Form, { FieldProps, utils } from '@rjsf/core';
+import Form, { getDefaultRegistry } from '@rjsf/core';
+import { FieldProps } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
@@ -7,6 +8,8 @@ import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } fr
 import { IoIosCut } from 'react-icons/io';
 import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { customizeValidator, Localizer } from '@rjsf/validator-ajv8';
+import localizer from 'ajv-i18n';
 
 import { useModal } from '../../../../common/BootstrapSNCF/ModalSNCF';
 import HelpModal from './HelpModal';
@@ -33,8 +36,12 @@ import './style.scss';
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { openModal, closeModal } = useModal();
-  const { t } = useTranslation();
-  const Fields = utils.getDefaultRegistry().fields;
+  const { t, i18n } = useTranslation();
+  const validator = customizeValidator(
+    {},
+    localizer[i18n.language as keyof typeof localizer] as Localizer
+  );
+  const { ArrayField } = getDefaultRegistry().fields;
 
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
@@ -69,6 +76,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const jsonSchema = useMemo(
     () =>
       getFieldJsonSchema(
+        registry.schemaUtils.getValidator(),
         schema,
         registry.rootSchema,
         distance
@@ -137,8 +145,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     setSelectedData(selected !== null && data[selected] ? data[selected] : null);
   }, [selected, data]);
 
-  if (!LINEAR_METADATA_FIELDS.includes(name))
-    return <Fields.ArrayField {...props} schema={jsonSchema} />;
+  if (!LINEAR_METADATA_FIELDS.includes(name)) return <ArrayField {...props} schema={jsonSchema} />;
 
   return (
     <div className="linear-metadata">
@@ -335,21 +342,27 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 name="selected"
                 liveValidate
                 noHtml5Validate
+                validator={validator}
                 tagName="div"
                 schema={
-                  (getFieldJsonSchema(schema, registry.rootSchema, {
-                    begin: {
-                      minimum: 0,
-                      maximum: fnMax([selectedData.begin, selectedData.end - SEGMENT_MIN_SIZE]),
-                    },
-                    end: {
-                      minimum: fnMin([selectedData.end, data[selected].begin + SEGMENT_MIN_SIZE]),
-                      maximum:
-                        selected !== data.length - 1
-                          ? fnMax([selectedData.end, data[selected + 1].end - SEGMENT_MIN_SIZE])
-                          : selectedData.end,
-                    },
-                  }).items as JSONSchema7) || {}
+                  (getFieldJsonSchema(
+                    registry.schemaUtils.getValidator(),
+                    schema,
+                    registry.rootSchema,
+                    {
+                      begin: {
+                        minimum: 0,
+                        maximum: fnMax([selectedData.begin, selectedData.end - SEGMENT_MIN_SIZE]),
+                      },
+                      end: {
+                        minimum: fnMin([selectedData.end, data[selected].begin + SEGMENT_MIN_SIZE]),
+                        maximum:
+                          selected !== data.length - 1
+                            ? fnMax([selectedData.end, data[selected + 1].end - SEGMENT_MIN_SIZE])
+                            : selectedData.end,
+                      },
+                    }
+                  ).items as JSONSchema7) || {}
                 }
                 uiSchema={{
                   begin: {

@@ -277,6 +277,78 @@
         },
         "label": "Outil \"Ligne\""
       }
+    },
+    "form": {
+      "fields": {
+        "length": {
+          "title": "Longueur",
+          "description": "Longueur (en mètre) de la ligne"
+        },
+        "slopes": {
+          "title": "",
+          "description": ""
+        },
+        "curves": {
+          "title": "",
+          "description": ""
+        },
+        "loading_gauge_limits": {
+          "title": "",
+          "description": ""
+        },
+        "extensions": {
+          "title": "",
+          "description": ""
+        }
+      },
+      "types": {
+        "LoadingGaugeLimit": {
+          "title": "",
+          "description": "",
+          "fields": {
+            "begin": {
+              "title": "Début",
+              "description": ""
+            },
+            "end": {
+              "title": "Fin",
+              "description": ""
+            },
+            "category": {
+              "title": "Catégorie",
+              "description": ""
+            }
+          }
+        },
+        "TrackSectionExtensions": {
+          "fields": {
+            "sncf": {
+              "title": "",
+              "description": ""
+            }
+          }
+        },
+        "TrackSectionSncfExtension": {
+          "fields": {
+            "line_code": {
+              "title": "",
+              "description": ""
+            },
+            "line_name": {
+              "title": "",
+              "description": ""
+            },
+            "track_name": {
+              "title": "",
+              "description": ""
+            },
+            "track_number": {
+              "title": "",
+              "description": ""
+            }
+          }
+        }
+      }
     }
   }
 }

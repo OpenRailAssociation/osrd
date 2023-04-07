@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { WidgetProps } from '@rjsf/core';
+import { WidgetProps } from '@rjsf/utils';
 import { useTranslation } from 'react-i18next';
 import { isNil, toNumber, isEmpty } from 'lodash';
 import { getLineStringDistance, DISTANCE_ERROR_RANGE } from './data';

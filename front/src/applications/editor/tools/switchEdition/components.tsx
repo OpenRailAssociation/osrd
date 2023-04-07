@@ -1,11 +1,11 @@
 import React, { FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { FieldProps } from '@rjsf/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Select from 'react-select';
 import { first, last, keyBy } from 'lodash';
 import { FaTimesCircle, FaMapMarkedAlt } from 'react-icons/fa';
-import SchemaField from '@rjsf/core/lib/components/fields/SchemaField';
+import { FieldProps } from '@rjsf/utils';
+import { getDefaultRegistry } from '@rjsf/core';
 import { Layer, Popup, Source } from 'react-map-gl';
 import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';
@@ -169,8 +169,10 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
 };
 
 export const CustomSchemaField: FC<FieldProps> = (props) => {
+  const registery = getDefaultRegistry();
   const { name = '' } = props;
-  if (name.indexOf(FLAT_SWITCH_PORTS_PREFIX) !== 0) return <SchemaField {...props} />;
+  if (name.indexOf(FLAT_SWITCH_PORTS_PREFIX) !== 0)
+    return <registery.fields.SchemaField {...props} />;
 
   return <TrackSectionEndpointSelector {...props} />;
 };

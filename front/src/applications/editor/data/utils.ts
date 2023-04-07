@@ -1,9 +1,11 @@
 import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
-import { isArray, isNil, isObject, uniq } from 'lodash';
+import { isArray, isNil, isObject, uniq, defaultTo, isEqual, mapValues, pickBy } from 'lodash';
 import bearing from '@turf/bearing';
 import { compare } from 'fast-json-patch';
 import { v4 as uuid } from 'uuid';
+import { TFunction } from 'i18next';
+import { RJSFSchema } from '@rjsf/utils';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 import {
@@ -189,4 +191,71 @@ export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
     objType: type,
     geometry: entity.geographic,
   } as T;
+}
+
+const getTypeScope = (scope: string, typeName: string) => `${scope}.types.${typeName}`;
+const getPropScope = (scope: string, propName: string) => `${scope}.fields.${propName}`;
+const translateIfExist = (i18n: TFunction, key: string, defaultValue?: string) => {
+  const value = i18n(key);
+  if (value !== key && !isObject(value)) return value;
+  if (import.meta.env.DEV) console.debug(`Missing i18n key ${key}`);
+  return defaultValue;
+};
+export function localizedJsonSchema(
+  schema: RJSFSchema,
+  i18n: TFunction,
+  scope: string
+): RJSFSchema {
+  const newSchema: RJSFSchema = {
+    ...schema,
+    ...pickBy({
+      title: translateIfExist(i18n, `${scope}.title`, schema.name),
+      description: translateIfExist(i18n, `${scope}.description`, schema.description),
+      help: translateIfExist(i18n, `${scope}.help`, schema.help),
+    }),
+  };
+
+  if (schema.definitions) {
+    newSchema.definitions = mapValues(schema.definitions, (typeSchema, typeName) =>
+      localizedJsonSchema(typeSchema as JSONSchema7, i18n, getTypeScope(scope, typeName))
+    );
+  }
+
+  if (schema.type === 'object') {
+    newSchema.properties = mapValues(schema.properties, (propSchema, propName) =>
+      localizedJsonSchema(propSchema as JSONSchema7, i18n, getPropScope(scope, propName))
+    );
+  }
+
+  if (schema.enum && (!schema.enumNames || isEqual(schema.enum, schema.enumNames))) {
+    newSchema.enumNames = schema.enum.map((option) =>
+      defaultTo(
+        translateIfExist(i18n, `${scope}.options.${option}`),
+        option ? `${option}` : undefined
+      )
+    );
+  }
+
+  if (schema.items && schema.type === 'array') {
+    if ((schema.items as RJSFSchema).enum && !(schema.items as RJSFSchema).enumNames) {
+      newSchema.items = {
+        ...(newSchema.items as RJSFSchema),
+        enumNames: (schema.items as RJSFSchema).enum?.map((option) =>
+          translateIfExist(i18n, `${scope}.options.${option}`, option ? `${option}` : undefined)
+        ),
+      } as RJSFSchema;
+    } else if (
+      (schema.items as RJSFSchema).properties &&
+      (schema.items as RJSFSchema).type === 'object'
+    ) {
+      newSchema.items = {
+        ...(newSchema.items as RJSFSchema),
+        properties: mapValues((schema.items as RJSFSchema).properties, (propSchema, propName) =>
+          localizedJsonSchema(propSchema as RJSFSchema, i18n, getPropScope(scope, propName))
+        ),
+      };
+    }
+  }
+
+  return newSchema;
 }
