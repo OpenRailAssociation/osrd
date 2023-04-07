@@ -169,7 +169,7 @@ public class STDCMEdgeBuilder {
             return Set.of();
         return Set.of(Math.min(
                 prevMaximumAddedDelay,
-                graph.delayManager.findMaximumAddedDelay(
+                lastOpeningDelay + graph.delayManager.findMaximumAddedDelay(
                         route,
                         startTime + lastOpeningDelay,
                         startOffset,
