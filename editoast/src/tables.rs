@@ -282,7 +282,7 @@ table! {
         loading_gauge -> Text,
         metadata -> Jsonb,
         power_restrictions -> Nullable<Jsonb>,
-        energy_sources -> Jsonb,
+        energy_sources -> Array<Jsonb>,
     }
 }
 

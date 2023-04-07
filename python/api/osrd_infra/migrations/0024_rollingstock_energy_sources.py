@@ -8,9 +8,8 @@ import osrd_infra.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ("osrd_infra", "0022_alter_study_actual_end_date_and_more"),
+        ("osrd_infra", "0023_alter_rollingstocklivery_compound_image_and_more"),
     ]
 
     operations = [

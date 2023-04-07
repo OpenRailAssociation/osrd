@@ -5,7 +5,7 @@ use crate::models::{
 };
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
-    EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
+    EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
 use crate::DbPool;
@@ -78,6 +78,7 @@ pub struct RollingStockForm {
     pub loading_gauge: String,
     pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<geos::geojson::JsonValue>,
+    pub energy_sources: Vec<DieselJson<EnergySource>>,
 }
 
 impl From<RollingStockForm> for RollingStockModel {
@@ -100,6 +101,7 @@ impl From<RollingStockForm> for RollingStockModel {
             loading_gauge: Some(rolling_stock.loading_gauge),
             metadata: Some(DieselJson(rolling_stock.metadata)),
             power_restrictions: Some(rolling_stock.power_restrictions),
+            energy_sources: Some(rolling_stock.energy_sources),
             ..Default::default()
         }
     }

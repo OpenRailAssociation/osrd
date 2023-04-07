@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 
-use super::{Gamma, RollingResistance, RollingStockMetadata};
+use super::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
 
 #[derive(Debug, QueryableByName, Deserialize, Serialize)]
 pub struct LightRollingStock {
@@ -46,6 +46,8 @@ pub struct LightRollingStock {
     pub metadata: DieselJson<RollingStockMetadata>,
     #[diesel(sql_type = Nullable<Jsonb>)]
     pub power_restrictions: Option<JsonValue>,
+    #[diesel(sql_type = Array<Jsonb>)]
+    pub energy_sources: Vec<DieselJson<EnergySource>>,
 }
 
 #[derive(Debug, QueryableByName, Serialize)]

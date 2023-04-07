@@ -86,5 +86,6 @@
         "series": "",
         "subseries": "",
         "unit": ""
-    }
+    },
+    "energy_sources": []
 }

@@ -27,7 +27,7 @@ pub struct RollingStock {
     pub loading_gauge: String,
     pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<JsonValue>,
-    pub energy_source: Vec<EnergySource>,
+    pub energy_sources: Vec<EnergySource>,
 }
 
 #[derive(Debug, Serialize)]
@@ -172,11 +172,11 @@ pub struct SpeedDependantPower {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "UPPERCASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EnergySourceType {
-    CATENARY,
-    POWER_PACK,
-    BATTERY,
+    Catenary,
+    PowerPack,
+    Battery,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
