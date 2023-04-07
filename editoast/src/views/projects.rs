@@ -109,7 +109,7 @@ async fn create(
     let project = project.create(db_pool).await?;
     let project_with_studies = ProjectWithStudies {
         project,
-        studies: vec![],
+        studies_count: 0,
     };
 
     Ok(Json(project_with_studies))
