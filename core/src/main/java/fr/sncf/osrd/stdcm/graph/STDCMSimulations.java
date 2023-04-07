@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
@@ -69,7 +70,7 @@ public class STDCMSimulations {
             Double stopPosition,
             String tag
     ) {
-        if (stopPosition != null && stopPosition == 0)
+        if (stopPosition != null && Math.abs(stopPosition) < POSITION_EPSILON)
             return makeSinglePointEnvelope(0);
         if (start >= route.getInfraRoute().getLength())
             return makeSinglePointEnvelope(initialSpeed);
