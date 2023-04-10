@@ -310,6 +310,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "approx"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cab112f0a86d568ea0e627cc1d6be74a1e9cd55214684db5561995f6dad897c6"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "arc-swap"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1367,22 +1376,34 @@ dependencies = [
 ]
 
 [[package]]
-name = "geojson"
-version = "0.22.4"
+name = "geo-types"
+version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05d90d17275f3d3d1c6e64d2703e2667f875e2bb80437e4675537f87fec0f07c"
+checksum = "a5f0b3068e1537a4b861ec3734f4aa9c317d537cf0845bf6fb6221973499d26c"
 dependencies = [
+ "approx",
+ "num-traits",
  "serde",
- "serde_derive",
+]
+
+[[package]]
+name = "geojson"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff2cc39a555a57b2a5514e223d76e23779f853840cc3c67767f77f58dc2272b7"
+dependencies = [
+ "geo-types",
+ "log",
+ "serde",
  "serde_json",
  "thiserror",
 ]
 
 [[package]]
 name = "geos"
-version = "8.1.0"
+version = "8.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2faf51d32b09edaf404d9a6eb6b4e7a777d6f6002c9f84bc8f7d5d124c57d80"
+checksum = "0483f74dbd9e8bf8d076e4c7bfe9298b5b14bc30fb07306d1f890f7b45c8143c"
 dependencies = [
  "c_vec",
  "geojson",
@@ -1393,12 +1414,13 @@ dependencies = [
 
 [[package]]
 name = "geos-sys"
-version = "2.0.4"
+version = "2.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ece257289a8aa90a1016447b870e4df1d389f6ff21b411cc7f046944370db3e"
+checksum = "d2d813c12b0d614852eca1e6381cdeab09d34c31113442219f6ea7c0cafb3859"
 dependencies = [
  "libc",
  "pkg-config",
+ "semver",
 ]
 
 [[package]]
@@ -1795,6 +1817,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3304a64d199bb964be99741b7a14d26972741915b3649639149b2479bb46f4b5"
 
 [[package]]
+name = "libm"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "348108ab3fba42ec82ff6e9564fc4ca0247bdccdc68dd8af9764bbc79c3c8ffb"
+
+[[package]]
 name = "link-cplusplus"
 version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2015,6 +2043,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
 dependencies = [
  "autocfg",
+ "libm",
 ]
 
 [[package]]
