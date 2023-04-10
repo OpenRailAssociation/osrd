@@ -45,21 +45,6 @@ pub enum ProjectError {
     ImageError(ImageError),
 }
 
-/// Expand a project with its image url
-#[derive(Serialize, Debug, Clone)]
-struct ProjectWithImageUrl {
-    image_url: Option<String>,
-    #[serde(flatten)]
-    project: ProjectWithStudies,
-}
-
-impl From<ProjectWithStudies> for ProjectWithImageUrl {
-    fn from(project: ProjectWithStudies) -> Self {
-        let image_url = project.project.image.unwrap().map(Document::get_url);
-        ProjectWithImageUrl { project, image_url }
-    }
-}
-
 #[derive(Debug, Clone, Deserialize)]
 pub struct QueryParams {
     #[serde(default = "Ordering::default")]
@@ -116,7 +101,7 @@ async fn check_image_content(db_pool: Data<DbPool>, document_key: i64) -> Result
 async fn create(
     db_pool: Data<DbPool>,
     data: Json<ProjectCreateForm>,
-) -> Result<Json<ProjectWithImageUrl>> {
+) -> Result<Json<ProjectWithStudies>> {
     let project: Project = data.into_inner().into();
     if let Some(Some(image)) = project.image {
         check_image_content(db_pool.clone(), image).await?;
@@ -127,7 +112,7 @@ async fn create(
         studies: vec![],
     };
 
-    Ok(Json(project_with_studies.into()))
+    Ok(Json(project_with_studies))
 }
 
 /// Return a list of projects
@@ -136,25 +121,25 @@ async fn list(
     db_pool: Data<DbPool>,
     pagination_params: Query<PaginationQueryParam>,
     params: Query<QueryParams>,
-) -> Result<Json<PaginatedResponse<ProjectWithImageUrl>>> {
+) -> Result<Json<PaginatedResponse<ProjectWithStudies>>> {
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
     let ordering = params.ordering.clone();
     let projects = ProjectWithStudies::list(db_pool, page, per_page, ordering).await?;
 
-    Ok(Json(projects.into()))
+    Ok(Json(projects))
 }
 
 /// Return a specific project
 #[get("")]
-async fn get(db_pool: Data<DbPool>, project: Path<i64>) -> Result<Json<ProjectWithImageUrl>> {
+async fn get(db_pool: Data<DbPool>, project: Path<i64>) -> Result<Json<ProjectWithStudies>> {
     let project_id = project.into_inner();
     let project = match Project::retrieve(db_pool.clone(), project_id).await? {
         Some(project) => project,
         None => return Err(ProjectError::NotFound { project_id }.into()),
     };
     let project_studies = project.with_studies(db_pool).await?;
-    Ok(Json(project_studies.into()))
+    Ok(Json(project_studies))
 }
 
 /// Delete a project
@@ -201,7 +186,7 @@ async fn patch(
     data: Json<ProjectPatchForm>,
     project: Path<i64>,
     db_pool: Data<DbPool>,
-) -> Result<Json<ProjectWithImageUrl>> {
+) -> Result<Json<ProjectWithStudies>> {
     let data = data.into_inner();
     let project_id = project.into_inner();
     let project = data.into_project(project_id);
@@ -213,7 +198,7 @@ async fn patch(
         None => return Err(ProjectError::NotFound { project_id }.into()),
     };
     let project_studies = project.with_studies(db_pool).await?;
-    Ok(Json(project_studies.into()))
+    Ok(Json(project_studies))
 }
 
 #[cfg(test)]

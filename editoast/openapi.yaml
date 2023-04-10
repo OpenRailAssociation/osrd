@@ -2436,10 +2436,6 @@ components:
         image:
           type: integer
           description: the image id
-        image_url:
-          type: string
-          description: the image url
-          example: http://localhost:8090/documents/20/
         creation_date:
           type: string
           format: date-time

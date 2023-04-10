@@ -1130,7 +1130,6 @@ export type ProjectResult = {
   funders?: string;
   budget?: number;
   image?: number;
-  image_url?: string;
   creation_date?: string;
   last_modification?: string;
   studies?: number[];
