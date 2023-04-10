@@ -1,4 +1,3 @@
-use crate::client::get_root_url;
 use crate::error::Result;
 use crate::models::{Create, Delete, Document, Retrieve};
 use crate::DbPool;
@@ -64,24 +63,6 @@ async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpRe
     Ok(HttpResponse::build(StatusCode::NO_CONTENT).body(""))
 }
 
-impl Document {
-    /// Return the URL to retrieve the document
-    ///
-    /// ```
-    /// let doc_key = 42;
-    /// let url = Document::get_url(doc_key);
-    /// assert_eq!(url, "http://localhost:8090/documents/42".to_string())
-    /// ```
-    pub fn get_url(key: i64) -> String {
-        let root_url = get_root_url();
-        if root_url.ends_with('/') {
-            format!("{}documents/{}", root_url, key)
-        } else {
-            format!("{}/documents/{}", root_url, key)
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use actix_web::http::header::ContentType;
@@ -138,10 +119,6 @@ mod tests {
             .await
             .unwrap();
         let key = doc.id.unwrap();
-
-        // Testing get_url
-        let url_ref = format!("http://localhost:8090/documents/{key}");
-        assert_eq!(Document::get_url(key), url_ref);
 
         // Delete doc
         assert!(Document::delete(pool.clone(), key).await.unwrap());
