@@ -7,13 +7,14 @@ import Vias from './Vias';
 import Destination from './Destination';
 
 interface DisplayItineraryProps {
+  mustUpdate?: boolean;
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
   viaModalContent: JSX.Element;
 }
 
 export default function DisplayItinerary(props: DisplayItineraryProps) {
-  const { zoomToFeaturePoint, zoomToFeature, viaModalContent } = props;
+  const { mustUpdate, zoomToFeaturePoint, zoomToFeature, viaModalContent } = props;
 
   return (
     <>
@@ -25,7 +26,7 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
       />
       <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
 
-      <Pathfinding zoomToFeature={zoomToFeature} />
+      <Pathfinding mustUpdate={mustUpdate} zoomToFeature={zoomToFeature} />
     </>
   );
 }
