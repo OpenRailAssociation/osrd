@@ -108,7 +108,7 @@ struct LightElectricalProfileSet {
 }
 
 impl ElectricalProfileSet {
-    fn retrieve(conn: &mut PgConnection, ep_set_id: i64) -> Result<ElectricalProfileSet> {
+    pub fn retrieve(conn: &mut PgConnection, ep_set_id: i64) -> Result<ElectricalProfileSet> {
         use crate::tables::osrd_infra_electricalprofileset::dsl::*;
         match osrd_infra_electricalprofileset.find(ep_set_id).first(conn) {
             Ok(ep_set) => Ok(ep_set),

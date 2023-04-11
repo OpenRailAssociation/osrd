@@ -35,7 +35,8 @@ pub fn routes() -> impl HttpServiceFactory {
         timetable::routes(),
         rolling_stocks::routes(),
         light_rolling_stocks::routes(),
-        pathfinding::routes()
+        pathfinding::routes(),
+        train_schedule::routes(),
     ]
 }
 
