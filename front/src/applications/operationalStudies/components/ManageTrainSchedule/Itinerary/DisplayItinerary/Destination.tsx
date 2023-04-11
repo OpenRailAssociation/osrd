@@ -24,7 +24,7 @@ import { store } from 'Store';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 interface DestinationProps {
-  zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
 }
 
 function Destination(props: DestinationProps) {
@@ -48,15 +48,13 @@ function Destination(props: DestinationProps) {
       {destination !== undefined ? (
         <div className="pl-1 hover w-100 d-flex align-items-center">
           <div
-            onClick={() =>
-              zoomToFeaturePoint(destination?.coordinates, destination?.id, destination?.source)
-            }
+            onClick={() => zoomToFeaturePoint(destination?.coordinates, destination?.id)}
             role="button"
             tabIndex={0}
             className="flex-grow-1"
           >
             <strong className="mr-1 text-nowrap">
-              {destination.name ? destination.name : destination.id.split('-')[0]}
+              {destination.name ? destination.name : destination.id?.split('-')[0]}
             </strong>
           </div>
 

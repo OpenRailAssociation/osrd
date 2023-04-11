@@ -19,5 +19,5 @@ export default function setPointIti(point, data) {
       store.dispatch(updateVias(data));
   }
   store.dispatch(updateFeatureInfoClickOSRD({ displayPopup: false }));
-  store.dispatch(updateFeatureInfoClick(undefined, undefined));
+  store.dispatch(updateFeatureInfoClick(undefined));
 }

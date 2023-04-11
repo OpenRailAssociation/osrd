@@ -7,7 +7,7 @@ import Vias from './Vias';
 import Destination from './Destination';
 
 interface DisplayItineraryProps {
-  zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
   viaModalContent: JSX.Element;
 }

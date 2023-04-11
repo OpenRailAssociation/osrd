@@ -19,7 +19,7 @@ function Itinerary() {
   const dispatch = useDispatch();
   const map = useSelector(getMap);
 
-  const zoomToFeature = (boundingBox: Position, id = undefined, source = undefined) => {
+  const zoomToFeature = (boundingBox: Position, id = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
 
     const viewport = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
@@ -40,12 +40,10 @@ function Itinerary() {
       zoom,
     };
     setExtViewport(newViewport);
-    if (id !== undefined && source !== undefined) {
-      updateFeatureInfoClick(Number(id), source);
-    }
+    if (id !== undefined) updateFeatureInfoClick(Number(id));
   };
 
-  const zoomToFeaturePoint = (lngLat?: Position, id?: string, source?: string) => {
+  const zoomToFeaturePoint = (lngLat?: Position, id?: string) => {
     if (lngLat) {
       const newViewport = {
         ...map.viewport,
@@ -54,8 +52,8 @@ function Itinerary() {
         zoom: 16,
       };
       setExtViewport(newViewport);
-      if (id !== undefined && source !== undefined) {
-        updateFeatureInfoClick(Number(id), source);
+      if (id !== undefined) {
+        updateFeatureInfoClick(Number(id));
       }
     }
   };
