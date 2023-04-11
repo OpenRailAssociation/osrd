@@ -287,12 +287,11 @@ export function updateFeatureInfoHover(featureInfoHoverID: unknown, featureSourc
   };
 }
 
-export function updateFeatureInfoClick(featureInfoClickID: unknown, featureSource: unknown) {
+export function updateFeatureInfoClick(featureInfoClickID: unknown) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK,
       featureInfoClickID,
-      featureSource,
     });
   };
 }

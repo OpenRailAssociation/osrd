@@ -30,7 +30,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 interface OriginProps {
-  zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
 }
 
 function Origin(props: OriginProps) {
@@ -52,13 +52,13 @@ function Origin(props: OriginProps) {
   const originPointName = (
     <div
       onClick={() => {
-        zoomToFeaturePoint(origin?.coordinates, origin?.id, origin?.source);
+        zoomToFeaturePoint(origin?.coordinates, origin?.id);
       }}
       role="button"
       tabIndex={0}
     >
       <strong className="mr-1 text-nowrap">
-        {origin?.name ? origin?.name : origin?.id.split('-')[0]}
+        {origin?.name ? origin?.name : origin?.id?.split('-')[0]}
       </strong>
     </div>
   );
