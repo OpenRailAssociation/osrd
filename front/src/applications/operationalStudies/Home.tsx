@@ -3,16 +3,13 @@ import { useDispatch } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
 import ProjectCardEmpty from 'applications/operationalStudies/components/Home/ProjectCardEmpty';
-import { PROJECTS_URI } from 'applications/operationalStudies/components/operationalStudiesConsts';
 import { MODES } from 'applications/operationalStudies/consts';
 import osrdLogo from 'assets/pictures/osrd.png';
 import logo from 'assets/pictures/views/projects.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import Loader from 'common/Loader';
-import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
 import { updateMode } from 'reducers/osrdconf';
 import { PostSearchApiArg, ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
@@ -31,11 +28,11 @@ function displayCards(
   return projectsList ? (
     <div className="projects-list">
       <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
+        <div className="col-lg-3 col-md-4 col-sm-6">
           <ProjectCardEmpty />
         </div>
         {projectsList.map((project) => (
-          <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
+          <div className="col-lg-3 col-md-4 col-sm-6" key={`home-projectsList-${project.id}`}>
             <ProjectCard project={project} setFilterChips={setFilterChips} />
           </div>
         ))}
@@ -79,7 +76,23 @@ export default function Home() {
       };
       try {
         const data: ProjectResult[] = await postSearch(payload).unwrap();
-        setProjectsList(data);
+        let filteredData = [...data];
+        if (sortOption === 'LastModifiedDesc') {
+          filteredData = filteredData.sort((a, b) => {
+            if (a.last_modification && b.last_modification) {
+              return b.last_modification.localeCompare(a.last_modification);
+            }
+            return 0;
+          });
+        } else if (sortOption === 'NameAsc') {
+          filteredData = filteredData.sort((a, b) => {
+            if (a.name && b.name) {
+              return a.name.localeCompare(b.name);
+            }
+            return 0;
+          });
+        }
+        setProjectsList(filteredData);
       } catch (error) {
         console.error('filter projetcs error : ', error);
       }

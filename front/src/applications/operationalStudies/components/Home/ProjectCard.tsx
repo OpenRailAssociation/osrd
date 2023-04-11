@@ -68,7 +68,7 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
           <span className="mr-1">
             <RiFoldersLine />
           </span>
-          {t('studiesCount', { count: project.studies })}
+          {t('studiesCount', { count: project.studies_count })}
         </div>
       </div>
       <div className="projects-list-project-card-name">{project.name}</div>
