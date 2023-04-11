@@ -65,6 +65,7 @@ export default async function getTimetable(timetableID) {
     } else {
       store.dispatch(updateSimulation({ trains: [] }));
       store.dispatch(updateIsUpdating(false));
+      store.dispatch(updateSelectedProjection(undefined));
     }
   } catch (e) {
     store.dispatch(

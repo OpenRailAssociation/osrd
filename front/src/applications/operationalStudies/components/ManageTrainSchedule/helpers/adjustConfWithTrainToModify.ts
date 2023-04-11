@@ -10,28 +10,25 @@ import {
   updateItinerary,
   updateOrigin,
   updateDestination,
+  replaceVias,
 } from 'reducers/osrdconf';
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
 import { store } from 'Store';
 import { Path, TrainSchedule } from 'common/api/osrdMiddlewareApi';
+import { ArrayElement } from 'utils/types';
 
-// Râle pas Mathieu c'est temporaire !
-function convertStep2PointOnMap(step: any) {
-  return {
-    ...step,
-    id: step.track,
-    extension_sncf_line_code: '',
-    extension_sncf_line_name: '',
-    extension_sncf_track_name: '',
-    extension_sncf_track_number: '',
-    loading_gauge_limits: '',
-    source: 'geo',
-    coordinates: step.geo.coordinates,
-  };
+function convertStep2PointOnMap(step?: ArrayElement<Path['steps']>) {
+  return step
+    ? {
+        ...step,
+        id: step.track,
+        coordinates: step.geo?.coordinates,
+      }
+    : undefined;
 }
 
-export default function ajustConf2TrainToModify(
+export default function adjustConfWithTrainToModify(
   trainSchedule: TrainSchedule,
   path: Path,
   dispatch: Dispatch
@@ -52,10 +49,20 @@ export default function ajustConf2TrainToModify(
     dispatch(updateDepartureTime(sec2time(trainSchedule.departure_time)));
   dispatch(updateInitialSpeed(trainSchedule.initial_speed || 0));
 
-  dispatch(updatePathfindingID(trainSchedule.path));
-  dispatch(updateItinerary(path));
-  if (path.steps) {
+  if (path.steps && path.steps.length > 1) {
+    dispatch(updatePathfindingID(trainSchedule.path));
+    dispatch(updateItinerary(path));
     dispatch(updateOrigin(convertStep2PointOnMap(path.steps[0])));
     dispatch(updateDestination(convertStep2PointOnMap(path.steps.at(-1))));
+    if (path.steps.length > 2) {
+      const vias = path.steps
+        .filter(
+          (via, idx) => idx !== 0 && path.steps && idx < path.steps.length - 1 && !via.suggestion
+        )
+        .map((via) => convertStep2PointOnMap(via));
+      dispatch(replaceVias(vias));
+    } else {
+      dispatch(replaceVias(undefined));
+    }
   }
 }
