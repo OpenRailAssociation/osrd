@@ -9,7 +9,7 @@ import { post } from 'common/requests';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
 import { Dispatch } from 'redux';
 
-const submitConf = async (
+const submitConfAddTrainSchedules = async (
   dispatch: Dispatch,
   t: (key: string) => string,
   setIsWorking: (isWorking: boolean) => void
@@ -70,4 +70,4 @@ const submitConf = async (
   }
 };
 
-export default submitConf;
+export default submitConfAddTrainSchedules;
