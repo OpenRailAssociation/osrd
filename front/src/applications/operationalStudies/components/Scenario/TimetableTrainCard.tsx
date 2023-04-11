@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
@@ -11,7 +11,7 @@ import cx from 'classnames';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
-import { get } from 'common/requests';
+import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 
 type Props = {
   train: ScheduledTrain;
@@ -38,9 +38,9 @@ function TimetableTrainCard({
   setDisplayTrainScheduleManagement,
   setTrainScheduleIDsToModify,
 }: Props) {
-  const [imageUrl, setImageUrl] = useState<string>();
   const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
-  const [getRollingStock] = osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
+  const [getRollingStock, { data: rollingStock }] =
+    osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
   const { t } = useTranslation(['operationalStudies/scenario']);
 
   const editTrainSchedule = () => {
@@ -48,28 +48,12 @@ function TimetableTrainCard({
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 
-  const getLivery = async (id?: number, liveryId?: number) => {
-    if (id && liveryId) {
-      const image = await get(`/editoast/rolling_stock/${id}/livery/${liveryId}/`, {
-        responseType: 'blob',
-      });
-      if (image) setImageUrl(URL.createObjectURL(image));
-    }
-  };
-
   useEffect(() => {
     if (train.id) {
       getTrainSchedule({ id: train.id })
         .unwrap()
         .then((trainSchedule) => {
-          if (trainSchedule.rolling_stock)
-            getRollingStock({ id: trainSchedule.rolling_stock })
-              .unwrap()
-              .then((rollingStockData) => {
-                if (rollingStockData.liveries) {
-                  getLivery(rollingStockData.id, rollingStockData.liveries[0].id);
-                }
-              });
+          if (trainSchedule.rolling_stock) getRollingStock({ id: trainSchedule.rolling_stock });
         });
     }
   }, [train.id]);
@@ -90,9 +74,9 @@ function TimetableTrainCard({
               {idx + 1}
             </div>
             {train.name}
-            {imageUrl && (
+            {rollingStock && (
               <span className="img-container">
-                <img src={imageUrl} alt="rollingstock livery" />
+                <RollingStock2Img rollingStock={rollingStock} />
               </span>
             )}
           </div>
