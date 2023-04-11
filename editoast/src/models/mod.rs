@@ -26,7 +26,10 @@ pub use rolling_stock::{
 pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules};
-pub use train_schedule::TrainSchedule;
+pub use train_schedule::{
+    ResultPosition, ResultSpeed, ResultStops, ResultTrain, SignalSighting, SimulationOutput,
+    SimulationOutputChangeset, TrainSchedule, TrainScheduleChangeset, ZoneUpdate,
+};
 
 pub trait Identifiable {
     fn get_id(&self) -> i64;

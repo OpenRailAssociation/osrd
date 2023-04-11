@@ -229,6 +229,22 @@ impl DirectionalTrackRange {
             Direction::StopToStart => self.end,
         }
     }
+
+    pub fn get_begin(&self) -> f64 {
+        if self.direction == Direction::StartToStop {
+            self.begin
+        } else {
+            self.end
+        }
+    }
+
+    pub fn get_end(&self) -> f64 {
+        if self.direction == Direction::StartToStop {
+            self.end
+        } else {
+            self.begin
+        }
+    }
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]

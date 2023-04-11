@@ -4,6 +4,7 @@ pub mod infra_state;
 #[cfg(test)]
 pub mod mocking;
 pub mod pathfinding;
+pub mod simulation;
 
 use std::marker::PhantomData;
 

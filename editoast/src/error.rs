@@ -128,3 +128,13 @@ impl EditoastError for r2d2::Error {
         "editoast:R2d2Error"
     }
 }
+
+impl EditoastError for reqwest::Error {
+    fn get_status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn get_type(&self) -> &'static str {
+        "editoast:ReqwestError"
+    }
+}
