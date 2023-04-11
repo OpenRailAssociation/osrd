@@ -93,9 +93,9 @@ study:
       id: study.id
       project_id: study.project_id
       name: study.name
-      start_date_study: study.start_date_study
-      expected_end_date_study: study.expected_end_date_study
-      actual_end_date_study: study.actual_end_date_study
+      start_date_study: study.start_date
+      expected_end_date_study: study.expected_end_date
+      actual_end_date_study: study.actual_end_date
       state: study.state
       study_type: study.study_type
       scenarios_count: (SELECT COUNT(scenario.id) FROM osrd_infra_scenario AS scenario WHERE osrd_search_study.id = scenario.study_id)
