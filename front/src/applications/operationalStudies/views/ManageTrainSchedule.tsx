@@ -9,13 +9,14 @@ import Map from 'applications/operationalStudies/components/ManageTrainSchedule/
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
-import submitConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConf';
+import submitConfAddTrainSchedules from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConfAddTrainSchedules';
 import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
+import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
 
 type Props = {
   setDisplayTrainScheduleManagement: (arg0: string) => void;
@@ -34,7 +35,19 @@ export default function ManageTrainSchedule({
 
   function confirmButton() {
     return trainScheduleIDsToModify ? (
-      <button className="btn btn-warning" type="button">
+      <button
+        className="btn btn-warning"
+        type="button"
+        onClick={() =>
+          submitConfUpdateTrainSchedules(
+            dispatch,
+            t,
+            setIsWorking,
+            trainScheduleIDsToModify,
+            setDisplayTrainScheduleManagement
+          )
+        }
+      >
         <span className="mr-2">
           <FaPen />
         </span>
@@ -44,7 +57,7 @@ export default function ManageTrainSchedule({
       <button
         className="btn btn-primary"
         type="button"
-        onClick={() => submitConf(dispatch, t, setIsWorking)}
+        onClick={() => submitConfAddTrainSchedules(dispatch, t, setIsWorking)}
       >
         <span className="mr-2">
           <FaPlus />
