@@ -157,6 +157,7 @@ export default function Scenario() {
                 )}
                 {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
                   <TimetableManageTrainSchedule
+                    displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   />
                 )}
