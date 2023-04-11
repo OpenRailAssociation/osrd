@@ -92,6 +92,9 @@ jobs:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Install lib posgresql & geos
+        run: sudo apt-get install -y libpq-dev libgeos-dev
+
       - name: Setup toolchain
         uses: actions-rs/toolchain@v1
         with:
