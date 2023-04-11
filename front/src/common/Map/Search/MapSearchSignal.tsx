@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import nextId from 'react-id-generator';
@@ -35,6 +35,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
   const [aspects, setAspects] = useState<string[]>([]);
   const [searchResults, setSearchResults] = useState<SearchSignalResult[]>([]);
   const [autocompleteLineNames, setAutocompleteLineNames] = useState<string[]>([]);
+  const [searchSignalWidth, setSearchSignalWidth] = useState<number>(0);
 
   // Sort by, and order true = ASC, false = DESC
   const [sortFilter, setSortFilter] = useState<SortType>({
@@ -148,10 +149,17 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
     setSortFilter({ name, asc: name === sortFilter.name ? !sortFilter.asc : false });
   };
 
+  const divRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (divRef.current) setSearchSignalWidth(divRef.current.offsetWidth);
+  }, [divRef.current?.offsetWidth]);
+
+  const classLargeCol = searchSignalWidth > 768 ? 'col-lg-4' : '';
+
   return (
     <>
-      <div className="row mr-2 mb-2 search-signal">
-        <div className="col-md-6">
+      <div className="row mb-2 search-signal" ref={divRef}>
+        <div className={`${classLargeCol} col-md-6 mb-2`}>
           <InputSNCF
             label={t('map-search:line')}
             type="text"
@@ -178,7 +186,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
               ))}
           </datalist>
         </div>
-        <div className="col-md-6 mb-2">
+        <div className={`${classLargeCol} col-md-6 mb-2`}>
           <InputSNCF
             label={t('map-search:signal')}
             type="text"
@@ -206,7 +214,7 @@ const MapSearchSignal = ({ updateExtViewport }: MapSearchSignalProps) => {
               ))}
           </datalist>
         </div>
-        <div className="col-md-6">
+        <div className={`${classLargeCol} ${searchSignalWidth < 470 ? 'col-md-12' : 'col-md-6'}`}>
           <MultiSelectSNCF
             multiSelectTitle={t('map-search:aspects')}
             multiSelectPlaceholder={t('map-search:noAspectSelected')}
