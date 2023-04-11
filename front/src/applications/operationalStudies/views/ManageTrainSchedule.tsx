@@ -107,7 +107,8 @@ export default function ManageTrainSchedule({
             type="button"
             onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
           >
-            {t('cancelAddTrainSchedule')}
+            <i className="icons-arrow-prev mr-2" />
+            {t('returnToSimulationResults')}
           </button>
           {isWorking ? (
             <button className="btn btn-primary disabled" type="button">
