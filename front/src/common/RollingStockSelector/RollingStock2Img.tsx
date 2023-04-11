@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { RollingStock } from 'common/api/osrdEditoastApi';
+import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
 
-const RollingStock2Img: React.FC<{ rollingStock: RollingStock }> = ({ rollingStock }) => {
+const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStock }> = ({
+  rollingStock,
+}) => {
   // as the image is stored in the database and can be fetched only through api (authentication needed),
   // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
   // url is generated and stored in imageUrl (then used in <img />).
