@@ -89,7 +89,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
           <span className="mr-1">
             <RiFolderChartLine />
           </span>
-          {t('scenariosCount', { count: study.scenarios?.length })}
+          {t('scenariosCount', { count: study.scenarios_count })}
         </div>
         <div className="studies-list-card-date">
           <span className="mr-1">
