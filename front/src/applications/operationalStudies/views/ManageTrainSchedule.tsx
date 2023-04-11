@@ -30,6 +30,9 @@ export default function ManageTrainSchedule({
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
+  const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState(
+    !(trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
+  );
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
 
@@ -101,7 +104,7 @@ export default function ManageTrainSchedule({
 
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
-          <Itinerary />
+          <Itinerary mustUpdate={mustUpdatePathfinding} />
         </div>
         <div className="col-xl-6">
           <div className="osrd-config-item mb-2">
