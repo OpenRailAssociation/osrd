@@ -56,7 +56,7 @@ export const RouteEditionLayers: FC = () => {
 };
 
 export const RouteMessages: FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
   if (state.type === 'editRoutePath') {

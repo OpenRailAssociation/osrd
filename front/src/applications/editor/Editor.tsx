@@ -28,7 +28,7 @@ import TOOLS from './tools/list';
 import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
 
 const Editor: FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();

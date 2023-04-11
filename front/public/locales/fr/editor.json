@@ -1,0 +1,329 @@
+{
+  "Editor": {
+    "entities": {
+      "track_section": "Track section",
+      "track_section-length": "Taille"
+    },
+    "errors": {
+      "infra-not-found": "L'infrastructure {{id}} non trouvée",
+      "length-number-and-required": "La distance est un champs numérique requis",
+      "length-out-of-sync-with-geometry": "La distance renseignée est trop éloignée de celle de la géométrie (Doit être compris entre {{min}} et {{max}})",
+      "no-infra-available": "Votre compte n'est lié à aucune infrastructure",
+      "technical": "Une erreur technique est survenue : {{msg}}"
+    },
+    "infra-errors": {
+      "error-level": {
+        "all": "Tout",
+        "errors": "Erreurs",
+        "warnings": "Avertissements"
+      },
+      "error-type": {
+        "all": "Tout",
+        "duplicated_group": "Duplication de groupe",
+        "empty_object": "Object vide",
+        "empty_path": "Chemin vide",
+        "invalid_reference": "Référence invalide",
+        "invalid_switch_ports": "invalid_switch_ports",
+        "missing_route": "Route manquante",
+        "no_buffer_stop": "no_buffer_stop",
+        "object_out_of_path": "object_out_of_path",
+        "out_of_range": "Valeur invalide (hors intervalle)",
+        "overlapping_switches": "overlapping_switches",
+        "overlapping_track_links": "overlapping_track_links",
+        "path_does_not_match_endpoints": "path_does_not_match_endpoints",
+        "path_is_not_continuous": "Chemin non continu",
+        "unknown_port_name": "Nom de port inconnu",
+        "unused_port": "Port non utilisé"
+      },
+      "list": {
+        "error": "Une erreur est survenue lors du chargement des données",
+        "filter-level": "Niveau d'erreur",
+        "filter-type": "Type d'erreur",
+        "total-error": "{{count}} erreurs trouvées",
+        "total-error_one": "Une erreur trouvée",
+        "total-error_zero": "Aucune erreur trouvée"
+      },
+      "modal": {
+        "title": "Liste des erreurs de l'infrastructure {{id}}"
+      }
+    },
+    "item-statuses": {
+      "edited": "en cours d'édition",
+      "selected": "sélectionné"
+    },
+    "layers": {
+      "buffer_stops": "Heurtoirs",
+      "detectors": "Détecteurs",
+      "errors": "Erreurs",
+      "routes": "Itinéraires",
+      "signals": "Signaux",
+      "switches": "Aiguillages",
+      "track_sections": "Sections de lignes"
+    },
+    "layers-modal": {
+      "frozen-layer": "nécessaire pour l'outil actif",
+      "layer-selected-items_one": "Un élément sélectionné",
+      "layer-selected-items_other": "{{count}} éléments sélectionnés",
+      "selection-warning_one": "Un élément sera désélectionné lors de la confirmation.",
+      "selection-warning_other": "{{count}} éléments seront désélectionnés lors de la confirmation."
+    },
+    "linear-metadata": {
+      "help": "Ce composant vous permet de visualiser et modifier un habillage linéaire. Vous pouvez zoomer dans la visualisation via les boutons prévus à cet effet ou avec la molette de la souris, et vous déplacer via un drag'n'drop. Pour modifier la taille d'un segment, il vous suffit de cliquer dessus, le formulaire d'édition s'affichera en dessous. Vous pouvez aussi cliquer sur une bordure d'un segment, et tout en gardant le doigt appuyé, déplacer la bordure avec la sourie.",
+      "merge-with-left": "Fusionner avec l'élément précédent",
+      "merge-with-right": "Fusionner avec l'élément suivant",
+      "split": "Couper l'élément en deux",
+      "sync-length-with-geometry": "Synchroniser avec la géométrie"
+    },
+    "nav": {
+      "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\").",
+      "infra-errors": "Afficher les erreurs de l'infrastructure courante",
+      "recenter": "Recentrer la carte",
+      "select-infra": "Choisir l'infrastructure à éditer",
+      "toggle-layers": "Choisir les types d'éléments à afficher"
+    },
+    "obj-types": {
+      "BufferStop": "Heurtoir",
+      "Detector": "Détecteur",
+      "Route": "Itinéraire",
+      "Signal": "Signal",
+      "Switch": "Aiguillage",
+      "TrackSection": "Section de ligne"
+    },
+    "title": "Éditeur",
+    "tool-help": "Voir la description de l'outil actif",
+    "tools": {
+      "buffer-stop-edition": {
+        "actions": {
+          "new-entity": "Créer un nouveau heurtoir",
+          "reset-entity": "Réinitialiser les données"
+        },
+        "label": "Outil \"Heurtoir\""
+      },
+      "detector-edition": {
+        "actions": {
+          "new-entity": "Créer un nouveau détecteur",
+          "reset-entity": "Réinitialiser les données"
+        },
+        "label": "Outil \"Détecteur\""
+      },
+      "point-edition": {
+        "default-routes-error": "Une erreur est survenue lors du chargement des itinéraires liés.",
+        "help": {
+          "start-dragging": "Cliquez sur l'élément pour commencer à le déplacer.",
+          "stop-dragging-no-line": "L'élément doit être placé sur une section de ligne.",
+          "stop-dragging-on-line": "Cliquez pour valider le déplacement de l'élément."
+        },
+        "linked-routes": "Itinéraires liés",
+        "no-linked-route": "Aucun itinéraire lié",
+        "routes-ending-at": "Arrivant à...",
+        "routes-starting-from": "Partant de..."
+      },
+      "routes-edition": {
+        "actions": {
+          "delete-route": "Supprimer l'itinéraire",
+          "new-route": "Créer un nouvel itinéraire",
+          "pick-entrypoint": "Outil de sélection du point de départ",
+          "pick-entrypoint-cancel": "Annuler la sélection du point de départ",
+          "pick-exitpoint": "Outil de sélection du point d'arrivée",
+          "pick-exitpoint-cancel": "Annuler la sélection du point d'arrivée"
+        },
+        "alternative-routes": "Rechercher des itinéraires alternatifs",
+        "confirm-delete-route": "Êtes-vous sûr(e) de vouloir supprimer cet itinéraire ?",
+        "create-route": "Création d'un nouvel itinéraire",
+        "crossed-detectors": "{{count}} détecteurs",
+        "crossed-detectors_one": "Un détecteur",
+        "crossed-detectors_zero": "Aucun détecteur rencontré",
+        "crossed-track-ranges": "{{count}} tronçons",
+        "crossed-track-ranges_one": "Un tronçon",
+        "crossed-track-ranges_zero": "Aucun tronçon",
+        "delete-route": "Supprimer l'itinéraire",
+        "delete-route-success": "L'itinéraire a été supprimé avec succès.",
+        "directions": {
+          "START_TO_STOP": "Sens \"normal\"",
+          "STOP_TO_START": "Sens inverse"
+        },
+        "edit-route": "Édition d'un itinéraire existant",
+        "end": "Arrivée",
+        "endpoint": "Extrémité :",
+        "from": "de",
+        "geometry-error": "Une erreur est survenue lors du calcul du chemin exact de cet itinéraire.",
+        "help": {
+          "actions-on-edit-route": "Vous pouvez supprimer l'itinéraire, le modifier, ou en créer un nouveau.",
+          "select-endpoints": "L'itinéraire doit avoir un point de départ et un point d'arrivée.",
+          "select-route": "Sélectionnez un itinéraire.",
+          "select-waypoint": "Sélectionnez un détecteur ou un heurtoir.",
+          "validate-route": "Vous pouvez valider cet itinéraire, ou en sélectionner un autre."
+        },
+        "include-release-detectors": "Transit rigide",
+        "label": "Outil \"Itinéraires\"",
+        "locked-release-detectors": "Cette propriété ne peut pas être réactivée a posteriori, et peut uniquement être désactivée.",
+        "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
+        "preview-candidate": "Sélectionner",
+        "routes": "{{count}} itinéraires compatibles trouvés",
+        "routes_one": "Un itinéraire compatible trouvé",
+        "routes_zero": "Aucun itinéraire compatible trouvé",
+        "save-new-route": "Sauvegarder le nouvel itinéraire",
+        "save-route": "Sauvegarder les modifications",
+        "save-route-success": "L'itinéraire a été sauvegardé avec succès.",
+        "search-routes": "Rechercher des itinéraires compatibles",
+        "start": "Départ",
+        "start_direction": "Direction au départ :",
+        "swap-endpoints": "Échanger les extrémités",
+        "to": "à",
+        "untitled-track": "Ligne sans nom"
+      },
+      "select-items": {
+        "actions": {
+          "confirm-delete-selection": "Êtes-vous sûr(e) de vouloir supprimer la sélection ?",
+          "delete-selection": "Supprimer la sélection",
+          "edit-info": "Éditer la sélection",
+          "polygon": "Sélection polygone",
+          "rectangle": "Sélection rectangle",
+          "single": "Sélection simple",
+          "unselect-all": "Tout désélectionner"
+        },
+        "errors": {
+          "no-heterogenous-edition": "Il n'est pas possible d'éditer plusieurs éléments de différents types en même temps.",
+          "no-multi-edition": "Il n'est pas encore possible d'éditer plusieurs éléments en même temps (TODO)."
+        },
+        "focus": "Focus",
+        "help": {
+          "polygon-selection": "Cliquez pour délimiter un polygone. Double-cliquez pour le fermer, et sélectionner tous les éléments à l'intérieur.",
+          "rectangle-selection": "Cliquez deux fois pour délimiter un rectangle. Tous les éléments dans ce rectangle seront alors sélectionnés.",
+          "single-selection": "Cliquez sur un élément pour le sélectionner ou le désélectionner. Vous pouvez sélectionner plusieurs éléments en pressant la touche Contrôle."
+        },
+        "item": "Élément",
+        "label": "Outil \"Sélection\"",
+        "linked-to-line_one": "lié à la ligne",
+        "linked-to-line_other": "lié aux lignes",
+        "no-selection": "Aucun élément sélectionné",
+        "of-type": "de type",
+        "selection": "{{count}} élément sélectionné",
+        "selection_plural": "{{count}} éléments sélectionnés",
+        "title": "Sélection",
+        "unselect": "Désélectionner"
+      },
+      "signal-edition": {
+        "actions": {
+          "new-entity": "Créer un nouveau signal",
+          "reset-entity": "Réinitialiser les données"
+        },
+        "label": "Outil \"Signal\""
+      },
+      "switch-edition": {
+        "actions": {
+          "delete-switch": "Supprimer l'aiguillage",
+          "new-switch": "Créer un nouvel aiguillage",
+          "pick-track": "Outil de sélection d'une ligne sur la carte",
+          "pick-track-cancel": "Annuler la sélection d'une ligne"
+        },
+        "endpoint": "Extrémité :",
+        "help": {
+          "no-move": "Les aiguillages ne peuvent pas être déplacer, et sont automatiquement placés sur leur premier port.",
+          "select-track": "Sélectionnez une ligne sur la carte"
+        },
+        "label": "Outil \"Aiguillage\"",
+        "no-track-picked-yet": "Aucune ligne n'a encore été sélectionnée",
+        "switch-type": "Type d'aiguillage",
+        "untitled-track": "Ligne sans nom"
+      },
+      "track-edition": {
+        "actions": {
+          "add-at-end": "Ajouter les nouveaux points à la fin",
+          "add-at-start": "Ajouter les nouveaux points au début",
+          "cancel-line": "Annuler la saisie en cours",
+          "mode-add-point": "Ajouter un point",
+          "mode-delete-point": "Supprimer des points",
+          "mode-move-point": "Déplacer les points",
+          "toggle-anchoring": "Activer / désactiver l'ancrage automatique"
+        },
+        "help": {
+          "add-anchor-point": "Cliquez pour ajouter un point au bout de la section de ligne. Cliquez sur la ligne pour ajouter un point intermédiaire.",
+          "add-point": "Cliquez pour ajouter un point au bout de la section de ligne.",
+          "delete-point": "Cliquez sur un point pour le supprimer de la ligne.",
+          "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
+          "move-point-end": "Cliquez pour valider le déplacement du point."
+        },
+        "label": "Outil \"Ligne\""
+      }
+    },
+    "form": {
+      "common": {
+        "Add": "Ajouter",
+        "Move up": "Monter",
+        "Move down": "Descendre",
+        "Remove": "Enlever"
+      },
+      "fields": {
+        "length": {
+          "title": "Longueur",
+          "description": "Longueur (en mètre) de la ligne"
+        },
+        "slopes": {
+          "title": "",
+          "description": ""
+        },
+        "curves": {
+          "title": "",
+          "description": ""
+        },
+        "loading_gauge_limits": {
+          "title": "",
+          "description": ""
+        },
+        "extensions": {
+          "title": "",
+          "description": ""
+        }
+      },
+      "types": {
+        "LoadingGaugeLimit": {
+          "title": "",
+          "description": "",
+          "fields": {
+            "begin": {
+              "title": "Début",
+              "description": ""
+            },
+            "end": {
+              "title": "Fin",
+              "description": ""
+            },
+            "category": {
+              "title": "Catégorie",
+              "description": ""
+            }
+          }
+        },
+        "TrackSectionExtensions": {
+          "fields": {
+            "sncf": {
+              "title": "",
+              "description": ""
+            }
+          }
+        },
+        "TrackSectionSncfExtension": {
+          "fields": {
+            "line_code": {
+              "title": "",
+              "description": ""
+            },
+            "line_name": {
+              "title": "",
+              "description": ""
+            },
+            "track_name": {
+              "title": "",
+              "description": ""
+            },
+            "track_number": {
+              "title": "",
+              "description": ""
+            }
+          }
+        }
+      }
+    }
+  }
+}

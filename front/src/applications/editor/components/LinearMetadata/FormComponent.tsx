@@ -36,7 +36,7 @@ import './style.scss';
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { openModal, closeModal } = useModal();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('editor');
   const validator = customizeValidator(
     {},
     localizer[i18n.language as keyof typeof localizer] as Localizer
@@ -154,7 +154,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
         <button
           type="button"
           className="btn btn-unstyled p-1 ml-1"
-          title={t('common.help-display')}
+          title={t('translation:common.help-display')}
           onClick={() => openModal(<HelpModal />, 'lg')}
         >
           <MdOutlineHelpOutline />
@@ -228,7 +228,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
           />
           <div className="btn-group-vertical zoom">
             <button
-              title={t('common.zoom-in')}
+              title={t('translation:common.zoom-in')}
               type="button"
               className="btn btn-sm btn-outline-secondary"
               onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
@@ -236,7 +236,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               <TbZoomIn />
             </button>
             <button
-              title={t('common.zoom-reset')}
+              title={t('translation:common.zoom-reset')}
               type="button"
               disabled={viewBox === null}
               className="btn btn-sm btn-outline-secondary"
@@ -245,7 +245,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               <TbZoomCancel />
             </button>
             <button
-              title={t('common.zoom-out')}
+              title={t('translation:common.zoom-out')}
               type="button"
               disabled={viewBox === null}
               className="btn btn-sm btn-outline-secondary"
@@ -275,7 +275,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 <button
                   className="btn btn-sm btn-secondary"
                   type="button"
-                  title={t('common.previous')}
+                  title={t('translation:common.previous')}
                   disabled={selected === 0}
                   onClick={() => {
                     const newSelected = selected - 1;
@@ -324,7 +324,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 <button
                   className="btn btn-sm btn-secondary"
                   type="button"
-                  title={t('common.next')}
+                  title={t('translation:common.next')}
                   disabled={selected === data.length - 1}
                   onClick={() => {
                     const newSelected = selected + 1;
@@ -419,11 +419,11 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 <div className="buttons">
                   <button
                     type="button"
-                    title={t('common.close')}
+                    title={t('translation:common.close')}
                     className="btn btn-outline-dark mx-1"
                     onClick={() => setSelected(null)}
                   >
-                    {t('common.close')}
+                    {t('translation:common.close')}
                   </button>
                 </div>
               </Form>

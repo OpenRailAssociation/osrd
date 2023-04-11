@@ -12,7 +12,7 @@ interface InfraErrorsModalProps {
 }
 
 const InfraErrorsModal: FC<InfraErrorsModalProps> = ({ onErrorClick }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const infraID = useSelector(getInfraID);
 
   return (

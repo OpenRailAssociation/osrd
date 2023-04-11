@@ -59,7 +59,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const infraID = useSelector(getInfraID);
 
   const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
@@ -179,7 +179,7 @@ export const CustomSchemaField: FC<FieldProps> = (props) => {
 
 export const SwitchEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { state, setState, editorState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
@@ -292,7 +292,7 @@ export const SwitchEditionLeftPanel: FC = () => {
               state.portEditionState.type !== 'idle'
             }
           >
-            {t('common.save')}
+            {t('translation:common.save')}
           </button>
         </div>
       </EditorForm>
@@ -301,7 +301,7 @@ export const SwitchEditionLeftPanel: FC = () => {
 };
 
 export const SwitchEditionLayers: FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const switchTypes = useSelector(getSwitchTypes);
   const infraID = useSelector(getInfraID);
   const {
@@ -485,7 +485,7 @@ export const SwitchEditionLayers: FC = () => {
 };
 
 export const SwitchMessages: FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const {
     state: { portEditionState },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;

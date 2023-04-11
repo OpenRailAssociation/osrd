@@ -39,7 +39,7 @@ export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
  * Generic component to show routes starting or ending from the edited waypoint:
  */
 export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const infraID = useSelector(getInfraID);
   const [routesState, setRoutesState] = useState<
     | { type: 'idle' }
@@ -111,7 +111,7 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
-                    title={t('common.open')}
+                    title={t('translation:common.open')}
                     onClick={() => {
                       switchTool(RouteEditionTool, getEditRouteState(route));
                     }}
@@ -139,7 +139,7 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
-                    title={t('common.open')}
+                    title={t('translation:common.open')}
                     onClick={() => {
                       switchTool(RouteEditionTool, getEditRouteState(route));
                     }}
@@ -171,7 +171,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
   type: EditoastType;
 }) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const infraID = useSelector(getInfraID);
   const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
@@ -275,7 +275,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
             className="btn btn-primary"
             disabled={!state.entity.properties?.track || !state.entity.geometry}
           >
-            {t('common.save')}
+            {t('translation:common.save')}
           </button>
         </div>
       </EditorForm>

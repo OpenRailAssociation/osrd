@@ -49,6 +49,7 @@ export function getSwitchTypeJSONSchema(
           ...iter,
           [`${FLAT_SWITCH_PORTS_PREFIX}${port}`]: {
             title: `Port ${port}`,
+            description: (baseSchema.definitions?.TrackEndpoint as JSONSchema7)?.description,
             $ref: '#/definitions/TrackEndpoint',
           },
         }),

@@ -42,7 +42,7 @@ const LayersModal: FC<LayersModalProps> = ({
   onSubmit,
 }) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { closeModal } = useModal();
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
   const selectionCounts = useMemo(
@@ -122,7 +122,7 @@ const LayersModal: FC<LayersModalProps> = ({
           </div>
         )}
         <button type="button" className="btn btn-danger mr-2" onClick={closeModal}>
-          {t('common.cancel')}
+          {t('translation:common.cancel')}
         </button>
         <button
           type="button"
@@ -133,7 +133,7 @@ const LayersModal: FC<LayersModalProps> = ({
             closeModal();
           }}
         >
-          {t('common.confirm')}
+          {t('translation:common.confirm')}
         </button>
       </div>
     </Modal>

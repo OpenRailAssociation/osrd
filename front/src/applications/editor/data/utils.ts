@@ -196,7 +196,7 @@ export function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
 const getTypeScope = (scope: string, typeName: string) => `${scope}.types.${typeName}`;
 const getPropScope = (scope: string, propName: string) => `${scope}.fields.${propName}`;
 const translateIfExist = (i18n: TFunction, key: string, defaultValue?: string) => {
-  const value = i18n(key);
+  const value = i18n(key, { nsSeparator: false });
   if (value !== key && !isObject(value)) return value;
   if (import.meta.env.DEV) console.debug(`Missing i18n key ${key}`);
   return defaultValue;
@@ -209,7 +209,7 @@ export function localizedJsonSchema(
   const newSchema: RJSFSchema = {
     ...schema,
     ...pickBy({
-      title: translateIfExist(i18n, `${scope}.title`, schema.name),
+      title: translateIfExist(i18n, `${scope}.title`, schema.title),
       description: translateIfExist(i18n, `${scope}.description`, schema.description),
       help: translateIfExist(i18n, `${scope}.help`, schema.help),
     }),

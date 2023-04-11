@@ -21,7 +21,7 @@ const WayPointInput: FC<{
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<EditRoutePathState>;
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const infraID = useSelector(getInfraID);
   const [entityState, setEntityState] = useState<
     { type: 'data'; entity: WayPointEntity } | { type: 'loading' } | { type: 'empty' }

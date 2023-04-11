@@ -5,7 +5,7 @@ import { isNil, toNumber, isEmpty } from 'lodash';
 import { getLineStringDistance, DISTANCE_ERROR_RANGE } from './data';
 
 export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { id, value, required, readonly, onChange, formContext } = props;
 
   const [length, setLength] = useState<number | string>(value);
@@ -49,7 +49,7 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
           }}
         />
       )}
-      {geoLength && (length < min || length > max) && (
+      {!isNil(geoLength) && (length < min || length > max) && (
         <p className="text-warning">
           {t('Editor.errors.length-out-of-sync-with-geometry', { min, max })}.{' '}
           <button

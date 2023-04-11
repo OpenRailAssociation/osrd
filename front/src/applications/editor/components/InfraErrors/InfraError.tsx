@@ -28,7 +28,7 @@ const InfraErrorComponent: React.FC<PropsWithChildren<{ error: InfraError; index
   index,
   children,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
 
   return (
     <div className="management-item-content">

@@ -78,7 +78,7 @@ const InfraSelectorModal: FC = () => {
 
       <div className="text-right">
         <button type="button" className="btn btn-danger mr-2" onClick={closeModal}>
-          {t('common.cancel')}
+          {t('translation:common.cancel')}
         </button>
       </div>
     </Modal>

@@ -27,7 +27,7 @@ import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
 import { getMapStyle } from '../../../../../reducers/map/selectors';
 
 export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const [editorSave] = osrdEditoastApi.endpoints.postInfraById.useMutation({});
   const { setState } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
   const infraID = useSelector(getInfraID);
@@ -159,7 +159,7 @@ export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ stat
                         }}
                       >
                         {isFocused
-                          ? t('common.cancel')
+                          ? t('translation:common.cancel')
                           : t('Editor.tools.routes-edition.preview-candidate')}
                       </button>
                     </div>
@@ -245,7 +245,7 @@ export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
   },
 }) => {
   const mapStyle = useSelector(getMapStyle);
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const lineProps = useMemo(() => {
     const layer = getRoutesLineLayerProps({ colors: colors[mapStyle] });
     return {

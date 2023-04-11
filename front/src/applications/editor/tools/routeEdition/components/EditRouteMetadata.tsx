@@ -32,7 +32,7 @@ import { getMapStyle } from '../../../../../reducers/map/selectors';
 
 export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { initialRouteEntity, routeEntity } = state;
   const { entry_point, entry_point_direction, exit_point } = routeEntity.properties;
   const { setState, openModal, closeModal } = useContext(
@@ -183,7 +183,7 @@ export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ 
 };
 
 export const EditRouteMetadataLayers: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const infraID = useSelector(getInfraID);
   const mapStyle = useSelector(getMapStyle);
 

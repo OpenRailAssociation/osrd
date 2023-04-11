@@ -50,7 +50,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
   const [submited, setSubmited] = useState<boolean>(false);
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('editor');
   const validator = customizeValidator(
     {},
     localizer[i18n.language as keyof typeof localizer] as Localizer

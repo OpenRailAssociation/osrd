@@ -185,7 +185,7 @@ export const TrackEditionLayers: FC = () => {
 
 export const TrackEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
@@ -230,7 +230,7 @@ export const TrackEditionLeftPanel: FC = () => {
           className="btn btn-primary"
           disabled={state.track.geometry.coordinates.length < 2}
         >
-          {t('common.save')}
+          {t('translation:common.save')}
         </button>
       </div>
     </EditorForm>

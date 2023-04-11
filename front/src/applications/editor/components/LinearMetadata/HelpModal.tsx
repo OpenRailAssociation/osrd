@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 
 const HelpModal: FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
 
   return (
-    <Modal title={t('common.help')}>
+    <Modal title={t('translation:common.help')}>
       <p>{t('Editor.linear-metadata.help')}</p>
     </Modal>
   );

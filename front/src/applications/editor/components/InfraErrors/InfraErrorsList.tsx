@@ -19,7 +19,7 @@ interface InfraErrorsListProps {
 }
 
 const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const [total, setTotal] = useState<number | null>(null);
   const [next, setNext] = useState<number | null>(null);
   const [errors, setErrors] = useState<Array<InfraError>>([]);

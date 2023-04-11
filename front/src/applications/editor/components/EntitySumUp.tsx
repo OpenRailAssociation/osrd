@@ -163,7 +163,7 @@ function getSumUpContent(
                 count: trackNames.length,
               }).toString()}
             </span>{' '}
-            <span>{prettifyStringsArray(trackNames, ` ${t('common.and')} `)}</span>
+            <span>{prettifyStringsArray(trackNames, ` ${t('translation:common.and')} `)}</span>
           </>
         );
       }
@@ -238,7 +238,7 @@ const EntitySumUp: FC<
     | { id: string; objType: EditoastType; entity?: undefined }
   )
 > = ({ entity, id, objType, classes, status }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const infraID = useSelector(getInfraID);
   const [state, setState] = useState<
     | { type: 'idle' }

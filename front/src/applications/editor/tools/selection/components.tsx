@@ -95,7 +95,7 @@ export const SelectionLayers: FC = () => {
 };
 
 export const SelectionLeftPanel: FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SelectionState>;

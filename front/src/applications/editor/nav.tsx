@@ -76,7 +76,7 @@ const NavButtons: NavButton[][] = [
     {
       id: 'zoom-in',
       icon: FiZoomIn,
-      labelTranslationKey: 'common.zoom-in',
+      labelTranslationKey: 'translation:common.zoom-in',
       onClick({ setViewport, viewport }) {
         setViewport({
           ...viewport,
@@ -87,7 +87,7 @@ const NavButtons: NavButton[][] = [
     {
       id: 'zoom-out',
       icon: FiZoomOut,
-      labelTranslationKey: 'common.zoom-out',
+      labelTranslationKey: 'translation:common.zoom-out',
       onClick({ setViewport, viewport }) {
         setViewport({
           ...viewport,
@@ -109,7 +109,7 @@ const NavButtons: NavButton[][] = [
     {
       id: 'reset-viewport',
       icon: FaCompass,
-      labelTranslationKey: 'common.reset-north',
+      labelTranslationKey: 'translation:common.reset-north',
       onClick({ setViewport, viewport }) {
         setViewport({
           ...viewport,

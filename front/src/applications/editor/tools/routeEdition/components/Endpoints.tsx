@@ -25,7 +25,7 @@ export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteSt
   state,
   onChange,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { entryPoint, exitPoint, entryPointDirection } = state;
 
   const options = useMemo(
@@ -96,7 +96,7 @@ export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteSt
 };
 
 const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { switchTool } = useContext(EditorContext);
   const infraID = useSelector(getInfraID);
 
@@ -106,7 +106,7 @@ const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
         <button
           type="button"
           className="btn btn-primary btn-sm"
-          title={t('common.open')}
+          title={t('translation:common.open')}
           onClick={() => {
             getEntity<WayPointEntity>(infraID as number, id, type).then((entity) => {
               if (type === 'Detector') {
@@ -136,7 +136,7 @@ const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
 export const DisplayEndpoints: FC<{
   state: RouteState;
 }> = ({ state }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('editor');
   const { entryPoint, exitPoint, entryPointDirection } = state;
 
   return (
@@ -147,14 +147,18 @@ export const DisplayEndpoints: FC<{
       {entryPoint ? (
         <ExtremityDisplay id={entryPoint.id} type={entryPoint.type} />
       ) : (
-        t('common.error')
+        t('translation:common.error')
       )}
       <h5 className="mt-4">{t('Editor.tools.routes-edition.start_direction')}</h5>
       <div>{t(`Editor.tools.routes-edition.directions.${entryPointDirection}`)}</div>
       <h5 className="mt-4">
         <FaFlagCheckered /> {t('Editor.tools.routes-edition.end')}
       </h5>
-      {exitPoint ? <ExtremityDisplay id={exitPoint.id} type={exitPoint.type} /> : t('common.error')}
+      {exitPoint ? (
+        <ExtremityDisplay id={exitPoint.id} type={exitPoint.type} />
+      ) : (
+        t('translation:common.error')
+      )}
     </>
   );
 };
