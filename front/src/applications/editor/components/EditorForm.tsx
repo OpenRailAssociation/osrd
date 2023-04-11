@@ -104,6 +104,7 @@ function EditorForm<T extends Omit<EditorEntity, 'objType'> & { objType: string 
         noHtml5Validate
         method={undefined}
         validator={validator}
+        translateString={(key, _params) => t(`Editor.form.common.${key}`)}
         schema={schema}
         uiSchema={{
           length: {
