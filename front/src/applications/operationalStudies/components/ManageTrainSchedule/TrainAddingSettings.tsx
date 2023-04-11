@@ -47,6 +47,9 @@ export default function TrainAddingSettings() {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainStep(+e.target.value)}
           value={trainStep}
           noMargin
+          isInvalid={trainStep < 1}
+          errorMsg={trainStep < 1 ? t('errorMessages.noTrainStepInput') : undefined}
+          min={1}
           sm
         />
       </span>
@@ -63,6 +66,9 @@ export default function TrainAddingSettings() {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainCount(+e.target.value)}
           value={trainCount}
           noMargin
+          isInvalid={trainCount < 1}
+          errorMsg={trainCount < 1 ? t('errorMessages.noTrainCountInput') : undefined}
+          min={1}
           sm
         />
       </span>
@@ -80,6 +86,9 @@ export default function TrainAddingSettings() {
           value={trainDelta}
           unit="min"
           noMargin
+          isInvalid={trainDelta < 1}
+          errorMsg={trainDelta < 1 ? t('errorMessages.noDeltaInput') : undefined}
+          min={1}
           sm
         />
       </span>

@@ -77,6 +77,15 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
       })
     );
   }
+  if (osrdconf.trainStep < 1) {
+    error = true;
+    dispatch(
+      setFailure({
+        name: t('errorMessages.trainScheduleTitle'),
+        message: t('errorMessages.noTrainStep'),
+      })
+    );
+  }
 
   if (!error) {
     const osrdConfSchedule = {
