@@ -20,8 +20,7 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import DOCUMENT_URI from 'common/consts';
-import { ProjectResult, StudyResult } from 'common/api/osrdEditoastApi';
-import { PROJECTS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
+import { ProjectResult, StudyResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
@@ -31,11 +30,11 @@ function displayStudiesList(
 ) {
   return studiesList ? (
     <div className="row no-gutters">
-      <div className="col-xl-4 col-lg-6" key={nextId()}>
+      <div className="col-xl-4 col-lg-6">
         <StudyCardEmpty />
       </div>
       {studiesList.map((study) => (
-        <div className="col-xl-4 col-lg-6" key={nextId()}>
+        <div className="col-xl-4 col-lg-6" key={`project-displayStudiesList-${study.id}`}>
           <StudyCard study={study} setFilterChips={setFilterChips} />
         </div>
       ))}
@@ -58,7 +57,20 @@ export default function Project() {
   const [imageUrl, setImageUrl] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const projectID = useSelector(getProjectID);
+  const projectId = useSelector(getProjectID);
+  const {
+    data: currentProject,
+    isLoading,
+    isError,
+    error: projectError,
+  } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId: projectId as number });
+  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
+  const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
+
+  if (isError) {
+    console.error('getProject Error : ', projectError);
+    return <span className="mt-5">An error occured</span>;
+  }
 
   const sortOptions = [
     {
@@ -82,10 +94,9 @@ export default function Project() {
 
   const getProject = async (withNotification = false) => {
     try {
-      const result = await get(`${PROJECTS_URI}${projectID}/`);
-      setProject(result);
-      if (result.image) {
-        getProjectImage(`${DOCUMENT_URI}${result.image}`);
+      setProject(currentProject);
+      if (currentProject?.image) {
+        getProjectImage(`${DOCUMENT_URI}${currentProject.image}`);
       }
       if (withNotification) {
         dispatch(
@@ -101,17 +112,43 @@ export default function Project() {
   };
 
   const getStudiesList = async () => {
-    try {
-      const params = {
-        ordering: sortOption,
-        name: filter,
-        description: filter,
-        tags: filter,
+    if (filter) {
+      const payload = {
+        body: {
+          object: 'study',
+          query: ['and', ['or', ['search', ['name'], filter], ['search', ['description'], filter]]],
+        },
       };
-      const data = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, { params });
-      setStudiesList(data.results);
-    } catch (error) {
-      console.error(error);
+      try {
+        const filteredData = await postSearch(payload).unwrap();
+        let filteredStudies = [...filteredData];
+        if (sortOption === 'LastModifiedDesc') {
+          filteredStudies = filteredStudies.sort((a, b) => {
+            if (a.last_modification && b.last_modification) {
+              return b.last_modification.localeCompare(a.last_modification);
+            }
+            return 0;
+          });
+        } else if (sortOption === 'NameAsc') {
+          filteredStudies = filteredStudies.sort((a, b) => {
+            if (a.name && b.name) {
+              return a.name.localeCompare(b.name);
+            }
+            return 0;
+          });
+        }
+        console.log('filtered studies : ', filteredStudies);
+        setStudiesList(filteredStudies);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      try {
+        const { data } = await getStudies({ projectId, ordering: sortOption });
+        setStudiesList(data.results);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -120,16 +157,16 @@ export default function Project() {
   };
 
   useEffect(() => {
-    if (!projectID) {
+    if (!projectId) {
       navigate('/operational-studies');
-    } else {
+    } else if (!isLoading) {
       getProject();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoading]);
 
   useEffect(() => {
-    if (projectID) getStudiesList();
+    if (projectId) getStudiesList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 
