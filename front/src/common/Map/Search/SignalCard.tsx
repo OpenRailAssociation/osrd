@@ -14,7 +14,7 @@ const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
   >
     <div className="col-1">
       <img
-        src={`/signalsSVG/${signalSearchResult.type?.replace(/ /g, '_')}.svg`}
+        src={`/src/assets/pictures/signalicons/${signalSearchResult.type?.replace(/ /g, '_')}.svg`}
         alt={signalSearchResult.type}
       />
     </div>

@@ -77,7 +77,7 @@ const MultiSelectSNCF = ({
     const valuesLength = values.length;
     return valuesLength < 5
       ? values.join(', ')
-      : [...values.slice(0, 5), `+ ${valuesLength - 4}`].join(', ');
+      : [...values.slice(0, 4), `+ ${valuesLength - 4}`].join(', ');
   };
 
   return (
@@ -127,7 +127,11 @@ const MultiSelectSNCF = ({
           <div id="multiselecttoggle" className="select-menu position-relative" data-role="menu">
             {options.map((selectOption) =>
               selectOption.label ? (
-                <div role="listitem" className="select-group">
+                <div
+                  role="listitem"
+                  className="select-group"
+                  key={`multiSelect-selectOption-${selectOption.label}`}
+                >
                   <div className="select-group-head">
                     <span className="select-group-title text-uppercase">{selectOption.label}</span>
                   </div>
