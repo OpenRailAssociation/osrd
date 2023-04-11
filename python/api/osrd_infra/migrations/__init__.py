@@ -302,7 +302,7 @@ def run_sql_create_infra_search_table(
         )
         sep = "," if create_table_continuation else ""
         create_table = f"""CREATE TABLE "{name}" (
-            id BIGINT REFERENCES "{source_table}"("{source_table_pk}") ON UPDATE CASCADE ON DELETE CASCADE,
+            id BIGINT PRIMARY KEY REFERENCES "{source_table}"("{source_table_pk}") ON UPDATE CASCADE ON DELETE CASCADE,
             {search_columns}{sep}
             {create_table_continuation}
         )""".format(
