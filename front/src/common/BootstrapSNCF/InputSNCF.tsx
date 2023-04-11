@@ -169,11 +169,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     let invalidMsg = null;
     if (isInvalid) {
       invalidClass = 'is-invalid';
-      invalidMsg = (
-        <div className="invalid-feedback d-block" id="inputGroupPrepend">
-          {errorMsg}
-        </div>
-      );
+      invalidMsg = <div className="invalid-feedback">{errorMsg}</div>;
     }
 
     const inputComponent = (
@@ -186,10 +182,8 @@ class InputSNCF extends React.Component<InputSNCFProps> {
             {label}
           </label>
         )}
-        <div className="input-group">
-          <div
-            className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : null}`}
-          >
+        <>
+          <div className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : ''}`}>
             <input
               type={type}
               onChange={onChange}
@@ -207,12 +201,12 @@ class InputSNCF extends React.Component<InputSNCFProps> {
               list={list}
             />
             <span className="form-control-state" />
-            {unit ? <span className="form-control-icon small">{unit}</span> : null}
+            {unit && <span className="form-control-icon small">{unit}</span>}
             {this.renderClearButton()}
           </div>
           {this.renderAppendButton(sm)}
           {invalidMsg}
-        </div>
+        </>
       </>
     );
 
