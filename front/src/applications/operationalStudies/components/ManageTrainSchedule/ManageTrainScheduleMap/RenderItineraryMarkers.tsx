@@ -57,24 +57,26 @@ const RenderItineraryMarkers: FC = () => {
     }
     if (vias.length > 0) {
       vias.forEach((via, idx) => {
-        result.push(
-          <Marker
-            longitude={via.coordinates[0]}
-            latitude={via.coordinates[1]}
-            offset={[0, -12]}
-            key={nextId()}
-          >
-            <img src={viaSVG} alt="Destination" style={{ height: '1.5rem' }} />
-            <span className="map-pathfinding-marker via-number">{idx + 1}</span>
-            <div
-              className={`map-pathfinding-marker via-name ${
-                via.duration === 0 ? '' : 'via-with-stop'
-              }`}
+        if (via.coordinates) {
+          result.push(
+            <Marker
+              longitude={via.coordinates[0]}
+              latitude={via.coordinates[1]}
+              offset={[0, -12]}
+              key={nextId()}
             >
-              {via.name || (via.track && via.track.split('-')[0])}
-            </div>
-          </Marker>
-        );
+              <img src={viaSVG} alt="Destination" style={{ height: '1.5rem' }} />
+              <span className="map-pathfinding-marker via-number">{idx + 1}</span>
+              <div
+                className={`map-pathfinding-marker via-name ${
+                  via.duration === 0 ? '' : 'via-with-stop'
+                }`}
+              >
+                {via.name || (via.track && via.track.split('-')[0])}
+              </div>
+            </Marker>
+          );
+        }
       });
     }
     return result;

@@ -99,18 +99,17 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
 });
 
 export interface PointOnMap {
-  id: string;
+  id?: string;
   name?: string;
-  curves: string;
-  length: number;
-  slopes: string;
-  extensions_sncf_line_code: number;
-  extensions_sncf_line_name: string;
-  extensions_sncf_track_name: string;
-  extensions_sncf_track_number: number;
-  loading_gauge_limits: string;
-  source: string;
-  coordinates: Position | number[];
+  curves?: string;
+  length?: number;
+  slopes?: string;
+  extensions_sncf_line_code?: number;
+  extensions_sncf_line_name?: string;
+  extensions_sncf_track_name?: string;
+  extensions_sncf_track_number?: number;
+  loading_gauge_limits?: string;
+  coordinates?: Position | number[];
   duration?: number;
   track?: string;
   position?: number;

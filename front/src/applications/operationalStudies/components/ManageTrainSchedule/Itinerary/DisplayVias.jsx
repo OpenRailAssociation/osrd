@@ -66,9 +66,7 @@ export default function DisplayVias(props) {
                     <div className="pl-1 hover w-100 d-flex align-items-center">
                       <div
                         className="flex-grow-1"
-                        onClick={() =>
-                          zoomToFeaturePoint(place.coordinates, place.id, place.source)
-                        }
+                        onClick={() => zoomToFeaturePoint(place.coordinates, place.id)}
                         role="button"
                         tabIndex={0}
                       >

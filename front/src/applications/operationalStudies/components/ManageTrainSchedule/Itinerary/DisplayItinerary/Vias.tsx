@@ -10,7 +10,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getGeojson, getVias } from 'reducers/osrdconf/selectors';
 
 interface ViasProps {
-  zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
   viaModalContent: JSX.Element;
 }
 
