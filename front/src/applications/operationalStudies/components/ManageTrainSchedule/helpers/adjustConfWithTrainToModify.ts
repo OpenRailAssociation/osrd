@@ -11,6 +11,7 @@ import {
   updateOrigin,
   updateDestination,
   replaceVias,
+  updateSuggeredVias,
 } from 'reducers/osrdconf';
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
@@ -61,6 +62,7 @@ export default function adjustConfWithTrainToModify(
         )
         .map((via) => convertStep2PointOnMap(via));
       dispatch(replaceVias(vias));
+      dispatch(updateSuggeredVias(path.steps.map((via) => convertStep2PointOnMap(via))));
     } else {
       dispatch(replaceVias(undefined));
     }

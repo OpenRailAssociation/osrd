@@ -1670,6 +1670,7 @@ components:
           items:
             type: object
             properties:
+              id: { type: string }
               name: { type: string }
               suggestion: { type: boolean }
               duration: { type: number, format: float }

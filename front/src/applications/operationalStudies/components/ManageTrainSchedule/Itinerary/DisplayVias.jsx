@@ -64,7 +64,7 @@ export default function DisplayVias(props) {
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {osrdconf.vias.map((place, index) => (
               <Draggable
-                key={`drag-key-${place.position}`}
+                key={`drag-key-${place.id}`}
                 draggableId={`drag-vias-${index}`}
                 index={index}
               >
