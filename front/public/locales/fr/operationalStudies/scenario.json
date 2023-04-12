@@ -29,6 +29,7 @@
     "trainDeleted": "Le train {{name}} a bien été supprimé.",
     "update": "Modifier"
   },
+  "displayTrainsWithDetails": "Afficher/masquer le détail des trains",
   "trainCount_one": "1 train",
   "trainCount_other": "{{count}} trains",
   "trainCount_zero": "Aucun train"
