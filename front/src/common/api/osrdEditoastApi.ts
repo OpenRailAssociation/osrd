@@ -372,7 +372,11 @@ export type GetVersionApiResponse = /** status 200 Return the service version */
 };
 export type GetVersionApiArg = void;
 export type PostSearchApiResponse =
-  /** status 200 Search results, the structure of the returned objects depend on their type */ object[];
+  /** status 200 Search results, the structure of the returned objects depend on their type */ (
+    | SearchTrackResult
+    | SearchOperationalPointResult
+    | SearchSignalResult
+  )[];
 export type PostSearchApiArg = {
   /** Search query */
   body: {
@@ -843,6 +847,41 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
   /** The fields you want to update */
   scenarioRequest: ScenarioRequest;
 };
+export type SearchTrackResult = {
+  infra_id: number;
+  line_code: number;
+  line_name: string;
+};
+export type Point3D = number[];
+export type MultiPoint = {
+  type: 'MultiPoint';
+  coordinates: Point3D[];
+};
+export type SearchOperationalPointResult = {
+  obj_id: string;
+  infra_id?: string;
+  name: string;
+  uic?: number;
+  trigram: string;
+  ch: string;
+  geographic: MultiPoint;
+  schematic: MultiPoint;
+};
+export type Point = {
+  type: 'Point';
+  coordinates: Point3D;
+};
+export type SearchSignalResult = {
+  label: string;
+  infra_id?: number;
+  aspects?: string[];
+  systems?: string[];
+  type?: string;
+  line_code: number;
+  line_name: string;
+  geographic: Point;
+  schematic: Point;
+};
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {
   type?: string;
@@ -923,11 +962,6 @@ export type RailjsonFile = {
   catenaries?: any;
   detectors?: any;
 };
-export type Point3D = number[];
-export type Point = {
-  type: 'Point';
-  coordinates: Point3D;
-};
 export type LineString = {
   type: 'LineString';
   coordinates: Point3D[];
@@ -935,10 +969,6 @@ export type LineString = {
 export type Polygon = {
   type: 'Polygon';
   coordinates: Point3D[][];
-};
-export type MultiPoint = {
-  type: 'MultiPoint';
-  coordinates: Point3D[];
 };
 export type MultiLineString = {
   type: 'MultiLineString';

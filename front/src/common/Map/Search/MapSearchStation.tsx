@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateMapSearchMarker } from 'reducers/map';
+import { Viewport, updateMapSearchMarker } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
@@ -9,16 +8,25 @@ import nextId from 'react-id-generator';
 import StationCard from 'common/StationCard';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  SearchQuery,
+  osrdEditoastApi,
+  SearchOperationalPointResult,
+} from 'common/api/osrdEditoastApi';
 import { onResultSearchClick } from '../utils';
 
-export default function MapSearchStation(props) {
-  const { updateExtViewport } = props;
+type MapSearchStationProps = {
+  updateExtViewport: (viewport: Partial<Viewport>) => void;
+};
+
+const MapSearchStation = ({ updateExtViewport }: MapSearchStationProps) => {
   const map = useSelector(getMap);
-  const [searchState, setSearch] = useState('');
-  const [searchResults, setSearchResults] = useState(undefined);
-  const [trigramResults, setTrigramResults] = useState([]);
-  const [nameResults, setNameResults] = useState([]);
+  const [searchState, setSearch] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<SearchOperationalPointResult[] | undefined>(
+    undefined
+  );
+  const [trigramResults, setTrigramResults] = useState<SearchOperationalPointResult[]>([]);
+  const [nameResults, setNameResults] = useState<SearchOperationalPointResult[]>([]);
   const infraID = useSelector(getInfraID);
 
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
@@ -35,39 +43,43 @@ export default function MapSearchStation(props) {
 
   // Create playload based on the type of search "name" or "trigram"
 
-  const createPayload = (searchQuery) => ({
+  const createPayload = (searchQuery: SearchQuery) => ({
     object: 'operationalpoint',
-    query: ['and', searchQuery, ['=', ['infra_id'], infraID]],
+    query: ['and', searchQuery, ['=', ['infra_id'], infraID]] as SearchQuery,
   });
 
   // Sort on name, and on yardname
-  const orderResults = (results) =>
-    results.sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+  const orderResults = (results: SearchOperationalPointResult[]) =>
+    results.slice().sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
 
   const searchByTrigrams = useCallback(async () => {
     const searchQuery = ['=i', ['trigram'], searchState];
     const payload = createPayload(searchQuery);
-    const { data, error } = await postSearch({
+    await postSearch({
       body: payload,
-    });
-    if (error) {
-      resetSearchResult();
-    } else {
-      setTrigramResults(data);
-    }
+    })
+      .unwrap()
+      .then((results) => {
+        setTrigramResults(results as SearchOperationalPointResult[]);
+      })
+      .catch(() => {
+        resetSearchResult();
+      });
   }, [searchState]);
 
   const searchByNames = useCallback(async () => {
     const searchQuery = ['search', ['name'], searchState];
     const payload = createPayload(searchQuery);
-    const { data, error } = await postSearch({
+    await postSearch({
       body: payload,
-    });
-    if (error) {
-      resetSearchResult();
-    } else {
-      setNameResults(orderResults([...data]));
-    }
+    })
+      .unwrap()
+      .then((results) => {
+        setNameResults(orderResults(results as SearchOperationalPointResult[]));
+      })
+      .catch(() => {
+        resetSearchResult();
+      });
   }, [searchState]);
 
   const getResult = async () => {
@@ -98,7 +110,7 @@ export default function MapSearchStation(props) {
     setSearchResults([...trigramResults, ...nameResults]);
   }, [trigramResults, nameResults]);
 
-  const onResultClick = (result) =>
+  const onResultClick = (result: SearchOperationalPointResult) =>
     onResultSearchClick({
       result,
       map,
@@ -131,7 +143,6 @@ export default function MapSearchStation(props) {
             clearButton
             noMargin
             sm
-            // focus
           />
         </span>
       </div>
@@ -143,7 +154,7 @@ export default function MapSearchStation(props) {
           searchResults.map((result) => (
             <div
               className="mb-1"
-              key={`mapSearchStation-${nextId()}-${result.trigram}${result.yardname}${result.uic}`}
+              key={`mapSearchStation-${nextId()}-${result.trigram}${result.uic}`}
             >
               <StationCard
                 station={{ ...result, yardname: result.ch }}
@@ -154,8 +165,6 @@ export default function MapSearchStation(props) {
       </div>
     </>
   );
-}
-
-MapSearchStation.propTypes = {
-  updateExtViewport: PropTypes.func.isRequired,
 };
+
+export default MapSearchStation;

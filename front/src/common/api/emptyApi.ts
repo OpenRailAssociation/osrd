@@ -29,6 +29,9 @@ export const baseApi = createApi({
 });
 export const baseEditoastApi = createApi({
   reducerPath: 'editoastApi',
-  baseQuery: fetchBaseQuery({ baseUrl: `${MAIN_API.proxy_editoast}/`, prepareHeaders }) as BaseQueryFn<FetchArgs, unknown, ApiError>,
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${MAIN_API.proxy_editoast}/`,
+    prepareHeaders,
+  }) as BaseQueryFn<FetchArgs, unknown, ApiError>,
   endpoints: () => ({}),
 });

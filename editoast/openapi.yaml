@@ -71,7 +71,10 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  oneOf:
+                    - $ref: "#/components/schemas/SearchTrackResult"
+                    - $ref: "#/components/schemas/SearchOperationalPointResult"
+                    - $ref: "#/components/schemas/SearchSignalResult"
 
   /layers/layer/{layer_slug}/mvt/{view_slug}/:
     get:
@@ -2290,6 +2293,76 @@ components:
           ],
           ["=", ["infra_id"], 2],
         ]
+
+    SearchOperationalPointResult:
+      required:
+        - obj_id
+        - name
+        - geographic
+        - ch
+        - schematic
+        - trigram
+      properties:
+        obj_id:
+          type: string
+        infra_id:
+          type: string
+        name:
+          type: string
+        uic:
+          type: integer
+        trigram:
+          type: string
+        ch:
+          type: string
+        geographic:
+          $ref: "#/components/schemas/MultiPoint"
+        schematic:
+          $ref: "#/components/schemas/MultiPoint"
+
+    SearchTrackResult:
+      required:
+        - infra_id
+        - line_code
+        - line_name
+      properties:
+        infra_id:
+          type: integer
+        line_code:
+          type: integer
+        line_name:
+          type: string
+
+    SearchSignalResult:
+      required:
+        - label
+        - geographic
+        - schematic
+        - line_code
+        - line_name
+      properties:
+        label:
+          type: string
+        infra_id:
+          type: integer
+        aspects:
+          type: array
+          items:
+            type: string
+        systems:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+        line_code:
+          type: integer
+        line_name:
+          type: string
+        geographic:
+          $ref: "#/components/schemas/Point"
+        schematic:
+          $ref: "#/components/schemas/Point"
 
     ProjectCreateRequest:
       properties:
