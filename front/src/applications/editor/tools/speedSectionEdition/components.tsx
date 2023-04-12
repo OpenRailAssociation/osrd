@@ -1,6 +1,6 @@
 import { mapValues, without, cloneDeep } from 'lodash';
 import { useSelector } from 'react-redux';
-import { Layer, Source } from 'react-map-gl';
+import { Layer, Popup, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import { Feature, FeatureCollection, LineString, Point } from 'geojson';
@@ -8,6 +8,7 @@ import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FaTimes, MdShowChart } from 'react-icons/all';
 import { FaFlagCheckered } from 'react-icons/fa';
+import { MdSpeed } from 'react-icons/md';
 
 import EditorContext from '../../context';
 import { SpeedSectionEditionState, TrackState } from './types';
@@ -18,9 +19,9 @@ import { getMap } from '../../../../reducers/map/selectors';
 import { TrackSectionEntity } from '../../../../types';
 import { getEntities } from '../../data/api';
 import { getInfraID } from '../../../../reducers/osrdconf/selectors';
-import { getTrackRangeFeatures } from './utils';
+import { getPointAt, getTrackRangeFeatures } from './utils';
 import { flattenEntity } from '../../data/utils';
-import Loader from '../../../../common/Loader';
+import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
@@ -35,19 +36,21 @@ export const TrackRangesList: FC = () => {
   const [showAll, setShowAll] = useState(false);
 
   return (
-    <>
+    <div>
+      <h4 className="pb-0">
+        <MdShowChart className="me-1" /> {t('Editor.tools.speed-edition.linked-track-sections')}
+      </h4>
       <ul className="list-unstyled">
         {(showAll ? ranges : ranges.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT)).map((range, i) => {
           const trackState = trackSectionsCache[range.track];
 
           return (
-            <li
-              key={i}
-              className="mb-4 d-flex flex-row align-items-center"
-              onMouseEnter={() => setState({ hoveredTrackSection: range.track })}
-              onMouseLeave={() => setState({ hoveredTrackSection: null })}
-            >
-              {(!trackState || trackState.type === 'loading') && <Loader />}
+            <li key={i} className="mb-4 d-flex flex-row align-items-center">
+              {(!trackState || trackState.type === 'loading') && (
+                <div className="position-relative w-100" style={{ height: 50 }}>
+                  <LoaderFill className="bg-transparent" />
+                </div>
+              )}
               {trackState?.type === 'success' && (
                 <>
                   <div className="flex-shrink-0 mr-3 d-flex flex-column">
@@ -65,6 +68,16 @@ export const TrackRangesList: FC = () => {
                             },
                           });
                         }}
+                        onMouseLeave={() => setState({ hoveredPoint: null })}
+                        onMouseEnter={() =>
+                          setState({
+                            hoveredPoint: {
+                              track: trackState.track,
+                              position: getPointAt(trackState.track, range.begin),
+                              extremity: 'BEGIN',
+                            },
+                          })
+                        }
                       >
                         <BsArrowBarRight />
                       </button>
@@ -83,6 +96,16 @@ export const TrackRangesList: FC = () => {
                             },
                           });
                         }}
+                        onMouseLeave={() => setState({ hoveredPoint: null })}
+                        onMouseEnter={() =>
+                          setState({
+                            hoveredPoint: {
+                              track: trackState.track,
+                              position: getPointAt(trackState.track, range.end),
+                              extremity: 'END',
+                            },
+                          })
+                        }
                       >
                         <FaFlagCheckered />
                       </button>
@@ -143,23 +166,55 @@ export const TrackRangesList: FC = () => {
           {t('Editor.tools.speed-edition.add-track-range')}
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
-export const SpeedSectionEditionLeftPanel: FC = () => {
+export const MetadataForm: FC = () => {
+  const { t } = useTranslation();
   const {
     state: { entity, trackSectionsCache },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
+
+  return (
+    <div>
+      <h4 className="pb-0">
+        <MdSpeed className="me-1" /> {t('Editor.tools.speed-edition.speed-limits')}
+      </h4>
+      {/* The following tag is here to mimick other tools' forms style: */}
+      <form className="rjsf" onSubmit={(e) => e.preventDefault()}>
+        <div className="form-group field field-string">
+          <label className="control-label" htmlFor="speed-section.main-limit">
+            {t('Editor.tools.speed-edition.main-speed-limit')}
+          </label>
+          <input
+            className="form-control"
+            id="speed-section.main-limit"
+            placeholder=""
+            type="number"
+            min={0}
+            value={entity.properties.speed_limit || ''}
+            onChange={(e) => {
+              const newEntity = cloneDeep(entity);
+              const value = parseFloat(e.target.value);
+              newEntity.properties.speed_limit = !isNaN(value) ? value : undefined;
+              setState({ entity: newEntity });
+            }}
+          />
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export const SpeedSectionEditionLeftPanel: FC = () => {
   const { t } = useTranslation();
 
   return (
     <div>
       <legend>{t('Editor.obj-types.SpeedSection')}</legend>
-      <h4 className="pb-0">
-        <MdShowChart className="me-1" /> {t('Editor.tools.speed-edition.linked-track-sections')}
-      </h4>
+      <MetadataForm />
       <TrackRangesList />
     </div>
   );
@@ -169,7 +224,7 @@ export const SpeedSectionEditionLayers: FC = () => {
   const {
     renderingFingerprint,
     editorState: { editorLayers },
-    state: { entity, trackSectionsCache },
+    state: { entity, trackSectionsCache, hoveredPoint },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
@@ -263,6 +318,17 @@ export const SpeedSectionEditionLayers: FC = () => {
           filter={['has', 'position']}
         />
       </Source>
+      {hoveredPoint && (
+        <Popup
+          className="popup"
+          anchor="bottom"
+          longitude={hoveredPoint.position[0]}
+          latitude={hoveredPoint.position[1]}
+          closeButton={false}
+        >
+          <EntitySumUp entity={hoveredPoint.track} />
+        </Popup>
+      )}
     </>
   );
 };

@@ -36,7 +36,7 @@ export function getEditSpeedSectionState(entity: SpeedSectionEntity): SpeedSecti
     entity: cloneDeep(entity),
     trackSectionsCache: {},
     interactionState: { type: 'idle' },
-    hoveredTrackSection: null,
+    hoveredPoint: null,
   };
 }
 
@@ -81,4 +81,13 @@ export function getTrackRangeFeatures(
       properties: { ...properties, track: range.track, position: 'END' },
     },
   ];
+}
+
+export function getPointAt(track: TrackSectionEntity, at: number): Position {
+  const dataLength = track.properties.length;
+  if (at <= 0) return track.geometry.coordinates[0];
+  if (at >= dataLength) return last(track.geometry.coordinates) as Position;
+
+  const computedLength = length(track);
+  return along(track.geometry, (at * computedLength) / dataLength).geometry.coordinates;
 }

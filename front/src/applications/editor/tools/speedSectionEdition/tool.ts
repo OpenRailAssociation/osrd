@@ -1,5 +1,6 @@
 import { MdSpeed } from 'react-icons/md';
 import { IoMdAddCircleOutline } from 'react-icons/io';
+import { cloneDeep, isEqual } from 'lodash';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { SpeedSectionEditionState } from './types';
@@ -9,6 +10,7 @@ import {
   SpeedSectionEditionLeftPanel,
   SpeedSectionMessages,
 } from './components';
+import { BiReset } from 'react-icons/bi';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   id: 'speed-section-edition',
@@ -26,7 +28,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   actions: [
     [
       {
-        id: 'new-switch',
+        id: 'new-speed-section',
         icon: IoMdAddCircleOutline,
         labelTranslationKey: 'Editor.tools.speed-section-edition.actions.new-speed-section',
         onClick({ setState }) {
@@ -36,6 +38,19 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
             ...DEFAULT_COMMON_TOOL_STATE,
             entity,
             initialEntity: entity,
+          });
+        },
+      },
+      {
+        id: 'reset-speed-section',
+        icon: BiReset,
+        labelTranslationKey: 'Editor.tools.speed-section-edition.actions.reset-speed-section',
+        isDisabled({ state: { entity, initialEntity } }) {
+          return isEqual(entity, initialEntity);
+        },
+        onClick({ setState, state: { initialEntity } }) {
+          setState({
+            entity: cloneDeep(initialEntity),
           });
         },
       },
