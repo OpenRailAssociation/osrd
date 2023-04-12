@@ -2435,6 +2435,7 @@ components:
           type: integer
         image:
           type: integer
+          nullable: true
           description: the image id
         creation_date:
           type: string

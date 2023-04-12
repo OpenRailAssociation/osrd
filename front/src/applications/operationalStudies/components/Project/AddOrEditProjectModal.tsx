@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import projectLogo from 'assets/pictures/views/projects.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -31,7 +31,7 @@ import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
 export type Props = {
-  editionMode?: boolean;
+  editionMode?: false;
   project?: ProjectResult;
   getProject?: (v: boolean) => void;
 };
@@ -40,7 +40,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
   const [currentProject, setCurrentProject] = useState<ProjectResult | undefined>(project);
-  const [blobImage, setBlobImage] = useState<Blob>();
+  const [tempProjectImage, setTempProjectImage] = useState<Blob | null | undefined>();
 
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
@@ -48,12 +48,6 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
 
   const [postProject] = osrdEditoastApi.usePostProjectsMutation();
   const [patchProject] = osrdEditoastApi.usePatchProjectsByProjectIdMutation();
-
-  useEffect(() => {
-    if (!blobImage) {
-      setCurrentProject({ ...currentProject, image: undefined, image_url: undefined });
-    }
-  }, [blobImage]);
 
   const removeTag = (idx: number) => {
     if (currentProject?.tags) {
@@ -64,9 +58,11 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = currentProject?.tags ? Array.from(currentProject.tags) : [];
-    newTags.push(tag);
-    setCurrentProject({ ...currentProject, tags: newTags });
+    if (currentProject?.tags) {
+      const newTags: string[] = currentProject.tags ? Array.from(currentProject.tags) : [];
+      newTags.push(tag);
+      setCurrentProject({ ...currentProject, tags: newTags });
+    }
   };
 
   const getDocKey = async (image: Blob) => {
@@ -81,8 +77,8 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       setDisplayErrors(true);
     } else {
       try {
-        if (blobImage) {
-          currentProject.image = await getDocKey(blobImage);
+        if (tempProjectImage) {
+          currentProject.image = await getDocKey(tempProjectImage as Blob);
         }
         const request = postProject({
           projectCreateRequest: currentProject as ProjectCreateRequest,
@@ -107,8 +103,11 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     } else if (project) {
       try {
         let imageId = currentProject.image;
-        if (blobImage) {
-          imageId = await getDocKey(blobImage);
+        if (tempProjectImage) {
+          imageId = await getDocKey(tempProjectImage as Blob);
+        } else {
+          imageId = null;
+          setTempProjectImage(imageId);
         }
         currentProject.image = imageId;
         const request = patchProject({
@@ -162,9 +161,9 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
           <div className="col-xl-4 col-lg-5 col-md-6">
             <div className="project-edition-modal-picture">
               <PictureUploader
-                currentProjectImageUrl={currentProject?.image_url}
-                blobImage={blobImage}
-                setBlobImage={setBlobImage}
+                image={currentProject?.image}
+                setTempProjectImage={setTempProjectImage}
+                tempProjectImage={tempProjectImage}
               />
             </div>
           </div>
