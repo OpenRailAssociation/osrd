@@ -11,6 +11,18 @@
       opacity: 1;
     }
   }
+  .scenario-timetable-collapsed {
+    display: flex;
+    position: absolute;
+    left: 0;
+    background-color: var(--secondary);
+    color: var(--white);
+    border: unset;
+    border-radius: 4px;
+    font-size: 2rem;
+    height: 2rem;
+    z-index: 2;
+  }
   .scenario-loader {
     position: absolute;
     color: var(--coolgray9);
@@ -221,37 +233,29 @@
                 font-size: 0.8rem;
               }
             }
-            &.with-details {
-              .scenario-timetable-train-body {
-                display: flex;
-                justify-content: space-between;
-                padding: 0.25rem;
-                font-size: 0.8rem;
-              }
-              .scenario-timetable-train-tags {
-                display: flex;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 0.25rem;
-                padding: 0 0.25rem;
-                overflow: auto;
-                .scenario-timetable-train-tags-tag {
-                  font-size: 0.7rem;
-                  font-weight: 500;
-                  background-color: var(--green);
-                  border-radius: 4px;
-                  padding: 0 0.25rem;
-                  margin-bottom: 0.25rem;
-                  &:hover {
-                    opacity: 0.5;
-                  }
-                }
-              }
+            .scenario-timetable-train-body {
+              display: flex;
+              justify-content: space-between;
+              padding: 0.25rem;
+              font-size: 0.8rem;
             }
-            &:not(.with-details) {
-              .scenario-timetable-train-body,
-              .scenario-timetable-train-tags {
-                display: none;
+            .scenario-timetable-train-tags {
+              display: flex;
+              align-items: center;
+              flex-wrap: wrap;
+              gap: 0.25rem;
+              padding: 0 0.25rem;
+              overflow: auto;
+              .scenario-timetable-train-tags-tag {
+                font-size: 0.7rem;
+                font-weight: 500;
+                background-color: var(--green);
+                border-radius: 4px;
+                padding: 0 0.25rem;
+                margin-bottom: 0.25rem;
+                &:hover {
+                  opacity: 0.5;
+                }
               }
             }
           }
@@ -271,6 +275,14 @@
             }
             .scenario-timetable-train-buttons {
               display: flex;
+            }
+          }
+        }
+        &:not(.with-details) {
+          .scenario-timetable-train {
+            .scenario-timetable-train-body,
+            .scenario-timetable-train-tags {
+              display: none;
             }
           }
         }

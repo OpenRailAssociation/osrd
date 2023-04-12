@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaDownload, FaPlus } from 'react-icons/fa';
+import cx from 'classnames';
 
-import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
@@ -39,11 +39,13 @@ import TimetableTrainCard from './TimetableTrainCard';
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   setTrainScheduleIDsToModify: (IDs?: number[]) => void;
+  trainsWithDetails: boolean;
 };
 
 export default function Timetable({
   setDisplayTrainScheduleManagement,
   setTrainScheduleIDsToModify,
+  trainsWithDetails,
 }: Props) {
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
@@ -218,25 +220,26 @@ export default function Timetable({
           />
         </div>
       </div>
-      <div className="scenario-timetable-trains">
+      <div className={cx('scenario-timetable-trains', trainsWithDetails && 'with-details')}>
         {trainsList &&
           selectedProjection &&
-          trainsList.map((train: ScheduledTrain, idx: number) =>
-            !train.isFiltered ? (
-              <TimetableTrainCard
-                train={train}
-                key={`timetable-train-card-${train.id}`}
-                isSelected={selectedTrain === idx}
-                projectionPathIsUsed={selectedProjection.id === train.id}
-                idx={idx}
-                changeSelectedTrain={changeSelectedTrain}
-                deleteTrain={deleteTrain}
-                duplicateTrain={duplicateTrain}
-                selectPathProjection={selectPathProjection}
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
-              />
-            ) : null
+          trainsList.map(
+            (train: ScheduledTrain, idx: number) =>
+              !train.isFiltered && (
+                <TimetableTrainCard
+                  train={train}
+                  key={`timetable-train-card-${train.id}`}
+                  isSelected={selectedTrain === idx}
+                  projectionPathIsUsed={selectedProjection.id === train.id}
+                  idx={idx}
+                  changeSelectedTrain={changeSelectedTrain}
+                  deleteTrain={deleteTrain}
+                  duplicateTrain={duplicateTrain}
+                  selectPathProjection={selectPathProjection}
+                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                  setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
+                />
+              )
           )}
       </div>
     </div>
