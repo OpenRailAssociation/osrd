@@ -24,6 +24,7 @@ export const InfraErrorTypeList: Array<InfraErrorType> = [
   'duplicated_group',
   'missing_buffer_stop',
   'path_is_not_continuous',
+  'overlapping_speed_sections',
   'overlapping_switches',
   'overlapping_track_links',
 ];

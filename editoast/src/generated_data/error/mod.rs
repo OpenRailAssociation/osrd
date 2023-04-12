@@ -208,7 +208,7 @@ impl GeneratedData for ErrorLayer {
             infra_cache,
             &graph,
             &speed_sections::OBJECT_GENERATORS,
-            &[],
+            &speed_sections::GLOBAL_GENERATORS,
         ));
 
         infra_errors.extend(generate_errors(
@@ -322,7 +322,7 @@ mod test {
             &small_infra_cache,
             &graph,
             &speed_sections::OBJECT_GENERATORS,
-            &[],
+            &speed_sections::GLOBAL_GENERATORS,
         )
         .is_empty());
         assert!(generate_errors(

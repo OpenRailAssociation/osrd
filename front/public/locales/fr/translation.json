@@ -59,6 +59,7 @@
         "no_buffer_stop": "no_buffer_stop",
         "object_out_of_path": "object_out_of_path",
         "out_of_range": "Valeur invalide (hors intervalle)",
+        "overlapping_speed_sections": "Superposition de limites de vitesse",
         "overlapping_switches": "overlapping_switches",
         "overlapping_track_links": "overlapping_track_links",
         "path_does_not_match_endpoints": "path_does_not_match_endpoints",
