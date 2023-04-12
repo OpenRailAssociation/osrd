@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { dateTimeFrenchFormatting } from 'utils/date';
 
 type Props = {
-  date: Date;
+  date?: Date | null;
   className: string;
   translation: string;
 };

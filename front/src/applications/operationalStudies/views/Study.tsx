@@ -147,12 +147,10 @@ export default function Study() {
       getProject();
       getStudy();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (studyID) getScenarioList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 
   return (
@@ -171,41 +169,31 @@ export default function Study() {
           {project && study ? (
             <div className="study-details">
               <div className="study-details-dates">
-                {study.creation_date && (
-                  <DateBox
-                    date={new Date(study.creation_date)}
-                    className="creation"
-                    translation="creation"
-                  />
-                )}
-                {study.start_date_study && (
-                  <DateBox
-                    date={new Date(study.start_date_study)}
-                    className="start"
-                    translation="start"
-                  />
-                )}
-                {study.expected_end_date_study && (
-                  <DateBox
-                    date={new Date(study.expected_end_date_study)}
-                    className="estimatedend"
-                    translation="estimatedend"
-                  />
-                )}
-                {study.actual_end_date_study && (
-                  <DateBox
-                    date={new Date(study.actual_end_date_study)}
-                    className="realend"
-                    translation="realend"
-                  />
-                )}
-                {study.last_modification && (
-                  <DateBox
-                    date={new Date(study.last_modification)}
-                    className="modified"
-                    translation="modified"
-                  />
-                )}
+                <DateBox
+                  date={study.creation_date ? new Date(study.creation_date) : null}
+                  className="creation"
+                  translation="creation"
+                />
+                <DateBox
+                  date={study.start_date ? new Date(study.start_date) : null}
+                  className="start"
+                  translation="start"
+                />
+                <DateBox
+                  date={study.expected_end_date ? new Date(study.expected_end_date) : null}
+                  className="estimatedend"
+                  translation="estimatedend"
+                />
+                <DateBox
+                  date={study.actual_end_date ? new Date(study.actual_end_date) : null}
+                  className="realend"
+                  translation="realend"
+                />
+                <DateBox
+                  date={study.last_modification ? new Date(study.last_modification) : null}
+                  className="modified"
+                  translation="modified"
+                />
               </div>
               <div className="row">
                 <div className="col-xl-9 col-lg-8 col-md-7">
