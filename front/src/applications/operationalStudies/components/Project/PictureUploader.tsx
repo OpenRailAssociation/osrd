@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AiOutlinePicture } from 'react-icons/ai';
 import { useTranslation } from 'react-i18next';
 import { SiFoodpanda } from 'react-icons/si';
@@ -9,56 +9,74 @@ import { TbCheese } from 'react-icons/tb';
 import { FaCat, FaDog } from 'react-icons/fa';
 import logoSNCF from 'assets/logo_sncf_bw.png';
 import logoGhibli from 'assets/pictures/misc/ghibli.svg';
+import { getDocument } from 'common/api/documentApi';
 
-type PicturePlaceholderProps = {
-  currentProjectImageUrl?: string;
-  blobImage?: Blob;
+type PropsPlaceholder = {
+  image?: number | null;
   isValid: boolean;
+  tempProjectImage: Blob | null | undefined;
 };
 
-type PictureUploaderProps = {
-  currentProjectImageUrl?: string;
-  blobImage?: Blob;
-  setBlobImage: (blob?: Blob) => void;
+type Props = {
+  image?: number | null;
+  setTempProjectImage: (tempProjectImage: Blob | null | undefined) => void;
+  tempProjectImage: Blob | null | undefined;
 };
 
-type PicturePlaceholderButtonsProps = {
-  setBlobImage: (blob?: Blob) => void;
+type PropsButtons = {
+  setTempProjectImage: (tempProjectImage: Blob | null | undefined) => void;
 };
 
-function PicturePlaceholder({
-  currentProjectImageUrl,
-  blobImage,
-  isValid,
-}: PicturePlaceholderProps) {
-  const { t } = useTranslation('operationalStudies/project');
-  if (blobImage) {
-    return <img src={URL.createObjectURL(blobImage)} alt="Project illustration" />;
-  }
-  if (currentProjectImageUrl) {
-    return <img src={currentProjectImageUrl} alt="Project illustration" />;
-  }
+function displayNoImageMessages(isValid: boolean, t: (arg0: string) => string) {
   return (
     <>
       <AiOutlinePicture />
       {isValid ? (
-        <div className="project-edition-modal-picture-placeholder-text">
-          {t('picturePlaceholder')}
-        </div>
+        <div className="project-edition-modal-picture-placeholder-text">{t('noImage')}</div>
       ) : (
         <div className="project-edition-modal-picture-placeholder-text invalid">
-          {t('picturePlaceholderInvalid')}
+          {t('noImageInvalid')}
         </div>
       )}
     </>
   );
 }
 
-function PicturePlaceholderButtons({ setBlobImage }: PicturePlaceholderButtonsProps) {
+function PicturePlaceholder({ image, isValid, tempProjectImage }: PropsPlaceholder) {
+  const { t } = useTranslation('operationalStudies/project');
+  const [projectImage, setProjectImage] = useState<Blob | undefined>(undefined);
+
+  const getProjectImageBlob = async () => {
+    if (image) {
+      try {
+        const imageBlob = await getDocument(image);
+        setProjectImage(imageBlob);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    getProjectImageBlob();
+  }, [image]);
+  if (tempProjectImage) {
+    return <img src={URL.createObjectURL(tempProjectImage)} alt="Project illustration" />;
+  }
+  if (tempProjectImage === null) {
+    return <>{displayNoImageMessages(isValid, t)}</>;
+  }
+  if (projectImage) {
+    return <img src={URL.createObjectURL(projectImage)} alt="Project illustration" />;
+  }
+  return <>{displayNoImageMessages(isValid, t)}</>;
+}
+
+function PicturePlaceholderButtons({ setTempProjectImage }: PropsButtons) {
   async function getRandomImage(url: string) {
     try {
       const currentImage = await fetch(url).then((res) => res.blob());
-      setBlobImage(currentImage);
+      setTempProjectImage(currentImage);
     } catch (error) {
       console.error(error);
     }
@@ -129,47 +147,39 @@ function PicturePlaceholderButtons({ setBlobImage }: PicturePlaceholderButtonsPr
       >
         <img src={logoSNCF} alt="SNCF BW LOGO" />
       </button>
-      <button className="remove" type="button" onClick={() => setBlobImage(undefined)}>
+      <button className="remove" type="button" onClick={() => setTempProjectImage(null)}>
         <TiDelete />
       </button>
     </div>
   );
 }
 
-export default function PictureUploader({
-  currentProjectImageUrl,
-  blobImage,
-  setBlobImage,
-}: PictureUploaderProps) {
+export default function PictureUploader({ image, setTempProjectImage, tempProjectImage }: Props) {
   const [isValid, setIsValid] = useState<boolean>(true);
 
   const handleUpload = async (file?: File) => {
     if (file && file.type.startsWith('image/')) {
-      setBlobImage(file);
+      setTempProjectImage(file);
       setIsValid(true);
     } else {
-      setBlobImage(undefined);
+      setTempProjectImage(undefined);
       setIsValid(false);
     }
   };
   return (
     <div className="project-edition-modal-picture-placeholder">
       <label htmlFor="picture-upload">
-        <PicturePlaceholder
-          currentProjectImageUrl={currentProjectImageUrl}
-          blobImage={blobImage}
-          isValid={isValid}
-        />
+        <PicturePlaceholder image={image} isValid={isValid} tempProjectImage={tempProjectImage} />
         <input
           id="picture-upload"
           type="file"
           name="imageFile"
           onChange={(e) => handleUpload(e.target.files ? e.target.files[0] : undefined)}
-          accept=".png"
+          accept=".png, .jpg, .jpeg"
           className="d-none"
         />
       </label>
-      <PicturePlaceholderButtons setBlobImage={setBlobImage} />
+      <PicturePlaceholderButtons setTempProjectImage={setTempProjectImage} />
     </div>
   );
 }

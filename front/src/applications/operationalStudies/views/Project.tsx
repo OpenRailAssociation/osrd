@@ -84,7 +84,7 @@ export default function Project() {
     try {
       const result = await get(`${PROJECTS_URI}${projectID}/`);
       setProject(result);
-      if (result.image_url) {
+      if (result.image) {
         getProjectImage(`${DOCUMENT_URI}${result.image}`);
       }
       if (withNotification) {
@@ -142,12 +142,12 @@ export default function Project() {
             <div className="project-details">
               <div className="project-details-title">
                 <div className="row w-100 no-gutters">
-                  <div className={project.image_url ? 'col-lg-4 col-md-4' : 'd-none'}>
+                  <div className={project.image ? 'col-lg-4 col-md-4' : 'd-none'}>
                     <div className="project-details-title-img">
                       <img src={imageUrl} alt="project logo" />
                     </div>
                   </div>
-                  <div className={project.image_url ? 'pl-md-2 col-lg-8 col-md-8' : 'col-12'}>
+                  <div className={project.image ? 'pl-md-2 col-lg-8 col-md-8' : 'col-12'}>
                     <div className="project-details-title-content">
                       <div className="project-details-title-name">
                         {project.name}
