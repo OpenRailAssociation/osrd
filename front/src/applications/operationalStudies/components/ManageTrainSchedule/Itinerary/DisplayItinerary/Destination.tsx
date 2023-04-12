@@ -46,16 +46,28 @@ function Destination(props: DestinationProps) {
         <IoFlag />
       </span>
       {destination !== undefined ? (
-        <div className="pl-1 hover w-100 d-flex align-items-center">
-          <div
-            onClick={() => zoomToFeaturePoint(destination?.coordinates, destination?.id)}
-            role="button"
-            tabIndex={0}
-            className="flex-grow-1"
-          >
-            <strong className="mr-1 text-nowrap">
-              {destination.name ? destination.name : destination.id?.split('-')[0]}
-            </strong>
+        <div>
+          <div className="pl-1 hover w-100 d-flex align-items-center">
+            <div
+              onClick={() => zoomToFeaturePoint(destination?.coordinates, destination?.id)}
+              role="button"
+              tabIndex={0}
+              className="flex-grow-1"
+            >
+              <strong className="mr-1 text-nowrap">
+                {destination.name ? destination.name : destination.id?.split('-')[0]}
+              </strong>
+            </div>
+            <button
+              className="btn btn-sm btn-only-icon btn-white"
+              type="button"
+              onClick={() => store.dispatch(updateDestination(undefined))}
+            >
+              <i className="icons-circle-delete" />
+              <span className="sr-only" aria-hidden="true">
+                Delete
+              </span>
+            </button>
           </div>
 
           {isStdcm && (
@@ -94,17 +106,6 @@ function Destination(props: DestinationProps) {
               </div>
             </div>
           )}
-
-          <button
-            className="btn btn-sm btn-only-icon btn-white"
-            type="button"
-            onClick={() => store.dispatch(updateDestination(undefined))}
-          >
-            <i className="icons-circle-delete" />
-            <span className="sr-only" aria-hidden="true">
-              Delete
-            </span>
-          </button>
         </div>
       ) : (
         <small>{t('noDestinationChosen')}</small>
