@@ -96,6 +96,11 @@ class NoBufferStop(InfraWarningTrait):
     error_type: Literal["no_buffer_stop"] = Field(default="no_buffer_stop")
 
 
+class OverlappingSpeedSections(InfraWarningTrait):
+    error_type: Literal["overlapping_speed_sections"] = Field(default="overlapping_speed_sections")
+    reference: ObjectReference
+
+
 class OverlappingTrackLinks(InfraWarningTrait):
     error_type: Literal["overlapping_track_links"] = Field(default="overlapping_track_links")
     reference: ObjectReference
@@ -113,6 +118,7 @@ InfraError = Annotated[
         NoBufferStop,
         ObjectOutOfPath,
         OutOfRange,
+        OverlappingSpeedSections,
         OverlappingSwitches,
         OverlappingTrackLinks,
         UnknownPortName,

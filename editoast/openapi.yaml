@@ -1913,6 +1913,7 @@ components:
         - object_out_of_path
         - odd_buffer_stop_location
         - out_of_range
+        - overlapping_speed_sections
         - overlapping_switches
         - overlapping_track_links
         - path_does_not_match_endpoints
