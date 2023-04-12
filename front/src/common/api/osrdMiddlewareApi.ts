@@ -723,6 +723,7 @@ export type Path = {
     position?: number;
   }[];
   steps?: {
+    id?: string;
     name?: string;
     suggestion?: boolean;
     duration?: number;
