@@ -291,6 +291,12 @@
       },
       "speed-edition": {
         "label": "Outil \"Sections de vitesse\"",
+        "actions": {
+          "new-speed-section": "Créer une nouvelle section de vitesse",
+          "reset-speed-section": "Annuler les modifications en cours"
+        },
+        "speed-limits": "Limitations de vitesses",
+        "main-speed-limit": "Limitation de vitesse par défaut",
         "linked-track-sections": "Sections de lignes liées",
         "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
