@@ -117,7 +117,7 @@ class TestBALtoBAL {
         fullPath.add(blockInfra.getBlocksAtDetector(detectorU.normal).first())
         fullPath.add(blockInfra.getBlocksAtDetector(detectorV.normal).first())
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.CLEAR)
-        val res = simulator.evaluate(infra, loadedSignalInfra, blockInfra, fullPath, 0, fullPath.size, zoneStates)
+        val res = simulator.evaluate(infra, loadedSignalInfra, blockInfra, fullPath, 0, fullPath.size, zoneStates, ZoneStatus.INCOMPATIBLE)
         assertEquals("A", res[loadedSignalInfra.getLogicalSignals(signalV).first()]!!.getEnum("aspect"))
     }
 }
