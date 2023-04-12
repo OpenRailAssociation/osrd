@@ -20,7 +20,13 @@
     "curves": "Courbes",
     "maxSpeed": "Vitesse ligne",
     "slopes": "Déclivités",
-    "electricalProfiles": "Profils électriques"
+    "electricalProfiles": "Profils électriques",
+    "powerRestriction": "Restriction de puissance"
+  },
+  "powerRestriction": {
+    "waited": "Attendue",
+    "incompatible": "Incompatible",
+    "unknown": "Restriction de puissance inconnue"
   },
   "electricalProfiles": {
     "25000": "25000V",
