@@ -1,7 +1,11 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateViewport, updateLineSearchCode, updateMapSearchMarker } from 'reducers/map';
-import PropTypes from 'prop-types';
+import {
+  updateViewport,
+  updateLineSearchCode,
+  updateMapSearchMarker,
+  Viewport,
+} from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import MapSearchStation from 'common/Map/Search/MapSearchStation';
 import Tabs from 'common/Tabs';
@@ -10,11 +14,14 @@ import MapSearchLine from './MapSearchLine';
 import HearderPopUp from '../HeaderPopUp';
 import MapSearchSignal from './MapSearchSignal';
 
-export default function MapSearch(props) {
-  const { closeMapSearchPopUp } = props;
+type MapSearchProps = {
+  closeMapSearchPopUp: () => void;
+};
+
+const MapSearch = ({ closeMapSearchPopUp }: MapSearchProps) => {
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, undefined)),
+    (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
   const { lineSearchCode, mapSearchMarker } = useSelector(getMap);
@@ -68,8 +75,6 @@ export default function MapSearch(props) {
       />
     </div>
   );
-}
-
-MapSearch.propTypes = {
-  closeMapSearchPopUp: PropTypes.func.isRequired,
 };
+
+export default MapSearch;
