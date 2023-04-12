@@ -43,6 +43,9 @@ pub enum InfraErrorType {
         position: f64,
         expected_range: [f64; 2],
     },
+    OverlappingSpeedSections {
+        reference: ObjectRef,
+    },
     OverlappingSwitches {
         reference: ObjectRef,
     },
@@ -226,6 +229,26 @@ impl InfraError {
             field: None,
             is_warning: true,
             sub_type: InfraErrorType::OddBufferStopLocation,
+        }
+    }
+
+    /// Create a new overlapping speed sections error.
+    /// Takes the two speed sections ID that overlap as arguments.
+    pub fn new_overlapping_speed_sections<T1: AsRef<str>, T2: AsRef<str>>(
+        sc1: T1,
+        sc2: T2,
+    ) -> Self {
+        // Ensure sc1 is the smallest ID
+        if sc1.as_ref() > sc2.as_ref() {
+            return Self::new_overlapping_speed_sections(sc2, sc1);
+        }
+        let reference = ObjectRef::new(ObjectType::SpeedSection, sc1.as_ref());
+        Self {
+            obj_id: sc2.as_ref().into(),
+            obj_type: ObjectType::SpeedSection,
+            field: Default::default(),
+            is_warning: true,
+            sub_type: InfraErrorType::OverlappingSpeedSections { reference },
         }
     }
 
