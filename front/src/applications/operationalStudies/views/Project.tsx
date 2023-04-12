@@ -137,7 +137,6 @@ export default function Project() {
             return 0;
           });
         }
-        console.log('filtered studies : ', filteredStudies);
         setStudiesList(filteredStudies);
       } catch (error) {
         console.error(error);
