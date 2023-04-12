@@ -1,3 +1,5 @@
+import { Position } from 'geojson';
+
 import { CommonToolState } from '../types';
 import { SpeedSectionEntity, TrackSectionEntity } from '../../../../types';
 
@@ -12,7 +14,11 @@ export type SpeedSectionEditionState = CommonToolState & {
 
   trackSectionsCache: Record<string, TrackState>;
 
-  hoveredTrackSection: string | null;
+  hoveredPoint: null | {
+    track: TrackSectionEntity;
+    extremity: 'BEGIN' | 'END';
+    position: Position;
+  };
   interactionState:
     | { type: 'idle' }
     | { type: 'movePoint'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
