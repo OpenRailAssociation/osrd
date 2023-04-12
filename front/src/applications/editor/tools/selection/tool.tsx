@@ -13,6 +13,7 @@ import {
   BufferStopEntity,
   DetectorEntity,
   SignalEntity,
+  SpeedSectionEntity,
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../../types';
@@ -24,6 +25,7 @@ import {
 import SwitchEditionTool from '../switchEdition/tool';
 import { getMixedEntities } from '../../data/api';
 import { selectInZone } from '../../../../utils/mapboxHelper';
+import SpeedSectionEditionTool from '../speedSectionEdition/tool';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -127,6 +129,12 @@ const SelectionTool: Tool<SelectionState> = {
                 switchTool(SwitchEditionTool, {
                   initialEntity: selectedElement as SwitchEntity,
                   entity: selectedElement as SwitchEntity,
+                });
+                break;
+              case 'SpeedSection':
+                switchTool(SpeedSectionEditionTool, {
+                  initialEntity: selectedElement as SpeedSectionEntity,
+                  entity: selectedElement as SpeedSectionEntity,
                 });
                 break;
               default:

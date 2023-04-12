@@ -275,7 +275,19 @@ const GeoJSONs: FC<{
   prefix?: string;
   layers?: Set<LayerType>;
   fingerprint?: string | number;
-}> = ({ colors, layersSettings, hidden, selection, layers, fingerprint, prefix = 'editor/' }) => {
+  isEmphasized?: boolean;
+  beforeId?: string;
+}> = ({
+  colors,
+  layersSettings,
+  hidden,
+  selection,
+  layers,
+  fingerprint,
+  prefix = 'editor/',
+  isEmphasized = true,
+  beforeId,
+}) => {
   const infraID = useSelector(getInfraID);
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
@@ -303,7 +315,7 @@ const GeoJSONs: FC<{
       symbolsList: ALL_SIGNAL_LAYERS,
       sourceLayer: 'geo',
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
-      isEmphasized: true,
+      isEmphasized: isEmphasized,
       showIGNBDORTHO,
       layersSettings,
     }),
@@ -349,7 +361,7 @@ const GeoJSONs: FC<{
         sources.map((source) => (
           <Source key={source.id} promoteId="id" type="vector" url={source.url}>
             {source.layers.map((layer) => (
-              <Layer key={layer.id} {...layer} />
+              <Layer key={layer.id} {...layer} beforeId={beforeId} />
             ))}
           </Source>
         ))}
