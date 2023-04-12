@@ -18,9 +18,13 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
-import { ProjectResult, ScenarioResult, StudyResult } from 'common/api/osrdEditoastApi';
+import {
+  ProjectResult,
+  ScenarioResult,
+  StudyResult,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import BreadCrumbs from '../components/BreadCrumbs';
-import { PROJECTS_URI, SCENARIOS_URI, STUDIES_URI } from '../components/operationalStudiesConsts';
 import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import FilterTextField from '../components/FilterTextField';
 
@@ -41,11 +45,11 @@ function displayScenariosList(
 ) {
   return scenariosList ? (
     <div className="row no-gutters">
-      <div className="col-xl-4 col-lg-6" key={nextId()}>
+      <div className="col-xl-4 col-lg-6">
         <ScenarioCardEmpty />
       </div>
       {scenariosList.map((scenario) => (
-        <div className="col-xl-4 col-lg-6" key={nextId()}>
+        <div className="col-xl-4 col-lg-6" key={`study-displayScenariosList-${scenario.id}`}>
           <ScenarioCard scenario={scenario} setFilterChips={setFilterChips} />
         </div>
       ))}
@@ -69,8 +73,23 @@ export default function Study() {
   const [studyStates, setStudyStates] = useState<StateType[]>([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const projectID = useSelector(getProjectID);
-  const studyID = useSelector(getStudyID);
+  const projectId = useSelector(getProjectID);
+  const studyId = useSelector(getStudyID);
+  const {
+    data: currentProject,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+    error: projectError,
+  } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId });
+  const [getCurrentStudy] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdQuery();
+  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
+  const [getScenarios] =
+    osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
+
+  if (isProjectError) {
+    console.error('getProject Error : ', projectError);
+    return <span className="mt-5">An error occured</span>;
+  }
 
   const getStudyStates = async (id: number) => {
     try {
@@ -98,17 +117,17 @@ export default function Study() {
 
   const getProject = async () => {
     try {
-      const result = await get(`${PROJECTS_URI}${projectID}/`);
-      setProject(result);
-      await getStudyStates(result.id);
+      setProject(currentProject);
+      await getStudyStates(currentProject.id);
     } catch (error) {
       console.error(error);
     }
   };
+
   const getStudy = async (withNotification = false) => {
     try {
-      const result = await get(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`);
-      setStudy(result);
+      const { data } = await getCurrentStudy({ projectId, studyId });
+      setStudy(data);
       if (withNotification) {
         dispatch(
           setSuccess({
@@ -123,34 +142,59 @@ export default function Study() {
   };
 
   const getScenarioList = async () => {
-    try {
-      const params = {
-        ordering: sortOption,
-        name: filter,
-        description: filter,
-        tags: filter,
+    if (filter) {
+      const payload = {
+        body: {
+          object: 'scenario',
+          query: ['and', ['or', ['search', ['name'], filter], ['search', ['description'], filter]]],
+        },
       };
-      const data = await get(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
-        { params }
-      );
-      setScenariosList(data.results);
-    } catch (error) {
-      console.error(error);
+      try {
+        const filteredData = await postSearch(payload).unwrap();
+        let filteredScenarios = [...filteredData];
+        if (sortOption === 'LastModifiedDesc') {
+          filteredScenarios = filteredScenarios.sort((a, b) => {
+            if (a.last_modification && b.last_modification) {
+              return b.last_modification.localeCompare(a.last_modification);
+            }
+            return 0;
+          });
+        } else if (sortOption === 'NameAsc') {
+          filteredScenarios = filteredScenarios.sort((a, b) => {
+            if (a.name && b.name) {
+              return a.name.localeCompare(b.name);
+            }
+            return 0;
+          });
+        }
+        console.log('filtered scenarios : ', filteredScenarios);
+        setScenariosList(filteredScenarios);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      try {
+        const { data } = await getScenarios({ projectId, studyId, ordering: sortOption });
+        setScenariosList(data.results);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
   useEffect(() => {
-    if (!studyID || !projectID) {
+    if (!studyId || !projectId) {
       navigate('/operational-studies/project');
-    } else {
+    } else if (!isProjectLoading) {
       getProject();
       getStudy();
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isProjectLoading]);
 
   useEffect(() => {
-    if (studyID) getScenarioList();
+    if (studyId) getScenarioList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 
   return (

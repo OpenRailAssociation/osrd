@@ -112,15 +112,16 @@ scenario:
   result:
     joins: |
       INNER JOIN osrd_infra_scenario AS scenario ON scenario.id = osrd_search_scenario.id
+      INNER JOIN osrd_infra_infra AS infra ON infra.id = scenario.infra_id
     columns:
       id: scenario.id
       study_id: scenario.study_id
       name: scenario.name
-      infra_name: scenario.infra_name
       electrical_profile_set_id: scenario.electrical_profile_set_id
-      electrical_profile_set_name: scenario.electrical_profile_set_name
       infra_id: scenario.infra_id
+      infra_name: infra.name
       timetable_id: scenario.timetable_id
-      description: study.description
-      last_modification: study.last_modification
-      tags: study.tags
+      trains_count: (SELECT COUNT(trains.id) FROM osrd_infra_trainschedule AS trains WHERE scenario.timetable_id = trains.timetable_id)
+      description: scenario.description
+      last_modification: scenario.last_modification
+      tags: scenario.tags
