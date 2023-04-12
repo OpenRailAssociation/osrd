@@ -41,7 +41,7 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
   };
 
   useEffect(() => {
-    if (project.image_url) {
+    if (project.image) {
       getProjectImage();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

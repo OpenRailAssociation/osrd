@@ -1012,7 +1012,6 @@ export type ProjectResult = {
   description?: string;
   funders?: string;
   budget?: number;
-  image_url?: string;
   creation_date?: string;
   last_modification?: string;
   studies?: number[];
