@@ -1609,13 +1609,30 @@ paths:
           required: true
       responses:
         200:
-          description: A list of ranges associated to catenary modes
+          description: A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CatenaryRange"
+                type: object 
+                properties:
+                  catenary_ranges:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CatenaryRange"
+                  warnings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: ["CatenaryOverlap"]
+                        catenary_id:
+                          type: string
+                        overlapping_ranges:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/TrackRange"
 
 components:
   schemas:

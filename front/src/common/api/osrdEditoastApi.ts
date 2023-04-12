@@ -851,7 +851,14 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
   scenarioPatchRequest: ScenarioPatchRequest;
 };
 export type GetPathfindingByPathIdCatenariesApiResponse =
-  /** status 200 A list of ranges associated to catenary modes */ CatenaryRange[];
+  /** status 200 A list of ranges associated to catenary modes. When a catenary overlapping another is found, a warning is added to the list. */ {
+    catenary_ranges?: CatenaryRange[];
+    warnings?: {
+      type?: 'CatenaryOverlap';
+      catenary_id?: string;
+      overlapping_ranges?: TrackRange[];
+    }[];
+  };
 export type GetPathfindingByPathIdCatenariesApiArg = {
   /** The path's id */
   pathId: number;
