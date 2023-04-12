@@ -129,6 +129,7 @@ export interface OsrdConfState {
   infraID?: number;
   switchTypes?: SwitchType[];
   pathfindingID?: number;
+  shouldRunPathfinding: boolean;
   timetableID?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;

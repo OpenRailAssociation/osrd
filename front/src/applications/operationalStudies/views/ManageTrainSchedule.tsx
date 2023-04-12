@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
 import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
@@ -15,6 +15,8 @@ import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { getShouldRunPathfinding } from 'reducers/osrdconf/selectors';
+import { updateShouldRunPathfinding } from 'reducers/osrdconf';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
 
@@ -28,11 +30,12 @@ export default function ManageTrainSchedule({
   trainScheduleIDsToModify,
 }: Props) {
   const dispatch = useDispatch();
+  const shouldRunPathfinding = useSelector(getShouldRunPathfinding);
+  const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState<boolean | undefined>(
+    undefined
+  );
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
-  const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState(
-    !(trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
-  );
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
 
@@ -85,6 +88,17 @@ export default function ManageTrainSchedule({
         });
   }, [trainScheduleIDsToModify]);
 
+  useEffect(() => {
+    setMustUpdatePathfinding(false);
+    dispatch(updateShouldRunPathfinding(false));
+  }, []);
+
+  useEffect(() => {
+    if (shouldRunPathfinding && mustUpdatePathfinding === false) {
+      setMustUpdatePathfinding(true);
+    }
+  }, [shouldRunPathfinding]);
+
   return (
     <>
       <div className="osrd-config-item-container mb-4">
@@ -104,7 +118,7 @@ export default function ManageTrainSchedule({
 
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
-          <Itinerary mustUpdate={mustUpdatePathfinding} />
+          {mustUpdatePathfinding !== undefined && <Itinerary mustUpdate={mustUpdatePathfinding} />}
         </div>
         <div className="col-xl-6">
           <div className="osrd-config-item mb-2">

@@ -3,7 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { updateRollingStockComfort, updateRollingStockID } from 'reducers/osrdconf';
+import {
+  updateRollingStockComfort,
+  updateRollingStockID,
+  updateShouldRunPathfinding,
+} from 'reducers/osrdconf';
 import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { comfort2pictogram } from './RollingStockHelpers';
@@ -30,6 +34,7 @@ export default function RollingStockCardButtons(props) {
   const selectRollingStock = () => {
     setOpenedRollingStockCardId(undefined);
     dispatch(updateRollingStockComfort(comfort));
+    dispatch(updateShouldRunPathfinding(true));
     dispatch(updateRollingStockID(id));
     closeModal();
   };
