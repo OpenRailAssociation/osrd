@@ -3,7 +3,7 @@ import { IoMdAddCircleOutline } from 'react-icons/io';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { SpeedSectionEditionState } from './types';
-import { getNewSpeedSection } from './utils';
+import { getEditSpeedSectionState, getNewSpeedSection } from './utils';
 import {
   SpeedSectionEditionLayers,
   SpeedSectionEditionLeftPanel,
@@ -20,13 +20,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   },
 
   getInitialState() {
-    const entity = getNewSpeedSection();
-
-    return {
-      ...DEFAULT_COMMON_TOOL_STATE,
-      entity,
-      initialEntity: entity,
-    };
+    return getEditSpeedSectionState(getNewSpeedSection());
   },
 
   actions: [

@@ -1,13 +1,14 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 import length from '@turf/length';
 import lineSliceAlong from '@turf/line-slice-along';
-import { last } from 'lodash';
+import { last, cloneDeep } from 'lodash';
 import along from '@turf/along';
 import { feature, point } from '@turf/helpers';
 
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
-import { Features } from 'vscode-languageserver';
+import { SpeedSectionEditionState } from './types';
+import { DEFAULT_COMMON_TOOL_STATE } from '../types';
 
 export function getNewSpeedSection(): SpeedSectionEntity {
   return {
@@ -25,6 +26,15 @@ export function getNewSpeedSection(): SpeedSectionEntity {
       type: 'MultiLineString',
       coordinates: [],
     },
+  };
+}
+
+export function getEditSpeedSectionState(entity: SpeedSectionEntity): SpeedSectionEditionState {
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    initialEntity: cloneDeep(entity),
+    entity: cloneDeep(entity),
+    interactionState: { type: 'idle' },
   };
 }
 

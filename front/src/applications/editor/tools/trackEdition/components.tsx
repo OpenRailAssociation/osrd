@@ -1,9 +1,10 @@
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { last } from 'lodash';
 import { Position } from 'geojson';
+import { BsBoxArrowInRight } from 'react-icons/bs';
 
 import EditorContext from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
@@ -11,17 +12,145 @@ import colors from '../../../../common/Map/Consts/colors';
 import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { EntityObjectOperationResult, TrackSectionEntity } from '../../../../types';
+import {
+  EntityObjectOperationResult,
+  SpeedSectionEntity,
+  TrackSectionEntity,
+} from '../../../../types';
 import { ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { getMap } from '../../../../reducers/map/selectors';
+import { getInfraID } from '../../../../reducers/osrdconf/selectors';
+import { getAttachedItems, getEntities } from '../../data/api';
+import { Spinner } from '../../../../common/Loader';
+import EntitySumUp from '../../components/EntitySumUp';
+import SpeedSectionEditionTool from '../speedSectionEdition/tool';
+import { getEditSpeedSectionState } from '../speedSectionEdition/utils';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
 
 const TRACK_COLOR = '#666';
 const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
+const DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT = 5;
+
+/**
+ * Generic component to show speed sections attached to edited track section:
+ */
+export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
+  const { t } = useTranslation();
+  const infraID = useSelector(getInfraID);
+  const [speedSectionsState, setSpeedSectionsState] = useState<
+    | { type: 'idle' }
+    | { type: 'loading' }
+    | { type: 'ready'; speedSections: SpeedSectionEntity[] }
+    | { type: 'error'; message: string }
+  >({ type: 'idle' });
+  const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    if (speedSectionsState.type === 'idle') {
+      setSpeedSectionsState({ type: 'loading' });
+      getAttachedItems(`${infraID}`, id)
+        .then((res: { SpeedSection?: string[] }) => {
+          if (res.SpeedSection?.length) {
+            getEntities<SpeedSectionEntity>(`${infraID}`, res.SpeedSection, 'SpeedSection')
+              .then((entities) => {
+                setSpeedSectionsState({
+                  type: 'ready',
+                  speedSections: (res.SpeedSection || []).map((s) => entities[s]),
+                });
+              })
+              .catch((err) => {
+                setSpeedSectionsState({ type: 'error', message: err.message });
+              });
+          } else {
+            setSpeedSectionsState({ type: 'ready', speedSections: [] });
+          }
+        })
+        .catch((err) => {
+          setSpeedSectionsState({ type: 'error', message: err.message });
+        });
+    }
+  }, [speedSectionsState]);
+
+  useEffect(() => {
+    setSpeedSectionsState({ type: 'idle' });
+  }, [id]);
+
+  if (speedSectionsState.type === 'loading' || speedSectionsState.type === 'idle')
+    return (
+      <div className="loader mt-4">
+        <Spinner />
+      </div>
+    );
+  if (speedSectionsState.type === 'error')
+    return (
+      <div className="form-error mt-3 mb-3">
+        <p>
+          {speedSectionsState.message ||
+            t('Editor.tools.track-edition.default-speed-sections-error')}
+        </p>
+      </div>
+    );
+
+  return (
+    <>
+      {!!speedSectionsState.speedSections.length && (
+        <>
+          <ul className="list-unstyled">
+            {(showAll
+              ? speedSectionsState.speedSections
+              : speedSectionsState.speedSections.slice(0, DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT)
+            ).map((speedSection) => (
+              <li key={speedSection.properties.id} className="d-flex align-items-center mb-2">
+                <div className="flex-shrink-0 mr-3">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    title={t('common.open')}
+                    onClick={() => {
+                      switchTool(SpeedSectionEditionTool, getEditSpeedSectionState(speedSection));
+                    }}
+                  >
+                    <BsBoxArrowInRight />
+                  </button>
+                </div>
+                <div className="flex-grow-1 flex-shrink-1">
+                  <EntitySumUp entity={speedSection} />
+                </div>
+              </li>
+            ))}
+          </ul>
+          {speedSectionsState.speedSections.length > DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT && (
+            <div className="mt-4">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowAll((v) => !v)}
+              >
+                {showAll
+                  ? t('Editor.tools.track-edition.only-show-n', {
+                      count: DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT,
+                    })
+                  : t('Editor.tools.track-edition.show-more-speed-sections', {
+                      count:
+                        speedSectionsState.speedSections.length -
+                        DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT,
+                    })}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+      {!speedSectionsState.speedSections.length && (
+        <div className="text-center">{t('Editor.tools.track-edition.no-linked-speed-section')}</div>
+      )}
+    </>
+  );
+};
 
 export const TrackEditionLayers: FC = () => {
   const {
@@ -191,50 +320,60 @@ export const TrackEditionLeftPanel: FC = () => {
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
   const { track } = state;
+  const isNew = track.properties.id === NEW_ENTITY_ID;
 
   return (
-    <EditorForm
-      data={track}
-      onSubmit={async (savedEntity) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res: any = await dispatch(
-          save(
-            track.properties.id !== NEW_ENTITY_ID
-              ? {
-                  update: [
-                    {
-                      source: injectGeometry(state.initialTrack),
-                      target: injectGeometry(savedEntity),
-                    },
-                  ],
-                }
-              : { create: [injectGeometry(savedEntity)] }
-          )
-        );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const operation = res[0] as EntityObjectOperationResult;
-        const { id } = operation.railjson;
+    <>
+      {!isNew && (
+        <>
+          <h3>{t('Editor.tools.track-edition.attached-speed-sections')}</h3>
+          <SpeedSectionsList id={track.properties.id} />
+          <div className="border-bottom" />
+        </>
+      )}
+      <EditorForm
+        data={track}
+        onSubmit={async (savedEntity) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const res: any = await dispatch(
+            save(
+              track.properties.id !== NEW_ENTITY_ID
+                ? {
+                    update: [
+                      {
+                        source: injectGeometry(state.initialTrack),
+                        target: injectGeometry(savedEntity),
+                      },
+                    ],
+                  }
+                : { create: [injectGeometry(savedEntity)] }
+            )
+          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const operation = res[0] as EntityObjectOperationResult;
+          const { id } = operation.railjson;
 
-        if (id && id !== savedEntity.properties.id)
-          setState({
-            ...state,
-            track: { ...track, properties: { ...track.properties, id: `${id}` } },
-          });
-      }}
-      onChange={(newTrack) => {
-        setState({ ...state, track: newTrack as TrackSectionEntity });
-      }}
-    >
-      <div className="text-right">
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={state.track.geometry.coordinates.length < 2}
-        >
-          {t('common.save')}
-        </button>
-      </div>
-    </EditorForm>
+          if (id && id !== savedEntity.properties.id)
+            setState({
+              ...state,
+              track: { ...track, properties: { ...track.properties, id: `${id}` } },
+            });
+        }}
+        onChange={(newTrack) => {
+          setState({ ...state, track: newTrack as TrackSectionEntity });
+        }}
+      >
+        <div className="text-right">
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={state.track.geometry.coordinates.length < 2}
+          >
+            {t('common.save')}
+          </button>
+        </div>
+      </EditorForm>
+    </>
   );
 };
 
