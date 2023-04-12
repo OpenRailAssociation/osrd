@@ -1,5 +1,5 @@
 import { JSONSchema7 } from 'json-schema';
-import { Feature, GeoJsonProperties, Geometry, Point, LineString } from 'geojson';
+import { Feature, GeoJsonProperties, Geometry, Point, LineString, MultiLineString } from 'geojson';
 
 import { Direction, ObjectType, DirectionalTrackRange } from '../common/api/osrdEditoastApi';
 import { NullGeometry } from './geospatial';
@@ -38,7 +38,7 @@ export interface TrackSectionEntity
 
 export interface SpeedSectionEntity
   extends EditorEntity<
-    LineString,
+    MultiLineString,
     {
       speed_limit?: number;
       speed_limit_by_tag?: Record<string, number>;
