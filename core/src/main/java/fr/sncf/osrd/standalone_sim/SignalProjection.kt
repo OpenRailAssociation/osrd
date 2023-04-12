@@ -114,8 +114,8 @@ private fun computeSignalAspectChangeEvents(
     loadedSignalInfra: LoadedSignalInfra
 ): Map<PathSignal, MutableList<SignalAspectChangeEvent>> {
     val zoneCount = blockPath.sumOf { blockInfra.getBlockPath(it).size }
-    val zoneStates = ArrayList<ZoneStatus>(zoneCount + 1) // Consider the zone after the train clear for GET purposes
-    for (i in 0 until zoneCount + 1) zoneStates.add(ZoneStatus.CLEAR)
+    val zoneStates = ArrayList<ZoneStatus>(zoneCount)
+    for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
 
     val signalAspects = pathSignals.associateBy({ it.signal }, { "VL" })
         .toMutableMap() // TODO: Have a better way to get the least restrictive aspect
@@ -181,10 +181,6 @@ private fun signalUpdates(
         val signal = pathSignal.signal
         val physicalSignalId = loadedSignalInfra.getPhysicalSignal(signal)
         val physicalSignalName = rawInfra.getPhysicalSignalName(physicalSignalId)
-
-        if (!signalSightingMap.contains(physicalSignalName))
-            continue
-
         val signalId = rawInfra.signalMap.inverse()[physicalSignalId]!!
         val rjsSignal = rawInfra.rjsSignalMap[signalId]!!
         val track = rjsSignal.track
