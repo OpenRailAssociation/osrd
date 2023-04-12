@@ -22,6 +22,7 @@ import {
   EditorState,
   ExtendedEditorContextType,
   FullTool,
+  Reducer,
   Tool,
 } from './tools/types';
 import TOOLS from './tools/list';
@@ -57,12 +58,12 @@ const Editor: FC = () => {
     [infraID, setToolAndState]
   );
   const setToolState = useCallback(
-    <S extends CommonToolState>(state: Partial<S>) => {
+    <S extends CommonToolState>(stateOrReducer: Partial<S> | Reducer<S>) => {
       setToolAndState((s) => ({
         ...s,
         state: {
           ...s.state,
-          ...state,
+          ...(typeof stateOrReducer === 'function' ? stateOrReducer(s.state) : stateOrReducer),
         },
       }));
     },

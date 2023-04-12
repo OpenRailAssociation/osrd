@@ -6,6 +6,7 @@
     "change": "Changer",
     "close": "Fermer",
     "confirm": "Confirmer",
+    "delete": "Supprimer",
     "description": "Description",
     "download": "Télécharger",
     "dsc": "Descendant",
@@ -288,6 +289,16 @@
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
         "show-more-speed-sections_one": "Voir un résultat de plus",
         "show-more-speed-sections_other": "Voir {{count}} résultats de plus"
+      },
+      "speed-edition": {
+        "label": "Outil \"Sections de vitesse\"",
+        "linked-track-sections": "Sections de lignes liées",
+        "edit-track-range-start": "Modifier le point de départ",
+        "edit-track-range-end": "Modifier le point d'arrivée",
+        "add-track-range": "Lier une autre ligne",
+        "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
+        "show-more-ranges_one": "Voir une section de ligne de plus",
+        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"
       }
     }
   }

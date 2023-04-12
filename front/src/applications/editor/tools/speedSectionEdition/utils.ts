@@ -34,7 +34,9 @@ export function getEditSpeedSectionState(entity: SpeedSectionEntity): SpeedSecti
     ...DEFAULT_COMMON_TOOL_STATE,
     initialEntity: cloneDeep(entity),
     entity: cloneDeep(entity),
+    trackSectionsCache: {},
     interactionState: { type: 'idle' },
+    hoveredTrackSection: null,
   };
 }
 
