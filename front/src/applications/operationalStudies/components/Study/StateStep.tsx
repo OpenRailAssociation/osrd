@@ -1,8 +1,9 @@
 import React from 'react';
 import cx from 'classnames';
-import { patch } from 'common/requests';
 import { useTranslation } from 'react-i18next';
-import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
+type StateType = 'started' | 'inProgress' | 'finish';
 
 type StateType = 'started' | 'inProgress' | 'finish';
 
@@ -17,9 +18,15 @@ type Props = {
 
 export default function StateStep({ projectID, studyID, getStudy, number, state, done }: Props) {
   const { t } = useTranslation('operationalStudies/study');
+  const [patchStudy] = osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
+
   const changeStudyState = async () => {
     try {
-      await patch(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, { state });
+      await patchStudy({
+        projectId: projectID,
+        studyId: studyID,
+        studyPatchRequest: { state },
+      });
       getStudy(true);
     } catch (error) {
       console.error(error);

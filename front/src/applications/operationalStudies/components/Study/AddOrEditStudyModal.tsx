@@ -67,7 +67,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
 
   const removeTag = (idx: number) => {
     if (currentStudy?.tags) {
-      const newTags: string[] = Array.from(currentStudy.tags);
+      const newTags = [...currentStudy?.tags];
       newTags.splice(idx, 1);
       setCurrentStudy({ ...currentStudy, tags: newTags });
     }
@@ -75,7 +75,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
 
   const addTag = (tag: string) => {
     if (currentStudy?.tags) {
-      const newTags: string[] = Array.from(currentStudy.tags);
+      const newTags = [...currentStudy?.tags];
       newTags.push(tag);
       setCurrentStudy({ ...currentStudy, tags: newTags });
     }
