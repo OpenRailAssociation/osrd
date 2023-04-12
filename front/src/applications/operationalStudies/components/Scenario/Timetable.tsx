@@ -19,6 +19,7 @@ import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/con
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
+import { Path } from 'types';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 
@@ -97,11 +98,11 @@ export default function Timetable({
     //
 
     const trainDetail = await get(`${trainscheduleURI}${train.id}/`);
-    const paramsSchedules: ScheduledTrain[] = [];
-    const params = {
+
+    const params: { timetable: number; path: Path; schedules: ScheduledTrain[] } = {
       timetable: trainDetail.timetable,
       path: trainDetail.path,
-      schedules: paramsSchedules,
+      schedules: [],
     };
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
