@@ -1,10 +1,9 @@
 import React, { useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
 
-import { replaceVias } from 'reducers/osrdconf';
+import { replaceVias, updateShouldRunPathfinding } from 'reducers/osrdconf';
 import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
 import { getMapTrackSources } from 'reducers/map/selectors';
 
@@ -38,10 +37,11 @@ export default function ModalSugerredVias({
 
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias ? suggeredVias.length - 1 : 0;
-  const selectedViasTracks = vias.map((via) => via.position);
+  const selectedViasTracks = vias.map((via) => via.id);
   const { closeModal } = useContext(ModalContext);
 
   const removeViaFromPath = (step: ArrayElement<Path['steps']>) => {
+    dispatch(updateShouldRunPathfinding(true));
     dispatch(
       replaceVias(vias.filter((via) => via.track !== step.track || via.position !== step.position))
     );
@@ -57,21 +57,21 @@ export default function ModalSugerredVias({
         }
         return [];
       });
-
+      dispatch(updateShouldRunPathfinding(true));
       dispatch(replaceVias(newVias));
     }
   };
 
   const formatVia = (via: ArrayElement<Path['steps']>, idx: number, idxTrueVia: number) => (
     <div
-      key={nextId()}
+      key={`suggered-via-modal-${via.id}-${idx}`}
       className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
     >
       {!via.suggestion && <small className="pr-2">{idxTrueVia}</small>}
       <i className={`${via.suggestion ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
       {via.name || ''}
       <small className="ml-2">{via.position && `KM ${Math.round(via.position) / 1000}`}</small>
-      {via.suggestion && !selectedViasTracks.includes(via.position) ? (
+      {via.suggestion && !selectedViasTracks.includes(via.id) ? (
         <button
           className="btn btn-sm btn-only-icon ml-auto"
           type="button"
