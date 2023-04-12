@@ -59,11 +59,11 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
       options.unshift({ key: null, value: t(`${translationList}.nothingSelected`) });
       setFunction(options);
     } catch (error) {
-      /* empty */
+      console.error(error);
     }
   };
 
-  const formatDateForInput = (date: string | null) => (date === null ? '' : date.substr(0, 10));
+  const formatDateForInput = (date?: string | null) => (date ? date.substr(0, 10) : '');
 
   const removeTag = (idx: number) => {
     if (currentStudy?.tags) {
@@ -140,7 +140,6 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
       `/projects/${currentStudy?.id}/study_states/`,
       setStudyStates
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -232,63 +231,57 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
             </div>
           </div>
           <div className="col-lg-4">
-            {currentStudy?.start_date_study && (
-              <InputSNCF
-                id="studyInputStartDate"
-                type="date"
-                name="studyInputStartDate"
-                label={
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2 text-success">
-                      <RiCalendarLine />
-                    </span>
-                    {t('studyStartDate')}
-                  </div>
-                }
-                value={formatDateForInput(currentStudy.start_date_study)}
-                onChange={(e) =>
-                  setCurrentStudy({ ...currentStudy, start_date_study: e.target.value })
-                }
-              />
-            )}
-            {currentStudy?.expected_end_date_study && (
-              <InputSNCF
-                id="studyInputEstimatedEndingDate"
-                type="date"
-                name="studyInputEstimatedEndingDate"
-                label={
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2 text-warning">
-                      <RiCalendarLine />
-                    </span>
-                    {t('studyEstimatedEndingDate')}
-                  </div>
-                }
-                value={formatDateForInput(currentStudy?.expected_end_date_study)}
-                onChange={(e) =>
-                  setCurrentStudy({ ...currentStudy, expected_end_date_study: e.target.value })
-                }
-              />
-            )}
-            {currentStudy?.actual_end_date_study && (
-              <InputSNCF
-                id="studyInputRealEndingDate"
-                type="date"
-                name="studyInputRealEndingDate"
-                label={
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2 text-danger">
-                      <RiCalendarLine />
-                    </span>
-                    {t('studyRealEndingDate')}
-                  </div>
-                }
-                value={formatDateForInput(currentStudy.actual_end_date_study)}
-                onChange={(e) =>
-                  setCurrentStudy({ ...currentStudy, actual_end_date_study: e.target.value })
-                }
-              />
-            )}
+            <InputSNCF
+              id="studyInputStartDate"
+              type="date"
+              name="studyInputStartDate"
+              label={
+                <div className="d-flex align-items-center">
+                  <span className="mr-2 text-success">
+                    <RiCalendarLine />
+                  </span>
+                  {t('studyStartDate')}
+                </div>
+              }
+              value={formatDateForInput(currentStudy?.start_date)}
+              onChange={(e) =>
+                setCurrentStudy({ ...currentStudy, start_date: e.target.value || null })
+              }
+            />
+            <InputSNCF
+              id="studyInputEstimatedEndingDate"
+              type="date"
+              name="studyInputEstimatedEndingDate"
+              label={
+                <div className="d-flex align-items-center">
+                  <span className="mr-2 text-warning">
+                    <RiCalendarLine />
+                  </span>
+                  {t('studyEstimatedEndingDate')}
+                </div>
+              }
+              value={formatDateForInput(currentStudy?.expected_end_date)}
+              onChange={(e) =>
+                setCurrentStudy({ ...currentStudy, expected_end_date: e.target.value || null })
+              }
+            />
+            <InputSNCF
+              id="studyInputRealEndingDate"
+              type="date"
+              name="studyInputRealEndingDate"
+              label={
+                <div className="d-flex align-items-center">
+                  <span className="mr-2 text-danger">
+                    <RiCalendarLine />
+                  </span>
+                  {t('studyRealEndingDate')}
+                </div>
+              }
+              value={formatDateForInput(currentStudy?.actual_end_date)}
+              onChange={(e) =>
+                setCurrentStudy({ ...currentStudy, actual_end_date: e.target.value || null })
+              }
+            />
           </div>
         </div>
         <div className="row">
