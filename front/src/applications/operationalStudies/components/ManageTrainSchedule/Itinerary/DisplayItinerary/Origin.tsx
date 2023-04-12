@@ -97,8 +97,22 @@ function Origin(props: OriginProps) {
         <RiMapPin2Fill />
       </span>
       {origin !== undefined ? (
-        <div className="pl-1 hover w-100 origin-name-and-time-container">
-          {originPointName}
+        <div>
+          <div className="pl-1 hover w-100 origin-name-and-time-container">
+            {originPointName}
+            <button
+              className="btn btn-sm btn-only-icon btn-white ml-auto"
+              type="button"
+              onClick={() => {
+                dispatch(updateOrigin(undefined));
+              }}
+            >
+              <i className="icons-circle-delete" />
+              <span className="sr-only" aria-hidden="true">
+                Delete
+              </span>
+            </button>
+          </div>
           {isStdcm && (
             <>
               <div className="ml-auto d-flex mr-1">
@@ -149,18 +163,6 @@ function Origin(props: OriginProps) {
               {toggleButton}
             </>
           )}
-          <button
-            className="btn btn-sm btn-only-icon btn-white ml-auto"
-            type="button"
-            onClick={() => {
-              dispatch(updateOrigin(undefined));
-            }}
-          >
-            <i className="icons-circle-delete" />
-            <span className="sr-only" aria-hidden="true">
-              Delete
-            </span>
-          </button>
         </div>
       ) : (
         <small>{t('noOriginChosen')}</small>
