@@ -2137,12 +2137,15 @@ components:
             maxLength: 255
         start_date:
           type: string
+          nullable: true
           format: date-time
         expected_end_date:
           type: string
+          nullable: true
           format: date-time
         actual_end_date:
           type: string
+          nullable: true
           format: date-time
         state:
           type: string
@@ -2187,14 +2190,17 @@ components:
           type: array
           items:
             type: integer
-        start_date_study:
+        start_date:
           type: string
+          nullable: true
           format: date-time
-        expected_end_date_study:
+        expected_end_date:
           type: string
+          nullable: true
           format: date-time
-        actual_end_date_study:
+        actual_end_date:
           type: string
+          nullable: true
           format: date-time
         state:
           type: string
