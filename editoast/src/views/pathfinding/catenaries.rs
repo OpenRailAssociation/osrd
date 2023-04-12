@@ -1,4 +1,4 @@
-use crate::error::Result;
+use crate::error::{InternalError, Result};
 use crate::infra_cache::InfraCache;
 use crate::models::{pathfinding::Pathfinding, Infra, Retrieve};
 use crate::schema::{Direction, ObjectType};
@@ -18,27 +18,6 @@ use std::ops::Range;
 
 pub fn routes() -> impl HttpServiceFactory {
     services![catenaries_on_path,]
-}
-
-/// A struct used for the result of the catenaries_on_path endpoint
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-struct CatenaryRange {
-    begin: f64,
-    end: f64,
-    mode: String,
-}
-
-impl CatenaryRange {
-    fn list_from_range_map(range_map: &RangeMap<Float, String>) -> Vec<CatenaryRange> {
-        range_map
-            .iter()
-            .map(|(range, mode)| CatenaryRange {
-                begin: range.start.0,
-                end: range.end.0,
-                mode: mode.to_string(),
-            })
-            .collect()
-    }
 }
 
 /// A struct to make f64 Ord, to use in RangeMap
@@ -76,7 +55,8 @@ impl Eq for Float {}
 fn map_catenary_modes(
     infra_cache: &InfraCache,
     track_ids: HashSet<String>,
-) -> HashMap<String, RangeMap<Float, String>> {
+) -> (HashMap<String, RangeMap<Float, String>>, Vec<InternalError>) {
+    let mut warnings = Vec::new();
     let unique_catenary_ids = track_ids
         .iter()
         .flat_map(|track_id| {
@@ -94,6 +74,7 @@ fn map_catenary_modes(
             .get(catenary_id)
             .expect("catenary not found")
             .unwrap_catenary();
+        let mut overlapping_ranges = Vec::new();
         for track_range in &catenary.track_ranges {
             if track_ids.contains(track_range.track.as_str()) {
                 let res_entry = res
@@ -101,13 +82,22 @@ fn map_catenary_modes(
                     .or_insert_with(RangeMap::new);
                 let range = track_range.begin.into()..track_range.end.into();
                 if res_entry.overlaps(&range) {
-                    // TODO: Send a 200 with an error payload here when encountering this case
+                    overlapping_ranges.push(track_range.clone());
                 }
                 res_entry.insert(range, catenary.voltage.0.clone());
             }
         }
+        if !overlapping_ranges.is_empty() {
+            warnings.push(
+                PathfindingError::CatenaryOverlap {
+                    catenary_id: catenary_id.to_string(),
+                    overlapping_ranges,
+                }
+                .into(),
+            );
+        }
     }
-    res
+    (res, warnings)
 }
 
 fn clip_range_map(
@@ -176,33 +166,52 @@ fn make_path_range_map(
     res
 }
 
+/// A struct used for the result of the catenaries_on_path endpoint
+#[derive(Debug, Deserialize, PartialEq, Serialize)]
+struct CatenaryRange {
+    begin: f64,
+    end: f64,
+    mode: String,
+}
+
+impl CatenaryRange {
+    fn list_from_range_map(range_map: &RangeMap<Float, String>) -> Vec<CatenaryRange> {
+        range_map
+            .iter()
+            .map(|(range, mode)| CatenaryRange {
+                begin: range.start.0,
+                end: range.end.0,
+                mode: mode.to_string(),
+            })
+            .collect()
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CatenariesOnPathResponse {
+    catenary_ranges: Vec<CatenaryRange>,
+    warnings: Vec<InternalError>,
+}
+
 #[get("/{path_id}/catenaries")]
 async fn catenaries_on_path(
     pathfinding_id: Path<i64>,
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-) -> Result<Json<Vec<CatenaryRange>>> {
+) -> Result<Json<CatenariesOnPathResponse>> {
     let pathfinding_id = *pathfinding_id;
     let pathfinding = match Pathfinding::retrieve(db_pool.clone(), pathfinding_id).await? {
         Some(pf) => pf,
         None => return Err(PathfindingError::NotFound { pathfinding_id }.into()),
     };
 
-    let infra_id = pathfinding.infra_id;
-    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => infra,
-        None => {
-            return Err(PathfindingError::InvalidInfraId {
-                pathfinding_id,
-                infra_id,
-            }
-            .into())
-        }
-    };
+    let infra = Infra::retrieve(db_pool.clone(), pathfinding.infra_id)
+        .await?
+        .expect("Foreign key constraint not respected");
 
     let track_section_ids = pathfinding.track_section_ids();
 
-    let catenary_mode_map = block::<_, Result<_>>(move || {
+    let (catenary_mode_map, warnings) = block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         Ok(map_catenary_modes(&infra_cache, track_section_ids))
@@ -211,7 +220,10 @@ async fn catenaries_on_path(
     .unwrap()?;
 
     let res = make_path_range_map(&catenary_mode_map, &pathfinding);
-    Ok(Json(CatenaryRange::list_from_range_map(&res)))
+    Ok(Json(CatenariesOnPathResponse {
+        catenary_ranges: CatenaryRange::list_from_range_map(&res),
+        warnings,
+    }))
 }
 
 #[cfg(test)]
@@ -221,7 +233,9 @@ pub mod tests {
         models::{
             infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding, Create,
         },
-        schema::{ApplicableDirectionsTrackRange, Catenary as CatenarySchema},
+        schema::{
+            ApplicableDirections, ApplicableDirectionsTrackRange, Catenary as CatenarySchema,
+        },
         views::tests::create_test_service,
     };
     use actix_http::StatusCode;
@@ -229,6 +243,7 @@ pub mod tests {
     use diesel::r2d2::ConnectionManager;
     use r2d2::Pool;
     use rstest::*;
+    use serde_json::from_value;
 
     use super::*;
 
@@ -263,7 +278,7 @@ pub mod tests {
         db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
         #[future] empty_infra: TestFixture<Infra>,
     ) -> TestFixture<Infra> {
-        let empty_infra = empty_infra.await;
+        let infra = empty_infra.await;
 
         // See the diagram in `models::pathfinding::tests::simple_path` to see how the track sections are connected.
         let catenary_schemas = vec![
@@ -273,13 +288,31 @@ pub mod tests {
                         track: "track_1".into(),
                         begin: 0.0,
                         end: 10.0,
-                        applicable_directions: crate::schema::ApplicableDirections::Both,
+                        applicable_directions: ApplicableDirections::Both,
                     },
                     ApplicableDirectionsTrackRange {
                         track: "track_2".into(),
                         begin: 5.0,
                         end: 10.0,
-                        applicable_directions: crate::schema::ApplicableDirections::Both,
+                        applicable_directions: ApplicableDirections::Both,
+                    },
+                ],
+                voltage: "25kV".into(),
+                id: "catenary_1".into(),
+            },
+            CatenarySchema {
+                track_ranges: vec![
+                    ApplicableDirectionsTrackRange {
+                        track: "track_2".into(),
+                        begin: 0.0,
+                        end: 5.0,
+                        applicable_directions: ApplicableDirections::Both,
+                    },
+                    ApplicableDirectionsTrackRange {
+                        track: "track_3".into(),
+                        begin: 0.0,
+                        end: 5.0,
+                        applicable_directions: ApplicableDirections::Both,
                     },
                 ],
                 voltage: "25kV".into(),
@@ -288,34 +321,16 @@ pub mod tests {
             CatenarySchema {
                 track_ranges: vec![
                     ApplicableDirectionsTrackRange {
-                        track: "track_2".into(),
-                        begin: 0.0,
-                        end: 5.0,
-                        applicable_directions: crate::schema::ApplicableDirections::Both,
-                    },
-                    ApplicableDirectionsTrackRange {
-                        track: "track_3".into(),
-                        begin: 0.0,
-                        end: 5.0,
-                        applicable_directions: crate::schema::ApplicableDirections::Both,
-                    },
-                ],
-                voltage: "25kV".into(),
-                ..Default::default()
-            },
-            CatenarySchema {
-                track_ranges: vec![
-                    ApplicableDirectionsTrackRange {
                         track: "track_3".into(),
                         begin: 5.0,
                         end: 10.0,
-                        applicable_directions: crate::schema::ApplicableDirections::Both,
+                        applicable_directions: ApplicableDirections::Both,
                     },
                     ApplicableDirectionsTrackRange {
                         track: "track_5".into(),
                         begin: 0.0,
                         end: 10.0,
-                        applicable_directions: crate::schema::ApplicableDirections::Both,
+                        applicable_directions: ApplicableDirections::Both,
                     },
                 ],
                 voltage: "1.5kV".into(),
@@ -323,12 +338,12 @@ pub mod tests {
             },
         ];
         for (i, catenary_schema) in catenary_schemas.into_iter().enumerate() {
-            Catenary::new(catenary_schema, empty_infra.id(), i.to_string())
+            Catenary::new(catenary_schema, infra.id(), i.to_string())
                 .create(db_pool.clone())
                 .await
                 .expect("Could not create catenary");
         }
-        empty_infra
+        infra
     }
 
     #[test]
@@ -355,8 +370,65 @@ pub mod tests {
                 .map(|s| s.to_string())
                 .collect();
 
-        let mode_map = map_catenary_modes(&infra_cache, track_sections);
+        let (mode_map, warnings) = map_catenary_modes(&infra_cache, track_sections);
         assert_eq!(mode_map, simple_mode_map);
+        assert!(warnings.is_empty());
+    }
+
+    #[rstest]
+    async fn test_map_catenary_modes_with_warnings(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] infra_with_catenaries: TestFixture<Infra>,
+    ) {
+        let mut conn = db_pool.get().unwrap();
+        let infra_with_catenaries = infra_with_catenaries.await;
+        let mut infra_cache = InfraCache::load(&mut conn, &infra_with_catenaries.model)
+            .expect("Could not load infra_cache");
+        infra_cache.add(CatenarySchema {
+            track_ranges: vec![ApplicableDirectionsTrackRange {
+                track: "track_1".into(),
+                begin: 0.0,
+                end: 10.0,
+                applicable_directions: ApplicableDirections::Both,
+            }],
+            voltage: "25kV".into(),
+            id: "catenary_that_overlaps".into(),
+        });
+        let track_sections: HashSet<_> =
+            vec!["track_1", "track_2", "track_3", "track_4", "track_5"]
+                .into_iter()
+                .map(|s| s.to_string())
+                .collect();
+
+        let (_, warnings) = map_catenary_modes(&infra_cache, track_sections);
+        assert_eq!(warnings.len(), 1);
+        let warning = &warnings[0];
+
+        assert!(warning.get_context().contains_key("catenary_id"));
+        let catenary_id: String =
+            from_value(warning.get_context().get("catenary_id").unwrap().clone()).unwrap();
+
+        assert!(catenary_id == "catenary_that_overlaps" || catenary_id == "catenary_1");
+
+        assert!(warning.get_context().contains_key("overlapping_ranges"));
+        let overlapping_ranges: Vec<ApplicableDirectionsTrackRange> = from_value(
+            warning
+                .get_context()
+                .get("overlapping_ranges")
+                .unwrap()
+                .clone(),
+        )
+        .unwrap();
+        assert_eq!(overlapping_ranges.len(), 1);
+        assert_eq!(
+            overlapping_ranges[0],
+            ApplicableDirectionsTrackRange {
+                track: "track_1".into(),
+                begin: 0.0,
+                end: 10.0,
+                applicable_directions: ApplicableDirections::Both,
+            }
+        );
     }
 
     #[test]
@@ -456,10 +528,11 @@ pub mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let response: Vec<CatenaryRange> = read_body_json(response).await;
-        assert_eq!(response.len(), 3);
+        let response: CatenariesOnPathResponse = read_body_json(response).await;
+        assert!(response.warnings.is_empty());
+        assert_eq!(response.catenary_ranges.len(), 3);
         assert_eq!(
-            response[0],
+            response.catenary_ranges[0],
             CatenaryRange {
                 begin: 0.0,
                 end: 25.0,
@@ -467,7 +540,7 @@ pub mod tests {
             }
         );
         assert_eq!(
-            response[1],
+            response.catenary_ranges[1],
             CatenaryRange {
                 begin: 25.0,
                 end: 30.0,
@@ -475,7 +548,7 @@ pub mod tests {
             }
         );
         assert_eq!(
-            response[2],
+            response.catenary_ranges[2],
             CatenaryRange {
                 begin: 40.0,
                 end: 48.0,

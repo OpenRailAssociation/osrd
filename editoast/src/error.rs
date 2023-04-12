@@ -1,7 +1,7 @@
 use actix_web::{error::JsonPayloadError, http::StatusCode, HttpResponse, ResponseError};
 use diesel::result::Error as DieselError;
 use redis::RedisError;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::result::Result as StdResult;
@@ -23,11 +23,11 @@ pub trait EditoastError: Error + Send + Sync {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InternalError {
     #[serde(skip)]
     status: StatusCode,
-    #[serde(rename = "type")]
+    #[serde(rename = "type", skip_deserializing)]
     error_type: &'static str,
     context: HashMap<String, Value>,
     message: String,

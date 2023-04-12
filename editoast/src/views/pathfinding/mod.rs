@@ -17,18 +17,22 @@ use thiserror::Error;
 use crate::{
     error::Result,
     models::{CurveGraph, Delete, PathWaypoint, Pathfinding, Retrieve, SlopeGraph},
+    schema::ApplicableDirectionsTrackRange,
     DbPool,
 };
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, Serialize)]
 #[editoast_error(base_id = "pathfinding")]
 enum PathfindingError {
     #[error("Pathfinding {pathfinding_id} does not exist")]
     #[editoast_error(status = 404)]
     NotFound { pathfinding_id: i64 },
-    #[error("Pathfinding {pathfinding_id} has reference to invalid infra id {infra_id}")]
+    #[error("Catenary {catenary_id} overlaps with other catenaries on the same track")]
     #[editoast_error(status = 500)]
-    InvalidInfraId { pathfinding_id: i64, infra_id: i64 },
+    CatenaryOverlap {
+        catenary_id: String,
+        overlapping_ranges: Vec<ApplicableDirectionsTrackRange>,
+    },
 }
 
 /// Returns `/pathfinding` routes
