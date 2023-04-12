@@ -5,8 +5,6 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 type StateType = 'started' | 'inProgress' | 'finish';
 
-type StateType = 'started' | 'inProgress' | 'finish';
-
 type Props = {
   projectID: number;
   studyID: number;

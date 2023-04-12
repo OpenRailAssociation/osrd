@@ -33,5 +33,5 @@ class OsrdSearchStudy(models.Model):
 
 class OsrdSearchScenario(models.Model):
     class Meta:
-        db_table = "osrd_search_project"
+        db_table = "osrd_search_scenario"
         managed = False
