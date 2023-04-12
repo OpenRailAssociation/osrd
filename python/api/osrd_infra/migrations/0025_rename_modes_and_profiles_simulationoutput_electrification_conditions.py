@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("osrd_infra", "0023_alter_rollingstocklivery_compound_image_and_more"),
+        ("osrd_infra", "0024_search_fix_pk"),
     ]
 
     operations = [
