@@ -31,7 +31,7 @@ import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
 export type Props = {
-  editionMode?: false;
+  editionMode?: boolean;
   project?: ProjectResult;
   getProject?: (v: boolean) => void;
 };
@@ -109,10 +109,11 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
           imageId = null;
           setTempProjectImage(imageId);
         }
-        currentProject.image = imageId;
+        const editedProject = { ...currentProject, image: imageId };
+        setCurrentProject(editedProject);
         const request = patchProject({
           projectId: currentProject.id as number,
-          projectPatchRequest: currentProject as ProjectPatchRequest,
+          projectPatchRequest: editedProject as ProjectPatchRequest,
         });
         request
           .unwrap()

@@ -376,6 +376,9 @@ export type PostSearchApiResponse =
     | SearchTrackResult
     | SearchOperationalPointResult
     | SearchSignalResult
+    | SearchStudyResult
+    | SearchProjectResult
+    | SearchScenarioResult
   )[];
 export type PostSearchApiArg = {
   /** Search query */
@@ -875,6 +878,36 @@ export type SearchSignalResult = {
   line_name: string;
   geographic: Point;
   schematic: Point;
+};
+export type SearchStudyResult = {
+  id: number;
+  project_id: number;
+  name: string;
+  scenarios_count?: number;
+  description?: string;
+  last_modification: string;
+  tags?: string[];
+};
+export type SearchProjectResult = {
+  id: number;
+  image?: number;
+  name: string;
+  studies_count?: number;
+  description: string;
+  last_modification: string;
+  tags?: any;
+};
+export type SearchScenarioResult = {
+  id: number;
+  study_id: number;
+  electrical_profile_set_id?: number;
+  name: string;
+  trains_count?: number;
+  description?: string;
+  last_modification: string;
+  infra_id: number;
+  infra_name?: string;
+  tags?: string[];
 };
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {

@@ -66,8 +66,7 @@ project:
     id: integer
     name: string
     description: string
-    tags:
-      array: string
+    tags: string
   result:
     joins: |
       INNER JOIN osrd_infra_project AS project ON project.id = osrd_search_project.id
@@ -86,6 +85,8 @@ study:
     id: integer
     name: string
     description: string
+    tags: string
+    project_id: integer
   result:
     joins: |
       INNER JOIN osrd_infra_study AS study ON study.id = osrd_search_study.id
@@ -93,11 +94,6 @@ study:
       id: study.id
       project_id: study.project_id
       name: study.name
-      start_date_study: study.start_date
-      expected_end_date_study: study.expected_end_date
-      actual_end_date_study: study.actual_end_date
-      state: study.state
-      study_type: study.study_type
       scenarios_count: (SELECT COUNT(scenario.id) FROM osrd_infra_scenario AS scenario WHERE osrd_search_study.id = scenario.study_id)
       description: study.description
       last_modification: study.last_modification
@@ -109,6 +105,8 @@ scenario:
     id: integer
     name: string
     description: string
+    tags: string
+    study_id: integer
   result:
     joins: |
       INNER JOIN osrd_infra_scenario AS scenario ON scenario.id = osrd_search_scenario.id
@@ -120,7 +118,6 @@ scenario:
       electrical_profile_set_id: scenario.electrical_profile_set_id
       infra_id: scenario.infra_id
       infra_name: infra.name
-      timetable_id: scenario.timetable_id
       trains_count: (SELECT COUNT(trains.id) FROM osrd_infra_trainschedule AS trains WHERE scenario.timetable_id = trains.timetable_id)
       description: scenario.description
       last_modification: scenario.last_modification

@@ -20,9 +20,23 @@ import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import DOCUMENT_URI from 'common/consts';
-import { ProjectResult, StudyResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  PostSearchApiArg,
+  ProjectResult,
+  SearchStudyResult,
+  StudyResult,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
+
+type SortOptions =
+  | 'NameAsc'
+  | 'NameDesc'
+  | 'CreationDateAsc'
+  | 'CreationDateDesc'
+  | 'LastModifiedAsc'
+  | 'LastModifiedDesc';
 
 function displayStudiesList(
   studiesList: StudyResult[],
@@ -53,24 +67,25 @@ export default function Project() {
   const [studiesList, setStudiesList] = useState<StudyResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
-  const [sortOption, setSortOption] = useState('LastModifiedDesc');
+  const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [imageUrl, setImageUrl] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectId = useSelector(getProjectID);
-  const {
-    data: currentProject,
-    isLoading,
-    isError,
-    error: projectError,
-  } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId: projectId as number });
+  // const {
+  //   data: currentProject,
+  //   isLoading,
+  //   isError,
+  //   error: projectError,
+  // } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId: projectId as number });
+  const [getCurrentProject] = osrdEditoastApi.useLazyGetProjectsByProjectIdQuery();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
 
-  if (isError) {
-    console.error('getProject Error : ', projectError);
-    return <span className="mt-5">An error occured</span>;
-  }
+  // if (isError) {
+  //   console.error('getProject Error : ', projectError);
+  //   return <span className="mt-5">An error occured</span>;
+  // }
 
   const sortOptions = [
     {
@@ -94,9 +109,10 @@ export default function Project() {
 
   const getProject = async (withNotification = false) => {
     try {
-      setProject(currentProject);
-      if (currentProject?.image) {
-        getProjectImage(`${DOCUMENT_URI}${currentProject.image}`);
+      const { data } = await getCurrentProject({ projectId: projectId as number });
+      setProject(data);
+      if (data?.image) {
+        await getProjectImage(`${DOCUMENT_URI}${data.image}`);
       }
       if (withNotification) {
         dispatch(
@@ -112,57 +128,68 @@ export default function Project() {
   };
 
   const getStudiesList = async () => {
-    if (filter) {
-      const payload = {
-        body: {
-          object: 'study',
-          query: ['and', ['or', ['search', ['name'], filter], ['search', ['description'], filter]]],
-        },
-      };
-      try {
-        const filteredData = await postSearch(payload).unwrap();
-        let filteredStudies = [...filteredData];
-        if (sortOption === 'LastModifiedDesc') {
-          filteredStudies = filteredStudies.sort((a, b) => {
-            if (a.last_modification && b.last_modification) {
-              return b.last_modification.localeCompare(a.last_modification);
-            }
-            return 0;
-          });
-        } else if (sortOption === 'NameAsc') {
-          filteredStudies = filteredStudies.sort((a, b) => {
-            if (a.name && b.name) {
-              return a.name.localeCompare(b.name);
-            }
-            return 0;
-          });
+    if (projectId) {
+      if (filter) {
+        const payload: PostSearchApiArg = {
+          body: {
+            object: 'study',
+            query: [
+              'and',
+              [
+                'or',
+                ['search', ['name'], filter],
+                ['search', ['description'], filter],
+                ['search', ['tags'], filter],
+              ],
+              ['=', ['project_id'], projectId],
+            ],
+          },
+        };
+        try {
+          const filteredData = await postSearch(payload).unwrap();
+          let filteredStudies = [...filteredData] as SearchStudyResult[];
+          if (sortOption === 'LastModifiedDesc') {
+            filteredStudies = filteredStudies.sort((a, b) => {
+              if (a.last_modification && b.last_modification) {
+                return b.last_modification.localeCompare(a.last_modification);
+              }
+              return 0;
+            });
+          } else if (sortOption === 'NameAsc') {
+            filteredStudies = filteredStudies.sort((a, b) => {
+              if (a.name && b.name) {
+                return a.name.localeCompare(b.name);
+              }
+              return 0;
+            });
+          }
+          setStudiesList(filteredStudies);
+        } catch (error) {
+          console.error(error);
         }
-        setStudiesList(filteredStudies);
-      } catch (error) {
-        console.error(error);
-      }
-    } else {
-      try {
-        const { data } = await getStudies({ projectId, ordering: sortOption });
-        setStudiesList(data.results);
-      } catch (error) {
-        console.error(error);
+      } else {
+        try {
+          const { data } = await getStudies({ projectId, ordering: sortOption });
+          if (data?.results) setStudiesList(data.results);
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
   };
 
   const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSortOption(e.target.value);
+    setSortOption(e.target.value as SortOptions);
   };
 
   useEffect(() => {
     if (!projectId) {
       navigate('/operational-studies');
-    } else if (!isLoading) {
+    } else {
       getProject();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
+  }, []);
 
   useEffect(() => {
     if (projectId) getStudiesList();

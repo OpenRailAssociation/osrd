@@ -7,6 +7,7 @@ import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
+import { setFailure, setSuccess } from 'reducers/main';
 import ScenarioCardEmpty from 'applications/operationalStudies/components/Study/ScenarioCardEmpty';
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import { FaPencilAlt } from 'react-icons/fa';
@@ -15,18 +16,27 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
 import { get } from 'common/requests';
-import { setSuccess } from 'reducers/main';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import {
+  PostSearchApiArg,
   ProjectResult,
   ScenarioResult,
+  SearchScenarioResult,
   StudyResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import BreadCrumbs from '../components/BreadCrumbs';
 import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import FilterTextField from '../components/FilterTextField';
+
+type SortOptions =
+  | 'NameAsc'
+  | 'NameDesc'
+  | 'CreationDateAsc'
+  | 'CreationDateDesc'
+  | 'LastModifiedAsc'
+  | 'LastModifiedDesc';
 
 type StateType = 'started' | 'inProgress' | 'finish';
 
@@ -69,7 +79,7 @@ export default function Study() {
   const [scenariosList, setScenariosList] = useState<ScenarioResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
-  const [sortOption, setSortOption] = useState('LastModifiedDesc');
+  const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [studyStates, setStudyStates] = useState<StateType[]>([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -80,15 +90,17 @@ export default function Study() {
     isLoading: isProjectLoading,
     isError: isProjectError,
     error: projectError,
-  } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId });
+  } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId: projectId as number });
   const [getCurrentStudy] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdQuery();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getScenarios] =
     osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
 
   if (isProjectError) {
-    console.error('getProject Error : ', projectError);
-    return <span className="mt-5">An error occured</span>;
+    console.error(projectError);
+    return dispatch(
+      setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoFrom') })
+    );
   }
 
   const getStudyStates = async (id: number) => {
@@ -112,72 +124,86 @@ export default function Study() {
   ];
 
   const handleSortOptions = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSortOption(e.target.value);
+    setSortOption(e.target.value as SortOptions);
   };
 
   const getProject = async () => {
-    try {
-      setProject(currentProject);
-      await getStudyStates(currentProject.id);
-    } catch (error) {
-      console.error(error);
+    if (currentProject?.id) {
+      try {
+        setProject(currentProject);
+        await getStudyStates(currentProject.id);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
   const getStudy = async (withNotification = false) => {
-    try {
-      const { data } = await getCurrentStudy({ projectId, studyId });
-      setStudy(data);
-      if (withNotification) {
-        dispatch(
-          setSuccess({
-            title: t('studyUpdated'),
-            text: t('studyUpdatedDetails', { name: study?.name }),
-          })
-        );
+    if (projectId && studyId) {
+      try {
+        const { data } = await getCurrentStudy({ projectId, studyId });
+        if (data) setStudy(data as StudyWithFileType);
+        if (withNotification) {
+          dispatch(
+            setSuccess({
+              title: t('studyUpdated'),
+              text: t('studyUpdatedDetails', { name: study?.name }),
+            })
+          );
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
   };
 
   const getScenarioList = async () => {
-    if (filter) {
-      const payload = {
-        body: {
-          object: 'scenario',
-          query: ['and', ['or', ['search', ['name'], filter], ['search', ['description'], filter]]],
-        },
-      };
-      try {
-        const filteredData = await postSearch(payload).unwrap();
-        let filteredScenarios = [...filteredData];
-        if (sortOption === 'LastModifiedDesc') {
-          filteredScenarios = filteredScenarios.sort((a, b) => {
-            if (a.last_modification && b.last_modification) {
-              return b.last_modification.localeCompare(a.last_modification);
-            }
-            return 0;
-          });
-        } else if (sortOption === 'NameAsc') {
-          filteredScenarios = filteredScenarios.sort((a, b) => {
-            if (a.name && b.name) {
-              return a.name.localeCompare(b.name);
-            }
-            return 0;
-          });
+    if (projectId && studyId) {
+      if (filter) {
+        const payload: PostSearchApiArg = {
+          body: {
+            object: 'scenario',
+            query: [
+              'and',
+              [
+                'or',
+                ['search', ['name'], filter],
+                ['search', ['description'], filter],
+                ['search', ['tags'], filter],
+              ],
+              ['=', ['study_id'], studyId],
+            ],
+          },
+        };
+        try {
+          const filteredData = await postSearch(payload).unwrap();
+          let filteredScenarios = [...filteredData] as SearchScenarioResult[];
+          if (sortOption === 'LastModifiedDesc') {
+            filteredScenarios = filteredScenarios.sort((a, b) => {
+              if (a.last_modification && b.last_modification) {
+                return b.last_modification.localeCompare(a.last_modification);
+              }
+              return 0;
+            });
+          } else if (sortOption === 'NameAsc') {
+            filteredScenarios = filteredScenarios.sort((a, b) => {
+              if (a.name && b.name) {
+                return a.name.localeCompare(b.name);
+              }
+              return 0;
+            });
+          }
+          setScenariosList(filteredScenarios);
+        } catch (error) {
+          console.error(error);
         }
-        console.log('filtered scenarios : ', filteredScenarios);
-        setScenariosList(filteredScenarios);
-      } catch (error) {
-        console.error(error);
-      }
-    } else {
-      try {
-        const { data } = await getScenarios({ projectId, studyId, ordering: sortOption });
-        setScenariosList(data.results);
-      } catch (error) {
-        console.error(error);
+      } else {
+        try {
+          const { data } = await getScenarios({ projectId, studyId, ordering: sortOption });
+          if (data?.results) setScenariosList(data.results);
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
   };
