@@ -186,7 +186,7 @@
     background-color: transparent;
   }
   &.osrd-config-place-via {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0rem;
   }
   &:not(.osrd-config-place-via):last-child::after {
     position: absolute;
@@ -206,7 +206,18 @@
   width: 8rem;
 }
 .osrd-config-stoptime {
-  width: 7rem;
+  padding: 0rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 4px;
+  background-color: var(--coolgray1);
+  cursor: pointer;
+  &:hover {
+    background-color: var(--coolgray3);
+  }
+  .form-control {
+    width: 7rem;
+  }
 }
 
 .osrd-config-anchor {

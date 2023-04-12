@@ -33,7 +33,7 @@ export default function TrainAddingSettings() {
   }, [debouncedTrainDelta]);
 
   return (
-    <div className="osrd-config-item-container d-flex align-items-end mb-2">
+    <div className="osrd-config-item-container d-flex align-items-start mb-2">
       <span className="mr-2">
         <InputSNCF
           type="number"
