@@ -23,7 +23,9 @@ const submitConfAddTrainSchedules = async (
     const schedules = [];
     let actualTrainCount = 1;
     for (let nb = 1; nb <= osrdconf.simulationConf.trainCount; nb += 1) {
-      const newDepartureTime = departureTime + 60 * osrdconf.simulationConf.trainDelta * (nb - 1);
+      const newDepartureTimeString = sec2time(
+        departureTime + 60 * osrdconf.simulationConf.trainDelta * (nb - 1)
+      );
       const trainName = trainNameWithNum(
         osrdconf.simulationConf.name,
         actualTrainCount,
@@ -33,7 +35,7 @@ const submitConfAddTrainSchedules = async (
         formatConf(dispatch, t, {
           ...osrdconf.simulationConf,
           name: trainName,
-          originTime: newDepartureTime.toString(),
+          departureTime: newDepartureTimeString,
         })
       );
       actualTrainCount += osrdconf.simulationConf.trainStep;
