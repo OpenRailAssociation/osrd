@@ -154,7 +154,9 @@ export default function Timetable({
       setTrainsList(
         departureArrivalTimes.map((train: ScheduledTrain) => ({
           ...train,
-          isFiltered: !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()),
+          isFiltered:
+            !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
+            !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase()),
         }))
       );
     } else {
