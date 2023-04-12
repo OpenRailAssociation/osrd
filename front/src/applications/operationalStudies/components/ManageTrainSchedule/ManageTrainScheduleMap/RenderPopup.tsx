@@ -28,6 +28,7 @@ function RenderPopup() {
     const properties = {
       ...featureInfoClick.feature.properties,
       coordinates: featureInfoClick.coordinates.slice(0, 2),
+      name: featureInfoClick.feature.properties.extensions_sncf_track_name,
     };
 
     return (

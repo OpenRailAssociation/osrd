@@ -13,7 +13,7 @@ import { useDebounce } from 'utils/helpers';
 import { getConf, getVias } from 'reducers/osrdconf/selectors';
 
 function InputStopTime(props) {
-  const { index, dispatchAndRun } = props;
+  const { index, dispatchAndRun, setIndexSelected } = props;
   const vias = useSelector(getVias);
   const [stopTime, setStopTime] = useState(vias[index].duration ? vias[index].duration : 0);
   const [firstStart, setFirstStart] = useState(true);
@@ -22,6 +22,7 @@ function InputStopTime(props) {
   useEffect(() => {
     if (!firstStart) {
       dispatchAndRun(updateViaStopTime(vias, index, debouncedStopTime));
+      setIndexSelected(undefined);
     } else {
       setFirstStart(false);
     }
@@ -95,7 +96,11 @@ export default function DisplayVias(props) {
                         onClick={() => setIndexSelected(index)}
                       >
                         {index === indexSelected ? (
-                          <InputStopTime index={index} dispatchAndRun={dispatchAndRun} />
+                          <InputStopTime
+                            index={index}
+                            dispatchAndRun={dispatchAndRun}
+                            setIndexSelected={setIndexSelected}
+                          />
                         ) : (
                           <>{osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}s</>
                         )}
@@ -130,4 +135,5 @@ DisplayVias.propTypes = {
 InputStopTime.propTypes = {
   index: PropTypes.number.isRequired,
   dispatchAndRun: PropTypes.func.isRequired,
+  setIndexSelected: PropTypes.func.isRequired,
 };
