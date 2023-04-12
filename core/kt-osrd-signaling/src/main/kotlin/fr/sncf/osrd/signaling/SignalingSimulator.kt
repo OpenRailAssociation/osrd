@@ -47,6 +47,7 @@ interface SignalingSimulator {
         fullPath: StaticIdxList<Block>,
         evaluatedPathBegin: Int,
         evaluatedPathEnd: Int,
-        zoneStates: List<ZoneStatus>
+        zoneStates: List<ZoneStatus>,
+        followingZoneState: ZoneStatus,
     ): IdxMap<LogicalSignalId, SigState>
 }

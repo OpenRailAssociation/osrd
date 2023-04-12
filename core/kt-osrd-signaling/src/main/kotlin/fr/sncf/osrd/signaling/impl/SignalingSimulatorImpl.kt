@@ -100,7 +100,8 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         fullPath: StaticIdxList<Block>,
         evaluatedPathBegin: Int,
         evaluatedPathEnd: Int,
-        zoneStates: List<ZoneStatus>
+        zoneStates: List<ZoneStatus>,
+        followingZoneState: ZoneStatus,
     ): IdxMap<LogicalSignalId, SigState> {
         assert(evaluatedPathBegin >= 0)
         assert(evaluatedPathEnd > evaluatedPathBegin)
@@ -131,7 +132,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         if (!lastBlockEndsAtBufferStop) {
             val blockSignals = blocks.getBlockSignals(lastBlock)
             val lastSignal = blockSignals[blockSignals.size - 1]
-            signalEvalSequence.add(SignalEvalTask(lastSignal, ProtectionStatus.INCOMPATIBLE))
+            signalEvalSequence.add(SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus()))
         }
 
         for (blockIndex in (0 until evaluatedPath.size).reversed()) {

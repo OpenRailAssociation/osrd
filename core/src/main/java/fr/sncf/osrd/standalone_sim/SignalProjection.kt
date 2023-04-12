@@ -130,7 +130,9 @@ private fun computeSignalAspectChangeEvents(
             zoneStates[zoneToPathIndexMap[event.zone]!!] = ZoneStatus.CLEAR
 
         val simulatedSignalStates = simulator.evaluate(
-            rawInfra, loadedSignalInfra, blockInfra, blockPath, 0, blockPath.size, zoneStates
+            rawInfra, loadedSignalInfra, blockInfra,
+            blockPath, 0, blockPath.size,
+            zoneStates, ZoneStatus.CLEAR
         )
         val simulatedAspects = simulatedSignalStates.map { it.getEnum("aspect") }
         for (pathSignal in pathSignals) {
