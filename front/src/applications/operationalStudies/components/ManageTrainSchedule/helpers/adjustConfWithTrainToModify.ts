@@ -19,7 +19,7 @@ import { store } from 'Store';
 import { Path, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 import { ArrayElement } from 'utils/types';
 
-function convertStep2PointOnMap(step?: ArrayElement<Path['steps']>) {
+function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>) {
   return step
     ? {
         ...step,
@@ -53,16 +53,16 @@ export default function adjustConfWithTrainToModify(
   if (path.steps && path.steps.length > 1) {
     dispatch(updatePathfindingID(trainSchedule.path));
     dispatch(updateItinerary(path));
-    dispatch(updateOrigin(convertStep2PointOnMap(path.steps[0])));
-    dispatch(updateDestination(convertStep2PointOnMap(path.steps.at(-1))));
+    dispatch(updateOrigin(convertStepToPointOnMap(path.steps[0])));
+    dispatch(updateDestination(convertStepToPointOnMap(path.steps.at(-1))));
     if (path.steps.length > 2) {
       const vias = path.steps
         .filter(
           (via, idx) => idx !== 0 && path.steps && idx < path.steps.length - 1 && !via.suggestion
         )
-        .map((via) => convertStep2PointOnMap(via));
+        .map((via) => convertStepToPointOnMap(via));
       dispatch(replaceVias(vias));
-      dispatch(updateSuggeredVias(path.steps.map((via) => convertStep2PointOnMap(via))));
+      dispatch(updateSuggeredVias(path.steps.map((via) => convertStepToPointOnMap(via))));
     } else {
       dispatch(replaceVias(undefined));
     }

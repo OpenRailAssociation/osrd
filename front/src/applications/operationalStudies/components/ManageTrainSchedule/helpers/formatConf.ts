@@ -2,6 +2,7 @@ import { setFailure } from 'reducers/main';
 import { OsrdConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
+import { kmh2ms } from 'utils/physics';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function formatConf(
@@ -102,7 +103,7 @@ export default function formatConf(
       train_name: osrdconf.name,
       labels: osrdconf.labels,
       departure_time: time2sec(osrdconf.departureTime),
-      initial_speed: osrdconf.initialSpeed ? Math.abs(osrdconf.initialSpeed / 3.6) : 0,
+      initial_speed: osrdconf.initialSpeed ? kmh2ms(osrdconf.initialSpeed) : 0,
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,
