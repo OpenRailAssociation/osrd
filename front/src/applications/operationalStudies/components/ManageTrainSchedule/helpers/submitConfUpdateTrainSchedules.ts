@@ -17,11 +17,10 @@ const submitConfUpdateTrainSchedules = (
 ) => {
   const { osrdconf } = store.getState();
   // First train tested, and next we put the other trains
-  const osrdConfig = formatConf(dispatch, t, osrdconf.simulationConf);
-  if (osrdConfig) {
+  const simulationConf = formatConf(dispatch, t, osrdconf.simulationConf, true);
+  if (simulationConf) {
     setIsWorking(true);
     try {
-      const simulationConf = formatConf(dispatch, t, osrdconf.simulationConf);
       trainScheduleIDsToModify.forEach(async (trainScheduleID) => {
         await patch(
           `${trainscheduleURI + trainScheduleID}/`,
