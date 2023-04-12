@@ -94,6 +94,8 @@ export interface ElectrificationConditions {
   stop: number;
   used_mode: string;
   used_profile: string;
+  used_restriction?: string;
+  seen_restriction?: string;
 }
 
 export type ScheduledTrain = {

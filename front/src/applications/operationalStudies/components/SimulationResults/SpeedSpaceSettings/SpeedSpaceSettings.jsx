@@ -65,6 +65,16 @@ export default function SpeedSpaceSettings(props) {
         }}
         type="checkbox"
       />
+      <CheckboxRadioSNCF
+        id="speedSpaceSettings-powerRestriction"
+        name="speedSpaceSettings-powerRestriction"
+        label={t('speedSpaceSettings.powerRestriction')}
+        checked={settings.powerRestriction}
+        onChange={() => {
+          toggleSetting('powerRestriction', settings);
+        }}
+        type="checkbox"
+      />
     </div>
   );
 }

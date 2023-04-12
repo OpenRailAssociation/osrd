@@ -18,6 +18,7 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
+import { useTranslation } from 'react-i18next';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
 
@@ -47,6 +48,9 @@ export default function SpeedSpaceChart(props) {
     timePosition,
   } = props;
 
+  // to be removed after creating power restriction module
+  const { t } = useTranslation(['simulation']);
+
   const [chart, setChart] = useState(undefined);
   const [chartBaseHeight, setChartBaseHeight] = useState(initialHeight);
   const [chartHeight, setChartHeight] = useState(initialHeight);
@@ -54,6 +58,7 @@ export default function SpeedSpaceChart(props) {
   const [isActive, setIsActive] = useState(false);
   const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
   const [resetChart, setResetChart] = useState(false);
+  const [restrictionPower, setRestrictionPower] = useState('');
   const [rotate, setRotate] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -189,6 +194,27 @@ export default function SpeedSpaceChart(props) {
     };
   }, [chart, trainSimulation, localSettings, resetChart, rotate]);
 
+  // to be removed after creating power restriction module
+  useEffect(() => {
+    setRestrictionPower('');
+    trainSimulation.electrificationConditions.forEach((elem) => {
+      if (elem.used_restriction)
+        setRestrictionPower(
+          `${t('speedSpaceSettings.powerRestriction')}: ${elem.used_restriction}`
+        );
+    });
+    if (!restrictionPower) {
+      trainSimulation.electrificationConditions.forEach((elem) => {
+        if (elem.seen_restriction)
+          setRestrictionPower(
+            `${t('speedSpaceSettings.powerRestriction')} ${elem.seen_restriction} ${t(
+              'powerRestriction.waited'
+            )}, ${t('powerRestriction.incompatible')}`
+          );
+      });
+    }
+  }, [trainSimulation, chart, localSettings]);
+
   return (
     <Rnd
       default={{
@@ -257,8 +283,27 @@ export default function SpeedSpaceChart(props) {
         <div className="handle-tab-resize">
           <CgLoadbar />
         </div>
+        {isActive ? (
+          <ElectricalProfilesLegend isActive={isActive} setIsActive={setIsActive} />
+        ) : null}
+
+        {/* to be removed after creating power restriction module */}
+        {localSettings.powerRestriction && (
+          <div className="fixed-top d-flex justify-content-center w-25 m-auto">
+            <div
+              className="mt-2"
+              style={{
+                backgroundColor: '#333',
+                color: 'white',
+                borderRadius: '0.3rem',
+                padding: '0.2rem',
+              }}
+            >
+              {restrictionPower || t('powerRestriction.unknown')}
+            </div>
+          </div>
+        )}
       </div>
-      {isActive ? <ElectricalProfilesLegend isActive={isActive} setIsActive={setIsActive} /> : null}
     </Rnd>
   );
 }
