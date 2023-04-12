@@ -44,7 +44,7 @@ function Itinerary({ mustUpdate }: Props) {
       zoom,
     };
     setExtViewport(newViewport);
-    if (id !== undefined) updateFeatureInfoClick(Number(id));
+    if (id) updateFeatureInfoClick(Number(id));
   };
 
   const zoomToFeaturePoint = (lngLat?: Position, id?: string) => {
@@ -56,7 +56,7 @@ function Itinerary({ mustUpdate }: Props) {
         zoom: 16,
       };
       setExtViewport(newViewport);
-      if (id !== undefined) {
+      if (id) {
         updateFeatureInfoClick(Number(id));
       }
     }
