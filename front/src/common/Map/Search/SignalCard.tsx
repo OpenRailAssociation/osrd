@@ -1,9 +1,9 @@
 import React from 'react';
-import { ISignalSearchResult } from './searchTypes';
+import { SearchSignalResult } from 'common/api/osrdEditoastApi';
 
 type SignalCardProps = {
-  signalSearchResult: ISignalSearchResult;
-  onResultClick: (results: ISignalSearchResult) => void;
+  signalSearchResult: SearchSignalResult;
+  onResultClick: (results: SearchSignalResult) => void;
 };
 const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
   <div
@@ -14,7 +14,7 @@ const SignalCard = ({ signalSearchResult, onResultClick }: SignalCardProps) => (
   >
     <div className="col-1">
       <img
-        src={`/signalsSVG/${signalSearchResult.type.replace(/ /g, '_')}.svg`}
+        src={`/signalsSVG/${signalSearchResult.type?.replace(/ /g, '_')}.svg`}
         alt={signalSearchResult.type}
       />
     </div>
