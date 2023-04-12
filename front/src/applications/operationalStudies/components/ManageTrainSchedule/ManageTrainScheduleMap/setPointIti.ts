@@ -5,10 +5,13 @@ import {
   updateDestination,
   updateVias,
   updateFeatureInfoClickOSRD,
+  updateShouldRunPathfinding,
 } from 'reducers/osrdconf';
+import { PointOnMap } from 'applications/operationalStudies/consts';
 
-export default function setPointIti(point, data) {
-  switch (point) {
+export default function setPointIti(pointType: string, data: PointOnMap) {
+  store.dispatch(updateShouldRunPathfinding(true));
+  switch (pointType) {
     case 'start':
       store.dispatch(updateOrigin(data));
       break;
