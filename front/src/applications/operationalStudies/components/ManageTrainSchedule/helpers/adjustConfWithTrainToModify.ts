@@ -64,7 +64,7 @@ export default function adjustConfWithTrainToModify(
       dispatch(replaceVias(vias));
       dispatch(updateSuggeredVias(path.steps.map((via) => convertStepToPointOnMap(via))));
     } else {
-      dispatch(replaceVias(undefined));
+      dispatch(replaceVias([]));
     }
   }
 }
