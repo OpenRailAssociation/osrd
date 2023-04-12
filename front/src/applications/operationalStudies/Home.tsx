@@ -11,7 +11,12 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
 import { updateMode } from 'reducers/osrdconf';
-import { PostSearchApiArg, ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  PostSearchApiArg,
+  ProjectResult,
+  SearchProjectResult,
+  osrdEditoastApi,
+} from 'common/api/osrdEditoastApi';
 
 type SortOptions =
   | 'NameAsc'
@@ -71,12 +76,20 @@ export default function Home() {
       const payload: PostSearchApiArg = {
         body: {
           object: 'project',
-          query: ['and', ['or', ['search', ['name'], filter], ['search', ['description'], filter]]],
+          query: [
+            'and',
+            [
+              'or',
+              ['search', ['name'], filter],
+              ['search', ['description'], filter],
+              ['search', ['tags'], filter],
+            ],
+          ],
         },
       };
       try {
-        const data: ProjectResult[] = await postSearch(payload).unwrap();
-        let filteredData = [...data];
+        const data = await postSearch(payload).unwrap();
+        let filteredData = [...data] as SearchProjectResult[];
         if (sortOption === 'LastModifiedDesc') {
           filteredData = filteredData.sort((a, b) => {
             if (a.last_modification && b.last_modification) {
@@ -103,7 +116,7 @@ export default function Home() {
           setProjectsList(projects.data.results);
         }
       } catch (error) {
-        console.error('get Projetcs error : ', error);
+        console.error(error);
       }
     }
   };
