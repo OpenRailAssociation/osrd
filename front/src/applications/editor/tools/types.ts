@@ -66,6 +66,8 @@ export interface OSRDConf {
   switchTypes: SwitchType[] | undefined;
 }
 
+export type Reducer<T> = (v: T) => T;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EditorContextType<S = any> = {
   // Localisation:
@@ -74,7 +76,7 @@ export type EditorContextType<S = any> = {
   // Tool logic:
   activeTool: Tool<S>;
   state: S;
-  setState: (state: Partial<S>) => void;
+  setState: (stateOrReducer: Partial<S> | Reducer<S>) => void;
 
   // Switching tool:
   switchTool: <NewToolState extends CommonToolState>(
