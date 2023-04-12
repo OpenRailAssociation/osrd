@@ -5,6 +5,7 @@ import produce from 'immer';
 import { transformRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
 import { MAP_URL } from 'common/Map/const';
+import { Position } from '@turf/helpers';
 
 // Action Types
 export const UPDATE_VIEWPORT = 'map/UPDATE_VIEWPORT';
@@ -35,7 +36,7 @@ export type Viewport = ViewState & {
 export interface MapSearchMarker {
   title: string;
   subtitle?: string;
-  lonlat: [number, number];
+  lonlat: Position;
 }
 export interface MapState {
   ref: unknown;
