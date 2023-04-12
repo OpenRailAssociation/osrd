@@ -17,7 +17,7 @@ import {
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { FaPencilAlt } from 'react-icons/fa';
+import { FaCog, FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +28,8 @@ import getTimetable from '../components/Scenario/getTimetable';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
+import DropdownSNCF from 'common/BootstrapSNCF/DropdownSNCF';
+import { TbLayoutSidebarLeftCollapse, TbLayoutSidebarLeftExpand } from 'react-icons/tb';
 
 export default function Scenario() {
   const dispatch = useDispatch();
@@ -37,6 +39,8 @@ export default function Scenario() {
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
+  const [trainsWithDetails, setTrainsWithDetails] = useState(false);
+  const [collapseTimetable, setCollapseTimetable] = useState(false);
 
   const [getProject, { data: project }] =
     osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
@@ -108,13 +112,37 @@ export default function Scenario() {
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
           {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
+          {collapseTimetable &&
+            <button
+              className="scenario-timetable-collapsed"
+              type="button"
+              onClick={() => setCollapseTimetable(false)}>
+                <TbLayoutSidebarLeftExpand />
+            </button>}
           <div className="row">
-            <div className="col-lg-4">
+            <div className={collapseTimetable ? 'd-none' : 'col-lg-4'}>
               <div className="scenario-sidemenu">
                 {scenario && (
                   <div className="scenario-details">
                     <div className="scenario-details-name">
-                      {scenario.name}
+                      <span className="flex-grow-1">{scenario.name}</span>
+                      <button
+                        type="button"
+                        className="scenario-details-modify-button"
+                        onClick={() => setTrainsWithDetails(!trainsWithDetails)}
+                        title={t('displayTrainsWithDetails')}
+                      >
+                        {trainsWithDetails
+                          ? <FaEyeSlash />
+                          : <FaEye />}
+                      </button>
+                      <button
+                        type="button"
+                        className="scenario-details-modify-button"
+                        onClick={() => setCollapseTimetable(true)}
+                      >
+                        <TbLayoutSidebarLeftCollapse />
+                      </button>
                       <button
                         className="scenario-details-modify-button"
                         type="button"
@@ -128,9 +156,6 @@ export default function Scenario() {
                           )
                         }
                       >
-                        <span className="scenario-details-modify-button-text">
-                          {t('modifyScenario')}
-                        </span>
                         <FaPencilAlt />
                       </button>
                     </div>
@@ -164,10 +189,11 @@ export default function Scenario() {
                 <Timetable
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
+                  trainsWithDetails={trainsWithDetails}
                 />
               </div>
             </div>
-            <div className="col-lg-8">
+            <div className={collapseTimetable ? 'col-lg-12' : 'col-lg-8'}>
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">

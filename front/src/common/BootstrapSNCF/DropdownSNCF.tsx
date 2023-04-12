@@ -10,8 +10,10 @@ export const DROPDOWN_STYLE_TYPES = {
 const DropdownSNCF: FC<{
   titleContent: ReactNode;
   items?: ReactNode[];
-  type: string;
-}> = ({ titleContent, items = [], type }) => {
+  type?: string;
+  className?: string;
+  noArrow?: boolean;
+}> = ({ titleContent, items = [], type = 'transparent', className, noArrow = false }) => {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const targetRef = useRef<HTMLDivElement>(null);
   const itemNode = items.map((item) => (
@@ -48,17 +50,19 @@ const DropdownSNCF: FC<{
         renderTarget={(ref) => (
           <button
             ref={ref as LegacyRef<HTMLButtonElement>}
-            className={`${type} btn dropdown-toggle toolbar-item-spacing`}
+            className={className || `${type} btn dropdown-toggle toolbar-item-spacing`}
             type="button"
             onClick={() => !isDropdownShown && setIsDropdownShown(true)}
           >
             {titleContent}
-            <i
-              className={`${
-                isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down'
-              } d-none d-xl-block`}
-              aria-hidden="true"
-            />
+            {noArrow && (
+              <i
+                className={`${
+                  isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down'
+                } d-none d-xl-block`}
+                aria-hidden="true"
+              />
+            )}
           </button>
         )}
         renderElement={(ref) =>
