@@ -177,8 +177,7 @@ export const PointEditionLeftPanel: FC<{ type: EditoastType }> = <Entity extends
     PointEditionState<Entity>
   >;
   const isWayPoint = type === 'BufferStop' || type === 'Detector';
-  const isNew =
-    typeof state.entity.properties.id === 'string' && state.entity.properties.id === NEW_ENTITY_ID;
+  const isNew = state.entity.properties.id === NEW_ENTITY_ID;
 
   const [trackState, setTrackState] = useState<
     | { type: 'idle'; id?: undefined; track?: undefined }

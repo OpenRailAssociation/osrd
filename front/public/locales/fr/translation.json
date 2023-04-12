@@ -281,7 +281,13 @@
           "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
-        "label": "Outil \"Ligne\""
+        "label": "Outil \"Ligne\"",
+        "default-speed-sections-error": "Une erreur est survenue lors du chargement des sections de vitesse liés.",
+        "no-linked-speed-section": "Aucune section de vitesse liée",
+        "attached-speed-sections": "Sections de vitesse liées",
+        "only-show-n": "Ne montrer que les {{count}} premiers résultats",
+        "show-more-speed-sections_one": "Voir un résultat de plus",
+        "show-more-speed-sections_other": "Voir {{count}} résultats de plus"
       }
     }
   }
