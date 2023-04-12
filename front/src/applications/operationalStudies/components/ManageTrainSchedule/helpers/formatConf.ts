@@ -1,9 +1,15 @@
 import { setFailure } from 'reducers/main';
 import { OsrdConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
+import { Dispatch } from 'redux';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfState) {
+export default function formatConf(
+  dispatch: Dispatch,
+  t: (arg0: string) => string,
+  osrdconf: OsrdConfState,
+  ignoreTrainAddSettings = false
+) {
   let error = false;
   if (!osrdconf.origin) {
     error = true;
@@ -59,32 +65,36 @@ export default function formatConf(dispatch: any, t: any, osrdconf: OsrdConfStat
       })
     );
   }
-  if (osrdconf.trainCount < 1) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noTrainCount'),
-      })
-    );
-  }
-  if (osrdconf.trainDelta < 1) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noDelta'),
-      })
-    );
-  }
-  if (osrdconf.trainStep < 1) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.trainScheduleTitle'),
-        message: t('errorMessages.noTrainStep'),
-      })
-    );
+
+  // TrainAddSettings tests
+  if (!ignoreTrainAddSettings) {
+    if (osrdconf.trainCount < 1) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('errorMessages.trainScheduleTitle'),
+          message: t('errorMessages.noTrainCount'),
+        })
+      );
+    }
+    if (osrdconf.trainDelta < 1) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('errorMessages.trainScheduleTitle'),
+          message: t('errorMessages.noDelta'),
+        })
+      );
+    }
+    if (osrdconf.trainStep < 1) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('errorMessages.trainScheduleTitle'),
+          message: t('errorMessages.noTrainStep'),
+        })
+      );
+    }
   }
 
   if (!error) {
