@@ -49,6 +49,22 @@ export default function TimetableManageTrainSchedule({
         <div className="d-flex gap-1 align-items-center justify-content-center mb-2 p-4 bg-white rounded h-100">
           {textContent()}
         </div>
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
+          <button className="btn btn-warning mb-2" type="button">
+            <span className="mr-2">
+              <FaPen />
+            </span>
+            {t('updateTrainSchedule')}
+          </button>
+        )}
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
+          <button className="btn btn-primary mb-2" type="button">
+            <span className="mr-2">
+              <FaPlus />
+            </span>
+            {t('addTrainSchedule')}
+          </button>
+        )}
         <button
           className="btn btn-secondary btn-block"
           type="button"
