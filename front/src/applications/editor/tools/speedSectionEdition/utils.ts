@@ -128,3 +128,10 @@ export function getPointAt(track: TrackSectionEntity, at: number): Position {
   const computedLength = length(track);
   return along(track.geometry, (at * computedLength) / dataLength).geometry.coordinates;
 }
+
+export function msToKmh(v: number): string {
+  return (v * 3.6).toFixed(1);
+}
+export function kmhToMs(v: number): number {
+  return v / 3.6;
+}

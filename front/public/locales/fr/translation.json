@@ -298,6 +298,8 @@
         },
         "speed-limits": "Limitations de vitesses",
         "main-speed-limit": "Limitation de vitesse par défaut",
+        "additional-speed-limit": "Limitation de vitesse additionnelles",
+        "add-new-speed-limit": "Ajouter une nouvelle limitation",
         "linked-track-sections": "Sections de lignes liées",
         "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
@@ -306,7 +308,10 @@
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
         "add-track-range": "Cliquer pour lier à :",
         "remove-track-range": "Cliquer pour détacher de :",
-        "move-range-extremity": "Cliquer pour déplacer l'extrémité :"
+        "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
+        "save-new-speed-section": "Sauver la nouvelle section de vitesse",
+        "save-existing-speed-section": "Sauvegarder les modifications",
+        "new-tag": "Nouvelle étiquette"
       }
     }
   }
