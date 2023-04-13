@@ -200,7 +200,7 @@ export const MetadataForm: FC = () => {
             onChange={(e) => {
               const newEntity = cloneDeep(entity);
               const value = parseFloat(e.target.value);
-              newEntity.properties.speed_limit = !isNaN(value) ? value : undefined;
+              newEntity.properties.speed_limit = !Number.isNaN(value) ? value : undefined;
               setState({ entity: newEntity });
             }}
           />
@@ -378,12 +378,13 @@ export const SpeedSectionEditionLayers: FC = () => {
   );
 };
 
-export const SpeedSectionMessages: FC = () => {
-  // const { t } = useTranslation();
-  const {
-    state: {
-      /* TODO */
-    },
-  } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
-  return null;
-};
+export const SpeedSectionMessages: FC = () => null;
+// export const SpeedSectionMessages: FC = () => {
+//   const { t } = useTranslation();
+//   const {
+//     state: {
+//       /* TODO */
+//     },
+//   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
+//   return null;
+// };

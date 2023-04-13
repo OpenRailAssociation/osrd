@@ -1,6 +1,8 @@
 import { MdSpeed } from 'react-icons/md';
 import { IoMdAddCircleOutline } from 'react-icons/io';
-import { cloneDeep, groupBy, isEqual } from 'lodash';
+import { cloneDeep, isEqual } from 'lodash';
+import length from '@turf/length';
+import lineSlice from '@turf/line-slice';
 import { BiReset } from 'react-icons/bi';
 
 import {
@@ -23,11 +25,8 @@ import {
   SpeedSectionEditionLeftPanel,
   SpeedSectionMessages,
 } from './components';
-import { EditorEntity, NULL_GEOMETRY, TrackSectionEntity } from '../../../../types';
+import { TrackSectionEntity } from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
-import length from '@turf/length';
-import lineSliceAlong from '@turf/line-slice-along';
-import lineSlice from '@turf/line-slice';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   id: 'speed-section-edition',
@@ -86,7 +85,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
       setState({ interactionState: { type: 'idle' } });
     } else if (feature) {
       if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {
-        const hoveredExtremity = feature as any as TrackRangeExtremityFeature;
+        const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
         setState({
           hoveredItem: null,
           interactionState: {
@@ -96,7 +95,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
           },
         });
       } else if (feature.properties?.speedSectionItemType === 'TrackRange') {
-        const hoveredRange = feature as any as TrackRangeFeature;
+        const hoveredRange = feature as unknown as TrackRangeFeature;
         const newEntity = cloneDeep(entity);
         newEntity.properties.track_ranges?.splice(
           hoveredRange.properties.speedSectionRangeIndex,
@@ -104,7 +103,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
         );
         setState({ entity: newEntity, hoveredItem: null });
       } else if (feature.sourceLayer === 'track_sections') {
-        const clickedEntity = feature as any as TrackSectionEntity;
+        const clickedEntity = feature as unknown as TrackSectionEntity;
         const newEntity = cloneDeep(entity);
         newEntity.properties.track_ranges = newEntity.properties.track_ranges || [];
         newEntity.properties.track_ranges.push({
@@ -135,7 +134,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
 
     // Handle hovering custom elements:
     if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {
-      const hoveredExtremity = feature as any as TrackRangeExtremityFeature;
+      const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
       const trackState = trackSectionsCache[hoveredExtremity.properties.track];
       if (trackState?.type !== 'success') return;
 
@@ -150,7 +149,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
           hoveredItem: newHoveredItem,
         });
     } else if (feature.properties?.speedSectionItemType === 'TrackRange') {
-      const hoveredRange = feature as any as TrackRangeFeature;
+      const hoveredRange = feature as unknown as TrackRangeFeature;
       const trackState = trackSectionsCache[hoveredRange.properties.track];
       if (trackState?.type !== 'success') return;
 
