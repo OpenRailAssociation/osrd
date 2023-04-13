@@ -2657,7 +2657,7 @@ components:
           format: date-time
         scenarios_count:
           type: integer
-        start_date_study:
+        start_date:
           type: string
           nullable: true
           format: date-time
