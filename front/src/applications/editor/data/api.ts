@@ -8,8 +8,8 @@ import {
   GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg,
   GetInfraByIdRoutesTrackRangesApiResponse,
   GetInfraByIdAttachedAndTrackIdApiResponse,
-  GetInfraByIdAttachedAndTrackIdApiArg
-} from "../../../common/api/osrdEditoastApi";
+  GetInfraByIdAttachedAndTrackIdApiArg,
+} from '../../../common/api/osrdEditoastApi';
 import {
   Direction,
   EditorEntity,
