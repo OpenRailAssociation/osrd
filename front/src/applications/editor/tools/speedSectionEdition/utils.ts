@@ -1,14 +1,14 @@
-import { Feature, LineString, Point, Position } from 'geojson';
-import length from '@turf/length';
-import lineSliceAlong from '@turf/line-slice-along';
+import { Position } from 'geojson';
 import { last, cloneDeep } from 'lodash';
 import along from '@turf/along';
+import length from '@turf/length';
 import { feature, point } from '@turf/helpers';
+import lineSliceAlong from '@turf/line-slice-along';
 
 import { NEW_ENTITY_ID } from '../../data/utils';
-import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
-import { SpeedSectionEditionState } from './types';
 import { DEFAULT_COMMON_TOOL_STATE } from '../types';
+import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
+import { SpeedSectionEditionState, TrackRangeExtremityFeature, TrackRangeFeature } from './types';
 
 export function getNewSpeedSection(): SpeedSectionEntity {
   return {
@@ -36,30 +36,38 @@ export function getEditSpeedSectionState(entity: SpeedSectionEntity): SpeedSecti
     entity: cloneDeep(entity),
     trackSectionsCache: {},
     interactionState: { type: 'idle' },
-    hoveredPoint: null,
+    hoveredItem: null,
   };
 }
 
-type TrackRangeFeature = Feature<LineString, Pick<TrackRange, 'begin' | 'end' | 'track'>>;
-type TrackRangeExtremityFeature = Feature<Point, { track: string; position: 'BEGIN' | 'END' }>;
 export function getTrackRangeFeatures(
   track: TrackSectionEntity,
   range: Pick<TrackRange, 'begin' | 'end' | 'track'>,
+  rangeIndex: number,
   properties: Record<string, unknown>
 ): [TrackRangeFeature, TrackRangeExtremityFeature, TrackRangeExtremityFeature] {
   const dataLength = track.properties.length;
   if (range.begin <= 0 && range.end >= dataLength)
     return [
-      feature(track.geometry, { ...properties, ...range }),
+      feature(track.geometry, {
+        ...properties,
+        ...range,
+        speedSectionItemType: 'TrackRange',
+        speedSectionRangeIndex: rangeIndex,
+      }),
       point(track.geometry.coordinates[0] as Position, {
         ...properties,
         track: range.track,
-        position: 'BEGIN',
+        extremity: 'BEGIN',
+        speedSectionItemType: 'TrackRangeExtremity',
+        speedSectionRangeIndex: rangeIndex,
       }),
       point(last(track.geometry.coordinates) as Position, {
         ...properties,
         track: range.track,
-        position: 'END',
+        extremity: 'END',
+        speedSectionItemType: 'TrackRangeExtremity',
+        speedSectionRangeIndex: rangeIndex,
       }),
     ];
 
@@ -71,14 +79,34 @@ export function getTrackRangeFeatures(
   const begin = (range.begin * computedLength) / dataLength;
   const end = (range.end * computedLength) / dataLength;
   return [
-    { ...lineSliceAlong(track.geometry, begin, end), properties: { ...properties, ...range } },
+    {
+      ...lineSliceAlong(track.geometry, begin, end),
+      properties: {
+        ...properties,
+        ...range,
+        speedSectionItemType: 'TrackRange',
+        speedSectionRangeIndex: rangeIndex,
+      },
+    },
     {
       ...along(track.geometry, (begin * computedLength) / dataLength),
-      properties: { ...properties, track: range.track, position: 'BEGIN' },
+      properties: {
+        ...properties,
+        track: range.track,
+        extremity: 'BEGIN',
+        speedSectionItemType: 'TrackRangeExtremity',
+        speedSectionRangeIndex: rangeIndex,
+      },
     },
     {
       ...along(track.geometry, (end * computedLength) / dataLength),
-      properties: { ...properties, track: range.track, position: 'END' },
+      properties: {
+        ...properties,
+        track: range.track,
+        extremity: 'END',
+        speedSectionItemType: 'TrackRangeExtremity',
+        speedSectionRangeIndex: rangeIndex,
+      },
     },
   ];
 }
