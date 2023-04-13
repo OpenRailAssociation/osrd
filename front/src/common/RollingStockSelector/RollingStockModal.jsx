@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { BsLightningFill } from 'react-icons/bs';
@@ -13,11 +12,10 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { isEmpty } from 'lodash';
+import { isEmpty, some, sortBy } from 'lodash';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
-
-const ROLLING_STOCK_URL = '/editoast/light_rolling_stock/';
 
 function RollingStockModal(props) {
   const { ref2scroll } = props;
@@ -25,20 +23,31 @@ function RollingStockModal(props) {
   const { darkmode } = useSelector((state) => state.main);
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [rollingStocks, setRollingStocks] = useState();
   const [filteredRollingStockList, setFilteredRollingStockList] = useState([]);
   const [filters, setFilters] = useState({
     text: '',
     elec: false,
     thermal: false,
   });
-  const [isFiltering, setIsFiltering] = useState(false);
+  const [isFiltering, setIsFiltering] = useState(true);
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState();
   const { closeModal } = useContext(ModalContext);
 
   if (darkmode) {
     import('./RollingStockDarkMode.scss');
   }
+
+  const { rollingStocks, isSuccess, isError, error } = osrdEditoastApi.useGetLightRollingStockQuery(
+    {
+      pageSize: 1000,
+    },
+    {
+      selectFromResult: (response) => ({
+        ...response,
+        rollingStocks: sortBy(response.data?.results, ['metadata.reference', 'name']) || [],
+      }),
+    }
+  );
 
   const searchMateriel = (e) => {
     setFilters({ ...filters, text: e.target.value.toLowerCase() });
@@ -47,43 +56,51 @@ function RollingStockModal(props) {
 
   const updateSearch = () => {
     setOpenedRollingStockCardId(undefined);
-    // Text filter
-    let filteredRollingStockListNew = rollingStocks.filter(
-      (el) =>
-        el.name.toLowerCase().includes(filters.text) ||
-        (el.metadata.detail && el.metadata.detail.toLowerCase().includes(filters.text)) ||
-        (el.metadata.reference && el.metadata.reference.toLowerCase().includes(filters.text)) ||
-        (el.metadata.series && el.metadata.series.toLowerCase().includes(filters.text)) ||
-        (el.metadata.type && el.metadata.type.toLowerCase().includes(filters.text)) ||
-        (el.metadata.grouping && el.metadata.grouping.toLowerCase().includes(filters.text))
-    );
 
-    // checkbox filters
-    if (filters.elec) {
-      filteredRollingStockListNew = filteredRollingStockListNew.filter((el) =>
-        Object.keys(el.effort_curves.modes).find(
-          (mode) => el.effort_curves.modes[mode].is_electric === true
-        )
-      );
-    }
-    if (filters.thermal) {
-      filteredRollingStockListNew = filteredRollingStockListNew.filter((el) =>
-        Object.keys(el.effort_curves.modes).find(
-          (mode) => el.effort_curves.modes[mode].is_electric === false
-        )
-      );
-    }
+    const filterText = filters.text;
+    const filterIsNotEmpty = filterText || filters.elec || filters.thermal;
 
-    // ASC sort by default
-    filteredRollingStockListNew = filteredRollingStockListNew.sort((a, b) => {
-      if (a.reference && b.reference && a.reference !== b.reference) {
-        return a.name.localeCompare(b.name) && a.reference.localeCompare(b.reference);
-      }
-      return a.name.localeCompare(b.name);
-    });
+    const filteredRollingStocks = filterIsNotEmpty
+      ? rollingStocks.filter((rollingStock) => {
+          // checkbox filters
+          if (filters.elec || filters.thermal) {
+            const effortCurveModes = Object.values(rollingStock.effort_curves.modes).map(
+              // eslint-disable-next-line camelcase
+              ({ is_electric }) => is_electric
+            );
+            const isElectric = effortCurveModes.includes(true);
+            const isThermal = effortCurveModes.includes(false);
+            if ((filters.elec && !isElectric) || (filters.thermal && !isThermal)) {
+              return false;
+            }
+          }
+
+          // text filter
+          if (filterText) {
+            const { metadata } = rollingStock;
+            const containsFilterText = some(
+              [
+                rollingStock.name,
+                metadata.detail,
+                metadata.reference,
+                metadata.series,
+                metadata.type,
+                metadata.grouping,
+              ],
+              (string) => string && string.toLowerCase().includes(filterText)
+            );
+            if (!containsFilterText) {
+              return false;
+            }
+          }
+
+          // the rolling stock has passed both the checkbox filter and the text filter
+          return true;
+        })
+      : rollingStocks;
 
     setTimeout(() => {
-      setFilteredRollingStockList(filteredRollingStockListNew);
+      setFilteredRollingStockList(filteredRollingStocks);
       setIsFiltering(false);
     }, 0);
   };
@@ -91,22 +108,6 @@ function RollingStockModal(props) {
   const toggleFilter = (e) => {
     setFilters({ ...filters, [e.target.name]: !filters[e.target.name] });
     setIsFiltering(true);
-  };
-
-  const getAllRollingStock = async () => {
-    if (rollingStocks === undefined) {
-      try {
-        const data = await get(ROLLING_STOCK_URL, { params: { page_size: 1000 } });
-        setRollingStocks(data.results);
-      } catch (e) {
-        dispatch(
-          setFailure({
-            name: t('osrdconf:errorMessages.unableToRetrieveRollingStock'),
-            message: e.message,
-          })
-        );
-      }
-    }
   };
 
   const listOfRollingStocks = useMemo(
@@ -129,16 +130,25 @@ function RollingStockModal(props) {
   );
 
   useEffect(() => {
-    getAllRollingStock();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (isError) {
+      dispatch(
+        setFailure({
+          name: t('rollingstock:errorMessages.unableToRetrieveRollingStock'),
+          message:
+            error.status === 404
+              ? t('rollingstock:errorMessages.ressourcesNotFound')
+              : t('rollingstock:errorMessages.unableToRetrieveRollingStockMessage'),
+        })
+      );
+    }
+  }, [isError]);
 
   useEffect(() => {
     if (rollingStocks !== undefined) {
       updateSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, rollingStocks]);
+  }, [filters, isSuccess]);
 
   return (
     <ModalBodySNCF>

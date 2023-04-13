@@ -14,6 +14,11 @@
   "electric": "Électrique",
   "electricOnly": "Uniquement éléctrique",
   "equipement": "Équipement",
+  "errorMessages": {
+    "unableToRetrieveRollingStock": "Récupération matériel impossible",
+    "unableToRetrieveRollingStockMessage": "Une erreur est survenue",
+    "ressourcesNotFound": "Ressources introuvables"
+  },
   "family": "Famille",
   "intertiaCoefficient": "Coefficient d'inertie",
   "legend": "Légende",
