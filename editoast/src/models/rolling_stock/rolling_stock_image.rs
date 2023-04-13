@@ -4,15 +4,24 @@
 //! A rolling stock can have several liveries, and each livery can have one or several separated
 //! images and one compound image (created by aggregating the seperated images together).
 
-use crate::tables::osrd_infra_rollingstockimage;
+use crate::tables::osrd_infra_rollingstockseparatedimage;
+use derivative::Derivative;
+use editoast_derive::Model;
 use serde::Serialize;
 
-#[derive(Debug, Identifiable, Queryable, Serialize)]
+#[derive(Debug, Derivative, Identifiable, Insertable, Model, Queryable, Serialize)]
+#[derivative(Default)]
+#[model(table = "osrd_infra_rollingstockseparatedimage")]
+#[model(create)]
 #[diesel(belongs_to(RollingStockLiveryModel, foreign_key = livery_id))]
-#[diesel(table_name = osrd_infra_rollingstockimage)]
+#[diesel(table_name = osrd_infra_rollingstockseparatedimage)]
 pub struct RollingStockSeparatedImageModel {
-    id: i64,
-    image_id: i64, // FK to document
-    livery_id: i64,
-    order: i64,
+    #[diesel(deserialize_as = i64)]
+    pub id: Option<i64>,
+    #[diesel(deserialize_as = i64)]
+    pub image_id: Option<i64>, // FK to document
+    #[diesel(deserialize_as = i64)]
+    pub livery_id: Option<i64>,
+    #[diesel(deserialize_as = i32)]
+    pub order: Option<i32>,
 }

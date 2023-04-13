@@ -811,6 +811,7 @@ paths:
                     schematic:
                       description: object's schematic in geojson format
                       $ref: "#/components/schemas/Geometry"
+  
   /infra/{id}/clone/:
     post:
       tags:
@@ -1069,6 +1070,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollingStock"
+
+  /rolling_stock/{id}/livery:
+    post:
+      tags:
+        - rolling_stock
+        - rolling_stock_livery
+      summary: Create a rolling stock livery
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        200:
+          description: The rolling stock livery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollingStockLivery"
 
   /projects/:
     post:
@@ -2081,16 +2116,7 @@ components:
             liveries:
               type: array
               items:
-                type: object
-                properties:
-                  id:
-                    type: number
-                  name:
-                    type: string
-                  compound_image_id:
-                    type: number
-                    nullable: true
-                required: [id, name, compound_image_id]
+                $ref: "#/components/schemas/RollingStockLivery"
           required: [id, liveries]
 
     RollingStockCreatePayload:
@@ -2252,6 +2278,17 @@ components:
         - base_power_class
         - power_restrictions
         - metadata
+
+    RollingStockLivery:
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        compound_image_id:
+                    type: number
+                    nullable: true
+      required: [id, name, compound_image_id]
 
     RouteTrackRangesComputed:
       type: object

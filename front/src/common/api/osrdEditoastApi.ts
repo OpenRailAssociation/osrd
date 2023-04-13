@@ -217,6 +217,16 @@ const injectedRtkApi = api.injectEndpoints({
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
     }),
+    postRollingStockByIdLivery: build.mutation<
+      PostRollingStockByIdLiveryApiResponse,
+      PostRollingStockByIdLiveryApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/rolling_stock/${queryArg.id}/livery`,
+        method: 'POST',
+        body: queryArg.body,
+      }),
+    }),
     postProjects: build.mutation<PostProjectsApiResponse, PostProjectsApiArg>({
       query: (queryArg) => ({
         url: `/projects/`,
@@ -672,6 +682,16 @@ export type GetRollingStockByIdApiResponse =
 export type GetRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
+};
+export type PostRollingStockByIdLiveryApiResponse =
+  /** status 200 The rolling stock livery */ RollingStockLivery;
+export type PostRollingStockByIdLiveryApiArg = {
+  /** Rolling Stock ID */
+  id: number;
+  body: {
+    name?: string;
+    images?: Blob[];
+  };
 };
 export type PostProjectsApiResponse = /** status 201 The created project */ ProjectResult;
 export type PostProjectsApiArg = {
@@ -1150,13 +1170,14 @@ export type RollingStockCreatePayload = {
     unit: string;
   };
 };
+export type RollingStockLivery = {
+  id: number;
+  name: string;
+  compound_image_id: number | null;
+};
 export type RollingStock = RollingStockCreatePayload & {
   id: number;
-  liveries: {
-    id: number;
-    name: string;
-    compound_image_id: number | null;
-  }[];
+  liveries: RollingStockLivery[];
 };
 export type LightRollingStock = RollingStock & {
   effort_curves: {
