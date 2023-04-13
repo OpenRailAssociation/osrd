@@ -16,7 +16,12 @@ import { ExtendedEditorContextType, LayerType } from '../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from '../../../../common/Map/Layers/GeoJSONs';
 import { getMap } from '../../../../reducers/map/selectors';
-import { EntityObjectOperationResult, TrackSectionEntity } from '../../../../types';
+import {
+  APPLICABLE_DIRECTIONS,
+  ApplicableDirection,
+  EntityObjectOperationResult,
+  TrackSectionEntity,
+} from '../../../../types';
 import { getEntities } from '../../data/api';
 import { getInfraID } from '../../../../reducers/osrdconf/selectors';
 import { getPointAt, getTrackRangeFeatures, kmhToMs, msToKmh } from './utils';
@@ -145,6 +150,25 @@ export const TrackRangesList: FC = () => {
                   </div>
                   <div className="flex-grow-1 flex-shrink-1">
                     <EntitySumUp entity={trackState.track} />
+                    <div>
+                      <select
+                        id="filterLevel"
+                        className="form-control"
+                        value={range.applicable_directions}
+                        onChange={(e) => {
+                          const newEntity = cloneDeep(entity);
+                          const newRange = (newEntity.properties.track_ranges || [])[i];
+                          newRange.applicable_directions = e.target.value as ApplicableDirection;
+                          setState({ entity: newEntity, hoveredItem: null });
+                        }}
+                      >
+                        {APPLICABLE_DIRECTIONS.map((direction) => (
+                          <option key={direction} value={direction}>
+                            {t(`Editor.directions.${direction}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </>
               )}
@@ -336,10 +360,17 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
               const { id } = operation.railjson;
               setIsLoading(false);
 
-              if (id && id !== entity.properties.id)
-                setState({
-                  entity: { ...entity, properties: { ...entity.properties, id: `${id}` } },
-                });
+              const savedEntity =
+                id && id !== entity.properties.id
+                  ? {
+                      ...entity,
+                      properties: { ...entity.properties, id: `${id}` },
+                    }
+                  : entity;
+              setState({
+                entity: cloneDeep(savedEntity),
+                initialEntity: cloneDeep(savedEntity),
+              });
             } catch (e: unknown) {
               setIsLoading(false);
             }
