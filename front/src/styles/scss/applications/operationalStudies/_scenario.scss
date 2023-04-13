@@ -13,14 +13,16 @@
   }
   .scenario-timetable-collapsed {
     display: flex;
-    position: absolute;
+    align-items: center;
+    position: relative;
+    top: 0;
     left: 0;
     background-color: var(--secondary);
     color: var(--white);
     border: unset;
     border-radius: 4px;
     font-size: 2rem;
-    height: 2rem;
+    height: 2.2rem;
     z-index: 2;
   }
   .scenario-loader {
