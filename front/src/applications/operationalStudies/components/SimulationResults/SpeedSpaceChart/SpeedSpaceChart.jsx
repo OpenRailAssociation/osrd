@@ -196,24 +196,23 @@ export default function SpeedSpaceChart(props) {
 
   // to be removed after creating power restriction module
   useEffect(() => {
-    setRestrictionPower('');
+    let newRestrictionPower = '';
     trainSimulation.electrificationConditions.forEach((elem) => {
       if (elem.used_restriction)
-        setRestrictionPower(
-          `${t('speedSpaceSettings.powerRestriction')}: ${elem.used_restriction}`
-        );
+        newRestrictionPower = `${t('speedSpaceSettings.powerRestriction')}: ${
+          elem.used_restriction
+        }`;
     });
-    if (!restrictionPower) {
+    if (!newRestrictionPower) {
       trainSimulation.electrificationConditions.forEach((elem) => {
         if (elem.seen_restriction)
-          setRestrictionPower(
-            `${t('speedSpaceSettings.powerRestriction')} ${elem.seen_restriction} ${t(
-              'powerRestriction.waited'
-            )}, ${t('powerRestriction.incompatible')}`
-          );
+          newRestrictionPower = `${t('speedSpaceSettings.powerRestriction')} ${
+            elem.seen_restriction
+          } ${t('powerRestriction.waited')}, ${t('powerRestriction.incompatible')}`;
       });
     }
-  }, [trainSimulation, chart, localSettings]);
+    setRestrictionPower(newRestrictionPower);
+  }, [trainSimulation]);
 
   return (
     <Rnd
