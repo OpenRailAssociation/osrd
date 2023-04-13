@@ -6,6 +6,7 @@ import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../
 export type TrackRangeFeature = Feature<
   LineString,
   Pick<TrackRange, 'begin' | 'end' | 'track'> & {
+    id: string;
     speedSectionItemType: 'TrackRange';
     speedSectionRangeIndex: number;
   }
@@ -13,6 +14,7 @@ export type TrackRangeFeature = Feature<
 export type TrackRangeExtremityFeature = Feature<
   Point,
   {
+    id: string;
     track: string;
     extremity: 'BEGIN' | 'END';
     speedSectionItemType: 'TrackRangeExtremity';
