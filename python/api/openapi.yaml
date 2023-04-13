@@ -275,6 +275,7 @@ paths:
           description: No content
   /rolling_stock/:
     get:
+      deprecated: true
       tags:
         - rolling_stock
       summary: Paginated list of rolling stock
@@ -372,6 +373,7 @@ paths:
                 format: binary
   /rolling_stock_livery/:
     post:
+      deprecated: true
       tags:
         - rolling_stock
         - livery

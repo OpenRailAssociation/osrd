@@ -3,6 +3,7 @@ use crate::error::Result;
 use crate::models::{Delete, Document, Identifiable};
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::tables::osrd_infra_rollingstocklivery;
+use derivative::Derivative;
 use diesel::expression_methods::ExpressionMethods;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Text};
@@ -21,7 +22,8 @@ use editoast_derive::Model;
 ///
 /// /!\ Its compound image is not deleted by cascade if the livery is removed.
 ///
-#[derive(Debug, Identifiable, Insertable, Model, Queryable, Serialize)]
+#[derive(Debug, Derivative, Identifiable, Insertable, Model, Queryable, Serialize)]
+#[derivative(Default)]
 #[model(table = "osrd_infra_rollingstocklivery")]
 #[model(create, retrieve)]
 #[diesel(belongs_to(RollingStockModel, foreign_key = rolling_stock_id))]

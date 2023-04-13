@@ -295,11 +295,11 @@ table! {
 }
 
 table! {
-    osrd_infra_rollingstockimage(id) {
+    osrd_infra_rollingstockseparatedimage(id) {
         id -> BigInt,
-        image -> Binary,
-        livery_id -> Nullable<BigInt>,
-        order -> Nullable<BigInt>,
+        image_id -> BigInt,
+        livery_id -> BigInt,
+        order -> Integer,
     }
 }
 
