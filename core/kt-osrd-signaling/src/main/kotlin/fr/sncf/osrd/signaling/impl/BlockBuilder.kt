@@ -38,22 +38,26 @@ internal fun internalBuildBlocks(
             // if a signal does not delimit a block and has multiple drivers, it duplicates the block
 
             for (zonePath in rawSignalingInfra.getRoutePath(route)) {
+                val zonePathLength = rawSignalingInfra.getZonePathLength(zonePath)
                 for (block in currentBlocks)
-                    block.zonePaths.add(zonePath)
+                    block.addZonePath(zonePath, zonePathLength)
 
                 // iterate over signals which are between the block entry and the block exit
                 val signals = rawSignalingInfra.getSignals(zonePath)
                 val signalsPositions = rawSignalingInfra.getSignalPositions(zonePath)
                 for ((physicalSignal, position) in signals.zip(signalsPositions)) {
+                    val distanceToZonePathEnd = zonePathLength - position
+                    assert(distanceToZonePathEnd >= Distance.ZERO)
+                    assert(distanceToZonePathEnd <= zonePathLength)
                     for (signal in loadedSignalInfra.getLogicalSignals(physicalSignal)) {
-                        currentBlocks =
-                            updatePartialBlocks(sigModuleManager, currentBlocks, loadedSignalInfra, signal, position)
+                        currentBlocks = updatePartialBlocks(
+                            sigModuleManager,
+                            currentBlocks,
+                            loadedSignalInfra,
+                            signal,
+                            distanceToZonePathEnd,
+                        )
                     }
-                }
-
-                // Now we have finished processing the zonepath we can add its length
-                for (block in currentBlocks) {
-                    block.currentLength += rawSignalingInfra.getZonePathLength(zonePath)
                 }
             }
 
@@ -150,6 +154,11 @@ class PartialBlock(
         return this
     }
 
+    fun addZonePath(zonePath: ZonePathId, length: Distance) {
+        zonePaths.add(zonePath)
+        currentLength += length
+    }
+
     fun acceptsSignal(loadedSignalInfra: LoadedSignalInfra, signal: LogicalSignalId): Boolean {
         if (expectedSignalingSystem == null)
             return true
@@ -235,12 +244,12 @@ private fun BlockInfraBuilder.updatePartialBlocks(
     currentBlocks: MutableList<PartialBlock>,
     loadedSignalInfra: LoadedSignalInfra,
     signal: LogicalSignalId,
-    positionInZonePath: Distance,
+    distanceToZonePathEnd: Distance,
 ): MutableList<PartialBlock> {
     val nextBlocks = mutableListOf<PartialBlock>()
     // for each currently active block, evaluate the relationship between this signal and this block
     for (curBlock in currentBlocks) {
-        val blockPosition = positionInZonePath + curBlock.currentLength
+        val blockPosition = curBlock.currentLength - distanceToZonePathEnd
         when (evalSignalBlockRel(sigModuleManager, loadedSignalInfra, curBlock, signal)) {
             SignalBlockRel.UNRELATED -> nextBlocks.add(curBlock)
             SignalBlockRel.PART_OF -> {
