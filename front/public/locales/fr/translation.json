@@ -36,6 +36,11 @@
       "track_section": "Track section",
       "track_section-length": "Taille"
     },
+    "directions": {
+      "START_TO_STOP": "Départ vers arrivée",
+      "STOP_TO_START": "Arrivée vers départ",
+      "BOTH": "Les deux"
+    },
     "errors": {
       "infra-not-found": "L'infrastructure {{id}} non trouvée",
       "length-number-and-required": "La distance est un champs numérique requis",

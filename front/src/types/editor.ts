@@ -36,6 +36,8 @@ export interface TrackSectionEntity
   objType: 'TrackSection';
 }
 
+export const APPLICABLE_DIRECTIONS = ['BOTH', 'START_TO_STOP', 'STOP_TO_START'] as const;
+export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
 export interface SpeedSectionEntity
   extends EditorEntity<
     MultiLineString,
@@ -43,7 +45,7 @@ export interface SpeedSectionEntity
       speed_limit?: number;
       speed_limit_by_tag?: Record<string, number>;
       track_ranges?: {
-        applicable_directions: 'BOTH' | 'START_TO_STOP' | 'STOP_TO_START';
+        applicable_directions: ApplicableDirection;
         begin: number;
         end: number;
         track: string;
