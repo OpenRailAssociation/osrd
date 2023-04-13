@@ -78,7 +78,7 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
         const stepsWithDuration = trainSchedule.steps.map((step) => {
           // calcul duration in seconds between step arrival and departure
           const duration = Math.round(
-            (new Date(step.arrivalTime).getTime() - new Date(step.departureTime).getTime()) / 1000
+            (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
           );
           return {
             ...step,
