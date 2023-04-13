@@ -1,12 +1,12 @@
-import { mapValues, cloneDeep } from 'lodash';
-import { useSelector } from 'react-redux';
+import { mapValues, cloneDeep, isEqual, map, isEmpty, mapKeys, omit } from 'lodash';
+import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Popup, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
-import { FaTimes, MdShowChart } from 'react-icons/all';
+import { AiFillSave, AiOutlinePlusCircle, FaTimes, MdShowChart } from 'react-icons/all';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 
@@ -16,13 +16,14 @@ import { ExtendedEditorContextType, LayerType } from '../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from '../../../../common/Map/Layers/GeoJSONs';
 import { getMap } from '../../../../reducers/map/selectors';
-import { TrackSectionEntity } from '../../../../types';
+import { EntityObjectOperationResult, TrackSectionEntity } from '../../../../types';
 import { getEntities } from '../../data/api';
 import { getInfraID } from '../../../../reducers/osrdconf/selectors';
-import { getPointAt, getTrackRangeFeatures } from './utils';
-import { flattenEntity } from '../../data/utils';
+import { getPointAt, getTrackRangeFeatures, kmhToMs, msToKmh } from './utils';
+import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
+import { save } from '../../../../reducers/editor';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
@@ -186,37 +187,172 @@ export const MetadataForm: FC = () => {
       </h4>
       {/* The following tag is here to mimick other tools' forms style: */}
       <form className="rjsf" onSubmit={(e) => e.preventDefault()}>
-        <div className="form-group field field-string">
+        <div className="form-group field field-string mb-2">
           <label className="control-label" htmlFor="speed-section.main-limit">
             {t('Editor.tools.speed-edition.main-speed-limit')}
           </label>
-          <input
-            className="form-control"
-            id="speed-section.main-limit"
-            placeholder=""
-            type="number"
-            min={0}
-            value={entity.properties.speed_limit || ''}
-            onChange={(e) => {
-              const newEntity = cloneDeep(entity);
-              const value = parseFloat(e.target.value);
-              newEntity.properties.speed_limit = !Number.isNaN(value) ? value : undefined;
-              setState({ entity: newEntity });
-            }}
-          />
+          <div className="d-flex flex-row align-items-center">
+            <input
+              className="form-control flex-grow-1 flex-shrink-1"
+              id="speed-section.main-limit"
+              placeholder=""
+              type="number"
+              min={0}
+              value={entity.properties.speed_limit ? msToKmh(entity.properties.speed_limit) : ''}
+              onChange={(e) => {
+                const newEntity = cloneDeep(entity);
+                const value = parseFloat(e.target.value);
+                newEntity.properties.speed_limit = !Number.isNaN(value) ? value : undefined;
+                setState({ entity: newEntity });
+              }}
+            />
+            <span className="text-muted ml-2">km/h</span>
+          </div>
         </div>
+        {!isEmpty(entity.properties.speed_limit_by_tag) && (
+          <div className="control-label mb-1">
+            {t('Editor.tools.speed-edition.additional-speed-limit')}
+          </div>
+        )}
+        {map(entity.properties.speed_limit_by_tag || {}, (value, key) => (
+          <div className="form-group field field-string">
+            <div className="d-flex flex-row align-items-center">
+              <input
+                className="form-control flex-grow-2 flex-shrink-1 mr-2"
+                placeholder=""
+                type="text"
+                value={key}
+                onChange={(e) => {
+                  const newEntity = cloneDeep(entity);
+                  const newKey = e.target.value;
+                  newEntity.properties.speed_limit_by_tag = mapKeys(
+                    newEntity.properties.speed_limit_by_tag || {},
+                    (_v, k) => (k === key ? newKey : k)
+                  );
+                  setState({ entity: newEntity });
+                }}
+              />
+              <input
+                className="form-control flex-shrink-0 px-2"
+                style={{ width: '5em' }}
+                placeholder=""
+                type="number"
+                min={0}
+                step={0.1}
+                value={msToKmh(value)}
+                onChange={(e) => {
+                  const newEntity = cloneDeep(entity);
+                  newEntity.properties.speed_limit_by_tag =
+                    newEntity.properties.speed_limit_by_tag || {};
+                  newEntity.properties.speed_limit_by_tag[key] = kmhToMs(
+                    parseFloat(e.target.value)
+                  );
+                  setState({ entity: newEntity });
+                }}
+              />
+              <span className="text-muted ml-2">km/h</span>
+              <small>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm px-2 ml-2"
+                  title={t('commons.delete')}
+                  onClick={() => {
+                    const newEntity = cloneDeep(entity);
+                    newEntity.properties.speed_limit_by_tag = omit(
+                      newEntity.properties.speed_limit_by_tag || {},
+                      key
+                    );
+                    setState({ entity: newEntity });
+                  }}
+                >
+                  <FaTimes />
+                </button>
+              </small>
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="btn btn-secondary w-100 text-wrap small mb-2"
+          onClick={async () => {
+            const newEntity = cloneDeep(entity);
+            newEntity.properties.speed_limit_by_tag = newEntity.properties.speed_limit_by_tag || {};
+            let key = t('Editor.tools.speed-edition.new-tag');
+            let i = 1;
+            if (newEntity.properties.speed_limit_by_tag[key]) {
+              while (newEntity.properties.speed_limit_by_tag[`${key} ${i}`]) i += 1;
+              key += ` ${i}`;
+            }
+            newEntity.properties.speed_limit_by_tag[key] = kmhToMs(80);
+            setState({ entity: newEntity });
+          }}
+        >
+          <AiOutlinePlusCircle className="mr-2" />
+          {t('Editor.tools.speed-edition.add-new-speed-limit')}
+        </button>
       </form>
     </div>
   );
 };
 
 export const SpeedSectionEditionLeftPanel: FC = () => {
+  const dispatch = useDispatch();
   const { t } = useTranslation();
+  const {
+    setState,
+    state: { entity, initialEntity },
+  } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
+  const isNew = entity.properties.id === NEW_ENTITY_ID;
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div>
       <legend>{t('Editor.obj-types.SpeedSection')}</legend>
+      <div className="my-4">
+        <button
+          type="button"
+          className="btn btn-primary w-100 text-wrap"
+          disabled={isLoading || isEqual(entity, initialEntity)}
+          onClick={async () => {
+            setIsLoading(true);
+
+            try {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const res: any = await dispatch(
+                save(
+                  !isNew
+                    ? {
+                        update: [
+                          {
+                            source: initialEntity,
+                            target: entity,
+                          },
+                        ],
+                      }
+                    : { create: [entity] }
+                )
+              );
+              const operation = res[0] as EntityObjectOperationResult;
+              const { id } = operation.railjson;
+              setIsLoading(false);
+
+              if (id && id !== entity.properties.id)
+                setState({
+                  entity: { ...entity, properties: { ...entity.properties, id: `${id}` } },
+                });
+            } catch (e: unknown) {
+              setIsLoading(false);
+            }
+          }}
+        >
+          <AiFillSave className="mr-2" />
+          {isNew
+            ? t('Editor.tools.speed-edition.save-new-speed-section')
+            : t('Editor.tools.speed-edition.save-existing-speed-section')}
+        </button>
+      </div>
       <MetadataForm />
+      <hr />
       <TrackRangesList />
     </div>
   );
