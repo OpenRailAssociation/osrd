@@ -23,7 +23,11 @@ import {
   SpeedSectionEditionLeftPanel,
   SpeedSectionMessages,
 } from './components';
-import { EditorEntity, TrackSectionEntity } from '../../../../types';
+import { EditorEntity, NULL_GEOMETRY, TrackSectionEntity } from '../../../../types';
+import { getNearestPoint } from '../../../../utils/mapboxHelper';
+import length from '@turf/length';
+import lineSliceAlong from '@turf/line-slice-along';
+import lineSlice from '@turf/line-slice';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   id: 'speed-section-edition',
@@ -79,7 +83,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
     const feature = (e.features || [])[0];
 
     if (interactionState.type === 'movePoint') {
-      // TODO
+      setState({ interactionState: { type: 'idle' } });
     } else if (feature) {
       if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {
         const hoveredExtremity = feature as any as TrackRangeExtremityFeature;
@@ -179,9 +183,32 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
       setState({ hoveredItem: null });
     }
   },
-  onMove(_e, { setState, state: { interactionState, hoveredItem } }) {
+  onMove(e, { setState, state: { entity, interactionState, hoveredItem, trackSectionsCache } }) {
     if (interactionState.type === 'movePoint') {
-      // TODO
+      const range = (entity.properties?.track_ranges || [])[interactionState.rangeIndex];
+      if (!range) return;
+
+      const trackState = trackSectionsCache[range.track];
+      if (trackState?.type !== 'success') return;
+
+      const { track } = trackState;
+      const nearestPoint = getNearestPoint([track], e.lngLat.toArray());
+
+      const newEntity = cloneDeep(entity);
+      const newRange = (newEntity.properties?.track_ranges || [])[interactionState.rangeIndex];
+
+      // Since Turf and Editoast do not compute the lengths the same way (see #1751)
+      // we can have data "end" being larger than Turf's computed length, which
+      // throws an error. Until we find a way to get similar computations, we can
+      // approximate this way:
+      const distanceAlongTrack =
+        (length(lineSlice(track.geometry.coordinates[0], nearestPoint.geometry, track)) *
+          track.properties.length) /
+        length(track);
+      newRange[interactionState.extremity === 'BEGIN' ? 'begin' : 'end'] = distanceAlongTrack;
+      setState({
+        entity: newEntity,
+      });
     } else if (hoveredItem) {
       setState({ hoveredItem: null });
     }
