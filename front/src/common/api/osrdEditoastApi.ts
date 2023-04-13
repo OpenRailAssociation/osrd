@@ -1192,9 +1192,9 @@ export type StudyResult = {
   creation_date?: string;
   last_modification?: string;
   scenarios_count?: number;
-  start_date_study?: string;
-  expected_end_date_study?: string;
-  actual_end_date_study?: string;
+  start_date?: string | null;
+  expected_end_date?: string | null;
+  actual_end_date?: string | null;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'

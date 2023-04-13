@@ -72,20 +72,9 @@ export default function Project() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectId = useSelector(getProjectID);
-  // const {
-  //   data: currentProject,
-  //   isLoading,
-  //   isError,
-  //   error: projectError,
-  // } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId: projectId as number });
   const [getCurrentProject] = osrdEditoastApi.useLazyGetProjectsByProjectIdQuery();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getStudies] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
-
-  // if (isError) {
-  //   console.error('getProject Error : ', projectError);
-  //   return <span className="mt-5">An error occured</span>;
-  // }
 
   const sortOptions = [
     {
@@ -188,12 +177,10 @@ export default function Project() {
     } else {
       getProject();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (projectId) getStudiesList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 
   return (

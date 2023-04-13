@@ -127,7 +127,6 @@ export default function Home() {
 
   useEffect(() => {
     getProjectList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortOption, filter]);
 
   useEffect(() => {
