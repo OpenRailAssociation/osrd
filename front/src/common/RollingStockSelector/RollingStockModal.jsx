@@ -12,11 +12,22 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { isEmpty, some, sortBy } from 'lodash';
+import { isEmpty, sortBy } from 'lodash';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 
+export function rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes) {
+  if (filterElec || filterThermal) {
+    const effortCurveModes = Object.values(modes).map(({ is_electric: isElec }) => isElec);
+    const isElectric = effortCurveModes.includes(true);
+    const isThermal = effortCurveModes.includes(false);
+    if ((filterElec && !isElectric) || (filterThermal && !isThermal)) {
+      return false;
+    }
+  }
+  return true;
+}
 function RollingStockModal(props) {
   const { ref2scroll } = props;
   const dispatch = useDispatch();
@@ -56,51 +67,33 @@ function RollingStockModal(props) {
 
   const updateSearch = () => {
     setOpenedRollingStockCardId(undefined);
-
-    const filterText = filters.text;
-    const filterIsNotEmpty = filterText || filters.elec || filters.thermal;
-
-    const filteredRollingStocks = filterIsNotEmpty
-      ? rollingStocks.filter((rollingStock) => {
-          // checkbox filters
-          if (filters.elec || filters.thermal) {
-            const effortCurveModes = Object.values(rollingStock.effort_curves.modes).map(
-              // eslint-disable-next-line camelcase
-              ({ is_electric }) => is_electric
-            );
-            const isElectric = effortCurveModes.includes(true);
-            const isThermal = effortCurveModes.includes(false);
-            if ((filters.elec && !isElectric) || (filters.thermal && !isThermal)) {
-              return false;
-            }
-          }
-
-          // text filter
-          if (filterText) {
-            const { metadata } = rollingStock;
-            const containsFilterText = some(
-              [
-                rollingStock.name,
-                metadata.detail,
-                metadata.reference,
-                metadata.series,
-                metadata.type,
-                metadata.grouping,
-              ],
-              (string) => string && string.toLowerCase().includes(filterText)
-            );
-            if (!containsFilterText) {
-              return false;
-            }
-          }
-
-          // the rolling stock has passed both the checkbox filter and the text filter
-          return true;
-        })
-      : rollingStocks;
+    const includesSearchedString = (str) => str && str.toLowerCase().includes(filters.text);
+    const newFilteredRollingStock = rollingStocks
+      .filter(({ name, metadata, effort_curves: effortCurves }) => {
+        const passSearchedStringFilter = [
+          name,
+          metadata.detail,
+          metadata.reference,
+          metadata.series,
+          metadata.type,
+          metadata.grouping,
+        ].some(includesSearchedString);
+        const passEnergeticModesFilter = rollingStockPassesEnergeticModeFilters(
+          filters.elec,
+          filters.thermal,
+          effortCurves.modes
+        );
+        return passSearchedStringFilter && passEnergeticModesFilter;
+      })
+      .sort((a, b) => {
+        if (a.reference && b.reference && a.reference !== b.reference) {
+          return a.name.localeCompare(b.name) && a.reference.localeCompare(b.reference);
+        }
+        return a.name.localeCompare(b.name);
+      });
 
     setTimeout(() => {
-      setFilteredRollingStockList(filteredRollingStocks);
+      setFilteredRollingStockList(newFilteredRollingStock);
       setIsFiltering(false);
     }, 0);
   };
