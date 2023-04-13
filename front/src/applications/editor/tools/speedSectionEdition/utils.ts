@@ -2,7 +2,7 @@ import { Position } from 'geojson';
 import { last, cloneDeep } from 'lodash';
 import along from '@turf/along';
 import length from '@turf/length';
-import { feature, point } from '@turf/helpers';
+import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
 
 import { NEW_ENTITY_ID } from '../../data/utils';
@@ -84,9 +84,19 @@ export function getTrackRangeFeatures(
   const computedLength = length(track);
   const adjustedBegin = Math.max((begin * computedLength) / dataLength, 0);
   const adjustedEnd = Math.min((end * computedLength) / dataLength, computedLength);
+
+  let line: Feature<LineString>;
+  // See https://github.com/Turfjs/turf/issues/1577 for this issue:
+  if (adjustedBegin === adjustedEnd) {
+    const { coordinates } = along(track.geometry, adjustedBegin).geometry;
+    line = lineString([coordinates, coordinates]);
+  } else {
+    line = lineSliceAlong(track.geometry, adjustedBegin, adjustedEnd);
+  }
+
   return [
     {
-      ...lineSliceAlong(track.geometry, adjustedBegin, adjustedEnd),
+      ...line,
       properties: {
         ...properties,
         ...range,
