@@ -26,6 +26,9 @@ select.sm {
     left: 0;
     padding: 0.5rem;
     margin-bottom: 0.5rem;
+    input {
+      padding: 0.125rem 0.5rem;
+    }
     .train-detail {
       min-width: 4.5rem;
       max-height: 2rem;
