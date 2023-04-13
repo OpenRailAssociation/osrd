@@ -13,7 +13,7 @@ import {
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
-import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
+import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from '../../common/api/osrdEditoastApi';
 import { ThunkAction } from '../../types';
 /* eslint-disable default-case */
@@ -343,7 +343,7 @@ export function toggleUsingElectricalProfiles() {
     type: TOGGLE_USING_ELECTRICAL_PROFILES,
   };
 }
-export function updateMode(mode: any) {
+export function updateMode(mode: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_MODE,
@@ -359,7 +359,7 @@ export function updateStdcmMode(stdcmMode: any) {
     });
   };
 }
-export function updateLabels(labels: any) {
+export function updateLabels(labels?: string[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_LABELS,
@@ -577,7 +577,7 @@ export function updateViaStopTime(vias: PointOnMap[], index: number, value: numb
     });
   };
 }
-export function deleteVias(index: any) {
+export function deleteVias(index: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: DELETE_VIAS,
@@ -617,7 +617,7 @@ export function updateTrainCompo(trainCompo: any) {
     });
   };
 }
-export function updateItinerary(geojson: any) {
+export function updateItinerary(geojson?: Path) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ITINERARY,

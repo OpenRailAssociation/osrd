@@ -17,19 +17,18 @@ import {
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { FaCog, FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { RootState } from 'reducers';
+import { TbLayoutSidebarLeftCollapse, TbLayoutSidebarLeftExpand } from 'react-icons/tb';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
 import getTimetable from '../components/Scenario/getTimetable';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
-import DropdownSNCF from 'common/BootstrapSNCF/DropdownSNCF';
-import { TbLayoutSidebarLeftCollapse, TbLayoutSidebarLeftExpand } from 'react-icons/tb';
 
 export default function Scenario() {
   const dispatch = useDispatch();
@@ -112,13 +111,30 @@ export default function Scenario() {
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
           {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
-          {collapseTimetable &&
-            <button
-              className="scenario-timetable-collapsed"
-              type="button"
-              onClick={() => setCollapseTimetable(false)}>
+          {collapseTimetable && (
+            <div className="d-flex align-items-center">
+              <button
+                className="scenario-timetable-collapsed"
+                type="button"
+                onClick={() => setCollapseTimetable(false)}
+              >
                 <TbLayoutSidebarLeftExpand />
-            </button>}
+              </button>
+              <div className="lead ml-2">{scenario.name}</div>
+              <div className="d-flex align-items-center ml-auto">
+                <img src={infraLogo} alt="Infra logo" className="mr-2" height="16" />
+                {scenario.infra_name}
+              </div>
+              <div className="d-flex align-items-center ml-4">
+                <span className="mr-1">
+                  <GiElectric />
+                </span>
+                {scenario.electrical_profile_set_name
+                  ? scenario.electrical_profile_set_name
+                  : t('noElectricalProfileSet')}
+              </div>
+            </div>
+          )}
           <div className="row">
             <div className={collapseTimetable ? 'd-none' : 'col-lg-4'}>
               <div className="scenario-sidemenu">
@@ -132,9 +148,7 @@ export default function Scenario() {
                         onClick={() => setTrainsWithDetails(!trainsWithDetails)}
                         title={t('displayTrainsWithDetails')}
                       >
-                        {trainsWithDetails
-                          ? <FaEyeSlash />
-                          : <FaEye />}
+                        {trainsWithDetails ? <FaEyeSlash /> : <FaEye />}
                       </button>
                       <button
                         type="button"
