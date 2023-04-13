@@ -300,10 +300,12 @@
         "linked-track-sections": "Sections de lignes liées",
         "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
-        "add-track-range": "Lier une autre ligne",
         "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
         "show-more-ranges_one": "Voir une section de ligne de plus",
-        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"
+        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
+        "add-track-range": "Cliquer pour lier à :",
+        "remove-track-range": "Cliquer pour détacher de :",
+        "move-range-extremity": "Cliquer pour déplacer l'extrémité :"
       }
     }
   }

@@ -1,4 +1,4 @@
-import { mapValues, without, cloneDeep } from 'lodash';
+import { mapValues, cloneDeep } from 'lodash';
 import { useSelector } from 'react-redux';
 import { Layer, Popup, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { MdSpeed } from 'react-icons/md';
 
 import EditorContext from '../../context';
 import { SpeedSectionEditionState, TrackState } from './types';
-import { ExtendedEditorContextType } from '../types';
+import { ExtendedEditorContextType, LayerType } from '../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from '../../../../common/Map/Layers/GeoJSONs';
 import { getMap } from '../../../../reducers/map/selectors';
@@ -61,6 +61,7 @@ export const TrackRangesList: FC = () => {
                         title={t('Editor.tools.speed-edition.edit-track-range-start')}
                         onClick={() => {
                           setState({
+                            hoveredItem: null,
                             interactionState: {
                               type: 'movePoint',
                               rangeIndex: i,
@@ -68,10 +69,11 @@ export const TrackRangesList: FC = () => {
                             },
                           });
                         }}
-                        onMouseLeave={() => setState({ hoveredPoint: null })}
+                        onMouseLeave={() => setState({ hoveredItem: null })}
                         onMouseEnter={() =>
                           setState({
-                            hoveredPoint: {
+                            hoveredItem: {
+                              speedSectionItemType: 'TrackRangeExtremity',
                               track: trackState.track,
                               position: getPointAt(trackState.track, range.begin),
                               extremity: 'BEGIN',
@@ -89,6 +91,7 @@ export const TrackRangesList: FC = () => {
                         title={t('Editor.tools.speed-edition.edit-track-range-end')}
                         onClick={() => {
                           setState({
+                            hoveredItem: null,
                             interactionState: {
                               type: 'movePoint',
                               rangeIndex: i,
@@ -96,12 +99,13 @@ export const TrackRangesList: FC = () => {
                             },
                           });
                         }}
-                        onMouseLeave={() => setState({ hoveredPoint: null })}
+                        onMouseLeave={() => setState({ hoveredItem: null })}
                         onMouseEnter={() =>
                           setState({
-                            hoveredPoint: {
+                            hoveredItem: {
+                              speedSectionItemType: 'TrackRangeExtremity',
                               track: trackState.track,
-                              position: getPointAt(trackState.track, range.end),
+                              position: getPointAt(trackState.track, range.begin),
                               extremity: 'END',
                             },
                           })
@@ -118,8 +122,21 @@ export const TrackRangesList: FC = () => {
                         onClick={() => {
                           const newEntity = cloneDeep(entity);
                           newEntity.properties.track_ranges?.splice(i, 1);
-                          setState({ entity: newEntity });
+                          setState({ entity: newEntity, hoveredItem: null });
                         }}
+                        onMouseLeave={() => setState({ hoveredItem: null })}
+                        onMouseEnter={() =>
+                          setState({
+                            hoveredItem: {
+                              speedSectionItemType: 'TrackRange',
+                              track: trackState.track,
+                              position: getPointAt(
+                                trackState.track,
+                                trackState.track.properties.length / 2
+                              ),
+                            },
+                          })
+                        }
                       >
                         <FaTimes />
                       </button>
@@ -151,21 +168,6 @@ export const TrackRangesList: FC = () => {
           </button>
         </div>
       )}
-      <div className="mt-2">
-        <button
-          type="button"
-          className="btn btn-primary w-100"
-          onClick={() => {
-            setState({
-              interactionState: {
-                type: 'addTrackSection',
-              },
-            });
-          }}
-        >
-          {t('Editor.tools.speed-edition.add-track-range')}
-        </button>
-      </div>
     </div>
   );
 };
@@ -173,7 +175,7 @@ export const TrackRangesList: FC = () => {
 export const MetadataForm: FC = () => {
   const { t } = useTranslation();
   const {
-    state: { entity, trackSectionsCache },
+    state: { entity },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
 
@@ -221,23 +223,40 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
 };
 
 export const SpeedSectionEditionLayers: FC = () => {
+  const { t } = useTranslation();
   const {
     renderingFingerprint,
-    editorState: { editorLayers },
-    state: { entity, trackSectionsCache, hoveredPoint },
+    state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
+  const selection = useMemo(() => {
+    // Dragging an extremity:
+    if (interactionState.type === 'movePoint')
+      return [(entity.properties.track_ranges || [])[interactionState.rangeIndex].track];
+
+    // Custom hovered element:
+    if (hoveredItem?.speedSectionItemType) return [hoveredItem.track.properties.id];
+
+    // EditorEntity hovered element:
+    if (
+      hoveredItem?.type === 'TrackSection' &&
+      !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id)
+    )
+      return [hoveredItem.id];
+
+    return undefined;
+  }, [interactionState, hoveredItem, entity]);
 
   const speedSectionsFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     const trackRanges = entity.properties?.track_ranges || [];
     return featureCollection(
-      trackRanges.flatMap((range) => {
+      trackRanges.flatMap((range, i) => {
         const trackState = trackSectionsCache[range.track];
         return trackState?.type === 'success'
-          ? getTrackRangeFeatures(trackState.track, range, flatEntity.properties)
+          ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
           : [];
       }) as Feature<LineString | Point>[]
     );
@@ -260,12 +279,9 @@ export const SpeedSectionEditionLayers: FC = () => {
     [mapStyle, showIGNBDORTHO, layersSettings]
   );
 
-  const layers = useMemo(() => {
-    if (!editorLayers.has('speed_sections')) return editorLayers;
-    return new Set(without(Array.from(editorLayers), 'speed_sections'));
-  }, [editorLayers]);
+  const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
-  // Here is were we handle loading the TrackSections attached to the speed section:
+  // Here is where we handle loading the TrackSections attached to the speed section:
   useEffect(() => {
     const trackIDs = entity.properties?.track_ranges?.map((range) => range.track) || [];
     const missingTrackIDs = trackIDs.filter((id) => !trackSectionsCache[id]);
@@ -298,6 +314,7 @@ export const SpeedSectionEditionLayers: FC = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         layers={layers}
+        selection={selection}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         isEmphasized={false}
@@ -315,20 +332,48 @@ export const SpeedSectionEditionLayers: FC = () => {
             'circle-stroke-color': '#000000',
             'circle-stroke-width': 2,
           }}
-          filter={['has', 'position']}
+          filter={['has', 'extremity']}
         />
       </Source>
-      {hoveredPoint && (
+      {hoveredItem?.speedSectionItemType === 'TrackRangeExtremity' && (
         <Popup
           className="popup"
           anchor="bottom"
-          longitude={hoveredPoint.position[0]}
-          latitude={hoveredPoint.position[1]}
+          longitude={hoveredItem.position[0]}
+          latitude={hoveredItem.position[1]}
           closeButton={false}
         >
-          <EntitySumUp entity={hoveredPoint.track} />
+          <div>{t('Editor.tools.speed-edition.move-range-extremity')}</div>
+          <EntitySumUp entity={hoveredItem.track} />
         </Popup>
       )}
+      {hoveredItem?.speedSectionItemType === 'TrackRange' && (
+        <Popup
+          className="popup"
+          anchor="bottom"
+          longitude={hoveredItem.position[0]}
+          latitude={hoveredItem.position[1]}
+          closeButton={false}
+        >
+          <div>{t('Editor.tools.speed-edition.remove-track-range')}</div>
+          <EntitySumUp entity={hoveredItem.track} />
+        </Popup>
+      )}
+      {interactionState.type !== 'movePoint' &&
+        hoveredItem?.type === 'TrackSection' &&
+        !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id) &&
+        mousePosition && (
+          <Popup
+            className="popup"
+            anchor="bottom"
+            longitude={mousePosition[0]}
+            latitude={mousePosition[1]}
+            closeButton={false}
+          >
+            <div>{t('Editor.tools.speed-edition.add-track-range')}</div>
+            <EntitySumUp id={hoveredItem.id} objType={hoveredItem.type} />
+          </Popup>
+        )}
     </>
   );
 };
