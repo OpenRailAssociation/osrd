@@ -1,40 +1,72 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
-import PropTypes from 'prop-types';
-import Loader from 'common/Loader';
+import React, { useState, useEffect, useContext, useMemo, MutableRefObject } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
-import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
-import './RollingStock.scss';
+import { isEmpty, sortBy } from 'lodash';
+
+import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { RootState } from 'reducers';
+import { getRollingStockID } from 'reducers/osrdconf/selectors';
+import Loader from 'common/Loader';
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { isEmpty, sortBy } from 'lodash';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
+import './RollingStock.scss';
 
-export function rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes) {
+interface Filters {
+  text: string;
+  elec: boolean;
+  thermal: boolean;
+}
+function rollingStockPassesSearchedStringFilter(
+  name: string,
+  metadata: LightRollingStock['metadata'],
+  filters: Filters
+) {
+  function includesSearchedString(str: string) {
+    return str && str.toLowerCase().includes(filters.text);
+  }
+  return [
+    name,
+    metadata.detail,
+    metadata.reference,
+    metadata.series,
+    metadata.type,
+    metadata.grouping,
+  ].some(includesSearchedString);
+}
+
+export function rollingStockPassesEnergeticModeFilters(
+  filterElec: boolean,
+  filterThermal: boolean,
+  modes: LightRollingStock['effort_curves']['modes']
+) {
   if (filterElec || filterThermal) {
     const effortCurveModes = Object.values(modes).map(({ is_electric: isElec }) => isElec);
-    const isElectric = effortCurveModes.includes(true);
-    const isThermal = effortCurveModes.includes(false);
-    if ((filterElec && !isElectric) || (filterThermal && !isThermal)) {
+    const hasAnElectricMode = effortCurveModes.includes(true);
+    const hasAThermalMode = effortCurveModes.includes(false);
+    if ((filterElec && !hasAnElectricMode) || (filterThermal && !hasAThermalMode)) {
       return false;
     }
   }
   return true;
 }
-function RollingStockModal(props) {
-  const { ref2scroll } = props;
+
+interface RollingStockModal {
+  ref2scroll: MutableRefObject<HTMLDivElement>;
+}
+
+function RollingStockModal({ ref2scroll }: RollingStockModal) {
   const dispatch = useDispatch();
-  const { darkmode } = useSelector((state) => state.main);
+  const darkmode = useSelector((state: RootState) => state.main.darkmode);
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [filteredRollingStockList, setFilteredRollingStockList] = useState([]);
+  const [filteredRollingStockList, setFilteredRollingStockList] = useState<LightRollingStock[]>([]);
   const [filters, setFilters] = useState({
     text: '',
     elec: false,
@@ -60,24 +92,20 @@ function RollingStockModal(props) {
     }
   );
 
-  const searchMateriel = (e) => {
+  const searchMateriel = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, text: e.target.value.toLowerCase() });
     setIsFiltering(true);
   };
 
   const updateSearch = () => {
     setOpenedRollingStockCardId(undefined);
-    const includesSearchedString = (str) => str && str.toLowerCase().includes(filters.text);
     const newFilteredRollingStock = rollingStocks
-      .filter(({ name, metadata, effort_curves: effortCurves }) => {
-        const passSearchedStringFilter = [
+      ?.filter(({ name, metadata, effort_curves: effortCurves }) => {
+        const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
           name,
-          metadata.detail,
-          metadata.reference,
-          metadata.series,
-          metadata.type,
-          metadata.grouping,
-        ].some(includesSearchedString);
+          metadata,
+          filters
+        );
         const passEnergeticModesFilter = rollingStockPassesEnergeticModeFilters(
           filters.elec,
           filters.thermal,
@@ -86,20 +114,20 @@ function RollingStockModal(props) {
         return passSearchedStringFilter && passEnergeticModesFilter;
       })
       .sort((a, b) => {
-        if (a.reference && b.reference && a.reference !== b.reference) {
-          return a.name.localeCompare(b.name) && a.reference.localeCompare(b.reference);
-        }
-        return a.name.localeCompare(b.name);
+        const { reference: refA } = a.metadata;
+        const { reference: refB } = b.metadata;
+        return refA.localeCompare(refB);
       });
-
-    setTimeout(() => {
-      setFilteredRollingStockList(newFilteredRollingStock);
-      setIsFiltering(false);
-    }, 0);
+    if (newFilteredRollingStock) {
+      setTimeout(() => {
+        setFilteredRollingStockList(newFilteredRollingStock);
+        setIsFiltering(false);
+      }, 0);
+    }
   };
 
-  const toggleFilter = (e) => {
-    setFilters({ ...filters, [e.target.name]: !filters[e.target.name] });
+  const toggleFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters({ ...filters, [e.target.name]: !filters[e.target.name as 'elec' | 'thermal'] });
     setIsFiltering(true);
   };
 
@@ -131,7 +159,7 @@ function RollingStockModal(props) {
   );
 
   useEffect(() => {
-    if (isError) {
+    if (isError && 'status' in error) {
       dispatch(
         setFailure({
           name: t('rollingstock:errorMessages.unableToRetrieveRollingStock'),
@@ -226,10 +254,6 @@ function RollingStockModal(props) {
     </ModalBodySNCF>
   );
 }
-
-RollingStockModal.propTypes = {
-  ref2scroll: PropTypes.object.isRequired,
-};
 
 const MemoizedRollingStockModal = React.memo(RollingStockModal);
 export default MemoizedRollingStockModal;
