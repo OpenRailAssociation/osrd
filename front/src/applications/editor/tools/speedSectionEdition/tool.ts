@@ -29,9 +29,9 @@ import { TrackSectionEntity } from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
-  id: 'speed-section-edition',
+  id: 'speed-edition',
   icon: MdSpeed,
-  labelTranslationKey: 'Editor.tools.speed-section-edition.label',
+  labelTranslationKey: 'Editor.tools.speed-edition.label',
   requiredLayers: new Set(['speed_sections']),
   isDisabled({ editorState }) {
     return !editorState.editorLayers.has('speed_sections');
@@ -46,7 +46,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
       {
         id: 'new-speed-section',
         icon: IoMdAddCircleOutline,
-        labelTranslationKey: 'Editor.tools.speed-section-edition.actions.new-speed-section',
+        labelTranslationKey: 'Editor.tools.speed-edition.actions.new-speed-section',
         onClick({ setState }) {
           const entity = getNewSpeedSection();
 
@@ -60,7 +60,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
       {
         id: 'reset-speed-section',
         icon: BiReset,
-        labelTranslationKey: 'Editor.tools.speed-section-edition.actions.reset-speed-section',
+        labelTranslationKey: 'Editor.tools.speed-edition.actions.reset-speed-section',
         isDisabled({ state: { entity, initialEntity } }) {
           return isEqual(entity, initialEntity);
         },
