@@ -287,10 +287,14 @@ private fun buildZonePath(
         zonePathPosition += (rangeEnd - rangeBegin)
     }
 
+    val zoneLength = zonePathPosition
+
     zonePathSignals.sortBy { it.position }
     val signals = MutableStaticIdxArrayList<PhysicalSignal>()
     val signalPositions = MutableDistanceArrayList()
     for (zonePathSignal in zonePathSignals) {
+        assert(zonePathSignal.position >= Distance.ZERO)
+        assert(zonePathSignal.position <= zoneLength)
         signals.add(zonePathSignal.signal)
         signalPositions.add(zonePathSignal.position)
     }

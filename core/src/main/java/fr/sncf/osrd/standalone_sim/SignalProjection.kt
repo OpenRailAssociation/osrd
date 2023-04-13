@@ -17,7 +17,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import java.awt.Color
 
-data class SignalAspectChangeEvent(val newAspect: String, val time: Long, val offset: Distance)
+data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
 
 fun project(
     fullInfra: FullInfra,
@@ -86,6 +86,11 @@ private fun pathSignals(
     val pathSignals = mutableListOf<PathSignal>()
     var currentOffset = startOffset
     for ((blockIdx, block) in blockPath.withIndex()) {
+        var blockSize = Distance.ZERO
+        for (zonePath in blockInfra.getBlockPath(block)) {
+            blockSize += rawInfra.getZonePathLength(zonePath)
+        }
+
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
         val numExclusiveSignalInBlock =
@@ -93,10 +98,7 @@ private fun pathSignals(
         for ((signal, position) in blockSignals.zip(blockSignalPositions).take(numExclusiveSignalInBlock)) {
             pathSignals.add(PathSignal(signal, currentOffset + position))
         }
-
-        for (zonePath in blockInfra.getBlockPath(block)) {
-            currentOffset += rawInfra.getZonePathLength(zonePath)
-        }
+        currentOffset += blockSize
     }
 
     return pathSignals
@@ -139,7 +141,7 @@ private fun computeSignalAspectChangeEvents(
             val signal = pathSignal.signal
             val aspect = simulatedAspects[signal] ?: continue
             if (signalAspects[signal]!! == aspect) continue
-            signalAspectChangeEvents[pathSignal]!!.add(SignalAspectChangeEvent(aspect, (event.time * 1000).toLong(), event.offset.meters))
+            signalAspectChangeEvents[pathSignal]!!.add(SignalAspectChangeEvent(aspect, (event.time * 1000).toLong()))
             signalAspects[signal] = aspect
         }
     }
