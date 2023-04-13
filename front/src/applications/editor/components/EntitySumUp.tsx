@@ -217,7 +217,7 @@ function getSumUpContent(
         <span className={classes.muted}>
           {t('Editor.tools.select-items.linked-to-n-lines', {
             count: speedSection.properties.track_ranges?.length || 0,
-          })}
+          }).toString()}
         </span>
       );
       forEach(speedSection.properties.speed_limit_by_tag, (limit, tag) => {

@@ -105,7 +105,7 @@ export const TrackRangesList: FC = () => {
                             hoveredItem: {
                               speedSectionItemType: 'TrackRangeExtremity',
                               track: trackState.track,
-                              position: getPointAt(trackState.track, range.begin),
+                              position: getPointAt(trackState.track, range.end),
                               extremity: 'END',
                             },
                           })

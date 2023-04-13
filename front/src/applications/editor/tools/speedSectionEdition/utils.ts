@@ -47,16 +47,21 @@ export function getTrackRangeFeatures(
   properties: Record<string, unknown>
 ): [TrackRangeFeature, TrackRangeExtremityFeature, TrackRangeExtremityFeature] {
   const dataLength = track.properties.length;
-  if (range.begin <= 0 && range.end >= dataLength)
+  const begin = Math.max(Math.min(range.begin, range.end), 0);
+  const end = Math.min(Math.max(range.begin, range.end), dataLength);
+
+  if (begin <= 0 && end >= dataLength)
     return [
       feature(track.geometry, {
         ...properties,
         ...range,
+        id: `speedSectionRangeExtremity::${rangeIndex}::${begin}::${end}`,
         speedSectionItemType: 'TrackRange',
         speedSectionRangeIndex: rangeIndex,
       }),
       point(track.geometry.coordinates[0] as Position, {
         ...properties,
+        id: `speedSectionRangeExtremity::${rangeIndex}::${begin}`,
         track: range.track,
         extremity: 'BEGIN',
         speedSectionItemType: 'TrackRangeExtremity',
@@ -64,6 +69,7 @@ export function getTrackRangeFeatures(
       }),
       point(last(track.geometry.coordinates) as Position, {
         ...properties,
+        id: `speedSectionRangeExtremity::${rangeIndex}::${end}`,
         track: range.track,
         extremity: 'END',
         speedSectionItemType: 'TrackRangeExtremity',
@@ -76,22 +82,24 @@ export function getTrackRangeFeatures(
   // throws an error. Until we find a way to get similar computations, we can
   // approximate this way:
   const computedLength = length(track);
-  const begin = (range.begin * computedLength) / dataLength;
-  const end = (range.end * computedLength) / dataLength;
+  const adjustedBegin = Math.max((begin * computedLength) / dataLength, 0);
+  const adjustedEnd = Math.min((end * computedLength) / dataLength, computedLength);
   return [
     {
-      ...lineSliceAlong(track.geometry, begin, end),
+      ...lineSliceAlong(track.geometry, adjustedBegin, adjustedEnd),
       properties: {
         ...properties,
         ...range,
+        id: `speedSectionRangeExtremity::${rangeIndex}::${adjustedBegin}::${adjustedEnd}`,
         speedSectionItemType: 'TrackRange',
         speedSectionRangeIndex: rangeIndex,
       },
     },
     {
-      ...along(track.geometry, (begin * computedLength) / dataLength),
+      ...along(track.geometry, adjustedBegin),
       properties: {
         ...properties,
+        id: `speedSectionRangeExtremity::${rangeIndex}::${adjustedBegin}`,
         track: range.track,
         extremity: 'BEGIN',
         speedSectionItemType: 'TrackRangeExtremity',
@@ -99,9 +107,10 @@ export function getTrackRangeFeatures(
       },
     },
     {
-      ...along(track.geometry, (end * computedLength) / dataLength),
+      ...along(track.geometry, adjustedEnd),
       properties: {
         ...properties,
+        id: `speedSectionRangeExtremity::${rangeIndex}::${adjustedEnd}`,
         track: range.track,
         extremity: 'END',
         speedSectionItemType: 'TrackRangeExtremity',
