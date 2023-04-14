@@ -77,6 +77,8 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
       const trainsSchedules = trainsSchedulesTemp.map((trainSchedule) => {
         const stepsWithDuration = trainSchedule.steps.map((step) => {
           // calcul duration in seconds between step arrival and departure
+          // in case of arrival and departure are the same, we set duration to 0
+          // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
           const duration = Math.round(
             (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
           );
