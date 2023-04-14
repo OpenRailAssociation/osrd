@@ -52,13 +52,6 @@ class InvalidRoute(InfraErrorTrait):
     error_type: Literal["invalid_route"] = Field(default="invalid_route")
 
 
-class PathDoesNotMatchEndpoints(InfraErrorTrait):
-    error_type: Literal["path_does_not_match_endpoints"] = Field(default="path_does_not_match_endpoints")
-    expected_track: str
-    expected_position: float
-    endpoint_field: Union[Literal["entry_point"], Literal["exit_point"]]
-
-
 class UnknownPortName(InfraErrorTrait):
     error_type: Literal["unknown_port_name"] = Field(default="unknown_port_name")
     port_name: str
@@ -92,8 +85,12 @@ class DuplicatedGroup(InfraWarningTrait):
     original_group_path: str
 
 
-class NoBufferStop(InfraWarningTrait):
-    error_type: Literal["no_buffer_stop"] = Field(default="no_buffer_stop")
+class MissingBufferStop(InfraWarningTrait):
+    error_type: Literal["missing_buffer_stop"] = Field(default="missing_buffer_stop")
+
+
+class OddBufferStopLocation(InfraWarningTrait):
+    error_type: Literal["odd_buffer_stop_location"] = Field(default="odd_buffer_stop_location")
 
 
 class OverlappingSpeedSections(InfraWarningTrait):
@@ -115,8 +112,9 @@ InfraError = Annotated[
         InvalidRoute,
         InvalidSwitchPorts,
         MissingRoute,
-        NoBufferStop,
+        MissingBufferStop,
         ObjectOutOfPath,
+        OddBufferStopLocation,
         OutOfRange,
         OverlappingSpeedSections,
         OverlappingSwitches,

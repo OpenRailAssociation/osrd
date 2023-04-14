@@ -1009,19 +1009,18 @@ export type Geometry = Point | LineString | Polygon | MultiPoint | MultiLineStri
 export type InfraErrorType =
   | 'duplicated_group'
   | 'empty_object'
-  | 'empty_path'
+  | 'invalid_group'
   | 'invalid_reference'
+  | 'invalid_route'
   | 'invalid_switch_ports'
-  | 'missing_buffer_stop'
   | 'missing_route'
+  | 'missing_buffer_stop'
   | 'object_out_of_path'
   | 'odd_buffer_stop_location'
   | 'out_of_range'
   | 'overlapping_speed_sections'
   | 'overlapping_switches'
   | 'overlapping_track_links'
-  | 'path_does_not_match_endpoints'
-  | 'path_is_not_continuous'
   | 'unknown_port_name'
   | 'unused_port';
 export type InfraError = {
