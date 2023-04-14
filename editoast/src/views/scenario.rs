@@ -158,7 +158,6 @@ async fn delete(path: Path<(i64, i64, i64)>, db_pool: Data<DbPool>) -> Result<Ht
 struct ScenarioPatchForm {
     pub name: Option<String>,
     pub description: Option<String>,
-    pub electrical_profile_set_id: Option<Option<i64>>,
     pub tags: Option<Vec<String>>,
 }
 
@@ -167,7 +166,6 @@ impl From<ScenarioPatchForm> for Scenario {
         Scenario {
             name: form.name,
             description: form.description,
-            electrical_profile_set_id: form.electrical_profile_set_id,
             tags: form.tags,
             ..Default::default()
         }
