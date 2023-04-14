@@ -1,38 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { PropTypes } from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
-import { get } from 'common/requests';
 import icon from 'assets/pictures/components/tracks.svg';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { FaLock } from 'react-icons/fa';
 import './InfraSelector.scss';
-import { INFRA_URL } from './Consts';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
-export default function InfraSelector(props) {
-  const { modalOnly } = props;
+type InfraSelectorProps = {
+  isModalOnly?: boolean;
+};
+
+const InfraSelector = ({ isModalOnly = false }: InfraSelectorProps) => {
   const dispatch = useDispatch();
-  const [selectedInfra, setSelectedInfra] = useState(undefined);
+  const [selectedInfra, setSelectedInfra] = useState<Infra | undefined>(undefined);
   const infraID = useSelector(getInfraID);
   const { openModal } = useModal();
-
+  const [getInfraByID] = osrdEditoastApi.endpoints.getInfraById.useLazyQuery({});
   const { t } = useTranslation(['infraManagement']);
 
-  const getInfra = async (id) => {
-    try {
-      const infraQuery = await get(`${INFRA_URL}${id}/`);
-      setSelectedInfra(infraQuery);
-    } catch (e) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.unableToRetrieveInfra'),
-          message: e.message,
-        })
+  const getInfra = async (id: number) => {
+    getInfraByID({ id })
+      .unwrap()
+      .then((infra) => setSelectedInfra(infra))
+      .catch((e) =>
+        dispatch(
+          setFailure({
+            name: t('errorMessages.unableToRetrieveInfra'),
+            message: e.message,
+          })
+        )
       );
-    }
   };
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function InfraSelector(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
-  if (modalOnly) return <InfraSelectorModal />;
+  if (isModalOnly) return <InfraSelectorModal />;
 
   return (
     <div className="osrd-config-item mb-2">
@@ -50,7 +51,7 @@ export default function InfraSelector(props) {
         className="osrd-config-item-container osrd-config-item-clickable"
         data-testid="infra-selector"
         role="button"
-        tabIndex="-1"
+        tabIndex={-1}
         onClick={() => openModal(<InfraSelectorModal />, 'lg')}
       >
         <div className="infraselector-button" data-testid="infraselector-button">
@@ -72,11 +73,6 @@ export default function InfraSelector(props) {
       </div>
     </div>
   );
-}
+};
 
-InfraSelector.defaultProps = {
-  modalOnly: false,
-};
-InfraSelector.propTypes = {
-  modalOnly: PropTypes.bool,
-};
+export default InfraSelector;
