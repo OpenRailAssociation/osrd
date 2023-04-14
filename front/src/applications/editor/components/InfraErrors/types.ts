@@ -5,28 +5,28 @@ import {
 
 // Error level
 export type InfraErrorLevel = GetInfraByIdErrorsApiArg['level'];
-export const InfraErrorLevelList: Array<InfraErrorLevel> = ['all', 'errors', 'warnings'];
+export const InfraErrorLevelList: Array<InfraErrorLevel> =
+    [ 'all', 'errors', 'warnings' ];
 
 // Error type
 export type InfraErrorType = GetInfraByIdErrorsApiArg['errorType'];
 export const InfraErrorTypeList: Array<InfraErrorType> = [
-  'invalid_reference',
-  'out_of_range',
-  'empty_path',
-  'path_does_not_match_endpoints',
-  'unknown_port_name',
-  'invalid_switch_ports',
+  'duplicated_group',
   'empty_object',
+  'invalid_group',
+  'invalid_reference',
+  'invalid_route',
+  'invalid_switch_ports',
+  'missing_route',
+  'missing_buffer_stop',
   'object_out_of_path',
   'odd_buffer_stop_location',
-  'missing_route',
-  'unused_port',
-  'duplicated_group',
-  'missing_buffer_stop',
-  'path_is_not_continuous',
+  'out_of_range',
   'overlapping_speed_sections',
   'overlapping_switches',
   'overlapping_track_links',
+  'unknown_port_name',
+  'unused_port',
 ];
 
 // Type of an error
