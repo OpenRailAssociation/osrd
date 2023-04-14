@@ -315,11 +315,11 @@ const GeoJSONs: FC<{
       symbolsList: ALL_SIGNAL_LAYERS,
       sourceLayer: 'geo',
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
-      isEmphasized: isEmphasized,
+      isEmphasized,
       showIGNBDORTHO,
       layersSettings,
     }),
-    [colors, mapStyle, showIGNBDORTHO]
+    [colors, mapStyle, showIGNBDORTHO, layersSettings]
   );
   const hiddenLayerContext: LayerContext = useMemo(
     () => ({
