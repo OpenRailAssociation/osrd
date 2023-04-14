@@ -50,7 +50,11 @@ const MapSearchStation = ({ updateExtViewport }: MapSearchStationProps) => {
 
   // Sort on name, and on yardname
   const orderResults = (results: SearchOperationalPointResult[]) =>
-    results.slice().sort((a, b) => a.name.localeCompare(b.name) || a.ch.localeCompare(b.ch));
+    results.slice().sort((a, b) => {
+      const aYard = a.ch ?? '';
+      const bYard = b.ch ?? '';
+      return a.name.localeCompare(b.name) || aYard.localeCompare(bYard);
+    });
 
   const searchByTrigrams = useCallback(async () => {
     const searchQuery = ['=i', ['trigram'], searchState];
