@@ -7,7 +7,7 @@ use actix_web::web::{block, Data};
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
-use diesel::sql_types::{Array, BigInt};
+use diesel::sql_types::BigInt;
 use diesel::{delete, sql_query, update, QueryDsl, RunQueryDsl};
 use diesel::{ExpressionMethods, PgConnection};
 use editoast_derive::Model;
@@ -61,8 +61,8 @@ pub struct ProjectWithStudies {
     #[serde(flatten)]
     #[diesel(embed)]
     pub project: Project,
-    #[diesel(sql_type = Array<BigInt>)]
-    pub studies: Vec<i64>,
+    #[diesel(sql_type = BigInt)]
+    pub studies_count: i64,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -100,13 +100,13 @@ impl Project {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_study::dsl as study_dsl;
             let mut conn = db_pool.get()?;
-            let studies = study_dsl::osrd_infra_study
+            let studies_count = study_dsl::osrd_infra_study
                 .filter(study_dsl::project_id.eq(self.id.unwrap()))
-                .select(study_dsl::id)
-                .load(&mut conn)?;
+                .count()
+                .get_result(&mut conn)?;
             Ok(ProjectWithStudies {
                 project: self,
-                studies,
+                studies_count,
             })
         })
         .await
@@ -209,11 +209,13 @@ impl List<Ordering> for ProjectWithStudies {
         ordering: Ordering,
     ) -> Result<PaginatedResponse<Self>> {
         let ordering = ordering.to_sql();
-        sql_query(format!("SELECT t.*, COALESCE(ARRAY_AGG(study.id) FILTER (WHERE study.id is not NULL), ARRAY[]::bigint[])  as studies FROM osrd_infra_project t
+        sql_query(format!(
+            "SELECT t.*, COUNT(study.*) as studies_count FROM osrd_infra_project t
             LEFT JOIN osrd_infra_study study ON study.project_id = t.id
-            GROUP BY t.id ORDER BY {ordering}"))
-            .paginate(page, page_size)
-            .load_and_count(conn)
+            GROUP BY t.id ORDER BY {ordering}"
+        ))
+        .paginate(page, page_size)
+        .load_and_count(conn)
     }
 }
 
@@ -297,9 +299,14 @@ pub mod test {
 
         let projects = ProjectWithStudies::list(pool.clone(), 1, 25, Ordering::NameDesc)
             .await
-            .unwrap();
-        let name = projects.results.first().unwrap().project.name.clone();
-        assert_eq!(name, Some("test".into()));
+            .unwrap()
+            .results;
+
+        for (p1, p2) in projects.iter().zip(projects.iter().skip(1)) {
+            let name_1 = p1.project.name.as_ref().unwrap().to_lowercase();
+            let name_2 = p2.project.name.as_ref().unwrap().to_lowercase();
+            assert!(name_1.ge(&name_2));
+        }
 
         // Delete the projects
         assert!(Project::delete(pool.clone(), project_id_1).await.unwrap());

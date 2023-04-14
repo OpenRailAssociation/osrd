@@ -7,6 +7,8 @@ import {
   GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
   GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg,
   GetInfraByIdRoutesTrackRangesApiResponse,
+  GetInfraByIdAttachedAndTrackIdApiResponse,
+  GetInfraByIdAttachedAndTrackIdApiArg,
 } from '../../../common/api/osrdEditoastApi';
 import {
   Direction,
@@ -97,6 +99,15 @@ export async function getRoutesFromWaypoint(
     throw new Error(`${type} elements are not valid waypoints.`);
   return get<GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse>(
     `/editoast/infra/${infra}/routes/${type}/${id}`
+  );
+}
+
+export async function getAttachedItems(
+  infra: number | string,
+  id: GetInfraByIdAttachedAndTrackIdApiArg['trackId']
+): Promise<GetInfraByIdAttachedAndTrackIdApiResponse> {
+  return get<GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse>(
+    `/editoast/infra/${infra}/attached/${id}`
   );
 }
 

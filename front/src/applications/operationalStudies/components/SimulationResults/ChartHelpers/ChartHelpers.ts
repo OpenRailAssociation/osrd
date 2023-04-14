@@ -325,6 +325,7 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
   const lastStop = last(train.base.stops) as Stop;
   const departure = offsetSeconds(firstStop.time + dragOffset);
   const arrival = offsetSeconds(lastStop.time + dragOffset);
+
   return {
     id: train.id,
     labels: train.labels,

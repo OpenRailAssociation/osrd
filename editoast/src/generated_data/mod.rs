@@ -116,28 +116,32 @@ pub fn update_all(
 #[cfg(test)]
 pub mod tests {
     use crate::generated_data::{clear_all, refresh_all, update_all};
-    use crate::infra::tests::test_infra_transaction;
-    use crate::infra::Infra;
+    use crate::models::infra::tests::test_infra_transaction;
+    use crate::models::Infra;
+    use actix_web::test as actix_test;
     use diesel::PgConnection;
 
-    #[test]
-    fn refresh_all_test() {
+    #[actix_test]
+    async fn refresh_all_test() {
         test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
-            assert!(refresh_all(conn, infra.id, &Default::default()).is_ok());
+            assert!(refresh_all(conn, infra.id.unwrap(), &Default::default()).is_ok());
         })
+        .await
     }
 
-    #[test]
-    fn update_all_test() {
+    #[actix_test]
+    async fn update_all_test() {
         test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
-            assert!(update_all(conn, infra.id, &[], &Default::default()).is_ok());
+            assert!(update_all(conn, infra.id.unwrap(), &[], &Default::default()).is_ok());
         })
+        .await
     }
 
-    #[test]
-    fn clear_all_test() {
+    #[actix_test]
+    async fn clear_all_test() {
         test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
-            assert!(clear_all(conn, infra.id).is_ok());
+            assert!(clear_all(conn, infra.id.unwrap()).is_ok());
         })
+        .await
     }
 }

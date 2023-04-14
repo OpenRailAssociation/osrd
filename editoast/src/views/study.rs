@@ -110,7 +110,7 @@ async fn create(
     // Return study with list of scenarios
     let study_with_scenarios = StudyWithScenarios {
         study,
-        scenarios: vec![],
+        scenarios_count: 0,
     };
 
     Ok(Json(study_with_scenarios))
@@ -183,9 +183,9 @@ async fn get(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<Json<Study
 struct StudyPatchForm {
     pub name: Option<String>,
     pub description: Option<String>,
-    pub start_date: Option<Option<NaiveDate>>,
-    pub expected_end_date: Option<Option<NaiveDate>>,
-    pub actual_end_date: Option<Option<NaiveDate>>,
+    pub start_date: Option<NaiveDate>,
+    pub expected_end_date: Option<NaiveDate>,
+    pub actual_end_date: Option<NaiveDate>,
     pub business_code: Option<String>,
     pub service_code: Option<String>,
     pub budget: Option<i32>,
@@ -199,9 +199,9 @@ impl From<StudyPatchForm> for Study {
         Study {
             name: form.name,
             description: form.description,
-            start_date: form.start_date,
-            expected_end_date: form.expected_end_date,
-            actual_end_date: form.actual_end_date,
+            start_date: Some(form.start_date),
+            expected_end_date: Some(form.expected_end_date),
+            actual_end_date: Some(form.actual_end_date),
             budget: form.budget,
             business_code: form.business_code,
             service_code: form.service_code,

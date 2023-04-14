@@ -1,5 +1,9 @@
+use editoast_derive::EditoastError;
+use geos::geojson::{self, Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
+use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::{ObjectRef, ObjectType};
@@ -18,7 +22,48 @@ impl BoundingBox {
     pub fn is_valid(&self) -> bool {
         self.0 .0 <= self.1 .0 && self.0 .1 <= self.1 .1
     }
+
+    pub fn from_iter<I: Iterator<Item = (f64, f64)>>(iter: I) -> Self {
+        let mut min: (f64, f64) = (f64::MAX, f64::MAX);
+        let mut max: (f64, f64) = (f64::MIN, f64::MIN);
+        for (x, y) in iter {
+            min.0 = min.0.min(x);
+            max.0 = max.0.max(x);
+            min.1 = min.1.min(y);
+            max.1 = max.1.max(y);
+        }
+        BoundingBox(min, max)
+    }
+
+    pub fn from_geojson(value: geojson::Value) -> Result<Self> {
+        match value {
+            LineString(segments) => Ok(Self::from_iter(segments.into_iter().map(|points| {
+                (
+                    *points.first().expect("invalid point"),
+                    *points.get(1).expect("invalid point"),
+                )
+            }))),
+            value => Err(GeometryError::UnexpectedGeometry {
+                expected: "LineString".to_owned(),
+                actual: value.to_string(),
+            }
+            .into()),
+        }
+    }
+
+    pub fn from_geometry(value: Geometry) -> Result<Self> {
+        Self::from_geojson(value.value)
+    }
 }
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "geometry")]
+pub enum GeometryError {
+    #[error("expected geometry {expected} but got {actual}")]
+    #[editoast_error(status = 404)]
+    UnexpectedGeometry { expected: String, actual: String },
+}
+
 impl Default for BoundingBox {
     fn default() -> Self {
         Self(
@@ -67,12 +112,12 @@ impl Zone {
         for op in operations {
             match op {
                 OperationResult::Create(RailjsonObject::TrackSection { railjson }) => {
-                    geo.union(&railjson.geo.get_bbox());
-                    sch.union(&railjson.sch.get_bbox());
+                    geo.union(&railjson.geo_bbox());
+                    sch.union(&railjson.sch_bbox());
                 }
                 OperationResult::Update(RailjsonObject::TrackSection { railjson }) => {
-                    geo.union(&railjson.geo.get_bbox());
-                    sch.union(&railjson.sch.get_bbox());
+                    geo.union(&railjson.geo_bbox());
+                    sch.union(&railjson.sch_bbox());
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.id);
                 }
                 OperationResult::Update(RailjsonObject::Signal { railjson })

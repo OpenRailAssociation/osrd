@@ -8,7 +8,6 @@ pub mod operation;
 mod operational_point;
 mod railjson;
 pub mod rolling_stock;
-pub mod rolling_stock_image;
 mod route;
 mod signal;
 mod speed_section;
@@ -35,7 +34,7 @@ use strum_macros::Display;
 use strum_macros::EnumIter;
 pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
-pub use track_section::{Curve, LineString, Slope, TrackSection, TrackSectionCache};
+pub use track_section::{Curve, Slope, TrackSection, TrackSectionCache};
 pub use track_section_link::TrackSectionLink;
 
 use self::utils::{Identifier, NonBlankString};

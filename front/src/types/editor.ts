@@ -1,5 +1,5 @@
 import { JSONSchema7 } from 'json-schema';
-import { Feature, GeoJsonProperties, Geometry, Point, LineString } from 'geojson';
+import { Feature, GeoJsonProperties, Geometry, Point, LineString, MultiLineString } from 'geojson';
 
 import { Direction, ObjectType, DirectionalTrackRange } from '../common/api/osrdEditoastApi';
 import { NullGeometry } from './geospatial';
@@ -34,6 +34,32 @@ export interface TrackSectionEntity
     }
   > {
   objType: 'TrackSection';
+}
+
+export const APPLICABLE_DIRECTIONS = ['BOTH', 'START_TO_STOP', 'STOP_TO_START'] as const;
+export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
+export interface SpeedSectionEntity
+  extends EditorEntity<
+    MultiLineString,
+    {
+      speed_limit?: number;
+      speed_limit_by_tag?: Record<string, number | undefined>;
+      track_ranges?: {
+        applicable_directions: ApplicableDirection;
+        begin: number;
+        end: number;
+        track: string;
+      }[];
+      extensions?: {
+        lpv_sncf: null | {
+          announcement: unknown;
+          z: unknown;
+          r: unknown;
+        };
+      };
+    }
+  > {
+  objType: 'SpeedSection';
 }
 export interface SignalEntity
   extends EditorEntity<

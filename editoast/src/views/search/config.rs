@@ -23,6 +23,7 @@ pub struct SearchEntry {
 pub struct SearchResult {
     pub joins: Option<String>,
     pub columns: HashMap<String, String>,
+    pub group_by: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq)]

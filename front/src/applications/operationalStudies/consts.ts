@@ -2,7 +2,7 @@ import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-import { ModesAndProfiles } from 'reducers/osrdsimulation/types';
+import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
 
 export const BLOCKTYPES = [
   {
@@ -67,8 +67,8 @@ export const DUMMYCONST = null;
 export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
   none: 'NONE',
   add: 'ADD',
-  update: 'UPDATE',
-  opendata: 'OPENDATA',
+  edit: 'EDIT',
+  import: 'IMPORT',
 });
 
 interface MODES_Types {
@@ -99,25 +99,24 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
 });
 
 export interface PointOnMap {
-  id: string;
+  id?: string;
   name?: string;
-  curves: string;
-  length: number;
-  slopes: string;
-  extensions_sncf_line_code: number;
-  extensions_sncf_line_name: string;
-  extensions_sncf_track_name: string;
-  extensions_sncf_track_number: number;
-  loading_gauge_limits: string;
-  source: string;
-  coordinates: Position | number[];
+  curves?: string;
+  length?: number;
+  slopes?: string;
+  extensions_sncf_line_code?: number;
+  extensions_sncf_line_name?: string;
+  extensions_sncf_track_name?: string;
+  extensions_sncf_track_number?: number;
+  loading_gauge_limits?: string;
+  coordinates?: Position | number[];
   duration?: number;
   track?: string;
   position?: number;
 }
 
 export interface OsrdConfState {
-  rollingStockComfort: any;
+  rollingStockComfort: string;
   name: string;
   trainCount: number;
   trainStep: number;
@@ -130,12 +129,14 @@ export interface OsrdConfState {
   infraID?: number;
   switchTypes?: SwitchType[];
   pathfindingID?: number;
+  shouldRunPathfinding: boolean;
   timetableID?: number;
   rollingStockID?: number;
-  speedLimitByTag?: any;
+  speedLimitByTag?: string;
   powerRestriction?: PowerRestrictionRange;
   origin?: PointOnMap;
-  originSpeed: number;
+  initialSpeed?: number;
+  departureTime: string;
   destination?: PointOnMap;
   vias: PointOnMap[];
   suggeredVias: Path['steps'];
@@ -236,8 +237,8 @@ export const legend: Profile[] = [
 ];
 
 export const createProfileSegment = (
-  fullModesAndProfiles: ModesAndProfiles[],
-  modeAndProfile: ModesAndProfiles
+  fullElectrificationConditions: ElectrificationConditions[],
+  electrificationConditions: ElectrificationConditions
 ) => {
   const segment: Segment = {
     position_start: 0,
@@ -256,15 +257,15 @@ export const createProfileSegment = (
     isIncompatible: false,
   };
 
-  segment.position_start = modeAndProfile.start;
-  segment.position_end = modeAndProfile.stop;
-  segment.position_middle = (modeAndProfile.start + modeAndProfile.stop) / 2;
-  segment.lastPosition = fullModesAndProfiles.slice(-1)[0].stop;
+  segment.position_start = electrificationConditions.start;
+  segment.position_end = electrificationConditions.stop;
+  segment.position_middle = (electrificationConditions.start + electrificationConditions.stop) / 2;
+  segment.lastPosition = fullElectrificationConditions.slice(-1)[0].stop;
   segment.height_start = 4;
   segment.height_end = 24;
   segment.height_middle = (segment.height_start + segment.height_end) / 2;
-  segment.usedMode = modeAndProfile.used_mode;
-  segment.usedProfile = modeAndProfile.used_profile;
+  segment.usedMode = electrificationConditions.used_mode;
+  segment.usedProfile = electrificationConditions.used_profile;
 
   // prepare colors
   const electricalProfileColorsWithProfile: Mode = {

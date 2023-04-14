@@ -1,16 +1,13 @@
 use crate::error::Result;
-use crate::models::{Create, Retrieve, RollingStockLiveryModel, RollingStockModel};
-use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
+use crate::models::{Create, Retrieve, RollingStockModel};
 use crate::schema::rolling_stock::{
     EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
-use crate::schema::rolling_stock_image::RollingStockCompoundImage;
 use crate::DbPool;
-use actix_http::StatusCode;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, Data, Json, Path};
-use actix_web::{get, post, HttpResponse};
+use actix_web::{get, post};
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use serde::{Deserialize, Serialize};
@@ -25,16 +22,8 @@ pub enum RollingStockError {
     NotFound { rolling_stock_id: i64 },
 }
 
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "rollingstocks")]
-pub enum RollingStockLiveryError {
-    #[error("Rolling stock livery '{livery_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    NotFound { livery_id: i64 },
-}
-
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/rolling_stock").service((get, get_livery, create))
+    web::scope("/rolling_stock").service((get, create))
 }
 
 #[get("/{rolling_stock_id}")]
@@ -47,29 +36,6 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
     };
     let rollig_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
     Ok(Json(rollig_stock_with_liveries))
-}
-
-#[get("/{rolling_stock_id}/livery/{livery_id}")]
-async fn get_livery(db_pool: Data<DbPool>, path: Path<(i64, i64)>) -> Result<HttpResponse> {
-    let (_rolling_stock_id, livery_id) = path.into_inner();
-    let livery: RollingStockLivery =
-        match RollingStockLiveryModel::retrieve(db_pool.clone(), livery_id).await? {
-            Some(livery) => livery.into(),
-            None => return Err(RollingStockLiveryError::NotFound { livery_id }.into()),
-        };
-    if livery.compound_image_id.is_some() {
-        let compound_image = RollingStockCompoundImage::retrieve(
-            db_pool.clone(),
-            livery_id,
-            livery.compound_image_id.unwrap(),
-        )
-        .await?;
-        Ok(HttpResponse::build(StatusCode::OK)
-            .content_type("image/png")
-            .body(compound_image.inner_data()))
-    } else {
-        Ok(HttpResponse::build(StatusCode::NO_CONTENT).body(""))
-    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -132,9 +98,7 @@ async fn create(
 #[cfg(test)]
 mod tests {
     use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
-    use crate::models::rolling_stock::rolling_stock_livery::tests::get_rolling_stock_livery_example;
-    use crate::models::{Create, Delete, RollingStockModel};
-    use crate::schema::rolling_stock_image::RollingStockCompoundImage;
+    use crate::models::{Delete, RollingStockModel};
     use crate::views::rolling_stocks::RollingStock;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
@@ -142,7 +106,6 @@ mod tests {
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
     use rstest::rstest;
-    use std::io::Cursor;
 
     #[rstest]
     async fn get_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
@@ -154,50 +117,6 @@ mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[rstest]
-    async fn get_rolling_stock_livery(
-        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
-        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-    ) {
-        let app = create_test_service().await;
-        let rolling_stock = fast_rolling_stock.await;
-
-        let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
-        let mut img_bytes: Vec<u8> = Vec::new();
-        assert!(img
-            .write_to(
-                &mut Cursor::new(&mut img_bytes),
-                image::ImageOutputFormat::Png
-            )
-            .is_ok());
-        let image_id = RollingStockCompoundImage::create(db_pool.clone(), img_bytes)
-            .await
-            .unwrap();
-
-        let livery = get_rolling_stock_livery_example(rolling_stock.id(), image_id);
-        let livery = livery.create(db_pool.clone()).await.unwrap();
-        let livery_id = livery.id.unwrap();
-
-        // get - success
-        let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}/livery/{}", rolling_stock.id(), livery_id).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        // get - no content
-        assert!(
-            RollingStockCompoundImage::delete(db_pool.clone(), livery_id, image_id)
-                .await
-                .is_ok()
-        );
-        let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}/livery/{}", rolling_stock.id(), livery_id).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[rstest]

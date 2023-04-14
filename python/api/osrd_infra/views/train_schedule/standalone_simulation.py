@@ -42,6 +42,7 @@ def create_backend_request_payload(train_schedules: Iterator[TrainSchedule]):
                 "initial_speed": schedule.initial_speed,
                 "allowances": schedule.allowances,
                 "tag": schedule.speed_limit_tags,
+                "power_restriction_ranges": schedule.power_restriction_ranges,
                 "comfort": schedule.comfort,
                 "options": schedule.options,
             }
@@ -89,7 +90,7 @@ def _create_and_fill_simulation_output(
     eco_simulation: Any,
     stops_updates: List[Any],
     mrsp: Any,
-    modes_and_profiles: Optional[Any],
+    electrification_conditions: Optional[Any],
 ) -> SimulationOutput:
     _update_simulation_stops(base_simulation["stops"], stops_updates)
 
@@ -97,7 +98,7 @@ def _create_and_fill_simulation_output(
         train_schedule=train_schedule,
         base_simulation=base_simulation,
         mrsp=mrsp,
-        modes_and_profiles=modes_and_profiles or [],
+        electrification_conditions=electrification_conditions or [],
     )
 
     # Skip if no eco simulation is available
@@ -121,8 +122,8 @@ def process_simulation_response(
     speed_limits = response_payload["speed_limits"]
     assert len(train_schedules) == len(speed_limits)
     eco_simulations = response_payload["eco_simulations"]
-    modes_and_profiles = response_payload["modes_and_profiles"]
-    assert len(modes_and_profiles) == 0 or len(train_schedules) == len(modes_and_profiles)
+    electrification_conditions = response_payload["electrification_conditions"]
+    assert len(electrification_conditions) == 0 or len(train_schedules) == len(electrification_conditions)
 
     stops = train_schedules[0].path.payload["path_waypoints"]
     track_sections = TrackSectionModel.objects.filter(infra=infra, obj_id__in=[stop["track"] for stop in stops])
@@ -147,7 +148,7 @@ def process_simulation_response(
             eco_simulations[i],
             stops_additional_information,
             speed_limits[i],
-            modes_and_profiles[i] if len(modes_and_profiles) > 0 else None,
+            electrification_conditions[i] if len(electrification_conditions) > 0 else None,
         )
         for i, train_schedule in enumerate(train_schedules)
     ]

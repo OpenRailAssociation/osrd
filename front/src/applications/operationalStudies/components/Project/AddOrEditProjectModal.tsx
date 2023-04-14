@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-import { projectTypes } from 'applications/operationalStudies/components/operationalStudiesTypes';
 import projectLogo from 'assets/pictures/views/projects.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -25,32 +24,23 @@ import { useDebounce } from 'utils/helpers';
 import {
   ProjectCreateRequest,
   ProjectPatchRequest,
+  ProjectResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
 export type Props = {
-  editionMode?: false;
-  project?: projectTypes;
+  editionMode?: boolean;
+  project?: ProjectResult;
   getProject?: (v: boolean) => void;
-};
-
-const currentProjectDefaults = {
-  name: '',
-  description: '',
-  objectives: '',
-  funders: '',
-  tags: [],
-  budget: 0,
 };
 
 export default function AddOrEditProjectModal({ editionMode, project, getProject }: Props) {
   const { t } = useTranslation('operationalStudies/project');
   const { closeModal } = useContext(ModalContext);
-  const [currentProject, setCurrentProject] = useState<projectTypes>(
-    project || currentProjectDefaults
-  );
+  const [currentProject, setCurrentProject] = useState<ProjectResult | undefined>(project);
+  const [tempProjectImage, setTempProjectImage] = useState<Blob | null | undefined>();
 
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
@@ -60,15 +50,19 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   const [patchProject] = osrdEditoastApi.usePatchProjectsByProjectIdMutation();
 
   const removeTag = (idx: number) => {
-    const newTags: string[] = Array.from(currentProject.tags);
-    newTags.splice(idx, 1);
-    setCurrentProject({ ...currentProject, tags: newTags });
+    if (currentProject?.tags) {
+      const newTags: string[] = Array.from(currentProject.tags);
+      newTags.splice(idx, 1);
+      setCurrentProject({ ...currentProject, tags: newTags });
+    }
   };
 
   const addTag = (tag: string) => {
-    const newTags: string[] = currentProject.tags ? Array.from(currentProject.tags) : [];
-    newTags.push(tag);
-    setCurrentProject({ ...currentProject, tags: newTags });
+    if (currentProject?.tags) {
+      const newTags: string[] = currentProject.tags ? Array.from(currentProject.tags) : [];
+      newTags.push(tag);
+      setCurrentProject({ ...currentProject, tags: newTags });
+    }
   };
 
   const getDocKey = async (image: Blob) => {
@@ -79,12 +73,12 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   };
 
   const createProject = async () => {
-    if (!currentProject.name) {
+    if (!currentProject?.name) {
       setDisplayErrors(true);
     } else {
       try {
-        if (currentProject.currentImage) {
-          currentProject.image = await getDocKey(currentProject.currentImage as Blob);
+        if (tempProjectImage) {
+          currentProject.image = await getDocKey(tempProjectImage as Blob);
         }
         const request = postProject({
           projectCreateRequest: currentProject as ProjectCreateRequest,
@@ -104,18 +98,22 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   };
 
   const updateProject = async () => {
-    if (!currentProject.name) {
+    if (!currentProject?.name) {
       setDisplayErrors(true);
     } else if (project) {
       try {
         let imageId = currentProject.image;
-        if (currentProject.currentImage) {
-          imageId = await getDocKey(currentProject.currentImage as Blob);
+        if (tempProjectImage) {
+          imageId = await getDocKey(tempProjectImage as Blob);
+        } else {
+          imageId = null;
+          setTempProjectImage(imageId);
         }
-        currentProject.image = imageId;
+        const editedProject = { ...currentProject, image: imageId };
+        setCurrentProject(editedProject);
         const request = patchProject({
           projectId: currentProject.id as number,
-          projectPatchRequest: currentProject as ProjectPatchRequest,
+          projectPatchRequest: editedProject as ProjectPatchRequest,
         });
         request
           .unwrap()
@@ -149,7 +147,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     }
   };
 
-  const debouncedObjectives = useDebounce(currentProject.objectives, 500);
+  const debouncedObjectives = useDebounce(currentProject?.objectives, 500);
 
   return (
     <div className="project-edition-modal">
@@ -164,8 +162,9 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
           <div className="col-xl-4 col-lg-5 col-md-6">
             <div className="project-edition-modal-picture">
               <PictureUploader
-                currentProject={currentProject}
-                setCurrentProject={setCurrentProject}
+                image={currentProject?.image}
+                setTempProjectImage={setTempProjectImage}
+                tempProjectImage={tempProjectImage}
               />
             </div>
           </div>
@@ -183,11 +182,11 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     <span className="font-weight-bold">{t('projectName')}</span>
                   </div>
                 }
-                value={currentProject.name}
+                value={currentProject?.name}
                 onChange={(e) => setCurrentProject({ ...currentProject, name: e.target.value })}
-                isInvalid={displayErrors && !currentProject.name}
+                isInvalid={displayErrors && !currentProject?.name}
                 errorMsg={
-                  displayErrors && !currentProject.name ? t('projectNameMissing') : undefined
+                  displayErrors && !currentProject?.name ? t('projectNameMissing') : undefined
                 }
               />
             </div>
@@ -202,7 +201,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     {t('projectDescription')}
                   </div>
                 }
-                value={currentProject.description}
+                value={currentProject?.description}
                 onChange={(e) =>
                   setCurrentProject({ ...currentProject, description: e.target.value })
                 }
@@ -224,7 +223,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                     {t('projectObjectives')}
                   </div>
                 }
-                value={currentProject.objectives}
+                value={currentProject?.objectives}
                 onChange={(e) =>
                   setCurrentProject({ ...currentProject, objectives: e.target.value })
                 }
@@ -259,7 +258,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectFunders')}
                 </div>
               }
-              value={currentProject.funders}
+              value={currentProject?.funders}
               onChange={(e) =>
                 setCurrentProject({
                   ...currentProject,
@@ -283,7 +282,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                   {t('projectBudget')}
                 </div>
               }
-              value={currentProject.budget}
+              value={currentProject?.budget}
               onChange={(e) =>
                 setCurrentProject({ ...currentProject, budget: parseInt(e.target.value, 10) })
               }
@@ -292,7 +291,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
         </div>
         <ChipsSNCF
           addTag={addTag}
-          tags={currentProject.tags || []}
+          tags={currentProject?.tags || []}
           removeTag={removeTag}
           title={t('projectTags')}
           color="purple"

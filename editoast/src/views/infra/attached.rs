@@ -1,7 +1,8 @@
 use crate::error::Result;
-use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
+use crate::models::Infra;
 use crate::schema::ObjectType;
+use crate::views::infra::InfraApiError;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
@@ -47,7 +48,10 @@ async fn attached(
 
     block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        let infra = Infra::retrieve_for_update(&mut conn, infra)?;
+        let infra = match Infra::retrieve_for_update(&mut conn, infra) {
+            Ok(infra) => infra,
+            Err(_) => return Err(InfraApiError::NotFound { infra_id: infra }.into()),
+        };
         let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
         // Check track existence
         if !infra_cache.track_sections().contains_key(&track_id) {
@@ -84,7 +88,7 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
 
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::schema::operation::RailjsonObject;
     use crate::schema::{Detector, OSRDIdentified, ObjectType, TrackSection};
     use crate::views::infra::tests::{
@@ -101,10 +105,10 @@ mod tests {
 
         // Create a track and a detector on it
         let track: RailjsonObject = TrackSection::default().into();
-        let req = create_object_request(infra.id, track.clone());
+        let req = create_object_request(infra.id.unwrap(), track.clone());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
         let req = create_object_request(
-            infra.id,
+            infra.id.unwrap(),
             Detector {
                 track: track.get_id().clone().into(),
                 ..Default::default()
@@ -114,12 +118,12 @@ mod tests {
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/attached/{}/", infra.id, track.get_id()).as_str())
+            .uri(format!("/infra/{}/attached/{}/", infra.id.unwrap(), track.get_id()).as_str())
             .to_request();
         let response: HashMap<ObjectType, Vec<String>> = call_and_read_body_json(&app, req).await;
         assert_eq!(response.get(&ObjectType::Detector).unwrap().len(), 1);
 
-        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

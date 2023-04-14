@@ -93,16 +93,18 @@ impl Cache for DetectorCache {
 mod test {
 
     use super::Detector;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
+    use actix_web::test as actix_test;
 
-    #[test]
-    fn test_persist() {
+    #[actix_test]
+    async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10)
                 .map(|_| Detector::default())
                 .collect::<Vec<Detector>>();
 
-            assert!(Detector::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(Detector::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 }

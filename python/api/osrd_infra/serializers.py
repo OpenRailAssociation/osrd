@@ -11,11 +11,11 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 
 from osrd_infra.models import (
+    Document,
     Infra,
     PathModel,
     Project,
     RollingStock,
-    RollingStockCompoundImage,
     RollingStockLivery,
     RollingStockSeparatedImage,
     Scenario,
@@ -105,17 +105,25 @@ class CreateRollingStockLiverySerializer(Serializer):
         images = validated_data["images"]
         compound_image = validated_data["compound_image"]
 
-        compound_image = RollingStockCompoundImage(image=compound_image.open(mode="rb").read())
+        compound_image = Document(data=compound_image.open(mode="rb").read(), content_type="image/png")
         compound_image.save()
 
         livery = RollingStockLivery(
-            rolling_stock=rolling_stock, name=validated_data["livery_name"], compound_image=compound_image
+            rolling_stock=rolling_stock,
+            name=validated_data["livery_name"],
+            compound_image=compound_image,
         )
         livery.save()
 
         for i in range(len(images)):
             image = images[i]
-            RollingStockSeparatedImage(livery=livery, order=i, image=image.open(mode="rb").read()).save()
+            document = Document(data=image.open(mode="rb").read(), content_type="image/png")
+            document.save()
+            RollingStockSeparatedImage(
+                livery=livery,
+                order=i,
+                image=document,
+            ).save()
         return
 
 

@@ -48,10 +48,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'PUT', body: queryArg.body }),
     }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/railjson/`,
-        params: { exclude_extensions: queryArg.excludeExtensions },
-      }),
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
     }),
     postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
       query: (queryArg) => ({
@@ -364,12 +361,6 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.scenarioRequest,
       }),
     }),
-    getRollingStockByIdLiveryAndLiveryId: build.query<
-      GetRollingStockByIdLiveryAndLiveryIdApiResponse,
-      GetRollingStockByIdLiveryAndLiveryIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/livery/${queryArg.liveryId}/` }),
-    }),
   }),
   overrideExisting: false,
 });
@@ -381,7 +372,14 @@ export type GetVersionApiResponse = /** status 200 Return the service version */
 };
 export type GetVersionApiArg = void;
 export type PostSearchApiResponse =
-  /** status 200 Search results, the structure of the returned objects depend on their type */ object[];
+  /** status 200 Search results, the structure of the returned objects depend on their type */ (
+    | SearchTrackResult
+    | SearchOperationalPointResult
+    | SearchSignalResult
+    | SearchStudyResult
+    | SearchProjectResult
+    | SearchScenarioResult
+  )[];
 export type PostSearchApiArg = {
   /** Search query */
   body: {
@@ -407,7 +405,12 @@ export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
   y: number;
   infra: number;
 };
-export type GetInfraApiResponse = /** status 200 The infra list */ Infra[];
+export type GetInfraApiResponse = /** status 200 The infra list */ {
+  count: number;
+  next: any;
+  previous: any;
+  results?: Infra[];
+};
 export type GetInfraApiArg = void;
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
 export type PostInfraApiArg = {
@@ -448,8 +451,6 @@ export type GetInfraByIdRailjsonApiResponse =
 export type GetInfraByIdRailjsonApiArg = {
   /** Infra ID */
   id: number;
-  /** Whether the railjson should contain extensions */
-  excludeExtensions?: boolean;
 };
 export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
   id?: string;
@@ -674,16 +675,14 @@ export type GetProjectsApiResponse = /** status 200 the project list */ {
   count?: number;
   next?: any;
   previous?: any;
-  results?: {
-    schema?: ProjectResult;
-  }[];
+  results?: ProjectResult[];
 };
 export type GetProjectsApiArg = {
   ordering?:
     | 'NameAsc'
     | 'NameDesc'
     | 'CreationDateAsc'
-    | 'CreationDateAsc'
+    | 'CreationDateDesc'
     | 'LastModifiedAsc'
     | 'LastModifiedDesc';
   /** Filter projects by name */
@@ -739,9 +738,7 @@ export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studie
   count?: number;
   next?: any;
   previous?: any;
-  results?: {
-    schema?: StudyResult;
-  }[];
+  results?: StudyResult[];
 };
 export type GetProjectsByProjectIdStudiesApiArg = {
   projectId: number;
@@ -749,7 +746,7 @@ export type GetProjectsByProjectIdStudiesApiArg = {
     | 'NameAsc'
     | 'NameDesc'
     | 'CreationDateAsc'
-    | 'CreationDateAsc'
+    | 'CreationDateDesc'
     | 'LastModifiedAsc'
     | 'LastModifiedDesc';
   /** Filter operational studies by name */
@@ -800,9 +797,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
     count?: number;
     next?: any;
     previous?: any;
-    results?: {
-      schema?: ScenarioListResult;
-    }[];
+    results?: ScenarioListResult[];
   };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   projectId: number;
@@ -811,7 +806,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
     | 'NameAsc'
     | 'NameDesc'
     | 'CreationDateAsc'
-    | 'CreationDateAsc'
+    | 'CreationDateDesc'
     | 'LastModifiedAsc'
     | 'LastModifiedDesc';
   /** Page number */
@@ -849,12 +844,70 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
   /** The fields you want to update */
   scenarioRequest: ScenarioRequest;
 };
-export type GetRollingStockByIdLiveryAndLiveryIdApiResponse = unknown;
-export type GetRollingStockByIdLiveryAndLiveryIdApiArg = {
-  /** Rolling Stock ID */
+export type SearchTrackResult = {
+  infra_id: number;
+  line_code: number;
+  line_name: string;
+};
+export type Point3D = number[];
+export type MultiPoint = {
+  type: 'MultiPoint';
+  coordinates: Point3D[];
+};
+export type SearchOperationalPointResult = {
+  obj_id: string;
+  infra_id?: string;
+  name: string;
+  uic?: number;
+  trigram: string;
+  ch: string;
+  geographic: MultiPoint;
+  schematic: MultiPoint;
+};
+export type Point = {
+  type: 'Point';
+  coordinates: Point3D;
+};
+export type SearchSignalResult = {
+  label: string;
+  infra_id?: number;
+  aspects?: string[];
+  systems?: string[];
+  type?: string;
+  line_code: number;
+  line_name: string;
+  geographic: Point;
+  schematic: Point;
+};
+export type SearchStudyResult = {
   id: number;
-  /** Rolling Stock Livery ID */
-  liveryId: number;
+  project_id: number;
+  name: string;
+  scenarios_count?: number;
+  description?: string;
+  last_modification: string;
+  tags?: string[];
+};
+export type SearchProjectResult = {
+  id: number;
+  image?: number;
+  name: string;
+  studies_count?: number;
+  description: string;
+  last_modification: string;
+  tags?: any;
+};
+export type SearchScenarioResult = {
+  id: number;
+  study_id: number;
+  electrical_profile_set_id?: number;
+  name: string;
+  trains_count?: number;
+  description?: string;
+  last_modification: string;
+  infra_id: number;
+  infra_name?: string;
+  tags?: string[];
 };
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
 export type ViewMetadata = {
@@ -868,13 +921,13 @@ export type ViewMetadata = {
   maxzoom?: number;
 };
 export type Infra = {
-  id?: number;
-  name?: string;
-  version?: string;
-  generated_version?: string | null;
-  created?: string;
-  modified?: string;
-  locked?: boolean;
+  id: number;
+  name: string;
+  version: string;
+  generated_version: string | null;
+  created: string;
+  modified: string;
+  locked: boolean;
 };
 export type ObjectType =
   | 'TrackSection'
@@ -936,11 +989,6 @@ export type RailjsonFile = {
   catenaries?: any;
   detectors?: any;
 };
-export type Point3D = number[];
-export type Point = {
-  type: 'Point';
-  coordinates: Point3D;
-};
 export type LineString = {
   type: 'LineString';
   coordinates: Point3D[];
@@ -948,10 +996,6 @@ export type LineString = {
 export type Polygon = {
   type: 'Polygon';
   coordinates: Point3D[][];
-};
-export type MultiPoint = {
-  type: 'MultiPoint';
-  coordinates: Point3D[];
 };
 export type MultiLineString = {
   type: 'MultiLineString';
@@ -973,6 +1017,7 @@ export type InfraErrorType =
   | 'object_out_of_path'
   | 'odd_buffer_stop_location'
   | 'out_of_range'
+  | 'overlapping_speed_sections'
   | 'overlapping_switches'
   | 'overlapping_track_links'
   | 'path_does_not_match_endpoints'
@@ -1092,6 +1137,7 @@ export type RollingStock = RollingStockCreatePayload & {
   liveries: {
     id: number;
     name: string;
+    compound_image_id: number | null;
   }[];
 };
 export type LightRollingStock = RollingStock & {
@@ -1109,13 +1155,12 @@ export type ProjectResult = {
   name?: string;
   objectives?: string;
   description?: string;
-  funders?: string[];
+  funders?: string;
   budget?: number;
-  image?: number;
-  image_url?: string;
+  image?: number | null;
   creation_date?: string;
   last_modification?: string;
-  studies?: number[];
+  studies_count?: number;
   tags?: string[];
 };
 export type ProjectCreateRequest = {
@@ -1142,14 +1187,15 @@ export type StudyResult = {
   project_id?: number;
   description?: string;
   budget?: number;
+  tags?: string[];
   service_code?: string;
   business_code?: string;
   creation_date?: string;
   last_modification?: string;
-  scenarios?: number[];
-  start_date_study?: string;
-  expected_end_date_study?: string;
-  actual_end_date_study?: string;
+  scenarios_count?: number;
+  start_date?: string | null;
+  expected_end_date?: string | null;
+  actual_end_date?: string | null;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'
@@ -1169,9 +1215,9 @@ export type StudyCreateRequest = {
   description?: string;
   budget?: number;
   tags?: string[];
-  start_date?: string;
-  expected_end_date?: string;
-  actual_end_date?: string;
+  start_date?: string | null;
+  expected_end_date?: string | null;
+  actual_end_date?: string | null;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'
@@ -1191,9 +1237,9 @@ export type StudyPatchRequest = {
   description?: string;
   budget?: number;
   tags?: string[];
-  start_date?: string;
-  expected_end_date?: string;
-  actual_end_date?: string;
+  start_date?: string | null;
+  expected_end_date?: string | null;
+  actual_end_date?: string | null;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'
@@ -1210,7 +1256,7 @@ export type ScenarioResult = {
   id?: number;
   name?: string;
   study_id?: number;
-  description?: string[];
+  description?: string;
   tags?: string[];
   infra_id?: number;
   infra_name?: string;
@@ -1238,7 +1284,7 @@ export type ScenarioListResult = {
   id?: number;
   name?: string;
   study_id?: number;
-  description?: string[];
+  description?: string;
   tags?: string[];
   infra_id?: number;
   infra_name?: string;

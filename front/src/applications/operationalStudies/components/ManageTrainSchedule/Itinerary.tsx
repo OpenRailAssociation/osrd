@@ -11,7 +11,11 @@ import ModalSugerredVias from 'applications/operationalStudies/components/Manage
 import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 
-function Itinerary() {
+type Props = {
+  mustUpdate?: boolean;
+};
+
+function Itinerary({ mustUpdate }: Props) {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const vias = useSelector(getVias);
@@ -19,7 +23,7 @@ function Itinerary() {
   const dispatch = useDispatch();
   const map = useSelector(getMap);
 
-  const zoomToFeature = (boundingBox: Position, id = undefined, source = undefined) => {
+  const zoomToFeature = (boundingBox: Position, id = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
 
     const viewport = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
@@ -40,12 +44,10 @@ function Itinerary() {
       zoom,
     };
     setExtViewport(newViewport);
-    if (id !== undefined && source !== undefined) {
-      updateFeatureInfoClick(Number(id), source);
-    }
+    if (id) updateFeatureInfoClick(Number(id));
   };
 
-  const zoomToFeaturePoint = (lngLat?: Position, id?: string, source?: string) => {
+  const zoomToFeaturePoint = (lngLat?: Position, id?: string) => {
     if (lngLat) {
       const newViewport = {
         ...map.viewport,
@@ -54,8 +56,8 @@ function Itinerary() {
         zoom: 16,
       };
       setExtViewport(newViewport);
-      if (id !== undefined && source !== undefined) {
-        updateFeatureInfoClick(Number(id), source);
+      if (id) {
+        updateFeatureInfoClick(Number(id));
       }
     }
   };
@@ -93,6 +95,7 @@ function Itinerary() {
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container" data-testid="itinerary">
         <DisplayItinerary
+          mustUpdate={mustUpdate}
           data-testid="display-itinerary"
           zoomToFeaturePoint={zoomToFeaturePoint}
           zoomToFeature={zoomToFeature}

@@ -11,12 +11,10 @@ export default function ProjectMiniCard({
     <div
       className={`scenario-explorator-modal-part-itemslist-minicard project with-image ${
         isSelected ? 'selected' : ''
-      } ${project.studies && project.studies.length > 0 ? '' : 'empty'}`}
+      } ${project.studies_count > 0 ? '' : 'empty'}`}
       role="button"
       tabIndex={0}
-      onClick={() =>
-        !isSelected && project.studies && project.studies.length > 0 && setSelectedID(project.id)
-      }
+      onClick={() => !isSelected && project.studies_count > 0 && setSelectedID(project.id)}
     >
       <div className="scenario-explorator-modal-part-itemslist-minicard-img">
         <Project2Image project={project} />

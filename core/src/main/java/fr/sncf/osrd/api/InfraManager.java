@@ -97,7 +97,7 @@ public class InfraManager extends APIClient {
         public InfraStatus lastStatus = null;
         public Throwable lastError = null;
         public FullInfra infra = null;
-        public String expectedVersion = null;
+        public String version = null;
 
         void transitionTo(InfraStatus newStatus) {
             transitionTo(newStatus, null);
@@ -117,16 +117,19 @@ public class InfraManager extends APIClient {
     }
 
     @ExcludeFromGeneratedCodeCoverage
-    @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"})
+    @SuppressFBWarnings({
+            "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE",
+            "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+            "DM_GC"
+    })
     private FullInfra downloadInfra(
             InfraCacheEntry cacheEntry,
             String infraId,
-            String expectedVersion,
             DiagnosticRecorder diagnosticRecorder
     ) throws InfraLoadException {
         // create a request
         var endpointPath = String.format("infra/%s/railjson/", infraId);
-        var request = buildRequest(endpointPath, "exclude_extensions=true");
+        var request = buildRequest(endpointPath);
 
         try {
             // use the client to send the request
@@ -134,6 +137,7 @@ public class InfraManager extends APIClient {
             cacheEntry.transitionTo(InfraStatus.DOWNLOADING);
 
             RJSInfra rjsInfra;
+            String version;
             try (var response = httpClient.newCall(request).execute()) {
                 if (!response.isSuccessful())
                     throw new UnexpectedHttpResponse(response);
@@ -141,7 +145,8 @@ public class InfraManager extends APIClient {
                 // Parse the response
                 logger.info("parsing the JSON of {}", request.url());
                 cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
-
+                version = response.header("x-infra-version");
+                assert version != null : "missing x-infra-version header in railjson response";
                 rjsInfra = RJSInfra.adapter.fromJson(response.body().source());
             }
 
@@ -151,11 +156,16 @@ public class InfraManager extends APIClient {
             // Parse railjson into a proper infra
             logger.info("parsing the infra of {}", request.url());
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
-            var infra = SignalingInfraBuilder.fromRJSInfra(
+            final var infra = SignalingInfraBuilder.fromRJSInfra(
                     rjsInfra,
                     Set.of(new BAL3(diagnosticRecorder)),
                     diagnosticRecorder
             );
+
+            // Attempt to ease memory pressure by making the RailJSON deserialized copy
+            // orphan, and calling the garbage collector.
+            rjsInfra = null;
+            System.gc();
 
             logger.info("adaptation to kotlin of {}", request.url());
             var rawInfra = adaptRawInfra(infra);
@@ -167,7 +177,7 @@ public class InfraManager extends APIClient {
             // Cache the infra
             logger.info("successfully cached {}", request.url());
             cacheEntry.infra = new FullInfra(infra, rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
-            cacheEntry.expectedVersion = expectedVersion;
+            cacheEntry.version = version;
             cacheEntry.transitionTo(InfraStatus.CACHED);
             return cacheEntry.infra;
         } catch (IOException | UnexpectedHttpResponse | VirtualMachineError e) {
@@ -195,9 +205,9 @@ public class InfraManager extends APIClient {
                 // try downloading the infra again if:
                 //  - the existing cache entry hasn't reached a stable state
                 //  - we don't have the right version
-                var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.expectedVersion);
+                var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
                 if (!cacheEntry.status.isStable || obsoleteVersion)
-                    return downloadInfra(cacheEntry, infraId, expectedVersion, diagnosticRecorder);
+                    return downloadInfra(cacheEntry, infraId, diagnosticRecorder);
 
                 // otherwise, wait for the infra to reach a stable state
                 if (cacheEntry.status == InfraStatus.CACHED)

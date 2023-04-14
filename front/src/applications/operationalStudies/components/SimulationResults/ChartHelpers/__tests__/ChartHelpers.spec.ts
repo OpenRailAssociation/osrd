@@ -82,6 +82,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       });
     });
   });
+
   describe('with offset', () => {
     it('should add the given offset to arrival and departure', () => {
       const result = trainWithDepartureAndArrivalTimes(train[0], 1000);

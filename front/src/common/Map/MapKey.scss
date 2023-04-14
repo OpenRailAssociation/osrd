@@ -6,13 +6,13 @@
 }
 .mapkey {
   display: block;
-  font-size: .9rem;
+  font-size: 0.9rem;
   margin: 1rem 1rem 0;
   font-weight: lighter;
   .mapkey-title {
     border-bottom: 1px solid #555;
-    padding-bottom: .25rem;
-    margin-bottom: .5rem;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
   }
   .mapkey-item {
     display: flex;
@@ -32,7 +32,7 @@
       background: linear-gradient(0deg, #24842b 50%, #0d5f13 50%);
       background-size: auto;
       background-size: 1px 10px;
-      margin: 0 .5rem 0 0;
+      margin: 0 0.5rem 0 0;
     }
   }
   .mapkey-icon img {
@@ -44,13 +44,27 @@
     margin-left: 20%;
     height: 4px;
   }
-  .mapkey-v300 { background-color: #91D3FF; }
-  .mapkey-v200 { background-color: #89F7D8; }
-  .mapkey-v160 { background-color: #9EFF77; }
-  .mapkey-v100 { background-color: #E0FE64; }
-  .mapkey-v60 { background-color: #FDF479; }
-  .mapkey-v30 { background-color: #FBB286; }
-  .mapkey-v0 { background-color: #EF5151; }
+  .mapkey-v300 {
+    background-color: #91d3ff;
+  }
+  .mapkey-v200 {
+    background-color: #89f7d8;
+  }
+  .mapkey-v160 {
+    background-color: #9eff77;
+  }
+  .mapkey-v100 {
+    background-color: #e0fe64;
+  }
+  .mapkey-v60 {
+    background-color: #fdf479;
+  }
+  .mapkey-v30 {
+    background-color: #fbb286;
+  }
+  .mapkey-v0 {
+    background-color: #ef5151;
+  }
 
   .powerline {
     display: block;
@@ -59,6 +73,12 @@
     height: 6px;
   }
   @media screen and (max-width: 640px) {
-    font-size: .8em;
+    font-size: 0.8em;
+  }
+}
+
+.search-signal {
+  input::-webkit-calendar-picker-indicator {
+    opacity: 0;
   }
 }

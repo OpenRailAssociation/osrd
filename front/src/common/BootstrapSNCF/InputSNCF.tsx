@@ -33,6 +33,7 @@ export type InputSNCFProps = {
   inputProps?: Partial<InputHTMLAttributes<HTMLInputElement>>;
   min?: number;
   max?: number;
+  list?: string;
   // Error handling
   isInvalid?: boolean;
   errorMsg?: string;
@@ -67,6 +68,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     value: undefined,
     readonly: false,
     inputProps: {},
+    list: undefined,
     // Error handling
     isInvalid: false,
     errorMsg: undefined,
@@ -152,6 +154,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
       max,
       selectAllOnFocus,
       step,
+      list,
     } = this.props;
 
     // Build custom classes
@@ -166,11 +169,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     let invalidMsg = null;
     if (isInvalid) {
       invalidClass = 'is-invalid';
-      invalidMsg = (
-        <div className="invalid-feedback d-block" id="inputGroupPrepend">
-          {errorMsg}
-        </div>
-      );
+      invalidMsg = <div className="invalid-feedback">{errorMsg}</div>;
     }
 
     const inputComponent = (
@@ -183,10 +182,8 @@ class InputSNCF extends React.Component<InputSNCFProps> {
             {label}
           </label>
         )}
-        <div className="input-group">
-          <div
-            className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : null}`}
-          >
+        <>
+          <div className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : ''}`}>
             <input
               type={type}
               onChange={onChange}
@@ -201,14 +198,15 @@ class InputSNCF extends React.Component<InputSNCFProps> {
               {...inputProps}
               step={step}
               onFocus={(e) => selectAllOnFocus && e.target.select()}
+              list={list}
             />
             <span className="form-control-state" />
-            {unit ? <span className="form-control-icon small">{unit}</span> : null}
+            {unit && <span className="form-control-icon small">{unit}</span>}
             {this.renderClearButton()}
           </div>
           {this.renderAppendButton(sm)}
           {invalidMsg}
-        </div>
+        </>
       </>
     );
 

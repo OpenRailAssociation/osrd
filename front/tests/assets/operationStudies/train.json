@@ -4751,7 +4751,7 @@
       "mechanical_energy_consumed": 4341138851.046319
     },
     "speed_limit_composition": null,
-    "modes_and_profiles": [
+    "electrification_conditions": [
       {
         "stop": 54483.80299490723,
         "start": 0,

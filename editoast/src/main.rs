@@ -5,18 +5,20 @@ mod client;
 mod error;
 mod fixtures;
 mod generated_data;
-mod infra;
 mod infra_cache;
 mod map;
 mod models;
 mod schema;
 mod tables;
 mod views;
+
+use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
+use crate::views::infra::InfraForm;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
-use actix_web::web::{Data, JsonConfig};
+use actix_web::web::{block, Data, JsonConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
@@ -28,9 +30,9 @@ use colored::*;
 use diesel::r2d2::{self, ConnectionManager, Pool};
 use diesel::{Connection, PgConnection};
 use diesel_json::Json as DieselJson;
-use infra::Infra;
 use infra_cache::InfraCache;
 use map::MapLayers;
+use models::Retrieve;
 use sentry::ClientInitGuard;
 use std::env;
 use std::error::Error;
@@ -38,6 +40,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
 use views::electrical_profiles::ElectricalProfileSet;
+use views::infra::InfraApiError;
 use views::search::config::Config as SearchConfig;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
@@ -62,7 +65,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Runserver(args) => runserver(args, pg_config, redis_config).await,
         Commands::Generate(args) => generate(args, pg_config, redis_config).await,
         Commands::Clear(args) => clear(args, pg_config, redis_config).await,
-        Commands::ImportRailjson(args) => import_railjson(args, pg_config),
+        Commands::ImportRailjson(args) => import_railjson(args, pg_config).await,
         Commands::ImportProfileSet(args) => add_electrical_profile_set(args, pg_config).await,
     }
 }
@@ -175,17 +178,32 @@ async fn generate(
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
-
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(
+        Pool::builder()
+            .max_size(pg_config.pool_size)
+            .build(manager)
+            .expect("Failed to create pool."),
+    );
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&mut conn) {
+        for infra in Infra::all(&mut conn) {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&mut conn, id as i64)?);
+            let infra = match Infra::retrieve(pool.clone(), id as i64).await? {
+                Some(infra) => infra,
+                None => {
+                    return Err(InfraApiError::NotFound {
+                        infra_id: id as i64,
+                    }
+                    .into())
+                }
+            };
+            infras.push(infra);
         }
     };
 
@@ -193,49 +211,75 @@ async fn generate(
     for infra in infras {
         println!(
             "🍞 Infra {}[{}] is generating:",
-            infra.name.bold(),
-            infra.id
+            infra.name.clone().unwrap().bold(),
+            infra.id.unwrap()
         );
         let infra_cache = InfraCache::load(&mut conn, &infra)?;
         if infra.refresh(&mut conn, args.force, &infra_cache)? {
-            build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id).await;
-            println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
+            build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap())
+                .await;
+            println!(
+                "✅ Infra {}[{}] generated!",
+                infra.name.unwrap().bold(),
+                infra.id.unwrap()
+            );
         } else {
             println!(
                 "✅ Infra {}[{}] already generated!",
-                infra.name.bold(),
-                infra.id
+                infra.name.unwrap().bold(),
+                infra.id.unwrap()
             );
         }
     }
     Ok(())
 }
 
-fn import_railjson(
+async fn import_railjson(
     args: ImportRailjsonArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = File::open(args.railjson_path)?;
-    let conn = &mut PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
 
+    let infra: Infra = InfraForm {
+        name: args.infra_name,
+    }
+    .into();
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
-    let infra = railjson.persist(args.infra_name, conn)?;
-    let infra = infra.bump_version(conn)?;
+    let infra = infra.persist(railjson, pool.clone()).await?;
+    block::<_, Result<(), Box<dyn Error + Send + Sync>>>(move || {
+        let mut conn = pool.get()?;
+        let infra = match infra.bump_version(&mut conn) {
+            Ok(infra) => infra,
+            Err(_) => {
+                return Err(InfraApiError::NotFound {
+                    infra_id: infra.id.unwrap(),
+                }
+                .into())
+            }
+        };
 
-    println!("✅ Infra {}[{}] saved!", infra.name.bold(), infra.id);
-    // Generate only if the was set
-    if args.generate {
-        let infra_cache = InfraCache::load(conn, &infra)?;
-        infra.refresh(conn, true, &infra_cache)?;
         println!(
-            "✅ Infra {}[{}] generated data refreshed!",
-            infra.name.bold(),
-            infra.id
+            "✅ Infra {}[{}] saved!",
+            infra.name.clone().unwrap().bold(),
+            infra.id.unwrap()
         );
-    }
-
-    Ok(())
+        // Generate only if the was set
+        if args.generate {
+            let infra_cache = InfraCache::load(&mut conn, &infra)?;
+            infra.refresh(&mut conn, true, &infra_cache)?;
+            println!(
+                "✅ Infra {}[{}] generated data refreshed!",
+                infra.name.unwrap().bold(),
+                infra.id.unwrap()
+            );
+        };
+        Ok(())
+    })
+    .await
+    .unwrap()
 }
 
 async fn add_electrical_profile_set(
@@ -268,24 +312,48 @@ async fn clear(
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
+    let pool = Data::new(
+        Pool::builder()
+            .max_size(pg_config.pool_size)
+            .build(manager)
+            .expect("Failed to create pool."),
+    );
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&mut conn) {
+        for infra in Infra::all(&mut conn) {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&mut conn, id as i64)?);
+            let infra = match Infra::retrieve(pool.clone(), id as i64).await? {
+                Some(infra) => infra,
+                None => {
+                    return Err(InfraApiError::NotFound {
+                        infra_id: id as i64,
+                    }
+                    .into())
+                }
+            };
+            infras.push(infra);
         }
     };
 
     for infra in infras {
-        println!("🍞 Infra {}[{}] is clearing:", infra.name.bold(), infra.id);
-        build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id).await;
+        println!(
+            "🍞 Infra {}[{}] is clearing:",
+            infra.name.clone().unwrap().bold(),
+            infra.id.unwrap()
+        );
+        build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap()).await;
         infra.clear(&mut conn)?;
-        println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
+        println!(
+            "✅ Infra {}[{}] cleared!",
+            infra.name.unwrap().bold(),
+            infra.id.unwrap()
+        );
     }
     Ok(())
 }
@@ -296,7 +364,7 @@ mod tests {
 
     use crate::import_railjson;
     use crate::schema::RailJson;
-    use diesel::result::Error;
+    use actix_web::test as actix_test;
     use diesel::sql_types::Text;
     use diesel::{sql_query, Connection, PgConnection, RunQueryDsl};
     use rand::distributions::Alphanumeric;
@@ -304,16 +372,8 @@ mod tests {
     use std::io::Write;
     use tempfile::NamedTempFile;
 
-    pub fn test_transaction(fn_test: fn(&mut PgConnection)) {
-        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|conn| {
-            fn_test(conn);
-            Ok(())
-        });
-    }
-
-    #[test]
-    fn import_railjson_ko_file_not_found() {
+    #[actix_test]
+    async fn import_railjson_ko_file_not_found() {
         // GIVEN
         let pg_config = Default::default();
         let args: ImportRailjsonArgs = ImportRailjsonArgs {
@@ -323,14 +383,14 @@ mod tests {
         };
 
         // WHEN
-        let result = import_railjson(args, pg_config);
+        let result = import_railjson(args, pg_config).await;
 
         // THEN
         assert!(result.is_err())
     }
 
-    #[test]
-    fn import_railjson_ok() {
+    #[actix_test]
+    async fn import_railjson_ok() {
         // GIVEN
         let railjson = Default::default();
         let file = generate_railjson_temp_file(&railjson);
@@ -349,7 +409,7 @@ mod tests {
         };
 
         // WHEN
-        let result = import_railjson(args, pg_config.clone());
+        let result = import_railjson(args, pg_config.clone()).await;
 
         // THEN
         assert!(result.is_ok());

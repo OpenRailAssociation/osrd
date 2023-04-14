@@ -1,19 +1,17 @@
 import React, { useContext, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { updateSimulation } from 'reducers/osrdsimulation/actions';
+import PropTypes from 'prop-types';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { useTranslation } from 'react-i18next';
 
-import convertData from 'applications/customget/components/convertData';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
-function UploadFileModal() {
+function UploadFileModal(props) {
   const { t } = useTranslation(['customget', 'translation']);
   const [selectedFile, setSelectedFile] = useState();
   const [isValid, setIsValid] = useState('');
-  const dispatch = useDispatch();
   const { closeModal } = useContext(ModalContext);
+  const { handleSubmit } = props;
 
   const validateFile = async (fileToValidate) => {
     if (fileToValidate.type !== 'application/json') {
@@ -35,17 +33,6 @@ function UploadFileModal() {
     setIsValid(status);
     if (status === true) {
       setSelectedFile(event.target.files[0]);
-    }
-  };
-
-  const handleSubmit = async () => {
-    closeModal();
-    if (selectedFile) {
-      dispatch(
-        updateSimulation({
-          trains: convertData(JSON.parse(await selectedFile.text())),
-        })
-      );
     }
   };
 
@@ -76,7 +63,7 @@ function UploadFileModal() {
               <button
                 type="button"
                 className={`btn btn-block btn-sm btn-primary ${isValid !== true ? 'disabled' : ''}`}
-                onClick={handleSubmit}
+                onClick={() => handleSubmit(selectedFile)}
               >
                 {t('translation:common:download')}
               </button>
@@ -87,5 +74,9 @@ function UploadFileModal() {
     </>
   );
 }
+
+UploadFileModal.propTypes = {
+  handleSubmit: PropTypes.func.isRequired,
+};
 
 export default UploadFileModal;

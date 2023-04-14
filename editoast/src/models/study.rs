@@ -10,7 +10,7 @@ use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
 use diesel::sql_query;
-use diesel::sql_types::{Array, BigInt};
+use diesel::sql_types::BigInt;
 use diesel::Associations;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -77,8 +77,8 @@ pub struct StudyWithScenarios {
     #[serde(flatten)]
     #[diesel(embed)]
     pub study: Study,
-    #[diesel(sql_type = Array<BigInt>)]
-    pub scenarios: Vec<i64>,
+    #[diesel(sql_type = BigInt)]
+    pub scenarios_count: i64,
 }
 
 impl Study {
@@ -93,13 +93,13 @@ impl Study {
         block::<_, Result<_>>(move || {
             use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
             let mut conn = db_pool.get()?;
-            let scenarios = scenario_dsl::osrd_infra_scenario
+            let scenarios_count = scenario_dsl::osrd_infra_scenario
                 .filter(scenario_dsl::study_id.eq(self.id.unwrap()))
-                .select(scenario_dsl::id)
-                .load(&mut conn)?;
+                .count()
+                .get_result(&mut conn)?;
             Ok(StudyWithScenarios {
                 study: self,
-                scenarios,
+                scenarios_count,
             })
         })
         .await
@@ -116,7 +116,7 @@ impl List<(i64, Ordering)> for StudyWithScenarios {
     ) -> Result<PaginatedResponse<Self>> {
         let project_id = params.0;
         let ordering = params.1.to_sql();
-        sql_query(format!("SELECT t.*, COALESCE(ARRAY_AGG(scenario.id) FILTER (WHERE scenario.id is not NULL), ARRAY[]::bigint[]) as scenarios FROM osrd_infra_study t
+        sql_query(format!("SELECT t.*, COUNT(scenario.*) as scenarios_count FROM osrd_infra_study t
             LEFT JOIN osrd_infra_scenario scenario ON scenario.study_id = t.id WHERE t.project_id = $1
             GROUP BY t.id ORDER BY {ordering} "))
             .bind::<BigInt, _>(project_id)
@@ -220,7 +220,7 @@ pub mod test {
     }
 
     #[actix_test]
-    async fn sort_model() {
+    async fn sort_study() {
         let project = build_test_project();
         let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
         let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
@@ -235,15 +235,18 @@ pub mod test {
 
         // Create second study
         study.name = Some("study_test".into());
-        let study = build_test_study(project_id);
         study.create(pool.clone()).await.unwrap();
 
         let studies =
             StudyWithScenarios::list(pool.clone(), 1, 25, (project_id, Ordering::NameDesc))
                 .await
-                .unwrap();
-        let name = studies.results.first().unwrap().study.name.clone();
-        assert_eq!(name, Some("test".into()));
+                .unwrap()
+                .results;
+        for (p1, p2) in studies.iter().zip(studies.iter().skip(1)) {
+            let name_1 = p1.study.name.as_ref().unwrap().to_lowercase();
+            let name_2 = p2.study.name.as_ref().unwrap().to_lowercase();
+            assert!(name_1.ge(&name_2));
+        }
 
         // Delete the project
         Project::delete(pool.clone(), project_id).await.unwrap();

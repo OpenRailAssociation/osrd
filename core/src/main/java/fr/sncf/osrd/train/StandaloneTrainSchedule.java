@@ -1,6 +1,8 @@
 package fr.sncf.osrd.train;
 
 import com.carrotsearch.hppc.DoubleArrayList;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.ImmutableRangeMap;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.List;
@@ -20,6 +22,8 @@ public class StandaloneTrainSchedule {
 
     public final RollingStock.Comfort comfort;
 
+    public final RangeMap<Double, String> powerRestrictionMap;
+
     public final TrainScheduleOptions options;
 
     /** Standalone Train Schedule constructor */
@@ -30,6 +34,7 @@ public class StandaloneTrainSchedule {
             List<? extends Allowance> allowances,
             String tag,
             RollingStock.Comfort comfort,
+            ImmutableRangeMap<Double, String> powerRestrictionMap,
             TrainScheduleOptions options
     ) {
         this.rollingStock = rollingStock;
@@ -38,6 +43,7 @@ public class StandaloneTrainSchedule {
         this.allowances = allowances;
         this.tag = tag;
         this.comfort = comfort;
+        this.powerRestrictionMap = Objects.requireNonNullElseGet(powerRestrictionMap, () -> ImmutableRangeMap.of());
         this.options = Objects.requireNonNullElseGet(options, () -> new TrainScheduleOptions(null));
     }
 

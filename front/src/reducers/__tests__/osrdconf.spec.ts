@@ -66,6 +66,7 @@ describe('osrdconfReducer', () => {
         osrdconf: {
           simulationConf: {
             originLinkedBounds: true,
+            originTime: undefined,
             originUpperBoundTime: '15:30:00',
           },
         },
@@ -156,6 +157,7 @@ describe('osrdconfReducer', () => {
         osrdconf: {
           simulationConf: {
             originLinkedBounds: true,
+            originTime: undefined,
             originUpperBoundTime: '14:00:00',
           },
         },
@@ -173,7 +175,6 @@ describe('osrdconfReducer', () => {
         osrdconf: {
           simulationConf: {
             originLinkedBounds: true,
-            originTime: '14:00:00',
           },
         },
       });

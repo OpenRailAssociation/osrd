@@ -2,6 +2,8 @@ package fr.sncf.osrd.railjson.parser;
 
 import static fr.sncf.osrd.railjson.parser.RJSRollingStockParser.parseComfort;
 
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.Range;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
@@ -9,7 +11,6 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeSimContextBuilder;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -45,6 +46,9 @@ public class RJSStandaloneTrainScheduleParser {
         // Parse options
         var options = new TrainScheduleOptions(rjsTrainSchedule.options);
 
+        // parse power restrictions
+        var powerRestrictionMap = parsePowerRestrictionRanges(rjsTrainSchedule.powerRestrictionRanges);
+
         // parse allowances
         var allowances = new ArrayList<Allowance>();
         if (rjsTrainSchedule.allowances != null)
@@ -55,7 +59,8 @@ public class RJSStandaloneTrainScheduleParser {
 
         var tag = rjsTrainSchedule.tag;
         var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
-        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tag, comfort, options);
+        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tag, comfort,
+                powerRestrictionMap, options);
     }
 
     private static double getPositiveDoubleOrDefault(double rjsInput, double defaultValue) {
@@ -163,5 +168,15 @@ public class RJSStandaloneTrainScheduleParser {
         }
 
         throw new RuntimeException("unknown allowance value type");
+    }
+
+    private static ImmutableRangeMap<Double, String> parsePowerRestrictionRanges(RJSPowerRestrictionRange[] ranges) {
+        var builder = ImmutableRangeMap.<Double, String>builder();
+        if (ranges == null)
+            return builder.build();
+        for (var range : ranges) {
+            builder.put(Range.openClosed(range.beginPosition, range.endPosition), range.powerRestrictionCode);
+        }
+        return builder.build();
     }
 }

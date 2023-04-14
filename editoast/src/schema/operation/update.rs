@@ -83,12 +83,13 @@ impl DataObject {
 mod tests {
     use super::UpdateOperation;
     use crate::error::EditoastError;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::schema::operation::OperationError;
     use crate::schema::{OSRDIdentified, ObjectType};
+    use actix_web::test as actix_test;
     use actix_web::ResponseError;
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
@@ -107,10 +108,10 @@ mod tests {
         label: String,
     }
 
-    #[test]
-    fn valid_update_track() {
+    #[actix_test]
+    async fn valid_update_track() {
         test_infra_transaction(|conn, infra| {
-            let track = create_track(conn, infra.id, Default::default());
+            let track = create_track(conn, infra.id.unwrap(), Default::default());
 
             let update_track = UpdateOperation {
                 obj_id: track.get_id().clone(),
@@ -123,23 +124,23 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_track.apply(infra.id, conn).is_ok());
+            assert!(update_track.apply(infra.id.unwrap(), conn).is_ok());
 
             let updated_length = sql_query(format!(
                 "SELECT (data->>'length')::float as val FROM osrd_infra_tracksectionmodel WHERE obj_id = '{}' AND infra_id = {}",
                 track.get_id(),
-                infra.id
+                infra.id.unwrap()
             ))
             .get_result::<Value>(conn).unwrap();
 
             assert_eq!(updated_length.val, 80.0);
-        });
+        }).await;
     }
 
-    #[test]
-    fn invalid_update_track() {
+    #[actix_test]
+    async fn invalid_update_track() {
         test_infra_transaction(|conn, infra| {
-            let track = create_track(conn, infra.id, Default::default());
+            let track = create_track(conn, infra.id.unwrap(), Default::default());
 
             let update_track = UpdateOperation {
                 obj_id: track.get_id().clone(),
@@ -152,20 +153,21 @@ mod tests {
                 .unwrap(),
             };
 
-            let res = update_track.apply(infra.id, conn);
+            let res = update_track.apply(infra.id.unwrap(), conn);
 
             assert!(res.is_err());
             assert_eq!(
                 res.unwrap_err().status_code(),
                 OperationError::ModifyId.get_status()
             );
-        });
+        })
+        .await;
     }
 
-    #[test]
-    fn valid_update_signal() {
+    #[actix_test]
+    async fn valid_update_signal() {
         test_infra_transaction(|conn, infra| {
-            let signal = create_signal(conn, infra.id, Default::default());
+            let signal = create_signal(conn, infra.id.unwrap(), Default::default());
 
             let update_signal = UpdateOperation {
                 obj_id: signal.get_id().clone(),
@@ -178,23 +180,23 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_signal.apply(infra.id, conn).is_ok());
+            assert!(update_signal.apply(infra.id.unwrap(), conn).is_ok());
 
             let updated_length = sql_query(format!(
                 "SELECT (data->>'sight_distance')::float as val FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
                 signal.get_id(),
-                infra.id
+                infra.id.unwrap()
             ))
             .get_result::<Value>(conn).unwrap();
 
             assert_eq!(updated_length.val, 15.0);
-        });
+        }).await;
     }
 
-    #[test]
-    fn valid_update_switch_extension() {
+    #[actix_test]
+    async fn valid_update_switch_extension() {
         test_infra_transaction(|conn, infra| {
-            let switch = create_switch(conn, infra.id, Default::default());
+            let switch = create_switch(conn, infra.id.unwrap(), Default::default());
 
             let update_switch = UpdateOperation {
                 obj_id: switch.get_id().clone(),
@@ -207,23 +209,23 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_switch.apply(infra.id, conn).is_ok());
+            assert!(update_switch.apply(infra.id.unwrap(), conn).is_ok());
 
             let updated_comment = sql_query(format!(
                 "SELECT (data->'extensions'->'sncf'->>'label') as label FROM osrd_infra_switchmodel WHERE obj_id = '{}' AND infra_id = {}",
                 switch.get_id(),
-                infra.id
+                infra.id.unwrap()
             ))
             .get_result::<Label>(conn).unwrap();
 
             assert_eq!(updated_comment.label, "Switch Label");
-        });
+        }).await;
     }
 
-    #[test]
-    fn valid_update_speed() {
+    #[actix_test]
+    async fn valid_update_speed() {
         test_infra_transaction(|conn, infra| {
-            let speed = create_speed(conn, infra.id, Default::default());
+            let speed = create_speed(conn, infra.id.unwrap(), Default::default());
 
             let update_speed = UpdateOperation {
                 obj_id: speed.get_id().clone(),
@@ -236,16 +238,16 @@ mod tests {
                 .unwrap(),
             };
 
-            assert!(update_speed.apply(infra.id, conn).is_ok());
+            assert!(update_speed.apply(infra.id.unwrap(), conn).is_ok());
 
             let updated_speed = sql_query(format!(
                 "SELECT (data->>'speed_limit')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_id(),
-                infra.id
+                infra.id.unwrap()
             ))
             .get_result::<Value>(conn).unwrap();
 
             assert_eq!(updated_speed.val, 80.0);
-        });
+        }).await;
     }
 }

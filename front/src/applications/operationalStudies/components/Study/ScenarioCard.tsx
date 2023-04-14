@@ -11,19 +11,11 @@ import { updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 import { FcCalendar } from 'react-icons/fc';
 import { MdTrain } from 'react-icons/md';
 import nextId from 'react-id-generator';
+import { ScenarioResult } from 'common/api/osrdEditoastApi';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  scenario: {
-    id: number;
-    name: string;
-    description: string;
-    creation_date: Date;
-    last_modification: Date;
-    infra_name: string;
-    trains_count: number;
-    tags: string[];
-  };
+  scenario: ScenarioResult;
 };
 
 export default function StudyCard({ setFilterChips, scenario }: Props) {
@@ -52,17 +44,18 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
       <div className="scenarios-list-card-description">{scenario.description}</div>
 
       <div className="scenarios-list-card-tags">
-        {scenario.tags.map((tag) => (
-          <div
-            className="scenarios-list-card-tags-tag"
-            key={nextId()}
-            role="button"
-            tabIndex={0}
-            onClick={() => setFilterChips(tag)}
-          >
-            {tag}
-          </div>
-        ))}
+        {scenario.tags &&
+          scenario.tags.map((tag) => (
+            <div
+              className="scenarios-list-card-tags-tag"
+              key={nextId()}
+              role="button"
+              tabIndex={0}
+              onClick={() => setFilterChips(tag)}
+            >
+              {tag}
+            </div>
+          ))}
       </div>
       <div className="scenarios-list-card-footer">
         <div className="scenarios-list-card-infra">
@@ -80,7 +73,8 @@ export default function StudyCard({ setFilterChips, scenario }: Props) {
             <FcCalendar />
           </span>
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dateTimeFrenchFormatting(scenario.last_modification)}
+          {scenario.last_modification &&
+            dateTimeFrenchFormatting(new Date(scenario.last_modification))}
         </div>
       </div>
     </div>

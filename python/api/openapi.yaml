@@ -1474,10 +1474,10 @@ components:
             - type: object
               properties:
                 error: { type: string }
-        modes_and_profiles:
+        electrification_conditions:
           type: array
           items:
-            description: The catenary mode and electrical profiles seen along the path. <mode_seen> and <profile_seen> are filled only if they differ from those used.
+            description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
             type: array
             items:
               type: object
@@ -1493,10 +1493,16 @@ components:
                 profile_used:
                   type: string
                   nullable: true
+                restriction_used:
+                  type: string
+                  nullable: true
                 mode_seen:
                   type: string
                   nullable: true
                 profile_seen:
+                  type: string
+                  nullable: true
+                restriction_seen:
                   type: string
                   nullable: true
 
@@ -1664,6 +1670,7 @@ components:
           items:
             type: object
             properties:
+              id: { type: string }
               name: { type: string }
               suggestion: { type: boolean }
               duration: { type: number, format: float }
@@ -2130,12 +2137,15 @@ components:
             maxLength: 255
         start_date:
           type: string
+          nullable: true
           format: date-time
         expected_end_date:
           type: string
+          nullable: true
           format: date-time
         actual_end_date:
           type: string
+          nullable: true
           format: date-time
         state:
           type: string
@@ -2180,14 +2190,17 @@ components:
           type: array
           items:
             type: integer
-        start_date_study:
+        start_date:
           type: string
+          nullable: true
           format: date-time
-        expected_end_date_study:
+        expected_end_date:
           type: string
+          nullable: true
           format: date-time
-        actual_end_date_study:
+        actual_end_date:
           type: string
+          nullable: true
           format: date-time
         state:
           type: string

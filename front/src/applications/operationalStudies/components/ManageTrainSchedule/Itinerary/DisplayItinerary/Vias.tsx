@@ -10,7 +10,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getGeojson, getVias } from 'reducers/osrdconf/selectors';
 
 interface ViasProps {
-  zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
   viaModalContent: JSX.Element;
 }
 
@@ -40,10 +40,10 @@ function Vias(props: ViasProps) {
     <>
       {viasTitle}
       <div className="mb-3">
-        {vias.length > 0 ? (
+        {vias && vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (
-          <small className="ml-4">{t('noplacechosen')}</small>
+          <small className="ml-4">{t('noPlaceChosen')}</small>
         )}
       </div>
     </>

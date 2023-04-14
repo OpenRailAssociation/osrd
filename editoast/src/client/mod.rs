@@ -8,13 +8,13 @@ pub use redis_config::RedisConfig;
 use std::{env, path::PathBuf};
 
 #[derive(Parser, Debug)]
-#[clap(author, version)]
+#[command(author, version)]
 pub struct Client {
-    #[clap(flatten)]
+    #[command(flatten)]
     pub postgres_config: PostgresConfig,
-    #[clap(flatten)]
+    #[command(flatten)]
     pub redis_config: RedisConfig,
-    #[clap(subcommand)]
+    #[command(subcommand)]
     pub command: Commands,
 }
 
@@ -31,63 +31,63 @@ pub enum Commands {
 #[derivative(Default)]
 pub struct MapLayersConfig {
     #[derivative(Default(value = "18"))]
-    #[clap(long, env, default_value_t = 18)]
+    #[arg(long, env, default_value_t = 18)]
     pub max_zoom: u64,
     /// Number maximum of tiles before we consider invalidating full Redis cache is required
     #[derivative(Default(value = "250_000"))]
-    #[clap(long, env, default_value_t = 250_000)]
+    #[arg(long, env, default_value_t = 250_000)]
     pub max_tiles: u64,
 }
 
 #[derive(Args, Debug, Derivative)]
 #[derivative(Default)]
-#[clap(about, long_about = "Launch the server")]
+#[command(about, long_about = "Launch the server")]
 pub struct RunserverArgs {
+    #[command(flatten)]
+    pub map_layers_config: MapLayersConfig,
     #[derivative(Default(value = "8090"))]
-    #[clap(long, env = "EDITOAST_PORT", default_value_t = 8090)]
+    #[arg(long, env = "EDITOAST_PORT", default_value_t = 8090)]
     pub port: u16,
     #[derivative(Default(value = r#""0.0.0.0".into()"#))]
-    #[clap(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
+    #[arg(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
     pub address: String,
-    #[clap(flatten)]
-    pub map_layers_config: MapLayersConfig,
-    #[clap(long, env = "SENTRY_DSN")]
+    #[arg(long, env = "SENTRY_DSN")]
     pub sentry_dsn: Option<String>,
-    #[clap(long, env = "SENTRY_ENV")]
+    #[arg(long, env = "SENTRY_ENV")]
     pub sentry_env: Option<String>,
 }
 
 #[derive(Args, Debug)]
-#[clap(about, long_about = "Refresh infra generated data")]
+#[command(about, long_about = "Refresh infra generated data")]
 pub struct GenerateArgs {
     /// List of infra ids
     pub infra_ids: Vec<u64>,
-    #[clap(short, long)]
+    #[arg(short, long)]
     /// Force the refresh of an infra (even if the generated version is up to date)
     pub force: bool,
 }
 
 #[derive(Args, Debug)]
-#[clap(about, long_about = "Clear infra generated data")]
+#[command(about, long_about = "Clear infra generated data")]
 pub struct ClearArgs {
     /// List of infra ids
     pub infra_ids: Vec<u64>,
 }
 
 #[derive(Args, Debug)]
-#[clap(about, long_about = "Import an infra given a railjson file")]
+#[command(about, long_about = "Import an infra given a railjson file")]
 pub struct ImportRailjsonArgs {
     /// Infra name
     pub infra_name: String,
     /// Railjson file path
     pub railjson_path: PathBuf,
     /// Whether the import should refresh generated data
-    #[clap(short = 'g', long)]
+    #[arg(short = 'g', long)]
     pub generate: bool,
 }
 
 #[derive(Args, Debug)]
-#[clap(about, long_about = "Add a set of electrical profiles")]
+#[command(about, long_about = "Add a set of electrical profiles")]
 pub struct ImportProfileSetArgs {
     /// Electrical profile set name
     pub name: String,

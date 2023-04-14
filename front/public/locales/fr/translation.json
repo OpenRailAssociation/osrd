@@ -6,6 +6,7 @@
     "change": "Changer",
     "close": "Fermer",
     "confirm": "Confirmer",
+    "delete": "Supprimer",
     "description": "Description",
     "download": "Télécharger",
     "dsc": "Descendant",
@@ -35,6 +36,11 @@
       "track_section": "Track section",
       "track_section-length": "Taille"
     },
+    "directions": {
+      "START_TO_STOP": "Départ vers arrivée",
+      "STOP_TO_START": "Arrivée vers départ",
+      "BOTH": "Les deux"
+    },
     "errors": {
       "infra-not-found": "L'infrastructure {{id}} non trouvée",
       "length-number-and-required": "La distance est un champs numérique requis",
@@ -59,6 +65,7 @@
         "no_buffer_stop": "no_buffer_stop",
         "object_out_of_path": "object_out_of_path",
         "out_of_range": "Valeur invalide (hors intervalle)",
+        "overlapping_speed_sections": "Superposition de limites de vitesse",
         "overlapping_switches": "overlapping_switches",
         "overlapping_track_links": "overlapping_track_links",
         "path_does_not_match_endpoints": "path_does_not_match_endpoints",
@@ -89,14 +96,16 @@
       "routes": "Itinéraires",
       "signals": "Signaux",
       "switches": "Aiguillages",
-      "track_sections": "Sections de lignes"
+      "track_sections": "Sections de lignes",
+      "speed_sections": "Vitesses limites"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
       "layer-selected-items_one": "Un élément sélectionné",
       "layer-selected-items_other": "{{count}} éléments sélectionnés",
       "selection-warning_one": "Un élément sera désélectionné lors de la confirmation.",
-      "selection-warning_other": "{{count}} éléments seront désélectionnés lors de la confirmation."
+      "selection-warning_other": "{{count}} éléments seront désélectionnés lors de la confirmation.",
+      "no-speed-limit-tag": "Aucun code de composition"
     },
     "linear-metadata": {
       "help": "Ce composant vous permet de visualiser et modifier un habillage linéaire. Vous pouvez zoomer dans la visualisation via les boutons prévus à cet effet ou avec la molette de la souris, et vous déplacer via un drag'n'drop. Pour modifier la taille d'un segment, il vous suffit de cliquer dessus, le formulaire d'édition s'affichera en dessous. Vous pouvez aussi cliquer sur une bordure d'un segment, et tout en gardant le doigt appuyé, déplacer la bordure avec la sourie.",
@@ -110,7 +119,10 @@
       "infra-errors": "Afficher les erreurs de l'infrastructure courante",
       "recenter": "Recentrer la carte",
       "select-infra": "Choisir l'infrastructure à éditer",
-      "toggle-layers": "Choisir les types d'éléments à afficher"
+      "toggle-layers": "Choisir les types d'éléments à afficher",
+      "osrd-layers": "Couches de données OSRD",
+      "speed-limits": "Limitations de vitesse",
+      "map-layers": "Couches cartographiques"
     },
     "obj-types": {
       "BufferStop": "Heurtoir",
@@ -118,7 +130,8 @@
       "Route": "Itinéraire",
       "Signal": "Signal",
       "Switch": "Aiguillage",
-      "TrackSection": "Section de ligne"
+      "TrackSection": "Section de ligne",
+      "SpeedSection": "Vitesse limite"
     },
     "title": "Éditeur",
     "tool-help": "Voir la description de l'outil actif",
@@ -227,6 +240,9 @@
         "label": "Outil \"Sélection\"",
         "linked-to-line_one": "lié à la ligne",
         "linked-to-line_other": "lié aux lignes",
+        "linked-to-n-lines_zero": "relatif à aucune ligne",
+        "linked-to-n-lines_one": "relatif à une ligne",
+        "linked-to-n-lines_other": "relatif à {{count}} lignes",
         "no-selection": "Aucun élément sélectionné",
         "of-type": "de type",
         "selection": "{{count}} élément sélectionné",
@@ -275,7 +291,36 @@
           "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
-        "label": "Outil \"Ligne\""
+        "label": "Outil \"Ligne\"",
+        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
+        "no-linked-speed-section": "Aucune vitesse limite renseignée",
+        "attached-speed-sections": "Vitesses limites",
+        "only-show-n": "Ne montrer que les {{count}} premiers résultats",
+        "show-more-speed-sections_one": "Voir un résultat de plus",
+        "show-more-speed-sections_other": "Voir {{count}} résultats de plus"
+      },
+      "speed-edition": {
+        "label": "Outil \"Vitesses limites\"",
+        "actions": {
+          "new-speed-section": "Créer une nouvelle vitesse limite",
+          "reset-speed-section": "Annuler les modifications en cours"
+        },
+        "speed-limits": "Limitations de vitesses",
+        "main-speed-limit": "Limitation de vitesse par défaut",
+        "additional-speed-limit": "Limitation de vitesse additionnelles",
+        "add-new-speed-limit": "Ajouter une nouvelle limitation",
+        "linked-track-sections": "Sections de lignes liées",
+        "edit-track-range-start": "Modifier le point de départ",
+        "edit-track-range-end": "Modifier le point d'arrivée",
+        "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
+        "show-more-ranges_one": "Voir une section de ligne de plus",
+        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
+        "add-track-range": "Cliquer pour lier à :",
+        "remove-track-range": "Cliquer pour détacher de :",
+        "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
+        "save-new-speed-section": "Sauver la nouvelle limite de vitesse",
+        "save-existing-speed-section": "Sauvegarder les modifications",
+        "new-tag": "Code de composition"
       }
     }
   }

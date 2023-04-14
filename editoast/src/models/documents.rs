@@ -10,7 +10,9 @@ use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use editoast_derive::Model;
 
-#[derive(Debug, Default, Queryable, Insertable, Model)]
+use super::Identifiable;
+
+#[derive(Debug, Default, Identifiable, Insertable, Model, Queryable)]
 #[model(table = "osrd_infra_document")]
 #[model(create, delete, retrieve)]
 #[diesel(table_name = osrd_infra_document)]
@@ -21,6 +23,12 @@ pub struct Document {
     pub content_type: Option<String>,
     #[diesel(deserialize_as = Vec<u8>)]
     pub data: Option<Vec<u8>>,
+}
+
+impl Identifiable for Document {
+    fn get_id(&self) -> i64 {
+        self.id.expect("Id not found")
+    }
 }
 
 impl Document {

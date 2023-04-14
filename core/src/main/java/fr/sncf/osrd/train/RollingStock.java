@@ -1,6 +1,6 @@
 package fr.sncf.osrd.train;
 
-import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ModeAndProfile;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ElectrificationConditions;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
@@ -90,7 +90,8 @@ public class RollingStock implements PhysicsRollingStock {
     protected final Map<String, ModeEffortCurves> modes;
 
     private final String defaultMode;
-    public final String powerClass;
+    public final String basePowerClass;
+    public final Map<String, String> powerRestrictions;
 
     @Override
     public double getMass() {
@@ -147,14 +148,15 @@ public class RollingStock implements PhysicsRollingStock {
     public record ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {
     }
 
-    public record EffortCurveConditions(Comfort comfort, String electricalProfile) {
+    public record EffortCurveConditions(Comfort comfort, String electricalProfile, String powerRestriction) {
         /**
          * Returns true if the conditions are met
          * If comfort condition is null then it matches any comfort, same for electrical profile
          */
-        public boolean match(Comfort comfort, String electricalProfile) {
-            return (this.comfort == null || comfort == this.comfort)
-                    && (this.electricalProfile == null || this.electricalProfile.equals(electricalProfile));
+        public boolean match(EffortCurveConditions other) {
+            return (this.comfort == null || other.comfort == this.comfort)
+                    && (this.electricalProfile == null || this.electricalProfile.equals(other.electricalProfile))
+                    && (this.powerRestriction == null || this.powerRestriction.equals(other.powerRestriction));
         }
     }
 
@@ -164,11 +166,11 @@ public class RollingStock implements PhysicsRollingStock {
         AC,
     }
 
-    protected record CurveAndCondition(TractiveEffortPoint[] curve, ModeAndProfile modeAndProfile) {
+    protected record CurveAndCondition(TractiveEffortPoint[] curve, ElectrificationConditions elecCond) {
     }
 
     public record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
-                                      RangeMap<Double, ModeAndProfile> conditions) {
+                                      RangeMap<Double, ElectrificationConditions> conditions) {
     }
 
     /**
@@ -179,46 +181,48 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Returns the tractive effort curve that matches best, along with the condition that matched
+     * Returns the tractive effort curve that matches best, along with the catenary conditions that matched
      */
-    protected CurveAndCondition findTractiveEffortCurve(String catenaryMode, String electricalProfile,
-                                                        Comfort comfort) {
+    protected CurveAndCondition findTractiveEffortCurve(Comfort comfort, ElectrificationConditions elecCond) {
         // Get mode effort curves
-        var mode = modes.get(defaultMode);
-        var usedMode = defaultMode;
-        if (catenaryMode != null && modes.containsKey(catenaryMode)) {
-            mode = modes.get(catenaryMode);
-            usedMode = catenaryMode;
+        var usedMode = elecCond.mode();
+        if (usedMode == null || !modes.containsKey(usedMode)) {
+            usedMode = defaultMode;
         }
+        var mode = modes.get(usedMode);
 
-        // Get best curve given a comfort
+        // Get first matching curve
+        var chosenCond = new EffortCurveConditions(comfort, elecCond.profile(), elecCond.powerRestriction());
         for (var condCurve : mode.curves) {
-            if (condCurve.cond.match(comfort, electricalProfile)) {
+            if (condCurve.cond.match(chosenCond)) {
                 return new CurveAndCondition(condCurve.curve,
-                        new ModeAndProfile(catenaryMode, condCurve.cond.electricalProfile));
+                        new ElectrificationConditions(usedMode, condCurve.cond.electricalProfile,
+                                condCurve.cond.powerRestriction));
             }
         }
-        return new CurveAndCondition(mode.defaultCurve, new ModeAndProfile(usedMode, null));
+        return new CurveAndCondition(mode.defaultCurve, new ElectrificationConditions(usedMode, null, null));
     }
 
     /**
-     * Returns the tractive effort curves corresponding to the given mode and profile map
+     * Returns the tractive effort curves corresponding to the electrical conditions map
      *
-     * @param modeAndProfileMap The map of mode and profile to use
+     * @param elecCondMap       The map of electrification conditions to use
      * @param comfort           The comfort level to get the curves for
      */
-    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, ModeAndProfile> modeAndProfileMap,
+    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, ElectrificationConditions> elecCondMap,
                                                        Comfort comfort, double pathLength) {
-        TreeRangeMap<Double, ModeAndProfile> conditionsUsed = TreeRangeMap.create();
+        TreeRangeMap<Double, ElectrificationConditions> conditionsUsed = TreeRangeMap.create();
         TreeRangeMap<Double, TractiveEffortPoint[]> res = TreeRangeMap.create();
-        var defaultCurve = findTractiveEffortCurve(defaultMode, null, comfort);
+
+        var defaultCondition = new ElectrificationConditions(defaultMode, null, null);
+        var defaultCurve = findTractiveEffortCurve(comfort, defaultCondition);
         res.put(Range.all(), defaultCurve.curve);
-        conditionsUsed.put(Range.closed(0., pathLength), defaultCurve.modeAndProfile);
-        for (var modeAndProfileEntry : modeAndProfileMap.asMapOfRanges().entrySet()) {
-            var modeAndProfile = modeAndProfileEntry.getValue();
-            var curve = findTractiveEffortCurve(modeAndProfile.mode(), modeAndProfile.profile(), comfort);
-            res.put(modeAndProfileEntry.getKey(), curve.curve);
-            conditionsUsed.put(modeAndProfileEntry.getKey(), curve.modeAndProfile);
+        conditionsUsed.put(Range.closed(0., pathLength), defaultCurve.elecCond);
+
+        for (var elecCondEntry : elecCondMap.asMapOfRanges().entrySet()) {
+            var curveAndCond = findTractiveEffortCurve(comfort, elecCondEntry.getValue());
+            res.put(elecCondEntry.getKey(), curveAndCond.curve);
+            conditionsUsed.put(elecCondEntry.getKey(), curveAndCond.elecCond);
         }
         return new CurvesAndConditions(ImmutableRangeMap.copyOf(res), ImmutableRangeMap.copyOf(conditionsUsed));
     }
@@ -258,7 +262,8 @@ public class RollingStock implements PhysicsRollingStock {
             RJSLoadingGaugeType loadingGaugeType,
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
-            String powerClass
+            String basePowerclass,
+            Map<String, String> powerRestrictions
     ) {
         this.id = id;
         this.A = a;
@@ -277,6 +282,7 @@ public class RollingStock implements PhysicsRollingStock {
         this.defaultMode = defaultMode;
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
-        this.powerClass = powerClass;
+        this.basePowerClass = basePowerclass;
+        this.powerRestrictions = powerRestrictions;
     }
 }

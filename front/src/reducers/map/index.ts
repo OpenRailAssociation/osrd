@@ -5,6 +5,7 @@ import produce from 'immer';
 import { transformRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
 import { MAP_URL } from 'common/Map/const';
+import { Position } from '@turf/helpers';
 
 // Action Types
 export const UPDATE_VIEWPORT = 'map/UPDATE_VIEWPORT';
@@ -34,8 +35,8 @@ export type Viewport = ViewState & {
 
 export interface MapSearchMarker {
   title: string;
-  subtitle: string;
-  lonlat: [number, number];
+  subtitle?: string;
+  lonlat: Position;
 }
 export interface MapState {
   ref: unknown;
@@ -287,12 +288,11 @@ export function updateFeatureInfoHover(featureInfoHoverID: unknown, featureSourc
   };
 }
 
-export function updateFeatureInfoClick(featureInfoClickID: unknown, featureSource: unknown) {
+export function updateFeatureInfoClick(featureInfoClickID: unknown) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK,
       featureInfoClickID,
-      featureSource,
     });
   };
 }

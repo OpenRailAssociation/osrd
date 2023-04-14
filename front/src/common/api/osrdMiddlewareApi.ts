@@ -723,6 +723,7 @@ export type Path = {
     position?: number;
   }[];
   steps?: {
+    id?: string;
     name?: string;
     suggestion?: boolean;
     duration?: number;
@@ -977,13 +978,15 @@ export type TrainScheduleResult = {
     | {
         error?: string;
       };
-  modes_and_profiles?: {
+  electrification_conditions?: {
     start?: number;
     stop?: number;
     mode_used?: string;
     profile_used?: string | null;
+    restriction_used?: string | null;
     mode_seen?: string | null;
     profile_seen?: string | null;
+    restriction_seen?: string | null;
   }[][];
 };
 export type StdcmRequest = {
@@ -1034,9 +1037,9 @@ export type StudyResult = {
   creation_date?: string;
   last_modification?: string;
   scenarios?: number[];
-  start_date_study?: string;
-  expected_end_date_study?: string;
-  actual_end_date_study?: string;
+  start_date?: string | null;
+  expected_end_date?: string | null;
+  actual_end_date?: string | null;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'
@@ -1056,9 +1059,9 @@ export type StudyRequest = {
   description?: string;
   budget?: number;
   tags?: string[];
-  start_date?: string;
-  expected_end_date?: string;
-  actual_end_date?: string;
+  start_date?: string | null;
+  expected_end_date?: string | null;
+  actual_end_date?: string | null;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'

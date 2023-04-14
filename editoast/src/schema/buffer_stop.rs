@@ -85,27 +85,30 @@ impl From<BufferStop> for BufferStopCache {
 mod test {
 
     use super::BufferStop;
-    use crate::infra::tests::test_infra_transaction;
+    use crate::models::infra::tests::test_infra_transaction;
+    use actix_web::test as actix_test;
 
-    #[test]
-    fn test_persist() {
+    #[actix_test]
+    async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10)
                 .map(|_| BufferStop::default())
                 .collect::<Vec<BufferStop>>();
 
-            assert!(BufferStop::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(BufferStop::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 
-    #[test]
-    fn test_persist_large() {
+    #[actix_test]
+    async fn test_persist_large() {
         test_infra_transaction(|conn, infra| {
             let data = (0..(2_usize.pow(16) * 2))
                 .map(|_| BufferStop::default())
                 .collect::<Vec<BufferStop>>();
 
-            assert!(BufferStop::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(BufferStop::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 }

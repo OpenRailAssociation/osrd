@@ -166,17 +166,19 @@ mod test {
 
     use super::Route;
     use crate::{
-        infra::tests::test_infra_transaction,
         infra_cache::{tests::create_small_infra_cache, Graph},
+        models::infra::tests::test_infra_transaction,
     };
+    use actix_web::test as actix_test;
 
-    #[test]
-    fn test_persist() {
+    #[actix_test]
+    async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10).map(|_| Route::default()).collect::<Vec<Route>>();
 
-            assert!(Route::persist_batch(&data, infra.id, conn).is_ok());
-        });
+            assert!(Route::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+        })
+        .await;
     }
 
     #[test]

@@ -17,7 +17,7 @@ import { isEmpty } from 'lodash';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 
-const ROLLING_STOCK_URL = '/light_rolling_stock/';
+const ROLLING_STOCK_URL = '/editoast/light_rolling_stock/';
 
 function RollingStockModal(props) {
   const { ref2scroll } = props;

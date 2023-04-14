@@ -167,10 +167,10 @@ paths:
                           speed:
                             type: number
                             format: double
-                  modes_and_profiles:
+                  electrification_conditions:
                     type: array
                     items:
-                      description: The catenary modes and electrical profiles used and seen along the path. <mode_seen> and <profile_seen> are filled only if they differ from those used.
+                      description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
                       type: array
                       items:
                         type: object
@@ -185,10 +185,17 @@ paths:
                             type: string
                           profile_used:
                             type: string
+                            nullable: true
+                          restriction_used:
+                            type: string
+                            nullable: true
                           mode_seen:
                             type: string
                             nullable: true
                           profile_seen:
+                            type: string
+                            nullable: true
+                          restriction_seen:
                             type: string
                             nullable: true
 
@@ -837,26 +844,30 @@ components:
           type: number
           format: double
           description: in %, how much time do we add compared to the fastest run time
-ZoneUpdate:
-  properties:
-    zone:
-      type: string
-    time:
-      type: double
-    offset:
-      type: double
-      description: the offset of the zone on the current path
-    is_entry:
-      type: boolean
-SignalSighting:
-  properties:
-    signal:
-      type: string
-    time:
-      type: double
-    offset:
-      type: double
-      description: The offset of the sighting on the current path
-    state:
-      type: string
-      decription: The expected state of the signal, if the train is alone in the infra
+    ZoneUpdate:
+      properties:
+        zone:
+          type: string
+        time:
+          type: number
+          format: double
+        offset:
+          type: number
+          format: double
+          description: the offset of the zone on the current path
+        is_entry:
+          type: boolean
+    SignalSighting:
+      properties:
+        signal:
+          type: string
+        time:
+          type: number
+          format: double
+        offset:
+          type: number
+          format: double
+          description: The offset of the sighting on the current path
+        state:
+          type: string
+          description: The expected state of the signal, if the train is alone in the infra

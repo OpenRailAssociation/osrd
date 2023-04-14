@@ -1,9 +1,10 @@
 import enum
 import itertools
 import re
-from typing import Optional
+from typing import Any, Optional
 
 import django
+import django.db.models.deletion
 from django.db import migrations, models
 
 
@@ -49,7 +50,11 @@ def run_sql_complex_add_foreign_key(
 
 
 def run_sql_add_foreign_key(
-    model_name: str, field_name: str, link_model: str, nullable: bool = False, related_name: Optional[str] = None
+    model_name: str,
+    field_name: str,
+    link_model: str,
+    nullable: bool = False,
+    related_name: Optional[str] = None,
 ):
     return run_sql_complex_add_foreign_key(
         table_name=model_name,
@@ -66,23 +71,48 @@ def run_sql_add_foreign_key_infra(model_name: str):
     return run_sql_add_foreign_key(model_name, "infra", "infra")
 
 
-def run_sql_add_one_to_one_key(model_name: str, field_name: str, link_model: str, related_name: str):
+def run_sql_add_one_to_one_key(
+    model_name: str,
+    field_name: str,
+    link_model: str,
+    related_name: Optional[str] = None,
+    nullable: Optional[bool] = False,
+    field: Optional[Any] = None,
+):
+    if field == None:
+        field = models.OneToOneField(
+            on_delete=django.db.models.deletion.CASCADE,
+            to=f"osrd_infra.{link_model}",
+            null=nullable,
+            blank=nullable,
+            related_name=related_name,
+        )
+
     return migrations.RunSQL(
-        f"""ALTER TABLE osrd_infra_{model_name}
-                ADD {field_name}_id BIGINT,
+        sql=[
+            (
+                f"""ALTER TABLE osrd_infra_{model_name}
+                ADD {field_name}_id BIGINT {"NULL" if nullable else ""},
                 ADD CONSTRAINT osrd_{link_model}_{model_name}_fkey FOREIGN KEY ({field_name}_id)
-                        REFERENCES osrd_infra_{link_model}(id) ON DELETE CASCADE,
+                        REFERENCES osrd_infra_{link_model}(id) ON DELETE {"SET NULL" if nullable else "CASCADE"},
                 ADD CONSTRAINT osrd_infra_{field_name}_id_uniq UNIQUE ({field_name}_id)
-            """,
+            """
+            )
+        ],
+        reverse_sql=[
+            (
+                f"""ALTER TABLE osrd_infra_{model_name}
+                DROP CONSTRAINT osrd_infra_{field_name}_id_uniq,
+                DROP CONSTRAINT osrd_{link_model}_{model_name}_fkey,
+                DROP {field_name}_id
+            """
+            )
+        ],
         state_operations=[
             migrations.AddField(
                 model_name=model_name,
                 name=field_name,
-                field=models.OneToOneField(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name=related_name,
-                    to=f"osrd_infra.{link_model}",
-                ),
+                field=field,
             ),
         ],
     )
@@ -115,7 +145,11 @@ Sql = str
 
 
 def insert_trigger(
-    search_table: str, source_table: str, columns: dict[str, Sql], joins: Sql, query_continuation: Sql
+    search_table: str,
+    source_table: str,
+    columns: dict[str, Sql],
+    joins: Sql,
+    query_continuation: Sql,
 ) -> Sql:
     insert_columns = ", ".join(f'"{col}"' for col in columns)
     select_columns = ", ".join(f'({sql}) AS "{col}"' for col, sql in columns.items())
@@ -151,7 +185,11 @@ def insert_trigger(
 
 
 def update_trigger(
-    search_table: str, source_table: str, columns: dict[str, Sql], joins: Sql, query_continuation: Sql
+    search_table: str,
+    source_table: str,
+    columns: dict[str, Sql],
+    joins: Sql,
+    query_continuation: Sql,
 ) -> Sql:
     set_columns = ", ".join(f'"{col}" = ({sql})' for col, sql in columns.items())
     trigger = f'"{search_table}__upd_trig"'
@@ -258,12 +296,13 @@ def run_sql_create_infra_search_table(
         search_columns = ", ".join(
             f'"{col}" {type_}'
             for col, type_ in itertools.chain(
-                ((col, "TEXT") for col in search_columns), ((col, type_) for col, (_, type_) in extra_columns.items())
+                ((col, "TEXT") for col in search_columns),
+                ((col, type_) for col, (_, type_) in extra_columns.items()),
             )
         )
         sep = "," if create_table_continuation else ""
         create_table = f"""CREATE TABLE "{name}" (
-            id BIGINT REFERENCES "{source_table}"("{source_table_pk}") ON UPDATE CASCADE ON DELETE CASCADE,
+            id BIGINT PRIMARY KEY REFERENCES "{source_table}"("{source_table_pk}") ON UPDATE CASCADE ON DELETE CASCADE,
             {search_columns}{sep}
             {create_table_continuation}
         )""".format(
@@ -290,7 +329,11 @@ def run_sql_create_infra_search_table(
         # That way Django knows when the migration has been applied and can reverse it.
         # Otherwise, DROP VIEW would never be run.
         state_operations=[
-            migrations.CreateModel(name=phony_model_name, fields=[], options={"managed": False, "db_table": name})
+            migrations.CreateModel(
+                name=phony_model_name,
+                fields=[],
+                options={"managed": False, "db_table": name},
+            )
         ],
     )
 

@@ -6,6 +6,9 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import React from 'react';
 import logo from 'assets/pictures/home/customget.svg';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+import { updateSimulation } from 'reducers/osrdsimulation/actions';
+import convertData from 'applications/customget/components/convertData';
 
 import CustomGET from 'applications/customget/views/CustomGET';
 
@@ -15,7 +18,19 @@ import UploadFileModal from './components/uploadFileModal';
 
 function HomeCustomGET() {
   const { t } = useTranslation(['customget', 'home/home']);
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
+  const dispatch = useDispatch();
+
+  const handleSubmit = async (file) => {
+    closeModal();
+    if (file) {
+      dispatch(
+        updateSimulation({
+          trains: convertData(JSON.parse(file)),
+        })
+      );
+    }
+  };
 
   return (
     <div className="customget-home">
@@ -31,7 +46,7 @@ function HomeCustomGET() {
               <button
                 type="button"
                 className="mastnav-item"
-                onClick={() => openModal(<UploadFileModal />)}
+                onClick={() => openModal(<UploadFileModal handleSubmit={handleSubmit} />)}
               >
                 <i className="icons-add icons-size-1x5" aria-hidden="true" />
                 <span className="font-weight-medium">{t('customget:uploadFile')}</span>

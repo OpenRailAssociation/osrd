@@ -10,26 +10,11 @@ import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { RiFolderChartLine } from 'react-icons/ri';
+import { StudyResult } from 'common/api/osrdEditoastApi';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
-  study: {
-    id: number;
-    name: string;
-    description: string;
-    service_code: string;
-    business_code: string;
-    creation_date: Date;
-    start_date: Date;
-    expected_end_date: Date;
-    actual_end_date: Date;
-    last_modification: Date;
-    step: string;
-    budget: bigint;
-    study_type: string;
-    scenarios: Array<1>;
-    tags: string[];
-  };
+  study: StudyResult;
 };
 
 export default function StudyCard({ setFilterChips, study }: Props) {
@@ -75,7 +60,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
             </div>
           )}
         </div>
-        {study.budget > 0 && (
+        {study.budget && study.budget > 0 && (
           <div className="studies-list-card-financials-amount">
             <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
             {budgetFormat(study.budget)}
@@ -84,17 +69,19 @@ export default function StudyCard({ setFilterChips, study }: Props) {
       </div>
 
       <div className="studies-list-card-tags">
-        {study.tags.map((tag) => (
-          <div
-            className="studies-list-card-tags-tag"
-            key={nextId()}
-            role="button"
-            tabIndex={0}
-            onClick={() => setFilterChips(tag)}
-          >
-            {tag}
-          </div>
-        ))}
+        {study.tags &&
+          study.tags.length > 0 &&
+          study.tags.map((tag) => (
+            <div
+              className="studies-list-card-tags-tag"
+              key={nextId()}
+              role="button"
+              tabIndex={0}
+              onClick={() => setFilterChips(tag)}
+            >
+              {tag}
+            </div>
+          ))}
       </div>
 
       <div className="studies-list-card-footer">
@@ -102,14 +89,14 @@ export default function StudyCard({ setFilterChips, study }: Props) {
           <span className="mr-1">
             <RiFolderChartLine />
           </span>
-          {t('scenariosCount', { count: study.scenarios.length })}
+          {t('scenariosCount', { count: study.scenarios_count })}
         </div>
         <div className="studies-list-card-date">
           <span className="mr-1">
             <FcCalendar />
           </span>
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dateTimeFrenchFormatting(study.last_modification)}
+          {study.last_modification && dateTimeFrenchFormatting(new Date(study.last_modification))}
         </div>
       </div>
     </div>

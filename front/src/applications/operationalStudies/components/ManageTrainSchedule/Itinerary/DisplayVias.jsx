@@ -2,22 +2,27 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteVias, permuteVias, updateViaStopTime } from 'reducers/osrdconf';
+import {
+  deleteVias,
+  permuteVias,
+  updateShouldRunPathfinding,
+  updateViaStopTime,
+} from 'reducers/osrdconf';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { getConf, getVias } from 'reducers/osrdconf/selectors';
 
 function InputStopTime(props) {
-  const { index } = props;
+  const { index, dispatchAndRun, setIndexSelected } = props;
   const vias = useSelector(getVias);
-  const dispatch = useDispatch();
   const [stopTime, setStopTime] = useState(vias[index].duration ? vias[index].duration : 0);
   const [firstStart, setFirstStart] = useState(true);
   const debouncedStopTime = useDebounce(stopTime, 1000);
 
   useEffect(() => {
     if (!firstStart) {
-      dispatch(updateViaStopTime(vias, index, debouncedStopTime));
+      dispatchAndRun(updateViaStopTime(vias, index, debouncedStopTime));
+      setIndexSelected(undefined);
     } else {
       setFirstStart(false);
     }
@@ -30,6 +35,8 @@ function InputStopTime(props) {
       onChange={(e) => setStopTime(e.target.value)}
       value={stopTime}
       unit="s"
+      focus
+      selectAllOnFocus
       sm
       noMargin
     />
@@ -42,16 +49,23 @@ export default function DisplayVias(props) {
   const [indexSelected, setIndexSelected] = useState(undefined);
   const { zoomToFeaturePoint } = props;
 
+  const dispatchAndRun = (action) => {
+    dispatch(updateShouldRunPathfinding(true));
+    dispatch(action);
+  };
+
   return (
     <DragDropContext
-      onDragEnd={(e) => dispatch(permuteVias(osrdconf.vias, e.source.index, e.destination.index))}
+      onDragEnd={(e) =>
+        dispatchAndRun(permuteVias(osrdconf.vias, e.source.index, e.destination.index))
+      }
     >
       <Droppable droppableId="droppableVias">
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {osrdconf.vias.map((place, index) => (
               <Draggable
-                key={`drag-key-${place.position}`}
+                key={`drag-key-${place.id}-${place.position}`}
                 draggableId={`drag-vias-${index}`}
                 index={index}
               >
@@ -66,9 +80,7 @@ export default function DisplayVias(props) {
                     <div className="pl-1 hover w-100 d-flex align-items-center">
                       <div
                         className="flex-grow-1"
-                        onClick={() =>
-                          zoomToFeaturePoint(place.coordinates, place.id, place.source)
-                        }
+                        onClick={() => zoomToFeaturePoint(place.coordinates, place.id)}
                         role="button"
                         tabIndex={0}
                       >
@@ -84,18 +96,19 @@ export default function DisplayVias(props) {
                         onClick={() => setIndexSelected(index)}
                       >
                         {index === indexSelected ? (
-                          <InputStopTime index={index} />
+                          <InputStopTime
+                            index={index}
+                            dispatchAndRun={dispatchAndRun}
+                            setIndexSelected={setIndexSelected}
+                          />
                         ) : (
-                          <>
-                            {osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}
-                            <i className="ml-2 icons-pencil" />
-                          </>
+                          <>{osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}s</>
                         )}
                       </div>
                       <button
                         className="btn btn-sm btn-only-icon btn-white ml-auto"
                         type="button"
-                        onClick={() => dispatch(deleteVias(index))}
+                        onClick={() => dispatchAndRun(deleteVias(index))}
                       >
                         <i className="icons-circle-delete" />
                         <span className="sr-only" aria-hidden="true">
@@ -121,4 +134,6 @@ DisplayVias.propTypes = {
 
 InputStopTime.propTypes = {
   index: PropTypes.number.isRequired,
+  dispatchAndRun: PropTypes.func.isRequired,
+  setIndexSelected: PropTypes.func.isRequired,
 };

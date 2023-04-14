@@ -89,7 +89,7 @@ export interface Regime {
   error?: string;
 }
 
-export interface ModesAndProfiles {
+export interface ElectrificationConditions {
   start: number;
   stop: number;
   used_mode: string;
@@ -103,7 +103,7 @@ export type ScheduledTrain = {
   path: number;
   departure: number;
   arrival: number;
-  speed_limit_tags: string;
+  speed_limit_tags?: string;
   isFiltered?: boolean;
 };
 
@@ -123,7 +123,7 @@ interface SpeedPosition {
 }
 
 export interface Train {
-  modes_and_profiles: ModesAndProfiles[];
+  electrification_conditions: ElectrificationConditions[];
   id: number;
   labels: string[];
   path: number;
@@ -201,7 +201,7 @@ export interface OsrdSimulationState {
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];
-  departureArrivalTimes: Array<any>;
+  departureArrivalTimes: Array<ScheduledTrain>;
   simulation: {
     past: SimulationHistory;
     present: SimulationSnapshot;

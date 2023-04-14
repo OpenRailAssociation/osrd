@@ -1,7 +1,9 @@
 use crate::error::Result;
-use crate::infra::RAILJSON_VERSION;
 use crate::infra_cache::InfraCache;
+use crate::models::infra::RAILJSON_VERSION;
+use crate::models::{Infra, Retrieve};
 use crate::schema::{ObjectType, RailJson};
+use crate::views::infra::{InfraApiError, InfraForm};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::http::header::ContentType;
@@ -36,30 +38,18 @@ enum ListErrorsRailjson {
     WrongRailjsonVersionProvided,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize)]
-struct GetRailjsonQueryParam {
-    #[serde(default)]
-    exclude_extensions: bool,
-}
-
 /// Serialize an infra
 #[get("/{infra}/railjson")]
-async fn get_railjson(
-    infra: Path<i64>,
-    params: Query<GetRailjsonQueryParam>,
-    db_pool: Data<DbPool>,
-) -> Result<impl Responder> {
+async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder> {
     let infra = infra.into_inner();
+
+    let infra_meta = Infra::retrieve(db_pool.clone(), infra).await?.unwrap();
+
     let futures: Vec<_> = ObjectType::iter()
         .map(|object_type| {
             let table = object_type.get_table();
-            let query = if params.exclude_extensions {
-                format!(
-                    "SELECT (x.data - 'extensions')::text AS railjson FROM {table} x WHERE x.infra_id = $1"
-                )
-            } else {
-                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1")
-            };
+            let query =
+                format!("SELECT (x.data)::text AS railjson FROM {table} x WHERE x.infra_id = $1");
             let db_pool_clone = db_pool.clone();
             block::<_, Result<_>>(move || {
                 let mut conn = db_pool_clone.get()?;
@@ -90,7 +80,7 @@ async fn get_railjson(
     // Here we avoid avoid the deserialization of the whole RailJson object
     let railjson = format!(
         r#"{{
-            "version": "{RAILJSON_VERSION}",
+            "version": "{version}",
             "track_sections": {track_sections},
             "signals": {signals},
             "speed_sections": {speed_sections},
@@ -103,6 +93,7 @@ async fn get_railjson(
             "operational_points": {operational_points},
             "catenaries": {catenaries}
         }}"#,
+        version = infra_meta.railjson_version,
         track_sections = res[ObjectType::TrackSection],
         signals = res[ObjectType::Signal],
         speed_sections = res[ObjectType::SpeedSection],
@@ -118,6 +109,7 @@ async fn get_railjson(
 
     Ok(HttpResponse::Ok()
         .content_type(ContentType::json())
+        .append_header(("x-infra-version", infra_meta.version))
         .body(railjson))
 }
 
@@ -145,16 +137,31 @@ async fn post_railjson(
         return Err(ListErrorsRailjson::WrongRailjsonVersionProvided.into());
     }
 
+    let infra: Infra = InfraForm {
+        name: params.name.clone(),
+    }
+    .into();
+    let railjson = railjson.into_inner();
+    let infra = infra.persist(railjson, db_pool.clone()).await?;
     block(move || {
         let mut conn = db_pool.get()?;
-        let infra = railjson.persist(&params.name, &mut conn)?;
-        let infra = infra.bump_version(&mut conn)?;
+        let infra = match infra.bump_version(&mut conn) {
+            Ok(infra) => infra,
+            Err(_) => {
+                return Err(InfraApiError::NotFound {
+                    infra_id: infra.id.unwrap(),
+                }
+                .into())
+            }
+        };
         if params.generate_data {
             let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)?;
             infra.refresh(&mut conn, true, &infra_cache)?;
         }
 
-        Ok(Json(PostRailjsonResponse { infra: infra.id }))
+        Ok(Json(PostRailjsonResponse {
+            infra: infra.id.unwrap(),
+        }))
     })
     .await
     .unwrap()
@@ -166,7 +173,7 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json};
 
-    use crate::infra::Infra;
+    use crate::models::Infra;
     use crate::schema::{RailJson, SwitchType};
     use crate::views::infra::railjson::PostRailjsonResponse;
     use crate::views::infra::tests::{
@@ -180,20 +187,20 @@ mod tests {
         let req = create_infra_request("get_railjson_test");
         let infra: Infra = call_and_read_body_json(&app, req).await;
 
-        let req = create_object_request(infra.id, SwitchType::default().into());
+        let req = create_object_request(infra.id.unwrap(), SwitchType::default().into());
         let response = call_service(&app, req).await;
         assert!(response.status().is_success());
 
         let req = actix_test::TestRequest::get()
-            .uri(&format!("/infra/{}/railjson", infra.id))
+            .uri(&format!("/infra/{}/railjson", infra.id.unwrap()))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let railjson: RailJson = read_body_json(response).await;
-        assert_eq!(railjson.version, crate::infra::RAILJSON_VERSION);
+        assert_eq!(railjson.version, crate::models::infra::RAILJSON_VERSION);
         assert_eq!(railjson.switch_types.len(), 1);
 
-        let response = call_service(&app, delete_infra_request(infra.id)).await;
+        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 

@@ -1,14 +1,15 @@
 import React, { FC, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { groupBy, mapKeys, mapValues, sum, isString } from 'lodash';
+import { useDispatch, useSelector } from 'react-redux';
+import { groupBy, mapKeys, mapValues, sum, isString, isArray } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { BsFillExclamationOctagonFill } from 'react-icons/bs';
+import { MdSpeed } from 'react-icons/md';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
-import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -16,6 +17,10 @@ import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgr
 import { LayerType, EDITOAST_TO_LAYER_DICT, EditoastType } from '../tools/types';
 import { selectLayers } from '../../../reducers/editor';
 import { EditorEntity } from '../../../types';
+import { getMap } from '../../../reducers/map/selectors';
+import { getInfraID } from '../../../reducers/osrdconf/selectors';
+import { osrdEditoastApi } from '../../../common/api/osrdEditoastApi';
+import { updateLayersSettings } from '../../../reducers/map';
 
 const LAYERS: Array<{ id: LayerType; icon: string | JSX.Element }> = [
   { id: 'track_sections', icon: trackSectionsIcon },
@@ -23,11 +28,14 @@ const LAYERS: Array<{ id: LayerType; icon: string | JSX.Element }> = [
   { id: 'buffer_stops', icon: bufferStopIcon },
   { id: 'detectors', icon: detectorsIcon },
   { id: 'switches', icon: switchesIcon },
+  { id: 'speed_sections', icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   {
     id: 'errors',
     icon: <BsFillExclamationOctagonFill style={{ width: '20px' }} className="mx-2 text-danger" />,
   },
 ];
+
+const SPEED_LIMIT_TAG_PLACEHOLDER = 'OSRD::SPEED_LIMIT_TAG_PLACEHOLDER';
 
 interface LayersModalProps {
   initialLayers: Set<LayerType>;
@@ -44,7 +52,15 @@ const LayersModal: FC<LayersModalProps> = ({
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { closeModal } = useModal();
+  const { layersSettings } = useSelector(getMap);
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
+  const [speedLimitTag, setSpeedLimitTag] = useState<string | undefined>(
+    layersSettings.speedlimittag as string | undefined
+  );
+  const infraID = useSelector(getInfraID);
+  const { data: speedLimitTags } = osrdEditoastApi.endpoints.getInfraByIdSpeedLimitTags.useQuery({
+    id: infraID as number,
+  });
   const selectionCounts = useMemo(
     () =>
       selection
@@ -68,6 +84,9 @@ const LayersModal: FC<LayersModalProps> = ({
   return (
     <Modal title={t('Editor.nav.toggle-layers')}>
       <div className="container-fluid mb-3">
+        <div>
+          <h4>{t('Editor.nav.osrd-layers')}</h4>
+        </div>
         <div className="row">
           {LAYERS.map(({ id, icon }) => (
             <div className="col-lg-6" key={id}>
@@ -112,6 +131,34 @@ const LayersModal: FC<LayersModalProps> = ({
           ))}
         </div>
         <hr />
+        <div>
+          <h4>{t('Editor.nav.speed-limits')}</h4>
+          <select
+            id="filterLevel"
+            className="form-control"
+            value={speedLimitTag || SPEED_LIMIT_TAG_PLACEHOLDER}
+            disabled={!isArray(speedLimitTags) || !selectedLayers.has('speed_sections')}
+            onChange={(e) => {
+              setSpeedLimitTag(
+                e.target.value && e.target.value !== SPEED_LIMIT_TAG_PLACEHOLDER
+                  ? e.target.value
+                  : undefined
+              );
+            }}
+          >
+            {[SPEED_LIMIT_TAG_PLACEHOLDER, ...(speedLimitTags || [])].map((tag) => (
+              <option value={tag}>
+                {tag === SPEED_LIMIT_TAG_PLACEHOLDER
+                  ? t('Editor.layers-modal.no-speed-limit-tag')
+                  : tag}
+              </option>
+            ))}
+          </select>
+        </div>
+        <hr />
+        <div>
+          <h4>{t('Editor.nav.map-layers')}</h4>
+        </div>
         <MapSettingsBackgroundSwitches />
       </div>
 
@@ -129,6 +176,12 @@ const LayersModal: FC<LayersModalProps> = ({
           className="btn btn-primary"
           onClick={() => {
             dispatch(selectLayers(selectedLayers));
+            dispatch(
+              updateLayersSettings({
+                ...layersSettings,
+                speedlimittag: speedLimitTag,
+              })
+            );
             onSubmit({ newLayers: selectedLayers });
             closeModal();
           }}

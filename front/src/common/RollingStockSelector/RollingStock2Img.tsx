@@ -1,28 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { RollingStock } from 'common/api/osrdEditoastApi';
-import { get } from '../requests';
+import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
+import { getDocument } from 'common/api/documentApi';
 
-const RollingStock2Img: React.FC<{ rollingStock: RollingStock }> = ({ rollingStock }) => {
+const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStock }> = ({
+  rollingStock,
+}) => {
   // as the image is stored in the database and can be fetched only through api (authentication needed),
   // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
   // url is generated and stored in imageUrl (then used in <img />).
   const [imageUrl, setImageUrl] = useState('');
 
   const getRollingStockImage = async () => {
-    const { id, liveries } = rollingStock;
+    const { liveries } = rollingStock;
     if (!rollingStock || !Array.isArray(liveries)) return;
 
     const defaultLivery = liveries.find((livery) => livery.name === 'default');
-    if (!defaultLivery?.id) return;
+    if (!defaultLivery?.compound_image_id) return;
 
     try {
-      const image = await get(`/editoast/rolling_stock/${id}/livery/${defaultLivery.id}/`, {
-        responseType: 'blob',
-      });
+      const image = await getDocument(defaultLivery.compound_image_id);
       if (image) setImageUrl(URL.createObjectURL(image));
-    } catch (e) {
-      console.error(e);
+    } catch (e: unknown) {
+      console.error(e instanceof Error ? e.message : e);
     }
   };
 

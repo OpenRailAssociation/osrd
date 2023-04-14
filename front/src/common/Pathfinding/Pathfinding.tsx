@@ -170,10 +170,11 @@ function init({
 }
 
 interface PathfindingProps {
+  mustUpdate?: boolean;
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
 }
 
-function Pathfinding({ zoomToFeature }: PathfindingProps) {
+function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] =
     useState<ReturnType<typeof postPathfinding>>();
@@ -197,9 +198,6 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   };
   const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
   const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
-  const openModalWrapperBecauseTypescriptSucks = () => {
-    openModal(<ModalPathJSONDetail />, 'lg');
-  };
 
   const transformVias = ({ steps }: Path) => {
     if (steps && steps.length >= 2) {
@@ -283,6 +281,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           } else if (e?.data?.message) {
             pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
           }
+          dispatch(updatePathfindingID(undefined));
         });
     }
   };
@@ -294,16 +293,18 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   }, []);
 
   useEffect(() => {
-    pathfindingDispatch({
-      type: 'VIAS_CHANGED',
-      params: {
-        vias,
-        origin,
-        destination,
-        rollingStockID,
-      },
-    });
-  }, [vias]);
+    if (mustUpdate) {
+      pathfindingDispatch({
+        type: 'VIAS_CHANGED',
+        params: {
+          vias,
+          origin,
+          destination,
+          rollingStockID,
+        },
+      });
+    }
+  }, [mustUpdate, vias]);
 
   useEffect(() => {
     if (pathfindingState.mustBeLaunched) {
@@ -312,20 +313,22 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   }, [pathfindingState.mustBeLaunched]);
 
   useEffect(() => {
-    pathfindingDispatch({
-      type: 'PATHFINDING_PARAM_CHANGED',
-      params: {
-        origin,
-        destination,
-        rollingStockID,
-      },
-    });
-  }, [origin, destination, rollingStockID]);
+    if (mustUpdate) {
+      pathfindingDispatch({
+        type: 'PATHFINDING_PARAM_CHANGED',
+        params: {
+          origin,
+          destination,
+          rollingStockID,
+        },
+      });
+    }
+  }, [mustUpdate, origin, destination, rollingStockID]);
 
   const pathDetailsToggleButton = (
     <button
       type="button"
-      onClick={openModalWrapperBecauseTypescriptSucks}
+      onClick={() => openModal(<ModalPathJSONDetail />, 'lg')}
       className="btn btn-link details"
     >
       {formatKmValue(lengthFromLineCoordinates(geojson?.geographic?.coordinates))}

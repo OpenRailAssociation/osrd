@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { flatMap, uniq } from 'lodash';
+import { flatMap, forEach, isNumber, uniq } from 'lodash';
 import { useSelector } from 'react-redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
@@ -12,12 +12,14 @@ import {
   EditorEntity,
   RouteEntity,
   SignalEntity,
+  SpeedSectionEntity,
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../types';
 import { EditoastType } from '../tools/types';
 import { getEntities, getEntity } from '../data/api';
 import { getInfraID } from '../../../reducers/osrdconf/selectors';
+import { getSpeedSectionsNameString } from '../../../common/Map/Layers/SpeedLimits';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {
@@ -130,7 +132,7 @@ function getSumUpContent(
         subtexts.push(
           <>
             <span className={classes.muted}>
-              {t('Editor.tools.select-items.linked-to-line', { count: 1 })}
+              {t('Editor.tools.select-items.linked-to-line', { count: 1 }).toString()}
             </span>{' '}
             <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
           </>
@@ -159,7 +161,9 @@ function getSumUpContent(
         subtexts.push(
           <>
             <span className={classes.muted}>
-              {t('Editor.tools.select-items.linked-to-line', { count: trackNames.length })}
+              {t('Editor.tools.select-items.linked-to-line', {
+                count: trackNames.length,
+              }).toString()}
             </span>{' '}
             <span>{prettifyStringsArray(trackNames, ` ${t('common.and')} `)}</span>
           </>
@@ -176,11 +180,11 @@ function getSumUpContent(
             {additionalEntities.entryPoint && (
               <>
                 <span className={cx(classes.muted, 'mr-2')}>
-                  {t('Editor.tools.routes-edition.from')}
+                  {t('Editor.tools.routes-edition.from').toString()}
                 </span>{' '}
                 <div>
                   <span className={cx(classes.muted, classes.small)}>
-                    {t(`Editor.obj-types.${additionalEntities.entryPoint.objType}`)}
+                    {t(`Editor.obj-types.${additionalEntities.entryPoint.objType}`).toString()}
                   </span>
                   <div>{additionalEntities.entryPoint.properties.id}</div>
                 </div>
@@ -192,11 +196,11 @@ function getSumUpContent(
             {additionalEntities.exitPoint && (
               <>
                 <span className={cx(classes.muted, 'mr-2')}>
-                  {t('Editor.tools.routes-edition.to')}
+                  {t('Editor.tools.routes-edition.to').toString()}
                 </span>{' '}
                 <div>
                   <span className={cx(classes.muted, classes.small)}>
-                    {t(`Editor.obj-types.${additionalEntities.exitPoint.objType}`)}
+                    {t(`Editor.obj-types.${additionalEntities.exitPoint.objType}`).toString()}
                   </span>
                   <div>{additionalEntities.exitPoint.properties.id}</div>
                 </div>
@@ -204,6 +208,26 @@ function getSumUpContent(
             )}
           </div>
         );
+      break;
+    }
+    case 'SpeedSection': {
+      const speedSection = entity as SpeedSectionEntity;
+      text = speedSection.properties.id;
+      subtexts.push(
+        <span className={classes.muted}>
+          {t('Editor.tools.select-items.linked-to-n-lines', {
+            count: speedSection.properties.track_ranges?.length || 0,
+          }).toString()}
+        </span>
+      );
+      forEach(speedSection.properties.speed_limit_by_tag, (limit, tag) => {
+        subtexts.push(
+          <>
+            <span className={cx(classes.muted, 'mr-2')}>{tag}</span>{' '}
+            <span>{isNumber(limit) ? getSpeedSectionsNameString(limit) : '-'}</span>
+          </>
+        );
+      });
       break;
     }
     default: {

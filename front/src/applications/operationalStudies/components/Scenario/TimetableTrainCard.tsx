@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdContentCopy } from 'react-icons/md';
 import { sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import cx from 'classnames';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
+import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 
 type Props = {
   train: ScheduledTrain;
@@ -17,9 +22,11 @@ type Props = {
   deleteTrain: (train: ScheduledTrain) => void;
   selectPathProjection: (train: ScheduledTrain) => void;
   duplicateTrain: (train: ScheduledTrain) => void;
+  setDisplayTrainScheduleManagement: (arg0: string) => void;
+  setTrainScheduleIDsToModify: (IDs: number[] | undefined) => void;
 };
 
-export default function TimetableTrainCard({
+function TimetableTrainCard({
   train,
   isSelected,
   projectionPathIsUsed,
@@ -28,35 +35,57 @@ export default function TimetableTrainCard({
   deleteTrain,
   selectPathProjection,
   duplicateTrain,
+  setDisplayTrainScheduleManagement,
+  setTrainScheduleIDsToModify,
 }: Props) {
+  const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getRollingStock, { data: rollingStock }] =
+    osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
   const { t } = useTranslation(['operationalStudies/scenario']);
+
+  const editTrainSchedule = () => {
+    setTrainScheduleIDsToModify([train.id]);
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
+  };
+
+  useEffect(() => {
+    if (train.id) {
+      getTrainSchedule({ id: train.id })
+        .unwrap()
+        .then((trainSchedule) => {
+          if (trainSchedule.rolling_stock) getRollingStock({ id: trainSchedule.rolling_stock });
+        });
+    }
+  }, [train.id]);
 
   return (
     <div className={`scenario-timetable-train ${isSelected ? 'selected' : ''}`}>
       <div
-        className="scenario-timetable-train-container"
+        className="scenario-timetable-train-container with-details"
         role="button"
         tabIndex={0}
         onClick={() => changeSelectedTrain(idx)}
       >
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
-            <div className="scenario-timetable-train-idx">{idx + 1}</div>
-            {projectionPathIsUsed && (
-              <span className="mr-1">
-                <GiPathDistance />
+            <div
+              className={cx('scenario-timetable-train-idx', projectionPathIsUsed && 'projected')}
+            >
+              {idx + 1}
+            </div>
+            {train.name}
+            {rollingStock && (
+              <span className="img-container">
+                <RollingStock2Img rollingStock={rollingStock} />
               </span>
             )}
-            {train.name}
           </div>
           <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
           <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
         </div>
         <div className="scenario-timetable-train-body">
-          <div className="scenario-timetable-train-duration">{train.speed_limit_tags}</div>
-          <div className="scenario-timetable-train-duration">
-            {sec2time(train.arrival - train.departure)}
-          </div>
+          <span>{train.speed_limit_tags}</span>
+          {sec2time(train.arrival - train.departure)}
         </div>
         <div className="scenario-timetable-train-tags">
           {train.labels.map((tag) => (
@@ -85,9 +114,10 @@ export default function TimetableTrainCard({
           <MdContentCopy />
         </button>
         <button
-          className="scenario-timetable-train-buttons-update d-none"
+          className="scenario-timetable-train-buttons-update"
           type="button"
           title={t('timetable.update')}
+          onClick={editTrainSchedule}
         >
           <FaPencilAlt />
         </button>
@@ -103,3 +133,5 @@ export default function TimetableTrainCard({
     </div>
   );
 }
+
+export default React.memo(TimetableTrainCard);
