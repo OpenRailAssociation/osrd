@@ -21,9 +21,13 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
       setIsOpened(!isOpened);
     }
   };
-  const trainDuration = Math.round(
-    (new Date(trainData.arrivalTime).getTime() - new Date(trainData.departureTime).getTime()) / 1000
-  );
+
+  const calcRouteDurationInHour = (departureTime: string, arrivalTime: string) => {
+    const durationInSecond = Math.round(
+      (new Date(arrivalTime).getTime() - new Date(departureTime).getTime()) / 1000
+    );
+    return seconds2hhmmss(durationInSecond);
+  };
   return (
     <div
       className="import-train-schedule-traindetail import-train-schedule-traindetail-no-hover"
@@ -47,7 +51,7 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
           {trainData.departureTime.slice(-8)} - {trainData.arrivalTime.slice(-8)}
         </span>
         <span className="import-train-schedule-traindetail-duration">
-          {seconds2hhmmss(trainDuration)}
+          {calcRouteDurationInHour(trainData.departureTime, trainData.arrivalTime)}
         </span>
         {rollingStock && (
           <LazyLoadComponent>
@@ -81,10 +85,10 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
               <div className="import-train-schedule-traindetail-step" key={nextId()}>
                 <span className="import-train-schedule-traindetail-step-nb">{stepIdx}</span>
                 <span className="import-train-schedule-traindetail-step-startend">
-                  {`${step.debut} - ${step.fin}`}
+                  {`${step.arrivalTime.slice(-8)} - ${step.departureTime.slice(-8)} `}
                 </span>
                 <span className="import-train-schedule-traindetail-step-duration">
-                  {step.duree}s
+                  {step.duration}s
                 </span>
                 <span className="import-train-schedule-traindetail-step-name">{step.gare}</span>
               </div>
