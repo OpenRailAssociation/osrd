@@ -2215,9 +2215,15 @@ components:
 
     LightRollingStock:
       allOf:
-        - $ref: "#/components/schemas/RollingStock"
+        - $ref: "#/components/schemas/RollingStockBase"
         - type: object
           properties:
+            id:
+              type: number
+            liveries:
+              type: array
+              items:
+                $ref: "#/components/schemas/RollingStockLivery"
             effort_curves:
               type: object
               properties:
@@ -2232,7 +2238,7 @@ components:
                         type: boolean
                     required: [is_electric]
               required: [default_mode, modes]
-          required: [effort_curves]
+          required: [id, liveries, effort_curves]
 
     PowerPack:
       description: energy source for a rolling stock representing a power pack (hydrogen, fuel...)
@@ -2268,6 +2274,33 @@ components:
           required: [id, liveries]
 
     RollingStockUpsertPayload:
+      allOf:
+        - $ref: "#/components/schemas/RollingStockBase"
+        - type: object
+          properties:
+            effort_curves:
+              type: object
+              properties:
+                default_mode:
+                  type: string
+                modes:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      curves:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ConditionalEffortCurve"
+                      default_curve:
+                        $ref: "#/components/schemas/EffortCurve"
+                      is_electric:
+                        type: boolean
+                    required: [curves, default_curve, is_electric]
+              required: [default_mode, modes]
+          required: [effort_curves]
+    
+    RollingStockBase:
       properties:
         version:
           type: string
@@ -2334,26 +2367,6 @@ components:
             - "FR3.3"
             - "FR3.3/GB/G2"
             - "GLOTT"
-        effort_curves:
-          type: object
-          properties:
-            default_mode:
-              type: string
-            modes:
-              type: object
-              additionalProperties:
-                type: object
-                properties:
-                  curves:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/ConditionalEffortCurve"
-                  default_curve:
-                    $ref: "#/components/schemas/EffortCurve"
-                  is_electric:
-                    type: boolean
-                required: [curves, default_curve, is_electric]
-          required: [default_mode, modes]
         base_power_class:
           type: string
           example: "5"
@@ -2426,7 +2439,6 @@ components:
         - mass
         - rolling_resistance
         - loading_gauge
-        - effort_curves
         - base_power_class
         - power_restrictions
         - metadata
