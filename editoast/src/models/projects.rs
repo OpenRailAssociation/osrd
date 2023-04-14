@@ -115,7 +115,7 @@ impl Project {
 
     /// Update a project. If the image is changed, the old image is deleted.
     /// If the image is not found, return `None`.
-    /// If the project id is `None` this functions panic.
+    /// If the project id is `None` this function panics.
     pub async fn update(self, db_pool: Data<DbPool>) -> Result<Option<Project>> {
         let project_id = self.id.expect("Project id is None");
         let project = match Project::retrieve(db_pool.clone(), project_id).await? {

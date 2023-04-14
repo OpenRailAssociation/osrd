@@ -12,6 +12,7 @@ mod schema;
 mod tables;
 mod views;
 
+use crate::error::InternalError;
 use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
@@ -113,7 +114,7 @@ async fn runserver(
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
         .limit(250 * 1024 * 1024) // 250MB
-        .error_handler(|err, _| err.into());
+        .error_handler(|err, _| InternalError::from(err).into());
 
     // Set the default log level to 'info'
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
