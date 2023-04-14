@@ -74,11 +74,9 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   };
 
   const addTag = (tag: string) => {
-    if (currentStudy?.tags) {
-      const newTags = [...currentStudy?.tags];
-      newTags.push(tag);
-      setCurrentStudy({ ...currentStudy, tags: newTags });
-    }
+    const newTags = currentStudy?.tags ? currentStudy?.tags : [];
+    newTags.push(tag);
+    setCurrentStudy({ ...currentStudy, tags: newTags });
   };
 
   const createStudy = async () => {

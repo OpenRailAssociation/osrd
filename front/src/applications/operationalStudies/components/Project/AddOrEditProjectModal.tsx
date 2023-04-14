@@ -58,11 +58,9 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   };
 
   const addTag = (tag: string) => {
-    if (currentProject?.tags) {
-      const newTags: string[] = currentProject.tags ? Array.from(currentProject.tags) : [];
-      newTags.push(tag);
-      setCurrentProject({ ...currentProject, tags: newTags });
-    }
+    const newTags: string[] = currentProject?.tags ? Array.from(currentProject.tags) : [];
+    newTags.push(tag);
+    setCurrentProject({ ...currentProject, tags: newTags });
   };
 
   const getDocKey = async (image: Blob) => {
