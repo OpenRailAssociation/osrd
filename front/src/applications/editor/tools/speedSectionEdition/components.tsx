@@ -1,10 +1,10 @@
-import { mapValues, cloneDeep, isEqual, map, isEmpty, mapKeys, omit } from 'lodash';
+import { mapValues, cloneDeep, isEqual, map, isEmpty, mapKeys, omit, isNumber } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Popup, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import { Feature, FeatureCollection, LineString, Point } from 'geojson';
-import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
+import React, { FC, InputHTMLAttributes, useContext, useEffect, useMemo, useState } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { AiFillSave, AiOutlinePlusCircle, FaTimes, MdShowChart } from 'react-icons/all';
 import { FaFlagCheckered } from 'react-icons/fa';
@@ -197,6 +197,39 @@ export const TrackRangesList: FC = () => {
   );
 };
 
+function msToKmhString(msSpeed: number | undefined): string {
+  return isNumber(msSpeed) ? msToKmh(msSpeed).toFixed(2) : '';
+}
+const SpeedInput: FC<
+  {
+    msSpeed: number | undefined;
+    onChange: (newMsSpeed: number | undefined) => void;
+  } & Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'>
+> = ({ msSpeed, onChange, ...attrs }) => {
+  const [kmhSpeed, setKmhSpeed] = useState<string>(msToKmhString(msSpeed));
+
+  useEffect(() => {
+    const newKmhSpeed = msToKmhString(msSpeed);
+    if (+newKmhSpeed !== +kmhSpeed) setKmhSpeed(newKmhSpeed);
+  }, [msSpeed]);
+
+  return (
+    <input
+      min={0}
+      step={0.1}
+      {...attrs}
+      type="number"
+      value={kmhSpeed}
+      onChange={(e) => {
+        setKmhSpeed(e.target.value);
+        const newKmhSpeed = +e.target.value;
+        const newMsSpeed = isNumber(newKmhSpeed) ? kmhToMs(newKmhSpeed) : undefined;
+        if (newMsSpeed !== msSpeed) onChange(newMsSpeed);
+      }}
+    />
+  );
+};
+
 export const MetadataForm: FC = () => {
   const { t } = useTranslation();
   const {
@@ -216,17 +249,14 @@ export const MetadataForm: FC = () => {
             {t('Editor.tools.speed-edition.main-speed-limit')}
           </label>
           <div className="d-flex flex-row align-items-center">
-            <input
+            <SpeedInput
               className="form-control flex-grow-1 flex-shrink-1"
               id="speed-section.main-limit"
               placeholder=""
-              type="number"
-              min={0}
-              value={entity.properties.speed_limit ? msToKmh(entity.properties.speed_limit) : ''}
-              onChange={(e) => {
+              msSpeed={entity.properties.speed_limit || undefined}
+              onChange={(newMsSpeed) => {
                 const newEntity = cloneDeep(entity);
-                const value = parseFloat(e.target.value);
-                newEntity.properties.speed_limit = !Number.isNaN(value) ? value : undefined;
+                newEntity.properties.speed_limit = newMsSpeed;
                 setState({ entity: newEntity });
               }}
             />
@@ -256,21 +286,16 @@ export const MetadataForm: FC = () => {
                   setState({ entity: newEntity });
                 }}
               />
-              <input
+              <SpeedInput
                 className="form-control flex-shrink-0 px-2"
                 style={{ width: '5em' }}
                 placeholder=""
-                type="number"
-                min={0}
-                step={0.1}
-                value={msToKmh(value)}
-                onChange={(e) => {
+                msSpeed={value}
+                onChange={(newMsSpeed) => {
                   const newEntity = cloneDeep(entity);
                   newEntity.properties.speed_limit_by_tag =
                     newEntity.properties.speed_limit_by_tag || {};
-                  newEntity.properties.speed_limit_by_tag[key] = kmhToMs(
-                    parseFloat(e.target.value)
-                  );
+                  newEntity.properties.speed_limit_by_tag[key] = newMsSpeed;
                   setState({ entity: newEntity });
                 }}
               />

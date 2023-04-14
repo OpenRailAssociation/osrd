@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { flatMap, forEach, uniq } from 'lodash';
+import { flatMap, forEach, isNumber, uniq } from 'lodash';
 import { useSelector } from 'react-redux';
 import { TFunction } from 'i18next';
 import cx from 'classnames';
@@ -223,8 +223,8 @@ function getSumUpContent(
       forEach(speedSection.properties.speed_limit_by_tag, (limit, tag) => {
         subtexts.push(
           <>
-            <span className={cx(classes.muted, 'mr-2')}>{tag} -</span>{' '}
-            <span>{getSpeedSectionsNameString(limit)}</span>
+            <span className={cx(classes.muted, 'mr-2')}>{tag}</span>{' '}
+            <span>{isNumber(limit) ? getSpeedSectionsNameString(limit) : '-'}</span>
           </>
         );
       });

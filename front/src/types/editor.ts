@@ -43,7 +43,7 @@ export interface SpeedSectionEntity
     MultiLineString,
     {
       speed_limit?: number;
-      speed_limit_by_tag?: Record<string, number>;
+      speed_limit_by_tag?: Record<string, number | undefined>;
       track_ranges?: {
         applicable_directions: ApplicableDirection;
         begin: number;
