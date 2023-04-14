@@ -33,9 +33,6 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   icon: MdSpeed,
   labelTranslationKey: 'Editor.tools.speed-edition.label',
   requiredLayers: new Set(['speed_sections']),
-  isDisabled({ editorState }) {
-    return !editorState.editorLayers.has('speed_sections');
-  },
 
   getInitialState() {
     return getEditSpeedSectionState(getNewSpeedSection());

@@ -104,7 +104,8 @@
       "layer-selected-items_one": "Un élément sélectionné",
       "layer-selected-items_other": "{{count}} éléments sélectionnés",
       "selection-warning_one": "Un élément sera désélectionné lors de la confirmation.",
-      "selection-warning_other": "{{count}} éléments seront désélectionnés lors de la confirmation."
+      "selection-warning_other": "{{count}} éléments seront désélectionnés lors de la confirmation.",
+      "no-speed-limit-tag": "Aucun code de composition"
     },
     "linear-metadata": {
       "help": "Ce composant vous permet de visualiser et modifier un habillage linéaire. Vous pouvez zoomer dans la visualisation via les boutons prévus à cet effet ou avec la molette de la souris, et vous déplacer via un drag'n'drop. Pour modifier la taille d'un segment, il vous suffit de cliquer dessus, le formulaire d'édition s'affichera en dessous. Vous pouvez aussi cliquer sur une bordure d'un segment, et tout en gardant le doigt appuyé, déplacer la bordure avec la sourie.",
@@ -118,7 +119,10 @@
       "infra-errors": "Afficher les erreurs de l'infrastructure courante",
       "recenter": "Recentrer la carte",
       "select-infra": "Choisir l'infrastructure à éditer",
-      "toggle-layers": "Choisir les types d'éléments à afficher"
+      "toggle-layers": "Choisir les types d'éléments à afficher",
+      "osrd-layers": "Couches de données OSRD",
+      "speed-limits": "Limitations de vitesse",
+      "map-layers": "Couches cartographiques"
     },
     "obj-types": {
       "BufferStop": "Heurtoir",
