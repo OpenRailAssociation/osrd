@@ -209,23 +209,25 @@ export default function AddOrEditScenarioModal({
                 }
               />
             </div>
-            <div className="scenario-edition-modal-description">
-              <SelectImprovedSNCF
-                title={
-                  <div className="d-flex align-items-center">
-                    <span className="mr-2">
-                      <GiElectric />
-                    </span>
-                    {t('electricalProfileSet')}
-                  </div>
-                }
-                selectedValue={selectedValue}
-                options={electricalProfileSetOptions}
-                onChange={(e: SelectOptionsType) =>
-                  setCurrentScenario({ ...currentScenario, electrical_profile_set_id: e.key })
-                }
-              />
-            </div>
+            {!editionMode && (
+              <div className="scenario-edition-modal-description">
+                <SelectImprovedSNCF
+                  title={
+                    <div className="d-flex align-items-center">
+                      <span className="mr-2">
+                        <GiElectric />
+                      </span>
+                      {t('electricalProfileSet')}
+                    </div>
+                  }
+                  selectedValue={selectedValue}
+                  options={electricalProfileSetOptions}
+                  onChange={(e: SelectOptionsType) =>
+                    setCurrentScenario({ ...currentScenario, electrical_profile_set_id: e.key })
+                  }
+                />
+              </div>
+            )}
             <ChipsSNCF
               addTag={addTag}
               tags={currentScenario.tags}
