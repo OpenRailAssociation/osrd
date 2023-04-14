@@ -97,7 +97,7 @@
       "signals": "Signaux",
       "switches": "Aiguillages",
       "track_sections": "Sections de lignes",
-      "speed_sections": "Sections de vitesses"
+      "speed_sections": "Vitesses limites"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
@@ -127,7 +127,7 @@
       "Signal": "Signal",
       "Switch": "Aiguillage",
       "TrackSection": "Section de ligne",
-      "SpeedSection": "Section de vitesse"
+      "SpeedSection": "Vitesse limite"
     },
     "title": "Éditeur",
     "tool-help": "Voir la description de l'outil actif",
@@ -288,17 +288,17 @@
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
         "label": "Outil \"Ligne\"",
-        "default-speed-sections-error": "Une erreur est survenue lors du chargement des sections de vitesse liés.",
-        "no-linked-speed-section": "Aucune section de vitesse liée",
-        "attached-speed-sections": "Sections de vitesse liées",
+        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
+        "no-linked-speed-section": "Aucune vitesse limite renseignée",
+        "attached-speed-sections": "Vitesses limites",
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
         "show-more-speed-sections_one": "Voir un résultat de plus",
         "show-more-speed-sections_other": "Voir {{count}} résultats de plus"
       },
       "speed-edition": {
-        "label": "Outil \"Sections de vitesse\"",
+        "label": "Outil \"Vitesses limites\"",
         "actions": {
-          "new-speed-section": "Créer une nouvelle section de vitesse",
+          "new-speed-section": "Créer une nouvelle vitesse limite",
           "reset-speed-section": "Annuler les modifications en cours"
         },
         "speed-limits": "Limitations de vitesses",
@@ -314,9 +314,9 @@
         "add-track-range": "Cliquer pour lier à :",
         "remove-track-range": "Cliquer pour détacher de :",
         "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
-        "save-new-speed-section": "Sauver la nouvelle section de vitesse",
+        "save-new-speed-section": "Sauver la nouvelle limite de vitesse",
         "save-existing-speed-section": "Sauvegarder les modifications",
-        "new-tag": "Nouvelle étiquette"
+        "new-tag": "Code de composition"
       }
     }
   }
