@@ -307,7 +307,15 @@ public class Pathfinding<NodeT, EdgeT> {
         else {
             totalDistance = prevDistance + edgeRangeCost.apply(range);
         }
-        double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.start);
+        double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.end);
+
+        for (var edge: targets) {
+            if (edge.edge == range.edge) {
+                distanceLeftEstimation = 0;
+                break;
+            }
+        }
+
         queue.add(new Step<>(
                 range,
                 prev,
