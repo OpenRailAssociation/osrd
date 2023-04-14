@@ -103,7 +103,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
         let imageId = currentProject.image;
         if (tempProjectImage) {
           imageId = await getDocKey(tempProjectImage as Blob);
-        } else {
+        } else if (tempProjectImage === null) {
           imageId = null;
           setTempProjectImage(imageId);
         }
