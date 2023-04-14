@@ -211,11 +211,21 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/rolling_stock/`,
         method: 'POST',
-        body: queryArg.rollingStockCreatePayload,
+        body: queryArg.rollingStockUpsertPayload,
       }),
     }),
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
+    }),
+    patchRollingStockById: build.mutation<
+      PatchRollingStockByIdApiResponse,
+      PatchRollingStockByIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/rolling_stock/${queryArg.id}/`,
+        method: 'PATCH',
+        body: queryArg.rollingStockUpsertPayload,
+      }),
     }),
     postRollingStockByIdLivery: build.mutation<
       PostRollingStockByIdLiveryApiResponse,
@@ -673,15 +683,22 @@ export type GetLightRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
 };
-export type PostRollingStockApiResponse = /** status 200 The rolling stock list */ RollingStock;
+export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
-  rollingStockCreatePayload: RollingStockCreatePayload;
+  rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
 export type GetRollingStockByIdApiResponse =
   /** status 200 The rolling stock information */ RollingStock;
 export type GetRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
+};
+export type PatchRollingStockByIdApiResponse =
+  /** status 200 The updated rolling stock */ RollingStock;
+export type PatchRollingStockByIdApiArg = {
+  /** Rolling Stock ID */
+  id: number;
+  rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
 export type PostRollingStockByIdLiveryApiResponse =
   /** status 200 The rolling stock livery */ RollingStockLivery;
@@ -1122,7 +1139,7 @@ export type ConditionalEffortCurve = {
   } | null;
   curve?: EffortCurve;
 };
-export type RollingStockCreatePayload = {
+export type RollingStockUpsertPayload = {
   version: string;
   name: string;
   length: number;
@@ -1175,7 +1192,7 @@ export type RollingStockLivery = {
   name: string;
   compound_image_id: number | null;
 };
-export type RollingStock = RollingStockCreatePayload & {
+export type RollingStock = RollingStockUpsertPayload & {
   id: number;
   liveries: RollingStockLivery[];
 };

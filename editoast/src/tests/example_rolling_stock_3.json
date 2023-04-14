@@ -1,0 +1,66 @@
+{
+    "version": "3.2",
+    "length": 200.0,
+    "max_speed": 40.0,
+    "startup_time": 5.0,
+    "startup_acceleration": 0.25,
+    "comfort_acceleration": 0.12,
+    "inertia_coefficient": 1.02,
+    "features": [],
+    "name": "other_rolling_stock",
+    "mass": 50000.0,
+    "loading_gauge": "G2",
+    "gamma": {
+        "value": 0.6,
+        "type": "MAX"
+    },
+    "rolling_resistance": {
+        "type": "davis",
+        "A": 200,
+        "B": 12,
+        "C": 5000
+    },
+    "effort_curves": {
+        "default_mode": "25000",
+        "modes": {
+            "25000": {
+                "curves": [],
+                "default_curve": {
+                    "speeds": [
+                        0,
+                        5,
+                        10,
+                        15,
+                        20,
+                        22,
+                        27,
+                        32,
+                        37,
+                        42,
+                        47,
+                        52,
+                        57,
+                        62,
+                        67,
+                        72,
+                        77
+                    ],
+                    "max_efforts": []
+                },
+                "is_electric": true
+            }
+        }
+    },
+    "base_power_class": "4",
+    "metadata": {
+        "detail": "detail updated",
+        "number": "2",
+        "reference": "reference updated",
+        "family": "LOCOMOTIVES",
+        "type": "Locomotives électriques",
+        "grouping": "Locomotives électriques monophasé",
+        "series": "",
+        "subseries": "US",
+        "unit": "1"
+    }
+}

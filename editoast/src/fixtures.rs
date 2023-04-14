@@ -54,6 +54,22 @@ pub mod tests {
     }
 
     #[fixture]
+    pub async fn other_rolling_stock(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) -> TestFixture<RollingStockModel> {
+        TestFixture {
+            model: serde_json::from_str::<RollingStockModel>(include_str!(
+                "./tests/example_rolling_stock_2.json"
+            ))
+            .expect("Unable to parse")
+            .create(db_pool.clone())
+            .await
+            .unwrap(),
+            db_pool,
+        }
+    }
+
+    #[fixture]
     pub async fn document_example(
         db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
     ) -> TestFixture<Document> {

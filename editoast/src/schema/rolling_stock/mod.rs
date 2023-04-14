@@ -1,7 +1,7 @@
 pub mod light_rolling_stock;
 pub mod rolling_stock_livery;
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
@@ -95,11 +95,38 @@ pub struct ConditionalEffortCurve {
     curve: EffortCurve,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurve {
     speeds: Vec<f64>,
     max_efforts: Vec<f64>,
+}
+
+impl<'de> Deserialize<'de> for EffortCurve {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct InnerParams {
+            speeds: Vec<f64>,
+            max_efforts: Vec<f64>,
+        }
+
+        let inner = InnerParams::deserialize(deserializer)?;
+
+        // Validate the curve
+        if inner.max_efforts.len() != inner.speeds.len() {
+            return Err(serde::de::Error::custom(
+                "effort curve invalid, max_efforts and speeds arrays should have the same length",
+            ));
+        }
+
+        Ok(EffortCurve {
+            speeds: inner.speeds,
+            max_efforts: inner.max_efforts,
+        })
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -115,4 +142,25 @@ pub struct ModeEffortCurves {
 pub struct EffortCurves {
     modes: HashMap<String, ModeEffortCurves>,
     default_mode: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::schema::rolling_stock::EffortCurve;
+
+    #[test]
+    fn test_de_effort_curve_valid() {
+        assert!(serde_json::from_str::<EffortCurve>(
+            r#"{ "speeds": [0, 1], "max_efforts": [0, 2] }"#
+        )
+        .is_ok());
+    }
+
+    #[test]
+    fn test_de_effort_curve_unvalid() {
+        assert!(
+            serde_json::from_str::<EffortCurve>(r#"{ "speeds": [0, 1], "max_efforts": [] }"#)
+                .is_err()
+        );
+    }
 }
