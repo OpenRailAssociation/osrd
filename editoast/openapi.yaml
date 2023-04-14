@@ -1586,7 +1586,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ScenarioRequest"
+              $ref: "#/components/schemas/ScenarioPatchRequest"
       responses:
         200:
           description: The scenario updated
@@ -2708,6 +2708,20 @@ components:
       required:
         - "name"
         - "infra_id"
+
+    ScenarioPatchRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 1024
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
 
     ScenarioResult:
       properties:
