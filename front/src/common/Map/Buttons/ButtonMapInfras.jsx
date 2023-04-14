@@ -12,7 +12,7 @@ export default function ButtonMapInfras() {
     <button
       type="button"
       className={`btn-rounded btn-rounded-white ${infraID ? '' : 'btn-map-infras-blinking'}`}
-      onClick={() => openModal(<InfraSelector modalOnly />, 'lg')}
+      onClick={() => openModal(<InfraSelector isModalOnly />, 'lg')}
     >
       <span className="sr-only">Infrastructures</span>
       <GiRailway />
