@@ -358,7 +358,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
         method: 'PATCH',
-        body: queryArg.scenarioRequest,
+        body: queryArg.scenarioPatchRequest,
       }),
     }),
   }),
@@ -842,7 +842,7 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg =
   /** scenario you want to update */
   scenarioId: number;
   /** The fields you want to update */
-  scenarioRequest: ScenarioRequest;
+  scenarioPatchRequest: ScenarioPatchRequest;
 };
 export type SearchTrackResult = {
   infra_id: number;
@@ -1294,4 +1294,9 @@ export type ScenarioListResult = {
   last_modification?: string;
   timetable_id?: number;
   trains_count?: number;
+};
+export type ScenarioPatchRequest = {
+  name?: string;
+  description?: string;
+  tags?: string[];
 };
