@@ -1,6 +1,8 @@
 use crate::error::Result;
 use crate::models::rolling_stock::RollingStockSeparatedImageModel;
-use crate::models::{Create, Document, Retrieve, RollingStockLiveryModel, RollingStockModel};
+use crate::models::{
+    Create, Document, Retrieve, RollingStockLiveryModel, RollingStockModel, Update,
+};
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
     EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
@@ -10,7 +12,7 @@ use crate::DbPool;
 use actix_multipart::form::text::Text;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, scope, Data, Json, Path};
-use actix_web::{get, post};
+use actix_web::{get, patch, post};
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
@@ -25,20 +27,23 @@ use actix_multipart::form::{tempfile::TempFile, MultipartForm};
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "rollingstocks")]
 pub enum RollingStockError {
-    #[error("Rolling stock '{rolling_stock_id}', could not be found")]
-    #[editoast_error(status = 404)]
-    NotFound { rolling_stock_id: i64 },
     #[error("Impossible to read the separated image")]
     #[editoast_error(status = 500)]
     CannotReadImage,
     #[error("Impossible to copy the separated image on the compound image")]
     #[editoast_error(status = 500)]
     CannotCreateCompoundImage,
+    #[error("Rolling stock '{rolling_stock_id}' could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { rolling_stock_id: i64 },
+    #[error("Name '{name}' already used")]
+    #[editoast_error(status = 400)]
+    NameAlreadyUsed { name: String },
 }
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/rolling_stock")
-        .service((get, create))
+        .service((get, create, update))
         .service(scope("/{rolling_stock_id}").service(create_livery))
 }
 
@@ -54,8 +59,8 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
     Ok(Json(rollig_stock_with_liveries))
 }
 
-#[derive(Serialize, Deserialize)]
-struct RollingStockCreateForm {
+#[derive(Deserialize, Serialize)]
+struct RollingStockForm {
     pub name: String,
     pub version: String,
     pub effort_curves: EffortCurves,
@@ -75,8 +80,8 @@ struct RollingStockCreateForm {
     pub power_restrictions: Option<JsonValue>,
 }
 
-impl From<RollingStockCreateForm> for RollingStockModel {
-    fn from(rolling_stock: RollingStockCreateForm) -> Self {
+impl From<RollingStockForm> for RollingStockModel {
+    fn from(rolling_stock: RollingStockForm) -> Self {
         RollingStockModel {
             name: Some(rolling_stock.name),
             version: Some(rolling_stock.version),
@@ -100,15 +105,55 @@ impl From<RollingStockCreateForm> for RollingStockModel {
     }
 }
 
+impl RollingStockForm {
+    fn into_rolling_stock_model(self, rolling_stock_id: i64) -> RollingStockModel {
+        RollingStockModel {
+            id: Some(rolling_stock_id),
+            name: Some(self.name),
+            version: Some(self.version),
+            effort_curves: Some(DieselJson(self.effort_curves)),
+            base_power_class: Some(self.base_power_class),
+            length: Some(self.length),
+            max_speed: Some(self.max_speed),
+            startup_time: Some(self.startup_time),
+            startup_acceleration: Some(self.startup_acceleration),
+            comfort_acceleration: Some(self.comfort_acceleration),
+            gamma: Some(DieselJson(self.gamma)),
+            inertia_coefficient: Some(self.inertia_coefficient),
+            features: Some(self.features),
+            mass: Some(self.mass),
+            rolling_resistance: Some(DieselJson(self.rolling_resistance)),
+            loading_gauge: Some(self.loading_gauge),
+            metadata: Some(DieselJson(self.metadata)),
+            power_restrictions: Some(self.power_restrictions),
+        }
+    }
+}
+
 #[post("")]
-async fn create(
-    db_pool: Data<DbPool>,
-    data: Json<RollingStockCreateForm>,
-) -> Result<Json<RollingStock>> {
+async fn create(db_pool: Data<DbPool>, data: Json<RollingStockForm>) -> Result<Json<RollingStock>> {
     let rolling_stock: RollingStockModel = data.into_inner().into();
     let rolling_stock: RollingStock = rolling_stock.create(db_pool).await?.into();
 
     Ok(Json(rolling_stock))
+}
+
+#[patch("/{rolling_stock_id}")]
+async fn update(
+    db_pool: Data<DbPool>,
+    path: Path<i64>,
+    data: Json<RollingStockForm>,
+) -> Result<Json<RollingStockWithLiveries>> {
+    let data = data.into_inner();
+    let rolling_stock_id = path.into_inner();
+    let rolling_stock = data.into_rolling_stock_model(rolling_stock_id);
+
+    let rolling_stock = rolling_stock
+        .update(db_pool.clone(), rolling_stock_id)
+        .await?
+        .unwrap();
+    let rollig_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    Ok(Json(rollig_stock_with_liveries))
 }
 
 #[derive(Debug, MultipartForm)]
@@ -243,15 +288,22 @@ async fn create_compound_image(
 
 #[cfg(test)]
 mod tests {
-    use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
+    use super::RollingStockError;
+    use crate::error::InternalError;
+    use crate::fixtures::tests::{db_pool, fast_rolling_stock, other_rolling_stock, TestFixture};
+    use crate::models::rolling_stock::tests::{
+        get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
+    };
     use crate::models::{Delete, RollingStockModel};
     use crate::views::rolling_stocks::RollingStock;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
+    use actix_web::http::header::ContentType;
     use actix_web::test::{call_service, read_body_json, TestRequest};
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
     use rstest::rstest;
+    use serde_json::{to_value, Value as JsonValue};
 
     #[rstest]
     async fn get_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
@@ -268,9 +320,7 @@ mod tests {
     #[rstest]
     async fn create_rolling_stock(db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>) {
         let app = create_test_service().await;
-        let rolling_stock: RollingStockModel =
-            serde_json::from_str(include_str!("../tests/example_rolling_stock.json"))
-                .expect("Unable to parse");
+        let rolling_stock: RollingStockModel = get_fast_rolling_stock();
 
         let response = call_service(
             &app,
@@ -287,5 +337,77 @@ mod tests {
         assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock.id)
             .await
             .is_ok());
+    }
+
+    #[rstest]
+    async fn create_rolling_stock_failure_invalid_effort_curve() {
+        let app = create_test_service().await;
+
+        let invalid_payload = get_invalid_effort_curves();
+
+        let response = call_service(
+            &app,
+            TestRequest::post()
+                .uri("/rolling_stock")
+                .set_payload(invalid_payload)
+                .insert_header(ContentType::json())
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[rstest]
+    async fn update_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
+        let app = create_test_service().await;
+        let fast_rolling_stock = fast_rolling_stock.await;
+        let rolling_stock_id = fast_rolling_stock.id();
+
+        let mut rolling_stock = get_other_rolling_stock();
+        rolling_stock.id = Some(rolling_stock_id);
+
+        let response = call_service(
+            &app,
+            TestRequest::patch()
+                .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
+                .set_json(rolling_stock)
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let rolling_stock: RollingStock = read_body_json(response).await;
+        assert_eq!(rolling_stock.name, "other_rolling_stock");
+    }
+
+    #[rstest]
+    async fn update_rolling_stock_failure_name_already_used(
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let app = create_test_service().await;
+        let fast_rolling_stock = fast_rolling_stock.await;
+        let _other_rolling_stock = other_rolling_stock.await;
+        let rolling_stock_id = fast_rolling_stock.id();
+
+        let mut rolling_stock = get_other_rolling_stock();
+        rolling_stock.id = Some(rolling_stock_id);
+
+        let response = call_service(
+            &app,
+            TestRequest::patch()
+                .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
+                .set_json(rolling_stock)
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+
+        let body: JsonValue = read_body_json(response).await;
+        let error: InternalError = RollingStockError::NameAlreadyUsed {
+            name: String::from("other_rolling_stock"),
+        }
+        .into();
+        assert_eq!(to_value(error).unwrap(), body);
     }
 }

@@ -1042,10 +1042,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollingStockCreatePayload"
+              $ref: "#/components/schemas/RollingStockUpsertPayload"
       responses:
         200:
-          description: The rolling stock list
+          description: The created rolling stock
           content:
             application/json:
               schema:
@@ -1066,6 +1066,29 @@ paths:
       responses:
         200:
           description: The rolling stock information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollingStock"
+    patch:
+      tags:
+        - rolling_stock
+      summary: Patch a rolling stock
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RollingStockUpsertPayload"
+      responses:
+        200:
+          description: The updated rolling stock
           content:
             application/json:
               schema:
@@ -2108,7 +2131,7 @@ components:
 
     RollingStock:
       allOf:
-        - $ref: "#/components/schemas/RollingStockCreatePayload"
+        - $ref: "#/components/schemas/RollingStockUpsertPayload"
         - type: object
           properties:
             id:
@@ -2119,7 +2142,7 @@ components:
                 $ref: "#/components/schemas/RollingStockLivery"
           required: [id, liveries]
 
-    RollingStockCreatePayload:
+    RollingStockUpsertPayload:
       properties:
         version:
           type: string
@@ -2777,6 +2800,7 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
+    
     ScenarioRequest:
       properties:
         name:

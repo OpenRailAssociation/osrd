@@ -8,25 +8,34 @@ pub use rolling_stock_livery::RollingStockLiveryModel;
 
 use crate::error::Result;
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
-use crate::models::Identifiable;
+use crate::models::{Identifiable, Update};
 use crate::schema::rolling_stock::{
     EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
 use crate::tables::osrd_infra_rollingstock;
+use crate::views::rolling_stocks::RollingStockError;
 use crate::DbPool;
 use actix_web::web::{block, Data};
 use derivative::Derivative;
 use diesel::result::Error as DieselError;
-use diesel::ExpressionMethods;
-use diesel::SelectableHelper;
-use diesel::{QueryDsl, RunQueryDsl};
+use diesel::{update, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 use diesel_json::Json as DieselJson;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
-#[derive(Debug, Derivative, Deserialize, Identifiable, Insertable, Model, Queryable, Serialize)]
+#[derive(
+    AsChangeset,
+    Debug,
+    Derivative,
+    Deserialize,
+    Identifiable,
+    Insertable,
+    Model,
+    Queryable,
+    Serialize,
+)]
 #[derivative(Default)]
 #[model(table = "osrd_infra_rollingstock")]
 #[model(create, retrieve, delete)]
@@ -95,6 +104,34 @@ impl RollingStockModel {
     }
 }
 
+impl Update for RollingStockModel {
+    fn update_conn(
+        self,
+        conn: &mut diesel::PgConnection,
+        rolling_stock_id: i64,
+    ) -> Result<Option<Self>> {
+        use crate::tables::osrd_infra_rollingstock::dsl::*;
+
+        match update(osrd_infra_rollingstock.find(rolling_stock_id))
+            .set(&self)
+            .get_result::<RollingStockModel>(conn)
+        {
+            Ok(rolling_stock) => Ok(Some(rolling_stock)),
+            Err(DieselError::NotFound) => {
+                Err(RollingStockError::NotFound { rolling_stock_id }.into())
+            }
+            Err(DieselError::DatabaseError(
+                diesel::result::DatabaseErrorKind::UniqueViolation,
+                _,
+            )) => Err(RollingStockError::NameAlreadyUsed {
+                name: self.name.unwrap(),
+            }
+            .into()),
+            Err(e) => Err(e.into()),
+        }
+    }
+}
+
 impl From<RollingStockModel> for RollingStock {
     fn from(rolling_stock_model: RollingStockModel) -> Self {
         RollingStock {
@@ -122,15 +159,30 @@ impl From<RollingStockModel> for RollingStock {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{
-        fixtures::tests::{db_pool, fast_rolling_stock, TestFixture},
-        models::Retrieve,
-    };
+    use crate::error::InternalError;
+    use crate::fixtures::tests::{db_pool, fast_rolling_stock, other_rolling_stock, TestFixture};
+    use crate::models::{Retrieve, Update};
+    use crate::views::rolling_stocks::RollingStockError;
     use rstest::*;
+    use serde_json::to_value;
 
     use super::RollingStockModel;
     use actix_web::web::Data;
     use diesel::r2d2::{ConnectionManager, Pool};
+
+    pub fn get_fast_rolling_stock() -> RollingStockModel {
+        serde_json::from_str(include_str!("../../tests/example_rolling_stock.json"))
+            .expect("Unable to parse")
+    }
+
+    pub fn get_other_rolling_stock() -> RollingStockModel {
+        serde_json::from_str(include_str!("../../tests/example_rolling_stock_2.json"))
+            .expect("Unable to parse")
+    }
+
+    pub fn get_invalid_effort_curves() -> &'static str {
+        include_str!("../../tests/example_rolling_stock_3.json")
+    }
 
     #[rstest]
     async fn create_delete_rolling_stock(
@@ -150,5 +202,54 @@ pub mod tests {
             .await
             .unwrap()
             .is_none());
+    }
+
+    #[rstest]
+    async fn update_rolling_stock(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let rolling_stock = fast_rolling_stock.await;
+        let rolling_stock_id = rolling_stock.id();
+
+        let mut updated_rolling_stock = get_other_rolling_stock();
+        updated_rolling_stock.id = Some(rolling_stock_id);
+
+        let updated_rolling_stock = updated_rolling_stock
+            .update(db_pool.clone(), rolling_stock_id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(updated_rolling_stock.name.unwrap(), "other_rolling_stock");
+    }
+
+    #[rstest]
+    async fn update_rolling_stock_failure_name_already_used(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let _rolling_stock = fast_rolling_stock.await;
+        let other_rolling_stock = other_rolling_stock.await;
+
+        let other_rolling_stock_id = other_rolling_stock.id();
+        let mut other_rolling_stock =
+            RollingStockModel::retrieve(db_pool.clone(), other_rolling_stock_id)
+                .await
+                .unwrap()
+                .unwrap();
+        other_rolling_stock.name = Some(String::from("fast_rolling_stock"));
+
+        let result = other_rolling_stock
+            .update(db_pool.clone(), other_rolling_stock_id)
+            .await;
+        let error: InternalError = RollingStockError::NameAlreadyUsed {
+            name: String::from("fast_rolling_stock"),
+        }
+        .into();
+        assert_eq!(
+            to_value(result.unwrap_err()).unwrap(),
+            to_value(error).unwrap()
+        );
     }
 }
