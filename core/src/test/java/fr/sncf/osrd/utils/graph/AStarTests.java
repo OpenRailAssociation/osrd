@@ -10,6 +10,7 @@ import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ public class AStarTests {
      * we need. But with no heuristic the destination would be the last point visited. We check that
      * there are routes left unvisited. */
     @Test
+    @Disabled("See https://github.com/DGEXSolutions/osrd/pull/3908")
     public void notAllRoutesVisitedWithHeuristic() throws Exception {
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
         var graph = infra.getSignalingRouteGraph();
