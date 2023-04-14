@@ -35,7 +35,7 @@ const LAYERS: Array<{ id: LayerType; icon: string | JSX.Element }> = [
   },
 ];
 
-const SPEED_LIMIT_TAG_PLACEHOLDER = 'OSRD::SPEED_LIMIT_TAG_PLACEHOLDER';
+const NO_SPEED_LIMIT_TAG = 'undefined';
 
 interface LayersModalProps {
   initialLayers: Set<LayerType>;
@@ -136,21 +136,13 @@ const LayersModal: FC<LayersModalProps> = ({
           <select
             id="filterLevel"
             className="form-control"
-            value={speedLimitTag || SPEED_LIMIT_TAG_PLACEHOLDER}
+            value={speedLimitTag || NO_SPEED_LIMIT_TAG}
             disabled={!isArray(speedLimitTags) || !selectedLayers.has('speed_sections')}
-            onChange={(e) => {
-              setSpeedLimitTag(
-                e.target.value && e.target.value !== SPEED_LIMIT_TAG_PLACEHOLDER
-                  ? e.target.value
-                  : undefined
-              );
-            }}
+            onChange={(e) => setSpeedLimitTag(e.target.value)}
           >
-            {[SPEED_LIMIT_TAG_PLACEHOLDER, ...(speedLimitTags || [])].map((tag) => (
+            {[NO_SPEED_LIMIT_TAG, ...(speedLimitTags || [])].map((tag) => (
               <option value={tag}>
-                {tag === SPEED_LIMIT_TAG_PLACEHOLDER
-                  ? t('Editor.layers-modal.no-speed-limit-tag')
-                  : tag}
+                {tag === NO_SPEED_LIMIT_TAG ? t('Editor.layers-modal.no-speed-limit-tag') : tag}
               </option>
             ))}
           </select>
