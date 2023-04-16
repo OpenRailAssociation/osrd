@@ -18,7 +18,6 @@ import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
-import { useTranslation } from 'react-i18next';
 import ElectricalProfilesLegend from './ElectricalProfilesLegend';
 import prepareData from './prepareData';
 
@@ -48,9 +47,6 @@ export default function SpeedSpaceChart(props) {
     timePosition,
   } = props;
 
-  // to be removed after creating power restriction module
-  const { t } = useTranslation(['simulation']);
-
   const [chart, setChart] = useState(undefined);
   const [chartBaseHeight, setChartBaseHeight] = useState(initialHeight);
   const [chartHeight, setChartHeight] = useState(initialHeight);
@@ -58,7 +54,6 @@ export default function SpeedSpaceChart(props) {
   const [isActive, setIsActive] = useState(false);
   const [localSettings, setLocalSettings] = useState(speedSpaceSettings);
   const [resetChart, setResetChart] = useState(false);
-  const [restrictionPower, setRestrictionPower] = useState('');
   const [rotate, setRotate] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -194,26 +189,6 @@ export default function SpeedSpaceChart(props) {
     };
   }, [chart, trainSimulation, localSettings, resetChart, rotate]);
 
-  // to be removed after creating power restriction module
-  useEffect(() => {
-    let newRestrictionPower = '';
-    trainSimulation.electrificationConditions.forEach((elem) => {
-      if (elem.used_restriction)
-        newRestrictionPower = `${t('speedSpaceSettings.powerRestriction')}: ${
-          elem.used_restriction
-        }`;
-    });
-    if (!newRestrictionPower) {
-      trainSimulation.electrificationConditions.forEach((elem) => {
-        if (elem.seen_restriction)
-          newRestrictionPower = `${t('speedSpaceSettings.powerRestriction')} ${
-            elem.seen_restriction
-          } ${t('powerRestriction.waited')}, ${t('powerRestriction.incompatible')}`;
-      });
-    }
-    setRestrictionPower(newRestrictionPower);
-  }, [trainSimulation]);
-
   return (
     <Rnd
       default={{
@@ -248,11 +223,13 @@ export default function SpeedSpaceChart(props) {
         >
           <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
         </button>
-        <SpeedSpaceSettings
-          showSettings={showSettings}
-          onSetSettings={onLocalSetSettings}
-          speedSpaceSettings={speedSpaceSettings}
-        />
+        <div>
+          <SpeedSpaceSettings
+            showSettings={showSettings}
+            onSetSettings={onLocalSetSettings}
+            speedSpaceSettings={speedSpaceSettings}
+          />
+        </div>
         <div ref={ref} className="w-100" />
         {localSettings.electricalProfiles && (
           <button
@@ -285,23 +262,6 @@ export default function SpeedSpaceChart(props) {
         {isActive ? (
           <ElectricalProfilesLegend isActive={isActive} setIsActive={setIsActive} />
         ) : null}
-
-        {/* to be removed after creating power restriction module */}
-        {localSettings.powerRestriction && (
-          <div className="fixed-top d-flex justify-content-center w-25 m-auto">
-            <div
-              className="mt-2"
-              style={{
-                backgroundColor: '#333',
-                color: 'white',
-                borderRadius: '0.3rem',
-                padding: '0.2rem',
-              }}
-            >
-              {restrictionPower || t('powerRestriction.unknown')}
-            </div>
-          </div>
-        )}
       </div>
     </Rnd>
   );
