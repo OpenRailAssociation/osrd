@@ -37,7 +37,8 @@ function prepareData(simulation: SimulationSnapshot, selectedTrain: number): Gev
   }));
 
   if (simulation.trains[selectedTrain].electrification_conditions) {
-    dataSimulation.electrificationConditions = simulation.trains[selectedTrain].electrification_conditions;
+    dataSimulation.electrificationConditions =
+      simulation.trains[selectedTrain].electrification_conditions;
   }
 
   if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
