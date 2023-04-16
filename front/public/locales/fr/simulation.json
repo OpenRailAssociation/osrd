@@ -24,9 +24,8 @@
     "powerRestriction": "Restriction de puissance"
   },
   "powerRestriction": {
-    "waited": "Attendue",
-    "incompatible": "Incompatible",
-    "unknown": "Restriction de puissance inconnue"
+    "used": "utilisée",
+    "incompatible": "Restriction de puissance incompatible"
   },
   "electricalProfiles": {
     "25000": "25000V",

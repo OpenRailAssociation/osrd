@@ -176,7 +176,7 @@ interface Profile {
   isStriped: boolean;
 }
 
-interface Segment {
+interface ElectricalConditionSegment {
   position_start: number;
   position_end: number;
   position_middle: number;
@@ -186,11 +186,15 @@ interface Segment {
   height_middle: number;
   usedMode: string;
   usedProfile: string;
+  seenRestriction?: string;
+  usedRestriction?: string;
   color: string;
   textColor: string;
   text: string;
   isStriped: boolean;
-  isIncompatible: boolean;
+  isIncompatibleElectricalProfile: boolean;
+  isRestriction: boolean;
+  isIncompatiblePowerRestriction: boolean;
 }
 
 interface AC {
@@ -240,32 +244,24 @@ export const createProfileSegment = (
   fullElectrificationConditions: ElectrificationConditions[],
   electrificationConditions: ElectrificationConditions
 ) => {
-  const segment: Segment = {
-    position_start: 0,
-    position_end: 0,
-    position_middle: 0,
-    lastPosition: 0,
-    height_start: 0,
-    height_end: 0,
-    height_middle: 0,
-    usedMode: '',
-    usedProfile: '',
+  const segment: ElectricalConditionSegment = {
+    position_start: electrificationConditions.start,
+    position_end: electrificationConditions.stop,
+    position_middle: (electrificationConditions.start + electrificationConditions.stop) / 2,
+    lastPosition: fullElectrificationConditions.slice(-1)[0].stop,
+    height_start: 4,
+    height_end: 24,
+    height_middle: 14,
+    usedMode: electrificationConditions.used_mode,
+    usedProfile: electrificationConditions.used_profile,
     color: '',
     textColor: '',
     text: '',
     isStriped: false,
-    isIncompatible: false,
+    isIncompatibleElectricalProfile: false,
+    isRestriction: false,
+    isIncompatiblePowerRestriction: false,
   };
-
-  segment.position_start = electrificationConditions.start;
-  segment.position_end = electrificationConditions.stop;
-  segment.position_middle = (electrificationConditions.start + electrificationConditions.stop) / 2;
-  segment.lastPosition = fullElectrificationConditions.slice(-1)[0].stop;
-  segment.height_start = 4;
-  segment.height_end = 24;
-  segment.height_middle = (segment.height_start + segment.height_end) / 2;
-  segment.usedMode = electrificationConditions.used_mode;
-  segment.usedProfile = electrificationConditions.used_profile;
 
   // prepare colors
   const electricalProfileColorsWithProfile: Mode = {
@@ -322,7 +318,7 @@ export const createProfileSegment = (
     segment.usedMode === '1500' &&
     !segment.usedProfile.match(/O|A|B|C|D|E|F|G/)
   ) {
-    segment.isIncompatible = true;
+    segment.isIncompatibleElectricalProfile = true;
     segment.isStriped = true;
     segment.text = `${segment.usedMode}V`;
   } else if (
@@ -330,10 +326,57 @@ export const createProfileSegment = (
     segment.usedMode === '25000' &&
     !segment.usedProfile.match(/25000|22500|20000/)
   ) {
-    segment.isIncompatible = true;
+    segment.isIncompatibleElectricalProfile = true;
     segment.isStriped = true;
     segment.text = `${segment.usedMode}V`;
   }
+
+  return segment;
+};
+
+interface PowerRestrictionSegment {
+  position_start: number;
+  position_end: number;
+  position_middle: number;
+  lastPosition: number;
+  height_start: number;
+  height_end: number;
+  height_middle: number;
+  seenRestriction: string;
+  usedRestriction: string;
+  isStriped: boolean;
+  isRestriction: boolean;
+  isIncompatiblePowerRestriction: boolean;
+}
+
+export const createPowerRestrictionSegment = (
+  fullElectrificationConditions: ElectrificationConditions[],
+  electrificationConditions: ElectrificationConditions
+) => {
+  const segment: PowerRestrictionSegment = {
+    position_start: electrificationConditions.start,
+    position_end: electrificationConditions.stop,
+    position_middle: (electrificationConditions.start + electrificationConditions.stop) / 2,
+    lastPosition: fullElectrificationConditions.slice(-1)[0].stop,
+    height_start: 4,
+    height_end: 24,
+    height_middle: 14,
+    seenRestriction: electrificationConditions.seen_restriction || '',
+    usedRestriction: electrificationConditions.used_restriction || '',
+    isStriped: false,
+    isRestriction: false,
+    isIncompatiblePowerRestriction: false,
+  };
+
+  // figure out if the power restriction is incompatible or missing
+  if (segment.usedRestriction) {
+    segment.isRestriction = true;
+    if (segment.seenRestriction && segment.usedRestriction !== segment.seenRestriction) {
+      segment.isIncompatiblePowerRestriction = true;
+    }
+  }
+  if (!segment.isRestriction) segment.isStriped = true;
+  if (segment.isIncompatiblePowerRestriction) segment.isStriped = true;
 
   return segment;
 };

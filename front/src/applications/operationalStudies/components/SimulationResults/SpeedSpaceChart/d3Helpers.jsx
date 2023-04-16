@@ -3,9 +3,13 @@ import drawCurve from 'applications/operationalStudies/components/SimulationResu
 import defineChart from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/defineChart';
 import { defineLinear } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import * as d3 from 'd3';
-import { createProfileSegment } from 'applications/operationalStudies/consts';
+import {
+  createProfileSegment,
+  createPowerRestrictionSegment,
+} from 'applications/operationalStudies/consts';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
 import { POSITION, SPEED, SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
+import drawPowerRestriction from '../ChartHelpers/drawPowerRestriction';
 
 function createChart(
   CHART_ID,
@@ -194,8 +198,47 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
           'electrical_profiles',
           rotate,
           segment.isStriped,
-          segment.isIncompatible,
+          segment.isIncompatibleElectricalProfile,
           `electricalProfiles_${index}`
+        );
+      });
+    }
+    if (dataSimulation.electrificationConditions && speedSpaceSettings.powerRestriction) {
+      let newSimulation = [];
+      let prevRestriction = '';
+
+      dataSimulation.electrificationConditions.forEach((elem, index) => {
+        if (index && elem.used_restriction && prevRestriction === elem.used_restriction) {
+          newSimulation[newSimulation.length - 1].position_end += elem.stop - elem.start;
+          newSimulation[newSimulation.length - 1].position_middle += (elem.stop - elem.start) / 2;
+        } else if (index && elem.seen_restriction && prevRestriction === elem.used_restriction) {
+          newSimulation[newSimulation.length - 1].position_end += elem.stop - elem.start;
+          newSimulation[newSimulation.length - 1].position_middle += (elem.stop - elem.start) / 2;
+        } else {
+          const segment = createPowerRestrictionSegment(
+            dataSimulation.electrificationConditions,
+            elem
+          );
+          newSimulation = [...newSimulation, segment];
+        }
+        prevRestriction = elem.used_restriction;
+      });
+
+      newSimulation.forEach((source, index) => {
+        drawPowerRestriction(
+          chartLocal,
+          `powerRestrictions_${index}`,
+          source,
+          'speedSpaceChart',
+          'curveLinear',
+          ['position', 'height'],
+          'power_restrictions',
+          rotate,
+          source.isStriped,
+          source.isIncompatiblePowerRestriction,
+          source.isRestriction,
+          speedSpaceSettings.electricalProfiles,
+          `powerRestrictions_${index}`
         );
       });
     }
