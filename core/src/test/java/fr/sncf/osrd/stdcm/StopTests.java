@@ -331,7 +331,7 @@ public class StopTests {
         var occupancy = ImmutableMultimap.of(
                 routes.get(0), new OccupancyBlock(10, POSITIVE_INFINITY, 0, 1),
                 routes.get(3), new OccupancyBlock(0, 1_200, 0, 1),
-                routes.get(3), new OccupancyBlock(1_220, POSITIVE_INFINITY, 0, 1)
+                routes.get(3), new OccupancyBlock(1_300, POSITIVE_INFINITY, 0, 1)
         );
         double timeStep = 2;
         var infra = infraBuilder.build();

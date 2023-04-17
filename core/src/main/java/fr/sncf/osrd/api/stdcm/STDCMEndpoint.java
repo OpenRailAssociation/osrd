@@ -225,12 +225,11 @@ public class STDCMEndpoint implements Take {
 
         var path = TrainPathBuilder.from(routes, startLocation, lastLocation);
         DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
-        var stops = List.of(new TrainStop(path.length(), 0.1));  // TODO: fix this
         var standaloneResult = StandaloneSim.run(
                 fullInfra,
                 path,
                 EnvelopeTrainPath.from(path),
-                List.of(makeTrainSchedule(path.length(), rollingStock, comfort, stops)),
+                List.of(makeTrainSchedule(path.length(), rollingStock, comfort, new ArrayList<>())),
                 timeStep,
                 driverBehaviour
         );
