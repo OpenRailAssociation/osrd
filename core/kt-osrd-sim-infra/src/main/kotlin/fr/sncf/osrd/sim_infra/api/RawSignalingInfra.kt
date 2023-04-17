@@ -56,6 +56,31 @@ val Double.meters: Distance get() = Distance((this * 1000).toLong())
 val Int.meters: Distance get() = Distance(this.toLong() * 1000)
 
 @JvmInline
+value class Duration(val miliseconds: Long) : Comparable<Duration> {
+    val absoluteValue get() = Duration(miliseconds.absoluteValue)
+
+    operator fun plus(value: Duration): Duration {
+        return Duration(miliseconds + value.miliseconds)
+    }
+
+    operator fun minus(value: Duration): Duration {
+        return Duration(miliseconds - value.miliseconds)
+    }
+
+    override fun compareTo(other: Duration): Int {
+        return miliseconds.compareTo(other.miliseconds)
+    }
+
+    companion object {
+        @JvmStatic
+        val ZERO = Duration(miliseconds = 0L)
+    }
+}
+
+val Double.seconds: Duration get() = Duration((this * 1000).toLong())
+val Int.seconds: Distance get() = Distance(this.toLong() * 1000)
+
+@JvmInline
 value class Speed(val value: ULong)
 
 
