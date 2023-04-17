@@ -93,16 +93,16 @@ function Origin(props: OriginProps) {
     </div>
   );
   return (
-    <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
+    <div className="mb-2 d-flex align-items-center w-100 place">
       <span className="text-success mr-2">
         <RiMapPin2Fill />
       </span>
       {origin !== undefined ? (
-        <div>
+        <>
           <div className="pl-1 hover w-100 origin-name-and-time-container">
-            {originPointName}
+            <span className="flex-grow-1">{originPointName}</span>
             <button
-              className="btn btn-sm btn-only-icon btn-white ml-auto"
+              className="btn btn-sm btn-only-icon btn-white"
               type="button"
               onClick={() => {
                 dispatch(updateOrigin(undefined));
@@ -165,7 +165,7 @@ function Origin(props: OriginProps) {
               {toggleButton}
             </>
           )}
-        </div>
+        </>
       ) : (
         <small>{t('noOriginChosen')}</small>
       )}

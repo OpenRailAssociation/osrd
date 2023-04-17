@@ -1,13 +1,13 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Position } from 'geojson';
-import { RiMapPin3Fill } from 'react-icons/ri';
-import { GiPathDistance } from 'react-icons/gi';
 import { useTranslation } from 'react-i18next';
 
 import DisplayVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayVias';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getGeojson, getVias } from 'reducers/osrdconf/selectors';
+import { FaPlus } from 'react-icons/fa';
+import cx from 'classnames';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -21,25 +21,20 @@ function Vias(props: ViasProps) {
   const geojson = useSelector(getGeojson);
   const { openModal } = useModal();
 
-  const viasTitle = (
-    <h2 className="d-flex align-items-center mb-0 ml-4">
-      <span className="mr-1 h2 text-info">
-        <RiMapPin3Fill />
-      </span>
-      <span>{t('vias')}</span>
+  return (
+    <>
       <button
-        className={`btn btn-info btn-only-icon btn-sm ml-1 ${geojson ? '' : 'disabled'}`}
+        className={cx(
+          'btn btn-link text-cyan w-100 justify-content-center btn-sm',
+          !geojson && 'disabled'
+        )}
         type="button"
         onClick={() => openModal(viaModalContent)}
       >
-        <GiPathDistance />
+        <span className="mr-2">{t('addVias')}</span>
+        <FaPlus />
       </button>
-    </h2>
-  );
-  return (
-    <>
-      {viasTitle}
-      <div className="mb-3">
+      <div className="mb-2">
         {vias && vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (

@@ -93,7 +93,7 @@ function Itinerary({ mustUpdate }: Props) {
 
   return (
     <div className="osrd-config-item mb-2">
-      <div className="osrd-config-item-container" data-testid="itinerary">
+      <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
         <DisplayItinerary
           mustUpdate={mustUpdate}
           data-testid="display-itinerary"
