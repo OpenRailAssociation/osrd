@@ -5,7 +5,7 @@ description = ""
 authors = ["OSRD <contact@osrd.fr>"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.9,<3.12"
 osrd-schemas = { path = "../osrd_schemas/", develop = false }
 
 [tool.poetry.group.dev.dependencies]
