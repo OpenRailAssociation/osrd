@@ -5,7 +5,7 @@ description = "Integration tests"
 authors = ["OSRD <contact@osrd.fr>"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.9,<3.12"
 pydantic = "1.10.4"
 geojson-pydantic = "0.5.0"
 
