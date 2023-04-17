@@ -41,12 +41,12 @@ function Destination(props: DestinationProps) {
   const { isStdcm } = makeEnumBooleans(MODES, mode);
 
   return (
-    <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
+    <div className="d-flex align-items-center w-100 place">
       <span className="text-warning mr-2">
         <IoFlag />
       </span>
       {destination !== undefined ? (
-        <div>
+        <>
           <div className="pl-1 hover w-100 d-flex align-items-center">
             <div
               onClick={() => zoomToFeaturePoint(destination?.coordinates, destination?.id)}
@@ -59,7 +59,7 @@ function Destination(props: DestinationProps) {
               </strong>
             </div>
             <button
-              className="btn btn-sm btn-only-icon btn-white"
+              className="btn btn-sm btn-only-icon btn-white ml-auto"
               type="button"
               onClick={() => {
                 dispatch(updateDestination(undefined));
@@ -109,7 +109,7 @@ function Destination(props: DestinationProps) {
               </div>
             </div>
           )}
-        </div>
+        </>
       ) : (
         <small>{t('noDestinationChosen')}</small>
       )}
