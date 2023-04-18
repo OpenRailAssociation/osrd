@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://dgexsolutions.github.io/osrd-website/en/developers/contribute/"><img src="https://img.shields.io/github/contributors-anon/DGEXSolutions/osrd" alt="Contributors badge" /></a>
+  <a href="https://osrd.fr/en/docs/guides/contribute/"><img src="https://img.shields.io/github/contributors-anon/DGEXSolutions/osrd" alt="Contributors badge" /></a>
   <a href="https://github.com/DGEXSolutions/osrd/blob/dev/LICENSE"><img src="https://img.shields.io/badge/license-LGPL-blue.svg" alt="LGPL License badge" /></a>
   <a href="https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml"><img src="https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml/badge.svg" alt="Integration Status" /></a>
 </p>
