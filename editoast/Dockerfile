@@ -11,6 +11,7 @@ FROM chef as builder
 RUN apt update -yqq &&  apt install -yqq --no-install-recommends libgeos-dev
 
 COPY --from=planner /app/recipe.json recipe.json
+COPY --from=planner /app/editoast_derive/ editoast_derive
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
     cargo chef cook --release --recipe-path recipe.json
