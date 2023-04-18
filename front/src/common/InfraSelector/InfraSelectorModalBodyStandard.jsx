@@ -16,6 +16,7 @@ export function editoastUpToDateIndicator(v, genv) {
 
 export default function InfraSelectorModalBodyStandard(props) {
   const { infrasList, filter, setFilter, onlySelectionMode, onInfraChange } = props;
+
   const { t } = useTranslation(['translation', 'infraManagement']);
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID);

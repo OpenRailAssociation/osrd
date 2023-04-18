@@ -1,23 +1,34 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
-import { post } from 'common/requests';
 import { VscJson } from 'react-icons/vsc';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import InfraSelectorEditionItem from './InfraSelectorEditionItem';
-import { INFRA_URL, INFRA_URL_OLD } from './Consts';
 
-export default function InfraSelectorModalBodyEdition(props) {
-  const { infrasList, setFilter, filter, getInfrasList } = props;
+type InfraSelectorModalBodyEditionProps = {
+  infrasList: Infra[];
+  setFilter: React.Dispatch<React.SetStateAction<string>>;
+  filter: string;
+  getInfrasList: () => void;
+};
+
+const InfraSelectorModalBodyEdition = ({
+  infrasList,
+  setFilter,
+  filter,
+  getInfrasList,
+}: InfraSelectorModalBodyEditionProps) => {
   const [isFocused, setIsFocused] = useState();
   const [runningDelete, setRunningDelete] = useState();
-  const [nameNewInfra, setNameNewInfra] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [selectedFile, setSelectedFile] = useState();
+  const [nameNewInfra, setNameNewInfra] = useState<string | undefined>(undefined);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const { t } = useTranslation(['translation', 'infraManagement']);
+  const [postInfraRailjson] = osrdEditoastApi.usePostInfraRailjsonMutation();
+  const [postInfra] = osrdEditoastApi.usePostInfraMutation();
 
-  const validateFile = async (fileToValidate) => {
+  const validateFile = async (fileToValidate: File) => {
     if (fileToValidate.type !== 'application/json') {
       setErrorMessage(t('customget:notJSONFormat'));
       return false;
@@ -35,32 +46,43 @@ export default function InfraSelectorModalBodyEdition(props) {
     return true;
   };
 
-  const handleSelect = async (event) => {
-    const status = await validateFile(event.target.files[0]);
-    if (status === true) {
-      setErrorMessage(undefined);
-      setSelectedFile(event.target.files[0]);
+  const handleSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const status = await validateFile(event.target.files[0]);
+      if (status === true) {
+        setErrorMessage(undefined);
+        setSelectedFile(event.target.files[0]);
+      }
     }
   };
 
-  async function addNewInfra() {
-    if (nameNewInfra !== '') {
-      try {
-        if (selectedFile) {
-          await post(`${INFRA_URL_OLD}railjson/`, JSON.parse(await selectedFile.text()));
-          setSelectedFile(undefined);
-        } else {
-          await post(`${INFRA_URL}`, { name: nameNewInfra });
-        }
-        getInfrasList();
-        setErrorMessage(undefined);
-      } catch (e) {
-        /* empty */
-      }
-    } else {
+  const addNewInfra = async () => {
+    if (!nameNewInfra) {
       setErrorMessage(t('infraManagement:errorMessages.noEmptyName'));
+      return;
     }
-  }
+
+    if (selectedFile) {
+      postInfraRailjson({
+        name: nameNewInfra,
+        railjsonFile: JSON.parse(await selectedFile.text()),
+        generateData: true,
+      })
+        .unwrap()
+        .then(() => {
+          setSelectedFile(undefined);
+          getInfrasList();
+          setErrorMessage(undefined);
+        });
+    } else {
+      postInfra({ body: { name: nameNewInfra } })
+        .unwrap()
+        .then(() => {
+          getInfrasList();
+          setErrorMessage(undefined);
+        });
+    }
+  };
 
   return (
     <div className="row">
@@ -147,15 +169,6 @@ export default function InfraSelectorModalBodyEdition(props) {
       </div>
     </div>
   );
-}
-
-InfraSelectorModalBodyEdition.defaultProps = {
-  filter: '',
 };
 
-InfraSelectorModalBodyEdition.propTypes = {
-  filter: PropTypes.string,
-  infrasList: PropTypes.array.isRequired,
-  setFilter: PropTypes.func.isRequired,
-  getInfrasList: PropTypes.func.isRequired,
-};
+export default InfraSelectorModalBodyEdition;

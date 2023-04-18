@@ -4,51 +4,52 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import icon from 'assets/pictures/components/tracks.svg';
 import iconEdition from 'assets/pictures/components/tracks_edit.svg';
-import { get } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import Loader from 'common/Loader';
 import { MdEditNote, MdList } from 'react-icons/md';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
-import { INFRA_URL } from './Consts';
 
-type InfraListType = { id: number; name: string }[];
-type InfraType = { name: string };
-type Props = {
+type InfraSelectorModalProps = {
   onlySelectionMode?: boolean;
   onInfraChange?: (infraId: number) => void;
 };
 
-export default function InfraSelectorModal({ onInfraChange, onlySelectionMode = false }: Props) {
-  const [infrasList, setInfrasList] = useState([]);
+const InfraSelectorModal = ({
+  onInfraChange,
+  onlySelectionMode = false,
+}: InfraSelectorModalProps) => {
+  const [infrasList, setInfrasList] = useState<Infra[]>([]);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [filter, setFilter] = useState('');
-  const [filteredInfrasList, setFilteredInfrasList] = useState<InfraListType>([]);
+  const [filteredInfrasList, setFilteredInfrasList] = useState<Infra[]>([]);
   const [editionMode, setEditionMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [getInfra] = osrdEditoastApi.endpoints.getInfra.useLazyQuery();
 
   const debouncedFilter = useDebounce(filter, 250);
 
-  function filterInfras(filteredInfrasListLocal: InfraListType) {
+  function filterInfras(filteredInfrasListLocal: Infra[]) {
     if (debouncedFilter && debouncedFilter !== '') {
-      filteredInfrasListLocal = infrasList.filter((infra: InfraType) =>
+      filteredInfrasListLocal = infrasList.filter((infra) =>
         infra.name.toLowerCase().includes(debouncedFilter.toLowerCase())
       );
     }
-    filteredInfrasListLocal.sort((a, b) => a.name.localeCompare(b.name));
+    filteredInfrasListLocal.slice().sort((a, b) => a.name.localeCompare(b.name));
     setFilteredInfrasList(filteredInfrasListLocal);
   }
 
-  const getInfrasList = async () => {
+  const getInfrasList = () => {
     setIsFetching(true);
-    try {
-      const infrasListQuery = await get(INFRA_URL);
-      setInfrasList(infrasListQuery.results);
-      filterInfras(infrasListQuery.results);
-      setIsFetching(false);
-    } catch (e) {
-      setIsFetching(false);
-    }
+    getInfra()
+      .unwrap()
+      .then(({ results }) => {
+        setInfrasList(results as Infra[]);
+        filterInfras(results as Infra[]);
+        setIsFetching(false);
+      })
+      .catch(() => setIsFetching(false));
   };
 
   useEffect(() => {
@@ -121,4 +122,6 @@ export default function InfraSelectorModal({ onInfraChange, onlySelectionMode = 
       </ModalBodySNCF>
     </>
   );
-}
+};
+
+export default InfraSelectorModal;
