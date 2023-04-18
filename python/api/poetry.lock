@@ -837,14 +837,14 @@ files = [
 
 [[package]]
 name = "redis"
-version = "4.4.2"
+version = "4.4.4"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-4.4.2-py3-none-any.whl", hash = "sha256:e6206448e2f8a432871d07d432c13ed6c2abcf6b74edb436c99752b1371be387"},
-    {file = "redis-4.4.2.tar.gz", hash = "sha256:a010f6cb7378065040a02839c3f75c7e0fb37a87116fb4a95be82a95552776c7"},
+    {file = "redis-4.4.4-py3-none-any.whl", hash = "sha256:da92a39fec86438d3f1e2a1db33c312985806954fe860120b582a8430e231d8f"},
+    {file = "redis-4.4.4.tar.gz", hash = "sha256:68226f7ede928db8302f29ab088a157f41061fa946b7ae865452b6d7838bbffb"},
 ]
 
 [package.dependencies]
@@ -1091,4 +1091,4 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "7c9044ed5b5fe14cd60b83e016bddc931f6cea358c4e91f5591f42c19065ef37"
+content-hash = "fb33156aacfd3553476f55d837c0b79dbd4aef95f8845768ce964c722fb5ec80"
