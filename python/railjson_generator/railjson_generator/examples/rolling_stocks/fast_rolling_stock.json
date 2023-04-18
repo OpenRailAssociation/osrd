@@ -1890,5 +1890,6 @@
   "power_restrictions": {
     "C1": 3,
     "C2": 1
-  }
+  },
+  "energy_sources": []
 }
