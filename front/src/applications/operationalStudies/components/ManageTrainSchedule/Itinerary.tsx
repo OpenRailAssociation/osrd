@@ -8,16 +8,25 @@ import { Position } from 'geojson';
 
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
+import {
+  getOrigin,
+  getDestination,
+  getVias,
+  getPowerRestriction,
+} from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
+import { useTranslation } from 'react-i18next';
+import icon from 'assets/pictures/components/power_restrictions.svg';
 
 type Props = {
   mustUpdate?: boolean;
 };
 
 function Itinerary({ mustUpdate }: Props) {
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
+  const powerRestriction = useSelector(getPowerRestriction);
   const vias = useSelector(getVias);
   const [extViewport, setExtViewport] = useState<Viewport>();
   const dispatch = useDispatch();
@@ -92,17 +101,28 @@ function Itinerary({ mustUpdate }: Props) {
   }, [extViewport]);
 
   return (
-    <div className="osrd-config-item mb-2">
-      <div className="osrd-config-item-container" data-testid="itinerary">
-        <DisplayItinerary
-          mustUpdate={mustUpdate}
-          data-testid="display-itinerary"
-          zoomToFeaturePoint={zoomToFeaturePoint}
-          zoomToFeature={zoomToFeature}
-          viaModalContent={viaModalContent}
-        />
+    <>
+      <div className="osrd-config-item mb-2">
+        <div className="osrd-config-item-container" data-testid="itinerary">
+          <DisplayItinerary
+            mustUpdate={mustUpdate}
+            data-testid="display-itinerary"
+            zoomToFeaturePoint={zoomToFeaturePoint}
+            zoomToFeature={zoomToFeature}
+            viaModalContent={viaModalContent}
+          />
+        </div>
       </div>
-    </div>
+      {!powerRestriction && (
+        <div className="osrd-config-item mb-2">
+          <div className="osrd-config-item-container">
+            <img width="32px" className="mr-2" src={icon} alt="PowerRestrictionIcon" />
+
+            {t('errorMessages.noPowerRestriction')}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

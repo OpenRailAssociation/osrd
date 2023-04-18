@@ -13,8 +13,13 @@ import {
 import { osrdEditoastApi, LightRollingStock } from 'common/api/osrdEditoastApi';
 import { osrdMiddlewareApi, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { lengthFromLineCoordinates } from 'utils/geometry';
+import { setFailure } from 'reducers/main';
 
 type selectorOption = { key: string | undefined; value: string | undefined };
+
+type ElectrificationPR = {
+  [key: string]: string[] | (string | null | undefined)[];
+};
 
 export default function PowerRestrictionSelector() {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
@@ -25,6 +30,9 @@ export default function PowerRestrictionSelector() {
   const [powerRestrictions, setPowerRestrictions] = useState<selectorOption[] | undefined>();
   const [getRollingStockById] = osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
   const [getPathFindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
+  const [getPathFindingByIdCatenaries] =
+    osrdEditoastApi.useLazyGetPathfindingByPathIdCatenariesQuery();
+  const [getRollingStockWithCurves] = osrdEditoastApi.useLazyGetRollingStockByIdQuery();
 
   const getPowerRestrictionsList = async (rollingStockInfo: LightRollingStock) => {
     if (rollingStockInfo.power_restrictions) {
@@ -38,23 +46,75 @@ export default function PowerRestrictionSelector() {
     }
   };
 
-  const definePowerRestrictionRange = (powerRestrictionCode?: string) => {
-    if (powerRestrictionCode && pathFindingID) {
-      getPathFindingById({ id: pathFindingID })
-        .unwrap()
-        .then((pathFinding) => {
-          const pathLength = Math.round(
-            lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000
+  const definePowerRestrictionRange = async (powerRestrictionCode?: string) => {
+    if (powerRestrictionCode && pathFindingID && rollingStockID) {
+      const { data: pathWithCatenaries } = await getPathFindingByIdCatenaries({
+        pathId: pathFindingID,
+      });
+      const { data: rollingStockWithCurves } = await getRollingStockWithCurves({
+        id: rollingStockID,
+      });
+
+      if (rollingStockWithCurves && pathWithCatenaries) {
+        // Extract uniques rollingstock's power restriction codes allowed by each electrification mode
+        const curvesMode = rollingStockWithCurves?.effort_curves.modes;
+        const curvesModesKey = Object.keys(curvesMode);
+
+        let parsedElectrification: ElectrificationPR = {};
+        for (const mode of curvesModesKey) {
+          let powerCodes = curvesMode[mode].curves.map(
+            (curve) => curve.cond?.power_restriction_code
           );
-          const powerRestrictionRange: PowerRestrictionRange[] = [
-            {
-              begin_position: 0,
-              end_position: pathLength,
-              power_restriction_code: powerRestrictionCode,
-            },
-          ];
-          dispatch(updatePowerRestriction(powerRestrictionRange));
-        });
+          powerCodes = powerCodes.filter(
+            (value, index, array) => value && array.indexOf(value) === index
+          );
+          parsedElectrification = {
+            ...parsedElectrification,
+            [mode]: powerCodes,
+          };
+        }
+
+        // Extract path electrification mode and check compatibility
+        const pathCatenaryRanges = pathWithCatenaries.catenary_ranges;
+        if (pathCatenaryRanges) {
+          const pathElectrification = pathCatenaryRanges.map((range) => range.mode);
+
+          const isCombinationValid = pathElectrification.every(
+            (electrification) =>
+              electrification &&
+              parsedElectrification[electrification as keyof ElectrificationPR].includes(
+                powerRestrictionCode
+              )
+          );
+          if (!isCombinationValid) {
+            dispatch(
+              setFailure({
+                name: t('errorMessages.error'),
+                message: t('errorMessages.powerRestrictionInvalidCombination', {
+                  powerRestrictionCode,
+                }),
+              })
+            );
+            dispatch(updatePowerRestriction(undefined));
+          } else {
+            getPathFindingById({ id: pathFindingID })
+              .unwrap()
+              .then((pathFinding) => {
+                const pathLength = Math.round(
+                  lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000
+                );
+                const powerRestrictionRange: PowerRestrictionRange[] = [
+                  {
+                    begin_position: 0,
+                    end_position: pathLength,
+                    power_restriction_code: powerRestrictionCode,
+                  },
+                ];
+                dispatch(updatePowerRestriction(powerRestrictionRange));
+              });
+          }
+        }
+      }
     } else dispatch(updatePowerRestriction(undefined));
   };
 
