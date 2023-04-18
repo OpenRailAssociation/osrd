@@ -9,7 +9,7 @@ import osrd_infra.utils
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("osrd_infra", "0023_alter_rollingstocklivery_compound_image_and_more"),
+        ("osrd_infra", "0026_osrdsearchproject_study_scenario"),
     ]
 
     operations = [
@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
                     null=True,
                     validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.rolling_stock.EnergySource)],
                 ),
+                blank=True,
                 default=list,
                 size=None,
             ),
