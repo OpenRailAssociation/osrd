@@ -26,5 +26,4 @@ def test_get_rolling_stocks():
     # no need to check that id is the same
     rolling_stock_result.pop("id")
     assert [] == rolling_stock_result.pop("liveries")
-    assert [] == rolling_stock_result.pop("energy_sources")
     assert RollingStock(**rolling_stock_result) == _FAST_ROLLING_STOCK
