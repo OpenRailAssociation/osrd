@@ -93,6 +93,7 @@ class RollingStock(models.Model):
             null=True,
         ),
         default=list,
+        blank=True
     )
 
     def __str__(self):

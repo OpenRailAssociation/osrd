@@ -518,7 +518,7 @@ version = "0.2.0"
 description = ""
 category = "main"
 optional = false
-python-versions = ">=3.9,<3.11"
+python-versions = ">=3.9,<3.12"
 files = []
 develop = false
 
