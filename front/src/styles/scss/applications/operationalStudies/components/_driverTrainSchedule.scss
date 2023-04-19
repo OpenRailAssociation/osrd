@@ -1,55 +1,60 @@
 .container-drivertrainschedule {
-    max-height: 30rem;
+  max-height: 30rem;
+}
+
+.modal-drivertrainschedule {
+  height: 50%;
+}
+
+.simulation-drivertrainschedule {
+  max-height: 15rem;
+  overflow: auto;
+}
+
+.table-drivertrainschedule,
+.table-drivertrainschedule th,
+.table-drivertrainschedule td {
+  border: none !important;
+  padding-right: 10px;
+
+  .drivertrainschedule-pk {
+    text-align: right;
+    width: 2rem;
   }
 
-  .modal-drivertrainschedule {
-    height: 50%;
-  }
-
-  .simulation-drivertrainschedule {
-    max-height: 15rem;
-    overflow: auto;
-  }
-
-  .table-drivertrainschedule, .table-drivertrainschedule th, .table-drivertrainschedule td {
-    border : none !important;
-    padding-right: 10px;
-
-    .drivertrainschedule-pk {
-      text-align: right;
-      width: 2rem;
-    }
-
-    .stoptime-container {
-      .box{
-      width:100%;
-      display:table;
-        .box-row {
-        display:table-row;
-        }
-        .box-cell {
-          display:table-cell;
-          width:calc(100% / 3);
-          text-align:left;
-          position: relative;
-            .box-cell::after {
-            content: '+';
-            position: absolute;
-          }
+  .stoptime-container {
+    .box {
+      width: 100%;
+      display: table;
+      .box-row {
+        z-index: 0;
+        display: table-row;
+      }
+      .box-cell {
+        display: table-cell;
+        width: calc(100% / 3);
+        text-align: left;
+        position: relative;
+        .box-cell::after {
+          content: '+';
+          position: absolute;
         }
       }
     }
+  }
 
-    .drivertrainschedule-stop {
+  .drivertrainschedule-stop {
+    font-weight: bold;
+    small {
       font-weight: bold;
-      small {
-        font-weight: bold;
-      }
     }
   }
+}
 
-  .table-drivertrainschedule th, thead {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
+.table-drivertrainschedule th,
+.table-drivertrainschedule thead,
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
