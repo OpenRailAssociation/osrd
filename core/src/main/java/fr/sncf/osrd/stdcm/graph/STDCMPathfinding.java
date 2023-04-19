@@ -56,7 +56,7 @@ public class STDCMPathfinding {
 
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(makeAStarHeuristic(endLocations, rollingStock))
+                .setRemainingDistanceEstimator(List.of(makeAStarHeuristic(endLocations, rollingStock)))
                 .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.route()))
                 .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.route()))
                 .setTotalDistanceUntilEdgeLocation(range -> totalDistanceUntilEdgeLocation(range, maxDepartureDelay))
@@ -126,7 +126,7 @@ public class STDCMPathfinding {
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
             RollingStock rollingStock
     ) {
-        var remainingDistance = new RemainingDistanceEstimator(endLocations);
+        var remainingDistance = new RemainingDistanceEstimator(endLocations, 0.);
         return ((edge, offset) -> {
             var distance = remainingDistance.apply(edge.route(), offset);
             return distance / rollingStock.maxSpeed;

@@ -30,14 +30,14 @@ public class AStarTests {
         var lastRoute = infra.findSignalingRoute("rt.DH1_2->buffer_stop.7", "BAL3");
         var origin = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0));
         var destination = Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0));
-        var remainingDistanceEstimator = new RemainingDistanceEstimator(destination);
+        var remainingDistanceEstimator = new RemainingDistanceEstimator(destination, 0.);
         var seen = new HashSet<SignalingRoute>();
         new Pathfinding<>(new GraphAdapter<>(graph))
                 .setEdgeToLength(x -> x.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator((route, offset) -> {
+                .setRemainingDistanceEstimator(List.of((route, offset) -> {
                     seen.add(route);
                     return remainingDistanceEstimator.apply(route, offset);
-                })
+                }))
                 .runPathfinding(List.of(origin, destination));
         var allRoutes = allReachableRoutes(graph, origin);
 
@@ -59,10 +59,10 @@ public class AStarTests {
         var seen = new HashSet<SignalingRoute>();
         new Pathfinding<>(new GraphAdapter<>(graph))
                 .setEdgeToLength(x -> x.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator((route, offset) -> {
+                .setRemainingDistanceEstimator(List.of((route, offset) -> {
                     seen.add(route);
                     return 0;
-                })
+                }))
                 .runPathfinding(List.of(origin, destination));
         var allRoutes = allReachableRoutes(graph, origin);
 
@@ -79,10 +79,10 @@ public class AStarTests {
         var seen = new HashSet<SignalingRoute>();
         var res = new Pathfinding<>(new GraphAdapter<>(graph))
                 .setEdgeToLength(x -> x.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator((route, offset) -> {
+                .setRemainingDistanceEstimator(List.of((route, offset) -> {
                     seen.add(route);
                     return 0;
-                })
+                }))
                 .runPathfinding(List.of(
                         origin,
                         List.of(new Pathfinding.EdgeLocation<>(
