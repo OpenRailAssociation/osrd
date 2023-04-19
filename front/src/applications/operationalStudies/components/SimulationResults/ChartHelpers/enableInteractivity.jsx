@@ -75,9 +75,18 @@ const updateChart = (chart, keyValues, rotate, event) => {
 
   let newX = chart.x;
   let newY = chart.y;
-  if (event.sourceEvent.shiftKey || event.sourceEvent.ctrlKey) {
+  if (
+    (event.sourceEvent.shiftKey || event.sourceEvent.ctrlKey) &&
+    !(event.sourceEvent.shiftKey && event.sourceEvent.ctrlKey)
+  ) {
     newX = event.transform.rescaleX(chart.originalScaleX);
     newY = event.transform.rescaleY(chart.originalScaleY);
+  } else if (event.sourceEvent.shiftKey && event.sourceEvent.ctrlKey) {
+    if (rotate) {
+      newY = event.transform.rescaleY(chart.originalScaleY);
+    } else {
+      newX = event.transform.rescaleX(chart.originalScaleX);
+    }
   }
 
   // update axes with these new boundaries
@@ -273,7 +282,6 @@ const enableInteractivity = (
     .wheelDelta(wheelDelta)
     .on('zoom', (event) => {
       event.sourceEvent.preventDefault();
-
       const zoomFunctions = updateChart(chart, keyValues, rotate, event);
       const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
       setChart(newChart);
@@ -394,9 +402,7 @@ export const isolatedEnableInteractivity = (
 ) => {
   if (!chart) return;
 
-  let newHoverPosition;
-
-  const zoom = d3zoom(newHoverPosition)
+  const zoom = d3zoom()
     .scaleExtent([0.3, 20]) // This controls how much you can unzoom (x0.5) and zoom (x20)
     .extent([
       [0, 0],
