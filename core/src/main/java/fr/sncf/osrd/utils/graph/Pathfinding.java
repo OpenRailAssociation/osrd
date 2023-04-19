@@ -63,9 +63,10 @@ public class Pathfinding<NodeT, EdgeT> {
     private final Graph<NodeT, EdgeT> graph;
     /** Keeps track of visited location. For each visited range, keeps the max number of passed targets at that point */
     private final HashMap<EdgeRange<EdgeT>, Integer> seen = new HashMap<>();
-    /** Function to call to get estimate of the remaining distance.
-     * The function takes the edge and the offset and returns a distance. */
-    private AStarHeuristic<EdgeT> estimateRemainingDistance = null;
+    /** Functions to call to get estimate of the remaining distance.
+     * We have a list of function for each step.
+     * These functions take the edge and the offset and returns a distance. */
+    private List<AStarHeuristic<EdgeT>> estimateRemainingDistance = new ArrayList<>();
     /** Function to call to know the cost of the range. */
     private EdgeRangeCost<EdgeT> edgeRangeCost = null;
     /**
@@ -85,8 +86,8 @@ public class Pathfinding<NodeT, EdgeT> {
         return this;
     }
 
-    /** Sets the functor used to estimate the remaining distance for A* */
-    public Pathfinding<NodeT, EdgeT> setRemainingDistanceEstimator(AStarHeuristic<EdgeT> f) {
+    /** Sets functors used to estimate the remaining distance for A* */
+    public Pathfinding<NodeT, EdgeT> setRemainingDistanceEstimator(List<AStarHeuristic<EdgeT>> f) {
         this.estimateRemainingDistance = f;
         return this;
     }
@@ -225,8 +226,7 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Checks that required parameters are set, sets the optional ones to their default values */
     private void checkParameters() {
         assert edgeToLength != null;
-        if (estimateRemainingDistance == null)
-            estimateRemainingDistance = (x, y) -> 0.;
+        assert estimateRemainingDistance != null;
         if (totalDistanceUntilEdgeLocation == null && edgeRangeCost == null)
             edgeRangeCost = (range) -> range.end - range.start;
     }
@@ -307,7 +307,11 @@ public class Pathfinding<NodeT, EdgeT> {
         else {
             totalDistance = prevDistance + edgeRangeCost.apply(range);
         }
-        double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.start);
+
+        double distanceLeftEstimation = 0;
+        if (nPassedTargets < estimateRemainingDistance.size())
+            distanceLeftEstimation = estimateRemainingDistance.get(nPassedTargets).apply(range.edge, range.start);
+
         queue.add(new Step<>(
                 range,
                 prev,

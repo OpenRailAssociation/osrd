@@ -1,5 +1,7 @@
 package fr.sncf.osrd.api.pathfinding;
 
+import static fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator.minDistanceBetweenSteps;
+
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
@@ -20,6 +22,7 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import org.takes.Request;
 import org.takes.Response;
@@ -31,6 +34,7 @@ import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 public class PathfindingRoutesEndpoint implements Take {
     private final InfraManager infraManager;
@@ -106,32 +110,40 @@ public class PathfindingRoutesEndpoint implements Take {
         // Initializes the constraints
         var loadingGaugeConstraints = new LoadingGaugeConstraints(rollingStocks);
         var electrificationConstraints = new ElectrificationConstraints(rollingStocks);
-        List<EdgeToRanges<SignalingRoute>> constraintsList =
+        final List<EdgeToRanges<SignalingRoute>> constraintsList =
                 List.of(loadingGaugeConstraints, electrificationConstraints);
-        RemainingDistanceEstimator remainingDistanceEstimator = null;
 
-        if (waypoints.size() == 2) {
-            // The current implementation of A* only works well if there are no intermediate steps
-            remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
+        // Compute the minimum distance between steps
+        double[] stepMinDistance = new double[waypoints.size() - 1];
+        for (int i = 0; i < waypoints.size() - 2; i++) {
+            stepMinDistance[i] = minDistanceBetweenSteps(waypoints.get(i + 1), waypoints.get(i + 2));
         }
+
+        // Reversed cumulative sum
+        for (int i = stepMinDistance.length - 2; i >= 0; i--) {
+            stepMinDistance[i] += stepMinDistance[i + 1];
+        }
+
+        // Setup estimators foreach intermediate steps
+        var remainingDistanceEstimators = new ArrayList<AStarHeuristic<SignalingRoute>>();
+        for (int i = 0; i < waypoints.size() - 1; i++) {
+            remainingDistanceEstimators.add(new RemainingDistanceEstimator(waypoints.get(i + 1), stepMinDistance[i]));
+        }
+
         // Compute the paths from the entry waypoint to the exit waypoint
-        return computePaths(
-                infra,
-                waypoints,
-                constraintsList,
-                remainingDistanceEstimator
-        );
+        return computePaths(infra, waypoints, constraintsList, remainingDistanceEstimators);
     }
+
 
     private static Pathfinding.Result<SignalingRoute> computePaths(
             SignalingInfra infra,
             ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
             List<EdgeToRanges<SignalingRoute>> constraintsList,
-            RemainingDistanceEstimator remainingDistanceEstimator
+            List<AStarHeuristic<SignalingRoute>> remainingDistanceEstimators
     ) throws NoPathFoundError {
         var pathFound = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                .setRemainingDistanceEstimator(remainingDistanceEstimators)
                 .addBlockedRangeOnEdges(constraintsList)
                 .runPathfinding(waypoints);
 
@@ -142,7 +154,7 @@ public class PathfindingRoutesEndpoint implements Take {
         var possiblePathWithoutErrorNoConstraints =
                 new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                     .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                    .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                    .setRemainingDistanceEstimator(remainingDistanceEstimators)
                     .runPathfinding(waypoints);
         if (possiblePathWithoutErrorNoConstraints == null) {
             throw new NoPathFoundError(PATH_FINDING_GENERIC_ERROR);
@@ -152,7 +164,7 @@ public class PathfindingRoutesEndpoint implements Take {
             var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                     .setEdgeToLength(route -> route.getInfraRoute().getLength())
                     .addBlockedRangeOnEdges(currentConstraint)
-                    .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                    .setRemainingDistanceEstimator(remainingDistanceEstimators)
                     .runPathfinding(waypoints);
             if (possiblePathWithoutError == null) {
                 throw new NoPathFoundError(constraints.get(currentConstraint.getClass()));
