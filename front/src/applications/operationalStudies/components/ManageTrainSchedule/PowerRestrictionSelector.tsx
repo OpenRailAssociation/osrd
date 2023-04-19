@@ -48,6 +48,22 @@ export default function PowerRestrictionSelector() {
 
   const definePowerRestrictionRange = async (powerRestrictionCode?: string) => {
     if (powerRestrictionCode && pathFindingID && rollingStockID) {
+      getPathFindingById({ id: pathFindingID })
+        .unwrap()
+        .then((pathFinding) => {
+          const pathLength = Math.round(
+            lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000
+          );
+          const powerRestrictionRange: PowerRestrictionRange[] = [
+            {
+              begin_position: 0,
+              end_position: pathLength,
+              power_restriction_code: powerRestrictionCode,
+            },
+          ];
+          dispatch(updatePowerRestriction(powerRestrictionRange));
+        });
+
       const { data: pathWithCatenaries } = await getPathFindingByIdCatenaries({
         pathId: pathFindingID,
       });
@@ -74,45 +90,32 @@ export default function PowerRestrictionSelector() {
           };
         }
 
-        // Extract path electrification mode and check compatibility
         const pathCatenaryRanges = pathWithCatenaries.catenary_ranges;
         if (pathCatenaryRanges) {
+          // Extract path electrification mode and check compatibility
           const pathElectrification = pathCatenaryRanges.map((range) => range.mode);
 
-          const isCombinationValid = pathElectrification.every(
-            (electrification) =>
+          // Display an error when the first incompatibility is encountered
+          pathElectrification.some((electrification) => {
+            const isInvalid =
               electrification &&
-              parsedElectrification[electrification as keyof ElectrificationPR].includes(
+              !parsedElectrification[electrification as keyof ElectrificationPR].includes(
                 powerRestrictionCode
-              )
-          );
-          if (!isCombinationValid) {
-            dispatch(
-              setFailure({
-                name: t('errorMessages.error'),
-                message: t('errorMessages.powerRestrictionInvalidCombination', {
-                  powerRestrictionCode,
-                }),
-              })
-            );
-            dispatch(updatePowerRestriction(undefined));
-          } else {
-            getPathFindingById({ id: pathFindingID })
-              .unwrap()
-              .then((pathFinding) => {
-                const pathLength = Math.round(
-                  lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000
-                );
-                const powerRestrictionRange: PowerRestrictionRange[] = [
-                  {
-                    begin_position: 0,
-                    end_position: pathLength,
-                    power_restriction_code: powerRestrictionCode,
-                  },
-                ];
-                dispatch(updatePowerRestriction(powerRestrictionRange));
-              });
-          }
+              );
+            if (isInvalid) {
+              dispatch(
+                setFailure({
+                  name: t('errorMessages.error'),
+                  message: t('errorMessages.powerRestrictionInvalidCombination', {
+                    powerRestrictionCode,
+                    electrification,
+                  }),
+                })
+              );
+            }
+
+            return isInvalid;
+          });
         }
       }
     } else dispatch(updatePowerRestriction(undefined));
