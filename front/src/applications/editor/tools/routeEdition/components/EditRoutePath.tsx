@@ -268,6 +268,7 @@ export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
   );
   const collection = useMemo(() => {
     const options =
+      // eslint-disable-next-line no-nested-ternary
       optionsState.type !== 'options'
         ? []
         : typeof optionsState.focusedOptionIndex === 'number'

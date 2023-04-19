@@ -15,9 +15,11 @@
     "ecmaVersion": "latest"
   },
   "rules": {
-    "no-shadow": "off",
+    "no-shadow": ["error"],
+    "no-nested-ternary": 2,
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-use-before-define": ["error"],
+    "prefer-template":2,
     "arrow-body-style": ["error", "as-needed"],
     "global-require": "off",
     "import/extensions": [

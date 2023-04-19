@@ -9,9 +9,9 @@ export default function SpeedSpaceSettings(props) {
 
   const [settings, setSettings] = useState(speedSpaceSettings);
 
-  const toggleSetting = (settingName, settings) => {
-    const newSettings = { ...settings };
-    newSettings[settingName] = !settings[settingName];
+  const toggleSetting = (settingName, currentSettings) => {
+    const newSettings = { ...currentSettings };
+    newSettings[settingName] = !currentSettings[settingName];
     setSettings(newSettings);
     onSetSettings(newSettings);
   };

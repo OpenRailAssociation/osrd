@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import nextId from 'react-id-generator';
 
+// eslint-disable-next-line no-shadow
 enum colorClasses {
   primary = 'bg-primary',
   secondary = 'bg-secondary',
