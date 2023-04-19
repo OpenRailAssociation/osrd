@@ -10,7 +10,6 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
-import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
@@ -198,10 +197,10 @@ public class STDCMEndpoint implements Take {
             AllowanceValue standardAllowance
     ) {
         var infra = fullInfra.java();
-        var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations);
+        var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations, 0.);
         var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                .setRemainingDistanceEstimator(List.of(remainingDistanceEstimator))
                 .runPathfinding(List.of(startLocations, endLocations));
         if (rawPath == null)
             return 0;
