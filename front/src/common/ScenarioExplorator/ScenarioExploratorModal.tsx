@@ -4,11 +4,6 @@ import {
   SCENARIOS_URI,
   STUDIES_URI,
 } from 'applications/operationalStudies/components/operationalStudiesConsts';
-import {
-  projectTypes,
-  scenarioTypes,
-  studyTypes,
-} from 'applications/operationalStudies/components/operationalStudiesTypes';
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
 import scenariosLogo from 'assets/pictures/views/scenarios.svg';
@@ -21,6 +16,7 @@ import { MdArrowRight } from 'react-icons/md';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
+import { ProjectResult, ScenarioListResult, StudyResult } from 'common/api/osrdEditoastApi';
 import ProjectMiniCard from './ScenarioExploratorModalProjectMiniCard';
 import ScenarioMiniCard from './ScenarioExploratorModalScenarioMiniCard';
 import StudyMiniCard from './ScenarioExploratorModalStudyMiniCard';
@@ -36,9 +32,9 @@ export default function ScenarioExploratorModal() {
   const [projectID, setProjectID] = useState<number | undefined>(globalProjectID);
   const [studyID, setStudyID] = useState<number | undefined>(globalStudyID);
   const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioID);
-  const [projectsList, setProjectsList] = useState<projectTypes[]>();
-  const [studiesList, setStudiesList] = useState<studyTypes[]>();
-  const [scenariosList, setScenariosList] = useState<scenarioTypes[]>();
+  const [projectsList, setProjectsList] = useState<ProjectResult[]>();
+  const [studiesList, setStudiesList] = useState<StudyResult[]>();
+  const [scenariosList, setScenariosList] = useState<ScenarioListResult[]>();
 
   const grabItemsList = async (
     url: string,
