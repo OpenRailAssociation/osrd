@@ -1,8 +1,4 @@
-import {
-  projectTypes,
-  scenarioTypes,
-  studyTypes,
-} from 'applications/operationalStudies/components/operationalStudiesTypes';
+import { ProjectResult, ScenarioListResult, StudyResult } from 'common/api/osrdEditoastApi';
 
 export type FilterParams = {
   name?: string;
@@ -17,17 +13,17 @@ type MiniCardsProps = {
 };
 
 export interface MiniCardsProjectProps extends MiniCardsProps {
-  project: projectTypes;
+  project: ProjectResult;
 }
 export interface MiniCardsStudyProps extends MiniCardsProps {
-  study: studyTypes;
+  study: StudyResult;
 }
 export interface MiniCardsScenarioProps extends MiniCardsProps {
-  scenario: scenarioTypes;
+  scenario: ScenarioListResult;
   projectID: number;
   studyID: number;
 }
 
 export type MiniCardsImageProps = {
-  project: projectTypes;
+  project: ProjectResult;
 };
