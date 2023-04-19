@@ -15,9 +15,10 @@ import fr.sncf.osrd.standalone_sim.result.SignalUpdate
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.sim_infra.api.Duration
 import java.awt.Color
 
-data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
+data class SignalAspectChangeEvent(val newAspect: String, val time: Duration)
 
 fun project(
     fullInfra: FullInfra,
@@ -141,7 +142,7 @@ private fun computeSignalAspectChangeEvents(
             val signal = pathSignal.signal
             val aspect = simulatedAspects[signal] ?: continue
             if (signalAspects[signal]!! == aspect) continue
-            signalAspectChangeEvents[pathSignal]!!.add(SignalAspectChangeEvent(aspect, (event.time * 1000).toLong()))
+            signalAspectChangeEvents[pathSignal]!!.add(SignalAspectChangeEvent(aspect, Duration((event.time * 1000).toLong())))
             signalAspects[signal] = aspect
         }
     }
@@ -197,7 +198,7 @@ private fun signalUpdates(
 
         // Compute the "green" section
         // It happens before the first event
-        if (events.first().time != 0L && signalSightingMap.contains(physicalSignalName)) {
+        if (events.first().time != Duration.ZERO && signalSightingMap.contains(physicalSignalName)) {
             val event = events.first()
             val timeEnd = event.time
             val timeStart = signalSightingMap[physicalSignalName]!!.time
@@ -205,7 +206,7 @@ private fun signalUpdates(
                 SignalUpdate(
                     signalId,
                     timeStart,
-                    timeEnd.toDouble() / 1000,
+                    timeEnd.miliseconds.toDouble() / 1000,
                     positionStart.meters,
                     positionEnd?.meters,
                     color("VL"),
@@ -226,8 +227,8 @@ private fun signalUpdates(
             signalUpdates.add(
                 SignalUpdate(
                     signalId,
-                    timeStart.toDouble() / 1000,
-                    timeEnd.toDouble() / 1000,
+                    timeStart.miliseconds.toDouble() / 1000,
+                    timeEnd.miliseconds.toDouble() / 1000,
                     positionStart.meters,
                     positionEnd?.meters,
                     color(event.newAspect),
@@ -246,7 +247,7 @@ private fun signalUpdates(
             signalUpdates.add(
                 SignalUpdate(
                     signalId,
-                    timeStart.toDouble() / 1000,
+                    timeStart.miliseconds.toDouble() / 1000,
                     null,
                     positionStart.meters,
                     positionEnd?.meters,
