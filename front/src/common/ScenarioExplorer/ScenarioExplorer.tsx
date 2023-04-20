@@ -11,15 +11,15 @@ import { useDispatch } from 'react-redux';
 import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
-import ScenarioExploratorModal from './ScenarioExploratorModal';
-import { ScenarioExploratorProps } from './ScenarioExploratorTypes';
+import ScenarioExplorerModal from './ScenarioExplorerModal';
+import { ScenarioExplorerProps } from './ScenarioExplorerTypes';
 
-export default function ScenarioExplorator({
+export default function ScenarioExplorer({
   globalProjectId,
   globalStudyId,
   globalScenarioId,
-}: ScenarioExploratorProps) {
-  const { t } = useTranslation('common/scenarioExplorator');
+}: ScenarioExplorerProps) {
+  const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useDispatch();
   const { openModal } = useModal();
   const [imageUrl, setImageUrl] = useState<string>();
@@ -76,7 +76,7 @@ export default function ScenarioExplorator({
       data-testid="scenario-explorator"
       onClick={() => {
         openModal(
-          <ScenarioExploratorModal
+          <ScenarioExplorerModal
             globalProjectId={globalProjectId}
             globalStudyId={globalStudyId}
             globalScenarioId={globalScenarioId}

@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
-import ScenarioExplorator from 'common/ScenarioExplorator/ScenarioExplorator';
+import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 
@@ -57,7 +57,7 @@ export default function OSRDConfig({
       {/* use class from new workflow in future */}
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-md-7 col-lg-4">
-          <ScenarioExplorator
+          <ScenarioExplorer
             globalProjectId={projectID}
             globalStudyId={studyID}
             globalScenarioId={scenarioID}
