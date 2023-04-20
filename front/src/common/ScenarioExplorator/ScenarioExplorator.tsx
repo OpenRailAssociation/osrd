@@ -1,76 +1,57 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import {
-  PROJECTS_URI,
-  SCENARIOS_URI,
-  STUDIES_URI,
-} from 'applications/operationalStudies/components/operationalStudiesConsts';
 import infraIcon from 'assets/pictures/components/tracks.svg';
 import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
 import projectIcon from 'assets/pictures/views/projects.svg';
 import studyIcon from 'assets/pictures/views/study.svg';
-import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { updateInfraID, updateTimetableID } from 'reducers/osrdconf';
-import { getProjectID, getScenarioID, getStudyID, getMode } from 'reducers/osrdconf/selectors';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { getDocument } from 'common/api/documentApi';
 import ScenarioExploratorModal from './ScenarioExploratorModal';
+import { ScenarioExploratorProps } from './ScenarioExploratorTypes';
 
-export default function ScenarioExplorator() {
+export default function ScenarioExplorator({
+  globalProjectId,
+  globalStudyId,
+  globalScenarioId,
+}: ScenarioExploratorProps) {
   const { t } = useTranslation('common/scenarioExplorator');
   const dispatch = useDispatch();
   const { openModal } = useModal();
-  const projectID = useSelector(getProjectID);
-  const studyID = useSelector(getStudyID);
-  const scenarioID = useSelector(getScenarioID);
-  const mode = useSelector(getMode);
-  const [projectDetails, setProjectDetails] = useState<any>();
-  const [studyDetails, setStudyDetails] = useState<any>();
-  const [scenarioDetails, setScenarioDetails] = useState<any>();
   const [imageUrl, setImageUrl] = useState<string>();
 
-  async function getDetails(url: string, setDetails: (arg0: any) => void) {
-    try {
-      const result = await get(url);
-      setDetails(result);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const { data: projectDetails } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
+    { projectId: globalProjectId as number },
+    { skip: !globalProjectId }
+  );
 
-  const getProjectImage = async (url: string) => {
+  const { data: studyDetails } = osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdQuery(
+    { projectId: globalProjectId as number, studyId: globalStudyId as number },
+    { skip: !globalProjectId && !globalStudyId }
+  );
+
+  const { data: scenarioDetails } =
+    osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdQuery(
+      {
+        projectId: globalProjectId as number,
+        studyId: globalStudyId as number,
+        scenarioId: globalScenarioId as number,
+      },
+      { skip: !globalProjectId && !globalStudyId && !globalScenarioId }
+    );
+
+  const getProjectImage = async (imageId: number) => {
     try {
-      const image = await get(url, { responseType: 'blob' });
-      setImageUrl(URL.createObjectURL(image));
+      const blobImage = await getDocument(imageId);
+      setImageUrl(URL.createObjectURL(blobImage));
     } catch (error) {
       console.error(error);
     }
   };
-
-  // NOT ISOLATED? FORCE reset stuff to undefined
-
-  useEffect(() => {
-    if (projectID && studyID && scenarioID) {
-      getDetails(`${PROJECTS_URI}${projectID}/`, setProjectDetails);
-      getDetails(`${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}/`, setStudyDetails);
-      getDetails(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}${scenarioID}/`,
-        setScenarioDetails
-      );
-    } else if (!projectID) {
-      setProjectDetails({});
-      setStudyDetails({});
-      setScenarioDetails({});
-    } else if (!studyID) {
-      setStudyDetails({});
-      setScenarioDetails({});
-    } else if (!scenarioID) {
-      setScenarioDetails({});
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scenarioID, studyID, scenarioID, mode]);
 
   useEffect(() => {
     if (scenarioDetails?.timetable_id) {
@@ -81,8 +62,8 @@ export default function ScenarioExplorator() {
   }, [scenarioDetails]);
 
   useEffect(() => {
-    if (projectDetails?.image_url) {
-      getProjectImage(`${PROJECTS_URI}${projectID}/image/`);
+    if (projectDetails?.image) {
+      getProjectImage(projectDetails?.image);
     } else {
       setImageUrl(undefined);
     }
@@ -94,12 +75,24 @@ export default function ScenarioExplorator() {
       className="scenario-explorator-card"
       data-testid="scenario-explorator"
       onClick={() => {
-        openModal(<ScenarioExploratorModal />, 'lg');
+        openModal(
+          <ScenarioExploratorModal
+            globalProjectId={globalProjectId}
+            globalStudyId={globalStudyId}
+            globalScenarioId={globalScenarioId}
+          />,
+          'lg'
+        );
       }}
       role="button"
       tabIndex={0}
     >
-      {projectID && projectDetails && studyID && studyDetails && scenarioID && scenarioDetails ? (
+      {globalProjectId &&
+      projectDetails &&
+      globalStudyId &&
+      studyDetails &&
+      globalScenarioId &&
+      scenarioDetails ? (
         <div className="scenario-explorator-card-head">
           {imageUrl && (
             <div className="scenario-explorator-card-head-img">

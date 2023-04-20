@@ -57,7 +57,11 @@ export default function OSRDConfig({
       {/* use class from new workflow in future */}
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-md-7 col-lg-4">
-          <ScenarioExplorator />
+          <ScenarioExplorator
+            globalProjectId={projectID}
+            globalStudyId={studyID}
+            globalScenarioId={scenarioID}
+          />
           {projectID && studyID && scenarioID && timetableID && infraID && (
             <>
               <RollingStockSelector condensed />

@@ -1,10 +1,9 @@
 import { ProjectResult, ScenarioListResult, StudyResult } from 'common/api/osrdEditoastApi';
 
-export type FilterParams = {
-  name?: string;
-  description?: string;
-  tags?: string;
-  ordering?: string;
+export type ScenarioExploratorProps = {
+  globalProjectId: number | undefined;
+  globalStudyId: number | undefined;
+  globalScenarioId: number | undefined;
 };
 
 type MiniCardsProps = {

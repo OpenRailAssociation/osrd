@@ -1,64 +1,69 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  PROJECTS_URI,
-  SCENARIOS_URI,
-  STUDIES_URI,
-} from 'applications/operationalStudies/components/operationalStudiesConsts';
 import projectsLogo from 'assets/pictures/views/projects.svg';
 import scenarioExploratorLogo from 'assets/pictures/views/scenarioExplorator.svg';
 import scenariosLogo from 'assets/pictures/views/scenarios.svg';
 import studiesLogo from 'assets/pictures/views/studies.svg';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { MdArrowRight } from 'react-icons/md';
-import nextId from 'react-id-generator';
-import { useSelector } from 'react-redux';
-import { getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
-import { ProjectResult, ScenarioListResult, StudyResult } from 'common/api/osrdEditoastApi';
+import { useDispatch } from 'react-redux';
+import { ScenarioListResult, StudyResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { setFailure } from 'reducers/main';
 import ProjectMiniCard from './ScenarioExploratorModalProjectMiniCard';
 import ScenarioMiniCard from './ScenarioExploratorModalScenarioMiniCard';
 import StudyMiniCard from './ScenarioExploratorModalStudyMiniCard';
-import { FilterParams } from './ScenarioExploratorTypes';
+import { ScenarioExploratorProps } from './ScenarioExploratorTypes';
 
-export default function ScenarioExploratorModal() {
+export default function ScenarioExploratorModal({
+  globalProjectId,
+  globalStudyId,
+  globalScenarioId,
+}: ScenarioExploratorProps) {
   const { t } = useTranslation('common/scenarioExplorator');
+  const dispatch = useDispatch();
 
-  const globalProjectID = useSelector(getProjectID);
-  const globalStudyID = useSelector(getStudyID);
-  const globalScenarioID = useSelector(getScenarioID);
-
-  const [projectID, setProjectID] = useState<number | undefined>(globalProjectID);
-  const [studyID, setStudyID] = useState<number | undefined>(globalStudyID);
-  const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioID);
-  const [projectsList, setProjectsList] = useState<ProjectResult[]>();
+  const [projectID, setProjectID] = useState<number | undefined>(globalProjectId);
+  const [studyID, setStudyID] = useState<number | undefined>(globalStudyId);
+  const [scenarioID, setScenarioID] = useState<number | undefined>(globalScenarioId);
   const [studiesList, setStudiesList] = useState<StudyResult[]>();
   const [scenariosList, setScenariosList] = useState<ScenarioListResult[]>();
-
-  const grabItemsList = async (
-    url: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setFunction: (arg0: any) => void,
-    params?: FilterParams
-  ) => {
-    try {
-      const data = await get(url, { params });
-      setFunction(data.results);
-    } catch (error) {
-      /* empty */
+  const {
+    projectsList,
+    isError: isProjectsError,
+    error: projectsError,
+  } = osrdEditoastApi.useGetProjectsQuery(
+    { ordering: 'NameAsc' },
+    {
+      selectFromResult: (response) => ({
+        ...response,
+        projectsList: response.data?.results || [],
+      }),
     }
-  };
+  );
+
+  const [getStudiesList] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesQuery();
+  const [getScenariosList] =
+    osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
 
   useEffect(() => {
-    grabItemsList(PROJECTS_URI, setProjectsList, { ordering: 'NameAsc' });
-  }, []);
+    if (isProjectsError) {
+      dispatch(
+        setFailure({
+          name: t('errorMessages.error'),
+          message: t('errorMessages.unableToRetrieveProjectsMessage'),
+        })
+      );
+      console.error('error : ', projectsError);
+    }
+  }, [isProjectsError]);
 
   useEffect(() => {
-    if (projectID) {
-      grabItemsList(`${PROJECTS_URI}${projectID}${STUDIES_URI}`, setStudiesList, {
-        ordering: 'NameAsc',
-      });
+    if (projectID && !isProjectsError) {
+      getStudiesList({ projectId: projectID, ordering: 'NameAsc' })
+        .unwrap()
+        .then(({ results }) => setStudiesList(results))
+        .catch((error) => console.error(error));
     }
   }, [projectID]);
 
@@ -67,16 +72,12 @@ export default function ScenarioExploratorModal() {
   }, [studiesList]);
 
   useEffect(() => {
-    if (projectID && studyID) {
-      grabItemsList(
-        `${PROJECTS_URI}${projectID}${STUDIES_URI}${studyID}${SCENARIOS_URI}`,
-        setScenariosList,
-        {
-          ordering: 'NameAsc',
-        }
-      );
+    if (projectID && studyID && !isProjectsError) {
+      getScenariosList({ projectId: projectID, studyId: studyID, ordering: 'NameAsc' })
+        .unwrap()
+        .then(({ results }) => setScenariosList(results))
+        .catch((error) => console.error(error));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studyID]);
 
   return (
@@ -103,13 +104,13 @@ export default function ScenarioExploratorModal() {
               <div className="scenario-explorator-modal-part-itemslist">
                 {useMemo(
                   () =>
-                    projectsList &&
+                    projectsList.length > 0 &&
                     projectsList.map((project) => (
                       <ProjectMiniCard
                         project={project}
                         setSelectedID={setProjectID}
                         isSelected={project.id === projectID}
-                        key={nextId()}
+                        key={`scenario-explorator-modal-${project.id}`}
                       />
                     )),
                   [projectsList, projectID]
@@ -140,7 +141,7 @@ export default function ScenarioExploratorModal() {
                         study={study}
                         setSelectedID={setStudyID}
                         isSelected={study.id === studyID}
-                        key={nextId()}
+                        key={`scenario-explorator-modal-${study.id}`}
                       />
                     )),
                   [studiesList, studyID]
@@ -175,7 +176,7 @@ export default function ScenarioExploratorModal() {
                         isSelected={scenario.id === scenarioID}
                         projectID={projectID}
                         studyID={studyID}
-                        key={nextId()}
+                        key={`scenario-explorator-modal-${scenario.id}`}
                       />
                     )),
                   [scenariosList, scenarioID]
