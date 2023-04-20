@@ -43,6 +43,7 @@ export default function OSRDConfig({
     'operationalStudies/manageTrainSchedule',
     'allowances',
     'simulation',
+    'stdcm',
   ]);
 
   const selectedTrain = useSelector(getSelectedTrain);
@@ -101,7 +102,6 @@ export default function OSRDConfig({
                   type="button"
                   onClick={() => {
                     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
-                    setShowMap(false);
                   }}
                 >
                   {t('operationalStudies/manageTrainSchedule:apply')}
@@ -128,6 +128,9 @@ export default function OSRDConfig({
                 </div>
               )}
               <div className="osrd-config-item">
+                {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.rejected && (
+                  <div className="stdcm-error">{t('stdcm:searchFailed')}</div>
+                )}
                 {showMap && (
                   <div
                     className={`osrd-config-item-container osrd-config-item-container-map ${
