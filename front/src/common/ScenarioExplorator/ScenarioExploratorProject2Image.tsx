@@ -10,8 +10,7 @@ export default function Project2Image({ project }: MiniCardsImageProps) {
     try {
       const blobImage = await getDocument(project.image as number);
       if (blobImage) setImageUrl(URL.createObjectURL(blobImage));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
     }
   }, [project]);

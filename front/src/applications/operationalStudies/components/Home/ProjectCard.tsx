@@ -8,9 +8,8 @@ import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
-import { get } from 'common/requests';
-import DOCUMENT_URI from 'common/consts';
 import { ProjectResult } from 'common/api/osrdEditoastApi';
+import { getDocument } from 'common/api/documentApi';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -33,16 +32,18 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
   // as the image is stored in the database and can be fetched only through api (authentication needed),
   // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
   // url is generated and stored in imageUrl (then used in <img />).
-  const getProjectImage = async () => {
-    const image = await get(`${DOCUMENT_URI}${project.image}`, {
-      responseType: 'blob',
-    });
-    setImageUrl(URL.createObjectURL(image));
+  const getProjectImage = async (imageKey: number) => {
+    try {
+      const image = await getDocument(imageKey);
+      setImageUrl(URL.createObjectURL(image));
+    } catch (error: unknown) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
     if (project.image) {
-      getProjectImage();
+      getProjectImage(project.image);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -7,8 +7,7 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import DOCUMENT_URI from 'common/consts';
-import { deleteRequest, getAuthConfig, post } from 'common/requests';
+import { deleteRequest } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
@@ -17,7 +16,7 @@ import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setSuccess } from 'reducers/main';
+import { setFailure, setSuccess } from 'reducers/main';
 import { updateProjectID } from 'reducers/osrdconf';
 import remarkGfm from 'remark-gfm';
 import { useDebounce } from 'utils/helpers';
@@ -27,6 +26,7 @@ import {
   ProjectResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
+import { postDocument } from 'common/api/documentApi';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
@@ -63,11 +63,21 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     setCurrentProject({ ...currentProject, tags: newTags });
   };
 
-  const getDocKey = async (image: Blob) => {
-    const { document_key: docKey } = await post(`${DOCUMENT_URI}`, image, {
-      headers: { 'Content-Type': 'multipart/form-data', ...getAuthConfig().headers },
-    });
-    return docKey;
+  const uploadImage = async (image: Blob): Promise<number | null> => {
+    try {
+      const imageId = await postDocument(image as Blob);
+      return imageId;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        dispatch(
+          setFailure({
+            name: t('error.unableToPostDocumentTitle'),
+            message: t('error.unableToPostDocument'),
+          })
+        );
+      }
+      return null;
+    }
   };
 
   const createProject = async () => {
@@ -76,7 +86,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     } else {
       try {
         if (tempProjectImage) {
-          currentProject.image = await getDocKey(tempProjectImage as Blob);
+          currentProject.image = await uploadImage(tempProjectImage as Blob);
         }
         const request = postProject({
           projectCreateRequest: currentProject as ProjectCreateRequest,
@@ -101,12 +111,18 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
     } else if (project) {
       try {
         let imageId = currentProject.image;
+
         if (tempProjectImage) {
-          imageId = await getDocKey(tempProjectImage as Blob);
+          imageId = await uploadImage(tempProjectImage as Blob);
+          // if the upload of the new image fails, keep the old one
+          if (!imageId && currentProject.image) {
+            imageId = currentProject.image;
+          }
         } else if (tempProjectImage === null) {
           imageId = null;
           setTempProjectImage(imageId);
         }
+
         const editedProject = { ...currentProject, image: imageId };
         setCurrentProject(editedProject);
         const request = patchProject({
