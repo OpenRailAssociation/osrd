@@ -8,7 +8,7 @@ import {
   updateStudyID,
   updateTimetableID,
 } from 'reducers/osrdconf';
-import { MiniCardsScenarioProps } from './ScenarioExploratorTypes';
+import { MiniCardsScenarioProps } from './ScenarioExplorerTypes';
 
 export default function ScenarioMiniCard({
   scenario,

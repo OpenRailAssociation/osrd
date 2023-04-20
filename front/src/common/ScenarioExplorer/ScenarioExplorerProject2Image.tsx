@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { getDocument } from 'common/api/documentApi';
-import { MiniCardsImageProps } from './ScenarioExploratorTypes';
+import { MiniCardsImageProps } from './ScenarioExplorerTypes';
 
 export default function Project2Image({ project }: MiniCardsImageProps) {
   const [imageUrl, setImageUrl] = useState<string>();
