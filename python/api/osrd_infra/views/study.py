@@ -182,11 +182,11 @@ class ProjectView(
             return HttpResponse(image_db, content_type="image/png")
         return Response("No image for this project", status=404)
 
-    @action(url_path="study_types", detail=True, methods=["get"])
+    @action(url_path="study_types", detail=False, methods=["get"])
     def get_types(self, request, pk=None):
         return Response([x.value for x in StudyType])
 
-    @action(url_path="study_states", detail=True, methods=["get"])
+    @action(url_path="study_states", detail=False, methods=["get"])
     def get_states(self, request, pk=None):
         return Response([x.value for x in StudyState])
 

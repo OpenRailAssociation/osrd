@@ -1058,18 +1058,11 @@ paths:
       responses:
         204:
           description: No content
-  /projects/{project_id}/study_types/:
+  /projects/study_types/:
     get:
       tags:
         - studies
       summary: Retrieve list of study types
-      parameters:
-        - in: path
-          name: project_id
-          schema:
-            type: integer
-          description: project id refered to the operational study
-          required: true
       responses:
         200:
           description: The list of study types
@@ -1091,18 +1084,11 @@ paths:
                     "chartStability",
                     "disturbanceTests",
                   ]
-  /projects/{project_id}/study_states/:
+  /projects/study_states/:
     get:
       tags:
         - studies
       summary: Retrieve list of study states
-      parameters:
-        - in: path
-          name: project_id
-          schema:
-            type: integer
-          description: project id refered to the operational study
-          required: true
       responses:
         200:
           description: The list of study states

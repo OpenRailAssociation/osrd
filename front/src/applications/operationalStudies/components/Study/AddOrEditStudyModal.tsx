@@ -128,16 +128,8 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
   };
 
   useEffect(() => {
-    createSelectOptions(
-      'studyCategories',
-      `/projects/${currentStudy?.id}/study_types/`,
-      setStudyCategories
-    );
-    createSelectOptions(
-      'studyStates',
-      `/projects/${currentStudy?.id}/study_states/`,
-      setStudyStates
-    );
+    createSelectOptions('studyCategories', `/projects/study_types/`, setStudyCategories);
+    createSelectOptions('studyStates', `/projects/study_states/`, setStudyStates);
   }, []);
 
   return (
