@@ -1,13 +1,11 @@
 from django.db import transaction
-from django.http import Http404
 from rest_framework import mixins
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from osrd_infra.models import PathModel, SimulationOutput, TrainSchedule
+from osrd_infra.models import PathModel, SimulationOutput, Timetable, TrainSchedule
 from osrd_infra.serializers import (
     StandaloneSimulationSerializer,
     TrainScheduleSerializer,
@@ -78,40 +76,27 @@ class TrainScheduleView(
 
     @action(detail=False)
     def results(self, request):
-        train_ids = request.query_params.get("train_ids", None)
-        path_id = request.query_params.get("path", None)
-        # parse the list of train_ids
-        if train_ids is None:
-            raise ParseError("missing train_ids")
-        try:
-            train_ids = [int(train_id) for train_id in train_ids.split(",")]
-        except ValueError as e:
-            raise ParseError("invalid train_ids list") from e
-        train_ids_set = set(train_ids)
-        if len(train_ids_set) != len(train_ids):
-            raise ParseError("duplicate train_ids")
+        timetable_id = request.query_params.get("timetable_id", None)
+        path_id = request.query_params.get("path_id", None)
 
-        # get the schedules from database
-        schedules = TrainSchedule.objects.filter(pk__in=train_ids)
+        if timetable_id is None:
+            raise ValueError("missing timetable_id")
+        timetable = get_object_or_404(Timetable, pk=timetable_id)
+        infra = timetable.infra
+        train_schedules = timetable.train_schedules.all()
 
-        # if some schedules were not found, raise an error
-        schedules_map = {schedule.id: schedule for schedule in schedules}
-        missing_schedules = train_ids_set.difference(schedules_map.keys())
-        if missing_schedules:
-            raise Http404(f"Invalid schedule IDs: {', '.join(map(str, missing_schedules))}")
+        if len(train_schedules) == 0:
+            return Response([])
 
-        # if there's no path argument, use the path of the first train
+        # if there's no path argument, use the path of the first train_schedule
         if path_id is not None:
             path = get_object_or_404(PathModel, pk=path_id)
         else:
-            path = schedules_map[train_ids[0]].path
+            path = train_schedules[0].path
 
-        infra = schedules[0].timetable.infra
-
+        # create the simulation reports to something frontend-friendly
         res = []
-        for train_id in train_ids:
-            train_schedule = schedules_map[train_id]
-            # create the simulation report to something frontend-friendly
+        for train_schedule in train_schedules:
             sim_report = create_simulation_report(infra, train_schedule, path)
             if not sim_report["base"]["head_positions"]:
                 continue
