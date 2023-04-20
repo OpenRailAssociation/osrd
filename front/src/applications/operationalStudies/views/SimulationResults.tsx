@@ -213,7 +213,7 @@ export default function SimulationResults() {
               onClick={toggleAllowancesDisplay}
             >
               {t('simulation:allowances')}
-              <i className="icons-arrow-down m-auto" />
+              <i className="icons-arrow-down ml-auto" />
             </div>
           )}
 
