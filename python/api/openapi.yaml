@@ -612,19 +612,15 @@ paths:
       summary: Retrieve the simulation result of multiple train schedules
       parameters:
         - in: query
-          name: path
+          name: path_id
           schema:
             type: integer
           description: Path id used to project the train path
         - in: query
-          name: train_ids
+          name: timetable_id
           schema:
-            type: array
-            uniqueItems: true
-            minItems: 1
-            items:
-              type: integer
-          description: List of train schedule ids
+            type: integer
+          description: Timetable id of the simulation
           required: true
       responses:
         200:

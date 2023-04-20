@@ -41,8 +41,8 @@ export default async function getTimetable(timetableID) {
 
       const simulationLocal = await get(`${trainscheduleURI}results/`, {
         params: {
-          train_ids: trainSchedulesIDs.join(','),
-          path: selectedProjectionPath,
+          timetable_id: timetableID,
+          path_id: selectedProjectionPath,
         },
       });
       simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);

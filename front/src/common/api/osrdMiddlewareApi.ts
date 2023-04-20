@@ -138,7 +138,7 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({
         url: `/train_schedule/results/`,
-        params: { path: queryArg.path, train_ids: queryArg.trainIds },
+        params: { path_id: queryArg.pathId, timetable_id: queryArg.timetableId },
       }),
     }),
     getInfraByIdSpeedLimitTags: build.query<
@@ -489,9 +489,9 @@ export type GetTrainScheduleResultsApiResponse =
   /** status 200 The train schedules results */ TrainScheduleResult[];
 export type GetTrainScheduleResultsApiArg = {
   /** Path id used to project the train path */
-  path?: number;
-  /** List of train schedule ids */
-  trainIds: number[];
+  pathId?: number;
+  /** Timetable id of the simulation */
+  timetableId: number;
 };
 export type GetInfraByIdSpeedLimitTagsApiResponse = /** status 200 Tags list */ string[];
 export type GetInfraByIdSpeedLimitTagsApiArg = {

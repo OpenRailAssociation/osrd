@@ -75,38 +75,33 @@ export default function StdcmRequestModal(props) {
             })
           );
 
-          // ask for timetable with the new path
-          get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {
-            // eslint-disable-next-line camelcase
-            const trainIds = timetable.train_schedules.map((train_schedule) => train_schedule.id);
-            get(`${trainscheduleURI}results/`, {
-              params: {
-                train_ids: trainIds.join(','),
-                path: result.path.id,
-              },
-            }).then((simulationLocal) => {
-              const newSimulation = {};
-              newSimulation.trains = [...simulationLocal];
-              newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
-              const consolidatedSimulation = createTrain(
-                dispatch,
-                KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-                newSimulation.trains,
-                t
-              );
-              dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-              dispatch(updateSimulation(newSimulation));
-              dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
+          get(`${trainscheduleURI}results/`, {
+            params: {
+              timetable_id: osrdconf.timetableID,
+              path: result.path.id,
+            },
+          }).then((simulationLocal) => {
+            const newSimulation = {};
+            newSimulation.trains = [...simulationLocal];
+            newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
+            const consolidatedSimulation = createTrain(
+              dispatch,
+              KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+              newSimulation.trains,
+              t
+            );
+            dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+            dispatch(updateSimulation(newSimulation));
+            dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
 
-              dispatch(
-                updateSelectedProjection({
-                  id: fakedNewTrain.id,
-                  path: result.path,
-                })
-              );
+            dispatch(
+              updateSelectedProjection({
+                id: fakedNewTrain.id,
+                path: result.path,
+              })
+            );
 
-              dispatch(updateMustRedraw(true));
-            });
+            dispatch(updateMustRedraw(true));
           });
         })
         .catch((e) => {
