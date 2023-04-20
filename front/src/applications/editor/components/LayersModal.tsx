@@ -109,7 +109,7 @@ const LayersModal: FC<LayersModalProps> = ({
                 {isString(icon) ? (
                   <img className="mx-2" src={icon} alt="" height="20" />
                 ) : (
-                  <>{icon}</>
+                  <div>{icon}</div>
                 )}
                 <div className="d-flex flex-column">
                   <div>{t(`Editor.layers.${id}`)}</div>

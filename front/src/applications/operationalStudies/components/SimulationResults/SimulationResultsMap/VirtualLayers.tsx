@@ -26,5 +26,5 @@ export default function VirtualLayers() {
         />
       );
     });
-  return <>{layers}</>;
+  return <div>{layers}</div>;
 }

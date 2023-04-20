@@ -355,16 +355,18 @@ const GeoJSONs: FC<{
     [hidden, hiddenLayerContext, layerContext, layers, infraID, prefix, selectedPrefix, selection]
   );
 
+  if (skipSources) {
+    return null;
+  }
   return (
     <>
-      {!skipSources &&
-        sources.map((source) => (
-          <Source key={source.id} promoteId="id" type="vector" url={source.url}>
-            {source.layers.map((layer) => (
-              <Layer key={layer.id} {...layer} beforeId={beforeId} />
-            ))}
-          </Source>
-        ))}
+      {sources.map((source) => (
+        <Source key={source.id} promoteId="id" type="vector" url={source.url}>
+          {source.layers.map((layer) => (
+            <Layer key={layer.id} {...layer} beforeId={beforeId} />
+          ))}
+        </Source>
+      ))}
     </>
   );
 };

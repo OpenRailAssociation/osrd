@@ -69,28 +69,27 @@ export const ModalSNCF: FC = () => {
     };
   }, [isOpen, closeModal]);
 
+  if (!content) {
+    return null;
+  }
   return (
-    <>
-      {content && (
-        <div
-          className={cx('modal fade', isOpen && 'show')}
-          style={{ display: 'block' }}
-          tabIndex={-1}
-          role="dialog"
-          aria-hidden="true"
-        >
-          <div
-            ref={modalRef}
-            className={cx('modal-dialog modal-dialog-centered', className, size && `modal-${size}`)}
-            role="document"
-          >
-            <div id="modal-content" className="modal-content">
-              {content}
-            </div>
-          </div>
+    <div
+      className={cx('modal fade', isOpen && 'show')}
+      style={{ display: 'block' }}
+      tabIndex={-1}
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div
+        ref={modalRef}
+        className={cx('modal-dialog modal-dialog-centered', className, size && `modal-${size}`)}
+        role="document"
+      >
+        <div id="modal-content" className="modal-content">
+          {content}
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 };
 
