@@ -1,6 +1,6 @@
 import React from 'react';
-import { MiniCardsProjectProps } from './ScenarioExploratorTypes';
-import Project2Image from './ScenarioExploratorProject2Image';
+import { MiniCardsProjectProps } from './ScenarioExplorerTypes';
+import Project2Image from './ScenarioExplorerProject2Image';
 
 export default function ProjectMiniCard({
   project,

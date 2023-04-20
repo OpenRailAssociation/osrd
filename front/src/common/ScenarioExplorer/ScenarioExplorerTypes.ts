@@ -1,9 +1,9 @@
 import { ProjectResult, ScenarioListResult, StudyResult } from 'common/api/osrdEditoastApi';
 
-export type ScenarioExploratorProps = {
-  globalProjectId: number | undefined;
-  globalStudyId: number | undefined;
-  globalScenarioId: number | undefined;
+export type ScenarioExplorerProps = {
+  globalProjectId?: number;
+  globalStudyId?: number;
+  globalScenarioId?: number;
 };
 
 type MiniCardsProps = {

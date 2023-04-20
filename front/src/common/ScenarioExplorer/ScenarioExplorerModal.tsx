@@ -10,17 +10,17 @@ import { MdArrowRight } from 'react-icons/md';
 import { useDispatch } from 'react-redux';
 import { ScenarioListResult, StudyResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
-import ProjectMiniCard from './ScenarioExploratorModalProjectMiniCard';
-import ScenarioMiniCard from './ScenarioExploratorModalScenarioMiniCard';
-import StudyMiniCard from './ScenarioExploratorModalStudyMiniCard';
-import { ScenarioExploratorProps } from './ScenarioExploratorTypes';
+import ProjectMiniCard from './ScenarioExplorerModalProjectMiniCard';
+import ScenarioMiniCard from './ScenarioExplorerModalScenarioMiniCard';
+import StudyMiniCard from './ScenarioExplorerModalStudyMiniCard';
+import { ScenarioExplorerProps } from './ScenarioExplorerTypes';
 
-export default function ScenarioExploratorModal({
+export default function ScenarioExplorerModal({
   globalProjectId,
   globalStudyId,
   globalScenarioId,
-}: ScenarioExploratorProps) {
-  const { t } = useTranslation('common/scenarioExplorator');
+}: ScenarioExplorerProps) {
+  const { t } = useTranslation('common/scenarioExplorer');
   const dispatch = useDispatch();
 
   const [projectID, setProjectID] = useState<number | undefined>(globalProjectId);

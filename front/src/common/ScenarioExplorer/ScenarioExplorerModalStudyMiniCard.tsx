@@ -1,5 +1,5 @@
 import React from 'react';
-import { MiniCardsStudyProps } from './ScenarioExploratorTypes';
+import { MiniCardsStudyProps } from './ScenarioExplorerTypes';
 
 export default function StudyMiniCard({ study, setSelectedID, isSelected }: MiniCardsStudyProps) {
   return (
