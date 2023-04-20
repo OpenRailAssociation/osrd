@@ -103,9 +103,9 @@ export default function Study() {
     );
   }
 
-  const getStudyStates = async (id: number) => {
+  const getStudyStates = async () => {
     try {
-      const list = await get(`/projects/${id}/study_states/`);
+      const list = await get(`/projects/study_states/`);
       setStudyStates(list);
     } catch (error) {
       /* empty */
@@ -131,7 +131,7 @@ export default function Study() {
     if (currentProject?.id) {
       try {
         setProject(currentProject);
-        await getStudyStates(currentProject.id);
+        await getStudyStates();
       } catch (error) {
         console.error(error);
       }
