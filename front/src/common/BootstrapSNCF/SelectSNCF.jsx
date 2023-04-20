@@ -24,7 +24,7 @@ export default function SelectSNCF(props) {
 
   return (
     <>
-      <label htmlFor={id}>{title}</label>
+      {title && <label htmlFor={id}>{title}</label>}
       <select
         id={id}
         name={name}
