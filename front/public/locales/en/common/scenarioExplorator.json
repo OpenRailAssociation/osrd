@@ -1,4 +1,8 @@
 {
+  "errorMessages": {
+    "error": "An error has occured",
+    "unableToRetrieveProjectsMessage": "Failed to get projects"
+  },
   "infraLegend": "infra",
   "noScenarioSelected": "Click here to select a case study",
   "projectLegend": "project",

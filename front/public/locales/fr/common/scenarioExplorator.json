@@ -1,4 +1,8 @@
 {
+  "errorMessages": {
+    "error": "Une erreur est survenue",
+    "unableToRetrieveProjectsMessage": "Impossible de récupérer les projets"
+  },
   "infraLegend": "infra",
   "noScenarioSelected": "Cliquez ici pour sélectionner un scénario afin de déterminer une infrastructure et une grille horaire.",
   "projectLegend": "projet",
