@@ -67,7 +67,7 @@ public class STDCMPathfinding {
                 .setEdgeToLength(STDCMEdge::getLength)
                 .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.route()))
                 .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.route()))
-                .setTotalDistanceUntilEdgeLocation(range -> totalDistanceUntilEdgeLocation(range, maxDepartureDelay))
+                .setTotalCostUntilEdgeLocation(range -> totalCostUntilEdgeLocation(range, maxDepartureDelay))
                 .runPathfinding(
                         convertLocations(graph, steps.get(0).locations(), startTime, maxDepartureDelay),
                         makeObjectiveFunction(steps)
@@ -107,8 +107,8 @@ public class STDCMPathfinding {
         return globalResult;
     }
 
-    /** Compute the total distance of a path (in s) to an edge location
-     * This estimation of the total distance is used to compare paths in the pathfinding algorithm.
+    /** Compute the total cost of a path (in s) to an edge location
+     * This estimation of the total cost is used to compare paths in the pathfinding algorithm.
      * We select the shortest path (in duration), and for 2 paths with the same duration, we select the earliest one.
      * The path weight which takes into account the total duration of the path and the time shift at the departure
      * (with different weights): path_duration * searchTimeRange + departure_time_shift.
@@ -121,7 +121,7 @@ public class STDCMPathfinding {
      * - the second one leaves at 9:00 and lasts for 20:01 min.
      * As we are looking for the fastest train, the first train should have the lightest weight, which is the case with
      * the formula above.*/
-    private static double totalDistanceUntilEdgeLocation(
+    private static double totalCostUntilEdgeLocation(
             Pathfinding.EdgeLocation<STDCMEdge> range,
             double searchTimeRange
     ) {
