@@ -107,126 +107,117 @@ export default function SimulationResults({ isDisplayed }: { isDisplayed: boolea
       <h1 className="text-center">{t('simulation:noData')}</h1>
     ) : null;
 
+  if (!displaySimulation || isUpdating) {
+    return <div className="pt-5 mt-5">{waitingLoader}</div>;
+  }
   return (
-    <>
-      {!displaySimulation || isUpdating ? (
-        <div className="pt-5 mt-5">{waitingLoader}</div>
-      ) : (
-        <div className="simulation-results">
-          {/* SIMULATION : STICKY BAR */}
-          <div className="osrd-simulation-sticky-bar">
-            <div className="row">
-              <div className="col-xl-4">
-                <TimeButtons />
-              </div>
-              <div className="col-xl-8 d-flex justify-content-end mt-2 mt-xl-0">
-                <TrainDetails />
-              </div>
-            </div>
+    <div className="simulation-results">
+      {/* SIMULATION : STICKY BAR */}
+      <div className="osrd-simulation-sticky-bar">
+        <div className="row">
+          <div className="col-xl-4">
+            <TimeButtons />
           </div>
-
-          {/* SIMULATION : TIMELINE */}
-          <TimeLine />
-
-          {/* SIMULATION : SPACE TIME CHART */}
-          <div className="osrd-simulation-container d-flex mb-2">
-            <div
-              className="spacetimechart-container"
-              style={{ height: `${heightOfSpaceTimeChart}px` }}
-            >
-              {displaySimulation && (
-                <SpaceTimeChartIsolated
-                  initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
-                  onSetBaseHeightOfSpaceTimeChart={setHeightOfSpaceTimeChart}
-                  isDisplayed={isDisplayed}
-                />
-              )}
-            </div>
+          <div className="col-xl-8 d-flex justify-content-end mt-2 mt-xl-0">
+            <TrainDetails />
           </div>
+        </div>
+      </div>
 
-          {/* TRAIN : SPACE SPEED CHART */}
-          <div className="osrd-simulation-container d-flex mb-2">
-            <div
-              className="speedspacechart-container"
-              style={{ height: `${heightOfSpeedSpaceChart}px` }}
-            >
-              {displaySimulation && (
-                <SpeedSpaceChart
-                  initialHeight={heightOfSpeedSpaceChart}
-                  onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
-                />
-              )}
-            </div>
-          </div>
+      {/* SIMULATION : TIMELINE */}
+      <TimeLine />
 
-          {/* TRAIN : CURVES & SLOPES */}
-          <div className="osrd-simulation-container d-flex mb-2">
-            <div
-              className="spacecurvesslopes-container"
-              style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
-            >
-              {displaySimulation && (
-                <Rnd
-                  default={{
-                    x: 0,
-                    y: 0,
-                    width: '100%',
-                    height: `${heightOfSpaceCurvesSlopesChart}px`,
-                  }}
-                  disableDragging
-                  enableResizing={{
-                    bottom: true,
-                  }}
-                  onResizeStart={() =>
-                    setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
-                  }
-                  onResize={(_e, _dir, _refToElement, delta) => {
-                    setHeightOfSpaceCurvesSlopesChart(
-                      initialHeightOfSpaceCurvesSlopesChart + delta.height
-                    );
-                  }}
-                  onResizeStop={() => {
-                    dispatch(updateMustRedraw(true));
-                  }}
-                >
-                  <SpaceCurvesSlopes
-                    heightOfSpaceCurvesSlopesChart={heightOfSpaceCurvesSlopesChart}
-                  />
-                </Rnd>
-              )}
-            </div>
-          </div>
-
-          {/* TRAIN : DRIVER TRAIN SCHEDULE */}
-          <div className="osrd-simulation-container mb-2">
-            <DriverTrainSchedule data={simulation.trains[selectedTrain]} />
-          </div>
-
-          {displayAllowances ? (
-            <div className="mb-2">
-              <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
-            </div>
-          ) : (
-            <div
-              role="button"
-              tabIndex={-1}
-              className="btn osrd-config-item-container d-flex align-items-center mb-2 font-weight-bold"
-              onClick={toggleAllowancesDisplay}
-            >
-              {t('simulation:allowances')}
-              <i className="icons-arrow-down ml-auto" />
-            </div>
+      {/* SIMULATION : SPACE TIME CHART */}
+      <div className="osrd-simulation-container d-flex mb-2">
+        <div className="spacetimechart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
+          {displaySimulation && (
+            <SpaceTimeChartIsolated
+              initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
+              onSetBaseHeightOfSpaceTimeChart={setHeightOfSpaceTimeChart}
+              isDisplayed={isDisplayed}
+            />
           )}
+        </div>
+      </div>
 
-          {/* SIMULATION : MAP */}
-          <div className="row" ref={timeTableRef}>
-            <div className="col-12">
-              <div className="osrd-simulation-container mb-2">
-                <div
-                  className="osrd-simulation-map"
-                  style={{ height: `${heightOfSimulationMap}px` }}
-                >
-                  {/* <Rnd
+      {/* TRAIN : SPACE SPEED CHART */}
+      <div className="osrd-simulation-container d-flex mb-2">
+        <div
+          className="speedspacechart-container"
+          style={{ height: `${heightOfSpeedSpaceChart}px` }}
+        >
+          {displaySimulation && (
+            <SpeedSpaceChart
+              initialHeight={heightOfSpeedSpaceChart}
+              onSetChartBaseHeight={setHeightOfSpeedSpaceChart}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* TRAIN : CURVES & SLOPES */}
+      <div className="osrd-simulation-container d-flex mb-2">
+        <div
+          className="spacecurvesslopes-container"
+          style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
+        >
+          {displaySimulation && (
+            <Rnd
+              default={{
+                x: 0,
+                y: 0,
+                width: '100%',
+                height: `${heightOfSpaceCurvesSlopesChart}px`,
+              }}
+              disableDragging
+              enableResizing={{
+                bottom: true,
+              }}
+              onResizeStart={() =>
+                setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
+              }
+              onResize={(_e, _dir, _refToElement, delta) => {
+                setHeightOfSpaceCurvesSlopesChart(
+                  initialHeightOfSpaceCurvesSlopesChart + delta.height
+                );
+              }}
+              onResizeStop={() => {
+                dispatch(updateMustRedraw(true));
+              }}
+            >
+              <SpaceCurvesSlopes heightOfSpaceCurvesSlopesChart={heightOfSpaceCurvesSlopesChart} />
+            </Rnd>
+          )}
+        </div>
+      </div>
+
+      {/* TRAIN : DRIVER TRAIN SCHEDULE */}
+      <div className="osrd-simulation-container mb-2">
+        <DriverTrainSchedule data={simulation.trains[selectedTrain]} />
+      </div>
+
+      {displayAllowances ? (
+        <div className="mb-2">
+          <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
+        </div>
+      ) : (
+        <div
+          role="button"
+          tabIndex={-1}
+          className="btn osrd-config-item-container d-flex align-items-center mb-2 font-weight-bold"
+          onClick={toggleAllowancesDisplay}
+        >
+          {t('simulation:allowances')}
+          <i className="icons-arrow-down ml-auto" />
+        </div>
+      )}
+
+      {/* SIMULATION : MAP */}
+      <div className="row" ref={timeTableRef}>
+        <div className="col-12">
+          <div className="osrd-simulation-container mb-2">
+            <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
+              {/* <Rnd
                     className="map-resizer"
                     default={{
                       x: 0,
@@ -253,13 +244,11 @@ export default function SimulationResults({ isDisplayed }: { isDisplayed: boolea
                   >
                     <Map setExtViewport={setExtViewport} />
                   </Rnd> */}
-                  <SimulationResultsMap setExtViewport={setExtViewport} />
-                </div>
-              </div>
+              <SimulationResultsMap setExtViewport={setExtViewport} />
             </div>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }
