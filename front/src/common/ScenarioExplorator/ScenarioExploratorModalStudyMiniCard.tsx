@@ -6,7 +6,7 @@ export default function StudyMiniCard({ study, setSelectedID, isSelected }: Mini
     <div
       className={`scenario-explorator-modal-part-itemslist-minicard study ${
         isSelected ? 'selected' : ''
-      } ${study.scenarios_count > 0 ? '' : 'empty'}`}
+      } ${study.scenarios_count && study.scenarios_count > 0 ? '' : 'empty'}`}
       role="button"
       tabIndex={0}
       onClick={() => setSelectedID(study.id)}
