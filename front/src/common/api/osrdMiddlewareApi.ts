@@ -252,17 +252,17 @@ const injectedRtkApi = api.injectEndpoints({
         method: 'DELETE',
       }),
     }),
-    getProjectsByProjectIdStudyTypes: build.query<
-      GetProjectsByProjectIdStudyTypesApiResponse,
-      GetProjectsByProjectIdStudyTypesApiArg
+    getProjectsStudyTypes: build.query<
+      GetProjectsStudyTypesApiResponse,
+      GetProjectsStudyTypesApiArg
     >({
-      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/study_types/` }),
+      query: () => ({ url: `/projects/study_types/` }),
     }),
-    getProjectsByProjectIdStudyStates: build.query<
-      GetProjectsByProjectIdStudyStatesApiResponse,
-      GetProjectsByProjectIdStudyStatesApiArg
+    getProjectsStudyStates: build.query<
+      GetProjectsStudyStatesApiResponse,
+      GetProjectsStudyStatesApiArg
     >({
-      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/study_states/` }),
+      query: () => ({ url: `/projects/study_states/` }),
     }),
     postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
       PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
@@ -623,18 +623,10 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** study id you want to delete */
   studyId: number;
 };
-export type GetProjectsByProjectIdStudyTypesApiResponse =
-  /** status 200 The list of study types */ string[];
-export type GetProjectsByProjectIdStudyTypesApiArg = {
-  /** project id refered to the operational study */
-  projectId: number;
-};
-export type GetProjectsByProjectIdStudyStatesApiResponse =
-  /** status 200 The list of study states */ string[];
-export type GetProjectsByProjectIdStudyStatesApiArg = {
-  /** project id refered to the operational study */
-  projectId: number;
-};
+export type GetProjectsStudyTypesApiResponse = /** status 200 The list of study types */ string[];
+export type GetProjectsStudyTypesApiArg = void;
+export type GetProjectsStudyStatesApiResponse = /** status 200 The list of study states */ string[];
+export type GetProjectsStudyStatesApiArg = void;
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
   /** status 201 The created scenario */ ScenarioResult;
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
