@@ -4,6 +4,10 @@
   "createdOn": "Créée le",
   "createStudy": "Créer une étude",
   "description": "description",
+  "error": {
+    "unableToPostDocumentTitle": "Echec de l'upload de l'image",
+    "unableToPostDocument": "Impossible de charger l'image"
+  },
   "filterPlaceholder": "Rechercher…",
   "fundedBy": "Financement",
   "geremiCode": "Code GEREMI",

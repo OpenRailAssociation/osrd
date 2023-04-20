@@ -16,10 +16,8 @@ import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getProjectID } from 'reducers/osrdconf/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-import { get } from 'common/requests';
 import { setSuccess } from 'reducers/main';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
-import DOCUMENT_URI from 'common/consts';
 import {
   PostSearchApiArg,
   ProjectResult,
@@ -27,6 +25,7 @@ import {
   StudyResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
+import { getDocument } from 'common/api/documentApi';
 import AddOrEditProjectModal from '../components/Project/AddOrEditProjectModal';
 import BreadCrumbs from '../components/BreadCrumbs';
 
@@ -87,21 +86,17 @@ export default function Project() {
     },
   ];
 
-  const getProjectImage = async (url: string) => {
-    try {
-      const image: Blob = await get(url, { responseType: 'blob' });
-      setImageUrl(URL.createObjectURL(image));
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const getProject = async (withNotification = false) => {
     try {
       const { data } = await getCurrentProject({ projectId: projectId as number });
       setProject(data);
       if (data?.image) {
-        await getProjectImage(`${DOCUMENT_URI}${data.image}`);
+        try {
+          const image = await getDocument(data.image);
+          setImageUrl(URL.createObjectURL(image));
+        } catch (error: unknown) {
+          console.error(error);
+        }
       }
       if (withNotification) {
         dispatch(
