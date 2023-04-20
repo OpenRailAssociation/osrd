@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { post } from 'common/requests';
 import { VscJson } from 'react-icons/vsc';
 import InfraSelectorEditionItem from './InfraSelectorEditionItem';
-import { INFRA_URL, INFRA_URL_OLD } from './Consts';
+import { INFRA_URL } from './Consts';
 
 export default function InfraSelectorModalBodyEdition(props) {
   const { infrasList, setFilter, filter, getInfrasList } = props;
@@ -47,7 +47,7 @@ export default function InfraSelectorModalBodyEdition(props) {
     if (nameNewInfra !== '') {
       try {
         if (selectedFile) {
-          await post(`${INFRA_URL_OLD}railjson/`, JSON.parse(await selectedFile.text()));
+          await post(`${INFRA_URL}railjson/`, JSON.parse(await selectedFile.text()));
           setSelectedFile(undefined);
         } else {
           await post(`${INFRA_URL}`, { name: nameNewInfra });
