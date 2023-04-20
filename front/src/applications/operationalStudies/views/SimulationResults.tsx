@@ -192,9 +192,11 @@ export default function SimulationResults({ isDisplayed }: { isDisplayed: boolea
       </div>
 
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
-      <div className="osrd-simulation-container mb-2">
-        <DriverTrainSchedule data={simulation.trains[selectedTrain]} />
-      </div>
+      {simulation.trains[selectedTrain] && (
+        <div className="osrd-simulation-container mb-2">
+          <DriverTrainSchedule train={simulation.trains[selectedTrain]} />
+        </div>
+      )}
 
       {displayAllowances ? (
         <div className="mb-2">

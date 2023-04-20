@@ -1,29 +1,32 @@
 import React from 'react';
 import * as d3 from 'd3';
 import nextId from 'react-id-generator';
+import { PositionSpeedTime, SpeedPosition, Stop, Train } from 'reducers/osrdsimulation/types';
 
-export function massWithOneDecimal(number) {
+export function massWithOneDecimal(number: number) {
   return Math.round(number / 100) / 10;
 }
 
-function getTime(sec) {
+function getTime(sec: number) {
   const timeplus = new Date(sec * 1000);
   const time = timeplus.toISOString().substr(11, 8);
-  if (time[6] >= 0 && time[6] < 2) {
-    if (time[6] === '1') {
-      if (time[7] <= 4) {
+  const sixthDigit = parseInt(time[6], 10);
+  const seventhDigit = parseInt(time[7], 10);
+  if (sixthDigit >= 0 && sixthDigit < 2) {
+    if (sixthDigit === 1) {
+      if (seventhDigit <= 4) {
         return time.slice(0, 5);
       }
       return `${time.slice(0, 5)}+`;
     }
     return time.slice(0, 5);
   }
-  if (time[6] >= 1 && time[6] < 5) {
-    if (time[6] === '4') {
-      if (time[7] <= 4) {
+  if (sixthDigit >= 1 && sixthDigit < 5) {
+    if (sixthDigit === 4) {
+      if (seventhDigit <= 4) {
         return `${time.slice(0, 5)}+`;
       }
-      if (time[7] > 4) {
+      if (seventhDigit > 4) {
         timeplus.setMinutes(timeplus.getMinutes() + 1);
         timeplus.setSeconds(0);
         return timeplus.toISOString().substr(11, 8).slice(0, 5);
@@ -36,7 +39,7 @@ function getTime(sec) {
   return timeplus.toISOString().substr(11, 8).slice(0, 5);
 }
 
-function getActualVmax(givenPosition, vmax) {
+function getActualVmax(givenPosition: number, vmax: SpeedPosition[]) {
   const vmaxPosition = d3.bisectLeft(
     vmax.map((d) => d.position),
     givenPosition
@@ -44,7 +47,7 @@ function getActualVmax(givenPosition, vmax) {
   return Math.round(vmax[vmaxPosition].speed * 3.6);
 }
 
-function getActualSpeedLeft(givenPosition, speed) {
+function getActualSpeedLeft(givenPosition: number, speed: PositionSpeedTime[]) {
   const speedPosition = d3.bisectLeft(
     speed.map((d) => d.position),
     givenPosition
@@ -52,7 +55,7 @@ function getActualSpeedLeft(givenPosition, speed) {
   return speed[speedPosition].speed * 3.6;
 }
 
-function getActualPositionLeft(givenPosition, speed) {
+function getActualPositionLeft(givenPosition: number, speed: PositionSpeedTime[]) {
   const speedPosition = d3.bisectLeft(
     speed.map((d) => d.position),
     givenPosition
@@ -60,7 +63,7 @@ function getActualPositionLeft(givenPosition, speed) {
   return speed[speedPosition].position / 1000;
 }
 
-function getActualSpeedRight(givenPosition, speed) {
+function getActualSpeedRight(givenPosition: number, speed: PositionSpeedTime[]) {
   const speedPosition =
     d3.bisectLeft(
       speed.map((d) => d.position),
@@ -69,7 +72,7 @@ function getActualSpeedRight(givenPosition, speed) {
   return speedPosition <= 0 ? speed[0].speed * 3.6 : speed[speedPosition].speed * 3.6;
 }
 
-function getActualPositionRight(givenPosition, speed) {
+function getActualPositionRight(givenPosition: number, speed: PositionSpeedTime[]) {
   const speedPosition =
     d3.bisectLeft(
       speed.map((d) => d.position),
@@ -78,7 +81,7 @@ function getActualPositionRight(givenPosition, speed) {
   return speedPosition <= 0 ? speed[0].position / 1000 : speed[speedPosition].position / 1000;
 }
 
-function getActualSpeed(givenPosition, speed) {
+function getActualSpeed(givenPosition: number, speed: PositionSpeedTime[]) {
   const speedA = getActualSpeedRight(givenPosition, speed);
   const speedB = getActualSpeedLeft(givenPosition, speed);
   const posA = getActualPositionRight(givenPosition, speed);
@@ -89,9 +92,14 @@ function getActualSpeed(givenPosition, speed) {
   return Math.round(a * (givenPosition / 1000) + b);
 }
 
-function getAverageSpeed(posA, posB, speedList) {
+interface SpeedDistance {
+  distance: number;
+  speed: number;
+}
+
+function getAverageSpeed(posA: number, posB: number, speedList: PositionSpeedTime[]) {
   let totalDistance = 0;
-  const speedsAndDistances = [];
+  const speedsAndDistances: SpeedDistance[] = [];
   let averageSpeed = 0;
 
   // Filter concerned speed by posA & posB (all speed sections between the two positions)
@@ -111,7 +119,10 @@ function getAverageSpeed(posA, posB, speedList) {
   concernedSpeeds.forEach((actualPosition, idx) => {
     if (idx !== 0) {
       const actualDistance = actualPosition.position - speedList[idx - 1].position;
-      speedsAndDistances.push({ speed: actualPosition.speed, distance: actualDistance });
+      speedsAndDistances.push({
+        speed: actualPosition.speed,
+        distance: actualDistance,
+      } as SpeedDistance);
       totalDistance += actualDistance;
     }
   });
@@ -125,7 +136,7 @@ function getAverageSpeed(posA, posB, speedList) {
   return Math.round(averageSpeed * 3.6 * 10) / 10;
 }
 
-export default function formatStops(stop, idx, data) {
+export default function formatStops(stop: Stop, idx: number, data: Train) {
   const actualSpeed = getActualSpeed(stop.position, data.base.speeds);
   const averageSpeed = getAverageSpeed(
     idx === 0 ? stop.position : data.base.stops[idx - 1].position,
@@ -183,7 +194,7 @@ export default function formatStops(stop, idx, data) {
       </td>
       <td>
         <div className="text-center" title={`${stop.line_name}`}>
-          <small>{stop.track_name}</small>
+          <small> {stop.track_name}</small>
         </div>
       </td>
     </tr>

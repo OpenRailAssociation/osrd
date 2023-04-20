@@ -55,6 +55,8 @@ export interface Stop {
   position: number;
   line_code: number;
   track_number: number;
+  line_name: string;
+  track_name: string;
 }
 
 export interface RouteAspect<Time = number, Color = number> {
@@ -87,7 +89,7 @@ export interface Regime {
   route_aspects: RouteAspect[];
   signal_aspects?: SignalAspect[];
   error?: string;
-  mechanical_energy_consumed?: number;
+  mechanical_energy_consumed: number;
 }
 
 export interface ElectrificationConditions {
@@ -120,7 +122,7 @@ interface RadiusPosition {
   position: number;
 }
 
-interface SpeedPosition {
+export interface SpeedPosition {
   speed: number;
   position: number;
 }
