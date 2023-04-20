@@ -2,9 +2,9 @@ package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.railjson.schema.geom.Point;
-import fr.sncf.osrd.reporting.exceptions.NotImplemented;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import java.util.ArrayList;
 import java.util.Collection;
 
 /** This is a function object that estimates the remaining distance to the closest target point,
@@ -14,14 +14,27 @@ public class RemainingDistanceEstimator implements AStarHeuristic<SignalingRoute
     private final Collection<Point> targets;
     private final double remainingDistance;
 
+    /** Targets closer than this threshold will be merged together */
+    private static final double distanceThreshold = 1.;
+
     /** Constructor */
     public RemainingDistanceEstimator(
             Collection<Pathfinding.EdgeLocation<SignalingRoute>> edgeLocations,
             double remainingDistance
     ) {
-        targets = edgeLocations.stream()
-                .map(loc -> routeOffsetToPoint(loc.edge(), loc.offset()))
-                .toList();
+        targets = new ArrayList<>();
+        for (var edgeLocation : edgeLocations) {
+            var point = routeOffsetToPoint(edgeLocation.edge(), edgeLocation.offset());
+            var skip = false;
+            for (var otherPoint : targets) {
+                if (point.distanceAsMeters(otherPoint) < distanceThreshold) {
+                    skip = true; // Avoid adding duplicate geo points to the target list
+                    break;
+                }
+            }
+            if (!skip)
+                targets.add(point);
+        }
         this.remainingDistance = remainingDistance;
     }
 
