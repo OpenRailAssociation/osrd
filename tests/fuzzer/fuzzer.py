@@ -121,6 +121,9 @@ def test_new_train(
     path_payload = make_payload_path(scenario.infra, path)
     r = post_with_timeout(base_url + "pathfinding/", json=path_payload)
     if r.status_code // 100 != 2:
+        if r.status_code // 100 == 4:
+            print("ignore: invalid user input")
+            return
         make_error(
             ErrorType.PATHFINDING,
             r,
@@ -463,7 +466,7 @@ def create_scenario(base_url: str, infra_id: int) -> Scenario:
     # Create the scenario
     scenario_payload = {
         "name": "fuzzer_scenario",
-        "infra_id": infra_id,
+        "infra": infra_id,
     }
     r = post_with_timeout(base_url + f"{study_url}/scenarios/", json=scenario_payload)
     r.raise_for_status()
