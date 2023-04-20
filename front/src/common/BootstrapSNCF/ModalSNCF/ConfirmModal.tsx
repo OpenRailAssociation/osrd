@@ -52,7 +52,7 @@ export const ConfirmModal: FC<PropsWithChildren<ConfirmModalProps>> = ({
 
   return (
     <Modal title={title} withCloseButton>
-      <>{children}</>
+      {children}
 
       <div className="text-right">
         <button

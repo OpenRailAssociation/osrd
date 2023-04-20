@@ -41,7 +41,7 @@
     "prettier/prettier": ["warn"],
     "react/forbid-prop-types": "off",
     "react/jsx-filename-extension": "off",
-    "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }],
+    "react/jsx-no-useless-fragment": "error",
     "react/jsx-props-no-spreading": 0,
     "react/prefer-stateless-function": "off",
     "react/static-property-placement": 0,
