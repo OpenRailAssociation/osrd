@@ -102,11 +102,6 @@ fn apply_edit(
         }
     };
 
-    // update infra modified medata
-    Infra::default()
-        .update_conn(conn, infra.id.unwrap())?
-        .unwrap();
-
     Ok((operation_results, invalid_zone))
 }
 
