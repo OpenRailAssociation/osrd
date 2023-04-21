@@ -183,7 +183,11 @@ export default function Scenario() {
                 </div>
               )}
               <div className="scenario-results">
-                <SimulationResults />
+                <SimulationResults
+                  isDisplayed={
+                    displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
+                  }
+                />
               </div>
             </div>
           </div>
