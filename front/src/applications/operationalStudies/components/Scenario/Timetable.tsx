@@ -225,7 +225,7 @@ export default function Timetable({
             !train.isFiltered ? (
               <TimetableTrainCard
                 train={train}
-                key={nextId()}
+                key={`timetable-train-card-${train.id}`}
                 isSelected={selectedTrain === idx}
                 projectionPathIsUsed={selectedProjection.id === train.id}
                 idx={idx}
