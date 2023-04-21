@@ -106,6 +106,7 @@ export function makeStairCase(data: Array<{ time: number; position: number }>) {
 export const timeShiftTrain = (train: Train, offset: number) => ({
   ...train,
   base: {
+    mechanical_energy_consumed: train.base.mechanical_energy_consumed,
     head_positions: train.base.head_positions.map((section) =>
       section.map((step) => ({ ...step, time: offsetSeconds(step.time + offset) }))
     ),
