@@ -30,7 +30,7 @@ import { getTimetableID } from 'reducers/osrdconf/selectors';
 
 const MAP_MIN_HEIGHT = 450;
 
-export default function SimulationResults() {
+export default function SimulationResults({ isDisplayed }: { isDisplayed: boolean }) {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
@@ -138,6 +138,7 @@ export default function SimulationResults() {
                 <SpaceTimeChartIsolated
                   initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
                   onSetBaseHeightOfSpaceTimeChart={setHeightOfSpaceTimeChart}
+                  isDisplayed={isDisplayed}
                 />
               )}
             </div>

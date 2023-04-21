@@ -62,6 +62,7 @@ export default function SpaceTimeChart(props) {
     simulation,
     simulationIsPlaying,
     timePosition,
+    isDisplayed,
   } = props;
 
   const [baseHeightOfSpaceTimeChart, setBaseHeightOfSpaceTimeChart] = useState(
@@ -253,7 +254,7 @@ export default function SpaceTimeChart(props) {
   }, [mousePos]);
 
   const handleKey = ({ key }) => {
-    if (['+', '-'].includes(key)) {
+    if (isDisplayed && ['+', '-'].includes(key)) {
       setShowModal(key);
     }
   };
@@ -273,7 +274,7 @@ export default function SpaceTimeChart(props) {
       window.removeEventListener('keydown', handleKey);
       window.removeEventListener('resize', debounceResize);
     };
-  }, []);
+  }, [isDisplayed]);
 
   return (
     <Rnd
@@ -353,6 +354,7 @@ SpaceTimeChart.propTypes = {
   timePosition: PropTypes.any,
   onOffsetTimeByDragging: PropTypes.func,
   onSetBaseHeightOfSpaceTimeChart: PropTypes.any,
+  isDisplayed: PropTypes.bool,
 };
 
 SpaceTimeChart.defaultProps = {
@@ -370,4 +372,5 @@ SpaceTimeChart.defaultProps = {
   simulation: ORSD_GRAPH_SAMPLE_DATA.simulation.present,
   simulationIsPlaying: false,
   timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
+  isDisplayed: true,
 };
