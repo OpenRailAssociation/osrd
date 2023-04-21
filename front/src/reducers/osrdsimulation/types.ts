@@ -87,6 +87,7 @@ export interface Regime {
   route_aspects: RouteAspect[];
   signal_aspects?: SignalAspect[];
   error?: string;
+  mechanical_energy_consumed?: number;
 }
 
 export interface ElectrificationConditions {
