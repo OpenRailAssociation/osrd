@@ -16,13 +16,13 @@ type InfraSelectorModalBodyEditionProps = {
 const InfraSelectorModalBodyEdition = ({
   infrasList,
   setFilter,
-  filter,
+  filter = '',
   getInfrasList,
 }: InfraSelectorModalBodyEditionProps) => {
-  const [isFocused, setIsFocused] = useState();
-  const [runningDelete, setRunningDelete] = useState();
-  const [nameNewInfra, setNameNewInfra] = useState<string | undefined>(undefined);
-  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+  const [isFocused, setIsFocused] = useState<number | undefined>(undefined);
+  const [runningDelete, setRunningDelete] = useState<number | undefined>(undefined);
+  const [nameNewInfra, setNameNewInfra] = useState<string | undefined>('');
+  const [errorMessage, setErrorMessage] = useState<string | undefined>('');
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [postInfraRailjson] = osrdEditoastApi.usePostInfraRailjsonMutation();

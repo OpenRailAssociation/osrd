@@ -30,13 +30,16 @@ const InfraSelectorModal = ({
 
   const debouncedFilter = useDebounce(filter, 250);
 
-  function filterInfras(filteredInfrasListLocal: Infra[]) {
+  function filterInfras(infrasListLocal: Infra[]) {
     if (debouncedFilter && debouncedFilter !== '') {
-      filteredInfrasListLocal = infrasList.filter((infra) =>
+      infrasListLocal = infrasList.filter((infra) =>
         infra.name.toLowerCase().includes(debouncedFilter.toLowerCase())
       );
     }
-    filteredInfrasListLocal.slice().sort((a, b) => a.name.localeCompare(b.name));
+    const filteredInfrasListLocal = infrasListLocal
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name));
+
     setFilteredInfrasList(filteredInfrasListLocal);
   }
 
