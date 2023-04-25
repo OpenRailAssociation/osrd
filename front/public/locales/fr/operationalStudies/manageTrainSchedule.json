@@ -41,6 +41,7 @@
   },
   "failedRequest": "La requête a échoué",
   "gare": "Gare, poste",
+  "importTrainSchedule": "Importation",
   "inverseOD": "Inverser origine/destination",
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
