@@ -2,23 +2,24 @@ import React from 'react';
 import { FaDownload, FaPen, FaPlus } from 'react-icons/fa';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { useTranslation } from 'react-i18next';
+import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
+import { useDispatch } from 'react-redux';
 
 type Props = {
   displayTrainScheduleManagement: string;
   setDisplayTrainScheduleManagement: (type: string) => void;
-  setTrainScheduleIDsToModify: (IDs?: number[]) => void;
 };
 
 export default function TimetableManageTrainSchedule({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
-  setTrainScheduleIDsToModify,
 }: Props) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const dispatch = useDispatch();
 
   const leaveManageTrainSchedule = () => {
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
-    setTrainScheduleIDsToModify(undefined);
+    dispatch(updateTrainScheduleIDsToModify(undefined));
   };
 
   const textContent = () => {

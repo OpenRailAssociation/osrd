@@ -16,10 +16,11 @@ import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
+import { getTimetableID, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
 import { Path } from 'types';
+import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 
@@ -38,17 +39,10 @@ import TimetableTrainCard from './TimetableTrainCard';
 
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleIDsToModify: (IDs?: number[]) => void;
-  trainScheduleIDsToModify?: number[];
   trainsWithDetails: boolean;
 };
 
-export default function Timetable({
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleIDsToModify,
-  trainScheduleIDsToModify,
-  trainsWithDetails,
-}: Props) {
+export default function Timetable({ setDisplayTrainScheduleManagement, trainsWithDetails }: Props) {
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
   );
@@ -57,6 +51,7 @@ export default function Timetable({
   );
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const timetableID = useSelector(getTimetableID);
+  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
 
@@ -189,7 +184,7 @@ export default function Timetable({
           data-testid="scenarios-add-train-schedule-button"
           onClick={() => {
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
-            setTrainScheduleIDsToModify(undefined);
+            dispatch(updateTrainScheduleIDsToModify(undefined));
           }}
         >
           <span className="mr-2">
@@ -240,7 +235,6 @@ export default function Timetable({
                   duplicateTrain={duplicateTrain}
                   selectPathProjection={selectPathProjection}
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
                 />
               )
           )}
