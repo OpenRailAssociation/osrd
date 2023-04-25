@@ -1705,7 +1705,6 @@ components:
                         type: boolean
             energy_sources:
               type: array
-              nullable: true
               items:
                 $ref: "#/components/schemas/EnergySource"
     EnergySource:
