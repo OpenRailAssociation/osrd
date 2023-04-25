@@ -13,7 +13,8 @@ const submitConfUpdateTrainSchedules = (
   t: (key: string) => string,
   setIsWorking: (isWorking: boolean) => void,
   trainScheduleIDsToModify: number[],
-  setDisplayTrainScheduleManagement: (arg0: string) => void
+  setDisplayTrainScheduleManagement: (arg0: string) => void,
+  setTrainScheduleIDsToModify: (IDs?: number[]) => void
 ) => {
   const { osrdconf } = store.getState();
   // First train tested, and next we put the other trains
@@ -41,6 +42,7 @@ const submitConfUpdateTrainSchedules = (
       setIsWorking(false);
       getTimetable(osrdconf.simulationConf.timetableID);
       setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+      setTrainScheduleIDsToModify(undefined);
     } catch (e: unknown) {
       setIsWorking(false);
       if (e instanceof Error) {
