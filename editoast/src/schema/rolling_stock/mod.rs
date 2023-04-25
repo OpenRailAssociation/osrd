@@ -27,6 +27,7 @@ pub struct RollingStock {
     pub loading_gauge: String,
     pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<JsonValue>,
+    #[serde(default)]
     pub energy_sources: Vec<EnergySource>,
 }
 
