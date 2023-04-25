@@ -180,38 +180,26 @@ pub enum EnergySourceType {
     Battery,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct Catenary {
-    max_input_power: SpeedDependantPower,
-    max_output_power: SpeedDependantPower,
-    efficiency: f64,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct PowerPack {
-    max_input_power: SpeedDependantPower,
-    max_output_power: SpeedDependantPower,
-    energy_storage: EnergyStorage,
-    efficiency: f64,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct Battery {
-    max_input_power: SpeedDependantPower,
-    max_output_power: SpeedDependantPower,
-    energy_storage: EnergyStorage,
-    efficiency: f64,
-}
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "energy_source_type", deny_unknown_fields)]
 pub enum EnergySource {
-    Catenary { railjson: Catenary},
-    PowerPack { railjson: PowerPack},
-    Battery { railjson: Battery},
+    Catenary {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        efficiency: f64,
+    },
+    PowerPack {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        energy_storage: EnergyStorage,
+        efficiency: f64,
+    },
+    Battery {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        energy_storage: EnergyStorage,
+        efficiency: f64,
+    },
 }
 
 #[cfg(test)]

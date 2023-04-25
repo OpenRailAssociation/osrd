@@ -1708,17 +1708,54 @@ components:
               items:
                 $ref: "#/components/schemas/EnergySource"
     EnergySource:
+      oneOf:
+        - $ref: '#/components/schemas/Catenary'
+        - $ref: '#/components/schemas/PowerPack'
+        - $ref: '#/components/schemas/Battery'
+      discriminator:
+        propertyName: energySourceType
+    Catenary:
       type: object
-      required: [energy_source_type, max_input_power, max_output_power, energy_storage, efficiency]
+      required: [energy_source_type, max_input_power, max_output_power, efficiency]
       properties:
         energy_source_type:
           type: string
+          enum: ["catenary"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        efficiency:
+          type: number
+          format: float
+    PowerPack:
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["power_pack"]
         max_input_power:
           $ref: "#/components/schemas/SpeedDependantPower"
         max_output_power:
           $ref: "#/components/schemas/SpeedDependantPower"
         energy_storage:
-          nullable: true
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+    Battery:
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["battery"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
           $ref: "#/components/schemas/EnergyStorage"
         efficiency:
           type: number
