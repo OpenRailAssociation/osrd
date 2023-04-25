@@ -16,6 +16,7 @@ import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 type Props = {
   train: ScheduledTrain;
   isSelected: boolean;
+  isModified?: boolean;
   projectionPathIsUsed: boolean;
   idx: number;
   changeSelectedTrain: (idx: number) => void;
@@ -29,6 +30,7 @@ type Props = {
 function TimetableTrainCard({
   train,
   isSelected,
+  isModified,
   projectionPathIsUsed,
   idx,
   changeSelectedTrain,
@@ -59,7 +61,9 @@ function TimetableTrainCard({
   }, [train.id]);
 
   return (
-    <div className={`scenario-timetable-train ${isSelected ? 'selected' : ''}`}>
+    <div
+      className={cx('scenario-timetable-train', isSelected && 'selected', isModified && 'modified')}
+    >
       <div
         className="scenario-timetable-train-container with-details"
         role="button"

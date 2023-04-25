@@ -23,8 +23,8 @@ import { Path } from 'types';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 
-/* function trainsDurations(trainList) {
-  const durationList = trainList.map((train) => ({
+/* function trainsDurations(trainsList: ScheduledTrain[]) {
+  const durationList = trainsList.map((train) => ({
     id: train.id,
     duration:
       train.arrival > train.departure
@@ -39,12 +39,14 @@ import TimetableTrainCard from './TimetableTrainCard';
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   setTrainScheduleIDsToModify: (IDs?: number[]) => void;
+  trainScheduleIDsToModify?: number[];
   trainsWithDetails: boolean;
 };
 
 export default function Timetable({
   setDisplayTrainScheduleManagement,
   setTrainScheduleIDsToModify,
+  trainScheduleIDsToModify,
   trainsWithDetails,
 }: Props) {
   const selectedProjection = useSelector(
@@ -230,6 +232,7 @@ export default function Timetable({
                   train={train}
                   key={`timetable-train-card-${train.id}`}
                   isSelected={selectedTrain === idx}
+                  isModified={trainScheduleIDsToModify?.includes(train.id)}
                   projectionPathIsUsed={selectedProjection.id === train.id}
                   idx={idx}
                   changeSelectedTrain={changeSelectedTrain}

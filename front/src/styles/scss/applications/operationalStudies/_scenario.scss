@@ -261,9 +261,15 @@
               }
             }
           }
-          &.selected {
+          &.selected:not(.modified) {
             .scenario-timetable-train-header {
               background-color: var(--green);
+            }
+          }
+          &.modified {
+            z-index: 3;
+            .scenario-timetable-train-header {
+              background-color: var(--yellow);
             }
           }
           &:hover {

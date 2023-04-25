@@ -1,18 +1,25 @@
 import React from 'react';
-import { FaPen, FaPlus } from 'react-icons/fa';
+import { FaDownload, FaPen, FaPlus } from 'react-icons/fa';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
   displayTrainScheduleManagement: string;
   setDisplayTrainScheduleManagement: (type: string) => void;
+  setTrainScheduleIDsToModify: (IDs?: number[]) => void;
 };
 
 export default function TimetableManageTrainSchedule({
   displayTrainScheduleManagement,
   setDisplayTrainScheduleManagement,
+  setTrainScheduleIDsToModify,
 }: Props) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+
+  const leaveManageTrainSchedule = () => {
+    setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+    setTrainScheduleIDsToModify(undefined);
+  };
 
   const textContent = () => {
     if (displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add) {
@@ -35,6 +42,16 @@ export default function TimetableManageTrainSchedule({
         </>
       );
     }
+    if (displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import) {
+      return (
+        <>
+          <span className="text-secondary">
+            <FaDownload />
+          </span>
+          <span className="text-center flex-grow-1">{t('importTrainSchedule')}</span>
+        </>
+      );
+    }
     return null;
   };
 
@@ -43,7 +60,7 @@ export default function TimetableManageTrainSchedule({
       className="scenario-timetable-managetrainschedule"
       role="button"
       tabIndex={0}
-      onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
+      onClick={leaveManageTrainSchedule}
     >
       <div className="scenario-timetable-managetrainschedule-header">
         <div className="d-flex gap-1 align-items-center justify-content-center mb-2 p-4 bg-white rounded h-100">
