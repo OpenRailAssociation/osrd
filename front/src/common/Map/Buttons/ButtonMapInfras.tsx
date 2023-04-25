@@ -5,7 +5,7 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { useSelector } from 'react-redux';
 
-export default function ButtonMapInfras() {
+const ButtonMapInfras = () => {
   const { openModal } = useModal();
   const infraID = useSelector(getInfraID);
   return (
@@ -18,4 +18,6 @@ export default function ButtonMapInfras() {
       <GiRailway />
     </button>
   );
-}
+};
+
+export default ButtonMapInfras;
