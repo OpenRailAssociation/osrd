@@ -72,7 +72,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     elec: false,
     thermal: false,
   });
-  const [isFiltering, setIsFiltering] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState();
   const { closeModal } = useContext(ModalContext);
 
@@ -94,7 +94,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
 
   const searchMateriel = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, text: e.target.value.toLowerCase() });
-    setIsFiltering(true);
+    setIsLoading(true);
   };
 
   const updateSearch = () => {
@@ -121,14 +121,14 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     if (newFilteredRollingStock) {
       setTimeout(() => {
         setFilteredRollingStockList(newFilteredRollingStock);
-        setIsFiltering(false);
+        setIsLoading(false);
       }, 0);
     }
   };
 
   const toggleFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, [e.target.name]: !filters[e.target.name as 'elec' | 'thermal'] });
-    setIsFiltering(true);
+    setIsLoading(true);
   };
 
   if (rollingStockID !== undefined) {
@@ -159,7 +159,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   );
 
   useEffect(() => {
-    if (isError && 'status' in error) {
+    if (isError && error && 'status' in error) {
       dispatch(
         setFailure({
           name: t('rollingstock:errorMessages.unableToRetrieveRollingStock'),
@@ -178,6 +178,16 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, isSuccess]);
+
+  function displayList() {
+    if (isEmpty(filteredRollingStockList)) {
+      if (isLoading) {
+        return <Loader msg={t('rollingstock:waitingLoader')} />;
+      }
+      return <div className="rollingstock-empty">{t('rollingstock:noResultFound')}</div>;
+    }
+    return listOfRollingStocks;
+  }
 
   return (
     <ModalBodySNCF>
@@ -243,13 +253,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
             </div>
           </div>
         </div>
-        <div className="rollingstock-search-list">
-          {!isEmpty(filteredRollingStockList) && !isFiltering ? (
-            listOfRollingStocks
-          ) : (
-            <Loader msg={t('rollingstock:waitingLoader')} />
-          )}
-        </div>
+        <div className="rollingstock-search-list">{displayList()}</div>
       </div>
     </ModalBodySNCF>
   );
