@@ -183,7 +183,6 @@ pub enum EnergySourceType {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Catenary {
-    energy_source_type: EnergySourceType,
     max_input_power: SpeedDependantPower,
     max_output_power: SpeedDependantPower,
     efficiency: f64,
@@ -192,7 +191,6 @@ pub struct Catenary {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerPack {
-    energy_source_type: EnergySourceType,
     max_input_power: SpeedDependantPower,
     max_output_power: SpeedDependantPower,
     energy_storage: EnergyStorage,
@@ -202,7 +200,6 @@ pub struct PowerPack {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Battery {
-    energy_source_type: EnergySourceType,
     max_input_power: SpeedDependantPower,
     max_output_power: SpeedDependantPower,
     energy_storage: EnergyStorage,
