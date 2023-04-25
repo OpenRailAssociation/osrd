@@ -272,7 +272,7 @@
               background-color: var(--yellow);
             }
           }
-          &:hover {
+          &:hover:not(.modified) {
             .scenario-timetable-train-container {
               border-radius: 4px 0 0 4px;
               border-color: var(--secondary);
