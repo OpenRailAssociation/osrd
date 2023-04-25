@@ -13,6 +13,7 @@ import {
   updateOriginUpperBoundTime,
   updateStdcmMode,
   toggleOriginLinkedBounds,
+  updatePathfindingID,
 } from 'reducers/osrdconf';
 import {
   getStdcmMode,
@@ -105,6 +106,7 @@ function Origin(props: OriginProps) {
               type="button"
               onClick={() => {
                 dispatch(updateOrigin(undefined));
+                dispatch(updatePathfindingID(undefined));
               }}
             >
               <i className="icons-circle-delete" />

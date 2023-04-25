@@ -7,6 +7,7 @@ import {
   updateRollingStockComfort,
   updateRollingStockID,
   updateShouldRunPathfinding,
+  updatePowerRestriction,
 } from 'reducers/osrdconf';
 import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -36,6 +37,7 @@ export default function RollingStockCardButtons(props) {
     dispatch(updateRollingStockComfort(comfort));
     dispatch(updateShouldRunPathfinding(true));
     dispatch(updateRollingStockID(id));
+    dispatch(updatePowerRestriction(undefined));
     closeModal();
   };
 

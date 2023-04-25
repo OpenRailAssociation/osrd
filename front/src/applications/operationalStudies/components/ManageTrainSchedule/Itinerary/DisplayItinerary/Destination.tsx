@@ -15,12 +15,12 @@ import {
   updateDestination,
   updateDestinationDate,
   updateDestinationTime,
+  updatePathfindingID,
   updateStdcmMode,
 } from 'reducers/osrdconf';
 import { makeEnumBooleans } from 'utils/constants';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { store } from 'Store';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 interface DestinationProps {
@@ -61,7 +61,10 @@ function Destination(props: DestinationProps) {
             <button
               className="btn btn-sm btn-only-icon btn-white"
               type="button"
-              onClick={() => store.dispatch(updateDestination(undefined))}
+              onClick={() => {
+                dispatch(updateDestination(undefined));
+                dispatch(updatePathfindingID(undefined));
+              }}
             >
               <i className="icons-circle-delete" />
               <span className="sr-only" aria-hidden="true">

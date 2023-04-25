@@ -12,6 +12,7 @@
   "deleteVias": "Supprimer les étapes",
   "destination": "Destination",
   "errorMessages": {
+    "error": "Une erreur est survenue",
     "mandatoryField": "Champ obligatoire",
     "noDelta": "L'intervalle ente deux trains doit être d'au moins une minute",
     "noDeltaInput": "Doit être > 0",
@@ -26,6 +27,7 @@
     "noTrainCountInput": "Doit être > 0",
     "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
     "noTrainStepInput": "Doit être > 0",
+    "powerRestrictionInvalidCombination": "Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} V de l'itinéraire",
     "stdcmError": "Erreur de calcul Sillon de dernière minute",
     "The requested train couldn't reach its destination": "Le train ne peut pas atteindre sa destination",
     "trainScheduleTitle": "Une erreur est survenue",
