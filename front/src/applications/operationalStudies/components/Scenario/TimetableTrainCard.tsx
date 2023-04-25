@@ -12,6 +12,8 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
+import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
+import { useDispatch } from 'react-redux';
 
 type Props = {
   train: ScheduledTrain;
@@ -24,7 +26,6 @@ type Props = {
   selectPathProjection: (train: ScheduledTrain) => void;
   duplicateTrain: (train: ScheduledTrain) => void;
   setDisplayTrainScheduleManagement: (arg0: string) => void;
-  setTrainScheduleIDsToModify: (IDs: number[] | undefined) => void;
 };
 
 function TimetableTrainCard({
@@ -38,15 +39,15 @@ function TimetableTrainCard({
   selectPathProjection,
   duplicateTrain,
   setDisplayTrainScheduleManagement,
-  setTrainScheduleIDsToModify,
 }: Props) {
   const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getRollingStock, { data: rollingStock }] =
     osrdEditoastApi.endpoints.getLightRollingStockById.useLazyQuery({});
   const { t } = useTranslation(['operationalStudies/scenario']);
+  const dispatch = useDispatch();
 
   const editTrainSchedule = () => {
-    setTrainScheduleIDsToModify([train.id]);
+    dispatch(updateTrainScheduleIDsToModify([train.id]));
     setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.edit);
   };
 

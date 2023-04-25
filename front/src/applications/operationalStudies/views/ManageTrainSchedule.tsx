@@ -14,7 +14,7 @@ import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
-import { getShouldRunPathfinding } from 'reducers/osrdconf/selectors';
+import { getShouldRunPathfinding, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
@@ -22,13 +22,9 @@ import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/he
 
 type Props = {
   setDisplayTrainScheduleManagement: (arg0: string) => void;
-  trainScheduleIDsToModify?: number[];
 };
 
-export default function ManageTrainSchedule({
-  setDisplayTrainScheduleManagement,
-  trainScheduleIDsToModify,
-}: Props) {
+export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
   const dispatch = useDispatch();
   const shouldRunPathfinding = useSelector(getShouldRunPathfinding);
   const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState<boolean | undefined>(
@@ -36,6 +32,7 @@ export default function ManageTrainSchedule({
   );
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
+  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
 

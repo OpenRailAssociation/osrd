@@ -33,7 +33,6 @@ export default function Scenario() {
   const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
-  const [trainScheduleIDsToModify, setTrainScheduleIDsToModify] = useState<number[]>();
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
@@ -173,13 +172,10 @@ export default function Scenario() {
                   <TimetableManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
                   />
                 )}
                 <Timetable
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
-                  trainScheduleIDsToModify={trainScheduleIDsToModify}
                   trainsWithDetails={trainsWithDetails}
                 />
               </div>
@@ -189,9 +185,7 @@ export default function Scenario() {
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
                   <ManageTrainSchedule
-                    setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    trainScheduleIDsToModify={trainScheduleIDsToModify}
                   />
                 </div>
               )}
