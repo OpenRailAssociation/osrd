@@ -78,7 +78,7 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = Option<JsonValue>)]
     pub power_restrictions: Option<Option<JsonValue>>,
     #[diesel(deserialize_as = Vec<DieselJson<EnergySource>>)]
-    pub energy_sources: Option<Vec<DieselJson<EnergySource>>>,
+    pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
 }
 
 impl Identifiable for RollingStockModel {
