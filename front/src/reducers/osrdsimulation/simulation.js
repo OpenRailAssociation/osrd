@@ -13,8 +13,6 @@ export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 
-const timetableURI = '/editoast/timetable/';
-
 export function updateSimulation(simulation) {
   return (dispatch) => {
     dispatch({
