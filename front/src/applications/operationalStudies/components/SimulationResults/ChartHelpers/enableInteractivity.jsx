@@ -70,23 +70,35 @@ export const updatePointers = (
   });
 };
 
-const updateChart = (chart, keyValues, rotate, event) => {
+const transformationTypeEnum = {
+  zoom: 'zoom',
+  zoomX: 'zoomX',
+  zoomY: 'zoomY',
+};
+
+const getTransformationType = (event, rotate) => {
+  if (event.sourceEvent.shiftKey && event.sourceEvent.ctrlKey) {
+    if (rotate) {
+      return transformationTypeEnum.zoomY;
+    }
+    return transformationTypeEnum.zoomX;
+  }
+  return transformationTypeEnum.zoom;
+};
+
+const updateChart = (chart, keyValues, rotate, event, transformType) => {
   // recover the new scale & test if movement under 0
 
   let newX = chart.x;
   let newY = chart.y;
-  if (
-    (event.sourceEvent.shiftKey || event.sourceEvent.ctrlKey) &&
-    !(event.sourceEvent.shiftKey && event.sourceEvent.ctrlKey)
-  ) {
+
+  if (transformType === transformationTypeEnum.zoom) {
     newX = event.transform.rescaleX(chart.originalScaleX);
     newY = event.transform.rescaleY(chart.originalScaleY);
-  } else if (event.sourceEvent.shiftKey && event.sourceEvent.ctrlKey) {
-    if (rotate) {
-      newY = event.transform.rescaleY(chart.originalScaleY);
-    } else {
-      newX = event.transform.rescaleX(chart.originalScaleX);
-    }
+  } else if (transformType === transformationTypeEnum.zoomX) {
+    newX = event.transform.rescaleX(chart.originalScaleX);
+  } else if (transformType === transformationTypeEnum.zoomY) {
+    newY = event.transform.rescaleY(chart.originalScaleY);
   }
 
   // update axes with these new boundaries
@@ -94,15 +106,24 @@ const updateChart = (chart, keyValues, rotate, event) => {
     !rotate && isGET(keyValues)
       ? d3.axisBottom(newX).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisBottom(newX);
+
   const axisLeftY =
     rotate && isGET(keyValues)
       ? d3.axisLeft(newY).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisLeft(newY);
-  chart.xAxis.call(axisBottomX);
-  chart.yAxis.call(axisLeftY);
 
-  chart.xAxisGrid.call(gridX(newX, chart.height));
-  chart.yAxisGrid.call(gridY(newY, chart.width));
+  if (transformType === transformationTypeEnum.zoom) {
+    chart.xAxis.call(axisBottomX);
+    chart.xAxisGrid.call(gridX(newX, chart.height));
+    chart.yAxis.call(axisLeftY);
+    chart.yAxisGrid.call(gridY(newY, chart.width));
+  } else if (transformType === transformationTypeEnum.zoomX) {
+    chart.xAxis.call(axisBottomX);
+    chart.xAxisGrid.call(gridX(newX, chart.height));
+  } else if (transformType === transformationTypeEnum.zoomY) {
+    chart.yAxis.call(axisLeftY);
+    chart.yAxisGrid.call(gridY(newY, chart.width));
+  }
 
   // update lines & areas
   chart.drawZone.selectAll('.line').attr(
@@ -241,7 +262,7 @@ export const traceVerticalLine = (
 // enableInteractivity
 
 // Override the default wheelDelta computation to get smoother zoom
-function wheelDelta(event) {
+function getWheelDelta(event) {
   let factor = 1;
   if (event.deltaMode === 1) {
     factor = 0.005;
@@ -279,7 +300,7 @@ const enableInteractivity = (
       [0, 0],
       [chart.width, chart.height],
     ])
-    .wheelDelta(wheelDelta)
+    .wheelDelta(getWheelDelta)
     .on('zoom', (event) => {
       event.sourceEvent.preventDefault();
       const zoomFunctions = updateChart(chart, keyValues, rotate, event);
@@ -408,11 +429,16 @@ export const isolatedEnableInteractivity = (
       [0, 0],
       [chart.width, chart.height],
     ])
-    .wheelDelta(wheelDelta)
+    .wheelDelta(getWheelDelta)
     .on('zoom', (event) => {
       event.sourceEvent.preventDefault();
-      const zoomFunctions = updateChart(chart, keyValues, rotate, event);
-      const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
+      const transformationType = getTransformationType(event, rotate);
+      const zoomFunctions = updateChart(chart, keyValues, rotate, event, transformationType);
+      const newChart = {
+        ...chart,
+        x: zoomFunctions.newX,
+        y: zoomFunctions.newY,
+      };
       setChart(newChart);
     })
     .filter(
