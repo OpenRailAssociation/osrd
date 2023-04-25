@@ -99,8 +99,8 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
 
   const updateSearch = () => {
     setOpenedRollingStockCardId(undefined);
-    const newFilteredRollingStock = rollingStocks
-      ?.filter(({ name, metadata, effort_curves: effortCurves }) => {
+    const newFilteredRollingStock = rollingStocks?.filter(
+      ({ name, metadata, effort_curves: effortCurves }) => {
         const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
           name,
           metadata,
@@ -112,12 +112,8 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
           effortCurves.modes
         );
         return passSearchedStringFilter && passEnergeticModesFilter;
-      })
-      .sort((a, b) => {
-        const { reference: refA } = a.metadata;
-        const { reference: refB } = b.metadata;
-        return refA.localeCompare(refB);
-      });
+      }
+    );
     if (newFilteredRollingStock) {
       setTimeout(() => {
         setFilteredRollingStockList(newFilteredRollingStock);
