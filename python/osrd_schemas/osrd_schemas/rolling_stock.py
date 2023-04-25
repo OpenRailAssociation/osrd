@@ -214,7 +214,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
-    energy_sources: List[EnergySource]
+    energy_sources: List[EnergySource] = Field(default_factory=list)
 
 
 if __name__ == "__main__":
