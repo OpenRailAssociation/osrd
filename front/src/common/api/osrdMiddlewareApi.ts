@@ -988,8 +988,10 @@ export type StdcmRequest = {
   timetable?: number;
   start_time?: number;
   end_time?: number;
-  start_points?: Waypoint[];
-  end_points?: Waypoint[];
+  steps?: {
+    duration?: number;
+    waypoints?: Waypoint;
+  }[];
   maximum_departure_delay?: number;
   maximum_relative_run_time?: number;
   speed_limit_tags?: string;
