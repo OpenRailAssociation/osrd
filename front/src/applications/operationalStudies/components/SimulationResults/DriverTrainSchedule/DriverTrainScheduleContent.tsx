@@ -1,12 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
 import { jouleToKwh } from 'utils/physics';
+import { Stop, Train } from 'reducers/osrdsimulation/types';
+import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import formatStops, { massWithOneDecimal } from './DriverTrainScheduleHelpers';
 
-function originStop(stop) {
+function originStop(stop: Stop) {
   return (
     <div className="text-primary" key={nextId()}>
       {stop.name || 'Unknown'}
@@ -14,48 +15,51 @@ function originStop(stop) {
   );
 }
 
-export default function DriverTrainScheduleContent(props) {
-  const { data, rollingStockSelected } = props;
+export default function DriverTrainScheduleContent({
+  train,
+  rollingStock,
+}: {
+  train: Train;
+  rollingStock: LightRollingStock;
+}) {
   const { t } = useTranslation(['drivertrainschedule']);
   return (
     <div className="container-drivertrainschedule">
       <h1 className="text-blue mt-2">
         {t('drivertrainschedule:dcmdetails')}
-        <span className="ml-1 text-normal">{data.name}</span>
+        <span className="ml-1 text-normal">{train.name}</span>
       </h1>
       <div className="row">
         <div className="col-xl-4">
           <div className="row no-gutters">
             <div className="col-4">{t('drivertrainschedule:origin')}</div>
             <div className="font-weight-bold text-primary col-8">
-              {data.base.stops.map((stop) => originStop(stop))[0]}
+              {train.base.stops.map((stop) => originStop(stop))[0]}
             </div>
           </div>
           <div className="row no-gutters">
             <div className="col-4">{t('drivertrainschedule:destination')}</div>
             <div className="font-weight-bold text-primary col-8">
-              {data.base.stops.map((stop) => originStop(stop)).slice(-1)}
+              {train.base.stops.map((stop) => originStop(stop)).slice(-1)}
             </div>
           </div>
         </div>
         <div className="col-xl-4 my-xl-0 my-1">
           <div className="row no-gutters">
             <div className="col-4 col-xl-5">{t('drivertrainschedule:rollingstock')}</div>
-            <div className="font-weight-bold text-primary col-8 col-xl-7">
-              {rollingStockSelected.name}
-            </div>
+            <div className="font-weight-bold text-primary col-8 col-xl-7">{rollingStock.name}</div>
           </div>
           <div className="row no-gutters">
             <div className="col-4 col-xl-5">{t('drivertrainschedule:mass')}</div>
             <div className="font-weight-bold text-primary col-8 col-xl-7">
-              {massWithOneDecimal(rollingStockSelected.mass)}T
+              {massWithOneDecimal(rollingStock.mass)}T
             </div>
           </div>
         </div>
         <div className="col-xl-4">
           <div className="row no-gutters">
             <div className="col-4">{t('drivertrainschedule:composition')}</div>
-            <div className="font-weight-bold text-primary col-8">{data.speed_limit_tags}</div>
+            <div className="font-weight-bold text-primary col-8">{train.speed_limit_tags}</div>
           </div>
         </div>
       </div>
@@ -63,20 +67,20 @@ export default function DriverTrainScheduleContent(props) {
       <div className="row">
         <div className="col-4">{t('drivertrainschedule:energyconsumed-basic')}</div>
         <div className="font-weight-bold text-primary col-8">
-          {jouleToKwh(data.base.mechanical_energy_consumed, true)} kWh
+          {jouleToKwh(train.base.mechanical_energy_consumed, true)} kWh
         </div>
       </div>
-      {data.eco != null && (
+      {train.eco != null && (
         <div className="row">
           <div className="col-4">{t('drivertrainschedule:energyconsumed-eco')}</div>
           <div className="font-weight-bold text-primary col-8">
-            {jouleToKwh(data.eco.mechanical_energy_consumed, true)} kWh
+            {jouleToKwh(train.eco.mechanical_energy_consumed, true)} kWh
           </div>
         </div>
       )}
       <div className="text-right font-italic text-cyan">
         {t('drivertrainschedule:numberoflines')} :
-        <span className="font-weight-bold ml-1"> {data.base.stops.length}</span>
+        <span className="font-weight-bold ml-1"> {train.base.stops.length}</span>
       </div>
       <div className="simulation-drivertrainschedule ml-auto mr-auto">
         <table className="table-drivertrainschedule table-hover">
@@ -85,7 +89,7 @@ export default function DriverTrainScheduleContent(props) {
               <th className="text-center text-primary mt-1">
                 {t('drivertrainschedule:placeholderline')}
               </th>
-              <th colSpan="3" className="text-primary mt-1">
+              <th colSpan={3} className="text-primary mt-1">
                 {t('drivertrainschedule:speed')}
               </th>
               <th className="text-center text-primary mt-1">{t('drivertrainschedule:pk')}</th>
@@ -121,19 +125,14 @@ export default function DriverTrainScheduleContent(props) {
                   {t('drivertrainschedule:averagespeed-short')}
                 </span>
               </th>
-              <td colSpan="4" />
+              <td colSpan={4} />
             </tr>
           </thead>
           <tbody className="font-weight-normal">
-            {data.base.stops.map((stop, idx) => formatStops(stop, idx, data))}
+            {train.base.stops.map((stop, idx) => formatStops(stop, idx, train))}
           </tbody>
         </table>
       </div>
     </div>
   );
 }
-
-DriverTrainScheduleContent.propTypes = {
-  data: PropTypes.object.isRequired,
-  rollingStockSelected: PropTypes.object.isRequired,
-};
