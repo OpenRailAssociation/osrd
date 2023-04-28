@@ -671,3 +671,11 @@ for track_section in electrified_tracks_25000 - {ta6}:
 
 
 external_inputs.save(OUTPUT_DIR / "external_generated_inputs.json")
+
+print(
+    """
+NOTE: This infra is used by editoast's unit test suite. If any relevant
+modification was made to this infra, its railjson description should
+be copied into `editoast/tests/small_infra.json`. Make sure to run `cargo test`
+afterwards."""
+)

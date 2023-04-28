@@ -90,6 +90,27 @@ mod tests {
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::PgConnection;
 
+    /// Asserts the status code of a simulated response and deserailizes its body,
+    /// with a nice failure message should the something fail
+    #[macro_export]
+    macro_rules! assert_status_and_read {
+        ($response: ident, $status: expr) => {{
+            let (status, body): (_, serde_json::Value) = (
+                $response.status(),
+                actix_web::test::read_body_json($response).await,
+            );
+            let fmt_body = format!("{}", body);
+            assert_eq!(status, $status, "unexpected error response: {}", fmt_body);
+            match serde_json::from_value(body) {
+                Ok(response) => response,
+                Err(err) => panic!(
+                    "cannot deserialize response because '{}': {}",
+                    err, fmt_body
+                ),
+            }
+        }};
+    }
+
     /// Creates a test client with 1 pg connection and a given [CoreClient]
     pub async fn create_test_service_with_core_client(
         core: CoreClient,
