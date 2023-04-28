@@ -6,6 +6,7 @@ pub mod tests {
     use crate::models::{
         Create, Delete, Document, Identifiable, Infra, RollingStockLiveryModel, RollingStockModel,
     };
+    use crate::schema::RailJson;
     use crate::views::infra::InfraForm;
 
     use actix_web::web::Data;
@@ -66,6 +67,7 @@ pub mod tests {
             .await
             .unwrap(),
             db_pool,
+            infra: None,
         }
     }
 
@@ -122,6 +124,32 @@ pub mod tests {
                 .create(db_pool.clone())
                 .await
                 .unwrap(),
+            db_pool,
+        }
+    }
+
+    /// Provides an [Infra] based on small_infra
+    ///
+    /// The infra is imported once for each test using the fixture and
+    /// deleted afterwards. The small_infra railjson file is located
+    /// at `editoast/tests/small_infra.json`. Any modification of that
+    /// file is likely to impact the tests using this fixture. Likewise, if any
+    /// modification of the infra itself (cf.
+    /// `python/railjson_generator/railjson_generator/scripts/examples/small_infra.py`)
+    /// is made, the `editoast/tests/small_infra/small_infra.json` file should be updated
+    /// to the latest infra description.
+    #[fixture]
+    pub async fn small_infra(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) -> TestFixture<Infra> {
+        let railjson: RailJson =
+            serde_json::from_str(include_str!("tests/small_infra/small_infra.json")).unwrap();
+        let infra = Infra::from(InfraForm {
+            name: "small_infra".to_owned(),
+        });
+        let infra = infra.persist(railjson, db_pool.clone()).await.unwrap();
+        TestFixture {
+            model: infra,
             db_pool,
         }
     }
