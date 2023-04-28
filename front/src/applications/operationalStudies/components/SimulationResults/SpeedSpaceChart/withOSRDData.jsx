@@ -22,9 +22,6 @@ const withOSRDData = (Component) =>
     const speedSpaceSettings = useSelector((state) => state.osrdsimulation.speedSpaceSettings);
     const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
     const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-    const consolidatedSimulation = useSelector(
-      (state) => state.osrdsimulation.consolidatedSimulation
-    );
 
     const isPlaying = useSelector(getIsPlaying);
 
@@ -50,7 +47,7 @@ const withOSRDData = (Component) =>
 
     // Prepare data
     const trainSimulation = useMemo(
-      () => prepareData(simulation, selectedTrain),
+      () => prepareData(simulation.trains[selectedTrain]),
       [simulation, selectedTrain]
     );
 
@@ -63,7 +60,6 @@ const withOSRDData = (Component) =>
         positionValues={positionValues}
         speedSpaceSettings={speedSpaceSettings}
         timePosition={timePosition}
-        consolidatedSimulation={consolidatedSimulation}
         toggleSetting={toggleSetting}
         simulationIsPlaying={isPlaying}
       />
