@@ -14,9 +14,11 @@ import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
+import { IntervalPositionType } from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
 
 type Props = {
   train: ScheduledTrain;
+  duration?: IntervalPositionType;
   isSelected: boolean;
   isModified?: boolean;
   projectionPathIsUsed: boolean;
@@ -30,6 +32,7 @@ type Props = {
 
 function TimetableTrainCard({
   train,
+  duration,
   isSelected,
   isModified,
   projectionPathIsUsed,
@@ -87,6 +90,7 @@ function TimetableTrainCard({
           </div>
           <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
           <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
+          <div className={`duration duration-${duration?.interval}`} />
         </div>
         <div className="scenario-timetable-train-body">
           <span>{train.speed_limit_tags}</span>

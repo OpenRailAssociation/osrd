@@ -136,7 +136,7 @@
         height: 2rem;
       }
       .scenario-timetable-trains {
-        overflow: auto;
+        // overflow: auto;
         height: calc(var(--content-height) - 13rem);
         .scenario-timetable-train {
           position: relative;
@@ -233,6 +233,24 @@
                 text-align: right;
                 font-weight: 500;
                 font-size: 0.8rem;
+              }
+              .duration {
+                position: absolute;
+                right: -0.5rem;
+                top: 0.25rem;
+                height: calc(100% - 0.5rem);
+                border-left: 3px solid var(--secondary);
+                opacity: 0.5;
+                &.duration-0 {
+                  border-color: var(--green);
+                }
+                &.duration-1 {
+                  opacity: 0.75;
+                  border-color: var(--yellow);
+                }
+                &.duration-2 {
+                  border-color: var(--red);
+                }
               }
             }
             .scenario-timetable-train-body {
