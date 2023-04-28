@@ -413,16 +413,16 @@ async fn del_pf(path: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Responder
 #[cfg(test)]
 mod test {
     use actix_http::StatusCode;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::{call_service, TestRequest};
     use actix_web::web::Data;
     use serde_json::json;
 
     use crate::core::CoreClient;
-    use crate::fixtures::tests::{db_pool, fast_rolling_stock, TestFixture};
-    use crate::models::{Pathfinding, Retrieve};
+    use crate::fixtures::tests::{db_pool, fast_rolling_stock, small_infra, TestFixture};
+    use crate::models::{Infra, Pathfinding, Retrieve};
     use crate::views::pathfinding::Response;
     use crate::views::tests::create_test_service_with_core_client;
-    use crate::DbPool;
+    use crate::{assert_status_and_read, DbPool};
     use crate::{models::RollingStockModel, views::tests::create_test_service};
 
     #[actix_web::test]
@@ -444,18 +444,26 @@ mod test {
     #[rstest::rstest]
     async fn test_post_ok(
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+        #[future] small_infra: TestFixture<Infra>,
         db_pool: Data<DbPool>,
     ) {
+        // Avoid `Drop`ping the fixture
         let rs = &fast_rolling_stock.await.model;
+        let infra = &small_infra.await.model;
         let rs_id = rs.id.unwrap();
-        let mut payload: serde_json::Value =
-            serde_json::from_str(include_str!("../../tests/pathfinding_post_payload.json"))
-                .unwrap();
+        let infra_id = infra.id.unwrap();
+        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
+            "../../tests/small_infra/pathfinding_post_payload.json"
+        ))
+        .unwrap();
+        *payload.get_mut("infra").unwrap() = json!(infra_id);
         *payload.get_mut("rolling_stocks").unwrap() = json!([rs_id]);
         let core = CoreClient::new_mocked();
         core.queue_expected_response(
-            serde_json::from_str(include_str!("../../tests/pathfinding_core_response.json"))
-                .unwrap(),
+            serde_json::from_str(include_str!(
+                "../../tests/small_infra/pathfinding_core_response.json"
+            ))
+            .unwrap(),
         );
         let app = create_test_service_with_core_client(core.clone()).await;
         let req = TestRequest::post()
@@ -463,8 +471,7 @@ mod test {
             .set_json(payload)
             .to_request();
         let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let response: Response = read_body_json(response).await;
+        let response: Response = assert_status_and_read!(response, StatusCode::OK);
         assert!(Pathfinding::retrieve(db_pool, response.id).await.is_ok());
     }
 }
