@@ -194,7 +194,7 @@ export default function formatStops(stop: Stop, idx: number, data: Train) {
       </td>
       <td>
         <div className="text-center" title={`${stop.line_name}`}>
-          <small> {stop.track_name}</small>
+          <small>{stop.track_name}</small>
         </div>
       </td>
     </tr>
