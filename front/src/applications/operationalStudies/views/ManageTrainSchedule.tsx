@@ -17,7 +17,6 @@ import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { getShouldRunPathfinding, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
 import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
 
 type Props = {
@@ -129,14 +128,6 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
       {!trainScheduleIDsToModify && <TrainAddingSettings />}
       <div className="osrd-config-item" data-testid="add-train-schedules">
         <div className="d-flex justify-content-end">
-          <button
-            className="btn btn-secondary mr-2"
-            type="button"
-            onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
-          >
-            <i className="icons-arrow-prev mr-2" />
-            {t('returnToSimulationResults')}
-          </button>
           {isWorking ? (
             <button className="btn btn-primary disabled" type="button">
               <DotsLoader />
