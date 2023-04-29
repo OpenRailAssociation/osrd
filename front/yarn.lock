@@ -1854,7 +1854,7 @@
 
 "@rtk-query/oazapfts-patched@^3.6.0-2", "@rtk-query/oazapfts-patched@anisometropie/oazapfts#master":
   version "3.6.0-1"
-  resolved "https://codeload.github.com/anisometropie/oazapfts/tar.gz/86111d2c438a2ab64ef0858234e61c4f47cf93b5"
+  resolved "https://codeload.github.com/anisometropie/oazapfts/tar.gz/324c195d19b80fd1c63931f4d96e5d6469dc78b2"
   dependencies:
     "@apidevtools/swagger-parser" "^10.0.1"
     lodash "^4.17.20"
