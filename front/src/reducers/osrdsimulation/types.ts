@@ -109,6 +109,7 @@ export type ScheduledTrain = {
   departure: number;
   arrival: number;
   speed_limit_tags?: string;
+  duration?: number;
   isFiltered?: boolean;
 };
 
