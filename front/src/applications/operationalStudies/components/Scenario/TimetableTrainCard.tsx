@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
-import { MdContentCopy } from 'react-icons/md';
+import { MdAvTimer, MdContentCopy } from 'react-icons/md';
 import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
@@ -14,6 +14,7 @@ import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
+import { jouleToKwh } from 'utils/physics';
 
 type Props = {
   train: ScheduledTrain;
@@ -87,13 +88,32 @@ function TimetableTrainCard({
               </span>
             )}
           </div>
-          <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
-          <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
+          <div className="scenario-timetable-train-times">
+            <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
+            <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
+          </div>
           <div className={`duration duration-${intervalPosition}`} />
         </div>
         <div className="scenario-timetable-train-body">
-          <span>{train.speed_limit_tags}</span>
-          {sec2time(durationInSeconds(train.departure, train.arrival))}
+          <span className="flex-grow-1">{train.speed_limit_tags}</span>
+
+          {train.mechanicalEnergyConsumed?.eco && (
+            <small className="mx-xl-2 mr-lg-1 text-orange font-weight-bold">
+              ECO {jouleToKwh(train.mechanicalEnergyConsumed.eco, true)}&nbsp;kWh
+            </small>
+          )}
+          {train.mechanicalEnergyConsumed?.base && (
+            <span className="mr-xl-3 mr-lg-2">
+              {jouleToKwh(train.mechanicalEnergyConsumed.base, true)}
+              <span className="small ml-1">kWh</span>
+            </span>
+          )}
+          <div className="text-nowrap">
+            <MdAvTimer />
+            <span className="ml-1">
+              {sec2time(durationInSeconds(train.departure, train.arrival))}
+            </span>
+          </div>
         </div>
         <div className="scenario-timetable-train-tags">
           {train.labels.map((tag) => (
