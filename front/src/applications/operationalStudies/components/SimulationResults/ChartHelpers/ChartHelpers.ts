@@ -326,12 +326,17 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
   const lastStop = last(train.base.stops) as Stop;
   const departure = offsetSeconds(firstStop.time + dragOffset);
   const arrival = offsetSeconds(lastStop.time + dragOffset);
+  const mechanicalEnergyConsumed = {
+    base: train.base?.mechanical_energy_consumed,
+    eco: train.eco?.mechanical_energy_consumed,
+  };
 
   return {
     id: train.id,
     labels: train.labels,
     name: train.name,
     path: train.path,
+    mechanicalEnergyConsumed,
     departure,
     arrival,
     duration: durationInSeconds(departure, arrival),
