@@ -30,9 +30,8 @@ import SpaceTimeChart from './SpaceTimeChart';
  */
 const withForcedEcoAllowanceSettings = (Component) =>
   function WrapperComponent(props) {
-    const { simulation } = props;
-    let forcedEcoAllowancesSettings = [];
-    // eslint-disable-next-line react/prop-types
+    const simulation = useSelector(getPresentSimulation);
+    const forcedEcoAllowancesSettings = [];
     simulation?.trains?.forEach((train) => {
       forcedEcoAllowancesSettings[train.id] = train.eco?.route_aspects
         ? {

@@ -10,7 +10,8 @@ import { FaFlagCheckered } from 'react-icons/fa';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FiSearch } from 'react-icons/fi';
 
-import { EditRoutePathState, RouteEditionState } from '../types';
+import { Feature, LineString } from 'geojson';
+import { EditRoutePathState, RouteCandidate, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
 import { ExtendedEditorContextType } from '../../types';
 import { getCompatibleRoutes, getEntity } from '../../../data/api';
@@ -267,12 +268,19 @@ export const EditRoutePathEditionLayers: FC<{ state: EditRoutePathState }> = ({
     [hovered?.renderedEntity, hovered?.type]
   );
   const collection = useMemo(() => {
-    const options =
-      optionsState.type !== 'options'
-        ? []
-        : typeof optionsState.focusedOptionIndex === 'number'
-        ? [optionsState.options[optionsState.focusedOptionIndex]]
-        : optionsState.options;
+    let options: {
+      data: RouteCandidate;
+      color: string;
+      feature: Feature<LineString, { index: number; color: string }>;
+    }[];
+    if (optionsState.type !== 'options') {
+      options = [];
+    } else {
+      options =
+        typeof optionsState.focusedOptionIndex === 'number'
+          ? [optionsState.options[optionsState.focusedOptionIndex]]
+          : optionsState.options;
+    }
     return featureCollection(
       options
         .map((opt) => ({

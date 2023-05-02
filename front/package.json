@@ -165,7 +165,7 @@
     "start": "import-meta-env-prepare -x .env.example && vite",
     "build": "vite build",
     "test": "import-meta-env-prepare -x .env.example && vitest",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 124",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 112",
     "lint-fix": "eslint --ext .ts,.tsx,.js,.jsx src --fix",
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",

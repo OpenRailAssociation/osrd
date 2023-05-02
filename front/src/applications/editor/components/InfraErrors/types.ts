@@ -5,8 +5,7 @@ import {
 
 // Error level
 export type InfraErrorLevel = GetInfraByIdErrorsApiArg['level'];
-export const InfraErrorLevelList: Array<InfraErrorLevel> =
-    [ 'all', 'errors', 'warnings' ];
+export const InfraErrorLevelList: Array<InfraErrorLevel> = ['all', 'errors', 'warnings'];
 
 // Error type
 export type InfraErrorType = GetInfraByIdErrorsApiArg['errorType'];

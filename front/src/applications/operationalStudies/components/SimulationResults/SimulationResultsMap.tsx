@@ -10,7 +10,6 @@ import along from '@turf/along';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import { CgLoadbar } from 'react-icons/cg';
 import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
