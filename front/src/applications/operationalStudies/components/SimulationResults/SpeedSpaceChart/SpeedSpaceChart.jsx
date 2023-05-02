@@ -35,7 +35,6 @@ const CHART_MIN_HEIGHT = 250;
  */
 export default function SpeedSpaceChart(props) {
   const {
-    dispatchUpdateMustRedraw,
     dispatchUpdateTimePositionValues,
     initialHeight,
     positionValues,
@@ -148,7 +147,6 @@ export default function SpeedSpaceChart(props) {
       noop,
       noop,
       simulationIsPlaying,
-      dispatchUpdateMustRedraw,
       dispatchUpdateTimePositionValues
     );
   }, [chart]);
@@ -268,7 +266,6 @@ export default function SpeedSpaceChart(props) {
 }
 
 SpeedSpaceChart.propTypes = {
-  dispatchUpdateMustRedraw: PropTypes.func,
   dispatchUpdateTimePositionValues: PropTypes.func,
   /**
    * height of chart
@@ -296,7 +293,6 @@ SpeedSpaceChart.propTypes = {
 };
 
 SpeedSpaceChart.defaultProps = {
-  dispatchUpdateMustRedraw: noop,
   dispatchUpdateTimePositionValues: noop,
   onSetChartBaseHeight: noop,
   onSetSettings: noop,
@@ -305,7 +301,6 @@ SpeedSpaceChart.defaultProps = {
   speedSpaceSettings: ORSD_GRAPH_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
   trainSimulation: prepareData(
-    ORSD_GRAPH_SAMPLE_DATA.simulation.present,
-    ORSD_GRAPH_SAMPLE_DATA.selectedTrain
+    ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[ORSD_GRAPH_SAMPLE_DATA.selectedTrain]
   ),
 };

@@ -28,6 +28,10 @@ export const getSelectedTrain = makeSubSelector<OsrdSimulationState, 'selectedTr
   getOsrdSimulation,
   'selectedTrain'
 );
+export const getSpeedSpaceSettings = makeSubSelector<OsrdSimulationState, 'speedSpaceSettings'>(
+  getOsrdSimulation,
+  'speedSpaceSettings'
+);
 export const getTimePosition = makeSubSelector<OsrdSimulationState, 'timePosition'>(
   getOsrdSimulation,
   'timePosition'

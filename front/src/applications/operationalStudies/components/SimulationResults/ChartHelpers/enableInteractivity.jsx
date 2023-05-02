@@ -389,7 +389,6 @@ export const isolatedEnableInteractivity = (
   setLocalPosition,
   setMousePos,
   simulationIsPlaying,
-  dispatchUpdateMustRedraw,
   dispatchUpdateTimePositionValues
 ) => {
   if (!chart) return;
@@ -411,10 +410,7 @@ export const isolatedEnableInteractivity = (
     })
     .filter(
       (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
-    )
-    .on('end', () => {
-      dispatchUpdateMustRedraw(true);
-    });
+    );
 
   let debounceTimeoutId;
 

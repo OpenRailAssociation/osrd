@@ -112,6 +112,18 @@ export type ScheduledTrain = {
   isFiltered?: boolean;
 };
 
+export const enum SPEED_SPACE_SETTINGS {
+  altitude = 'altitude',
+  curves = 'curves',
+  maxSpeed = 'maxSpeed',
+  slopes = 'slopes',
+  electricalProfiles = 'electricalProfiles',
+}
+
+export type ISpeedSpaceSettings = {
+  [key in SPEED_SPACE_SETTINGS]: boolean;
+};
+
 interface GradientPosition {
   gradient: number;
   position: number;
@@ -196,13 +208,7 @@ export interface OsrdSimulationState {
     path: unknown;
   };
   selectedTrain: number;
-  speedSpaceSettings: {
-    altitude: boolean;
-    curves: boolean;
-    maxSpeed: boolean;
-    slopes: boolean;
-    electricalProfiles: boolean;
-  };
+  speedSpaceSettings: ISpeedSpaceSettings;
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];

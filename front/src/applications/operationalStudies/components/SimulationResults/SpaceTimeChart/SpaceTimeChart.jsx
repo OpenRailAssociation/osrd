@@ -208,7 +208,6 @@ export default function SpaceTimeChart(props) {
         setLocalPosition,
         setMousePos,
         simulationIsPlaying,
-        dispatchUpdateMustRedraw,
         dispatchUpdateTimePositionValues
       );
       const immediatePositionsValuesForPointer = interpolateOnTime(

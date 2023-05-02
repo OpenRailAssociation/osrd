@@ -50,7 +50,6 @@ const OSRDStcdmResults = () => {
                 <SpeedSpaceChart
                   initialHeight={450}
                   onSetChartBaseHeight={setSpeedSpaceChartHeight}
-                  showSettings={false}
                 />
               </div>
             )}
