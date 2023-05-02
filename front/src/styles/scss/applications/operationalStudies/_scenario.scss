@@ -225,14 +225,21 @@
                 }
                 font-weight: bold;
                 font-size: 1rem;
-                width: 60%;
+                width: 80%;
               }
-              .scenario-timetable-train-departure,
-              .scenario-timetable-train-arrival {
+              .scenario-timetable-train-times {
                 min-width: 20%;
                 text-align: right;
-                font-weight: 500;
-                font-size: 0.8rem;
+                height: 1.5rem;
+                line-height: 0.8rem;
+                .scenario-timetable-train-departure {
+                  font-weight: 600;
+                  font-size: 0.9rem;
+                }
+                .scenario-timetable-train-arrival {
+                  font-weight: 400;
+                  font-size: 0.8rem;
+                }
               }
               .duration {
                 position: absolute;
@@ -256,8 +263,16 @@
             .scenario-timetable-train-body {
               display: flex;
               justify-content: space-between;
+              align-items: baseline;
               padding: 0.25rem;
               font-size: 0.8rem;
+              height: 1.75rem;
+              small {
+                font-size: 0.6rem;
+              }
+              svg {
+                margin-bottom: 0.2rem;
+              }
             }
             .scenario-timetable-train-tags {
               display: flex;

@@ -101,6 +101,11 @@ export interface ElectrificationConditions {
   seen_restriction?: string;
 }
 
+export type MechanicalEnergyConsumedBaseEco = {
+  base?: number;
+  eco?: number;
+};
+
 export type ScheduledTrain = {
   id: number;
   labels: string[];
@@ -111,6 +116,7 @@ export type ScheduledTrain = {
   speed_limit_tags?: string;
   duration?: number;
   isFiltered?: boolean;
+  mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
 };
 
 interface GradientPosition {
@@ -141,6 +147,7 @@ export interface Train {
   eco: Regime;
   margins: Regime;
   isStdcm?: boolean;
+  mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
   speed_limit_tags?: string;
 }
 
