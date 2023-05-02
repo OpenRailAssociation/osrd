@@ -2,8 +2,10 @@ import { MAP_URL } from 'common/Map/const';
 import React from 'react';
 import { LayerProps, Source } from 'react-map-gl';
 import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { SymbolLayer } from 'types';
+import { isNil } from 'lodash';
+import { getMap, getMapTrackSources } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
 
 interface SNCF_LPV_PanelsProps {
@@ -11,20 +13,25 @@ interface SNCF_LPV_PanelsProps {
   layerOrder?: number;
 }
 
-export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
-  const { mapStyle } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { geomType, layerOrder } = props;
+// Add function getAngleName ?
+// export function getAngleName() {
+//   const mapTrackSources = useSelector(getMapTrackSources);
+//   const geomType = mapTrackSources === 'schematic' ? 'sch' : 'geo';
+//   return geomType === 'sch' ? 'angle_sch' : 'angle_geo';
+// }
 
+export function getLPVPanelsLayerProps({ sourceTable }: { sourceTable?: string }): SymbolLayer {
+  // hook not allowed in this function
+  const { mapStyle, mapTrackSources } = useSelector(getMap);
+  const geomType = mapTrackSources === 'schematic' ? 'sch' : 'geo';
   const angleName = geomType === 'sch' ? 'angle_sch' : 'angle_geo';
-  let prefix;
+  let prefix: string;
   if (mapStyle === 'blueprint') {
     prefix = 'SCHB ';
   } else {
     prefix = geomType === 'sch' ? 'SCH ' : '';
   }
-
-  const panelsParams: LayerProps = {
+  const res: SymbolLayer = {
     id: 'panelParams',
     type: 'symbol',
     'source-layer': 'lpv_panels',
@@ -65,7 +72,21 @@ export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
     },
   };
 
-  const mastsParams: LayerProps = {
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export function getLPVPanelsMastLayerProps({
+  sourceTable,
+}: {
+  sourceTable?: string;
+}): Omit<SymbolLayer, 'id'> {
+  // hook not allowed in this function
+  const mapTrackSources = useSelector(getMapTrackSources);
+  const angleName = mapTrackSources === 'schematic' ? 'angle_sch' : 'angle_geo';
+
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     'source-layer': 'lpv_panels',
     minzoom: 13,
@@ -87,6 +108,24 @@ export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
       'icon-ignore-placement': true,
     },
   };
+
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
+  const infraID = useSelector(getInfraID);
+  const { geomType, layerOrder } = props;
+
+  const panelsParams: LayerProps = getLPVPanelsLayerProps({
+    // change sourcetable to lpv_panels ?
+    sourceTable: 'lpv',
+  });
+
+  const mastsParams: LayerProps = getLPVPanelsMastLayerProps({
+    sourceTable: 'lpv',
+  });
 
   return (
     <Source

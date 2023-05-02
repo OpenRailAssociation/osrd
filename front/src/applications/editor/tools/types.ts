@@ -23,6 +23,8 @@ export const LAYERS = [
   'routes',
   'speed_sections',
   'errors',
+  'lpv',
+  'lpv_panels',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(LAYERS);
 export type LayerType = (typeof LAYERS)[number];

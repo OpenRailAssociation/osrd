@@ -52,6 +52,7 @@ export interface SpeedSectionEntity
       }[];
       extensions?: {
         lpv_sncf: null | {
+          // typer les props
           announcement: unknown;
           z: unknown;
           r: unknown;

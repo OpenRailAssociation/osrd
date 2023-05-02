@@ -36,6 +36,16 @@ import {
   getSpeedSectionsTextLayerProps,
 } from './SpeedLimits';
 import { MapState } from '../../../reducers/map';
+import {
+  getLPVFilter,
+  getLPVSpeedLineBGLayerProps,
+  getLPVSpeedLineLayerProps,
+  getLPVSpeedValueLayerProps,
+} from './extensions/SNCF/SNCF_LPV';
+import {
+  getLPVPanelsLayerProps,
+  getLPVPanelsMastLayerProps,
+} from './extensions/SNCF/SNCF_LPV_PANELS';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
@@ -178,6 +188,43 @@ function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
     },
   ];
 }
+
+function getLPVPanelsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+  return [
+    {
+      ...getLPVPanelsLayerProps(context),
+      id: `${prefix}geo/lpv-panels`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...getLPVPanelsMastLayerProps(context),
+      id: `${prefix}geo/lpv-panels-mast`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+  ];
+}
+
+function getLPVLayers(context: LayerContext, prefix: string): AnyLayer[] {
+  const filter = getLPVFilter(context.layersSettings);
+  return [
+    {
+      ...getLPVSpeedValueLayerProps(context),
+      id: `${prefix}geo/lpv-value`,
+      filter,
+    },
+    {
+      ...getLPVSpeedLineBGLayerProps(context),
+      id: `${prefix}geo/lpv-line-bg`,
+      filter,
+    },
+    {
+      ...getLPVSpeedLineLayerProps(context),
+      id: `${prefix}geo/lpv-line`,
+      filter,
+    },
+  ];
+}
+
 function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     {
@@ -247,6 +294,8 @@ const SOURCES_DEFINITION: {
   { entityType: 'detectors', getLayers: getDetectorsLayers },
   { entityType: 'switches', getLayers: getSwitchesLayers },
   { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
+  { entityType: 'lpv', getLayers: getLPVLayers },
+  { entityType: 'lpv_panels', getLayers: getLPVPanelsLayers },
   { entityType: 'errors', getLayers: getErrorsLayers },
 ];
 
