@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { last } from 'lodash';
 
-import { sec2time } from 'utils/timeManipulation';
+import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
 // eslint-disable-next-line
 import {
@@ -334,6 +334,7 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
     path: train.path,
     departure,
     arrival,
+    duration: durationInSeconds(departure, arrival),
     speed_limit_tags: train.speed_limit_tags,
   };
 }

@@ -21,11 +21,10 @@ import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
 import { Path } from 'types';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
+import { value2interval } from 'utils/numbers';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
-import trainsDurationsIntervals, {
-  TrainsWithIntervalPositionType,
-} from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
+import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
 
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -44,8 +43,7 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
-  const [trainsWithIntervalPosition, setTrainsWithIntervalPosition] =
-    useState<TrainsWithIntervalPositionType>();
+  const [trainsDurationsIntervals, setTrainsDurationsIntervals] = useState<number[]>();
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -157,7 +155,7 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
   }, [departureArrivalTimes, debouncedTerm]);
 
   useEffect(() => {
-    setTrainsWithIntervalPosition(trainsDurationsIntervals(departureArrivalTimes));
+    setTrainsDurationsIntervals(findTrainsDurationsIntervals(departureArrivalTimes));
   }, [departureArrivalTimes]);
 
   return (
@@ -216,15 +214,13 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
       <div className={cx('scenario-timetable-trains', trainsWithDetails && 'with-details')}>
         {trainsList &&
           selectedProjection &&
-          trainsWithIntervalPosition &&
+          trainsDurationsIntervals &&
           trainsList.map(
             (train: ScheduledTrain, idx: number) =>
               !train.isFiltered && (
                 <TimetableTrainCard
                   train={train}
-                  duration={
-                    trainsWithIntervalPosition[train.id as keyof TrainsWithIntervalPositionType]
-                  }
+                  intervalPosition={value2interval(train.duration, trainsDurationsIntervals)}
                   key={`timetable-train-card-${train.id}`}
                   isSelected={selectedTrain === idx}
                   isModified={trainScheduleIDsToModify?.includes(train.id)}
