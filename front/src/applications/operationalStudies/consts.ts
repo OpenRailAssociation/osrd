@@ -160,6 +160,7 @@ export interface OsrdConfState {
   gridMarginBefore: number;
   gridMarginAfter: number;
   trainScheduleIDsToModify?: number[];
+  maximumRunTime?: number;
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {

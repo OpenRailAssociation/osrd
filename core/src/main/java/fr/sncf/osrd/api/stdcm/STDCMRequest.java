@@ -81,13 +81,12 @@ public final class STDCMRequest {
     public double maximumDepartureDelay = 3600 * 2;
 
     /**
-     * How much longer can the train take to reach its destination,
-     * compared to the time it would take with an empty timetable.
-     * e.g. with a value of 2 and a fastest run time of 1h, we ignore results after 2h.
-     * Defaults to 2.
+     * Specifies the running time that the train should not exceed to reach its destination,
+     * e.g. with a value of 18000, we ignore results after 5h.
+     * Defaults to 12hrs.
      */
-    @Json(name = "maximum_relative_run_time")
-    public double maximumRelativeRunTime = 2;
+    @Json(name = "maximum_run_time")
+    public double maximumRunTime;
 
     /**
      * Train category for speed limits
@@ -131,7 +130,8 @@ public final class STDCMRequest {
                 Double.NaN,
                 null,
                 0,
-                0
+                0,
+                12 * 3600
         );
     }
 
@@ -148,7 +148,8 @@ public final class STDCMRequest {
             double endTime,
             String speedLimitComposition,
             double marginBefore,
-            double marginAfter
+            double marginAfter,
+            double maximumRunTime
     ) {
         this.infra = infra;
         this.expectedVersion = expectedVersion;
@@ -160,6 +161,7 @@ public final class STDCMRequest {
         this.speedLimitComposition = speedLimitComposition;
         this.gridMarginBeforeSTDCM = marginBefore;
         this.gridMarginAfterSTDCM = marginAfter;
+        this.maximumRunTime = maximumRunTime;
     }
 
     public static class STDCMStep {

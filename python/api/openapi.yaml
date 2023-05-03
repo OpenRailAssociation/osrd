@@ -1576,12 +1576,12 @@ components:
           type: number
           format: double
           description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
-        maximum_relative_run_time:
+        maximum_run_time:
           type: number
           format: double
           description: |
-            How much longer the total run time can be compared to the shortest path on an empty timetable.
-            Defaults to 2 if unspecified, meaning that the result can't take more than twice the minimum time.
+            Specifies how long the total run time can be in seconds.
+            Defaults to 43200s if unspecified, meaning that the result can't exceed 12h.
         speed_limit_tags:
           type: string
           description: Train category for speed limits
@@ -2102,7 +2102,7 @@ components:
         capacity_speed_limit:
           type: number
           format: double
-      required: 
+      required:
         - "allowance_type"
     EngineeringAllowance:
       allOf:
@@ -2117,7 +2117,7 @@ components:
             capacity_speed_limit:
               type: number
               format: double
-          required: 
+          required:
             - "allowance_type"
         - $ref: "#/components/schemas/RangeAllowance"
     RangeAllowance:

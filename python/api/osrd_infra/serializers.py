@@ -238,7 +238,7 @@ class STDCMInputSerializer(Serializer):
     rolling_stock = serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all())
     comfort = serializers.ChoiceField(choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD)
     maximum_departure_delay = serializers.FloatField(required=False, allow_null=True)
-    maximum_relative_run_time = serializers.FloatField(required=False, allow_null=True)
+    maximum_run_time = serializers.FloatField(required=False, allow_null=True)
     speed_limit_tags = serializers.CharField(max_length=255, required=False, allow_null=True)
     margin_before = serializers.FloatField(required=False, allow_null=True)
     margin_after = serializers.FloatField(required=False, allow_null=True)

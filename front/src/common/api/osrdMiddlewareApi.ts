@@ -1038,7 +1038,7 @@ export type StdcmRequest = {
     waypoints?: Waypoint;
   }[];
   maximum_departure_delay?: number;
-  maximum_relative_run_time?: number;
+  maximum_run_time?: number;
   speed_limit_tags?: string;
   margin_before?: number;
   margin_after?: number;

@@ -204,7 +204,7 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
         "timetable": scenario.timetable,
         "start_time": random.randint(0, 3600 * 24),
         "maximum_departure_delay": random.randint(0, 3600 * 4),
-        "maximum_relative_run_time": random.random() * 4,
+        "maximum_run_time": random.randint(3600 * 5, 3600 * 10),
         "margin_before": random.randint(0, 600),
         "margin_after": random.randint(0, 600),
         "steps": [convert_stop(stop) for stop in path],

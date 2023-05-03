@@ -110,14 +110,6 @@ public class STDCMEndpoint implements Take {
                     request.gridMarginAfterSTDCM,
                     request.gridMarginBeforeSTDCM
             );
-            double minRunTime = getMinRunTime(
-                    fullInfra,
-                    rollingStock,
-                    comfort,
-                    steps,
-                    request.timeStep,
-                    standardAllowance
-            );
 
             // Run the STDCM pathfinding
             var res = STDCMPathfinding.findPath(
@@ -130,7 +122,7 @@ public class STDCMEndpoint implements Take {
                     new RouteAvailabilityLegacyAdapter(unavailableSpace),
                     request.timeStep,
                     request.maximumDepartureDelay,
-                    request.maximumRelativeRunTime * minRunTime,
+                    request.maximumRunTime,
                     tag,
                     standardAllowance
             );
@@ -189,55 +181,6 @@ public class STDCMEndpoint implements Take {
                 ));
         }
         return result;
-    }
-
-    /** Find the minimum run time to go from start to end, assuming the timetable is empty.
-     * Returns 0 if we can't find a valid path. */
-    private double getMinRunTime(
-            FullInfra fullInfra,
-            RollingStock rollingStock,
-            RollingStock.Comfort comfort,
-            List<STDCMStep> steps,
-            double timeStep,
-            AllowanceValue standardAllowance
-    ) {
-        var infra = fullInfra.java();
-        var locations = steps.stream()
-                .map(STDCMStep::locations)
-                .toList();
-        var remainingDistanceEstimators = PathfindingRoutesEndpoint.makeHeuristics(locations);
-        var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
-                .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(remainingDistanceEstimators)
-                .runPathfinding(locations);
-        if (rawPath == null)
-            return 0;
-        var routes = rawPath.ranges().stream()
-                .map(Pathfinding.EdgeRange::edge)
-                .toList();
-
-        var firstRange = rawPath.ranges().get(0);
-        var startLocation = TrackRangeView.getLocationFromList(
-                firstRange.edge().getInfraRoute().getTrackRanges(), firstRange.start());
-        var lastRange = rawPath.ranges().get(rawPath.ranges().size() - 1);
-        var lastLocation = TrackRangeView.getLocationFromList(
-                lastRange.edge().getInfraRoute().getTrackRanges(), lastRange.end());
-
-        var path = TrainPathBuilder.from(routes, startLocation, lastLocation);
-        DriverBehaviour driverBehaviour = new DriverBehaviour(0, 0);
-        var standaloneResult = StandaloneSim.run(
-                fullInfra,
-                path,
-                EnvelopeTrainPath.from(path),
-                List.of(makeTrainSchedule(path.length(), rollingStock, comfort, new ArrayList<>())),
-                timeStep,
-                driverBehaviour
-        );
-        var headPositions = standaloneResult.baseSimulations.get(0).headPositions;
-        var time = headPositions.get(headPositions.size() - 1).time;
-        if (standardAllowance != null)
-            time += standardAllowance.getAllowanceTime(time, path.length()); // Add allowance time to the shortest time
-        return time;
     }
 
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */

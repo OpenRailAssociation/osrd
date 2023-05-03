@@ -32,6 +32,7 @@ import {
   getRollingStockID,
   getPathfindingID,
   getGeojson,
+  getMaximumRunTime,
 } from 'reducers/osrdconf/selectors';
 
 import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
@@ -234,6 +235,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   const origin = useSelector(getOrigin, isEqual);
   const destination = useSelector(getDestination, isEqual);
   const vias = useSelector(getVias, isEqual);
+  const maximumRunTime = useSelector(getMaximumRunTime, isEqual);
   const rollingStockID = useSelector(getRollingStockID, isEqual);
   const pathfindingID = useSelector(getPathfindingID, isEqual);
   const geojson = useSelector(getGeojson, isEqual);
@@ -375,6 +377,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     [!origin, t('origin')],
     [!destination, t('destination')],
     [!rollingStockID, t('rollingstock')],
+    [!maximumRunTime, t('maximumRunTime')],
   ]);
   return (
     <div className="pathfinding-main-container">
