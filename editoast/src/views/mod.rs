@@ -111,6 +111,20 @@ mod tests {
         }};
     }
 
+    /// Checks if the field "type" of the response matches the `type` field of
+    /// the `InternalError` derived from the provided error
+    ///
+    /// The other error fields (message, status_code and context) are ignored.
+    #[macro_export]
+    macro_rules! assert_editoast_error_type {
+        ($response: ident, $error: expr) => {{
+            let expected_error: $crate::error::InternalError = $error.into();
+            let payload: serde_json::Value = actix_web::test::read_body_json($response).await;
+            let error_type = payload.get("type").expect("invalid error format");
+            assert_eq!(error_type, expected_error.get_type(), "error type mismatch");
+        }};
+    }
+
     /// Creates a test client with 1 pg connection and a given [CoreClient]
     pub async fn create_test_service_with_core_client(
         core: CoreClient,
