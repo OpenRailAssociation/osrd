@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// It differs from infra/pathfinding that performs a topological pathfinding
 /// meant to be used with the infra editor.
-#[derive(Debug, Clone, Serialize, Derivative, Queryable, QueryableByName, Model)]
+#[derive(Debug, Clone, PartialEq, Serialize, Derivative, Queryable, QueryableByName, Model)]
 #[derivative(Default(new = "true"))]
 #[model(table = "osrd_infra_pathmodel")]
 #[model(retrieve, delete)]
@@ -102,26 +102,26 @@ impl From<PathfindingChangeset> for Pathfinding {
 pub type SlopeGraph = Vec<Slope>;
 pub type CurveGraph = Vec<Curve>;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Slope {
     gradient: f64,
     position: f64,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Curve {
     radius: f64,
     position: f64,
 }
 
-#[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct PathfindingPayload {
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 pub struct RoutePath {
     pub route: String,
     pub signaling_type: String,
@@ -129,7 +129,7 @@ pub struct RoutePath {
     pub track_ranges: Vec<DirectionalTrackRange>,
 }
 
-#[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct PathWaypoint {
     pub id: Option<String>,

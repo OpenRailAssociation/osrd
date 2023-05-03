@@ -524,6 +524,7 @@ pub mod tests {
         let pathfinding = TestFixture {
             model: pathfinding,
             db_pool,
+            infra: None,
         };
 
         let app = create_test_service().await;
