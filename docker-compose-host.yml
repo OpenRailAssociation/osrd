@@ -6,24 +6,24 @@ services:
   postgres:
     image: postgis/postgis:15-3.3-alpine
     container_name: osrd-postgres
+    network_mode: host
     user: postgres
     restart: unless-stopped
-    ports: ["5432:5432"]
     environment:
       POSTGRES_PASSWORD: "password"
     volumes:
       - "psql_data:/var/lib/postgresql/data"
       - "./init_db.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
-      test: ["CMD", "sh", "-c", '[ "$$(cat /proc/1/cmdline | tr ''\0'' ''\n'' | tail -n 1)" = postgres ] && pg_isready']
+      test: ["CMD", "sh", "-c", '[ "$$(cat /proc/1/cmdline)" = postgres ] && pg_isready']
       start_period: 4s
       interval: 5s
 
   redis:
     image: redis
     container_name: osrd-redis
+    network_mode: host
     restart: unless-stopped
-    ports: ["6379:6379"]
     volumes:
       - "redis_data:/data"
     command: "redis-server --save 30 1 --loglevel warning"
@@ -35,7 +35,7 @@ services:
   api:
     image: osrd/api
     container_name: osrd-api
-    platform: linux/amd64
+    network_mode: host
     depends_on:
       postgres: {condition: service_healthy}
     restart: unless-stopped
@@ -44,39 +44,40 @@ services:
       dockerfile: api/Dockerfile
       args:
         environment: test
-    ports: ["8000:80"]
     environment:
       OSRD_DEV: "True"
-      OSRD_BACKEND_URL: "http://osrd-core"
-      POSTGRES_HOST: "osrd-postgres"
+      OSRD_BACKEND_URL: "http://localhost:8080"
+      OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     command:
       - /bin/sh
       - -c
       - |
         set -e
         python3 manage.py migrate
-        exec python3 manage.py runserver 0.0.0.0:80
+        exec python3 manage.py runserver 0.0.0.0:8000
     # bind the code inside the container
     volumes:
       - ./python/api:/home/service
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       start_period: 4s
       interval: 5s
 
   core:
     image: osrd/core
     container_name: osrd-core
+    network_mode: host
     build:
       context: core
       dockerfile: Dockerfile
+      args:
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     restart: unless-stopped
-    ports: ["8080:80"]
-    command: "java -ea -jar /app/osrd_core.jar api -p 80"
+    command: "java -ea -jar /app/osrd_core.jar api -p 8080"
     environment:
-      MIDDLEWARE_BASE_URL: "http://osrd-editoast"
+      MIDDLEWARE_BASE_URL: "http://localhost:8090"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       start_period: 4s
       interval: 5s
 
@@ -103,21 +104,20 @@ services:
   editoast:
     image: osrd/editoast
     container_name: osrd-editoast
+    network_mode: host
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
     build:
       context: editoast
       dockerfile: Dockerfile
+      args:
+        OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     restart: unless-stopped
-    ports: ["8090:80"]
     environment:
-      EDITOAST_PORT: 80
       ROCKET_PROFILE: debug
-      PSQL_HOST: "postgres"
-      REDIS_URL: "redis://redis"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
       start_period: 4s
       interval: 5s
 
