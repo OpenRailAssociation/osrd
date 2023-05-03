@@ -51,9 +51,9 @@ const ToastSNCF: FC<Notification> = ({ title, date, type = 'info', text }) => {
       <div className="toast-header">
         <i className={`icons-size-1x25 ${typeToIcon[type]}`} />
         &nbsp;
-        <strong className="mr-auto">{title || type}</strong>
+        <strong className="mr-auto ml-1">{title || type}</strong>
         {date && <small>{dateToFromAgo(date)}</small>}
-        <button type="button" className="ml-2 mb-1 close" onClick={() => setOpen(false)}>
+        <button type="button" className="ml-2 close" onClick={() => setOpen(false)}>
           <span>&times;</span>
         </button>
       </div>

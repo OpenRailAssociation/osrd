@@ -12,7 +12,7 @@ import {
 import { osrdEditoastApi, RollingStock } from 'common/api/osrdEditoastApi';
 import { osrdMiddlewareApi, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { lengthFromLineCoordinates } from 'utils/geometry';
-import { setFailure } from 'reducers/main';
+import { setWarning } from 'reducers/main';
 import { compact, reduce, uniq } from 'lodash';
 
 type selectorOption = { key: string | undefined; value: string | undefined };
@@ -111,9 +111,9 @@ export default function PowerRestrictionSelector() {
             );
           if (isInvalid) {
             dispatch(
-              setFailure({
-                name: t('errorMessages.error'),
-                message: t('errorMessages.powerRestrictionInvalidCombination', {
+              setWarning({
+                title: t('warningMessages.electrification'),
+                text: t('warningMessages.powerRestrictionInvalidCombination', {
                   powerRestrictionCode,
                   electrification,
                 }),
