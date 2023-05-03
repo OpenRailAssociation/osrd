@@ -5,7 +5,7 @@ import { Source } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
-import { LineLayer, SymbolLayer, Theme } from 'types';
+import { SourceLayer, LineLayer, SymbolLayer, Theme } from 'types';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -19,7 +19,7 @@ import SNCF_LPV_Panels from './SNCF_LPV_PANELS';
 import { getSpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
 
 interface SNCF_LPVProps {
-  geomType: string;
+  geomType: SourceLayer;
   colors: Theme;
   layerOrder?: number;
 }

@@ -97,7 +97,8 @@
       "signals": "Signaux",
       "switches": "Aiguillages",
       "track_sections": "Sections de lignes",
-      "speed_sections": "Vitesses limites"
+      "speed_sections": "Vitesses limites",
+      "lpv-lpv_panels": "Vitesses permanentes de vitesse"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",

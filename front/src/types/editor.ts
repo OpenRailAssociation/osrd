@@ -38,6 +38,15 @@ export interface TrackSectionEntity
 
 export const APPLICABLE_DIRECTIONS = ['BOTH', 'START_TO_STOP', 'STOP_TO_START'] as const;
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
+export interface LPVPanel {
+  angle_sch: number;
+  angle_geo: number;
+  position: number;
+  side: 'LEFT' | 'RIGHT';
+  track: string;
+  type: string;
+  value: string;
+}
 export interface SpeedSectionEntity
   extends EditorEntity<
     MultiLineString,
@@ -52,10 +61,9 @@ export interface SpeedSectionEntity
       }[];
       extensions?: {
         lpv_sncf: null | {
-          // typer les props
-          announcement: unknown;
-          z: unknown;
-          r: unknown;
+          announcement: LPVPanel[];
+          z: LPVPanel | null;
+          r: LPVPanel[];
         };
       };
     }

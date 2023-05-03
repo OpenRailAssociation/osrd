@@ -3,38 +3,26 @@ import React from 'react';
 import { LayerProps, Source } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { SymbolLayer } from 'types';
+import { SourceLayer, SymbolLayer } from 'types';
 import { isNil } from 'lodash';
-import { getMap, getMapTrackSources } from 'reducers/map/selectors';
+import { getMap } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
+import { LayerContext } from '../../types';
 
 interface SNCF_LPV_PanelsProps {
-  geomType: string;
+  geomType: SourceLayer;
   layerOrder?: number;
 }
 
-// Add function getAngleName ?
-// export function getAngleName() {
-//   const mapTrackSources = useSelector(getMapTrackSources);
-//   const geomType = mapTrackSources === 'schematic' ? 'sch' : 'geo';
-//   return geomType === 'sch' ? 'angle_sch' : 'angle_geo';
-// }
-
-export function getLPVPanelsLayerProps({ sourceTable }: { sourceTable?: string }): SymbolLayer {
-  // hook not allowed in this function
-  const { mapStyle, mapTrackSources } = useSelector(getMap);
-  const geomType = mapTrackSources === 'schematic' ? 'sch' : 'geo';
-  const angleName = geomType === 'sch' ? 'angle_sch' : 'angle_geo';
-  let prefix: string;
-  if (mapStyle === 'blueprint') {
-    prefix = 'SCHB ';
-  } else {
-    prefix = geomType === 'sch' ? 'SCH ' : '';
-  }
+export function getLPVPanelsLayerProps({
+  sourceTable,
+  prefix,
+  sourceLayer,
+}: Pick<LayerContext, 'sourceTable' | 'prefix' | 'sourceLayer'>): SymbolLayer {
+  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
   const res: SymbolLayer = {
     id: 'panelParams',
     type: 'symbol',
-    'source-layer': 'lpv_panels',
     minzoom: 11,
     paint: {},
     layout: {
@@ -79,16 +67,12 @@ export function getLPVPanelsLayerProps({ sourceTable }: { sourceTable?: string }
 
 export function getLPVPanelsMastLayerProps({
   sourceTable,
-}: {
-  sourceTable?: string;
-}): Omit<SymbolLayer, 'id'> {
-  // hook not allowed in this function
-  const mapTrackSources = useSelector(getMapTrackSources);
-  const angleName = mapTrackSources === 'schematic' ? 'angle_sch' : 'angle_geo';
+  sourceLayer,
+}: Pick<LayerContext, 'sourceTable' | 'sourceLayer'>): Omit<SymbolLayer, 'id'> {
+  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
 
   const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
-    'source-layer': 'lpv_panels',
     minzoom: 13,
     paint: {},
     layout: {
@@ -118,13 +102,23 @@ export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
   const infraID = useSelector(getInfraID);
   const { geomType, layerOrder } = props;
 
+  const { mapStyle } = useSelector(getMap);
+  let prefix: string;
+  if (mapStyle === 'blueprint') {
+    prefix = 'SCHB ';
+  } else {
+    prefix = geomType === 'sch' ? 'SCH ' : '';
+  }
+
   const panelsParams: LayerProps = getLPVPanelsLayerProps({
-    // change sourcetable to lpv_panels ?
-    sourceTable: 'lpv',
+    sourceTable: 'lpv_panels',
+    sourceLayer: geomType,
+    prefix,
   });
 
   const mastsParams: LayerProps = getLPVPanelsMastLayerProps({
-    sourceTable: 'lpv',
+    sourceTable: 'lpv_panels',
+    sourceLayer: geomType,
   });
 
   return (

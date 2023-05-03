@@ -353,6 +353,7 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const [isLoading, setIsLoading] = useState(false);
+  const isLPV = !!entity.properties?.extensions?.lpv_sncf;
 
   return (
     <div>
@@ -409,6 +410,40 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
       </div>
       <MetadataForm />
       <hr />
+      <div>
+        <input
+          id="is-lpv-checkbox"
+          type="checkbox"
+          checked={isLPV}
+          onChange={(e) => {
+            if (e.target.checked) {
+              const newEntity = cloneDeep(entity);
+              newEntity.properties.extensions = newEntity.properties.extensions || {
+                lpv_sncf: null,
+              };
+              newEntity.properties.extensions!.lpv_sncf = initialEntity.properties?.extensions
+                ?.lpv_sncf || {
+                announcement: [],
+                r: [],
+                z: null,
+              };
+              setState({
+                entity: newEntity,
+              });
+            } else {
+              const newEntity = cloneDeep(entity);
+              newEntity.properties.extensions = {
+                lpv_sncf: null,
+              };
+              setState({
+                entity: newEntity,
+              });
+            }
+          }}
+        />
+        <label htmlFor="is-lpv-checkbox">Is LPV ?</label>
+      </div>
+      <hr />
       <TrackRangesList />
     </div>
   );
@@ -421,6 +456,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
+  const isLPV = !!entity.properties?.extensions?.lpv_sncf;
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
@@ -455,7 +491,7 @@ export const SpeedSectionEditionLayers: FC = () => {
   }, [entity, trackSectionsCache]);
   const layersProps = useMemo(
     () =>
-      SourcesDefinitionsIndex.speed_sections(
+      (isLPV ? SourcesDefinitionsIndex.lpv : SourcesDefinitionsIndex.speed_sections)(
         {
           sourceLayer: 'geo',
           prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
@@ -466,9 +502,9 @@ export const SpeedSectionEditionLayers: FC = () => {
           showIGNBDORTHO,
           layersSettings,
         },
-        'speedSectionsEditor/'
+        `speedSectionsEditor/${isLPV ? 'lpv' : 'speedSection'}/`
       ),
-    [mapStyle, showIGNBDORTHO, layersSettings]
+    [isLPV, mapStyle, showIGNBDORTHO, layersSettings]
   );
 
   const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
@@ -512,7 +548,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         isEmphasized={false}
         beforeId={layersProps[0].id}
       />
-      <Source type="geojson" data={speedSectionsFeature}>
+      <Source type="geojson" data={speedSectionsFeature} key={isLPV ? 'lpv' : 'speed-section'}>
         {layersProps.map((props, i) => (
           <Layer {...props} key={i} />
         ))}

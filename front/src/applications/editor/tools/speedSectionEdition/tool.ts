@@ -32,7 +32,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   id: 'speed-edition',
   icon: MdSpeed,
   labelTranslationKey: 'Editor.tools.speed-edition.label',
-  requiredLayers: new Set(['speed_sections']),
+  requiredLayers: new Set(['speed_sections', 'lpv', 'lpv_panels']),
 
   getInitialState() {
     return getEditSpeedSectionState(getNewSpeedSection());

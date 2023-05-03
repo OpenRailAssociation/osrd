@@ -46,18 +46,11 @@ import {
   getLPVPanelsLayerProps,
   getLPVPanelsMastLayerProps,
 } from './extensions/SNCF/SNCF_LPV_PANELS';
+import { LayerContext } from './types';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
-
-interface LayerContext extends SignalContext {
-  sourceTable?: string;
-  symbolsList: string[];
-  isEmphasized: boolean;
-  showIGNBDORTHO: boolean;
-  layersSettings: MapState['layersSettings'];
-}
 
 /**
  * Helper to recursively transform all colors of a given theme:
