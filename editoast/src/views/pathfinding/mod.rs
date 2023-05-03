@@ -68,7 +68,7 @@ pub fn routes() -> impl HttpServiceFactory {
     web::scope("/pathfinding").service((get_pf, del_pf, create_pf, update_pf, catenaries::routes()))
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 struct Response {
     id: i64,
     owner: uuid::Uuid,
@@ -417,18 +417,45 @@ mod test {
     use serde_json::json;
 
     use crate::core::CoreClient;
-    use crate::fixtures::tests::{db_pool, fast_rolling_stock, small_infra, TestFixture};
+    use crate::fixtures::tests::{
+        db_pool, empty_infra, fast_rolling_stock, pathfinding, small_infra, TestFixture,
+    };
     use crate::models::{Infra, Pathfinding, Retrieve};
-    use crate::views::pathfinding::Response;
+    use crate::views::pathfinding::{PathfindingError, Response};
     use crate::views::tests::create_test_service_with_core_client;
-    use crate::{assert_status_and_read, DbPool};
+    use crate::{assert_editoast_error_type, assert_status_and_read, DbPool};
     use crate::{models::RollingStockModel, views::tests::create_test_service};
+
+    #[rstest::rstest]
+    async fn test_get_pf(#[future] pathfinding: TestFixture<Pathfinding>) {
+        let pf = &pathfinding.await.model;
+        let app = create_test_service().await;
+        let req = TestRequest::get()
+            .uri(&format!("/pathfinding/{}", pf.id))
+            .to_request();
+        let response = call_service(&app, req).await;
+        let response: Response = assert_status_and_read!(response, StatusCode::OK);
+        let expected_response = Response::from(pf.clone());
+        assert_eq!(response, expected_response);
+    }
 
     #[actix_web::test]
     async fn test_get_not_found() {
         let app = create_test_service().await;
         let req = TestRequest::get().uri("/pathfinding/666").to_request();
         let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest::rstest]
+    async fn test_delete_pf(#[future] pathfinding: TestFixture<Pathfinding>) {
+        let pf = &pathfinding.await.model;
+        let app = create_test_service().await;
+        let req = TestRequest::delete().uri(&format!("/pathfinding/{}", pf.id));
+        let response = call_service(&app, req.to_request()).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let req = TestRequest::delete().uri(&format!("/pathfinding/{}", pf.id));
+        let response = call_service(&app, req.to_request()).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
@@ -472,5 +499,67 @@ mod test {
         let response = call_service(&app, req).await;
         let response: Response = assert_status_and_read!(response, StatusCode::OK);
         assert!(Pathfinding::retrieve(db_pool, response.id).await.is_ok());
+    }
+
+    #[rstest::rstest]
+    async fn test_infra_not_found() {
+        let payload: serde_json::Value = serde_json::from_str(include_str!(
+            "../../tests/small_infra/pathfinding_post_payload.json"
+        ))
+        .unwrap();
+        let app = create_test_service().await;
+        let req = TestRequest::post()
+            .uri("/pathfinding")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_editoast_error_type!(response, PathfindingError::InfraNotFound { infra_id: 0 });
+    }
+
+    #[rstest::rstest]
+    async fn test_rolling_stock_not_found(#[future] small_infra: TestFixture<Infra>) {
+        let infra = &small_infra.await.model;
+        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
+            "../../tests/small_infra/pathfinding_post_payload.json"
+        ))
+        .unwrap();
+        *payload.get_mut("infra").unwrap() = json!(infra.id.unwrap());
+        let app = create_test_service().await;
+        let req = TestRequest::post()
+            .uri("/pathfinding")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_editoast_error_type!(
+            response,
+            PathfindingError::RollingStockNotFound {
+                rolling_stock_id: 0
+            }
+        );
+    }
+
+    #[rstest::rstest]
+    async fn test_track_section_not_found(#[future] empty_infra: TestFixture<Infra>) {
+        let infra = &empty_infra.await.model;
+        let mut payload: serde_json::Value = serde_json::from_str(include_str!(
+            "../../tests/small_infra/pathfinding_post_payload.json"
+        ))
+        .unwrap();
+        *payload.get_mut("infra").unwrap() = json!(infra.id.unwrap());
+        let app = create_test_service().await;
+        let req = TestRequest::post()
+            .uri("/pathfinding")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_editoast_error_type!(
+            response,
+            PathfindingError::TrackSectionsNotFound {
+                track_sections: Default::default()
+            }
+        );
     }
 }
