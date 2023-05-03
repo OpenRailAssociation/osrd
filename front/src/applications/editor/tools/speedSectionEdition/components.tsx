@@ -20,11 +20,20 @@ import {
   APPLICABLE_DIRECTIONS,
   ApplicableDirection,
   EntityObjectOperationResult,
+  SourceLayer,
+  SpeedSectionEntity,
   TrackSectionEntity,
 } from '../../../../types';
 import { getEntities } from '../../data/api';
 import { getInfraID } from '../../../../reducers/osrdconf/selectors';
-import { getPointAt, getTrackRangeFeatures, kmhToMs, msToKmh } from './utils';
+import {
+  generateLpvPanelFeatures,
+  getPointAt,
+  getTrackRangeFeatures,
+  kmhToMs,
+  msToKmh,
+  speedSectrionIsLpv,
+} from './utils';
 import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
@@ -353,7 +362,17 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const [isLoading, setIsLoading] = useState(false);
-  const isLPV = !!entity.properties?.extensions?.lpv_sncf;
+  const isLPV = speedSectrionIsLpv(entity);
+
+  const updateSpeedSectionExtensions = (
+    extensions: SpeedSectionEntity['properties']['extensions']
+  ) => {
+    const newEntity = cloneDeep(entity);
+    newEntity.properties.extensions = extensions;
+    setState({
+      entity: newEntity,
+    });
+  };
 
   return (
     <div>
@@ -416,29 +435,17 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
           type="checkbox"
           checked={isLPV}
           onChange={(e) => {
+            let newExtension: SpeedSectionEntity['properties']['extensions'] = { lpv_sncf: null };
             if (e.target.checked) {
-              const newEntity = cloneDeep(entity);
-              newEntity.properties.extensions = newEntity.properties.extensions || {
-                lpv_sncf: null,
+              newExtension = {
+                lpv_sncf: initialEntity.properties?.extensions?.lpv_sncf || {
+                  announcement: [],
+                  r: [],
+                  z: null,
+                },
               };
-              newEntity.properties.extensions!.lpv_sncf = initialEntity.properties?.extensions
-                ?.lpv_sncf || {
-                announcement: [],
-                r: [],
-                z: null,
-              };
-              setState({
-                entity: newEntity,
-              });
-            } else {
-              const newEntity = cloneDeep(entity);
-              newEntity.properties.extensions = {
-                lpv_sncf: null,
-              };
-              setState({
-                entity: newEntity,
-              });
             }
+            updateSpeedSectionExtensions(newExtension);
           }}
         />
         <label htmlFor="is-lpv-checkbox">Is LPV ?</label>
@@ -456,7 +463,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
-  const isLPV = !!entity.properties?.extensions?.lpv_sncf;
+  const isLPV = speedSectrionIsLpv(entity);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
@@ -479,33 +486,47 @@ export const SpeedSectionEditionLayers: FC = () => {
 
   const speedSectionsFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
+    // generate trackRangeFeatures
     const trackRanges = entity.properties?.track_ranges || [];
-    return featureCollection(
-      trackRanges.flatMap((range, i) => {
-        const trackState = trackSectionsCache[range.track];
-        return trackState?.type === 'success'
-          ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
-          : [];
-      }) as Feature<LineString | Point>[]
-    );
+    const trackRangeFeatures = trackRanges.flatMap((range, i) => {
+      const trackState = trackSectionsCache[range.track];
+      return trackState?.type === 'success'
+        ? getTrackRangeFeatures(trackState.track, range, i, flatEntity.properties)
+        : [];
+    }) as Feature<LineString | Point>[];
+
+    // generate lpvPanelFeatures
+    let lpvPanelFeatures = [] as Feature<Point>[];
+    if (entity.properties?.extensions?.lpv_sncf) {
+      lpvPanelFeatures = generateLpvPanelFeatures(
+        entity.properties?.extensions?.lpv_sncf,
+        trackSectionsCache
+      );
+    }
+    return featureCollection([...trackRangeFeatures, ...lpvPanelFeatures]);
   }, [entity, trackSectionsCache]);
-  const layersProps = useMemo(
-    () =>
-      (isLPV ? SourcesDefinitionsIndex.lpv : SourcesDefinitionsIndex.speed_sections)(
-        {
-          sourceLayer: 'geo',
-          prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
-          colors: colors[mapStyle],
-          signalsList: [],
-          symbolsList: [],
-          isEmphasized: true,
-          showIGNBDORTHO,
-          layersSettings,
-        },
-        `speedSectionsEditor/${isLPV ? 'lpv' : 'speedSection'}/`
-      ),
-    [isLPV, mapStyle, showIGNBDORTHO, layersSettings]
-  );
+
+  const layersProps = useMemo(() => {
+    const context = {
+      sourceLayer: 'geo' as SourceLayer,
+      prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
+      colors: colors[mapStyle],
+      signalsList: [],
+      symbolsList: [],
+      isEmphasized: true,
+      showIGNBDORTHO,
+      layersSettings,
+    };
+    if (!isLPV) {
+      return SourcesDefinitionsIndex.speed_sections(context, 'speedSectionsEditor/speedSection/');
+    }
+    const lpvLayers = SourcesDefinitionsIndex.lpv(context, 'speedSectionsEditor/lpv/');
+    const lpvPanelLayers = SourcesDefinitionsIndex.lpv_panels(
+      context,
+      'speedSectionsEditor/lpv_panels/'
+    );
+    return [...lpvLayers, ...lpvPanelLayers];
+  }, [isLPV, mapStyle, showIGNBDORTHO, layersSettings]);
 
   const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
@@ -537,32 +558,8 @@ export const SpeedSectionEditionLayers: FC = () => {
     }
   }, [entity.properties?.track_ranges]);
 
-  return (
+  const addPopUps = () => (
     <>
-      <GeoJSONs
-        colors={colors[mapStyle]}
-        layers={layers}
-        selection={selection}
-        fingerprint={renderingFingerprint}
-        layersSettings={layersSettings}
-        isEmphasized={false}
-        beforeId={layersProps[0].id}
-      />
-      <Source type="geojson" data={speedSectionsFeature} key={isLPV ? 'lpv' : 'speed-section'}>
-        {layersProps.map((props, i) => (
-          <Layer {...props} key={i} />
-        ))}
-        <Layer
-          type="circle"
-          paint={{
-            'circle-radius': 4,
-            'circle-color': '#fff',
-            'circle-stroke-color': '#000000',
-            'circle-stroke-width': 2,
-          }}
-          filter={['has', 'extremity']}
-        />
-      </Source>
       {hoveredItem?.speedSectionItemType === 'TrackRangeExtremity' && (
         <Popup
           className="popup"
@@ -602,6 +599,36 @@ export const SpeedSectionEditionLayers: FC = () => {
             <EntitySumUp id={hoveredItem.id} objType={hoveredItem.type} />
           </Popup>
         )}
+    </>
+  );
+
+  return (
+    <>
+      <GeoJSONs
+        colors={colors[mapStyle]}
+        layers={layers}
+        selection={selection}
+        fingerprint={renderingFingerprint}
+        layersSettings={layersSettings}
+        isEmphasized={false}
+        beforeId={layersProps[0].id}
+      />
+      <Source type="geojson" data={speedSectionsFeature} key={isLPV ? 'lpv' : 'speed-section'}>
+        {layersProps.map((props, i) => (
+          <Layer {...props} key={i} />
+        ))}
+        <Layer
+          type="circle"
+          paint={{
+            'circle-radius': 4,
+            'circle-color': '#fff',
+            'circle-stroke-color': '#000000',
+            'circle-stroke-width': 2,
+          }}
+          filter={['has', 'extremity']}
+        />
+      </Source>
+      {addPopUps()}
     </>
   );
 };

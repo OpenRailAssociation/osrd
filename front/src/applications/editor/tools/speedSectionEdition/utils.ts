@@ -1,5 +1,5 @@
 import { Position } from 'geojson';
-import { last, cloneDeep } from 'lodash';
+import { last, cloneDeep, compact, flatMap } from 'lodash';
 import along from '@turf/along';
 import length from '@turf/length';
 import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
@@ -7,8 +7,13 @@ import lineSliceAlong from '@turf/line-slice-along';
 
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { DEFAULT_COMMON_TOOL_STATE } from '../types';
-import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
-import { SpeedSectionEditionState, TrackRangeExtremityFeature, TrackRangeFeature } from './types';
+import { LPVPanel, SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
+import {
+  SpeedSectionEditionState,
+  TrackRangeExtremityFeature,
+  TrackRangeFeature,
+  TrackState,
+} from './types';
 
 export function getNewSpeedSection(): SpeedSectionEntity {
   return {
@@ -130,6 +135,33 @@ export function getTrackRangeFeatures(
   ];
 }
 
+function generatePointFromLPVPanel(
+  panel: LPVPanel,
+  trackSectionsCache: Record<string, TrackState>
+) {
+  const trackState = trackSectionsCache[panel.track];
+  if (trackState?.type !== 'success') {
+    return null;
+  }
+  const panelPoint = along(trackState.track, panel.position, { units: 'meters' });
+  panelPoint.properties = { ...panel };
+  return panelPoint;
+}
+
+/** Generate LPV panel Features (Point) from LPV panels and trackSectionCache */
+export function generateLpvPanelFeatures(
+  lpv: {
+    announcement: LPVPanel[];
+    z: LPVPanel | null;
+    r: LPVPanel[];
+  },
+  trackSectionsCache: Record<string, TrackState>
+) {
+  const panels = compact(flatMap(lpv));
+  const panelPoints = panels.map((panel) => generatePointFromLPVPanel(panel, trackSectionsCache));
+  return compact(panelPoints);
+}
+
 export function getPointAt(track: TrackSectionEntity, at: number): Position {
   const dataLength = track.properties.length;
   if (at <= 0) return track.geometry.coordinates[0];
@@ -144,4 +176,8 @@ export function msToKmh(v: number): number {
 }
 export function kmhToMs(v: number): number {
   return v / 3.6;
+}
+
+export function speedSectrionIsLpv(entity: SpeedSectionEntity): boolean {
+  return !!entity.properties?.extensions?.lpv_sncf;
 }

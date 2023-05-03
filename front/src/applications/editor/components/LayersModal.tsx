@@ -122,7 +122,6 @@ const LayersModal: FC<LayersModalProps> = ({
                     <div>{icon}</div>
                   )}
                   <div className="d-flex flex-column">
-                    {/* <div>{layers.map((id) => t(`Editor.layers.${id}`)).join(', ')}</div> */}
                     <div>{t(`Editor.layers.${layerKey}`)}</div>
                     {!!count && (
                       <div className="small text-muted font-italic">
