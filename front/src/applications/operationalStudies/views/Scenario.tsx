@@ -152,6 +152,7 @@ export default function Scenario() {
                         <div className="scenario-details-infra-name">
                           <img src={infraLogo} alt="Infra logo" className="mr-2" />
                           {scenario.infra_name}
+                          <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
                         </div>
                       </div>
                       <div className="col-md-6">
