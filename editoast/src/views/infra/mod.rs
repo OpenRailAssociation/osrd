@@ -47,6 +47,7 @@ pub fn routes() -> impl HttpServiceFactory {
             scope("/{infra}")
                 .service((
                     get,
+                    load,
                     delete,
                     clone,
                     edit,
@@ -196,6 +197,28 @@ async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
         Some(infra) => Ok(Json(infra)),
         None => Err(InfraApiError::NotFound { infra_id }.into()),
     }
+}
+
+/// Load an infra
+#[post("/load")]
+async fn load(
+    db_pool: Data<DbPool>,
+    infra_caches: Data<CHashMap<i64, InfraCache>>,
+    infra: Path<i64>,
+) -> Result<Json<String>> {
+    let infra_id = infra.into_inner();
+    let infra: Result<Infra> = match Infra::retrieve(db_pool.clone(), infra_id).await? {
+        Some(infra) => Ok(infra),
+        None => Err(InfraApiError::NotFound { infra_id }.into()),
+    };
+    let infra = infra.unwrap();
+    block::<_, Result<_>>(move || {
+        let conn = &mut db_pool.get()?;
+        InfraCache::get_or_load(conn, &infra_caches, &infra)?;
+        Ok(Json(format!("Infra {infra_id} loaded")))
+    })
+    .await
+    .unwrap()
 }
 
 /// Create an infra
@@ -481,6 +504,20 @@ pub mod tests {
     }
 
     #[actix_test]
+    async fn infra_load() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("loaded_infra")).await;
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/load/", infra.id.unwrap()).as_str())
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
     async fn infra_list() {
         let app = create_test_service().await;
         let req = TestRequest::get().uri("/infra/").to_request();
@@ -681,6 +718,7 @@ pub mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let switch_types: Vec<SwitchType> = read_body_json(response).await;
+        println!("{:#?}", switch_types);
         assert_eq!(switch_types.len(), 1);
         assert_eq!(switch_types[0].id, switch_type_id);
 
