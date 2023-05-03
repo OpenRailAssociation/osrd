@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import logo from 'assets/pictures/home/rolling-stock.svg';
+import logo from 'assets/pictures/home/rs_editor.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 
 const HomeRollingStock: FC = () => {
