@@ -13,7 +13,7 @@ export class PlaywrightHomePage {
 
   readonly getEditorLink: Locator;
 
-  readonly getRollingStockLink: Locator;
+  readonly getRollingStockEditorLink: Locator;
 
   readonly getSTDCMLink: Locator;
 
@@ -36,7 +36,9 @@ export class PlaywrightHomePage {
     this.getOperationalStudiesLink = page.getByRole('link', { name: /Études d'exploitation/ });
     this.getCartoLink = page.getByRole('link', { name: /Cartographie/ });
     this.getEditorLink = page.getByRole('link', { name: /Éditeur d'infrastructure/ });
-    this.getRollingStockLink = page.getByRole('link', { name: /Éditeur de matériel roulant/ });
+    this.getRollingStockEditorLink = page.getByRole('link', {
+      name: /Éditeur de matériel roulant/,
+    });
     this.getSTDCMLink = page.getByRole('link', { name: /Sillons de dernière minute/ });
     this.getLinks = page.locator('h5');
     this.getBackHomeLogo = page.locator('.mastheader-logo');
@@ -69,7 +71,7 @@ export class PlaywrightHomePage {
       this.getTranslations('operationalStudies'),
       this.getTranslations('map'),
       this.getTranslations('editor'),
-      this.getTranslations('rollingStock'),
+      this.getTranslations('rollingStockEditor'),
       this.getTranslations('stdcm'),
     ]);
   }
@@ -87,8 +89,8 @@ export class PlaywrightHomePage {
     await this.getEditorLink.click();
   }
 
-  async goToRollingStockPage() {
-    await this.getRollingStockLink.click();
+  async goToRollingStockEditorPage() {
+    await this.getRollingStockEditorLink.click();
   }
 
   async goToSTDCMPage() {
