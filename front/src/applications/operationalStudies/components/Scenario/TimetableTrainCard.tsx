@@ -65,98 +65,104 @@ function TimetableTrainCard({
   }, [train.id]);
 
   return (
-    <div
-      className={cx('scenario-timetable-train', isSelected && 'selected', isModified && 'modified')}
-    >
+    <div className="scenario-timetable-train-with-right-bar">
       <div
-        className="scenario-timetable-train-container with-details"
-        role="button"
-        tabIndex={0}
-        onClick={() => changeSelectedTrain(idx)}
+        className={cx(
+          'scenario-timetable-train with-colored-border',
+          isSelected && 'selected',
+          isModified && 'modified',
+          `colored-border-${intervalPosition}`
+        )}
       >
-        <div className="scenario-timetable-train-header">
-          <div className="scenario-timetable-train-name">
-            <div
-              className={cx('scenario-timetable-train-idx', projectionPathIsUsed && 'projected')}
-            >
-              {idx + 1}
+        <div
+          className="scenario-timetable-train-container"
+          role="button"
+          tabIndex={0}
+          onClick={() => changeSelectedTrain(idx)}
+        >
+          <div className="scenario-timetable-train-header">
+            <div className="scenario-timetable-train-name">
+              <div
+                className={cx('scenario-timetable-train-idx', projectionPathIsUsed && 'projected')}
+              >
+                {idx + 1}
+              </div>
+              {train.name}
+              {rollingStock && (
+                <span className="img-container">
+                  <RollingStock2Img rollingStock={rollingStock} />
+                </span>
+              )}
             </div>
-            {train.name}
-            {rollingStock && (
-              <span className="img-container">
-                <RollingStock2Img rollingStock={rollingStock} />
+            <div className="scenario-timetable-train-times">
+              <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
+              <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
+            </div>
+          </div>
+          <div className="scenario-timetable-train-body">
+            <span className="flex-grow-1">{train.speed_limit_tags}</span>
+
+            {train.mechanicalEnergyConsumed?.eco && (
+              <small className="mx-xl-2 mr-lg-1 text-orange font-weight-bold">
+                ECO {jouleToKwh(train.mechanicalEnergyConsumed.eco, true)}&nbsp;kWh
+              </small>
+            )}
+            {train.mechanicalEnergyConsumed?.base && (
+              <span className="mr-xl-3 mr-lg-2">
+                {jouleToKwh(train.mechanicalEnergyConsumed.base, true)}
+                <span className="small ml-1">kWh</span>
               </span>
             )}
-          </div>
-          <div className="scenario-timetable-train-times">
-            <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
-            <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
-          </div>
-          <div className={`duration duration-${intervalPosition}`} />
-        </div>
-        <div className="scenario-timetable-train-body">
-          <span className="flex-grow-1">{train.speed_limit_tags}</span>
-
-          {train.mechanicalEnergyConsumed?.eco && (
-            <small className="mx-xl-2 mr-lg-1 text-orange font-weight-bold">
-              ECO {jouleToKwh(train.mechanicalEnergyConsumed.eco, true)}&nbsp;kWh
-            </small>
-          )}
-          {train.mechanicalEnergyConsumed?.base && (
-            <span className="mr-xl-3 mr-lg-2">
-              {jouleToKwh(train.mechanicalEnergyConsumed.base, true)}
-              <span className="small ml-1">kWh</span>
-            </span>
-          )}
-          <div className="text-nowrap">
-            <MdAvTimer />
-            <span className="ml-1">
-              {sec2time(durationInSeconds(train.departure, train.arrival))}
-            </span>
-          </div>
-        </div>
-        <div className="scenario-timetable-train-tags">
-          {train.labels.map((tag) => (
-            <div className="scenario-timetable-train-tags-tag" key={nextId()}>
-              {tag}
+            <div className="text-nowrap">
+              <MdAvTimer />
+              <span className="ml-1">
+                {sec2time(durationInSeconds(train.departure, train.arrival))}
+              </span>
             </div>
-          ))}
+          </div>
+          <div className="scenario-timetable-train-tags">
+            {train.labels.map((tag) => (
+              <div className="scenario-timetable-train-tags-tag" key={nextId()}>
+                {tag}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="scenario-timetable-train-buttons">
-        <button
-          className="scenario-timetable-train-buttons-selectprojection"
-          type="button"
-          title={t('timetable.choosePath')}
-          onClick={() => selectPathProjection(train)}
-        >
-          <GiPathDistance />
-        </button>
-        <button
-          className="scenario-timetable-train-buttons-duplicate"
-          type="button"
-          title={t('timetable.duplicate')}
-          onClick={() => duplicateTrain(train)}
-        >
-          <MdContentCopy />
-        </button>
-        <button
-          className="scenario-timetable-train-buttons-update"
-          type="button"
-          title={t('timetable.update')}
-          onClick={editTrainSchedule}
-        >
-          <FaPencilAlt />
-        </button>
-        <button
-          className="scenario-timetable-train-buttons-delete"
-          type="button"
-          onClick={() => deleteTrain(train)}
-          title={t('timetable.delete')}
-        >
-          <FaTrash />
-        </button>
+        <div className="scenario-timetable-train-buttons">
+          <button
+            className="scenario-timetable-train-buttons-selectprojection"
+            type="button"
+            title={t('timetable.choosePath')}
+            onClick={() => selectPathProjection(train)}
+          >
+            <GiPathDistance />
+          </button>
+          <button
+            className="scenario-timetable-train-buttons-duplicate"
+            type="button"
+            title={t('timetable.duplicate')}
+            onClick={() => duplicateTrain(train)}
+          >
+            <MdContentCopy />
+          </button>
+          <button
+            className="scenario-timetable-train-buttons-update"
+            type="button"
+            title={t('timetable.update')}
+            onClick={editTrainSchedule}
+          >
+            <FaPencilAlt />
+          </button>
+          <button
+            className="scenario-timetable-train-buttons-delete"
+            type="button"
+            onClick={() => deleteTrain(train)}
+            title={t('timetable.delete')}
+          >
+            <FaTrash />
+          </button>
+        </div>
       </div>
     </div>
   );

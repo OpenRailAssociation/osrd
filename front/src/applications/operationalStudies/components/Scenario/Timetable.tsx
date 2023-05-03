@@ -221,7 +221,7 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
                 <TimetableTrainCard
                   train={train}
                   intervalPosition={value2interval(train.duration, trainsDurationsIntervals)}
-                  key={`timetable-train-card-${train.id}`}
+                  key={`timetable-train-card-${train.id}-${train.path}`}
                   isSelected={selectedTrain === idx}
                   isModified={trainScheduleIDsToModify?.includes(train.id)}
                   projectionPathIsUsed={selectedProjection.id === train.id}

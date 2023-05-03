@@ -136,194 +136,201 @@
         height: 2rem;
       }
       .scenario-timetable-trains {
-        // overflow: auto;
+        overflow: auto;
         height: calc(var(--content-height) - 13rem);
-        .scenario-timetable-train {
+        .scenario-timetable-train-with-right-bar {
           position: relative;
           display: flex;
-          margin-bottom: 0.5rem;
-          .scenario-timetable-train-buttons {
-            display: none;
-            background-color: var(--coolgray3);
-            border-radius: 0 4px 4px 0;
-            button {
-              background-color: transparent;
-              border: none;
-              padding: 0.25rem 0.5rem;
-              transition: 0.2s;
-              height: 100%;
-            }
-            .scenario-timetable-train-buttons-selectprojection {
-              color: var(--cyan);
-              &:hover {
-                background-color: var(--cyan);
-                color: var(--white);
-              }
-            }
-            .scenario-timetable-train-buttons-duplicate {
-              color: var(--primary);
-              &:hover {
-                background-color: var(--primary);
-                color: var(--white);
-              }
-            }
-            .scenario-timetable-train-buttons-update {
-              color: var(--orange);
-              &:hover {
-                background-color: var(--orange);
-                color: var(--white);
-              }
-            }
-            .scenario-timetable-train-buttons-delete {
-              border-radius: 0 4px 4px 0;
-              color: var(--red);
-              &:hover {
-                background-color: var(--red);
-                color: var(--white);
-              }
-            }
-          }
-          .scenario-timetable-train-container {
-            cursor: pointer;
-            border: 1px solid var(--coolgray3);
-            transition: border-color 0.2s;
-            border-radius: 4px;
+          .scenario-timetable-train {
+            position: relative;
+            display: flex;
+            margin-bottom: 0.5rem;
+            height: inherit;
             flex-grow: 1;
-            .scenario-timetable-train-header {
-              display: flex;
-              align-items: center;
-              padding: 0 0.25rem;
+            .scenario-timetable-train-buttons {
+              display: none;
               background-color: var(--coolgray3);
-              transition: background-color 0.2s;
-              .scenario-timetable-train-name {
-                position: relative;
+              border-radius: 0 4px 4px 0;
+              button {
+                background-color: transparent;
+                border: none;
+                padding: 0.25rem 0.5rem;
+                transition: 0.2s;
+                height: 100%;
+              }
+              .scenario-timetable-train-buttons-selectprojection {
+                color: var(--cyan);
+                &:hover {
+                  background-color: var(--cyan);
+                  color: var(--white);
+                }
+              }
+              .scenario-timetable-train-buttons-duplicate {
+                color: var(--primary);
+                &:hover {
+                  background-color: var(--primary);
+                  color: var(--white);
+                }
+              }
+              .scenario-timetable-train-buttons-update {
+                color: var(--orange);
+                &:hover {
+                  background-color: var(--orange);
+                  color: var(--white);
+                }
+              }
+              .scenario-timetable-train-buttons-delete {
+                border-radius: 0 4px 4px 0;
+                color: var(--red);
+                &:hover {
+                  background-color: var(--red);
+                  color: var(--white);
+                }
+              }
+            }
+            .scenario-timetable-train-container {
+              cursor: pointer;
+              border: 1px solid var(--coolgray3);
+              transition: border-color 0.2s;
+              border-radius: 4px;
+              flex-grow: 1;
+              .scenario-timetable-train-header {
                 display: flex;
                 align-items: center;
-                overflow: hidden;
-                .scenario-timetable-train-idx {
-                  display: inline-block;
-                  border-radius: 4px;
-                  color: var(--secondary);
-                  background-color: var(--coolgray1);
-                  font-size: 0.6rem;
-                  margin: 0.25rem 0.5rem 0.25rem 0;
-                  padding: 0.25rem;
-                  min-width: 1.5rem;
-                  text-align: center;
-                  &.projected {
-                    color: var(--white);
-                    background-color: var(--cyan);
-                  }
-                }
-                .img-container {
-                  height: 0.75rem;
-                  margin-left: 0.25rem;
-                  img {
-                    position: absolute;
-                    height: 0.5rem;
-                  }
-                }
-                font-weight: bold;
-                font-size: 1rem;
-                width: 80%;
-              }
-              .scenario-timetable-train-times {
-                min-width: 20%;
-                text-align: right;
-                height: 1.5rem;
-                line-height: 0.8rem;
-                .scenario-timetable-train-departure {
-                  font-weight: 600;
-                  font-size: 0.9rem;
-                }
-                .scenario-timetable-train-arrival {
-                  font-weight: 400;
-                  font-size: 0.8rem;
-                }
-              }
-              .duration {
-                position: absolute;
-                right: -0.5rem;
-                top: 0.25rem;
-                height: calc(100% - 0.5rem);
-                border-left: 3px solid var(--secondary);
-                opacity: 0.5;
-                &.duration-0 {
-                  border-color: var(--green);
-                }
-                &.duration-1 {
-                  opacity: 0.75;
-                  border-color: var(--yellow);
-                }
-                &.duration-2 {
-                  border-color: var(--red);
-                }
-              }
-            }
-            .scenario-timetable-train-body {
-              display: flex;
-              justify-content: space-between;
-              align-items: baseline;
-              padding: 0.25rem;
-              font-size: 0.8rem;
-              height: 1.75rem;
-              small {
-                font-size: 0.6rem;
-              }
-              svg {
-                margin-bottom: 0.2rem;
-              }
-            }
-            .scenario-timetable-train-tags {
-              display: flex;
-              align-items: center;
-              flex-wrap: wrap;
-              gap: 0.25rem;
-              padding: 0 0.25rem;
-              overflow: auto;
-              .scenario-timetable-train-tags-tag {
-                font-size: 0.7rem;
-                font-weight: 500;
-                background-color: var(--green);
-                border-radius: 4px;
                 padding: 0 0.25rem;
-                margin-bottom: 0.25rem;
-                &:hover {
-                  opacity: 0.5;
+                background-color: var(--coolgray3);
+                transition: background-color 0.2s;
+                .scenario-timetable-train-name {
+                  position: relative;
+                  display: flex;
+                  align-items: center;
+                  overflow: hidden;
+                  .scenario-timetable-train-idx {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                    color: var(--secondary);
+                    background-color: var(--coolgray1);
+                    font-size: 0.7rem;
+                    margin: 0.25rem 0.5rem 0.25rem 0;
+                    height: 1.25rem;
+                    min-width: 1.5rem;
+                    text-align: center;
+                    &.projected {
+                      color: var(--white);
+                      background-color: var(--cyan);
+                    }
+                  }
+                  .img-container {
+                    height: 0.75rem;
+                    margin-left: 0.25rem;
+                    img {
+                      position: absolute;
+                      height: 0.7rem;
+                    }
+                  }
+                  font-weight: bold;
+                  font-size: 1rem;
+                  width: 80%;
+                }
+                .scenario-timetable-train-times {
+                  min-width: 20%;
+                  text-align: right;
+                  height: 1.5rem;
+                  line-height: 0.8rem;
+                  .scenario-timetable-train-departure {
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                  }
+                  .scenario-timetable-train-arrival {
+                    font-weight: 400;
+                    font-size: 0.8rem;
+                  }
+                }
+              }
+              .scenario-timetable-train-body {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                padding: 0.25rem;
+                font-size: 0.8rem;
+                height: 1.75rem;
+                small {
+                  font-size: 0.6rem;
+                }
+                svg {
+                  margin-bottom: 0.2rem;
+                }
+              }
+              .scenario-timetable-train-tags {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.25rem;
+                padding: 0 0.25rem;
+                overflow: auto;
+                .scenario-timetable-train-tags-tag {
+                  font-size: 0.7rem;
+                  font-weight: 500;
+                  background-color: var(--green);
+                  border-radius: 4px;
+                  padding: 0 0.25rem;
+                  margin-bottom: 0.25rem;
+                  &:hover {
+                    opacity: 0.5;
+                  }
                 }
               }
             }
-          }
-          &.selected:not(.modified) {
-            .scenario-timetable-train-header {
-              background-color: var(--green);
-            }
-          }
-          &.modified {
-            z-index: 3;
-            .scenario-timetable-train-header {
-              background-color: var(--yellow);
-            }
-          }
-          &:hover:not(.modified) {
-            .scenario-timetable-train-container {
-              border-radius: 4px 0 0 4px;
-              border-color: var(--secondary);
+            &.selected:not(.modified) {
               .scenario-timetable-train-header {
-                background-color: var(--secondary);
-                color: var(--white);
+                background-color: var(--green);
               }
             }
-            .scenario-timetable-train-buttons {
-              display: flex;
+            &.modified {
+              z-index: 3;
+              .scenario-timetable-train-header {
+                background-color: var(--yellow);
+              }
+            }
+            &:hover:not(.modified) {
+              .scenario-timetable-train-container {
+                border-radius: 4px 0 0 4px;
+                border-color: var(--secondary);
+                .scenario-timetable-train-header {
+                  background-color: var(--secondary);
+                  color: var(--white);
+                }
+              }
+              .scenario-timetable-train-buttons {
+                display: flex;
+              }
+            }
+            
+            // DURATION BAR
+            &.with-colored-border {
+              border-right: 3px solid var(--secondary);
+              padding-right: 0.25rem;
+              &.colored-border-0 {
+                border-color: rgba(var(--green-rgb), 0.75);
+              }
+              &.colored-border-1 {
+                border-color: rgba(var(--yellow-rgb), 0.75);
+              }
+              &.colored-border-2 {
+                border-color: rgba(var(--red-rgb), 0.5);
+              }
             }
           }
         }
         &:not(.with-details) {
-          .scenario-timetable-train {
-            .scenario-timetable-train-body,
-            .scenario-timetable-train-tags {
-              display: none;
+          .scenario-timetable-train-with-right-bar {
+            .scenario-timetable-train {
+              .scenario-timetable-train-body,
+              .scenario-timetable-train-tags {
+                display: none;
+              }
             }
           }
         }
