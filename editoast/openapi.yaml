@@ -295,6 +295,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/Infra"
 
+  /infra/{id}/load/:
+    post:
+      tags:
+        - infra
+      summary: Load an infra if not loaded
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra id
+          required: true
+      responses:
+        200:
+          description: message that said that the infra is loaded
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Infra 1 is loaded
+
   /infra/{id}/railjson/:
     get:
       tags:
