@@ -137,6 +137,8 @@ export function getTrackRangeFeatures(
 
 function generatePointFromLPVPanel(
   panel: LPVPanel,
+  panelIndex: number,
+  panelType: string,
   trackSectionsCache: Record<string, TrackState>
 ) {
   const trackState = trackSectionsCache[panel.track];
@@ -144,7 +146,12 @@ function generatePointFromLPVPanel(
     return null;
   }
   const panelPoint = along(trackState.track, panel.position, { units: 'meters' });
-  panelPoint.properties = { ...panel };
+  panelPoint.properties = {
+    ...panel,
+    speedSectionItemType: 'LPVPanel',
+    speedSectionPanelIndex: panelIndex,
+    speedSectionPanelType: panelType,
+  };
   return panelPoint;
 }
 
@@ -152,13 +159,19 @@ function generatePointFromLPVPanel(
 export function generateLpvPanelFeatures(
   lpv: {
     announcement: LPVPanel[];
-    z: LPVPanel | null;
+    z: LPVPanel;
     r: LPVPanel[];
   },
   trackSectionsCache: Record<string, TrackState>
 ) {
-  const panels = compact(flatMap(lpv));
-  const panelPoints = panels.map((panel) => generatePointFromLPVPanel(panel, trackSectionsCache));
+  const panelsLists = [
+    { type: 'z', panels: lpv.z ? [lpv.z] : [] },
+    { type: 'r', panels: lpv.r },
+    { type: 'announcement', panels: lpv.announcement },
+  ];
+  const panelPoints = panelsLists.flatMap(({ type, panels }) =>
+    panels.map((panel, i) => generatePointFromLPVPanel(panel, i, type, trackSectionsCache))
+  );
   return compact(panelPoints);
 }
 

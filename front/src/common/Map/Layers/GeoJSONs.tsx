@@ -14,7 +14,6 @@ import {
   getPointLayerProps,
   getSignalLayerProps,
   getSignalMatLayerProps,
-  SignalContext,
 } from './geoSignalsLayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { getBufferStopsLayerProps } from './BufferStops';

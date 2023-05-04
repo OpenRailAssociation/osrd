@@ -14,6 +14,7 @@ import {
 } from '../types';
 import {
   HoveredExtremityState,
+  HoveredPanelState,
   HoveredRangeState,
   SpeedSectionEditionState,
   TrackRangeExtremityFeature,
@@ -71,14 +72,14 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   ],
 
   getCursor({ state: { hoveredItem, interactionState } }) {
-    if (interactionState.type !== 'movePoint' && hoveredItem) return 'pointer';
-    if (interactionState.type === 'movePoint') return 'grabbing';
+    if (interactionState.type !== 'moveRangeExtremity' && hoveredItem) return 'pointer';
+    if (interactionState.type === 'moveRangeExtremity') return 'grabbing';
     return 'default';
   },
   onClickMap(e, { setState, state: { entity, interactionState } }) {
     const feature = (e.features || [])[0];
 
-    if (interactionState.type === 'movePoint') {
+    if (interactionState.type === 'moveRangeExtremity') {
       setState({ interactionState: { type: 'idle' } });
     } else if (feature) {
       if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {
@@ -86,11 +87,17 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
         setState({
           hoveredItem: null,
           interactionState: {
-            type: 'movePoint',
+            type: 'moveRangeExtremity',
             rangeIndex: hoveredExtremity.properties.speedSectionRangeIndex,
             extremity: hoveredExtremity.properties.extremity,
           },
         });
+        /**
+         * TODO: Si on clique sur un panneau, on passe en mode "bouger le panneau"
+         * - tester si la feature est bien un panneau LPV
+         * - si oui, on update le state pour passer hoveredItem à null et updater le interactionState
+         *   (cf le travail de ce matin)
+         */
       } else if (feature.properties?.speedSectionItemType === 'TrackRange') {
         const hoveredRange = feature as unknown as TrackRangeFeature;
         const newEntity = cloneDeep(entity);
@@ -116,11 +123,11 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
     }
   },
   onKeyDown(e, { setState, state: { interactionState } }) {
-    if (e.code === 'Escape' && interactionState.type === 'movePoint')
+    if (e.code === 'Escape' && interactionState.type === 'moveRangeExtremity')
       setState({ interactionState: { type: 'idle' } });
   },
   onHover(e, { setState, state: { hoveredItem, trackSectionsCache, interactionState } }) {
-    if (interactionState.type === 'movePoint') return;
+    if (interactionState.type === 'moveRangeExtremity') return;
 
     const feature = (e.features || [])[0];
 
@@ -159,6 +166,22 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
         setState({
           hoveredItem: newHoveredItem,
         });
+    } else if (feature.properties?.speedSectionItemType === 'LPVPanel') {
+      const hoveredExtremity = feature as unknown as TrackRangeExtremityFeature;
+      const trackState = trackSectionsCache[hoveredExtremity.properties.track];
+      if (trackState?.type !== 'success') return;
+
+      const newHoveredItem: HoveredPanelState = {
+        speedSectionItemType: 'LPVPanel',
+        position: hoveredExtremity.geometry.coordinates,
+        track: trackState.track,
+        panelIndex: feature.properties?.speedSectionPanelIndex as number,
+        panelType: feature.properties?.speedSectionPanelType as string,
+      };
+      if (!isEqual(newHoveredItem, hoveredItem))
+        setState({
+          hoveredItem: newHoveredItem,
+        });
     }
 
     // Handle hovering EditorEntity elements:
@@ -180,7 +203,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
     }
   },
   onMove(e, { setState, state: { entity, interactionState, hoveredItem, trackSectionsCache } }) {
-    if (interactionState.type === 'movePoint') {
+    if (interactionState.type === 'moveRangeExtremity') {
       const range = (entity.properties?.track_ranges || [])[interactionState.rangeIndex];
       if (!range) return;
 
@@ -208,6 +231,10 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
     } else if (hoveredItem) {
       setState({ hoveredItem: null });
     }
+    /**
+     * TODO: Si on est mode "bouger le panneau", on doit bouger le panneau
+     * Copier le code de tool-factory.ts lines 126 à 137
+     */
   },
 
   messagesComponent: SpeedSectionMessages,

@@ -45,7 +45,7 @@ export interface LPVPanel {
   side: 'LEFT' | 'RIGHT';
   track: string;
   type: string;
-  value: string;
+  value: string | null;
 }
 export interface SpeedSectionEntity
   extends EditorEntity<
@@ -62,7 +62,7 @@ export interface SpeedSectionEntity
       extensions?: {
         lpv_sncf: null | {
           announcement: LPVPanel[];
-          z: LPVPanel | null;
+          z: LPVPanel;
           r: LPVPanel[];
         };
       };

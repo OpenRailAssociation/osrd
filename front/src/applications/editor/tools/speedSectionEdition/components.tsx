@@ -78,7 +78,7 @@ export const TrackRangesList: FC = () => {
                           setState({
                             hoveredItem: null,
                             interactionState: {
-                              type: 'movePoint',
+                              type: 'moveRangeExtremity',
                               rangeIndex: i,
                               extremity: 'BEGIN',
                             },
@@ -108,7 +108,7 @@ export const TrackRangesList: FC = () => {
                           setState({
                             hoveredItem: null,
                             interactionState: {
-                              type: 'movePoint',
+                              type: 'moveRangeExtremity',
                               rangeIndex: i,
                               extremity: 'END',
                             },
@@ -437,11 +437,21 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
           onChange={(e) => {
             let newExtension: SpeedSectionEntity['properties']['extensions'] = { lpv_sncf: null };
             if (e.target.checked) {
+              const firstRange = (entity.properties?.track_ranges || [])[0];
+              if (!firstRange) return;
               newExtension = {
                 lpv_sncf: initialEntity.properties?.extensions?.lpv_sncf || {
                   announcement: [],
                   r: [],
-                  z: null,
+                  z: {
+                    angle_sch: 0,
+                    angle_geo: 0,
+                    position: firstRange.begin,
+                    side: 'LEFT',
+                    track: firstRange.track,
+                    type: 'Z',
+                    value: null,
+                  },
                 },
               };
             }
@@ -449,6 +459,31 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
           }}
         />
         <label htmlFor="is-lpv-checkbox">Is LPV ?</label>
+        {/*
+          TODO: Afficher les panneaux, avec un bouton pour les supprimer, et un pour les créer
+          - créer un composant EditLPVSection
+
+          - créer un élément détails de panneau pour afficher un panneau de type annonce ou R
+            - position (input pour que l'utilisateur puisse changer) -> number sur la section
+              (compris entre 0 et la longueur de la trackrange)
+            - tracksection sur laquelle est le panneau
+            - calcul de la distance entre le panneau d'annonce et le panneau Z (pas input, juste indication)
+            - side (editable)
+            - si panneau de type annonce
+              - type (TIV_D, TIV_B etc)
+              - value par défaut la vitesse limite normale (pas changeable)
+              - dans un 2e temps, on ajoute un input pour les types de TIV qui acceptent 2 valeurs
+                (et on ajoute de la validation après discussion avec Florian)
+            - un bouton supprimer
+            -> pas besoin d'input pour modifier l'angle, par défaut il est à 0 et non modifiable
+          
+          - créer un composant conteneur des détails des panneaux de type annonce ou R
+            - un titre
+            - un bouton + (pour ajouter un paneau)
+            - la liste des panneaux de ce type
+          
+          - mettre tous ces composants dans EditLPVSection pour afficher tous les panneaux
+         */}
       </div>
       <hr />
       <TrackRangesList />
@@ -468,7 +503,7 @@ export const SpeedSectionEditionLayers: FC = () => {
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
     // Dragging an extremity:
-    if (interactionState.type === 'movePoint')
+    if (interactionState.type === 'moveRangeExtremity')
       return [(entity.properties.track_ranges || [])[interactionState.rangeIndex].track];
 
     // Custom hovered element:
@@ -503,7 +538,8 @@ export const SpeedSectionEditionLayers: FC = () => {
         trackSectionsCache
       );
     }
-    return featureCollection([...trackRangeFeatures, ...lpvPanelFeatures]);
+    const result = featureCollection([...trackRangeFeatures, ...lpvPanelFeatures]);
+    return result;
   }, [entity, trackSectionsCache]);
 
   const layersProps = useMemo(() => {
@@ -518,6 +554,7 @@ export const SpeedSectionEditionLayers: FC = () => {
       layersSettings,
     };
     if (!isLPV) {
+      // console.log('hello, on affiche les layers ')
       return SourcesDefinitionsIndex.speed_sections(context, 'speedSectionsEditor/speedSection/');
     }
     const lpvLayers = SourcesDefinitionsIndex.lpv(context, 'speedSectionsEditor/lpv/');
@@ -584,7 +621,21 @@ export const SpeedSectionEditionLayers: FC = () => {
           <EntitySumUp entity={hoveredItem.track} />
         </Popup>
       )}
-      {interactionState.type !== 'movePoint' &&
+      {hoveredItem?.speedSectionItemType === 'LPVPanel' && (
+        <Popup
+          className="popup"
+          anchor="bottom"
+          longitude={hoveredItem.position[0]}
+          latitude={hoveredItem.position[1]}
+          closeButton={false}
+        >
+          <div>
+            TODO: {hoveredItem.panelType},{' '}
+            {typeof hoveredItem.panelIndex === 'number' ? hoveredItem.panelIndex + 'nth' : ''}
+          </div>
+        </Popup>
+      )}
+      {interactionState.type !== 'moveRangeExtremity' &&
         hoveredItem?.type === 'TrackSection' &&
         !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id) &&
         mousePosition && (

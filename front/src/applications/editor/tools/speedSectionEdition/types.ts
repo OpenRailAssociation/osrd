@@ -1,7 +1,7 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 
 import { CommonToolState } from '../types';
-import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
+import { LPVPanel, SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
 
 export type TrackRangeFeature = Feature<
   LineString,
@@ -38,6 +38,16 @@ export type HoveredRangeState = {
   type?: undefined;
   id?: undefined;
 };
+export type HoveredPanelState = {
+  speedSectionItemType: 'LPVPanel';
+  track: TrackSectionEntity;
+  position: Position;
+  panelIndex: number;
+  panelType: string;
+  // (trick to help dealing with heterogeneous types)
+  type?: undefined;
+  id?: undefined;
+};
 
 export type TrackState =
   | { type: 'loading' }
@@ -54,8 +64,13 @@ export type SpeedSectionEditionState = CommonToolState & {
     | null
     | HoveredExtremityState
     | HoveredRangeState
+    | HoveredPanelState
     | (NonNullable<CommonToolState['hovered']> & { speedSectionItemType?: undefined });
   interactionState:
     | { type: 'idle' }
-    | { type: 'movePoint'; rangeIndex: number; extremity: 'BEGIN' | 'END' };
+    | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
+    | ({ type: 'movePanel' } & (
+        | { panelType: 'announcement' | 'r'; panelIndex: number }
+        | { panelType: 'z' }
+      ));
 };
