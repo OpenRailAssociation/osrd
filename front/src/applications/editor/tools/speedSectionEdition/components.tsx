@@ -485,7 +485,8 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
           
           - mettre tous ces composants dans EditLPVSection pour afficher tous les panneaux
          */}
-        <EditLPVSection entity={entity} />
+        {/* <EditLPVSection entity={entity} /> */}
+        <EditLPVSection />
       </div>
       <hr />
       <TrackRangesList />
