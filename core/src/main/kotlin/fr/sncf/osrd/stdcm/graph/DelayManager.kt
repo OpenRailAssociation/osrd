@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute
 import fr.sncf.osrd.infra_state.api.TrainPath
-import fr.sncf.osrd.stdcm.graph.STDCMUtils.makeTrainPath
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface.Availability
 import java.util.*
@@ -33,7 +32,7 @@ class DelayManager internal constructor(
         val endOffset = startOffset + envelope.endPos
         val path = makeTrainPath(route, startOffset, endOffset)
         var time = startTime
-        while (java.lang.Double.isFinite(time)) {
+        while (time.isFinite()) {
             val availability = getScaledAvailability(
                 path,
                 0.0,
@@ -69,7 +68,6 @@ class DelayManager internal constructor(
             envelope,
             time
         )
-        assert(availability.javaClass == RouteAvailabilityInterface.Available::class.java)
         return (availability as RouteAvailabilityInterface.Available).timeOfNextConflict
     }
 

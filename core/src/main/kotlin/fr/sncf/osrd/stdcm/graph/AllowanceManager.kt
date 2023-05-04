@@ -4,7 +4,6 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute
 import fr.sncf.osrd.stdcm.graph.STDCMEdgeBuilder.Companion.fromNode
-import fr.sncf.osrd.stdcm.graph.STDCMUtils.mergeEnvelopes
 import java.util.*
 import kotlin.math.abs
 
@@ -27,7 +26,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
             return null // No space to try the allowance
         val context = makeAllowanceContext(affectedEdges)
         val oldEnvelope = mergeEnvelopes(affectedEdges)
-        val newEnvelope = STDCMSimulations.findEngineeringAllowance(context, oldEnvelope, neededDelay) ?: return null
+        val newEnvelope = findEngineeringAllowance(context, oldEnvelope, neededDelay) ?: return null
         // We couldn't find an envelope
         val newPreviousEdge = makeNewEdges(affectedEdges, newEnvelope) ?: return null
         // The new edges are invalid, conflicts shouldn't happen here, but it can be too slow
@@ -83,7 +82,7 @@ class AllowanceManager(private val graph: STDCMGraph) {
         val routes = ArrayList<SignalingRoute>()
         val firstOffset = edges[0].route.infraRoute.length - edges[0].envelope.endPos
         for ((route) in edges) routes.add(route)
-        return STDCMSimulations.makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep)
+        return makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep)
     }
 
     /** Find on which edges to run the allowance  */
