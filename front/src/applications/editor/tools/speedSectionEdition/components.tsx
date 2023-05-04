@@ -11,7 +11,7 @@ import { FaFlagCheckered } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 
 import EditorContext from '../../context';
-import { SpeedSectionEditionState, TrackState } from './types';
+import { LpvPanelFeature, SpeedSectionEditionState, TrackState } from './types';
 import { ExtendedEditorContextType, LayerType } from '../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from '../../../../common/Map/Layers/GeoJSONs';
@@ -32,12 +32,13 @@ import {
   getTrackRangeFeatures,
   kmhToMs,
   msToKmh,
-  speedSectrionIsLpv,
+  speedSectionIsLpv,
 } from './utils';
 import { flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { save } from '../../../../reducers/editor';
+import EditLPVSection from './components/EditLPVSection';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
@@ -362,7 +363,7 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const [isLoading, setIsLoading] = useState(false);
-  const isLPV = speedSectrionIsLpv(entity);
+  const isLPV = speedSectionIsLpv(entity);
 
   const updateSpeedSectionExtensions = (
     extensions: SpeedSectionEntity['properties']['extensions']
@@ -484,6 +485,7 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
           
           - mettre tous ces composants dans EditLPVSection pour afficher tous les panneaux
          */}
+        <EditLPVSection entity={entity} />
       </div>
       <hr />
       <TrackRangesList />
@@ -498,7 +500,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
-  const isLPV = speedSectrionIsLpv(entity);
+  const isLPV = speedSectionIsLpv(entity);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
@@ -531,7 +533,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     }) as Feature<LineString | Point>[];
 
     // generate lpvPanelFeatures
-    let lpvPanelFeatures = [] as Feature<Point>[];
+    let lpvPanelFeatures = [] as LpvPanelFeature[];
     if (entity.properties?.extensions?.lpv_sncf) {
       lpvPanelFeatures = generateLpvPanelFeatures(
         entity.properties?.extensions?.lpv_sncf,
@@ -631,7 +633,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         >
           <div>
             TODO: {hoveredItem.panelType},{' '}
-            {typeof hoveredItem.panelIndex === 'number' ? hoveredItem.panelIndex + 'nth' : ''}
+            {typeof hoveredItem.panelIndex === 'number' ? `${hoveredItem.panelIndex}nth` : ''}
           </div>
         </Popup>
       )}

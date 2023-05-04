@@ -1,8 +1,6 @@
 import { MdSpeed } from 'react-icons/md';
 import { IoMdAddCircleOutline } from 'react-icons/io';
-import { cloneDeep, isEqual } from 'lodash';
-import length from '@turf/length';
-import lineSlice from '@turf/line-slice';
+import { cloneDeep, isEmpty, isEqual } from 'lodash';
 import { BiReset } from 'react-icons/bi';
 
 import {
@@ -16,11 +14,12 @@ import {
   HoveredExtremityState,
   HoveredPanelState,
   HoveredRangeState,
+  LpvPanelFeature,
   SpeedSectionEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
 } from './types';
-import { getEditSpeedSectionState, getNewSpeedSection } from './utils';
+import { clickOnLpvPanel, getEditSpeedSectionState, getNewSpeedSection } from './utils';
 import {
   SpeedSectionEditionLayers,
   SpeedSectionEditionLeftPanel,
@@ -28,6 +27,11 @@ import {
 } from './components';
 import { TrackSectionEntity } from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
+import {
+  approximateDistanceWithEditoastData,
+  getHoveredTrackRanges,
+  getTrackSectionEntityFromNearestPoint,
+} from '../utils';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   id: 'speed-edition',
@@ -79,7 +83,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   onClickMap(e, { setState, state: { entity, interactionState } }) {
     const feature = (e.features || [])[0];
 
-    if (interactionState.type === 'moveRangeExtremity') {
+    if (['moveRangeExtremity', 'movePanel'].includes(interactionState.type)) {
       setState({ interactionState: { type: 'idle' } });
     } else if (feature) {
       if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {
@@ -92,12 +96,15 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
             extremity: hoveredExtremity.properties.extremity,
           },
         });
+      } else if (feature.properties?.speedSectionItemType === 'LPVPanel') {
         /**
          * TODO: Si on clique sur un panneau, on passe en mode "bouger le panneau"
          * - tester si la feature est bien un panneau LPV
          * - si oui, on update le state pour passer hoveredItem à null et updater le interactionState
          *   (cf le travail de ce matin)
          */
+        const lpvPanelFeature = feature as unknown as LpvPanelFeature;
+        clickOnLpvPanel(lpvPanelFeature, setState);
       } else if (feature.properties?.speedSectionItemType === 'TrackRange') {
         const hoveredRange = feature as unknown as TrackRangeFeature;
         const newEntity = cloneDeep(entity);
@@ -216,25 +223,45 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
       const newEntity = cloneDeep(entity);
       const newRange = (newEntity.properties?.track_ranges || [])[interactionState.rangeIndex];
 
-      // Since Turf and Editoast do not compute the lengths the same way (see #1751)
-      // we can have data "end" being larger than Turf's computed length, which
-      // throws an error. Until we find a way to get similar computations, we can
-      // approximate this way:
-      const distanceAlongTrack =
-        (length(lineSlice(track.geometry.coordinates[0], nearestPoint.geometry, track)) *
-          track.properties.length) /
-        length(track);
+      const distanceAlongTrack = approximateDistanceWithEditoastData(track, nearestPoint.geometry);
       newRange[interactionState.extremity === 'BEGIN' ? 'begin' : 'end'] = distanceAlongTrack;
       setState({
         entity: newEntity,
       });
+    } else if (interactionState.type === 'movePanel') {
+      /**
+       * TODO: Si on est mode "bouger le panneau", on doit bouger le panneau
+       * Copier le code de tool-factory.ts lines 126 à 137
+       * - à partir de la position de la souris, détecter les trackRanges autour
+       * - trouver le point le plus proche entre la souris et les trackRanges en question
+       *   (nouvelle position du panneau)
+       * - trouver la trackSection sur laquelle se trouve le point depuis nearestPoint
+       * - interpoler sur la nouvelle position (vérifier qu'il n'y a pas d'incohérence avec editoast)
+       * - modifier le state en lui donnant comme entity une nouvelle entity avec la nouvelle position
+       *   & la nouvelle trackRange si nécessaire
+       */
+      // console.log(entity);
+      const hoveredTrackRanges = getHoveredTrackRanges(e);
+      if (!isEmpty(hoveredTrackRanges)) {
+        // console.log(hoveredTrackRanges);
+        const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
+        const trackSection = getTrackSectionEntityFromNearestPoint(
+          nearestPoint,
+          hoveredTrackRanges,
+          trackSectionsCache
+        );
+        if (trackSection) {
+          const distanceAlongTrack = approximateDistanceWithEditoastData(
+            trackSection,
+            nearestPoint.geometry
+          );
+          // update le state avec la nouvelle trackId et la nouvelle position (pour le panneau concerné)
+          console.log(distanceAlongTrack);
+        }
+      }
     } else if (hoveredItem) {
       setState({ hoveredItem: null });
     }
-    /**
-     * TODO: Si on est mode "bouger le panneau", on doit bouger le panneau
-     * Copier le code de tool-factory.ts lines 126 à 137
-     */
   },
 
   messagesComponent: SpeedSectionMessages,

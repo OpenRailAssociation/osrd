@@ -1,14 +1,17 @@
 import { Position } from 'geojson';
-import { last, cloneDeep, compact, flatMap } from 'lodash';
+import { last, cloneDeep, compact } from 'lodash';
 import along from '@turf/along';
 import length from '@turf/length';
 import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
 
 import { NEW_ENTITY_ID } from '../../data/utils';
-import { DEFAULT_COMMON_TOOL_STATE } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE, Reducer } from '../types';
 import { LPVPanel, SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
 import {
+  LPV_PANEL_TYPE,
+  LPV_PANEL_TYPES,
+  LpvPanelFeature,
   SpeedSectionEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
@@ -138,9 +141,9 @@ export function getTrackRangeFeatures(
 function generatePointFromLPVPanel(
   panel: LPVPanel,
   panelIndex: number,
-  panelType: string,
+  panelType: LPV_PANEL_TYPE,
   trackSectionsCache: Record<string, TrackState>
-) {
+): LpvPanelFeature | null {
   const trackState = trackSectionsCache[panel.track];
   if (trackState?.type !== 'success') {
     return null;
@@ -152,7 +155,7 @@ function generatePointFromLPVPanel(
     speedSectionPanelIndex: panelIndex,
     speedSectionPanelType: panelType,
   };
-  return panelPoint;
+  return panelPoint as LpvPanelFeature;
 }
 
 /** Generate LPV panel Features (Point) from LPV panels and trackSectionCache */
@@ -165,9 +168,9 @@ export function generateLpvPanelFeatures(
   trackSectionsCache: Record<string, TrackState>
 ) {
   const panelsLists = [
-    { type: 'z', panels: lpv.z ? [lpv.z] : [] },
-    { type: 'r', panels: lpv.r },
-    { type: 'announcement', panels: lpv.announcement },
+    { type: LPV_PANEL_TYPES.Z, panels: lpv.z ? [lpv.z] : [] },
+    { type: LPV_PANEL_TYPES.R, panels: lpv.r },
+    { type: LPV_PANEL_TYPES.ANNOUNCEMENT, panels: lpv.announcement },
   ];
   const panelPoints = panelsLists.flatMap(({ type, panels }) =>
     panels.map((panel, i) => generatePointFromLPVPanel(panel, i, type, trackSectionsCache))
@@ -191,6 +194,36 @@ export function kmhToMs(v: number): number {
   return v / 3.6;
 }
 
-export function speedSectrionIsLpv(entity: SpeedSectionEntity): boolean {
+export function clickOnLpvPanel(
+  lpvPanel: LpvPanelFeature,
+  setState: (
+    stateOrReducer: Partial<SpeedSectionEditionState> | Reducer<SpeedSectionEditionState>
+  ) => void
+) {
+  const {
+    properties: { speedSectionPanelType, speedSectionPanelIndex },
+  } = lpvPanel;
+  const interactionState =
+    speedSectionPanelType === LPV_PANEL_TYPES.Z
+      ? ({ type: 'movePanel', panelType: LPV_PANEL_TYPES.Z } as {
+          type: 'movePanel';
+          panelType: LPV_PANEL_TYPES.Z;
+        })
+      : ({
+          type: 'movePanel',
+          panelType: speedSectionPanelType,
+          panelIndex: speedSectionPanelIndex,
+        } as {
+          type: 'movePanel';
+          panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R;
+          panelIndex: number;
+        });
+  setState({
+    hoveredItem: null,
+    interactionState,
+  });
+}
+
+export function speedSectionIsLpv(entity: SpeedSectionEntity): boolean {
   return !!entity.properties?.extensions?.lpv_sncf;
 }

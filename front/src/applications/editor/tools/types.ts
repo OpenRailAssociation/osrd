@@ -3,7 +3,7 @@ import { Dispatch } from 'redux';
 import { ViewState } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
-import { reduce, flatMap } from 'lodash';
+import { flatMap } from 'lodash';
 
 import { Feature } from 'geojson';
 import { ModalContextType } from '../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';

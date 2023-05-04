@@ -1,7 +1,7 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 
 import { CommonToolState } from '../types';
-import { LPVPanel, SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
+import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
 
 export type TrackRangeFeature = Feature<
   LineString,
@@ -21,6 +21,22 @@ export type TrackRangeExtremityFeature = Feature<
     speedSectionRangeIndex: number;
   }
 >;
+export type LpvPanelFeature = Feature<
+  Point,
+  {
+    angle_sch: number;
+    angle_geo: number;
+    position: number;
+    side: 'LEFT' | 'RIGHT';
+    track: string;
+    type: string;
+    value: string | null;
+    speedSectionItemType: 'LPVPanel';
+    speedSectionPanelIndex: number;
+    speedSectionPanelType: LPV_PANEL_TYPE;
+  }
+>;
+
 export type HoveredExtremityState = {
   speedSectionItemType: 'TrackRangeExtremity';
   track: TrackSectionEntity;
@@ -54,6 +70,16 @@ export type TrackState =
   | { type: 'error' }
   | { type: 'success'; track: TrackSectionEntity };
 
+const TYPE_Z = 'z';
+const TYPE_R = 'r';
+const TYPE_ANNOUNCEMENT = 'announcement';
+export enum LPV_PANEL_TYPES {
+  Z = TYPE_Z,
+  R = TYPE_R,
+  ANNOUNCEMENT = TYPE_ANNOUNCEMENT,
+}
+export type LPV_PANEL_TYPE = typeof TYPE_Z | typeof TYPE_R | typeof TYPE_ANNOUNCEMENT;
+
 export type SpeedSectionEditionState = CommonToolState & {
   initialEntity: SpeedSectionEntity;
   entity: SpeedSectionEntity;
@@ -70,7 +96,7 @@ export type SpeedSectionEditionState = CommonToolState & {
     | { type: 'idle' }
     | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
     | ({ type: 'movePanel' } & (
-        | { panelType: 'announcement' | 'r'; panelIndex: number }
-        | { panelType: 'z' }
+        | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }
+        | { panelType: LPV_PANEL_TYPES.Z }
       ));
 };
