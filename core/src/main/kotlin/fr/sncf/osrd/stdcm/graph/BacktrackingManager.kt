@@ -50,7 +50,7 @@ class BacktrackingManager(private val graph: STDCMGraph) {
      * The start time and any data related to delays will be updated accordingly.
      */
     private fun rebuildEdgeBackward(old: STDCMEdge, endSpeed: Double): STDCMEdge? {
-        val newEnvelope = STDCMSimulations.simulateBackwards(
+        val newEnvelope = simulateBackwards(
             old.route,
             endSpeed,
             old.envelopeStartOffset,

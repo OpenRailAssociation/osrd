@@ -76,7 +76,7 @@ fun findPath(
             convertLocations(graph, steps[0].locations, startTime, maxDepartureDelay),
             makeObjectiveFunction(steps)
         ) ?: return null
-    return STDCMPostProcessing.makeResult(
+    return makeResult(
         path,
         startTime,
         graph.standardAllowance,
@@ -128,7 +128,7 @@ private fun totalCostUntilEdgeLocation(
 ): Double {
     val edge = location.edge!!
     val envelope = edge.envelope
-    val timeEnd = STDCMSimulations.interpolateTime(
+    val timeEnd = interpolateTime(
         envelope,
         edge.envelopeStartOffset,
         location.offset,

@@ -37,7 +37,7 @@ data class STDCMEdge(
     val endAtStop: Boolean
 ) {
     override fun equals(other: Any?): Boolean {
-        if (other == null || other.javaClass != STDCMEdge::class.java)
+        if (other == null || other !is STDCMEdge)
             return false
         val otherAsEdge = (other as? STDCMEdge)!!
         if (otherAsEdge.route.infraRoute.id != otherAsEdge.route.infraRoute.id)

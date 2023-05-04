@@ -99,14 +99,14 @@ internal constructor(
     /** Creates all edges that can be accessed on the given route, using all the parameters specified.  */
     fun makeAllEdges(): Collection<STDCMEdge> {
         if (envelope == null)
-            envelope = STDCMSimulations.simulateRoute(
+            envelope = simulateRoute(
                 route,
                 startSpeed,
                 startOffset,
                 graph.rollingStock,
                 graph.comfort,
                 graph.timeStep,
-                STDCMUtils.getStopOnRoute(graph, route, startOffset, waypointIndex),
+                getStopOnRoute(graph, route, startOffset, waypointIndex),
                 graph.tag
             )
         if (envelope == null)
@@ -146,13 +146,14 @@ internal constructor(
 
     /** Creates a single STDCM edge, adding the given amount of delay  */
     private fun makeSingleEdge(delayNeeded: Double): STDCMEdge? {
-        if (java.lang.Double.isInfinite(delayNeeded)) return null
+        if (delayNeeded.isInfinite())
+            return null
         val maximumDelay = min(
             prevMaximumAddedDelay - delayNeeded,
             graph.delayManager.findMaximumAddedDelay(route, startTime + delayNeeded, startOffset, envelope!!)
         )
         val actualStartTime = startTime + delayNeeded
-        val endAtStop = STDCMUtils.getStopOnRoute(graph, route, startOffset, waypointIndex) != null
+        val endAtStop = getStopOnRoute(graph, route, startOffset, waypointIndex) != null
         var res: STDCMEdge? = STDCMEdge(
             route,
             envelope!!,

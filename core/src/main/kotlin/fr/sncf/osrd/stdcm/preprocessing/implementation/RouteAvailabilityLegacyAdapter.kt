@@ -73,7 +73,7 @@ class RouteAvailabilityLegacyAdapter
         }
         if (minimumDelay == 0.0)
             return null
-        if (java.lang.Double.isFinite(minimumDelay)) {
+        if (minimumDelay.isFinite()) {
             // We need to add delay, a recursive call is needed to detect new conflicts that appear with the added delay
             val recursive = findMinimumDelay(path, startOffset, endOffset, envelope, startTime + minimumDelay)
             if (recursive != null)
