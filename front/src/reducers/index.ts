@@ -38,7 +38,7 @@ const mapWhiteList = [
 
 const userWhiteList = ['account'];
 
-const mainWhiteList = ['fullscreen', 'darkmode'];
+const mainWhiteList = ['fullscreen', 'darkmode', 'lastInterfaceVersion'];
 
 const simulationWhiteList = ['marginsSettings'];
 
@@ -57,7 +57,7 @@ const osrdconfPersistConfig: PersistConfig<OsrdConfState> = {
   blacklist: ['featureInfoClick', 'switchTypes'],
 };
 
-const persistConfig = {
+export const persistConfig = {
   key: 'root',
   storage,
   transforms: [compressor, saveMapFilter, saveUserFilter, saveMainFilter, saveSimulationFilter],

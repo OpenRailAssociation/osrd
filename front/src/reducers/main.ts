@@ -82,6 +82,22 @@ export function deleteNotification(n: Notification): ThunkAction<ActionNotificat
   };
 }
 
+export const UPDATE_LAST_INTERFACE_VERSION = 'main/UPDATE_LAST_INTERFACE_VERSION';
+type ActionSetLastInterfaceVersion = {
+  type: typeof UPDATE_LAST_INTERFACE_VERSION;
+  lastInterfaceVersion: string;
+};
+export function updateLastInterfaceVersion(
+  lastInterfaceVersion: string
+): ThunkAction<ActionSetLastInterfaceVersion> {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_LAST_INTERFACE_VERSION,
+      lastInterfaceVersion,
+    });
+  };
+}
+
 export type MainActions =
   | ActionFailure
   | ActionSuccess
@@ -89,7 +105,8 @@ export type MainActions =
   | ActionToggleDarkmode
   | ActionToggleFullscreen
   | ActionNotificationAdd
-  | ActionNotificationDelete;
+  | ActionNotificationDelete
+  | ActionSetLastInterfaceVersion;
 
 //
 // State definition
@@ -99,6 +116,7 @@ export interface MainState {
   fullscreen: boolean;
   loading: number;
   notifications: Array<Notification>;
+  lastInterfaceVersion: string;
 }
 export const initialState: MainState = {
   darkmode: false,
@@ -107,6 +125,7 @@ export const initialState: MainState = {
   loading: 0,
   // errors
   notifications: [],
+  lastInterfaceVersion: '',
 };
 
 //
@@ -159,6 +178,8 @@ export default function reducer(inputState: MainState | undefined, action: MainA
             )
         );
         break;
+      case UPDATE_LAST_INTERFACE_VERSION:
+        draft.lastInterfaceVersion = action.lastInterfaceVersion;
     }
   });
 }
