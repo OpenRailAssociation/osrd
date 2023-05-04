@@ -1093,6 +1093,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollingStock"
+    delete:
+      tags:
+        - rolling_stock
+      summary: Delete a rolling_stock and all entities linked to it
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: rolling_stock id
+          required: true
+      responses:
+        204:
+          description: No content
 
   /rolling_stock/{id}/livery/:
     post:

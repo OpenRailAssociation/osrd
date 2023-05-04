@@ -1,7 +1,7 @@
 use crate::error::Result;
 use crate::models::rolling_stock::RollingStockSeparatedImageModel;
 use crate::models::{
-    Create, Document, Retrieve, RollingStockLiveryModel, RollingStockModel, Update,
+    Create, Delete, Document, Retrieve, RollingStockLiveryModel, RollingStockModel, Update,
 };
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
@@ -11,8 +11,8 @@ use crate::schema::rolling_stock::{
 use crate::DbPool;
 use actix_multipart::form::text::Text;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, scope, Data, Json, Path};
-use actix_web::{get, patch, post};
+use actix_web::web::{scope, Data, Json, Path};
+use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
@@ -42,8 +42,8 @@ pub enum RollingStockError {
 }
 
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/rolling_stock")
-        .service((get, create, update))
+    scope("/rolling_stock")
+        .service((get, create, update, delete))
         .service(scope("/{rolling_stock_id}").service(create_livery))
 }
 
@@ -55,8 +55,8 @@ async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStock
         Some(rolling_stock) => rolling_stock,
         None => return Err(RollingStockError::NotFound { rolling_stock_id }.into()),
     };
-    let rollig_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
-    Ok(Json(rollig_stock_with_liveries))
+    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    Ok(Json(rolling_stock_with_liveries))
 }
 
 #[derive(Deserialize, Serialize)]
@@ -160,6 +160,15 @@ async fn update(
 struct RollingStockLiveryCreateForm {
     pub name: Text<String>,
     pub images: Vec<TempFile>,
+}
+
+#[delete("/{rolling_stock_id}")]
+async fn delete(db_pool: Data<DbPool>, path: Path<i64>) -> Result<HttpResponse> {
+    let rolling_stock_id = path.into_inner();
+    if !RollingStockModel::delete(db_pool, rolling_stock_id).await? {
+        return Err(RollingStockError::NotFound { rolling_stock_id }.into());
+    }
+    Ok(HttpResponse::NoContent().finish())
 }
 
 #[post("/livery")]
@@ -290,39 +299,51 @@ async fn create_compound_image(
 mod tests {
     use super::RollingStockError;
     use crate::error::InternalError;
-    use crate::fixtures::tests::{db_pool, fast_rolling_stock, other_rolling_stock, TestFixture};
+    use crate::fixtures::tests::{fast_rolling_stock, other_rolling_stock, TestFixture};
     use crate::models::rolling_stock::tests::{
         get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
     };
-    use crate::models::{Delete, RollingStockModel};
+    use crate::models::RollingStockModel;
     use crate::views::rolling_stocks::RollingStock;
     use crate::views::tests::create_test_service;
-    use actix_http::StatusCode;
+    use actix_http::{Request, StatusCode};
     use actix_web::http::header::ContentType;
     use actix_web::test::{call_service, read_body_json, TestRequest};
-    use actix_web::web::Data;
-    use diesel::r2d2::{ConnectionManager, Pool};
     use rstest::rstest;
     use serde_json::{to_value, Value as JsonValue};
 
     #[rstest]
-    async fn get_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
+    async fn get_returns_corresponding_rolling_stock(
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
         let app = create_test_service().await;
         let rolling_stock = fast_rolling_stock.await;
 
         let req = TestRequest::get()
             .uri(format!("/rolling_stock/{}", rolling_stock.id()).as_str())
             .to_request();
+
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+        let rolling_stock: RollingStock = read_body_json(response).await;
+        assert_eq!(rolling_stock.name, "fast_rolling_stock");
     }
 
     #[rstest]
-    async fn create_rolling_stock(db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>) {
+    async fn get_unexisting_rolling_stock_returns_not_found() {
+        let app = create_test_service().await;
+        let get_request = rolling_stock_get_request(0);
+        let get_response = call_service(&app, get_request).await;
+
+        assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn create_and_delete_rolling_stock_successfully() {
         let app = create_test_service().await;
         let rolling_stock: RollingStockModel = get_fast_rolling_stock();
 
-        let response = call_service(
+        let post_response = call_service(
             &app,
             TestRequest::post()
                 .uri("/rolling_stock")
@@ -330,13 +351,42 @@ mod tests {
                 .to_request(),
         )
         .await;
-        assert_eq!(response.status(), StatusCode::OK);
 
-        let rolling_stock: RollingStock = read_body_json(response).await;
+        //Check rolling_stock creation
+        assert_eq!(post_response.status(), StatusCode::OK);
+        let rolling_stock: RollingStock = read_body_json(post_response).await;
         assert_eq!(rolling_stock.name, "fast_rolling_stock");
-        assert!(RollingStockModel::delete(db_pool.clone(), rolling_stock.id)
-            .await
-            .is_ok());
+
+        //Check rolling_stock deletion
+        let delete_request = rolling_stock_delete_request(rolling_stock.id);
+        let delete_response = call_service(&app, delete_request).await;
+        assert_eq!(delete_response.status(), StatusCode::NO_CONTENT);
+
+        //Check object does not exist anymore
+        let get_request = rolling_stock_get_request(0);
+        let get_response = call_service(&app, get_request).await;
+        assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn delete_unexisting_rolling_stock_returns_not_found() {
+        let app = create_test_service().await;
+        let delete_request = rolling_stock_delete_request(0);
+        let delete_response = call_service(&app, delete_request).await;
+
+        assert_eq!(delete_response.status(), StatusCode::NOT_FOUND);
+    }
+
+    fn rolling_stock_get_request(rolling_stock_id: i64) -> Request {
+        TestRequest::get()
+            .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
+            .to_request()
+    }
+
+    fn rolling_stock_delete_request(rolling_stock_id: i64) -> Request {
+        TestRequest::delete()
+            .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
+            .to_request()
     }
 
     #[rstest]
