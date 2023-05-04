@@ -46,10 +46,10 @@ public class StandardAllowanceTests {
     static void checkAllowanceResult(STDCMAllowanceResults results, AllowanceValue value, double tolerance) {
         if (Double.isNaN(tolerance))
             tolerance = 2 * timeStep;
-        var baseEnvelope = results.withoutAllowance.envelope();
+        var baseEnvelope = results.withoutAllowance.envelope;
         var extraTime = value.getAllowanceTime(baseEnvelope.getTotalTime(), baseEnvelope.getTotalDistance());
         var baseTime = baseEnvelope.getTotalTime();
-        var actualTime = results.withAllowance.envelope().getTotalTime();
+        var actualTime = results.withAllowance.envelope.getTotalTime();
         assertEquals(
                 baseTime + extraTime,
                 actualTime,
@@ -132,8 +132,8 @@ public class StandardAllowanceTests {
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
-        var secondRouteEntryTime = res.withAllowance.departureTime()
-                + res.withAllowance.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
+        var secondRouteEntryTime = res.withAllowance.departureTime
+                + res.withAllowance.envelope.interpolateTotalTime(firstRoute.getInfraRoute().getLength());
         assertTrue(secondRouteEntryTime >= 3600 - timeStep);
         occupancyTest(res.withAllowance, occupancyGraph, timeStep);
         checkAllowanceResult(res, allowance);
@@ -164,8 +164,8 @@ public class StandardAllowanceTests {
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
-        var timeEnterOccupiedSection = res.withAllowance.departureTime()
-                + res.withAllowance.envelope().interpolateTotalTime(5_000);
+        var timeEnterOccupiedSection = res.withAllowance.departureTime
+                + res.withAllowance.envelope.interpolateTotalTime(5_000);
         assertEquals(3600, timeEnterOccupiedSection, 2 * timeStep);
         occupancyTest(res.withAllowance, occupancyGraph, 2 * timeStep);
         checkAllowanceResult(res, allowance);
@@ -211,8 +211,8 @@ public class StandardAllowanceTests {
                 .run();
         occupancyTest(res, occupancyGraph, timeStep);
 
-        var thirdRouteEntryTime = res.departureTime()
-                + res.envelope().interpolateTotalTime(11_000);
+        var thirdRouteEntryTime = res.departureTime
+                + res.envelope.interpolateTotalTime(11_000);
         assertEquals(1000, thirdRouteEntryTime, 4 * timeStep); // Errors build up, we need a high delta
     }
 
@@ -255,8 +255,8 @@ public class StandardAllowanceTests {
                 .run();
         occupancyTest(res, occupancyGraph, timeStep);
 
-        var thirdRouteEntryTime = res.departureTime()
-                + res.envelope().interpolateTotalTime(10_001);
+        var thirdRouteEntryTime = res.departureTime
+                + res.envelope.interpolateTotalTime(10_001);
         assertEquals(1000, thirdRouteEntryTime, 2 * timeStep);
     }
 
@@ -378,8 +378,8 @@ public class StandardAllowanceTests {
                 .run();
         occupancyTest(res, occupancyGraph, timeStep);
 
-        var thirdRouteEntryTime = res.departureTime()
-                + res.envelope().interpolateTotalTime(11_000);
+        var thirdRouteEntryTime = res.departureTime
+                + res.envelope.interpolateTotalTime(11_000);
         assertEquals(1000, thirdRouteEntryTime, 2 * timeStep);
     }
 
@@ -521,8 +521,8 @@ public class StandardAllowanceTests {
         );
         assertNotNull(res.withoutAllowance);
         assertNotNull(res.withAllowance);
-        assertEquals(0, res.withAllowance.envelope().getEndSpeed());
-        assertEquals(0, res.withoutAllowance.envelope().getEndSpeed());
+        assertEquals(0, res.withAllowance.envelope.getEndSpeed());
+        assertEquals(0, res.withoutAllowance.envelope.getEndSpeed());
         occupancyTest(res.withAllowance, occupancyGraph, 2 * timeStep);
 
         // We need a high tolerance because there are several binary searches

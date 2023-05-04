@@ -9,7 +9,6 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.STDCMStep;
-import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
@@ -26,8 +25,9 @@ import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.stdcm.graph.STDCMPathfindingKt;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilderKt;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -103,7 +103,7 @@ public class STDCMEndpoint implements Take {
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
             occupancies = addWarningOccupancies(infra, occupancies);
-            var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
+            var unavailableSpace = UnavailableSpaceBuilderKt.computeUnavailableSpace(
                     infra,
                     occupancies,
                     rollingStock,
@@ -120,7 +120,7 @@ public class STDCMEndpoint implements Take {
             );
 
             // Run the STDCM pathfinding
-            var res = STDCMPathfinding.findPath(
+            var res = STDCMPathfindingKt.findPath(
                     infra,
                     rollingStock,
                     comfort,
@@ -142,17 +142,17 @@ public class STDCMEndpoint implements Take {
             // Build the response
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
-                    MRSP.from(res.trainPath(), rollingStock, false, tag)
+                    MRSP.from(res.trainPath, rollingStock, false, tag)
             ));
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
-                    res.envelope(),
-                    res.trainPath(),
-                    makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
+                    res.envelope,
+                    res.trainPath,
+                    makeTrainSchedule(res.envelope.getEndPos(), rollingStock, comfort, res.stopResults),
                     fullInfra
             ));
             simResult.ecoSimulations.add(null);
-            var pathfindingRes = PathfindingResultConverter.convert(res.routes(), infra, recorder);
-            var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
+            var pathfindingRes = PathfindingResultConverter.convert(res.routes, infra, recorder);
+            var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime);
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
@@ -203,7 +203,7 @@ public class STDCMEndpoint implements Take {
     ) {
         var infra = fullInfra.java();
         var locations = steps.stream()
-                .map(STDCMStep::locations)
+                .map(step -> step.locations)
                 .toList();
         var remainingDistanceEstimators = PathfindingRoutesEndpoint.makeHeuristics(locations);
         var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))

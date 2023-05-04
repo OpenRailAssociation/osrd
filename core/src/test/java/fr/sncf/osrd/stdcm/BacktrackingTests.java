@@ -121,6 +121,6 @@ public class BacktrackingTests {
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 1_000)))
                 .run();
         assert res != null;
-        assertTrue(res.envelope().continuous);
+        assertTrue(res.envelope.continuous);
     }
 }
