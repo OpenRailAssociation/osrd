@@ -17,5 +17,5 @@ data class STDCMResult(
     @JvmField val trainPath: TrainPath,
     val physicsPath: PhysicsPath,
     @JvmField val departureTime: Double,
-    @JvmField val stopResults: List<TrainStop>
+    @JvmField val stopResults: MutableList<TrainStop>
 )
