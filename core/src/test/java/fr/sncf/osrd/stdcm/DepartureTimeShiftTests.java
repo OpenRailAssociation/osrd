@@ -37,8 +37,8 @@ public class DepartureTimeShiftTests {
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)))
                 .run();
         assertNotNull(res);
-        var secondRouteEntryTime = res.departureTime()
-                + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
+        var secondRouteEntryTime = res.departureTime
+                + res.envelope.interpolateTotalTime(firstRoute.getInfraRoute().getLength());
         assertTrue(secondRouteEntryTime >= 3600);
         occupancyTest(res, occupancyGraph);
     }
@@ -68,8 +68,8 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        var secondRouteEntryTime = res.departureTime()
-                + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
+        var secondRouteEntryTime = res.departureTime
+                + res.envelope.interpolateTotalTime(firstRoute.getInfraRoute().getLength());
         assertTrue(secondRouteEntryTime >= 3600);
 
         occupancyTest(res, occupancyGraph);
@@ -108,7 +108,7 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        var routes = res.routes().ranges().stream()
+        var routes = res.routes.ranges().stream()
                 .map(edgeRange -> edgeRange.edge().getInfraRoute().getID())
                 .collect(Collectors.toSet());
         assertTrue(routes.contains("b->c2"));
@@ -159,7 +159,7 @@ public class DepartureTimeShiftTests {
                 .run();
 
         assertNotNull(res);
-        var routes = res.routes().ranges().stream()
+        var routes = res.routes.ranges().stream()
                 .map(edgeRange -> edgeRange.edge().getInfraRoute().getID())
                 .collect(Collectors.toSet());
         assertTrue(routes.contains("b->c1"));

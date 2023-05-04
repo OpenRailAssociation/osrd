@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder.computeUnavailableSpace;
+import static fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilderKt.computeUnavailableSpace;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
