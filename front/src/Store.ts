@@ -52,13 +52,6 @@ getStoredState(persistConfig)
     console.error('Error retrieving persisted state:', err);
   });
 
-/*
-const obj2 = Object.assign({}, store.getState());
-console.log("Store initilaized", obj2.main)
-
-console.log(persistor.getState())
-*/
-
 const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
   createStore(combineReducers<RootState>(rootReducer), {
     ...rootInitialState,
