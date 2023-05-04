@@ -38,14 +38,14 @@ public class StopTests {
         double expectedOffset = 150;
 
         // Check that we stop
-        assertEquals(0, res.envelope().interpolateSpeed(expectedOffset), SPEED_EPSILON);
+        assertEquals(0, res.envelope.interpolateSpeed(expectedOffset), SPEED_EPSILON);
 
         // Check that the stop is properly returned
         assertEquals(
                 List.of(
                         new TrainStop(expectedOffset, 10_000)
                 ),
-                res.stopResults()
+                res.stopResults
         );
     }
 
@@ -126,7 +126,7 @@ public class StopTests {
                 .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routesDirectPath.get(3), 0)), 0, true))
                 .run();
         assertNotNull(res);
-        var routes = res.routes().ranges().stream()
+        var routes = res.routes.ranges().stream()
                 .map(route -> route.edge().getInfraRoute().getID()).toList();
         assertEquals(
                 List.of(
@@ -136,8 +136,8 @@ public class StopTests {
                         "d->e"
                 ), routes
         );
-        assertNotEquals(stop, res.stopResults().isEmpty());
-        assertEquals(stop, res.envelope().interpolateSpeed(101_100) == 0);
+        assertNotEquals(stop, res.stopResults.isEmpty());
+        assertEquals(stop, res.envelope.interpolateSpeed(101_100) == 0);
     }
 
     /** Test that the stop time is properly accounted for, by making the train stop for too long to find a solution */
@@ -360,11 +360,11 @@ public class StopTests {
         // Check that the stops are properly returned
         assertEquals(
                 expectedStops,
-                res.stopResults()
+                res.stopResults
         );
 
         // Check that we stop
         for (var stop : expectedStops)
-            assertEquals(0, res.envelope().interpolateSpeed(stop.position), SPEED_EPSILON);
+            assertEquals(0, res.envelope.interpolateSpeed(stop.position), SPEED_EPSILON);
     }
 }

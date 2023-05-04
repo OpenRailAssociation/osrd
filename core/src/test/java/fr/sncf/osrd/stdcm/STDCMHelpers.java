@@ -17,7 +17,7 @@ import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilderKt;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -62,7 +62,7 @@ public class STDCMHelpers {
                     departureTime + entry.getValue().timeTailFree
             ));
         }
-        return UnavailableSpaceBuilder.computeUnavailableSpace(
+        return UnavailableSpaceBuilderKt.computeUnavailableSpace(
                 infra.java(),
                 occupancies,
                 REALISTIC_FAST_TRAIN,
@@ -105,8 +105,8 @@ public class STDCMHelpers {
             var endTime = 0.;
             var startTime = Double.POSITIVE_INFINITY;
             for (var occupancy : occupancies.get(route)) {
-                endTime = Math.max(endTime, occupancy.timeEnd());
-                startTime = Math.min(startTime, occupancy.timeStart());
+                endTime = Math.max(endTime, occupancy.timeEnd);
+                startTime = Math.min(startTime, occupancy.timeStart);
             }
             maxOccupancyLength = Math.max(maxOccupancyLength, endTime - startTime);
         }
@@ -139,20 +139,20 @@ public class STDCMHelpers {
             ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph,
             double tolerance
     ) {
-        var envelopeWrapper = new EnvelopeStopWrapper(res.envelope(), res.stopResults());
-        var routes = res.trainPath().routePath();
+        var envelopeWrapper = new EnvelopeStopWrapper(res.envelope, res.stopResults);
+        var routes = res.trainPath.routePath();
         for (var index = 0; index < routes.size(); index++) {
             var startRoutePosition = routes.get(index).pathOffset();
             var routeOccupancies = occupancyGraph.get(routes.get(index).element());
             for (var occupancy : routeOccupancies) {
-                var enterTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
-                        startRoutePosition + occupancy.distanceStart()
+                var enterTime = res.departureTime + envelopeWrapper.interpolateTotalTimeClamp(
+                        startRoutePosition + occupancy.distanceStart
                 );
-                var exitTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
-                        startRoutePosition + occupancy.distanceEnd()
+                var exitTime = res.departureTime + envelopeWrapper.interpolateTotalTimeClamp(
+                        startRoutePosition + occupancy.distanceEnd
                 );
                 assertTrue(
-                        enterTime + tolerance >= occupancy.timeEnd() || exitTime - tolerance <= occupancy.timeStart()
+                        enterTime + tolerance >= occupancy.timeEnd || exitTime - tolerance <= occupancy.timeStart
                 );
             }
         }

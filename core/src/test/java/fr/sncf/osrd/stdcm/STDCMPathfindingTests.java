@@ -174,9 +174,9 @@ public class STDCMPathfindingTests {
                 .run();
         assertNotNull(res1);
         assertNotNull(res2);
-        final var routes1 = res1.routes().ranges().stream()
+        final var routes1 = res1.routes.ranges().stream()
                 .map(route -> route.edge().getInfraRoute().getID()).toList();
-        final var routes2 = res2.routes().ranges().stream()
+        final var routes2 = res2.routes.ranges().stream()
                 .map(route -> route.edge().getInfraRoute().getID()).toList();
 
         assertFalse(routes1.contains("b->c1"));
@@ -441,7 +441,7 @@ public class STDCMPathfindingTests {
 
         assertNotNull(res);
         STDCMHelpers.occupancyTest(res, occupancyGraph);
-        assertTrue(res.departureTime() < 300);
+        assertTrue(res.departureTime < 300);
     }
   
 }

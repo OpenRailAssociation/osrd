@@ -111,7 +111,7 @@ public class EngineeringAllowanceTests {
 
         assertNotNull(res);
         STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
-        assertEquals(0, res.departureTime(), 2 * timeStep);
+        assertEquals(0, res.departureTime, 2 * timeStep);
     }
 
     /** Test that allowances don't cause new conflicts */
@@ -172,7 +172,7 @@ public class EngineeringAllowanceTests {
 
         assertNotNull(res);
         STDCMHelpers.occupancyTest(res, occupancyGraph, 2 * timeStep);
-        assertEquals(0, res.departureTime(), 2 * timeStep);
+        assertEquals(0, res.departureTime, 2 * timeStep);
     }
 
     /** Test that we can add the max delay by shifting the departure time, then add more delay by slowing down */
@@ -216,8 +216,8 @@ public class EngineeringAllowanceTests {
 
         assertNotNull(res);
         STDCMHelpers.occupancyTest(res, occupancyGraph);
-        assertEquals(3600 * 2, res.departureTime(), 2 * timeStep);
-        assertTrue(res.departureTime() <= 3600 * 2);
+        assertEquals(3600 * 2, res.departureTime, 2 * timeStep);
+        assertTrue(res.departureTime <= 3600 * 2);
     }
 
     /** The allowance happens in an area where we have added delay by shifting the departure time */
@@ -343,6 +343,6 @@ public class EngineeringAllowanceTests {
 
         assertNotNull(res);
         STDCMHelpers.occupancyTest(res, occupancyGraph);
-        assertEquals(3600, res.departureTime(), timeStep);
+        assertEquals(3600, res.departureTime, timeStep);
     }
 }
