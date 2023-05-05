@@ -42,6 +42,7 @@ export interface Position<Time = number> {
 }
 export type ConsolidatedPosition<DateType = Date> = Position<DateType | null>;
 
+// a better name would be SpeedPositionTime
 export type PositionSpeedTime<Time = number> = Position<Time> & {
   speed: number;
 };
@@ -121,18 +122,23 @@ export type ScheduledTrain = {
   mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
 };
 
-interface GradientPosition {
+export interface GradientPosition {
   gradient: number;
   position: number;
 }
 
-interface RadiusPosition {
+export interface RadiusPosition {
   radius: number;
   position: number;
 }
 
 export interface SpeedPosition {
   speed: number;
+  position: number;
+}
+
+export interface HeightPosition {
+  height: number;
   position: number;
 }
 
