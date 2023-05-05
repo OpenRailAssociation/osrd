@@ -8,7 +8,6 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { deleteRequest, get, patch, post } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import { FaPencilAlt, FaPlus, FaTasks, FaTrash } from 'react-icons/fa';
 import { GoNote } from 'react-icons/go';
@@ -16,121 +15,145 @@ import { MdBusinessCenter, MdTitle } from 'react-icons/md';
 import { RiCalendarLine, RiMoneyEuroCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setSuccess } from 'reducers/main';
+import { setFailure, setSuccess } from 'reducers/main';
 import { updateStudyID } from 'reducers/osrdconf';
 import { getProjectID } from 'reducers/osrdconf/selectors';
-import { StudyResult } from 'common/api/osrdEditoastApi';
-import { PROJECTS_URI, STUDIES_URI } from '../operationalStudiesConsts';
+import { StudyResult, StudyUpsertRequest, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  StudyState,
+  studyStates,
+  StudyType,
+  studyTypes,
+} from 'applications/operationalStudies/consts';
+import { isEmpty, sortBy } from 'lodash';
 
 type Props = {
   editionMode?: boolean;
   study?: StudyResult;
-  getStudy?: (v: boolean) => void;
 };
+
+type OptionsList = StudyType[] | StudyState[];
 
 type SelectOptions = { key: string | null; value: string }[];
 
-export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Props) {
+const emptyStudy: StudyUpsertRequest = { name: '', tags: [] };
+
+export default function AddOrEditStudyModal({ editionMode, study }: Props) {
   const { t } = useTranslation('operationalStudies/study');
   const { closeModal } = useContext(ModalContext);
-  const [currentStudy, setCurrentStudy] = useState<StudyResult | undefined>(study);
+  const [currentStudy, setCurrentStudy] = useState<StudyUpsertRequest>(
+    (study as StudyUpsertRequest) || emptyStudy
+  );
   const [displayErrors, setDisplayErrors] = useState(false);
-  const emptyOptions = [{ key: null, value: t('nothingSelected') }];
-  const [studyCategories, setStudyCategories] = useState<SelectOptions>(emptyOptions);
-  const [studyStates, setStudyStates] = useState<SelectOptions>(emptyOptions);
   const projectID = useSelector(getProjectID);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const rootURI = `${PROJECTS_URI}${projectID}${STUDIES_URI}`;
+  const [createStudies, { isError: isCreateStudyError }] =
+    osrdEditoastApi.usePostProjectsByProjectIdStudiesMutation();
+  const [patchStudies, { isError: isPatchStudyError }] =
+    osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
+  const [deleteStudies, { isError: isDeleteStudyError }] =
+    osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdMutation();
 
-  const createSelectOptions = async (
-    translationList: string,
-    enumURI: string,
-    setFunction: (func: SelectOptions) => void
-  ) => {
-    try {
-      const list = await get(enumURI);
-      const options: SelectOptions = [];
-      list.forEach((key: string) => {
-        options.push({ key, value: t(`${translationList}.${key}`) });
-      });
-      options.sort((a, b) => a.value.localeCompare(b.value));
-      options.unshift({ key: null, value: t(`${translationList}.nothingSelected`) });
-      setFunction(options);
-    } catch (error) {
-      console.error(error);
-    }
+  const createSelectOptions = (translationList: string, list: OptionsList) => {
+    if (isEmpty(list)) return [{ key: null, value: t('nothingSelected') }];
+    const options: SelectOptions = [
+      { key: null, value: t(`${translationList}.nothingSelected`) },
+      ...sortBy(
+        list.map((key) => ({ key, value: t(`${translationList}.${key}`) })),
+        'value'
+      ),
+    ];
+    return options;
   };
 
-  const formatDateForInput = (date?: string | null) => (date ? date.substr(0, 10) : '');
+  const studyStateOptions = createSelectOptions('studyStates', studyStates);
+
+  const studyCategoriesOptions = createSelectOptions('studyCategories', studyTypes);
+
+  const formatDateForInput = (date?: string | null) => (date ? date.substring(0, 10) : '');
 
   const removeTag = (idx: number) => {
-    if (currentStudy?.tags) {
-      const newTags = [...currentStudy?.tags];
-      newTags.splice(idx, 1);
-      setCurrentStudy({ ...currentStudy, tags: newTags });
-    }
-  };
-
-  const addTag = (tag: string) => {
-    const newTags = currentStudy?.tags ? [...currentStudy.tags] : [];
-    newTags.push(tag);
+    const newTags = [...currentStudy.tags];
+    newTags.splice(idx, 1);
     setCurrentStudy({ ...currentStudy, tags: newTags });
   };
 
-  const createStudy = async () => {
+  const addTag = (tag: string) => {
+    setCurrentStudy({ ...currentStudy, tags: [...currentStudy.tags, tag] });
+  };
+
+  const createStudy = () => {
     if (!currentStudy?.name) {
       setDisplayErrors(true);
     } else {
-      try {
-        const result = await post(`${rootURI}`, currentStudy);
-        dispatch(updateStudyID(result.id));
-        navigate('/operational-studies/study');
-        closeModal();
-      } catch (error) {
-        console.error(error);
-      }
+      createStudies({
+        projectId: projectID as number,
+        studyUpsertRequest: currentStudy,
+      })
+        .unwrap()
+        .then((createdStudy) => {
+          dispatch(updateStudyID(createdStudy.id));
+          navigate('/operational-studies/study');
+          closeModal();
+        });
     }
   };
 
-  const updateStudy = async () => {
+  const updateStudy = () => {
     if (!currentStudy?.name) {
       setDisplayErrors(true);
-    } else if (study) {
-      try {
-        await patch(`${rootURI}${study.id}/`, currentStudy);
-        if (getStudy) getStudy(true);
-        closeModal();
-      } catch (error) {
-        console.error(error);
-      }
+    } else if (study?.id && projectID) {
+      patchStudies({
+        projectId: projectID,
+        studyId: study.id,
+        studyUpsertRequest: currentStudy,
+      })
+        .unwrap()
+        .then(() => {
+          dispatch(
+            setSuccess({
+              title: t('studyUpdated'),
+              text: t('studyUpdatedDetails', { name: study.name }),
+            })
+          );
+          closeModal();
+        });
     }
   };
 
-  const deleteStudy = async () => {
-    if (study) {
-      try {
-        await deleteRequest(`${rootURI}${study.id}/`);
-        dispatch(updateStudyID(undefined));
-        navigate('/operational-studies/project');
-        closeModal();
-        dispatch(
-          setSuccess({
-            title: t('studyDeleted'),
-            text: t('studyDeletedDetails', { name: study.name }),
-          })
-        );
-      } catch (error) {
-        console.error(error);
-      }
+  const deleteStudy = () => {
+    if (study?.id && projectID) {
+      deleteStudies({
+        projectId: projectID,
+        studyId: study.id,
+      })
+        .unwrap()
+        .then(() => {
+          dispatch(
+            setSuccess({
+              title: t('studyDeleted'),
+              text: t('studyDeletedDetails', { name: study.name }),
+            })
+          );
+          dispatch(updateStudyID(undefined));
+          navigate('/operational-studies/project');
+          closeModal();
+        });
     }
   };
 
   useEffect(() => {
-    createSelectOptions('studyCategories', `/projects/study_types/`, setStudyCategories);
-    createSelectOptions('studyStates', `/projects/study_states/`, setStudyStates);
-  }, []);
+    if (isCreateStudyError || isPatchStudyError || isDeleteStudyError) {
+      dispatch(
+        setFailure({
+          name: t('errorHappened'),
+          message: t('errorHappened'),
+        })
+      );
+    }
+  }, [isCreateStudyError, isPatchStudyError, isDeleteStudyError]);
 
   return (
     <div className="study-edition-modal">
@@ -178,7 +201,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       key: currentStudy?.study_type,
                       value: t(`studyCategories.${currentStudy?.study_type || 'nothingSelected'}`),
                     }}
-                    options={studyCategories}
+                    options={studyCategoriesOptions}
                     onChange={(e) => setCurrentStudy({ ...currentStudy, study_type: e.key })}
                   />
                 </div>
@@ -198,7 +221,7 @@ export default function AddOrEditStudyModal({ editionMode, study, getStudy }: Pr
                       key: currentStudy?.state,
                       value: t(`studyStates.${currentStudy?.state || 'nothingSelected'}`),
                     }}
-                    options={studyStates}
+                    options={studyStateOptions}
                     onChange={(e) => setCurrentStudy({ ...currentStudy, state: e.key })}
                   />
                 </div>

@@ -1527,7 +1527,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StudyCreateRequest"
+              $ref: "#/components/schemas/StudyUpsertRequest"
       responses:
         201:
           description: The created operational study
@@ -1651,7 +1651,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/StudyPatchRequest"
+              $ref: "#/components/schemas/StudyUpsertRequest"
       responses:
         200:
           description: The operational study updated
@@ -3299,7 +3299,7 @@ components:
           items:
             type: string
 
-    StudyCreateRequest:
+    StudyUpsertRequest:
       properties:
         name:
           type: string
@@ -3349,59 +3349,7 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
-      required:
-        - "name"
-
-    StudyPatchRequest:
-      properties:
-        name:
-          type: string
-          maxLength: 128
-        service_code:
-          type: string
-          maxLength: 128
-        business_code:
-          type: string
-          maxLength: 128
-        description:
-          type: string
-          maxLength: 1024
-        budget:
-          type: integer
-        tags:
-          type: array
-          items:
-            type: string
-            maxLength: 255
-        start_date:
-          type: string
-          nullable: true
-          format: date-time
-        expected_end_date:
-          type: string
-          nullable: true
-          format: date-time
-        actual_end_date:
-          type: string
-          nullable: true
-          format: date-time
-        state:
-          type: string
-          enum: ["started", "inProgress", "finish"]
-        study_type:
-          type: string
-          enum:
-            [
-              "timeTables",
-              "flowRate",
-              "parkSizing",
-              "garageRequirement",
-              "operationOrSizing",
-              "operability",
-              "strategicPlanning",
-              "chartStability",
-              "disturbanceTests",
-            ]
+      required: [name, tags]
 
     StudyResult:
       properties:
@@ -3460,6 +3408,21 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
+      required:
+        - id
+        - name
+        - project_id
+        - description
+        - budget
+        - tags
+        - service_code
+        - business_code
+        - creation_date
+        - last_modification
+        - scenarios_count
+        - start_date
+        - expected_end_date
+        - actual_end_date
 
     ScenarioRequest:
       properties:
