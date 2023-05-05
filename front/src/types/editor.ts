@@ -49,46 +49,31 @@ export interface LPVPanel {
 }
 
 export interface LPVExtension {
-  annoucement: LPVPanel[];
+  announcement: LPVPanel[];
   z: LPVPanel;
   r: LPVPanel[];
+}
+export interface SpeedSectionProperties {
+  speed_limit?: number;
+  speed_limit_by_tag?: Record<string, number | undefined>;
+  track_ranges?: {
+    applicable_directions: ApplicableDirection;
+    begin: number;
+    end: number;
+    track: string;
+  }[];
+  extensions?: {
+    lpv_sncf: null | LPVExtension;
+  };
 }
 export interface SpeedSectionLpvEntity
   extends EditorEntity<
     MultiLineString,
-    {
-      speed_limit?: number;
-      speed_limit_by_tag?: Record<string, number | undefined>;
-      track_ranges?: {
-        applicable_directions: ApplicableDirection;
-        begin: number;
-        end: number;
-        track: string;
-      }[];
-      extensions: {
-        lpv_sncf: LPVExtension;
-      };
-    }
+    Omit<SpeedSectionProperties, 'extensions'> & { extensions: { lpv_sncf: LPVExtension } }
   > {
   objType: 'SpeedSection';
 }
-export interface SpeedSectionEntity
-  extends EditorEntity<
-    MultiLineString,
-    {
-      speed_limit?: number;
-      speed_limit_by_tag?: Record<string, number | undefined>;
-      track_ranges?: {
-        applicable_directions: ApplicableDirection;
-        begin: number;
-        end: number;
-        track: string;
-      }[];
-      extensions?: {
-        lpv_sncf: null | LPVExtension;
-      };
-    }
-  > {
+export interface SpeedSectionEntity extends EditorEntity<MultiLineString, SpeedSectionProperties> {
   objType: 'SpeedSection';
 }
 export interface SignalEntity

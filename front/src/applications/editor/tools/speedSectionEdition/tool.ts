@@ -22,6 +22,7 @@ import {
 import {
   clickOnLpvPanel,
   getEditSpeedSectionState,
+  getLpvPanelNewPosition,
   getMovedLpvEntity,
   getNewSpeedSection,
   getPanelInformationFromInteractionState,
@@ -31,12 +32,10 @@ import {
   SpeedSectionEditionLeftPanel,
   SpeedSectionMessages,
 } from './components';
-import { TrackSectionEntity } from '../../../../types';
+import { SpeedSectionLpvEntity, TrackSectionEntity } from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import {
   approximateDistanceWithEditoastData,
-  getHoveredTrackRanges,
-  getTrackSectionEntityFromNearestPoint,
 } from '../utils';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
@@ -247,28 +246,15 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
        *   & la nouvelle trackRange si nécessaire
        */
       if (entity.properties.extensions?.lpv_sncf) {
-        const hoveredTrackRanges = getHoveredTrackRanges(e);
-        if (!isEmpty(hoveredTrackRanges)) {
-          const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
-          const trackSection = getTrackSectionEntityFromNearestPoint(
-            nearestPoint,
-            hoveredTrackRanges,
-            trackSectionsCache
+        const newPosition = getLpvPanelNewPosition(e, trackSectionsCache);
+        if (newPosition) {
+          const panelInfo = getPanelInformationFromInteractionState(interactionState);
+          const updatedEntity = getMovedLpvEntity(
+            entity as SpeedSectionLpvEntity,
+            panelInfo,
+            newPosition
           );
-          if (trackSection) {
-            const distanceAlongTrack = approximateDistanceWithEditoastData(
-              trackSection,
-              nearestPoint.geometry
-            );
-            // on récupère le panneau concerné avec les informations dans l'interactionState
-            const panelInfo = getPanelInformationFromInteractionState(interactionState);
-            const newPosition = {
-              trackId: trackSection.properties.id,
-              position: distanceAlongTrack,
-            };
-            const updatedEntity = getMovedLpvEntity(entity, panelInfo, newPosition);
-            setState({ entity: updatedEntity });
-          }
+          setState({ entity: updatedEntity });
         }
       }
     } else if (hoveredItem) {

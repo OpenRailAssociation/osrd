@@ -22,6 +22,7 @@ import {
   EntityObjectOperationResult,
   SourceLayer,
   SpeedSectionEntity,
+  SpeedSectionLpvEntity,
   TrackSectionEntity,
 } from '../../../../types';
 import { getEntities } from '../../data/api';
@@ -431,35 +432,39 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
       <MetadataForm />
       <hr />
       <div>
-        <input
-          id="is-lpv-checkbox"
-          type="checkbox"
-          checked={isLPV}
-          onChange={(e) => {
-            let newExtension: SpeedSectionEntity['properties']['extensions'] = { lpv_sncf: null };
-            if (e.target.checked) {
-              const firstRange = (entity.properties?.track_ranges || [])[0];
-              if (!firstRange) return;
-              newExtension = {
-                lpv_sncf: initialEntity.properties?.extensions?.lpv_sncf || {
-                  announcement: [],
-                  r: [],
-                  z: {
-                    angle_sch: 0,
-                    angle_geo: 0,
-                    position: firstRange.begin,
-                    side: 'LEFT',
-                    track: firstRange.track,
-                    type: 'Z',
-                    value: null,
+        <div className="d-flex">
+          <input
+            id="is-lpv-checkbox"
+            type="checkbox"
+            checked={isLPV}
+            onChange={(e) => {
+              let newExtension: SpeedSectionEntity['properties']['extensions'] = { lpv_sncf: null };
+              if (e.target.checked) {
+                const firstRange = (entity.properties?.track_ranges || [])[0];
+                if (!firstRange) return;
+                newExtension = {
+                  lpv_sncf: initialEntity.properties?.extensions?.lpv_sncf || {
+                    announcement: [],
+                    r: [],
+                    z: {
+                      angle_sch: 0,
+                      angle_geo: 0,
+                      position: firstRange.begin,
+                      side: 'LEFT',
+                      track: firstRange.track,
+                      type: 'Z',
+                      value: null,
+                    },
                   },
-                },
-              };
-            }
-            updateSpeedSectionExtensions(newExtension);
-          }}
-        />
-        <label htmlFor="is-lpv-checkbox">Is LPV ?</label>
+                };
+              }
+              updateSpeedSectionExtensions(newExtension);
+            }}
+          />
+          <label className="form-check-label" htmlFor="is-lpv-checkbox">
+            Is LPV ?
+          </label>
+        </div>
         {/*
           TODO: Afficher les panneaux, avec un bouton pour les supprimer, et un pour les créer
           - créer un composant EditLPVSection
@@ -485,8 +490,7 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
           
           - mettre tous ces composants dans EditLPVSection pour afficher tous les panneaux
          */}
-        {/* <EditLPVSection entity={entity} /> */}
-        <EditLPVSection />
+        {isLPV && <EditLPVSection entity={entity as SpeedSectionLpvEntity} setState={setState} />}
       </div>
       <hr />
       <TrackRangesList />
@@ -557,7 +561,6 @@ export const SpeedSectionEditionLayers: FC = () => {
       layersSettings,
     };
     if (!isLPV) {
-      // console.log('hello, on affiche les layers ')
       return SourcesDefinitionsIndex.speed_sections(context, 'speedSectionsEditor/speedSection/');
     }
     const lpvLayers = SourcesDefinitionsIndex.lpv(context, 'speedSectionsEditor/lpv/');

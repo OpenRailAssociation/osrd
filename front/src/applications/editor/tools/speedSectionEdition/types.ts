@@ -77,13 +77,17 @@ export type TrackState =
 
 const TYPE_Z = 'z';
 const TYPE_R = 'r';
-const TYPE_ANNOUNCEMENT = 'annoucement';
+const TYPE_ANNOUNCEMENT = 'announcement';
 export enum LPV_PANEL_TYPES {
   Z = TYPE_Z,
   R = TYPE_R,
   ANNOUNCEMENT = TYPE_ANNOUNCEMENT,
 }
 export type LPV_PANEL_TYPE = typeof TYPE_Z | typeof TYPE_R | typeof TYPE_ANNOUNCEMENT;
+
+export type LpvPanelInformation =
+  | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }
+  | { panelType: LPV_PANEL_TYPES.Z };
 
 export type SpeedSectionEditionState = CommonToolState & {
   initialEntity: SpeedSectionEntity;
@@ -100,10 +104,7 @@ export type SpeedSectionEditionState = CommonToolState & {
   interactionState:
     | { type: 'idle' }
     | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
-    | ({ type: 'movePanel' } & (
-        | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }
-        | { panelType: LPV_PANEL_TYPES.Z }
-      ));
+    | ({ type: 'movePanel' } & LpvPanelInformation);
 };
 
 export type SpeedSectionLpvEditionState = Omit<SpeedSectionEditionState, 'entity'> & {

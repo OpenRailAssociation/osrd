@@ -1,109 +1,134 @@
-import React, { useContext } from 'react';
-import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
-import { cloneDeep, flatMap } from 'lodash';
-import { FaPlus, FaTrash } from 'react-icons/fa';
-import { LPVExtension, LPVPanel, SpeedSectionEntity } from 'types';
+import React from 'react';
+import { cloneDeep } from 'lodash';
+import { LPVExtension, LPVPanel, SpeedSectionLpvEntity } from 'types';
 import { useTranslation } from 'react-i18next';
-import { ExtendedEditorContextType } from '../../types';
-import { SpeedSectionLpvEditionState } from '../types';
-import EditorContext from 'applications/editor/context';
-import { LPV_PANEL_TYPES } from '../types';
+import { Reducer } from '../../types';
+import { LpvPanelInformation, SpeedSectionEditionState, LPV_PANEL_TYPES } from '../types';
+import LpvPanelCard from './LpvPanelCard';
+import LpvPanelSubSection from './LpvPanelSubSection';
 
-// const LPVDetails = ({ lpv_panel }: { lpv_panel: LPVPanel }) => {
-//   return (
-//     <div className="my-4">
-//       <div>{t('Editor.obj-types.LPVPanel')}</div>
-//       <div className="mb-2">{lpv_panel.type}</div>
-//       <label htmlFor="lpv-position">Position</label>
-//       <input id="lpv-position" value={lpv_panel.position} />
-//       <div className="mb-2">Track id : {lpv_panel.track}</div>
-//       <div className="mb-2">Side : {lpv_panel.side}</div>
-//       <SelectImprovedSNCF
-//         sm
-//         options={['LEFT', 'RIGHT']}
-//         onChange={(e) => {}}
-//         selectedValue={lpv_panel.side}
-//       />
-//       <button type="button" className="btn btn-danger btn-sm px-2">
-//         <FaTrash />
-//       </button>
-//     </div>
-//   );
-// };
+const getNewAnnouncementPanel = (
+  trackRanges: NonNullable<SpeedSectionLpvEntity['properties']['track_ranges']>,
+  speedLimit: number
+) => {
+  const firstRange = trackRanges[0];
+  return {
+    angle_geo: 0,
+    angle_sch: 0,
+    position: 0,
+    side: 'LEFT',
+    track: firstRange.track,
+    type: 'TIV_D',
+    value: `${speedLimit}`,
+  } as LPVPanel;
+};
 
-// const LPVList = ({ entity }: { entity: SpeedSectionEntity }) => {
-//   const LPVs = entity.properties.extensions?.lpv_sncf;
+const getNewRPanel = (
+  trackRanges: NonNullable<SpeedSectionLpvEntity['properties']['track_ranges']>
+) => {
+  const lastRange = trackRanges[trackRanges.length - 1];
+  return {
+    angle_geo: 0,
+    angle_sch: 0,
+    position: lastRange.end,
+    side: 'LEFT',
+    track: lastRange.track,
+    type: 'R',
+    value: null,
+  } as LPVPanel;
+};
 
-//   const panels = flatMap(LPVs);
-
-//   return (
-//     <>
-//       <div>LPV Panels</div>
-//       <button type="button" className="btn btn-primary btn-sm px-2">
-//         <FaPlus />
-//       </button>
-//       {LPVs && panels.map((panel) => <LPVDetails lpv_panel={panel} />)}
-//     </>
-//   );
-// };
-
-// const EditLPVSection = ({ entity }: { entity: SpeedSectionEntity }) => <LPVList entity={entity} />;
-const EditLPVSection = () => {
+const EditLPVSection = ({
+  entity,
+  setState,
+}: {
+  entity: SpeedSectionLpvEntity;
+  setState: (
+    stateOrReducer: Partial<SpeedSectionEditionState> | Reducer<SpeedSectionEditionState>
+  ) => void;
+}) => {
   const { t } = useTranslation();
-  const {
-    setState,
-    state: { entity, initialEntity },
-  } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionLpvEditionState>;
 
-  const LPVs = entity.properties.extensions?.lpv_sncf;
+  const lpvExtension = entity.properties.extensions.lpv_sncf;
 
-  const panels: LPVPanel[] = flatMap(LPVs);
+  const updateEntity = (newLpvExtension: LPVExtension) => {
+    const newEntity = cloneDeep(entity);
+    newEntity.properties.extensions.lpv_sncf = newLpvExtension;
+    setState({ entity: newEntity });
+  };
 
-  console.log('panels : ', panels);
+  const addPanel = (panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R) => {
+    const newLpvExtension = cloneDeep(lpvExtension);
+    const trackRanges = entity.properties.track_ranges || [];
+    if (panelType === LPV_PANEL_TYPES.ANNOUNCEMENT) {
+      const speedLimit = entity.properties.speed_limit || 30;
+      newLpvExtension.announcement = [
+        ...lpvExtension.announcement,
+        getNewAnnouncementPanel(trackRanges, speedLimit),
+      ];
+    } else {
+      newLpvExtension.r = [...lpvExtension.r, getNewRPanel(trackRanges)];
+    }
+    updateEntity(newLpvExtension);
+  };
+
+  const updatePanel = (panelInfo: LpvPanelInformation, panel: LPVPanel) => {
+    const newLpvExtension = cloneDeep(lpvExtension);
+    const { panelType } = panelInfo;
+    if (panelType === LPV_PANEL_TYPES.Z) {
+      newLpvExtension.z = panel;
+    } else {
+      const { panelIndex } = panelInfo;
+      if (panelType === LPV_PANEL_TYPES.ANNOUNCEMENT) {
+        newLpvExtension.announcement[panelIndex] = panel;
+      } else {
+        newLpvExtension.r[panelIndex] = panel;
+      }
+    }
+    updateEntity(newLpvExtension);
+  };
+
+  const removePanel = ({
+    panelType,
+    panelIndex,
+  }: Exclude<LpvPanelInformation, { panelType: LPV_PANEL_TYPES.Z }>) => {
+    const newLpvExtension = cloneDeep(lpvExtension);
+    if (panelType === LPV_PANEL_TYPES.ANNOUNCEMENT) {
+      newLpvExtension.announcement = newLpvExtension.announcement.filter(
+        (_, i) => i !== panelIndex
+      );
+    }
+    if (panelType === LPV_PANEL_TYPES.R) {
+      newLpvExtension.r = newLpvExtension.r.filter((_, i) => i !== panelIndex);
+    }
+    updateEntity(newLpvExtension);
+  };
 
   return (
     <div>
       <h3>Liste des panneaux de la section</h3>
-      <button type="button" className="btn btn-primary btn-sm px-2">
-        <FaPlus />
-      </button>
-      {LPVs &&
-        panels.map((panel, i) => (
-          <div className="my-4">
-            <div>{t('Editor.obj-types.LPVPanel')}</div>
-            <div className="mb-2">Type : {panel.type}</div>
-            {/* <label htmlFor="lpv-position">Position</label>
-            <input id="lpv-position" value={panel.position} /> */}
-            <div className="mb-2">Track id : {panel.track}</div>
-            <div className="mb-2">Side : {panel.side}</div>
-            <SelectImprovedSNCF
-              title="Position"
-              sm
-              options={['LEFT', 'RIGHT']}
-              onChange={(e) => {
-                const newEntity = cloneDeep(entity);
-                const newEntityLPV = newEntity.properties.extensions.lpv_sncf;
-                console.log('panel type : ', panel.type);
-                if (panel.type !== 'Z' && panel.type !== 'R') {
-                  panel.type = 'annoucement';
-                }
-                console.log('panel type : ', panel.type);
-                let newSide = newEntityLPV[panel.type.toLowerCase() as LPV_PANEL_TYPES];
-                if (panel.type !== 'Z') {
-                  newSide = (newSide as LPVPanel[])[0];
-                }
-                console.log('newSide', newSide);
-                // const newRange = (newEntity.properties.track_ranges || [])[i];
-                // newRange.applicable_directions = e.target.value as ApplicableDirection;
-                setState({ entity: newEntity, hoveredItem: null });
-              }}
-              selectedValue={panel.side}
-            />
-            <button type="button" className="btn btn-danger btn-sm px-2">
-              <FaTrash />
-            </button>
-          </div>
-        ))}
+      <LpvPanelCard
+        panel={lpvExtension.z}
+        panelInfo={{ panelType: LPV_PANEL_TYPES.Z }}
+        t={t}
+        updatePanel={updatePanel}
+      />
+      <LpvPanelSubSection
+        panelType={LPV_PANEL_TYPES.ANNOUNCEMENT}
+        panels={lpvExtension.announcement}
+        t={t}
+        updatePanel={updatePanel}
+        addPanel={addPanel}
+        removePanel={removePanel}
+      />
+      <LpvPanelSubSection
+        panelType={LPV_PANEL_TYPES.R}
+        panels={lpvExtension.r}
+        updatePanel={updatePanel}
+        addPanel={addPanel}
+        removePanel={removePanel}
+        t={t}
+      />
     </div>
   );
 };
