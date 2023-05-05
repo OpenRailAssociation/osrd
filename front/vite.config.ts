@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       environment: 'happy-dom',
       coverage: {
+        all: true,
         reportsDirectory: './tests/unit/coverage',
       },
     },
