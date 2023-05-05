@@ -7,6 +7,7 @@ const config: ConfigFile = {
   outputFile: '../common/api/osrdEditoastApi.ts',
   exportName: 'osrdEditoastApi',
   hooks: false,
+  tag: true,
 };
 
 export default config;

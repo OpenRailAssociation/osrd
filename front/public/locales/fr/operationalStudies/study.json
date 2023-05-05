@@ -11,6 +11,7 @@
     "start": "Début"
   },
   "description": "description",
+  "errorHappened": "Une erreur est survenue",
   "filesAndLinks": "Documents & liens",
   "filterPlaceholder": "Rechercher…",
   "geremiCode": "Code GEREMI",
@@ -66,5 +67,6 @@
     "timeTables": "Grille horaire"
   },
   "studyUpdated": "Mise à jour réussie !",
-  "studyUpdatedDetails": "L'étude {{ name }} a bien été mise à jour."
+  "studyUpdatedDetails": "L'étude {{ name }} a bien été mise à jour.",
+  "unableToRetrieveStudyState": "Echec de la récupération des types d'étude"
 }

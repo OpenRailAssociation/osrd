@@ -121,6 +121,30 @@ export interface PointOnMap {
   position?: number;
 }
 
+const STUDY_STATES = {
+  started: 'started',
+  inProgress: 'inProgress',
+  finish: 'finish',
+};
+
+export type StudyState = keyof typeof STUDY_STATES;
+export const studyStates = Object.keys(STUDY_STATES) as StudyState[];
+
+const STUDY_TYPES = {
+  timeTables: 'timeTables',
+  flowRate: 'flowRate',
+  parkSizing: 'parkSizing',
+  garageRequirement: 'garageRequirement',
+  operationOrSizing: 'operationOrSizing',
+  operability: 'operability',
+  strategicPlanning: 'strategicPlanning',
+  chartStability: 'chartStability',
+  disturbanceTests: 'disturbanceTests',
+};
+
+export type StudyType = keyof typeof STUDY_TYPES;
+export const studyTypes = Object.keys(STUDY_TYPES) as StudyType[];
+
 export interface OsrdConfState {
   rollingStockComfort: Comfort;
   name: string;

@@ -7,7 +7,7 @@ import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
-import { setFailure, setSuccess } from 'reducers/main';
+import { setFailure } from 'reducers/main';
 import ScenarioCardEmpty from 'applications/operationalStudies/components/Study/ScenarioCardEmpty';
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import { FaPencilAlt } from 'react-icons/fa';
@@ -15,12 +15,10 @@ import { budgetFormat } from 'utils/numbers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
-import { get } from 'common/requests';
 import DateBox from 'applications/operationalStudies/components/Study/DateBox';
 import StateStep from 'applications/operationalStudies/components/Study/StateStep';
 import {
   PostSearchApiArg,
-  ProjectResult,
   ScenarioResult,
   SearchScenarioResult,
   StudyResult,
@@ -29,6 +27,7 @@ import {
 import BreadCrumbs from '../components/BreadCrumbs';
 import AddOrEditStudyModal from '../components/Study/AddOrEditStudyModal';
 import FilterTextField from '../components/FilterTextField';
+import { studyStates } from '../consts';
 
 type SortOptions =
   | 'NameAsc'
@@ -37,8 +36,6 @@ type SortOptions =
   | 'CreationDateDesc'
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
-
-type StateType = 'started' | 'inProgress' | 'finish';
 
 // While files property is not implemented in studies
 type StudyWithFileType = StudyResult & {
@@ -74,43 +71,51 @@ function displayScenariosList(
 export default function Study() {
   const { t } = useTranslation('operationalStudies/study');
   const { openModal } = useModal();
-  const [project, setProject] = useState<ProjectResult>();
-  const [study, setStudy] = useState<StudyWithFileType>();
   const [scenariosList, setScenariosList] = useState<ScenarioResult[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const [studyStates, setStudyStates] = useState<StateType[]>([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectId = useSelector(getProjectID);
   const studyId = useSelector(getStudyID);
-  const {
-    data: currentProject,
-    isLoading: isProjectLoading,
-    isError: isProjectError,
-    error: projectError,
-  } = osrdEditoastApi.useGetProjectsByProjectIdQuery({ projectId: projectId as number });
-  const [getCurrentStudy] = osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdQuery();
+
+  const { data: project, isError: isProjectError } = osrdEditoastApi.useGetProjectsByProjectIdQuery(
+    { projectId: projectId as number },
+    {
+      skip: !projectId,
+    }
+  );
+
+  const { data: study, isError: isCurrentStudyError } =
+    osrdEditoastApi.useGetProjectsByProjectIdStudiesAndStudyIdQuery(
+      {
+        projectId: projectId as number,
+        studyId: studyId as number,
+      },
+      {
+        skip: !projectId || !studyId,
+      }
+    );
+
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getScenarios] =
     osrdEditoastApi.useLazyGetProjectsByProjectIdStudiesAndStudyIdScenariosQuery();
 
-  if (isProjectError) {
-    console.error(projectError);
-    return dispatch(
-      setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoFrom') })
-    );
-  }
+  useEffect(() => {
+    if (!projectId || !studyId) navigate('/operational-studies/project');
+  }, [projectId, studyId]);
 
-  const getStudyStates = async () => {
-    try {
-      const list = await get(`/projects/study_states/`);
-      setStudyStates(list);
-    } catch (error) {
-      /* empty */
+  useEffect(() => {
+    if (isProjectError || isCurrentStudyError) {
+      dispatch(
+        setFailure({
+          name: t('errorHappened'),
+          message: t('errorHappened'),
+        })
+      );
     }
-  };
+  }, [isProjectError, isCurrentStudyError]);
 
   const sortOptions = [
     {
@@ -127,35 +132,42 @@ export default function Study() {
     setSortOption(e.target.value as SortOptions);
   };
 
-  const getProject = async () => {
-    if (currentProject?.id) {
-      try {
-        setProject(currentProject);
-        await getStudyStates();
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  };
-
-  const getStudy = async (withNotification = false) => {
-    if (projectId && studyId) {
-      try {
-        const { data } = await getCurrentStudy({ projectId, studyId });
-        if (data) setStudy(data as StudyWithFileType);
-        if (withNotification) {
-          dispatch(
-            setSuccess({
-              title: t('studyUpdated'),
-              text: t('studyUpdatedDetails', { name: study?.name }),
-            })
+  // TODO: use Files when it is implemented in the backend
+  const getFileSection = () => (
+    <div className="study-details-files">
+      <div className="study-details-files-title">
+        <span className="mr-2">
+          <VscFiles />
+        </span>
+        {t('filesAndLinks')}
+        <span className="ml-auto">
+          {(study as StudyWithFileType).files ? (study as StudyWithFileType).files.length : 0}
+        </span>
+      </div>
+      <div className="study-details-files-list">
+        {(study as StudyWithFileType).files?.map((file) => {
+          const isUrl = Math.random() > 0.5;
+          return (
+            <a
+              href={file.url}
+              key={nextId()}
+              target="_blank"
+              rel="noreferrer"
+              className={isUrl ? 'url' : 'file'}
+            >
+              <span className="study-details-files-list-name">
+                <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
+                {file.name}
+              </span>
+              <span className="study-details-files-list-link">
+                {isUrl ? file.url : file.filename}
+              </span>
+            </a>
           );
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  };
+        })}
+      </div>
+    </div>
+  );
 
   const getScenarioList = async () => {
     if (projectId && studyId) {
@@ -207,16 +219,6 @@ export default function Study() {
       }
     }
   };
-
-  useEffect(() => {
-    if (!studyId || !projectId) {
-      navigate('/operational-studies/project');
-    } else if (!isProjectLoading) {
-      getProject();
-      getStudy();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isProjectLoading]);
 
   useEffect(() => {
     if (studyId) getScenarioList();
@@ -273,10 +275,7 @@ export default function Study() {
                       className="study-details-modify-button"
                       type="button"
                       onClick={() =>
-                        openModal(
-                          <AddOrEditStudyModal editionMode study={study} getStudy={getStudy} />,
-                          'xl'
-                        )
+                        openModal(<AddOrEditStudyModal editionMode study={study} />, 'xl')
                       }
                     >
                       <span className="study-details-modify-button-text">{t('modifyStudy')}</span>
@@ -300,49 +299,18 @@ export default function Study() {
                               key={nextId()}
                               projectID={project.id}
                               studyID={study.id}
-                              getStudy={getStudy}
                               number={idx + 1}
+                              studyName={study.name}
                               state={state}
                               done={idx <= studyStates.indexOf(study.state)}
+                              tags={study.tags}
                             />
                           )
                       )}
                     </div>
                   )}
                 </div>
-                <div className="col-xl-3 col-lg-4 col-md-5">
-                  <div className="study-details-files">
-                    <div className="study-details-files-title">
-                      <span className="mr-2">
-                        <VscFiles />
-                      </span>
-                      {t('filesAndLinks')}
-                      <span className="ml-auto">{study.files ? study.files.length : 0}</span>
-                    </div>
-                    <div className="study-details-files-list">
-                      {study.files?.map((file) => {
-                        const isUrl = Math.random() > 0.5;
-                        return (
-                          <a
-                            href={file.url}
-                            key={nextId()}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={isUrl ? 'url' : 'file'}
-                          >
-                            <span className="study-details-files-list-name">
-                              <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
-                              {file.name}
-                            </span>
-                            <span className="study-details-files-list-link">
-                              {isUrl ? file.url : file.filename}
-                            </span>
-                          </a>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
+                <div className="col-xl-3 col-lg-4 col-md-5">{getFileSection()}</div>
               </div>
 
               <div className="study-details-financials">
