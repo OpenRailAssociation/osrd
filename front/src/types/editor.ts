@@ -47,6 +47,31 @@ export interface LPVPanel {
   type: string;
   value: string | null;
 }
+
+export interface LPVExtension {
+  annoucement: LPVPanel[];
+  z: LPVPanel;
+  r: LPVPanel[];
+}
+export interface SpeedSectionLpvEntity
+  extends EditorEntity<
+    MultiLineString,
+    {
+      speed_limit?: number;
+      speed_limit_by_tag?: Record<string, number | undefined>;
+      track_ranges?: {
+        applicable_directions: ApplicableDirection;
+        begin: number;
+        end: number;
+        track: string;
+      }[];
+      extensions: {
+        lpv_sncf: LPVExtension;
+      };
+    }
+  > {
+  objType: 'SpeedSection';
+}
 export interface SpeedSectionEntity
   extends EditorEntity<
     MultiLineString,
@@ -60,11 +85,7 @@ export interface SpeedSectionEntity
         track: string;
       }[];
       extensions?: {
-        lpv_sncf: null | {
-          announcement: LPVPanel[];
-          z: LPVPanel;
-          r: LPVPanel[];
-        };
+        lpv_sncf: null | LPVExtension;
       };
     }
   > {

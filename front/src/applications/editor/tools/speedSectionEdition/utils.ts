@@ -7,7 +7,13 @@ import lineSliceAlong from '@turf/line-slice-along';
 
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { DEFAULT_COMMON_TOOL_STATE, Reducer } from '../types';
-import { LPVPanel, SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
+import {
+  LPVExtension,
+  LPVPanel,
+  SpeedSectionEntity,
+  TrackRange,
+  TrackSectionEntity,
+} from '../../../../types';
 import {
   LPV_PANEL_TYPE,
   LPV_PANEL_TYPES,
@@ -35,6 +41,85 @@ export function getNewSpeedSection(): SpeedSectionEntity {
       coordinates: [],
     },
   };
+}
+
+export function getPanelInformationFromInteractionState(
+  interactionState: {
+    type: 'movePanel';
+  } & (
+    | {
+        panelType: LPV_PANEL_TYPES.R | LPV_PANEL_TYPES.ANNOUNCEMENT;
+        panelIndex: number;
+      }
+    | {
+        panelType: LPV_PANEL_TYPES.Z;
+      }
+  )
+) {
+  const { panelType } = interactionState;
+  return (
+    panelType === LPV_PANEL_TYPES.Z
+      ? { panelType: LPV_PANEL_TYPES.Z }
+      : { panelType, panelIndex: interactionState.panelIndex }
+  ) as
+    | { panelType: LPV_PANEL_TYPES.Z }
+    | {
+        panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R;
+        panelIndex: number;
+      };
+}
+
+export function getNewLpvExtension(
+  newLpvExtension: LPVExtension,
+  panelInformation:
+    | { panelType: LPV_PANEL_TYPES.Z }
+    | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number },
+  newPosition: { trackId: string; position: number }
+) {
+  const { panelType } = panelInformation;
+  if (panelType === LPV_PANEL_TYPES.Z) {
+    newLpvExtension.z = {
+      ...newLpvExtension.z,
+      ...newPosition,
+    };
+  } else {
+    const { panelIndex } = panelInformation;
+    if (panelType === LPV_PANEL_TYPES.ANNOUNCEMENT) {
+      newLpvExtension.annoucement[panelIndex] = {
+        ...newLpvExtension.annoucement[panelIndex],
+        ...newPosition,
+      };
+    } else {
+      newLpvExtension.r[panelIndex] = {
+        ...newLpvExtension.r[panelIndex],
+        ...newPosition,
+      };
+    }
+  }
+  return newLpvExtension;
+}
+
+export function getMovedLpvEntity(
+  entity: SpeedSectionEntity,
+  panelInfo:
+    | { panelType: LPV_PANEL_TYPES.Z }
+    | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number },
+  newPosition: { trackId: string; position: number }
+) {
+  if (entity.properties.extensions?.lpv_sncf) {
+    const newLpvExtension = getNewLpvExtension(
+      cloneDeep(entity.properties.extensions?.lpv_sncf),
+      panelInfo,
+      newPosition
+    );
+    const updatedEntity = cloneDeep(entity);
+    updatedEntity.properties.extensions = updatedEntity.properties.extensions
+      ? updatedEntity.properties.extensions
+      : { lpv_sncf: null };
+    updatedEntity.properties.extensions.lpv_sncf = newLpvExtension;
+    return updatedEntity;
+  }
+  return entity;
 }
 
 export function getEditSpeedSectionState(entity: SpeedSectionEntity): SpeedSectionEditionState {

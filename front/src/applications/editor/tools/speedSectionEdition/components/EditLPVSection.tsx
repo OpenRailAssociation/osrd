@@ -2,10 +2,10 @@ import React, { useContext } from 'react';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { cloneDeep, flatMap } from 'lodash';
 import { FaPlus, FaTrash } from 'react-icons/fa';
-import { LPVPanel, SpeedSectionEntity } from 'types';
+import { LPVExtension, LPVPanel, SpeedSectionEntity } from 'types';
 import { useTranslation } from 'react-i18next';
 import { ExtendedEditorContextType } from '../../types';
-import { SpeedSectionEditionState } from '../types';
+import { SpeedSectionLpvEditionState } from '../types';
 import EditorContext from 'applications/editor/context';
 import { LPV_PANEL_TYPES } from '../types';
 
@@ -53,11 +53,13 @@ const EditLPVSection = () => {
   const {
     setState,
     state: { entity, initialEntity },
-  } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionEditionState>;
+  } = useContext(EditorContext) as ExtendedEditorContextType<SpeedSectionLpvEditionState>;
 
   const LPVs = entity.properties.extensions?.lpv_sncf;
 
-  const panels = flatMap(LPVs);
+  const panels: LPVPanel[] = flatMap(LPVs);
+
+  console.log('panels : ', panels);
 
   return (
     <div>
@@ -66,7 +68,7 @@ const EditLPVSection = () => {
         <FaPlus />
       </button>
       {LPVs &&
-        panels.map((panel) => (
+        panels.map((panel, i) => (
           <div className="my-4">
             <div>{t('Editor.obj-types.LPVPanel')}</div>
             <div className="mb-2">Type : {panel.type}</div>
@@ -80,10 +82,19 @@ const EditLPVSection = () => {
               options={['LEFT', 'RIGHT']}
               onChange={(e) => {
                 const newEntity = cloneDeep(entity);
-                const newSide =
-                  newEntity.properties.extensions?.lpv_sncf[panel.type as LPV_PANEL_TYPES];
-                const newRange = (newEntity.properties.track_ranges || [])[i];
-                newRange.applicable_directions = e.target.value as ApplicableDirection;
+                const newEntityLPV = newEntity.properties.extensions.lpv_sncf;
+                console.log('panel type : ', panel.type);
+                if (panel.type !== 'Z' && panel.type !== 'R') {
+                  panel.type = 'annoucement';
+                }
+                console.log('panel type : ', panel.type);
+                let newSide = newEntityLPV[panel.type.toLowerCase() as LPV_PANEL_TYPES];
+                if (panel.type !== 'Z') {
+                  newSide = (newSide as LPVPanel[])[0];
+                }
+                console.log('newSide', newSide);
+                // const newRange = (newEntity.properties.track_ranges || [])[i];
+                // newRange.applicable_directions = e.target.value as ApplicableDirection;
                 setState({ entity: newEntity, hoveredItem: null });
               }}
               selectedValue={panel.side}

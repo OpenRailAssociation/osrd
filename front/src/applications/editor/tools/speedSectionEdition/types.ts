@@ -1,7 +1,12 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 
 import { CommonToolState } from '../types';
-import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
+import {
+  SpeedSectionEntity,
+  SpeedSectionLpvEntity,
+  TrackRange,
+  TrackSectionEntity,
+} from '../../../../types';
 
 export type TrackRangeFeature = Feature<
   LineString,
@@ -72,7 +77,7 @@ export type TrackState =
 
 const TYPE_Z = 'z';
 const TYPE_R = 'r';
-const TYPE_ANNOUNCEMENT = 'announcement';
+const TYPE_ANNOUNCEMENT = 'annoucement';
 export enum LPV_PANEL_TYPES {
   Z = TYPE_Z,
   R = TYPE_R,
@@ -99,4 +104,8 @@ export type SpeedSectionEditionState = CommonToolState & {
         | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }
         | { panelType: LPV_PANEL_TYPES.Z }
       ));
+};
+
+export type SpeedSectionLpvEditionState = Omit<SpeedSectionEditionState, 'entity'> & {
+  entity: SpeedSectionLpvEntity;
 };

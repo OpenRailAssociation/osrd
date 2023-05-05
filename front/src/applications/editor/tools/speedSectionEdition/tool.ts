@@ -19,7 +19,13 @@ import {
   TrackRangeExtremityFeature,
   TrackRangeFeature,
 } from './types';
-import { clickOnLpvPanel, getEditSpeedSectionState, getNewSpeedSection } from './utils';
+import {
+  clickOnLpvPanel,
+  getEditSpeedSectionState,
+  getMovedLpvEntity,
+  getNewSpeedSection,
+  getPanelInformationFromInteractionState,
+} from './utils';
 import {
   SpeedSectionEditionLayers,
   SpeedSectionEditionLeftPanel,
@@ -240,23 +246,29 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
        * - modifier le state en lui donnant comme entity une nouvelle entity avec la nouvelle position
        *   & la nouvelle trackRange si nécessaire
        */
-      // console.log(entity);
-      const hoveredTrackRanges = getHoveredTrackRanges(e);
-      if (!isEmpty(hoveredTrackRanges)) {
-        // console.log(hoveredTrackRanges);
-        const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
-        const trackSection = getTrackSectionEntityFromNearestPoint(
-          nearestPoint,
-          hoveredTrackRanges,
-          trackSectionsCache
-        );
-        if (trackSection) {
-          const distanceAlongTrack = approximateDistanceWithEditoastData(
-            trackSection,
-            nearestPoint.geometry
+      if (entity.properties.extensions?.lpv_sncf) {
+        const hoveredTrackRanges = getHoveredTrackRanges(e);
+        if (!isEmpty(hoveredTrackRanges)) {
+          const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
+          const trackSection = getTrackSectionEntityFromNearestPoint(
+            nearestPoint,
+            hoveredTrackRanges,
+            trackSectionsCache
           );
-          // update le state avec la nouvelle trackId et la nouvelle position (pour le panneau concerné)
-          console.log(distanceAlongTrack);
+          if (trackSection) {
+            const distanceAlongTrack = approximateDistanceWithEditoastData(
+              trackSection,
+              nearestPoint.geometry
+            );
+            // on récupère le panneau concerné avec les informations dans l'interactionState
+            const panelInfo = getPanelInformationFromInteractionState(interactionState);
+            const newPosition = {
+              trackId: trackSection.properties.id,
+              position: distanceAlongTrack,
+            };
+            const updatedEntity = getMovedLpvEntity(entity, panelInfo, newPosition);
+            setState({ entity: updatedEntity });
+          }
         }
       }
     } else if (hoveredItem) {
