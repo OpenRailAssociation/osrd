@@ -2,20 +2,31 @@ import React from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-
-type StateType = 'started' | 'inProgress' | 'finish';
+import { StudyState } from 'applications/operationalStudies/consts';
+import { useDispatch } from 'react-redux';
+import { setSuccess } from 'reducers/main';
 
 type Props = {
   projectID: number;
   studyID: number;
-  getStudy: (withNotification: boolean) => void;
   number: number;
-  state: StateType;
+  studyName: string;
+  state: StudyState;
   done: boolean;
+  tags: string[];
 };
 
-export default function StateStep({ projectID, studyID, getStudy, number, state, done }: Props) {
+export default function StateStep({
+  projectID,
+  studyID,
+  number,
+  studyName,
+  state,
+  done,
+  tags,
+}: Props) {
   const { t } = useTranslation('operationalStudies/study');
+  const dispatch = useDispatch();
   const [patchStudy] = osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdMutation();
 
   const changeStudyState = async () => {
@@ -23,9 +34,14 @@ export default function StateStep({ projectID, studyID, getStudy, number, state,
       await patchStudy({
         projectId: projectID,
         studyId: studyID,
-        studyPatchRequest: { state },
+        studyUpsertRequest: { name: studyName, state, tags },
       });
-      getStudy(true);
+      dispatch(
+        setSuccess({
+          title: t('studyUpdated'),
+          text: t('studyUpdatedDetails', { name: studyName }),
+        })
+      );
     } catch (error) {
       console.error(error);
     }

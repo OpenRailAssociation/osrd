@@ -1,494 +1,607 @@
 import { baseEditoastApi as api } from './emptyApi';
 
-const injectedRtkApi = api.injectEndpoints({
-  endpoints: (build) => ({
-    getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
-      query: () => ({ url: `/health/` }),
-    }),
-    getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
-      query: () => ({ url: `/version/` }),
-    }),
-    postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
-      query: (queryArg) => ({ url: `/search/`, method: 'POST', body: queryArg.body }),
-    }),
-    getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
-      GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
-      GetLayersLayerByLayerSlugMvtAndViewSlugApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/layers/layer/${queryArg.layerSlug}/mvt/${queryArg.viewSlug}/`,
-        params: { infra: queryArg.infra },
+export const addTagTypes = [
+  'layers',
+  'infra',
+  'routes',
+  'pathfinding',
+  'electrical_profiles',
+  'documents',
+  'rolling_stock',
+  'rolling_stock_livery',
+  'projects',
+  'timetable',
+  'studies',
+  'scenarios',
+  'train_schedule',
+] as const;
+const injectedRtkApi = api
+  .enhanceEndpoints({
+    addTagTypes,
+  })
+  .injectEndpoints({
+    endpoints: (build) => ({
+      getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
+        query: () => ({ url: `/health/` }),
+      }),
+      getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
+        query: () => ({ url: `/version/` }),
+      }),
+      postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
+        query: (queryArg) => ({ url: `/search/`, method: 'POST', body: queryArg.body }),
+      }),
+      getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
+        GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
+        GetLayersLayerByLayerSlugMvtAndViewSlugApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/layers/layer/${queryArg.layerSlug}/mvt/${queryArg.viewSlug}/`,
+          params: { infra: queryArg.infra },
+        }),
+        providesTags: ['layers'],
+      }),
+      getLayersTileByLayerSlugAndViewSlugZXY: build.query<
+        GetLayersTileByLayerSlugAndViewSlugZXYApiResponse,
+        GetLayersTileByLayerSlugAndViewSlugZXYApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/layers/tile/${queryArg.layerSlug}/${queryArg.viewSlug}/${queryArg.z}/${queryArg.x}/${queryArg.y}/`,
+          params: { infra: queryArg.infra },
+        }),
+        providesTags: ['layers'],
+      }),
+      getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
+        query: () => ({ url: `/infra/` }),
+        providesTags: ['infra'],
+      }),
+      postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
+        query: (queryArg) => ({ url: `/infra/`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['infra'],
+      }),
+      getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
+        providesTags: ['infra'],
+      }),
+      deleteInfraById: build.mutation<DeleteInfraByIdApiResponse, DeleteInfraByIdApiArg>({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
+        invalidatesTags: ['infra'],
+      }),
+      postInfraById: build.mutation<PostInfraByIdApiResponse, PostInfraByIdApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
+      }),
+      putInfraById: build.mutation<PutInfraByIdApiResponse, PutInfraByIdApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/`,
+          method: 'PUT',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
+      }),
+      postInfraByIdLoad: build.mutation<PostInfraByIdLoadApiResponse, PostInfraByIdLoadApiArg>({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/load/`, method: 'POST' }),
+        invalidatesTags: ['infra'],
+      }),
+      getInfraByIdRailjson: build.query<
+        GetInfraByIdRailjsonApiResponse,
+        GetInfraByIdRailjsonApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
+        providesTags: ['infra'],
+      }),
+      postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/railjson/`,
+          method: 'POST',
+          body: queryArg.railjsonFile,
+          params: { name: queryArg.name, generate_data: queryArg.generateData },
+        }),
+        invalidatesTags: ['infra'],
+      }),
+      getInfraByIdErrors: build.query<GetInfraByIdErrorsApiResponse, GetInfraByIdErrorsApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/errors/`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            error_type: queryArg.errorType,
+            object_id: queryArg.objectId,
+            level: queryArg.level,
+          },
+        }),
+        providesTags: ['infra'],
+      }),
+      getInfraByIdSwitchTypes: build.query<
+        GetInfraByIdSwitchTypesApiResponse,
+        GetInfraByIdSwitchTypesApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/switch_types/` }),
+        providesTags: ['infra'],
+      }),
+      postInfraRefresh: build.mutation<PostInfraRefreshApiResponse, PostInfraRefreshApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/refresh/`,
+          method: 'POST',
+          params: { infras: queryArg.infras, force: queryArg.force },
+        }),
+        invalidatesTags: ['infra'],
+      }),
+      getInfraByIdLinesAndLineCodeBbox: build.query<
+        GetInfraByIdLinesAndLineCodeBboxApiResponse,
+        GetInfraByIdLinesAndLineCodeBboxApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/lines/${queryArg.lineCode}/bbox/` }),
+        providesTags: ['infra'],
+      }),
+      postInfraByIdLock: build.mutation<PostInfraByIdLockApiResponse, PostInfraByIdLockApiArg>({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/lock/`, method: 'POST' }),
+        invalidatesTags: ['infra'],
+      }),
+      postInfraByIdUnlock: build.mutation<
+        PostInfraByIdUnlockApiResponse,
+        PostInfraByIdUnlockApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/unlock/`, method: 'POST' }),
+        invalidatesTags: ['infra'],
+      }),
+      getInfraByIdSpeedLimitTags: build.query<
+        GetInfraByIdSpeedLimitTagsApiResponse,
+        GetInfraByIdSpeedLimitTagsApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
+        providesTags: ['infra'],
+      }),
+      getInfraByIdVoltages: build.query<
+        GetInfraByIdVoltagesApiResponse,
+        GetInfraByIdVoltagesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/voltages/`,
+          params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
+        }),
+        providesTags: ['infra'],
+      }),
+      getInfraByIdAttachedAndTrackId: build.query<
+        GetInfraByIdAttachedAndTrackIdApiResponse,
+        GetInfraByIdAttachedAndTrackIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
+        providesTags: ['infra'],
+      }),
+      getInfraByIdRoutesAndWaypointTypeWaypointId: build.query<
+        GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
+        GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/routes/${queryArg.waypointType}/${queryArg.waypointId}/`,
+        }),
+        providesTags: ['infra', 'routes'],
+      }),
+      getInfraByIdRoutesTrackRanges: build.query<
+        GetInfraByIdRoutesTrackRangesApiResponse,
+        GetInfraByIdRoutesTrackRangesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/routes/track_ranges/`,
+          params: { routes: queryArg.routes },
+        }),
+        providesTags: ['infra', 'routes'],
+      }),
+      postInfraByIdPathfinding: build.mutation<
+        PostInfraByIdPathfindingApiResponse,
+        PostInfraByIdPathfindingApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/pathfinding/`,
+          method: 'POST',
+          body: queryArg.body,
+          params: { number: queryArg.number },
+        }),
+        invalidatesTags: ['infra', 'pathfinding'],
+      }),
+      postInfraByIdObjectsAndObjectType: build.mutation<
+        PostInfraByIdObjectsAndObjectTypeApiResponse,
+        PostInfraByIdObjectsAndObjectTypeApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/objects/${queryArg.objectType}/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
+      }),
+      postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.id}/clone/`,
+          method: 'POST',
+          params: { name: queryArg.name },
+        }),
+        invalidatesTags: ['infra'],
+      }),
+      getElectricalProfileSet: build.query<
+        GetElectricalProfileSetApiResponse,
+        GetElectricalProfileSetApiArg
+      >({
+        query: () => ({ url: `/electrical_profile_set/` }),
+        providesTags: ['electrical_profiles'],
+      }),
+      postElectricalProfileSet: build.mutation<
+        PostElectricalProfileSetApiResponse,
+        PostElectricalProfileSetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/electrical_profile_set/`,
+          method: 'POST',
+          params: { name: queryArg.name },
+        }),
+        invalidatesTags: ['electrical_profiles'],
+      }),
+      getElectricalProfileSetById: build.query<
+        GetElectricalProfileSetByIdApiResponse,
+        GetElectricalProfileSetByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/` }),
+        providesTags: ['electrical_profiles'],
+      }),
+      getElectricalProfileSetByIdLevelOrder: build.query<
+        GetElectricalProfileSetByIdLevelOrderApiResponse,
+        GetElectricalProfileSetByIdLevelOrderApiArg
+      >({
+        query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/level_order/` }),
+        providesTags: ['electrical_profiles'],
+      }),
+      getDocumentsByKey: build.query<GetDocumentsByKeyApiResponse, GetDocumentsByKeyApiArg>({
+        query: (queryArg) => ({ url: `/documents/${queryArg.key}/` }),
+        providesTags: ['documents'],
+      }),
+      deleteDocumentsByKey: build.mutation<
+        DeleteDocumentsByKeyApiResponse,
+        DeleteDocumentsByKeyApiArg
+      >({
+        query: (queryArg) => ({ url: `/documents/${queryArg.key}/`, method: 'DELETE' }),
+        invalidatesTags: ['documents'],
+      }),
+      postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
+        query: () => ({ url: `/documents/`, method: 'POST' }),
+        invalidatesTags: ['documents'],
+      }),
+      getLightRollingStock: build.query<
+        GetLightRollingStockApiResponse,
+        GetLightRollingStockApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/light_rolling_stock/`,
+          params: { page: queryArg.page, page_size: queryArg.pageSize },
+        }),
+        providesTags: ['rolling_stock'],
+      }),
+      getLightRollingStockById: build.query<
+        GetLightRollingStockByIdApiResponse,
+        GetLightRollingStockByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
+        providesTags: ['rolling_stock'],
+      }),
+      postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
+        query: (queryArg) => ({ url: `/pathfinding/`, method: 'POST', body: queryArg.pathQuery }),
+      }),
+      getPathfindingById: build.query<GetPathfindingByIdApiResponse, GetPathfindingByIdApiArg>({
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/` }),
+        providesTags: ['pathfinding'],
+      }),
+      putPathfindingById: build.mutation<PutPathfindingByIdApiResponse, PutPathfindingByIdApiArg>({
+        query: (queryArg) => ({
+          url: `/pathfinding/${queryArg.id}/`,
+          method: 'PUT',
+          body: queryArg.pathQuery,
+        }),
+        invalidatesTags: ['pathfinding'],
+      }),
+      deletePathfindingById: build.mutation<
+        DeletePathfindingByIdApiResponse,
+        DeletePathfindingByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/`, method: 'DELETE' }),
+        invalidatesTags: ['pathfinding'],
+      }),
+      postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
+        query: (queryArg) => ({
+          url: `/rolling_stock/`,
+          method: 'POST',
+          body: queryArg.rollingStockUpsertPayload,
+          params: { locked: queryArg.locked },
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
+      getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
+        query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
+        providesTags: ['rolling_stock'],
+      }),
+      patchRollingStockById: build.mutation<
+        PatchRollingStockByIdApiResponse,
+        PatchRollingStockByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/rolling_stock/${queryArg.id}/`,
+          method: 'PATCH',
+          body: queryArg.rollingStockUpsertPayload,
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
+      deleteRollingStockById: build.mutation<
+        DeleteRollingStockByIdApiResponse,
+        DeleteRollingStockByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/rolling_stock/${queryArg.id}/`,
+          method: 'DELETE',
+          params: { force: queryArg.force },
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
+      patchRollingStockByIdLocked: build.mutation<
+        PatchRollingStockByIdLockedApiResponse,
+        PatchRollingStockByIdLockedApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/rolling_stock/${queryArg.id}/locked/`,
+          method: 'PATCH',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
+      postRollingStockByIdLivery: build.mutation<
+        PostRollingStockByIdLiveryApiResponse,
+        PostRollingStockByIdLiveryApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/rolling_stock/${queryArg.id}/livery/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['rolling_stock', 'rolling_stock_livery'],
+      }),
+      postProjects: build.mutation<PostProjectsApiResponse, PostProjectsApiArg>({
+        query: (queryArg) => ({
+          url: `/projects/`,
+          method: 'POST',
+          body: queryArg.projectCreateRequest,
+        }),
+        invalidatesTags: ['projects'],
+      }),
+      getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
+        query: (queryArg) => ({
+          url: `/projects/`,
+          params: {
+            ordering: queryArg.ordering,
+            name: queryArg.name,
+            description: queryArg.description,
+            tags: queryArg.tags,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['projects'],
+      }),
+      getProjectsByProjectId: build.query<
+        GetProjectsByProjectIdApiResponse,
+        GetProjectsByProjectIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/` }),
+        providesTags: ['projects'],
+      }),
+      patchProjectsByProjectId: build.mutation<
+        PatchProjectsByProjectIdApiResponse,
+        PatchProjectsByProjectIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/`,
+          method: 'PATCH',
+          body: queryArg.projectPatchRequest,
+        }),
+        invalidatesTags: ['projects'],
+      }),
+      deleteProjectsByProjectId: build.mutation<
+        DeleteProjectsByProjectIdApiResponse,
+        DeleteProjectsByProjectIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
+        invalidatesTags: ['projects'],
+      }),
+      getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
+        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
+        providesTags: ['timetable'],
+      }),
+      getTimetableByIdConflicts: build.query<
+        GetTimetableByIdConflictsApiResponse,
+        GetTimetableByIdConflictsApiArg
+      >({
+        query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts/` }),
+        providesTags: ['timetable'],
+      }),
+      postProjectsByProjectIdStudies: build.mutation<
+        PostProjectsByProjectIdStudiesApiResponse,
+        PostProjectsByProjectIdStudiesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/`,
+          method: 'POST',
+          body: queryArg.studyUpsertRequest,
+        }),
+        invalidatesTags: ['studies'],
+      }),
+      getProjectsByProjectIdStudies: build.query<
+        GetProjectsByProjectIdStudiesApiResponse,
+        GetProjectsByProjectIdStudiesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/`,
+          params: {
+            ordering: queryArg.ordering,
+            name: queryArg.name,
+            description: queryArg.description,
+            tags: queryArg.tags,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['studies'],
+      }),
+      getProjectsByProjectIdStudiesAndStudyId: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+        }),
+        providesTags: ['studies'],
+      }),
+      patchProjectsByProjectIdStudiesAndStudyId: build.mutation<
+        PatchProjectsByProjectIdStudiesAndStudyIdApiResponse,
+        PatchProjectsByProjectIdStudiesAndStudyIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+          method: 'PATCH',
+          body: queryArg.studyUpsertRequest,
+        }),
+        invalidatesTags: ['studies'],
+      }),
+      deleteProjectsByProjectIdStudiesAndStudyId: build.mutation<
+        DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse,
+        DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['studies'],
+      }),
+      postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          method: 'POST',
+          body: queryArg.scenarioRequest,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      getProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
+          params: {
+            ordering: queryArg.ordering,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['scenarios'],
+      }),
+      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+        }),
+        providesTags: ['scenarios'],
+      }),
+      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
+        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
+        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
+          method: 'PATCH',
+          body: queryArg.scenarioPatchRequest,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      getPathfindingByPathIdCatenaries: build.query<
+        GetPathfindingByPathIdCatenariesApiResponse,
+        GetPathfindingByPathIdCatenariesApiArg
+      >({
+        query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathId}/catenaries/` }),
+        providesTags: ['infra'],
+      }),
+      getTrainScheduleById: build.query<
+        GetTrainScheduleByIdApiResponse,
+        GetTrainScheduleByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/` }),
+        providesTags: ['train_schedule'],
+      }),
+      deleteTrainScheduleById: build.mutation<
+        DeleteTrainScheduleByIdApiResponse,
+        DeleteTrainScheduleByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
+        invalidatesTags: ['train_schedule'],
+      }),
+      patchTrainScheduleById: build.mutation<
+        PatchTrainScheduleByIdApiResponse,
+        PatchTrainScheduleByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/${queryArg.id}/`,
+          method: 'PATCH',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule'],
+      }),
+      getTrainScheduleByIdResult: build.query<
+        GetTrainScheduleByIdResultApiResponse,
+        GetTrainScheduleByIdResultApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/${queryArg.id}/result/`,
+          params: { path_id: queryArg.pathId },
+        }),
+        providesTags: ['train_schedule'],
+      }),
+      getTrainScheduleResults: build.query<
+        GetTrainScheduleResultsApiResponse,
+        GetTrainScheduleResultsApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/results/`,
+          params: { path_id: queryArg.pathId, train_ids: queryArg.trainIds },
+        }),
+        providesTags: ['train_schedule'],
+      }),
+      postTrainScheduleStandaloneSimulation: build.mutation<
+        PostTrainScheduleStandaloneSimulationApiResponse,
+        PostTrainScheduleStandaloneSimulationApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/standalone_simulation/`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule'],
       }),
     }),
-    getLayersTileByLayerSlugAndViewSlugZXY: build.query<
-      GetLayersTileByLayerSlugAndViewSlugZXYApiResponse,
-      GetLayersTileByLayerSlugAndViewSlugZXYApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/layers/tile/${queryArg.layerSlug}/${queryArg.viewSlug}/${queryArg.z}/${queryArg.x}/${queryArg.y}/`,
-        params: { infra: queryArg.infra },
-      }),
-    }),
-    getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
-      query: () => ({ url: `/infra/` }),
-    }),
-    postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
-      query: (queryArg) => ({ url: `/infra/`, method: 'POST', body: queryArg.body }),
-    }),
-    getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
-    }),
-    deleteInfraById: build.mutation<DeleteInfraByIdApiResponse, DeleteInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'DELETE' }),
-    }),
-    postInfraById: build.mutation<PostInfraByIdApiResponse, PostInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'POST', body: queryArg.body }),
-    }),
-    putInfraById: build.mutation<PutInfraByIdApiResponse, PutInfraByIdApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'PUT', body: queryArg.body }),
-    }),
-    postInfraByIdLoad: build.mutation<PostInfraByIdLoadApiResponse, PostInfraByIdLoadApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/load/`, method: 'POST' }),
-    }),
-    getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
-    }),
-    postInfraRailjson: build.mutation<PostInfraRailjsonApiResponse, PostInfraRailjsonApiArg>({
-      query: (queryArg) => ({
-        url: `/infra/railjson/`,
-        method: 'POST',
-        body: queryArg.railjsonFile,
-        params: { name: queryArg.name, generate_data: queryArg.generateData },
-      }),
-    }),
-    getInfraByIdErrors: build.query<GetInfraByIdErrorsApiResponse, GetInfraByIdErrorsApiArg>({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/errors/`,
-        params: {
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-          error_type: queryArg.errorType,
-          object_id: queryArg.objectId,
-          level: queryArg.level,
-        },
-      }),
-    }),
-    getInfraByIdSwitchTypes: build.query<
-      GetInfraByIdSwitchTypesApiResponse,
-      GetInfraByIdSwitchTypesApiArg
-    >({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/switch_types/` }),
-    }),
-    postInfraRefresh: build.mutation<PostInfraRefreshApiResponse, PostInfraRefreshApiArg>({
-      query: (queryArg) => ({
-        url: `/infra/refresh/`,
-        method: 'POST',
-        params: { infras: queryArg.infras, force: queryArg.force },
-      }),
-    }),
-    getInfraByIdLinesAndLineCodeBbox: build.query<
-      GetInfraByIdLinesAndLineCodeBboxApiResponse,
-      GetInfraByIdLinesAndLineCodeBboxApiArg
-    >({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/lines/${queryArg.lineCode}/bbox/` }),
-    }),
-    postInfraByIdLock: build.mutation<PostInfraByIdLockApiResponse, PostInfraByIdLockApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/lock/`, method: 'POST' }),
-    }),
-    postInfraByIdUnlock: build.mutation<PostInfraByIdUnlockApiResponse, PostInfraByIdUnlockApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/unlock/`, method: 'POST' }),
-    }),
-    getInfraByIdSpeedLimitTags: build.query<
-      GetInfraByIdSpeedLimitTagsApiResponse,
-      GetInfraByIdSpeedLimitTagsApiArg
-    >({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
-    }),
-    getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/voltages/`,
-        params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
-      }),
-    }),
-    getInfraByIdAttachedAndTrackId: build.query<
-      GetInfraByIdAttachedAndTrackIdApiResponse,
-      GetInfraByIdAttachedAndTrackIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/attached/${queryArg.trackId}/` }),
-    }),
-    getInfraByIdRoutesAndWaypointTypeWaypointId: build.query<
-      GetInfraByIdRoutesAndWaypointTypeWaypointIdApiResponse,
-      GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/routes/${queryArg.waypointType}/${queryArg.waypointId}/`,
-      }),
-    }),
-    getInfraByIdRoutesTrackRanges: build.query<
-      GetInfraByIdRoutesTrackRangesApiResponse,
-      GetInfraByIdRoutesTrackRangesApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/routes/track_ranges/`,
-        params: { routes: queryArg.routes },
-      }),
-    }),
-    postInfraByIdPathfinding: build.mutation<
-      PostInfraByIdPathfindingApiResponse,
-      PostInfraByIdPathfindingApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/pathfinding/`,
-        method: 'POST',
-        body: queryArg.body,
-        params: { number: queryArg.number },
-      }),
-    }),
-    postInfraByIdObjectsAndObjectType: build.mutation<
-      PostInfraByIdObjectsAndObjectTypeApiResponse,
-      PostInfraByIdObjectsAndObjectTypeApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/objects/${queryArg.objectType}/`,
-        method: 'POST',
-        body: queryArg.body,
-      }),
-    }),
-    postInfraByIdClone: build.mutation<PostInfraByIdCloneApiResponse, PostInfraByIdCloneApiArg>({
-      query: (queryArg) => ({
-        url: `/infra/${queryArg.id}/clone/`,
-        method: 'POST',
-        params: { name: queryArg.name },
-      }),
-    }),
-    getElectricalProfileSet: build.query<
-      GetElectricalProfileSetApiResponse,
-      GetElectricalProfileSetApiArg
-    >({
-      query: () => ({ url: `/electrical_profile_set/` }),
-    }),
-    postElectricalProfileSet: build.mutation<
-      PostElectricalProfileSetApiResponse,
-      PostElectricalProfileSetApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/electrical_profile_set/`,
-        method: 'POST',
-        params: { name: queryArg.name },
-      }),
-    }),
-    getElectricalProfileSetById: build.query<
-      GetElectricalProfileSetByIdApiResponse,
-      GetElectricalProfileSetByIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/` }),
-    }),
-    getElectricalProfileSetByIdLevelOrder: build.query<
-      GetElectricalProfileSetByIdLevelOrderApiResponse,
-      GetElectricalProfileSetByIdLevelOrderApiArg
-    >({
-      query: (queryArg) => ({ url: `/electrical_profile_set/${queryArg.id}/level_order/` }),
-    }),
-    getDocumentsByKey: build.query<GetDocumentsByKeyApiResponse, GetDocumentsByKeyApiArg>({
-      query: (queryArg) => ({ url: `/documents/${queryArg.key}/` }),
-    }),
-    deleteDocumentsByKey: build.mutation<
-      DeleteDocumentsByKeyApiResponse,
-      DeleteDocumentsByKeyApiArg
-    >({
-      query: (queryArg) => ({ url: `/documents/${queryArg.key}/`, method: 'DELETE' }),
-    }),
-    postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
-      query: () => ({ url: `/documents/`, method: 'POST' }),
-    }),
-    getLightRollingStock: build.query<GetLightRollingStockApiResponse, GetLightRollingStockApiArg>({
-      query: (queryArg) => ({
-        url: `/light_rolling_stock/`,
-        params: { page: queryArg.page, page_size: queryArg.pageSize },
-      }),
-    }),
-    getLightRollingStockById: build.query<
-      GetLightRollingStockByIdApiResponse,
-      GetLightRollingStockByIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
-    }),
-    postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
-      query: (queryArg) => ({ url: `/pathfinding/`, method: 'POST', body: queryArg.pathQuery }),
-    }),
-    getPathfindingById: build.query<GetPathfindingByIdApiResponse, GetPathfindingByIdApiArg>({
-      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/` }),
-    }),
-    putPathfindingById: build.mutation<PutPathfindingByIdApiResponse, PutPathfindingByIdApiArg>({
-      query: (queryArg) => ({
-        url: `/pathfinding/${queryArg.id}/`,
-        method: 'PUT',
-        body: queryArg.pathQuery,
-      }),
-    }),
-    deletePathfindingById: build.mutation<
-      DeletePathfindingByIdApiResponse,
-      DeletePathfindingByIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/`, method: 'DELETE' }),
-    }),
-    postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
-      query: (queryArg) => ({
-        url: `/rolling_stock/`,
-        method: 'POST',
-        body: queryArg.rollingStockUpsertPayload,
-        params: { locked: queryArg.locked },
-      }),
-    }),
-    getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
-      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/` }),
-    }),
-    patchRollingStockById: build.mutation<
-      PatchRollingStockByIdApiResponse,
-      PatchRollingStockByIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/rolling_stock/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.rollingStockUpsertPayload,
-      }),
-    }),
-    deleteRollingStockById: build.mutation<
-      DeleteRollingStockByIdApiResponse,
-      DeleteRollingStockByIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/rolling_stock/${queryArg.id}/`,
-        method: 'DELETE',
-        params: { force: queryArg.force },
-      }),
-    }),
-    patchRollingStockByIdLocked: build.mutation<
-      PatchRollingStockByIdLockedApiResponse,
-      PatchRollingStockByIdLockedApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/rolling_stock/${queryArg.id}/locked/`,
-        method: 'PATCH',
-        body: queryArg.body,
-      }),
-    }),
-    postRollingStockByIdLivery: build.mutation<
-      PostRollingStockByIdLiveryApiResponse,
-      PostRollingStockByIdLiveryApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/rolling_stock/${queryArg.id}/livery/`,
-        method: 'POST',
-        body: queryArg.body,
-      }),
-    }),
-    postProjects: build.mutation<PostProjectsApiResponse, PostProjectsApiArg>({
-      query: (queryArg) => ({
-        url: `/projects/`,
-        method: 'POST',
-        body: queryArg.projectCreateRequest,
-      }),
-    }),
-    getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
-      query: (queryArg) => ({
-        url: `/projects/`,
-        params: {
-          ordering: queryArg.ordering,
-          name: queryArg.name,
-          description: queryArg.description,
-          tags: queryArg.tags,
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-        },
-      }),
-    }),
-    getProjectsByProjectId: build.query<
-      GetProjectsByProjectIdApiResponse,
-      GetProjectsByProjectIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/` }),
-    }),
-    patchProjectsByProjectId: build.mutation<
-      PatchProjectsByProjectIdApiResponse,
-      PatchProjectsByProjectIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/`,
-        method: 'PATCH',
-        body: queryArg.projectPatchRequest,
-      }),
-    }),
-    deleteProjectsByProjectId: build.mutation<
-      DeleteProjectsByProjectIdApiResponse,
-      DeleteProjectsByProjectIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/projects/${queryArg.projectId}/`, method: 'DELETE' }),
-    }),
-    getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
-      query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
-    }),
-    getTimetableByIdConflicts: build.query<
-      GetTimetableByIdConflictsApiResponse,
-      GetTimetableByIdConflictsApiArg
-    >({
-      query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts/` }),
-    }),
-    postProjectsByProjectIdStudies: build.mutation<
-      PostProjectsByProjectIdStudiesApiResponse,
-      PostProjectsByProjectIdStudiesApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/`,
-        method: 'POST',
-        body: queryArg.studyCreateRequest,
-      }),
-    }),
-    getProjectsByProjectIdStudies: build.query<
-      GetProjectsByProjectIdStudiesApiResponse,
-      GetProjectsByProjectIdStudiesApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/`,
-        params: {
-          ordering: queryArg.ordering,
-          name: queryArg.name,
-          description: queryArg.description,
-          tags: queryArg.tags,
-          page: queryArg.page,
-          page_size: queryArg.pageSize,
-        },
-      }),
-    }),
-    getProjectsByProjectIdStudiesAndStudyId: build.query<
-      GetProjectsByProjectIdStudiesAndStudyIdApiResponse,
-      GetProjectsByProjectIdStudiesAndStudyIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
-      }),
-    }),
-    patchProjectsByProjectIdStudiesAndStudyId: build.mutation<
-      PatchProjectsByProjectIdStudiesAndStudyIdApiResponse,
-      PatchProjectsByProjectIdStudiesAndStudyIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
-        method: 'PATCH',
-        body: queryArg.studyPatchRequest,
-      }),
-    }),
-    deleteProjectsByProjectIdStudiesAndStudyId: build.mutation<
-      DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse,
-      DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/`,
-        method: 'DELETE',
-      }),
-    }),
-    postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
-      PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-      PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
-        method: 'POST',
-        body: queryArg.scenarioRequest,
-      }),
-    }),
-    getProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
-      GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-      GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/`,
-        params: { ordering: queryArg.ordering, page: queryArg.page, page_size: queryArg.pageSize },
-      }),
-    }),
-    getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
-      GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-      GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
-      }),
-    }),
-    deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-      DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-      DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
-        method: 'DELETE',
-      }),
-    }),
-    patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-      PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-      PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/`,
-        method: 'PATCH',
-        body: queryArg.scenarioPatchRequest,
-      }),
-    }),
-    getPathfindingByPathIdCatenaries: build.query<
-      GetPathfindingByPathIdCatenariesApiResponse,
-      GetPathfindingByPathIdCatenariesApiArg
-    >({
-      query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathId}/catenaries/` }),
-    }),
-    getTrainScheduleById: build.query<GetTrainScheduleByIdApiResponse, GetTrainScheduleByIdApiArg>({
-      query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/` }),
-    }),
-    deleteTrainScheduleById: build.mutation<
-      DeleteTrainScheduleByIdApiResponse,
-      DeleteTrainScheduleByIdApiArg
-    >({
-      query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
-    }),
-    patchTrainScheduleById: build.mutation<
-      PatchTrainScheduleByIdApiResponse,
-      PatchTrainScheduleByIdApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/train_schedule/${queryArg.id}/`,
-        method: 'PATCH',
-        body: queryArg.body,
-      }),
-    }),
-    getTrainScheduleByIdResult: build.query<
-      GetTrainScheduleByIdResultApiResponse,
-      GetTrainScheduleByIdResultApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/train_schedule/${queryArg.id}/result/`,
-        params: { path_id: queryArg.pathId },
-      }),
-    }),
-    getTrainScheduleResults: build.query<
-      GetTrainScheduleResultsApiResponse,
-      GetTrainScheduleResultsApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/train_schedule/results/`,
-        params: { path_id: queryArg.pathId, train_ids: queryArg.trainIds },
-      }),
-    }),
-    postTrainScheduleStandaloneSimulation: build.mutation<
-      PostTrainScheduleStandaloneSimulationApiResponse,
-      PostTrainScheduleStandaloneSimulationApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/train_schedule/standalone_simulation/`,
-        method: 'POST',
-        body: queryArg.body,
-      }),
-    }),
-  }),
-  overrideExisting: false,
-});
+    overrideExisting: false,
+  });
 export { injectedRtkApi as osrdEditoastApi };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
@@ -933,7 +1046,7 @@ export type PostProjectsByProjectIdStudiesApiResponse =
   /** status 201 The created operational study */ StudyResult;
 export type PostProjectsByProjectIdStudiesApiArg = {
   projectId: number;
-  studyCreateRequest: StudyCreateRequest;
+  studyUpsertRequest: StudyUpsertRequest;
 };
 export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studies list */ {
   count?: number;
@@ -977,7 +1090,7 @@ export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
   /** study id you want to retrieve */
   studyId: number;
   /** The fields you want to update */
-  studyPatchRequest: StudyPatchRequest;
+  studyUpsertRequest: StudyUpsertRequest;
 };
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
 export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
@@ -1562,20 +1675,20 @@ export type ProjectPatchRequest = {
   tags?: string[];
 };
 export type StudyResult = {
-  id?: number;
-  name?: string;
-  project_id?: number;
-  description?: string;
-  budget?: number;
-  tags?: string[];
-  service_code?: string;
-  business_code?: string;
-  creation_date?: string;
-  last_modification?: string;
-  scenarios_count?: number;
-  start_date?: string | null;
-  expected_end_date?: string | null;
-  actual_end_date?: string | null;
+  id: number;
+  name: string;
+  project_id: number;
+  description: string;
+  budget: number;
+  tags: string[];
+  service_code: string;
+  business_code: string;
+  creation_date: string;
+  last_modification: string;
+  scenarios_count: number;
+  start_date: string | null;
+  expected_end_date: string | null;
+  actual_end_date: string | null;
   state?: 'started' | 'inProgress' | 'finish';
   study_type?:
     | 'timeTables'
@@ -1588,35 +1701,13 @@ export type StudyResult = {
     | 'chartStability'
     | 'disturbanceTests';
 };
-export type StudyCreateRequest = {
+export type StudyUpsertRequest = {
   name: string;
   service_code?: string;
   business_code?: string;
   description?: string;
   budget?: number;
-  tags?: string[];
-  start_date?: string | null;
-  expected_end_date?: string | null;
-  actual_end_date?: string | null;
-  state?: 'started' | 'inProgress' | 'finish';
-  study_type?:
-    | 'timeTables'
-    | 'flowRate'
-    | 'parkSizing'
-    | 'garageRequirement'
-    | 'operationOrSizing'
-    | 'operability'
-    | 'strategicPlanning'
-    | 'chartStability'
-    | 'disturbanceTests';
-};
-export type StudyPatchRequest = {
-  name?: string;
-  service_code?: string;
-  business_code?: string;
-  description?: string;
-  budget?: number;
-  tags?: string[];
+  tags: string[];
   start_date?: string | null;
   expected_end_date?: string | null;
   actual_end_date?: string | null;
