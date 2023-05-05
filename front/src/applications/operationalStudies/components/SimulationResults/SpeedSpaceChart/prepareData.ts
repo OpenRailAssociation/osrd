@@ -1,6 +1,14 @@
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
-import { ElectrificationConditions, Train } from 'reducers/osrdsimulation/types';
+import {
+  ElectrificationConditions,
+  GradientPosition,
+  HeightPosition,
+  PositionSpeedTime,
+  RadiusPosition,
+  SpeedPosition,
+  Train,
+} from 'reducers/osrdsimulation/types';
 
 interface IAreaBlock {
   position: number;
@@ -11,19 +19,17 @@ interface IAreaBlock {
 export interface GevPreparedata {
   areaBlock: IAreaBlock[];
   areaSlopesHistogram: IAreaBlock[];
-  curvesHistogram: { radius: number; position: number }[];
-  eco_speed: { speed: number; time: number; position: number }[];
+  curvesHistogram: RadiusPosition[];
+  eco_speed: PositionSpeedTime[];
   electrificationConditions: ElectrificationConditions[];
-  margins_speed: { speed: number; time: number; position: number }[];
-  slopesCurve: { height: number; position: number }[];
-  slopesHistogram: { gradient: number; position: number }[];
-  speed: { speed: number; time: number; position: number }[];
-  vmax: { speed: number; position: number }[];
+  margins_speed: PositionSpeedTime[];
+  slopesCurve: HeightPosition[];
+  slopesHistogram: GradientPosition[];
+  speed: PositionSpeedTime[];
+  vmax: SpeedPosition[];
 }
 
-function buildAreaBlocks(
-  speeds: { speed: number; time: number; position: number }[]
-): IAreaBlock[] {
+function buildAreaBlocks(speeds: PositionSpeedTime[]): IAreaBlock[] {
   return speeds.map((step) => ({
     position: step.position,
     value0: step.speed,
@@ -32,7 +38,7 @@ function buildAreaBlocks(
 }
 
 function buildAreaSlopesHistograms(
-  slopesHistogram: { gradient: number; position: number }[],
+  slopesHistogram: GradientPosition[],
   zeroLineSlope: number
 ): IAreaBlock[] {
   return slopesHistogram.map((step) => ({
@@ -93,7 +99,7 @@ function prepareData(trainSimulation: Train): GevPreparedata {
   const areaSlopesHistogram = buildAreaSlopesHistograms(slopesHistogram, zeroLineSlope);
 
   // Curves
-  const curvesHistogram: { radius: number; position: number }[] = createCurveCurve(
+  const curvesHistogram: RadiusPosition[] = createCurveCurve(
     trainSimulation.curves,
     speed,
     'speed'
