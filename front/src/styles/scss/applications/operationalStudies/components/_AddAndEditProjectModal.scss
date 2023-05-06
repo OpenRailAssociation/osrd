@@ -6,7 +6,7 @@
     position: absolute;
     overflow: hidden;
     border-radius: 4px;
-    max-height: 30vh;
+    max-height: 25vh;
     width: 100%;
     height: 100%;
     margin-bottom: 1rem;
@@ -105,7 +105,7 @@
     }
   }
   .project-edition-modal-name {
-    height: 7.5rem;
+    height: 5rem;
   }
   .project-edition-modal-description {
     textarea {
@@ -114,7 +114,7 @@
   }
   .project-edition-modal-objectives {
     textarea {
-      height: 20vh;
+      height: 17vh;
       padding: 0.5rem;
       font-size: 0.7rem;
       font-family: monospace;
@@ -124,7 +124,7 @@
     height: 100%;
     .project-edition-modal-objectives-md-render {
       overflow: auto;
-      height: 20vh;
+      height: 17vh;
       padding: 0.5rem;
       border-radius: 4px;
       border: 1px solid var(--coolgray3);
