@@ -15,3 +15,7 @@ export function kmh2ms(kmh: number) {
 export function ms2kmh(ms: number) {
   return ms * 3.6;
 }
+
+export function m2kmOneDecimal(m: number) {
+  return Math.round(m / 100) / 10;
+}
