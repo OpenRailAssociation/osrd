@@ -111,9 +111,11 @@ export type ScheduledTrain = {
   labels: string[];
   name: string;
   path: number;
+  pathLength?: number;
   departure: number;
   arrival: number;
   speed_limit_tags?: string;
+  stopsCount?: number;
   duration?: number;
   isFiltered?: boolean;
   mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
@@ -139,6 +141,7 @@ export interface Train {
   id: number;
   labels: string[];
   path: number;
+  pathLength?: number;
   name: string;
   vmax: SpeedPosition[];
   slopes: GradientPosition[];
@@ -146,6 +149,7 @@ export interface Train {
   base: Regime;
   eco: Regime;
   margins: Regime;
+  stopsCount?: number;
   isStdcm?: boolean;
   mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
   speed_limit_tags?: string;

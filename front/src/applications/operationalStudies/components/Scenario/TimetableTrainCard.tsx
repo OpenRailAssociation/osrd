@@ -14,7 +14,7 @@ import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
-import { jouleToKwh } from 'utils/physics';
+import { jouleToKwh, m2kmOneDecimal } from 'utils/physics';
 
 type Props = {
   train: ScheduledTrain;
@@ -101,10 +101,12 @@ function TimetableTrainCard({
           </div>
           <div className="scenario-timetable-train-body">
             <span className="flex-grow-1">{train.speed_limit_tags}</span>
-
+            {train.stopsCount !== undefined && train.stopsCount > 0 && (
+              <span className="mr-3">{t('timetable.stopsCount', { count: train.stopsCount })}</span>
+            )}
             {train.mechanicalEnergyConsumed?.eco && (
               <small className="mx-xl-2 mr-lg-1 text-orange font-weight-bold">
-                ECO {jouleToKwh(train.mechanicalEnergyConsumed.eco, true)}&nbsp;kWh
+                ECO {+jouleToKwh(train.mechanicalEnergyConsumed.eco, true)}&nbsp;kWh
               </small>
             )}
             {train.mechanicalEnergyConsumed?.base && (
@@ -113,7 +115,10 @@ function TimetableTrainCard({
                 <span className="small ml-1">kWh</span>
               </span>
             )}
-            <div className="text-nowrap">
+            {train.pathLength && (
+              <span className="mr-xl-3 mr-lg-2">{m2kmOneDecimal(train.pathLength)}km</span>
+            )}
+            <div className="text-nowrap text-right">
               <MdAvTimer />
               <span className="ml-1">
                 {sec2time(durationInSeconds(train.departure, train.arrival))}
