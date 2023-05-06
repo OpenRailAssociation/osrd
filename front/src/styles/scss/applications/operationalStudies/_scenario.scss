@@ -255,7 +255,8 @@
                 align-items: baseline;
                 padding: 0.25rem;
                 font-size: 0.8rem;
-                height: 1.75rem;
+                min-height: 1.75rem;
+                flex-wrap: wrap;
                 small {
                   font-size: 0.6rem;
                 }

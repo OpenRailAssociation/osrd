@@ -336,9 +336,11 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
     labels: train.labels,
     name: train.name,
     path: train.path,
+    pathLength: last(train.base.stops)?.position,
     mechanicalEnergyConsumed,
     departure,
     arrival,
+    stopsCount: train.base.stops.filter((stop) => stop.duration > 0).length - 1,
     duration: durationInSeconds(departure, arrival),
     speed_limit_tags: train.speed_limit_tags,
   };
