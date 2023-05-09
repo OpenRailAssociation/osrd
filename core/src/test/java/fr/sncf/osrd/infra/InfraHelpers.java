@@ -241,9 +241,9 @@ public class InfraHelpers {
         setPrivateField(track, "speedSections", speedSections);
     }
 
-    /** Sets the gradients on the track, bypassing visibility */
-    public static void setGradient(TrackSection track, EnumMap<Direction, RangeMap<Double, Double>> gradients) {
-        setPrivateField(track, "gradients", gradients);
+    /** Sets the slopes on the track, bypassing visibility */
+    public static void setSlopes(TrackSection track, EnumMap<Direction, RangeMap<Double, Double>> slopes) {
+        setPrivateField(track, "slopes", slopes);
     }
 
     /** Sets a field on the track, bypassing visibility */

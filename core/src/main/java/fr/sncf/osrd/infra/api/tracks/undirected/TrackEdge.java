@@ -8,7 +8,9 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.EnumMap;
 
-/** An undirected track edge, which can either be a branch of a switch, or a track section */
+/**
+ * An undirected track edge, which can either be a branch of a switch, or a track section
+ */
 public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     /** The physical length of the edge, in meters */
     double getLength();
@@ -18,6 +20,12 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
 
     /** List of gradients on the track for a given direction (corrected with curves) */
     EnumMap<Direction, RangeMap<Double, Double>> getGradients();
+
+    /** The interval tree of the slopes of the track section */
+    EnumMap<Direction, RangeMap<Double, Double>> getSlopes();
+
+    /** The interval tree of the curves of the track section */
+    EnumMap<Direction, RangeMap<Double, Double>> getCurves();
 
     /** List of speed sections on the track for a given direction */
     EnumMap<Direction, RangeMap<Double, SpeedLimits>> getSpeedSections();
