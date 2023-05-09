@@ -16,7 +16,7 @@
     "error": "Une erreur est survenue",
     "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
     "mandatoryField": "Champ obligatoire",
-    "noDelta": "L'intervalle ente deux trains doit être d'au moins une minute",
+    "noDelta": "L'intervalle entre deux trains doit être d'au moins une minute",
     "noDeltaInput": "Doit être > 0",
     "noDepartureTime": "Veuillez renseigner une heure de départ",
     "noDestination": "La destination n'est pas définie",

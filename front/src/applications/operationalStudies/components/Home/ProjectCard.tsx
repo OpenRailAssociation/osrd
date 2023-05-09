@@ -3,26 +3,29 @@ import { useTranslation } from 'react-i18next';
 import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useNavigate } from 'react-router-dom';
-import { AiFillFolderOpen } from 'react-icons/ai';
+import { AiFillFolderOpen, AiFillCheckCircle } from 'react-icons/ai';
 import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
 import { useDispatch } from 'react-redux';
 import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { ProjectResult } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
+import cx from 'classnames';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
   project: ProjectResult;
+  isSelected: boolean;
+  toggleSelect: (id?: number) => void;
 };
 
-export default function ProjectCard({ setFilterChips, project }: Props) {
+export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {
   const { t } = useTranslation('operationalStudies/home');
   const [imageUrl, setImageUrl] = useState<string>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleClick = () => {
+  const openProject = () => {
     dispatch(updateProjectID(project.id));
     dispatch(updateStudyID(undefined));
     dispatch(updateScenarioID(undefined));
@@ -45,17 +48,27 @@ export default function ProjectCard({ setFilterChips, project }: Props) {
     if (project.image) {
       getProjectImage(project.image);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="projects-list-project-card" data-testid={project.name}>
+    <div
+      className={cx('projects-list-project-card', isSelected && 'selected')}
+      data-testid={project.name}
+      onClick={() => toggleSelect(project.id)}
+      role="button"
+      tabIndex={0}
+    >
+      <span className="selected-mark">
+        <AiFillCheckCircle />
+      </span>
       <div className="projects-list-project-card-img">
         <LazyLoadImage src={imageUrl} alt="project logo" />
-        <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
-          <span className="mr-2">{t('openProject')}</span>
-          <AiFillFolderOpen />
-        </button>
+        <div className="buttons">
+          <button className="btn btn-primary btn-sm ml-auto" onClick={openProject} type="button">
+            <span className="mr-2">{t('openProject')}</span>
+            <AiFillFolderOpen />
+          </button>
+        </div>
       </div>
       <div className="projects-list-project-card-studies">
         <div>
