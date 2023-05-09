@@ -6,7 +6,7 @@ import {
 } from 'common/Map/Consts/SignalsNames';
 
 import { SIGNALS_PANELS } from 'common/Map/const';
-import { SourceLayer, Theme, SymbolLayout, SymbolLayer, CircleLayer } from '../../../types';
+import { CircleLayer, SourceLayer, SymbolLayer, SymbolLayout, Theme } from '../../../types';
 
 const signalTextOffsetX = 5;
 const signalTextOffsetY = -1;
@@ -53,10 +53,6 @@ export function getSignalsList(signalsSettings: SignalsSettings) {
   return signalsList;
 }
 
-export function getAngleName(sourceLayer: SourceLayer) {
-  return sourceLayer === 'sch' ? 'extensions_sncf_angle_sch' : 'extensions_sncf_angle_geo';
-}
-
 export function getPointLayerProps({
   signalsList,
   sourceTable,
@@ -100,11 +96,8 @@ export function signalsToSprites(
 
 export function getSignalMatLayerProps({
   signalsList,
-  sourceLayer,
   sourceTable,
 }: SignalContext): Omit<SymbolLayer, 'id'> {
-  const angleName = getAngleName(sourceLayer);
-
   const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 12,
@@ -125,7 +118,7 @@ export function getSignalMatLayerProps({
       'icon-size': 0.7,
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
-      'icon-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
       'text-allow-overlap': true,
@@ -144,8 +137,7 @@ export function getSignalEmptyLayerProps(
   iconOffset: SymbolLayout['icon-offset'],
   libelle = 'extensions_sncf_value'
 ): Omit<SymbolLayer, 'id'> {
-  const { sourceLayer, sourceTable, colors } = context;
-  const angleName = getAngleName(sourceLayer);
+  const { sourceTable, colors } = context;
   const excludeText = ['SIGNAUX A GAUCHE', 'SIGNAUX A DROITE'];
 
   const props: Omit<SymbolLayer, 'id'> = {
@@ -183,8 +175,8 @@ export function getSignalEmptyLayerProps(
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
       'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle'],
+      'text-rotate': ['get', 'angle'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
       'text-allow-overlap': true,
@@ -203,12 +195,10 @@ export function getSignalEmptyLayerProps(
 }
 
 export function getSignalPNLayerProps(
-  { sourceTable, sourceLayer }: SignalContext,
+  { sourceTable }: SignalContext,
   _type: string,
   iconOffset: SymbolLayout['icon-offset']
 ): Omit<SymbolLayer, 'id'> {
-  const angleName = getAngleName(sourceLayer);
-
   const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     minzoom: 13,
@@ -232,8 +222,8 @@ export function getSignalPNLayerProps(
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
       'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle'],
+      'text-rotate': ['get', 'angle'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
       'text-allow-overlap': true,
@@ -254,9 +244,8 @@ export function getSignalALayerProps(
   iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
 ): Omit<SymbolLayer, 'id'> {
-  const { sourceTable, sourceLayer, colors } = context;
+  const { sourceTable, colors } = context;
   const { yellowSignalIds = [] } = changeSignalContext;
-  const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
   const filterA = ['in', 'id'].concat(yellowSignalIds);
   const props: Omit<SymbolLayer, 'id'> = {
@@ -282,8 +271,8 @@ export function getSignalALayerProps(
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
       'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle'],
+      'text-rotate': ['get', 'angle'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
       'text-allow-overlap': true,
@@ -308,8 +297,7 @@ export function getSignalVLLayerProps(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _changeSignalContext: ChangeSignalContext
 ): Omit<SymbolLayer, 'id'> {
-  const { sourceTable, sourceLayer, colors } = context;
-  const angleName = getAngleName(sourceLayer);
+  const { sourceTable, colors } = context;
   const typeFilter = _type.split(' ')[0];
   const props: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
@@ -334,8 +322,8 @@ export function getSignalVLLayerProps(
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
       'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle'],
+      'text-rotate': ['get', 'angle'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
       'text-allow-overlap': true,
@@ -359,9 +347,8 @@ export function getSignalStopLayerProps(
   iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
 ): Omit<SymbolLayer, 'id'> {
-  const { sourceTable, sourceLayer, colors } = context;
+  const { sourceTable, colors } = context;
   const { redSignalIds = [] } = changeSignalContext;
-  const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
   const filterA = ['in', 'id'].concat(redSignalIds);
 
@@ -388,8 +375,8 @@ export function getSignalStopLayerProps(
       'icon-rotation-alignment': 'map',
       'icon-pitch-alignment': 'map',
       'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
+      'icon-rotate': ['get', 'angle'],
+      'text-rotate': ['get', 'angle'],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
       'text-allow-overlap': true,

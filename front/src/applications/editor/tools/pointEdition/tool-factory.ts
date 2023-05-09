@@ -29,7 +29,6 @@ function getPointEditionTool<T extends EditorPoint>({
   icon,
   getNewEntity,
   layersComponent,
-  requiresAngle,
 }: PointEditionToolParams<T>): Tool<PointEditionState<T>> {
   const id = layer.replace(/_/g, '-').replace(/s$/, '');
 
@@ -101,10 +100,6 @@ function getPointEditionTool<T extends EditorPoint>({
         };
         newEntity.properties = newEntity.properties || {};
         newEntity.properties.track = nearestPoint.trackSectionID;
-
-        if (requiresAngle && newEntity.objType === 'Signal') {
-          (newEntity as SignalEntity).properties.extensions.sncf.angle_geo = nearestPoint.angle;
-        }
 
         // retrieve the track section to be sure that the computation of the distance will be good
         // we can't trust maplibre, because the stored gemetry is not necessary the real one
