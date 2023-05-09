@@ -26,5 +26,8 @@ public class PathfindingResult {
     public LineString geographic = null;
     public LineString schematic = null;
 
+    public List<SlopeChartPointResult> slopes = new ArrayList<>();
+    public List<CurveChartPointResult> curves = new ArrayList<>();
+
     public List<Warning> warnings = null;
 }

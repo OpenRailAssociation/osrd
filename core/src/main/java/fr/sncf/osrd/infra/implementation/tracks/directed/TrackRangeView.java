@@ -88,6 +88,18 @@ public class TrackRangeView {
         return convertMap(originalGradients);
     }
 
+    /** Returns the curves with positions referring to the track range (0 = directed start of the range) */
+    public RangeMap<Double, Double> getCurves() {
+        var originalCurves = track.getEdge().getCurves().get(track.getDirection());
+        return convertMap(originalCurves);
+    }
+
+    /** Returns the slopes with positions referring to the track range (0 = directed start of the range) */
+    public RangeMap<Double, Double> getSlopes() {
+        var originalSlopes = track.getEdge().getSlopes().get(track.getDirection());
+        return convertMap(originalSlopes);
+    }
+
     /** Returns true if the location is included in the range */
     public boolean contains(TrackLocation location) {
         return location.track().equals(track.getEdge()) && containsOffset(location.offset());

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra.implementation.tracks.undirected;
 
 import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.*;
-import static java.lang.Math.abs;
 
 import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
@@ -19,9 +18,9 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.reporting.warnings.Warning;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
+import fr.sncf.osrd.reporting.warnings.Warning;
 import java.util.*;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
@@ -210,7 +209,8 @@ public class UndirectedInfraBuilder {
                 buildLoadingGaugeLimits(track.loadingGaugeLimits)
         );
         builder.addEdge(begin, end, edge);
-        edge.gradients = makeGradients(track);
+        edge.curves = makeCurves(track);
+        edge.slopes = makeSlopes(track);
         return edge;
     }
 
@@ -267,16 +267,43 @@ public class UndirectedInfraBuilder {
         };
     }
 
-    /** Creates the two RangeMaps with gradient values */
-    private EnumMap<Direction, RangeMap<Double, Double>> makeGradients(RJSTrackSection track) {
-        var res = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
+    /** Computes the curves RangeMap of a track section for both directions. */
+    private EnumMap<Direction, RangeMap<Double, Double>> makeCurves(RJSTrackSection track) {
+        var curves = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
         for (var dir : Direction.values()) {
             var newMap = TreeRangeMap.<Double, Double>create();
             newMap.putCoalescing(Range.closed(0., track.length), 0.);
-            res.put(dir, newMap);
+            curves.put(dir, newMap);
         }
 
-        // Insert railjson slopes
+        if (track.curves != null) {
+            for (var rjsCurve : track.curves) {
+                rjsCurve.simplify();
+                if (rjsCurve.begin < 0 || rjsCurve.end > track.length)
+                    throw new InvalidInfraError(
+                            String.format("Track '%s' has a curve with an invalid range", track.id));
+                if (rjsCurve.radius != 0.) {
+                    for (var dir : Direction.values())
+                        curves.get(dir).putCoalescing(
+                                Range.closed(rjsCurve.begin, rjsCurve.end),
+                                rjsCurve.radius * dir.sign
+                        );
+                }
+            }
+        }
+
+        return curves;
+    }
+
+    /** Computes the slopes RangeMap of a track section for both directions. */
+    private EnumMap<Direction, RangeMap<Double, Double>> makeSlopes(RJSTrackSection track) {
+        var slopes = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
+        for (var dir : Direction.values()) {
+            var newMap = TreeRangeMap.<Double, Double>create();
+            newMap.putCoalescing(Range.closed(0., track.length), 0.);
+            slopes.put(dir, newMap);
+        }
+
         if (track.slopes != null) {
             for (var rjsSlope : track.slopes) {
                 rjsSlope.simplify();
@@ -285,36 +312,15 @@ public class UndirectedInfraBuilder {
                             String.format("Track '%s' has a slope with an invalid range", track.id));
                 if (rjsSlope.gradient != 0.) {
                     for (var dir : Direction.values())
-                        res.get(dir).putCoalescing(
+                        slopes.get(dir).putCoalescing(
                                 Range.closed(rjsSlope.begin, rjsSlope.end),
                                 rjsSlope.gradient * dir.sign
                         );
                 }
             }
         }
-        for (var dir : Direction.values())
-            addCurvesToGradients(res.get(dir), track);
-        return res;
-    }
 
-    /** Inserts curves as extra gradient values */
-    private static void addCurvesToGradients(RangeMap<Double, Double> gradients, RJSTrackSection track) {
-        // Insert curves: gradient + 800 / radius
-        if (track.curves != null)
-            for (var rjsCurve : track.curves) {
-                rjsCurve.simplify();
-                if (rjsCurve.begin < 0 || rjsCurve.end > track.length)
-                    throw new InvalidInfraError(
-                            String.format("Track '%s' has a curve with an invalid range", track.id));
-
-                if (rjsCurve.radius == 0.)
-                    continue;
-
-                var subMap = gradients.subRangeMap(Range.open(rjsCurve.begin, rjsCurve.end));
-                var entries = new HashMap<>(subMap.asMapOfRanges());
-                for (var entry : entries.entrySet())
-                    gradients.putCoalescing(entry.getKey(), entry.getValue() + 800. / abs(rjsCurve.radius));
-            }
+        return slopes;
     }
 
     /** Creates a node and registers it in the graph */
