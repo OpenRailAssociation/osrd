@@ -25,7 +25,7 @@ class Infra:
     speed_sections: List[SpeedSection] = field(default_factory=list)
     catenaries: List[Catenary] = field(default_factory=list)
 
-    VERSION = "3.2.0"
+    VERSION = "3.2.1"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
