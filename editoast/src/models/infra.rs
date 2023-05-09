@@ -21,7 +21,7 @@ use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-pub const RAILJSON_VERSION: &str = "3.2.0";
+pub const RAILJSON_VERSION: &str = "3.2.1";
 
 #[derive(
     Clone,
