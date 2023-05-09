@@ -3,6 +3,7 @@ import { TFunction } from 'i18next';
 import { LPVPanel } from 'types';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { FaTrash } from 'react-icons/fa';
+import { isNil } from 'lodash';
 import { LPV_PANEL_TYPES, LpvPanelInformation } from '../types';
 
 const LpvPanelCard = ({
@@ -22,11 +23,45 @@ const LpvPanelCard = ({
   return (
     <div className="my-4 py-4 px-2" style={{ backgroundColor: 'white' }}>
       <div className="">Track id : {panel.track}</div>
-      <div className="">Position from the beginning of the track : {panel.position}</div>
+      <div className="my-2">
+        {panelType !== LPV_PANEL_TYPES.Z ? (
+          <>
+            <label htmlFor="lpv-position" className="mb-0">
+              Position
+            </label>
+            <input
+              id="lpv-position"
+              value={!isNil(panel.position) ? panel.position : 0}
+              onChange={(e) =>
+                updatePanel(panelInfo, {
+                  ...panel,
+                  position: Number(e.target.value),
+                })
+              }
+            />
+          </>
+        ) : (
+          <div className="">Position from the beginning of the track : {panel.position}</div>
+        )}
+      </div>
       {panelType === LPV_PANEL_TYPES.ANNOUNCEMENT && (
         <>
           <div className="">Type: {panel.type}</div>
-          <div className="">Value: {panel.value}</div>
+          <div className="my-2">
+            <label htmlFor="lpv-value" className="mb-0">
+              Value (Multiple of 5)
+            </label>
+            <input
+              id="lpv-value"
+              value={panel.value ? panel.value : ''}
+              onChange={(e) =>
+                updatePanel(panelInfo, {
+                  ...panel,
+                  value: e.target.value,
+                })
+              }
+            />
+          </div>
         </>
       )}
       <SelectImprovedSNCF

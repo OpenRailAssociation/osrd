@@ -32,6 +32,7 @@ const LpvPanelSubSection = ({
       </button>
       {panels.map((panel, panelIndex) => (
         <LpvPanelCard
+          key={`${panelType}-${panelIndex}`}
           panel={panel}
           panelInfo={{ panelType, panelIndex }}
           removePanel={removePanel}

@@ -6,20 +6,23 @@ import { Reducer } from '../../types';
 import { LpvPanelInformation, SpeedSectionEditionState, LPV_PANEL_TYPES } from '../types';
 import LpvPanelCard from './LpvPanelCard';
 import LpvPanelSubSection from './LpvPanelSubSection';
+import { msToKmh } from '../utils';
 
 const getNewAnnouncementPanel = (
   trackRanges: NonNullable<SpeedSectionLpvEntity['properties']['track_ranges']>,
   speedLimit: number
 ) => {
   const firstRange = trackRanges[0];
+  const speedInKmH = msToKmh(speedLimit);
+  const speedMultipleOfFive = Math.ceil(speedInKmH / 5) * 5;
   return {
     angle_geo: 0,
     angle_sch: 0,
-    position: 0,
-    side: 'LEFT',
+    position: firstRange.end,
+    side: 'RIGHT',
     track: firstRange.track,
     type: 'TIV_D',
-    value: `${speedLimit}`,
+    value: `${speedMultipleOfFive}`,
   } as LPVPanel;
 };
 
@@ -48,7 +51,6 @@ const EditLPVSection = ({
   ) => void;
 }) => {
   const { t } = useTranslation();
-
   const lpvExtension = entity.properties.extensions.lpv_sncf;
 
   const updateEntity = (newLpvExtension: LPVExtension) => {
