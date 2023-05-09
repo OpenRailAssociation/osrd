@@ -1,0 +1,62 @@
+{
+  "allowances": "Margins",
+  "departureTime": "Start",
+  "errorMessages": {
+    "unableToRetrieveTrainSchedule": "Path calculation impossible"
+  },
+  "isWorking": "Simulation calculation in process...",
+  "labels": "Tags",
+  "loadingTrain": "Loading train",
+  "ManualOffset": "Seconds addition to the train",
+  "ModalEdit": "Train edition",
+  "name": "Name",
+  "noData": "No available data",
+  "null": "Location not specified",
+  "placeholderlabel": "Tag filtering",
+  "simplify": "Data simplification",
+  "speedSpaceSettings": {
+    "display": "Display",
+    "altitude": "Altitude",
+    "curves": "Curves",
+    "maxSpeed": "Line speed",
+    "slopes": "Inclines",
+    "electricalProfiles": "Electrical profiles",
+    "powerRestriction": "Power restriction"
+  },
+  "powerRestriction": {
+    "used": "used",
+    "incompatible": "Power restriction incompatible"
+  },
+  "electricalProfiles": {
+    "25000": "25000V",
+    "1500": "1500V",
+    "15000": "15000V 16/2/3",
+    "3000": "3000V",
+    "thermal": "Thermal",
+    "used": "used",
+    "unused": "unused",
+    "incompatible": "incompatible",
+    "missingProfile": "Missing profile",
+    "legend": "Legend"
+  },
+  "start": "Start",
+  "stop": "End",
+  "stopPlace": "Place",
+  "stopTime": "End",
+  "stopStopTime": "Stop",
+  "timetable": "Timetable",
+  "train": "Train",
+  "trainDeleted": "Train deleted",
+  "trainDetails": {
+    "headPosition": "Head",
+    "tailPosition": "Tail",
+    "routeEndOccupancy": "Block end",
+    "routeBeginOccupancy": "Block start",
+    "routeSizeOccupancy": "Block size",
+    "speed": "Speed"
+  },
+  "trainList": "Train list",
+  "speedLimitComposition": "Composition",
+  "waiting": "Loading...",
+  "map": "Map"
+}
