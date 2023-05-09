@@ -40,13 +40,8 @@ class Signal:
     label: str = field(default_factory=_signal_id)
     installation_type: str = "CARRE"
     side: infra.Side = infra.Side.LEFT
-    angle: int = None
 
     _INDEX = 0
-
-    def __post_init__(self):
-        if self.angle is None:
-            self.angle = 90 if self.direction == Direction.START_TO_STOP else -90
 
     def add_logical_signal(self, *args, **kwargs) -> LogicalSignal:
         signal = LogicalSignal(*args, **kwargs)
@@ -64,8 +59,6 @@ class Signal:
             linked_detector=self.linked_detector.id,
             extensions={
                 "sncf": {
-                    "angle_geo": self.angle,
-                    "angle_sch": self.angle,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
