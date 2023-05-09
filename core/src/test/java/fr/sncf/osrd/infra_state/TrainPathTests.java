@@ -152,17 +152,17 @@ public class TrainPathTests {
 
     @Test
     public void envelopeTrainPathTests() {
-        var gradients = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
+        var slopes = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
         var map = TreeRangeMap.<Double, Double>create();
         map.put(Range.closed(0., 100.), 0.);
         map.put(Range.closed(0., 30.), 30.);
         map.put(Range.closed(60., 80.), -10.);
         for (var dir : Direction.values())
-            gradients.put(dir, map);
+            slopes.put(dir, map);
         var rjsInfra = makeSingleTrackRJSInfra();
         var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
-        setGradient(track, gradients);
+        setSlopes(track, slopes);
         var path = TrainPathBuilder.from(
                 List.of(getSignalingRoute(infra, "route_forward")),
                 new TrackLocation(track, 10),

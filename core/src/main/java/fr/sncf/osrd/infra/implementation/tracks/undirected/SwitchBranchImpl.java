@@ -45,6 +45,16 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
+    public EnumMap<Direction, RangeMap<Double, Double>> getSlopes() {
+        return emptyMap;
+    }
+
+    @Override
+    public EnumMap<Direction, RangeMap<Double, Double>> getCurves() {
+        return emptyMap;
+    }
+
+    @Override
     public EnumMap<Direction, RangeMap<Double, SpeedLimits>> getSpeedSections() {
         return new EnumMap<>(Map.of(
                 Direction.FORWARD, ImmutableRangeMap.of(),
