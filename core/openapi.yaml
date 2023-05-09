@@ -44,6 +44,27 @@ paths:
                     nullable: true
                 required:
                   - git_describe
+  /infra_load:
+    post:
+      tags:
+        - infra
+      summary: load the infrastructure from editoast
+      requestBody:
+        description: Infrastructure id and its expected version
+        content:
+          schema:
+            $ref: "#/components/schemas/InfraLoadRequest"
+        required: true
+      responses:
+        200:
+          description: Infra Loaded
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Infra is loaded
+        400:
+          description: The request body is invalid
   /pathfinding/routes:
     post:
       tags:
@@ -252,6 +273,15 @@ paths:
         400:
           description: The request body is invalid
 components:
+  InfraLoadRequest:
+    required:
+      - infra
+      - expected_version
+    properties:
+      infra:
+        type: string
+      expected_version:
+        type: string
   schemas:
     Waypoint:
       required:
