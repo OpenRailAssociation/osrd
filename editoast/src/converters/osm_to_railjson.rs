@@ -33,8 +33,33 @@ pub fn osm_to_railjson(
         })
         .collect();
 
+    let mut nodes = std::collections::HashMap::<osm4routing::NodeId, Vec<TrackEndpoint>>::new();
+    for edge in rail_edges {
+        let source = nodes.entry(edge.source).or_insert(vec![]);
+        source.push(TrackEndpoint {
+            track: edge.id.as_str().into(),
+            endpoint: Endpoint::Begin,
+        });
+        let target = nodes.entry(edge.target).or_insert(vec![]);
+        target.push(TrackEndpoint {
+            track: edge.id.as_str().into(),
+            endpoint: Endpoint::End,
+        });
+    }
+
+    let track_section_links = nodes
+        .iter()
+        .filter(|(_, edges)| edges.len() == 2)
+        .map(|(node, edges)| TrackSectionLink {
+            id: utils::Identifier(node.0.to_string()),
+            src: edges[0].clone(),
+            dst: edges[1].clone(),
+        })
+        .collect();
+
     let railjson = RailJson {
         track_sections,
+        track_section_links,
         ..Default::default()
     };
 
