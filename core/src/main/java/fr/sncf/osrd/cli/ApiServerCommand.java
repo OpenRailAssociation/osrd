@@ -71,7 +71,8 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/project_signals", new SignalProjectionEndpoint(infraManager)),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
                     new FkRegex("/version", new VersionEndpoint()),
-                    new FkRegex("/stdcm", new STDCMEndpoint(infraManager))
+                    new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
+                    new FkRegex("/infra_load", new InfraLoadEndpoint(infraManager))
             );
 
             // the list of pages which should be displayed on error
