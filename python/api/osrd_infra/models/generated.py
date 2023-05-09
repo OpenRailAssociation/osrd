@@ -30,6 +30,8 @@ class TrackSectionLayer(models.Model):
 class SignalLayer(models.Model):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
+    angle_geo = models.FloatField()
+    angle_sch = models.FloatField()
     geographic = models.PointField(srid=settings.MAPBOX_SRID)
     schematic = models.PointField(srid=settings.MAPBOX_SRID)
 
