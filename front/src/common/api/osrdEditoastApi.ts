@@ -232,7 +232,7 @@ const injectedRtkApi = api.injectEndpoints({
       PostRollingStockByIdLiveryApiArg
     >({
       query: (queryArg) => ({
-        url: `/rolling_stock/${queryArg.id}/livery`,
+        url: `/rolling_stock/${queryArg.id}/livery/`,
         method: 'POST',
         body: queryArg.body,
       }),

@@ -1987,6 +1987,8 @@ components:
         capacity_speed_limit:
           type: number
           format: double
+      required: 
+        - "allowance_type"
     EngineeringAllowance:
       allOf:
         - type: object
@@ -2000,6 +2002,8 @@ components:
             capacity_speed_limit:
               type: number
               format: double
+          required: 
+            - "allowance_type"
         - $ref: "#/components/schemas/RangeAllowance"
     RangeAllowance:
       properties:
