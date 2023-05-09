@@ -1,16 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import ProjectSelectionToolbar from 'applications/operationalStudies/components/Home/ProjectSelectionToolbar';
 import ProjectCard from 'applications/operationalStudies/components/Home/ProjectCard';
 import ProjectCardEmpty from 'applications/operationalStudies/components/Home/ProjectCardEmpty';
-import { MODES } from 'applications/operationalStudies/consts';
 import osrdLogo from 'assets/pictures/osrd.png';
 import logo from 'assets/pictures/views/projects.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
-import { updateMode } from 'reducers/osrdconf';
 import {
   PostSearchApiArg,
   ProjectResult,
@@ -26,37 +24,13 @@ type SortOptions =
   | 'LastModifiedAsc'
   | 'LastModifiedDesc';
 
-function displayCards(
-  projectsList: ProjectResult[],
-  setFilterChips: (filterChips: string) => void
-) {
-  return projectsList ? (
-    <div className="projects-list">
-      <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-6">
-          <ProjectCardEmpty />
-        </div>
-        {projectsList.map((project) => (
-          <div className="col-lg-3 col-md-4 col-sm-6" key={`home-projectsList-${project.id}`}>
-            <ProjectCard project={project} setFilterChips={setFilterChips} />
-          </div>
-        ))}
-      </div>
-    </div>
-  ) : (
-    <div className="mt-5">
-      <Loader position="center" />
-    </div>
-  );
-}
-
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
+  const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
-  const dispatch = useDispatch();
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [getProjects] = osrdEditoastApi.useLazyGetProjectsQuery();
 
@@ -125,13 +99,48 @@ export default function Home() {
     setSortOption(e.target.value as SortOptions);
   };
 
+  const toggleProjectSelection = (id?: number) => {
+    if (id !== undefined) {
+      const idPosition = selectedProjectIds.indexOf(id);
+      if (idPosition !== -1) {
+        const tempSelectedProjectIds = [...selectedProjectIds];
+        tempSelectedProjectIds.splice(idPosition, 1);
+        setSelectedProjectIds(tempSelectedProjectIds);
+      } else {
+        setSelectedProjectIds(selectedProjectIds.concat([id]));
+      }
+    }
+  };
+
+  function displayCards() {
+    return projectsList ? (
+      <div className="projects-list">
+        <div className="row">
+          <div className="col-lg-3 col-md-4 col-sm-6">
+            <ProjectCardEmpty />
+          </div>
+          {projectsList.map((project) => (
+            <div className="col-lg-3 col-md-4 col-sm-6" key={`home-projectsList-${project.id}`}>
+              <ProjectCard
+                project={project}
+                setFilterChips={setFilterChips}
+                isSelected={project.id !== undefined && selectedProjectIds.includes(project.id)}
+                toggleSelect={toggleProjectSelection}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : (
+      <div className="mt-5">
+        <Loader position="center" />
+      </div>
+    );
+  }
+
   useEffect(() => {
     getProjectList();
   }, [sortOption, filter]);
-
-  useEffect(() => {
-    dispatch(updateMode(MODES.simulation));
-  }, []);
 
   return (
     <>
@@ -160,7 +169,13 @@ export default function Home() {
               options={sortOptions}
             />
           </div>
-          {useMemo(() => displayCards(projectsList, setFilterChips), [projectsList])}
+          <ProjectSelectionToolbar
+            selectedProjectIds={selectedProjectIds}
+            setSelectedProjectIds={setSelectedProjectIds}
+            setProjectsList={setProjectsList}
+            projectsList={projectsList}
+          />
+          {useMemo(() => displayCards(), [projectsList, selectedProjectIds])}
         </div>
       </main>
     </>
