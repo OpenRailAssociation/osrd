@@ -14,7 +14,7 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.2.0"
+RAILJSON_INFRA_VERSION = "3.2.1"
 
 
 # Traits
@@ -533,8 +533,6 @@ class SwitchSncfExtension(BaseModel):
 
 @register_extension(object=Signal, name="sncf")
 class SignalSncfExtension(BaseModel):
-    angle_geo: float = Field(0, description="Geographic angle in degrees")
-    angle_sch: float = Field(0, description="Schematic angle in degrees")
     aspects: List[str]
     comment: str
     default_aspect: str = Field(description="Aspect displayed when no train is around")
