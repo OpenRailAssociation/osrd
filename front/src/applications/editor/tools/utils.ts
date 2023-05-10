@@ -57,7 +57,7 @@ export function getTrackSectionEntityFromNearestPoint(
   const currentTrackRange = trackRanges[point.properties.featureIndex];
   if (!currentTrackRange.id) return null;
   const trackState = trackSectionsCache[currentTrackRange.id];
-  if (trackState.type !== 'success') return null;
+  if (trackState?.type !== 'success') return null;
   const { track } = trackState;
   return track;
 }

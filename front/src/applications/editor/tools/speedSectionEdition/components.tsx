@@ -25,7 +25,7 @@ import {
   SpeedSectionLpvEntity,
   TrackSectionEntity,
 } from '../../../../types';
-import { getEntities } from '../../data/api';
+import { getEntities, getEntity } from '../../data/api';
 import { getInfraID } from '../../../../reducers/osrdconf/selectors';
 import {
   generateLpvPanelFeatures,
@@ -40,6 +40,7 @@ import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { save } from '../../../../reducers/editor';
 import EditLPVSection from './components/EditLPVSection';
+import ForceRemount from 'applications/editor/components/ForceRemount';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
@@ -601,6 +602,33 @@ export const SpeedSectionEditionLayers: FC = () => {
     }
   }, [entity.properties?.track_ranges]);
 
+  // Here is where we load hovered track sections that are not in ranges yet:
+  useEffect(() => {
+    if (hoveredItem?.type === 'TrackSection' && !trackSectionsCache[hoveredItem.id]) {
+      setState((s) => ({
+        ...s,
+        trackSectionsCache: {
+          ...s.trackSectionsCache,
+          [hoveredItem.id]: { type: 'loading' },
+        },
+      }));
+
+      getEntity<TrackSectionEntity>(infraId as number, hoveredItem.id, 'TrackSection').then(
+        (track) => {
+          setState((s) => ({
+            ...s,
+            trackSectionsCache: {
+              ...s.trackSectionsCache,
+              [hoveredItem.id]: { type: 'success', track },
+            },
+          }));
+        }
+      );
+    }
+  }, [hoveredItem]);
+
+  console.log(entity);
+
   const addPopUps = () => (
     <>
       {hoveredItem?.speedSectionItemType === 'TrackRangeExtremity' && (
@@ -668,11 +696,10 @@ export const SpeedSectionEditionLayers: FC = () => {
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         isEmphasized={false}
-        beforeId={layersProps[0].id}
       />
-      <Source type="geojson" data={speedSectionsFeature} key={isLPV ? 'lpv' : 'speed-section'}>
+      <Source type="geojson" data={speedSectionsFeature}>
         {layersProps.map((props, i) => (
-          <Layer {...props} key={i} />
+          <Layer {...props} key={props.id as string} />
         ))}
         <Layer
           type="circle"

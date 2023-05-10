@@ -164,7 +164,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               partialToolState.hovered = null;
             }
 
-            if (activeTool.onMove && (!nearestResult || !activeTool.onHover)) {
+            if (activeTool.onMove) {
               activeTool.onMove(e, extendedContext);
             }
 

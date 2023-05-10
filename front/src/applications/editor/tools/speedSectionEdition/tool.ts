@@ -34,9 +34,7 @@ import {
 } from './components';
 import { SpeedSectionLpvEntity, TrackSectionEntity } from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
-import {
-  approximateDistanceWithEditoastData,
-} from '../utils';
+import { approximateDistanceWithEditoastData } from '../utils';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   id: 'speed-edition',
@@ -120,6 +118,13 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
         setState({ entity: newEntity, hoveredItem: null });
       } else if (feature.sourceLayer === 'track_sections') {
         const clickedEntity = feature as unknown as TrackSectionEntity;
+        if (
+          (entity.properties.track_ranges || []).find(
+            (range) => range.track === clickedEntity.properties.id
+          )
+        )
+          return;
+
         const newEntity = cloneDeep(entity);
         newEntity.properties.track_ranges = newEntity.properties.track_ranges || [];
         newEntity.properties.track_ranges.push({
@@ -215,6 +220,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
     }
   },
   onMove(e, { setState, state: { entity, interactionState, hoveredItem, trackSectionsCache } }) {
+    console.log('on move qqch');
     if (interactionState.type === 'moveRangeExtremity') {
       const range = (entity.properties?.track_ranges || [])[interactionState.rangeIndex];
       if (!range) return;

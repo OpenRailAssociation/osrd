@@ -21,7 +21,7 @@ const getNewAnnouncementPanel = (
     position: firstRange.end,
     side: 'RIGHT',
     track: firstRange.track,
-    type: 'TIV_D',
+    type: 'TIV_C',
     value: `${speedMultipleOfFive}`,
   } as LPVPanel;
 };
