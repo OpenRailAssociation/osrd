@@ -6,8 +6,8 @@ import com.google.common.collect.TreeRangeMap;
 import java.util.Map;
 
 /** This is a simple fixture to build EnvelopeSimPath with some electrification conditions.
- * <p>
- * Electrification conditions (mode and electrical profile here) are used to select
+ *
+ * <p>Electrification conditions (mode and electrical profile here) are used to select
  * which effort curve to use in a rolling stock. Their values are unconstrained strings.
  * If they do not match any effort curve in a rolling stock, they are ignored.
  **/
@@ -24,7 +24,7 @@ public class EnvelopeSimPathBuilder {
 
     /** Builds an EnvelopeSimPath with some electrification modes and a set of electrical profiles */
     public static EnvelopeSimPath withElectricalProfiles1500() {
-        var path = withModes(10);
+        final var path = withModes(10);
 
         RangeMap<Double, String> profiles1 = TreeRangeMap.create();
         profiles1.put(Range.closed(3.0, 8.0), "A");
@@ -45,7 +45,7 @@ public class EnvelopeSimPathBuilder {
     /** Builds an EnvelopeSimPath with some electrification modes and
      * a set of electrical profiles different from `withElectricalProfiles25000` */
     public static EnvelopeSimPath withElectricalProfiles25000(double length) {
-        var path = withModes(length);
+        final var path = withModes(length);
 
         TreeRangeMap<Double, String> electricalProfiles5 = TreeRangeMap.create();
         electricalProfiles5.put(Range.closedOpen(10., 12.), "25000");

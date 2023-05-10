@@ -198,8 +198,6 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
     """
     Creates a payload for an STDCM request
     """
-    start_edge, start_offset = path[0]
-    last_edge, last_offset = path[1]
     res = {
         "infra": scenario.infra,
         "rolling_stock": rolling_stock,
@@ -209,18 +207,7 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
         "maximum_relative_run_time": random.random() * 4,
         "margin_before": random.randint(0, 600),
         "margin_after": random.randint(0, 600),
-        "start_points": [
-            {
-                "track_section": start_edge,
-                "offset": start_offset,
-            }
-        ],
-        "end_points": [
-            {
-                "track_section": last_edge,
-                "offset": last_offset,
-            }
-        ],
+        "steps": [convert_stop(stop) for stop in path],
     }
     allowance_value = make_random_allowance_value(0)
     if allowance_value["value_type"] != "time" and random.randint(0, 2) == 0:

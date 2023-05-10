@@ -831,13 +831,13 @@ export type AllowancePercentValue = {
 };
 export type AllowanceValue =
   | ({
-      value_type: 'AllowanceTimePerDistanceValue';
+      value_type: 'time_per_distance';
     } & AllowanceTimePerDistanceValue)
   | ({
-      value_type: 'AllowanceTimeValue';
+      value_type: 'time';
     } & AllowanceTimeValue)
   | ({
-      value_type: 'AllowancePercentValue';
+      value_type: 'percentage';
     } & AllowancePercentValue);
 export type RangeAllowance = {
   begin_position?: number;
@@ -845,12 +845,12 @@ export type RangeAllowance = {
   value?: AllowanceValue;
 };
 export type EngineeringAllowance = {
-  allowance_type?: 'engineering';
+  allowance_type: 'engineering';
   distribution?: 'MARECO' | 'LINEAR';
   capacity_speed_limit?: number;
 } & RangeAllowance;
 export type StandardAllowance = {
-  allowance_type?: 'standard';
+  allowance_type: 'standard';
   default_value?: AllowanceValue;
   ranges?: RangeAllowance[];
   distribution?: 'MARECO' | 'LINEAR';
@@ -858,10 +858,10 @@ export type StandardAllowance = {
 };
 export type Allowance =
   | ({
-      allowance_type: 'EngineeringAllowance';
+      allowance_type: 'engineering';
     } & EngineeringAllowance)
   | ({
-      allowance_type: 'StandardAllowance';
+      allowance_type: 'standard';
     } & StandardAllowance);
 export type PowerRestrictionRange = {
   begin_position?: number;
@@ -988,8 +988,10 @@ export type StdcmRequest = {
   timetable?: number;
   start_time?: number;
   end_time?: number;
-  start_points?: Waypoint[];
-  end_points?: Waypoint[];
+  steps?: {
+    duration?: number;
+    waypoints?: Waypoint;
+  }[];
   maximum_departure_delay?: number;
   maximum_relative_run_time?: number;
   speed_limit_tags?: string;

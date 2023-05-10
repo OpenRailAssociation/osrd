@@ -1,4 +1,5 @@
 {
+  "addVias": "Ajouter d'arrêts ou points de passage",
   "addTrainSchedule": "Ajouter un ou plusieurs trains",
   "apply": "Appliquer",
   "blocktype": "Type de block",
@@ -40,6 +41,7 @@
   },
   "failedRequest": "La requête a échoué",
   "gare": "Gare, poste",
+  "importTrainSchedule": "Importation",
   "inverseOD": "Inverser origine/destination",
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
@@ -85,6 +87,7 @@
   "trainScheduleInitialSpeed": "Vitesse initiale",
   "trainScheduleName": "Nom",
   "trainScheduleStep": "Pas d'incrément",
+  "trainUpdated": "Train modifié",
   "updateTrainSchedule": "Modifier le train",
   "usingElectricalProfiles": "Utiliser les profils électriques",
   "via": "Étape",

@@ -6,7 +6,6 @@ import TrainSettings from 'applications/operationalStudies/components/ManageTrai
 import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
-import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
 import submitConfAddTrainSchedules from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConfAddTrainSchedules';
@@ -14,21 +13,17 @@ import adjustConfWithTrainToModify from 'applications/operationalStudies/compone
 import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
-import { getShouldRunPathfinding } from 'reducers/osrdconf/selectors';
+import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { getShouldRunPathfinding, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { updateShouldRunPathfinding } from 'reducers/osrdconf';
-import { MANAGE_TRAIN_SCHEDULE_TYPES } from '../consts';
+import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
 
 type Props = {
   setDisplayTrainScheduleManagement: (arg0: string) => void;
-  trainScheduleIDsToModify?: number[];
 };
 
-export default function ManageTrainSchedule({
-  setDisplayTrainScheduleManagement,
-  trainScheduleIDsToModify,
-}: Props) {
+export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
   const dispatch = useDispatch();
   const shouldRunPathfinding = useSelector(getShouldRunPathfinding);
   const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState<boolean | undefined>(
@@ -36,6 +31,7 @@ export default function ManageTrainSchedule({
   );
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
+  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
 
@@ -77,7 +73,7 @@ export default function ManageTrainSchedule({
     if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
       getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
         .unwrap()
-        .then((trainSchedule) => {
+        .then((trainSchedule: TrainSchedule) => {
           if (trainSchedule.path) {
             getPathfindingById({ id: trainSchedule.path })
               .unwrap()
@@ -132,14 +128,6 @@ export default function ManageTrainSchedule({
       {!trainScheduleIDsToModify && <TrainAddingSettings />}
       <div className="osrd-config-item" data-testid="add-train-schedules">
         <div className="d-flex justify-content-end">
-          <button
-            className="btn btn-secondary mr-2"
-            type="button"
-            onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
-          >
-            <i className="icons-arrow-prev mr-2" />
-            {t('returnToSimulationResults')}
-          </button>
           {isWorking ? (
             <button className="btn btn-primary disabled" type="button">
               <DotsLoader />

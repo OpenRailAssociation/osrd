@@ -7,7 +7,7 @@ from config import settings
 from osrd_infra.models import PathModel, TrainSchedule
 from osrd_infra.serializers import PathSerializer, STDCMInputSerializer
 from osrd_infra.utils import make_exception_from_error
-from osrd_infra.views import fetch_track_sections, parse_waypoint, postprocess_path
+from osrd_infra.views import parse_steps_input, postprocess_path
 from osrd_infra.views.train_schedule import (
     create_simulation_report,
     process_simulation_response,
@@ -24,14 +24,6 @@ class InvalidSTDCMInput(APIException):
     status_code = 400
     default_detail = "The STDCM request had invalid inputs"
     default_code = "stdcm_invalid_input"
-
-
-def get_track_ids(request):
-    waypoints = request["start_points"] + request["end_points"]
-    res = list()
-    for waypoint in waypoints:
-        res.append(waypoint["track_section"])
-    return res
 
 
 def request_stdcm(payload):
@@ -63,21 +55,14 @@ def make_route_occupancies(timetable):
 
 
 def make_stdcm_core_payload(request):
-    start_points = []
-    end_points = []
     infra = request["infra"]
-    track_map = fetch_track_sections(infra, get_track_ids(request))
-    for waypoint in request["start_points"]:
-        start_points += parse_waypoint(waypoint, track_map)
-    for waypoint in request["end_points"]:
-        end_points += parse_waypoint(waypoint, track_map)
+    steps = parse_stdcm_steps(request, infra)
     res = {
         "infra": infra.pk,
         "expected_version": infra.version,
         "rolling_stock": request["rolling_stock"].to_schema().dict(),
         "comfort": request["comfort"],
-        "start_points": start_points,
-        "end_points": end_points,
+        "steps": steps,
         "route_occupancies": make_route_occupancies(request["timetable"]),
     }
     if "start_time" in request:
@@ -101,11 +86,35 @@ def make_stdcm_core_payload(request):
     return res
 
 
+def parse_stdcm_steps(request, infra):
+    waypoints, step_durations = parse_steps_input(request["steps"], infra)
+    assert len(waypoints) == len(step_durations)
+    assert len(waypoints) >= 2, "Need at least two steps to run an stdcm pathfinding"
+    res = []
+    for step_waypoints, duration in zip(waypoints, step_durations):
+        res.append(
+            {
+                "waypoints": step_waypoints,
+                "stop_duration": duration,
+                "stop": duration > 0,
+            }
+        )
+    return res
+
+
 def compute_stdcm(request, user):
     core_output = request_stdcm(make_stdcm_core_payload(request))
     path = PathModel()
     infra = request["infra"]
-    postprocess_path(path, core_output["path"], infra, user, [0, 0])
+    step_durations = [0]
+    for stop in core_output["simulation"]["base_simulations"][0]["stops"]:
+        step_durations.append(stop["duration"])
+
+    # Dummy values, we don't need actual stop values to be linked to the path,
+    # and it's difficult to sort out the waypoints where the train doesn't stop
+    step_durations = [0] * len(core_output["path"]["path_waypoints"])
+
+    postprocess_path(path, core_output["path"], infra, user, step_durations)
     path.save()
 
     schedule = TrainSchedule()

@@ -33,7 +33,7 @@ public class RJSRollingStock implements Identified {
     @Json(name = "effort_curves")
     public RJSEffortCurves effortCurves;
 
-    @Json(name="power_restrictions")
+    @Json(name = "power_restrictions")
     public Map<String, String> powerRestrictions;
 
     /** The class of power usage of the train */

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaDownload, FaPlus } from 'react-icons/fa';
+import cx from 'classnames';
 
-import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
@@ -16,35 +16,22 @@ import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
+import { getTimetableID, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
 import { Path } from 'types';
+import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
+import { valueToInterval } from 'utils/numbers';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
-
-/* function trainsDurations(trainList) {
-  const durationList = trainList.map((train) => ({
-    id: train.id,
-    duration:
-      train.arrival > train.departure
-        ? train.arrival - train.departure
-        : train.arrival + 86400 - train.departure,
-  }));
-  const min = Math.min(...durationList.map((train) => train.duration));
-  const max = Math.max(...durationList.map((train) => train.duration));
-  return durationList;
-} */
+import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
 
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
-  setTrainScheduleIDsToModify: (IDs?: number[]) => void;
+  trainsWithDetails: boolean;
 };
 
-export default function Timetable({
-  setDisplayTrainScheduleManagement,
-  setTrainScheduleIDsToModify,
-}: Props) {
+export default function Timetable({ setDisplayTrainScheduleManagement, trainsWithDetails }: Props) {
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
   );
@@ -53,8 +40,10 @@ export default function Timetable({
   );
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const timetableID = useSelector(getTimetableID);
+  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
+  const [trainsDurationsIntervals, setTrainsDurationsIntervals] = useState<number[]>();
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -165,6 +154,10 @@ export default function Timetable({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [departureArrivalTimes, debouncedTerm]);
 
+  useEffect(() => {
+    setTrainsDurationsIntervals(findTrainsDurationsIntervals(departureArrivalTimes));
+  }, [departureArrivalTimes]);
+
   return (
     <div className="scenario-timetable">
       <div className="scenario-timetable-addtrains-buttons">
@@ -185,7 +178,7 @@ export default function Timetable({
           data-testid="scenarios-add-train-schedule-button"
           onClick={() => {
             setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add);
-            setTrainScheduleIDsToModify(undefined);
+            dispatch(updateTrainScheduleIDsToModify(undefined));
           }}
         >
           <span className="mr-2">
@@ -218,25 +211,28 @@ export default function Timetable({
           />
         </div>
       </div>
-      <div className="scenario-timetable-trains">
+      <div className={cx('scenario-timetable-trains', trainsWithDetails && 'with-details')}>
         {trainsList &&
           selectedProjection &&
-          trainsList.map((train: ScheduledTrain, idx: number) =>
-            !train.isFiltered ? (
-              <TimetableTrainCard
-                train={train}
-                key={`timetable-train-card-${train.id}`}
-                isSelected={selectedTrain === idx}
-                projectionPathIsUsed={selectedProjection.id === train.id}
-                idx={idx}
-                changeSelectedTrain={changeSelectedTrain}
-                deleteTrain={deleteTrain}
-                duplicateTrain={duplicateTrain}
-                selectPathProjection={selectPathProjection}
-                setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
-              />
-            ) : null
+          trainsDurationsIntervals &&
+          trainsList.map(
+            (train: ScheduledTrain, idx: number) =>
+              !train.isFiltered && (
+                <TimetableTrainCard
+                  train={train}
+                  intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
+                  key={`timetable-train-card-${train.id}-${train.path}`}
+                  isSelected={selectedTrain === idx}
+                  isModified={trainScheduleIDsToModify?.includes(train.id)}
+                  projectionPathIsUsed={selectedProjection.id === train.id}
+                  idx={idx}
+                  changeSelectedTrain={changeSelectedTrain}
+                  deleteTrain={deleteTrain}
+                  duplicateTrain={duplicateTrain}
+                  selectPathProjection={selectPathProjection}
+                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                />
+              )
           )}
       </div>
     </div>
