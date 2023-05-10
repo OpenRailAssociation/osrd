@@ -215,22 +215,25 @@ class StandaloneSimulationSerializer(Serializer):
 
 
 class STDCMInputSerializer(Serializer):
-    class WaypointInputSerializer(Serializer):
-        track_section = serializers.CharField(max_length=255)
-        geo_coordinate = serializers.JSONField(required=False)
-        offset = serializers.FloatField(required=False)
+    class StepInputSerializer(Serializer):
+        class WaypointInputSerializer(Serializer):
+            track_section = serializers.CharField(max_length=255)
+            geo_coordinate = serializers.JSONField(required=False)
+            offset = serializers.FloatField(required=False)
+
+        duration = serializers.FloatField(required=False)
+        waypoints = serializers.ListField(
+            min_length=1,
+            child=WaypointInputSerializer(),
+        )
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
     timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())
     start_time = serializers.FloatField(required=False, allow_null=True)
     end_time = serializers.FloatField(required=False, allow_null=True)
-    start_points = serializers.ListField(
-        min_length=1,
-        child=WaypointInputSerializer(),
-    )
-    end_points = serializers.ListField(
-        min_length=1,
-        child=WaypointInputSerializer(),
+    steps = serializers.ListField(
+        min_length=2,
+        child=StepInputSerializer(),
     )
     rolling_stock = serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all())
     comfort = serializers.ChoiceField(choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD)
