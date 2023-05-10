@@ -48,7 +48,7 @@
   "No path could be found": "No path found",
   "No path could be found after loading Electrification constraints": "No path found for a rolling stock with this type of electrification",
   "No path could be found after loading Gauge constraints": "No path for this rolling stock gauge",
-  "noPlaceChosen": "No crossing/break point defined",
+  "noPlaceChosen": "No stop/waypoint defined",
   "noOriginChosen": "Departure undefined",
   "noDestinationChosen": "Arrival undefined",
   "noPowerRestriction": "No selection",
