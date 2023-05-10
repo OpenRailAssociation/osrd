@@ -39,8 +39,8 @@
     "missingProfile": "Missing profile",
     "legend": "Legend"
   },
-  "start": "Start",
-  "stop": "End",
+  "start": "Departure",
+  "stop": "Arrival",
   "stopPlace": "Place",
   "stopTime": "End",
   "stopStopTime": "Stop",
