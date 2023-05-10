@@ -18,8 +18,11 @@ export const ALLOWANCE_UNIT_TYPES = {
   TIME_PER_DISTANCE: 'time_per_distance',
 };
 
+export type AllowanceUnitsKeys = keyof typeof ALLOWANCE_UNITS_KEYS;
+export type AllowanceUnitskeysValues = (typeof ALLOWANCE_UNITS_KEYS)[AllowanceUnitsKeys];
+
 export interface AllowanceType {
   id: AllowanceValue['value_type'];
   label: string;
-  unit: string;
+  unit: AllowanceUnitskeysValues;
 }
