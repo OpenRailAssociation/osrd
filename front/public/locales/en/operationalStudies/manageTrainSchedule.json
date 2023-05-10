@@ -17,7 +17,7 @@
     "mandatoryField": "Required field",
     "noDelta": "The gap between two trains must be at least one minute",
     "noDeltaInput": "Must be > 0",
-    "noDepartureTime": "Please enter a departure date",
+    "noDepartureTime": "Please enter a departure time",
     "noDestination": "No destination set",
     "noName": "Please choose a name for the train",
     "noOrigin": "No origin set",
