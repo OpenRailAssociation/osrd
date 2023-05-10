@@ -42,7 +42,7 @@
   "start": "Departure",
   "stop": "Arrival",
   "stopPlace": "Place",
-  "stopTime": "End",
+  "stopTime": "Arrival",
   "stopStopTime": "Stop",
   "timetable": "Timetable",
   "train": "Train",
