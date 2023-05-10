@@ -83,7 +83,7 @@
   "trainLabels": "Tags",
   "trainScheduleCount": "Quantity",
   "trainScheduleDelta": "Gap",
-  "trainScheduleDepartureTime": "Departure hour",
+  "trainScheduleDepartureTime": "Departure time",
   "trainScheduleInitialSpeed": "Initial velocity",
   "trainScheduleName": "Name",
   "trainScheduleStep": "Increment step",
