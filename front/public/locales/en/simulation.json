@@ -19,13 +19,13 @@
     "altitude": "Altitude",
     "curves": "Curves",
     "maxSpeed": "Line speed",
-    "slopes": "Inclines",
+    "slopes": "Slopes",
     "electricalProfiles": "Electrical profiles",
     "powerRestriction": "Power restriction"
   },
   "powerRestriction": {
     "used": "used",
-    "incompatible": "Power restriction incompatible"
+    "incompatible": "Incompatible power restriction "
   },
   "electricalProfiles": {
     "25000": "25000V",
