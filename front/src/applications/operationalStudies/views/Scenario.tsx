@@ -37,7 +37,7 @@ export default function Scenario() {
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
   const [trainsWithDetails, setTrainsWithDetails] = useState(false);
-  const [collapseTimetable, setCollapseTimetable] = useState(false);
+  const [collapsedTimetable, setCollapsedTimetable] = useState(false);
 
   const [getProject, { data: project }] =
     osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
@@ -110,7 +110,7 @@ export default function Scenario() {
         <div className="scenario">
           {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
           <div className="row">
-            <div className={collapseTimetable ? 'd-none' : 'col-lg-4'}>
+            <div className={collapsedTimetable ? 'd-none' : 'col-lg-4'}>
               <div className="scenario-sidemenu">
                 {scenario && (
                   <div className="scenario-details">
@@ -142,7 +142,7 @@ export default function Scenario() {
                       <button
                         type="button"
                         className="scenario-details-modify-button"
-                        onClick={() => setCollapseTimetable(true)}
+                        onClick={() => setCollapsedTimetable(true)}
                       >
                         <i className="icons-arrow-prev" />
                       </button>
@@ -181,7 +181,7 @@ export default function Scenario() {
                 />
               </div>
             </div>
-            <div className={collapseTimetable ? 'col-lg-12' : 'col-lg-8'}>
+            <div className={collapsedTimetable ? 'col-lg-12' : 'col-lg-8'}>
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
@@ -196,12 +196,12 @@ export default function Scenario() {
                 </div>
               )}
               <div className="scenario-results">
-                {collapseTimetable && (
-                  <div className="d-flex align-items-center mb-2">
+                {collapsedTimetable && (
+                  <div className="scenario-timetable-collapsed">
                     <button
-                      className="scenario-timetable-collapsed"
+                      className="timetable-collapse-button"
                       type="button"
-                      onClick={() => setCollapseTimetable(false)}
+                      onClick={() => setCollapsedTimetable(false)}
                     >
                       <i className="icons-arrow-next" />
                     </button>
@@ -224,6 +224,7 @@ export default function Scenario() {
                   isDisplayed={
                     displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
                   }
+                  collapsedTimetable={collapsedTimetable}
                 />
               </div>
             </div>
