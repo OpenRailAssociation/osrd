@@ -147,6 +147,10 @@
       .scenario-timetable-trains {
         overflow: auto;
         height: calc(var(--content-height) - 13rem);
+        @media screen and (max-width: 1023px) {
+          height: auto;
+          max-height: 50vh;
+        }
         .scenario-timetable-train-with-right-bar {
           position: relative;
           display: flex;

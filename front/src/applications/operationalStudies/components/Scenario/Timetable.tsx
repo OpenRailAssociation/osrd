@@ -21,7 +21,7 @@ import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
 import { Path } from 'types';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
-import { value2interval } from 'utils/numbers';
+import { valueToInterval } from 'utils/numbers';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
@@ -220,7 +220,7 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
               !train.isFiltered && (
                 <TimetableTrainCard
                   train={train}
-                  intervalPosition={value2interval(train.duration, trainsDurationsIntervals)}
+                  intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
                   key={`timetable-train-card-${train.id}-${train.path}`}
                   isSelected={selectedTrain === idx}
                   isModified={trainScheduleIDsToModify?.includes(train.id)}

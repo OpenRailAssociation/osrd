@@ -67,7 +67,9 @@ export default function TimetableManageTrainSchedule({
         <div className="d-flex gap-1 align-items-center justify-content-center mb-2 p-4 bg-white rounded h-100">
           {textContent()}
         </div>
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
+        {/* 
+        *** WILL BE USED LATER ***
+        displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
           <button className="btn btn-warning mb-2" type="button">
             <span className="mr-2">
               <FaPen />
@@ -82,7 +84,9 @@ export default function TimetableManageTrainSchedule({
             </span>
             {t('addTrainSchedule')}
           </button>
-        )}
+        ) 
+        *** WILL BE USED LATER ***
+        */}
         <button
           className="btn btn-secondary btn-block"
           type="button"
