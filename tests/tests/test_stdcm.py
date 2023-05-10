@@ -10,6 +10,7 @@ from .scenario import Scenario
 from .services import API_URL, EDITOAST_URL
 
 _START = {"track_section": "TA2", "geo_coordinate": [-0.387122554630656, 49.4998]}
+_MIDDLE = {"track_section": "TA5", "geo_coordinate": [-0.387122554630656, 49.4998]}
 _STOP = {"track_section": "TH1", "geo_coordinate": [-0.095104854807785, 49.484]}
 
 
@@ -45,10 +46,36 @@ def test_empty_timetable(small_infra: Infra, foo_project_id: int, fast_rolling_s
         "timetable": timetable,
         "start_time": 0,
         "name": "foo",
-        "start_points": [_START],
-        "end_points": [_STOP],
+        "steps": [
+            {"duration": 0.1, "waypoints": [_START]},
+            {"duration": 0.1, "waypoints": [_STOP]},
+        ],
     }
     r = requests.post(API_URL + "stdcm/", json=payload)
+    assert r.status_code == 200
+
+
+def test_empty_timetable_with_stop(small_infra: Infra, foo_project_id: int, fast_rolling_stock: int):
+    op_study = create_op_study(EDITOAST_URL, foo_project_id)
+    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, foo_project_id, op_study)
+    payload = {
+        "infra": small_infra.id,
+        "rolling_stock": fast_rolling_stock,
+        "timetable": timetable,
+        "start_time": 0,
+        "name": "foo",
+        "steps": [
+            {"duration": 0.1, "waypoints": [_START]},
+            {"duration": 42, "waypoints": [_MIDDLE]},
+            {"duration": 0.1, "waypoints": [_STOP]},
+        ],
+    }
+    r = requests.post(API_URL + "stdcm/", json=payload)
+    r.raise_for_status()
+    result = r.json()
+    stops = result["simulation"]["base"]["stops"]
+    assert len(stops) == 2
+    assert stops[0]["duration"] == 42
     assert r.status_code == 200
 
 
@@ -61,8 +88,10 @@ def test_between_trains(small_scenario: Scenario, fast_rolling_stock: int, west_
         "timetable": small_scenario.timetable,
         "start_time": 5000,
         "name": "foo",
-        "start_points": [_START],
-        "end_points": [_STOP],
+        "steps": [
+            {"duration": 0.1, "waypoints": [_START]},
+            {"duration": 0.1, "waypoints": [_STOP]},
+        ],
     }
     r = requests.post(API_URL + "stdcm/", json=payload)
     if r.status_code // 100 != 2:

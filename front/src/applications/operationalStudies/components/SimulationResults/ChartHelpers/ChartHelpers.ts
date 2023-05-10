@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { last } from 'lodash';
 
-import { sec2time } from 'utils/timeManipulation';
+import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
 // eslint-disable-next-line
 import {
@@ -326,14 +326,22 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
   const lastStop = last(train.base.stops) as Stop;
   const departure = offsetSeconds(firstStop.time + dragOffset);
   const arrival = offsetSeconds(lastStop.time + dragOffset);
+  const mechanicalEnergyConsumed = {
+    base: train.base?.mechanical_energy_consumed,
+    eco: train.eco?.mechanical_energy_consumed,
+  };
 
   return {
     id: train.id,
     labels: train.labels,
     name: train.name,
     path: train.path,
+    pathLength: last(train.base.stops)?.position,
+    mechanicalEnergyConsumed,
     departure,
     arrival,
+    stopsCount: train.base.stops.filter((stop) => stop.duration > 0).length - 1,
+    duration: durationInSeconds(departure, arrival),
     speed_limit_tags: train.speed_limit_tags,
   };
 }

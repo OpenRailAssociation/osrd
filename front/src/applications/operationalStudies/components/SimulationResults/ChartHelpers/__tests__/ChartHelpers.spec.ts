@@ -79,6 +79,13 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         departure: 43200,
         arrival: 44417.01477978789,
         speed_limit_tags: undefined,
+        duration: 1217.014779787889,
+        mechanicalEnergyConsumed: {
+          base: 4341138851.046319,
+          eco: 4341138851.046319,
+        },
+        pathLength: 54483.80299490723,
+        stopsCount: 0,
       });
     });
   });
@@ -94,6 +101,13 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         departure: 44200,
         arrival: 45417.01477978789,
         speed_limit_tags: undefined,
+        duration: 1217.014779787889,
+        mechanicalEnergyConsumed: {
+          base: 4341138851.046319,
+          eco: 4341138851.046319,
+        },
+        pathLength: 54483.80299490723,
+        stopsCount: 0,
       });
     });
     it('should handle time exceeding midnight', () => {
@@ -106,6 +120,13 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         departure: 43200,
         arrival: 44417.01477978789,
         speed_limit_tags: undefined,
+        duration: 1217.014779787889,
+        mechanicalEnergyConsumed: {
+          base: 4341138851.046319,
+          eco: 4341138851.046319,
+        },
+        pathLength: 54483.80299490723,
+        stopsCount: 0,
       });
     });
     it('should handle time before midnight', () => {
@@ -118,6 +139,13 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         departure: 43200,
         arrival: 44417.01477978789,
         speed_limit_tags: undefined,
+        duration: 1217.014779787889,
+        mechanicalEnergyConsumed: {
+          base: 4341138851.046319,
+          eco: 4341138851.046319,
+        },
+        pathLength: 54483.80299490723,
+        stopsCount: 0,
       });
     });
   });

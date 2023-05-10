@@ -14,6 +14,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
@@ -138,15 +139,16 @@ public class STDCMHelpers {
             ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph,
             double tolerance
     ) {
+        var envelopeWrapper = new EnvelopeStopWrapper(res.envelope(), res.stopResults());
         var routes = res.trainPath().routePath();
         for (var index = 0; index < routes.size(); index++) {
             var startRoutePosition = routes.get(index).pathOffset();
             var routeOccupancies = occupancyGraph.get(routes.get(index).element());
             for (var occupancy : routeOccupancies) {
-                var enterTime = res.departureTime() + res.envelope().interpolateTotalTimeClamp(
+                var enterTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
                         startRoutePosition + occupancy.distanceStart()
                 );
-                var exitTime = res.departureTime() + res.envelope().interpolateTotalTimeClamp(
+                var exitTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
                         startRoutePosition + occupancy.distanceEnd()
                 );
                 assertTrue(

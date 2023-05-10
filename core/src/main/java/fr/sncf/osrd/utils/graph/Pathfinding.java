@@ -73,7 +73,7 @@ public class Pathfinding<NodeT, EdgeT> {
      * Function to call to know the cost of the path from the departure point to the edge location .
      * Used in STDCM. Either totalDistanceUntilEdgeLocation or edgeRangeCost must be defined.
     */
-    private TotalDistanceUntilEdgeLocation<EdgeT> totalDistanceUntilEdgeLocation = null;
+    private TotalCostUntilEdgeLocation<EdgeT> totalCostUntilEdgeLocation = null;
 
     /** Constructor */
     public Pathfinding(Graph<NodeT, EdgeT> graph) {
@@ -99,8 +99,8 @@ public class Pathfinding<NodeT, EdgeT> {
     }
 
     /** Sets the functor used to estimate the cost for a range */
-    public Pathfinding<NodeT, EdgeT> setTotalDistanceUntilEdgeLocation(TotalDistanceUntilEdgeLocation<EdgeT> f) {
-        this.totalDistanceUntilEdgeLocation = f;
+    public Pathfinding<NodeT, EdgeT> setTotalCostUntilEdgeLocation(TotalCostUntilEdgeLocation<EdgeT> f) {
+        this.totalCostUntilEdgeLocation = f;
         return this;
     }
 
@@ -227,7 +227,7 @@ public class Pathfinding<NodeT, EdgeT> {
     private void checkParameters() {
         assert edgeToLength != null;
         assert estimateRemainingDistance != null;
-        if (totalDistanceUntilEdgeLocation == null && edgeRangeCost == null)
+        if (totalCostUntilEdgeLocation == null && edgeRangeCost == null)
             edgeRangeCost = (range) -> range.end - range.start;
     }
 
@@ -302,8 +302,8 @@ public class Pathfinding<NodeT, EdgeT> {
         if (range == null)
             return;
         double totalDistance = 0;
-        if (totalDistanceUntilEdgeLocation != null)
-            totalDistance = totalDistanceUntilEdgeLocation.apply(new EdgeLocation<>(range.edge, range.end));
+        if (totalCostUntilEdgeLocation != null)
+            totalDistance = totalCostUntilEdgeLocation.apply(new EdgeLocation<>(range.edge, range.end));
         else {
             totalDistance = prevDistance + edgeRangeCost.apply(range);
         }
