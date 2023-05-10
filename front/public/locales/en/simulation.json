@@ -4,10 +4,10 @@
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Train schedule impossible"
   },
-  "isWorking": "Simulation calculation in process...",
+  "isWorking": "Generating simulation...",
   "labels": "Tags",
   "loadingTrain": "Loading train",
-  "ManualOffset": "Seconds addition to the train",
+  "ManualOffset": "Add seconds to the train",
   "ModalEdit": "Train edition",
   "name": "Name",
   "noData": "No available data",
