@@ -57,7 +57,7 @@
   "origin": "Origin",
   "pathfinding": "Path search",
   "pathfindingDone": "Search complete",
-  "pathfindingError": "Error during route search: {{errorMessage}}",
+  "pathfindingError": "Error during pathfinding: {{errorMessage}}",
   "pathfindingInProgress": "Looking for route",
   "pathfindingMissingParams": "Missing elements for search : {{missingElements}}",
   "pathfindingStatus": "Route search status",
