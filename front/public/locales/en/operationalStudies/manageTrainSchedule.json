@@ -59,7 +59,7 @@
   "pathfindingDone": "Search complete",
   "pathfindingError": "Error during pathfinding: {{errorMessage}}",
   "pathfindingInProgress": "Pathfinding running...",
-  "pathfindingMissingParams": "Missing elements for search : {{missingElements}}",
+  "pathfindingMissingParams": "Missing elements for search: {{missingElements}}",
   "pathfindingStatus": "Route search status",
   "pleaseWait": "Please wait",
   "powerRestriction": "Power restriction code",
