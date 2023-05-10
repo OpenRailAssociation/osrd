@@ -58,7 +58,7 @@
   "pathfinding": "Path search",
   "pathfindingDone": "Search complete",
   "pathfindingError": "Error during pathfinding: {{errorMessage}}",
-  "pathfindingInProgress": "Looking for route",
+  "pathfindingInProgress": "Pathfinding running...",
   "pathfindingMissingParams": "Missing elements for search : {{missingElements}}",
   "pathfindingStatus": "Route search status",
   "pleaseWait": "Please wait",
