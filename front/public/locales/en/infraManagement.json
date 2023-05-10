@@ -32,6 +32,6 @@
   "infrastructure": "Infrastructure",
   "locked": "Locked",
   "no": "No",
-  "noInfra": "Select an infrastructure",
+  "noInfra": "Please select an infrastructure",
   "yes": "Yes"
 }
