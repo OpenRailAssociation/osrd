@@ -45,6 +45,9 @@ select.sm {
     .btn {
       border-radius: 4px !important;
     }
+    &.with-collapsed-timetable {
+      top: 3rem;
+    }
   }
 
   .osrd-simulation-container {
