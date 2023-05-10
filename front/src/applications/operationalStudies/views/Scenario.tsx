@@ -17,7 +17,7 @@ import {
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { FaPencilAlt } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
@@ -33,10 +33,11 @@ export default function Scenario() {
   const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
-  const [trainScheduleIDsToModify, setTrainScheduleIDsToModify] = useState<number[]>();
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
+  const [trainsWithDetails, setTrainsWithDetails] = useState(false);
+  const [collapsedTimetable, setCollapsedTimetable] = useState(false);
 
   const [getProject, { data: project }] =
     osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
@@ -109,12 +110,12 @@ export default function Scenario() {
         <div className="scenario">
           {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
           <div className="row">
-            <div className="col-lg-4">
+            <div className={collapsedTimetable ? 'd-none' : 'col-lg-4'}>
               <div className="scenario-sidemenu">
                 {scenario && (
                   <div className="scenario-details">
                     <div className="scenario-details-name">
-                      {scenario.name}
+                      <span className="flex-grow-1">{scenario.name}</span>
                       <button
                         className="scenario-details-modify-button"
                         type="button"
@@ -128,10 +129,22 @@ export default function Scenario() {
                           )
                         }
                       >
-                        <span className="scenario-details-modify-button-text">
-                          {t('modifyScenario')}
-                        </span>
                         <FaPencilAlt />
+                      </button>
+                      <button
+                        type="button"
+                        className="scenario-details-modify-button"
+                        onClick={() => setTrainsWithDetails(!trainsWithDetails)}
+                        title={t('displayTrainsWithDetails')}
+                      >
+                        {trainsWithDetails ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                      <button
+                        type="button"
+                        className="scenario-details-modify-button"
+                        onClick={() => setCollapsedTimetable(true)}
+                      >
+                        <i className="icons-arrow-prev" />
                       </button>
                     </div>
                     <div className="row">
@@ -139,6 +152,7 @@ export default function Scenario() {
                         <div className="scenario-details-infra-name">
                           <img src={infraLogo} alt="Infra logo" className="mr-2" />
                           {scenario.infra_name}
+                          <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
                         </div>
                       </div>
                       <div className="col-md-6">
@@ -163,17 +177,16 @@ export default function Scenario() {
                 )}
                 <Timetable
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  setTrainScheduleIDsToModify={setTrainScheduleIDsToModify}
+                  trainsWithDetails={trainsWithDetails}
                 />
               </div>
             </div>
-            <div className="col-lg-8">
+            <div className={collapsedTimetable ? 'col-lg-12' : 'col-lg-8'}>
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
                   <ManageTrainSchedule
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                    trainScheduleIDsToModify={trainScheduleIDsToModify}
                   />
                 </div>
               )}
@@ -183,10 +196,35 @@ export default function Scenario() {
                 </div>
               )}
               <div className="scenario-results">
+                {collapsedTimetable && (
+                  <div className="scenario-timetable-collapsed">
+                    <button
+                      className="timetable-collapse-button"
+                      type="button"
+                      onClick={() => setCollapsedTimetable(false)}
+                    >
+                      <i className="icons-arrow-next" />
+                    </button>
+                    <div className="lead ml-2">{scenario.name}</div>
+                    <div className="d-flex align-items-center ml-auto">
+                      <img src={infraLogo} alt="Infra logo" className="mr-2" height="16" />
+                      {scenario.infra_name}
+                    </div>
+                    <div className="d-flex align-items-center ml-4">
+                      <span className="mr-1">
+                        <GiElectric />
+                      </span>
+                      {scenario.electrical_profile_set_name
+                        ? scenario.electrical_profile_set_name
+                        : t('noElectricalProfileSet')}
+                    </div>
+                  </div>
+                )}
                 <SimulationResults
                   isDisplayed={
                     displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
                   }
+                  collapsedTimetable={collapsedTimetable}
                 />
               </div>
             </div>

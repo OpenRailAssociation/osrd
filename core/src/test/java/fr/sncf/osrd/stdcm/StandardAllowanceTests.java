@@ -27,7 +27,7 @@ public class StandardAllowanceTests {
     ){}
 
     /** Runs the pathfinding with the given parameters, with and without allowance */
-    private static STDCMAllowanceResults runWithAndWithoutAllowance(STDCMPathfindingBuilder builder) {
+    static STDCMAllowanceResults runWithAndWithoutAllowance(STDCMPathfindingBuilder builder) {
         builder.setTimeStep(timeStep);
         var resultWithAllowance = builder.run();
         builder.setStandardAllowance(null);
@@ -43,7 +43,7 @@ public class StandardAllowanceTests {
     }
 
     /** Compares the run time with and without allowance, checks that the allowance is properly applied */
-    private static void checkAllowanceResult(STDCMAllowanceResults results, AllowanceValue value, double tolerance) {
+    static void checkAllowanceResult(STDCMAllowanceResults results, AllowanceValue value, double tolerance) {
         if (Double.isNaN(tolerance))
             tolerance = 2 * timeStep;
         var baseEnvelope = results.withoutAllowance.envelope();

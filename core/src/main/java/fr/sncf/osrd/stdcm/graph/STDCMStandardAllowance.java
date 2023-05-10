@@ -5,8 +5,10 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +31,12 @@ public class STDCMStandardAllowance {
             double timeStep,
             RollingStock.Comfort comfort,
             RouteAvailabilityInterface routeAvailability,
-            double departureTime
+            double departureTime,
+            List<TrainStop> stops
     ) {
         if (standardAllowance == null)
             return envelope; // This isn't just an optimization, it avoids float inaccuracies
-        var rangeTransitions = new TreeSet<Double>();
+        var rangeTransitions = initRangeTransitions(stops);
         for (int i = 0; i < 10; i++) {
             var newEnvelope = applyAllowanceWithTransitions(
                     envelope,
@@ -45,7 +48,7 @@ public class STDCMStandardAllowance {
                     rangeTransitions
             );
             var conflictOffset = findConflictOffsets(
-                    newEnvelope, routeAvailability, ranges, departureTime);
+                    newEnvelope, routeAvailability, ranges, departureTime, stops);
             if (Double.isNaN(conflictOffset))
                 return newEnvelope;
             assert !rangeTransitions.contains(conflictOffset) : "conflict offset is already on a range transition";
@@ -55,6 +58,14 @@ public class STDCMStandardAllowance {
         throw new RuntimeException("Couldn't find an envelope that wouldn't cause a conflict");
     }
 
+    /** Initiates the range transitions with one transition on each stop */
+    private static NavigableSet<Double> initRangeTransitions(List<TrainStop> stops) {
+        var res = new TreeSet<Double>();
+        for (var stop : stops)
+            res.add(stop.position);
+        return res;
+    }
+
     /** Looks for the first detected conflict that would happen on the given envelope.
      * If a conflict is found, returns its offset.
      * Otherwise, returns NaN. */
@@ -62,14 +73,16 @@ public class STDCMStandardAllowance {
             Envelope envelope,
             RouteAvailabilityInterface routeAvailability,
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
-            double departureTime
+            double departureTime,
+            List<TrainStop> stops
     ) {
         var path = STDCMUtils.makePathFromRanges(ranges);
+        var envelopeWithStops = new EnvelopeStopWrapper(envelope, stops);
         var availability = routeAvailability.getAvailability(
                 path,
                 0,
                 envelope.getEndPos(),
-                envelope,
+                envelopeWithStops,
                 departureTime
         );
         assert !(availability.getClass() == RouteAvailabilityInterface.NotEnoughLookahead.class);
@@ -86,7 +99,7 @@ public class STDCMStandardAllowance {
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
-            TreeSet<Double> rangeTransitions
+            NavigableSet<Double> rangeTransitions
     ) {
 
         var allowance = new MarecoAllowance(

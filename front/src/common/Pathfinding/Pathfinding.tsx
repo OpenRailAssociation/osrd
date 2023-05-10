@@ -174,6 +174,56 @@ interface PathfindingProps {
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
 }
 
+export function getOpenApiSteps({
+  infraID,
+  rollingStockID,
+  origin,
+  destination,
+  vias,
+}: {
+  infraID?: number;
+  rollingStockID?: number;
+  origin?: PointOnMap;
+  destination?: PointOnMap;
+  vias: PointOnMap[];
+}): PathQuery {
+  return origin && destination && rollingStockID
+    ? {
+        infra: infraID,
+        steps: [
+          {
+            duration: 0,
+            waypoints: [
+              {
+                track_section: origin.id,
+                geo_coordinate: origin.coordinates,
+              },
+            ],
+          },
+          ...vias.map((via) => ({
+            duration: Math.round(via.duration || 0),
+            waypoints: [
+              {
+                track_section: via.track || via.id,
+                geo_coordinate: via.coordinates,
+              },
+            ],
+          })),
+          {
+            duration: 1,
+            waypoints: [
+              {
+                track_section: destination.id,
+                geo_coordinate: destination.coordinates,
+              },
+            ],
+          },
+        ],
+        rolling_stocks: [rollingStockID],
+      }
+    : {};
+}
+
 function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [pathfindingRequest, setPathfindingRequest] =
@@ -216,42 +266,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
 
   const generatePathfindingParams = (): PathQuery => {
     dispatch(updateItinerary(undefined));
-    if (origin && destination && rollingStockID) {
-      return {
-        infra: infraID,
-        steps: [
-          {
-            duration: 0,
-            waypoints: [
-              {
-                track_section: origin.id,
-                geo_coordinate: origin.coordinates,
-              },
-            ],
-          },
-          ...vias.map((via) => ({
-            duration: Math.round(via.duration || 0),
-            waypoints: [
-              {
-                track_section: via.track || via.id,
-                geo_coordinate: via.coordinates,
-              },
-            ],
-          })),
-          {
-            duration: 1,
-            waypoints: [
-              {
-                track_section: destination.id,
-                geo_coordinate: destination.coordinates,
-              },
-            ],
-          },
-        ],
-        rolling_stocks: [rollingStockID],
-      };
-    }
-    return {};
+    return getOpenApiSteps({ infraID, rollingStockID, origin, destination, vias });
   };
 
   const startPathFinding = (zoom = true) => {
