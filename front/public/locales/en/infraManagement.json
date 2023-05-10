@@ -26,12 +26,12 @@
   "infraChoice": "Infrastructures",
   "infraManagement": "Infrastructures management",
   "infraName": "Infrastructure name",
-  "infrasFound_zero": "No insfrastructure found",
-  "infrasFound_one": "{{count}} insfrastructure found",
-  "infrasFound_other": "{{count}} insfrastructures found",
+  "infrasFound_zero": "No infrastructure found",
+  "infrasFound_one": "{{count}} infrastructure found",
+  "infrasFound_other": "{{count}} infrastructures found",
   "infrastructure": "Infrastructure",
   "locked": "Locked",
   "no": "No",
-  "noInfra": "Select an infrastructure",
+  "noInfra": "Please select an infrastructure",
   "yes": "Yes"
 }

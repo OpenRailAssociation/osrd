@@ -1,14 +1,13 @@
 {
   "about": "About",
-  "disconnect": "Disconnect",
   "attributions": "Attributions",
+  "disconnect": "Sign out",
   "informations": {
     "application": "Application",
-    "version": "Version",
-    "releaseInformations": "Version informations"
+    "releaseInformations": "Libraries & licenses",
+    "version": "Version"
   },
   "language": {
-    "languageChoice": "Interface language",
     "de": "Deutsch",
     "en": "English",
     "es": "Español",
@@ -16,6 +15,7 @@
     "it": "Italiano",
     "jp": "やまと",
     "ru": "Русский",
-    "uk": "Українська"
+    "uk": "Українська",
+    "languageChoice": "Language"
   }
 }
