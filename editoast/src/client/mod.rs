@@ -25,6 +25,7 @@ pub enum Commands {
     Clear(ClearArgs),
     ImportRailjson(ImportRailjsonArgs),
     ImportProfileSet(ImportProfileSetArgs),
+    OsmToRailjson(OsmToRailjsonArgs),
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
@@ -93,6 +94,15 @@ pub struct ImportProfileSetArgs {
     pub name: String,
     /// Electrical profile set file path
     pub electrical_profile_set_path: PathBuf,
+}
+
+#[derive(Args, Debug)]
+#[command(about, long_about = "Extracts a railjson from OpenStreetMap data")]
+pub struct OsmToRailjsonArgs {
+    /// Input file in the OSM PBF format
+    pub osm_pbf_in: PathBuf,
+    /// Output file in Railjson format
+    pub railjson_out: PathBuf,
 }
 
 /// Retrieve the ROOT_URL env var. If not found returns default local url.

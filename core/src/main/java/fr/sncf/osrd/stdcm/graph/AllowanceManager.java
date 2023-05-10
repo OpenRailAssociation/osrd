@@ -77,6 +77,7 @@ public class AllowanceManager {
                     .setPrevNode(node)
                     .setEnvelope(extractEnvelopeSection(totalEnvelope, previousEnd, end))
                     .setForceMaxDelay(true)
+                    .setWaypointIndex(edge.waypointIndex())
                     .findEdgeSameNextOccupancy(edge.timeNextOccupancy());
             if (prevEdge == null)
                 return null;
@@ -107,6 +108,10 @@ public class AllowanceManager {
     private List<STDCMEdge> findAffectedEdges(STDCMEdge edge, double delayNeeded) {
         var res = new ArrayDeque<STDCMEdge>();
         while (true) {
+            if (edge.endAtStop()) {
+                // Engineering allowances can't span over stops
+                return new ArrayList<>(res);
+            }
             var endTime = edge.timeStart() + edge.getTotalTime();
             var maxDelayAddedOnEdge = edge.timeNextOccupancy() - endTime;
             if (delayNeeded > maxDelayAddedOnEdge) {
