@@ -18,7 +18,7 @@ export function budgetFormat(amount: number | bigint) {
 }
 
 // This function takes a train duration & the distributed intervals, and return the position of train inside intervals
-export function value2interval(value?: number, intervals?: number[]) {
+export function valueToInterval(value?: number, intervals?: number[]) {
   if (value && intervals) {
     if (value < intervals[1]) return 0;
     if (value < intervals[2]) return 1;
@@ -27,7 +27,7 @@ export function value2interval(value?: number, intervals?: number[]) {
   return undefined;
 }
 
-// This helper takes a train list and find & return 3 distributed intervals of schedule duration
+// This helper takes an array of numbers an determinate 3 distributed intervals based upon the numbers from the array
 export function distributedIntervalsFromArrayOfValues(values: number[]) {
   values.sort((a, b) => a - b);
   const valuesCount = values.length;
