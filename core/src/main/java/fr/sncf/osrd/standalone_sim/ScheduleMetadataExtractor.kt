@@ -121,6 +121,7 @@ private fun routeOccupancies(
         val exit = events.last()
         if (exit.isEntry) {
             routeOccupancies[route] = ResultOccupancyTiming(entry.time.toDouble() / 1000, envelope.totalTime)
+            continue;
         }
         routeOccupancies[route] = ResultOccupancyTiming(entry.time.toDouble() / 1000, exit.time.toDouble() / 1000)
     }
