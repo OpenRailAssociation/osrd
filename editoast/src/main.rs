@@ -2,6 +2,7 @@
 extern crate diesel;
 
 mod client;
+mod converters;
 mod error;
 mod fixtures;
 mod generated_data;
@@ -68,6 +69,9 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Clear(args) => clear(args, pg_config, redis_config).await,
         Commands::ImportRailjson(args) => import_railjson(args, pg_config).await,
         Commands::ImportProfileSet(args) => add_electrical_profile_set(args, pg_config).await,
+        Commands::OsmToRailjson(args) => {
+            converters::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
+        }
     }
 }
 

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
+import { RootState } from 'reducers';
 
 /**
  *
@@ -26,7 +27,7 @@ const getOccupancyBounds = (routeAspects: ConsolidatedRouteAspect[], time: Date)
 
 export default function TrainDetails() {
   const { positionValues, timePosition, consolidatedSimulation, selectedTrain } = useSelector(
-    (state: any) => state.osrdsimulation
+    (state: RootState) => state.osrdsimulation
   );
 
   const { t } = useTranslation(['simulation']);
@@ -35,7 +36,7 @@ export default function TrainDetails() {
     () =>
       getOccupancyBounds(
         consolidatedSimulation[selectedTrain]?.routeAspects,
-        positionValues?.headPosition?.time
+        new Date(positionValues?.headPosition?.time)
       ),
     [consolidatedSimulation, positionValues, selectedTrain]
   );

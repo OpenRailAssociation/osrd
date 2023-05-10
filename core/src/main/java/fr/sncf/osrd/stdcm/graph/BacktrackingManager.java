@@ -71,6 +71,7 @@ public class BacktrackingManager {
                 .setPrevAddedDelay(old.totalDepartureTimeShift() - old.addedDelay())
                 .setPrevNode(prevNode)
                 .setEnvelope(newEnvelope)
+                .setWaypointIndex(old.waypointIndex())
                 .findEdgeSameNextOccupancy(old.timeNextOccupancy());
     }
 

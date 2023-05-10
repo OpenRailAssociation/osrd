@@ -1,14 +1,18 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import debounce from 'lodash/debounce';
+import identity from 'lodash/identity';
+import noop from 'lodash/noop';
+import { FaTrash } from 'react-icons/fa';
+
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
 
-import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
-import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import debounce from 'lodash/debounce';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
@@ -100,8 +104,8 @@ export default function StandardAllowanceDefault(props) {
       allowance_type: 'standard',
       distribution: distribution.id,
       default_value: {
-        value_type: value.type,
-        [TYPES_UNITS[value.type]]: value.value,
+        value_type: value?.type,
+        [TYPES_UNITS[value?.type]]: value?.value,
       },
     };
     const newAllowances = [];
@@ -244,8 +248,8 @@ export default function StandardAllowanceDefault(props) {
                 id="standardAllowanceTypeSelect"
                 options={allowanceTypes}
                 handleType={handleType}
-                value={value.value}
-                type={value.type}
+                value={value?.value}
+                type={value?.type}
                 sm
               />
             ) : (
@@ -257,7 +261,7 @@ export default function StandardAllowanceDefault(props) {
                     value: e.target.value,
                   })
                 }
-                value={value.value}
+                value={value?.value}
                 unit={allowanceTypes[0].unit}
                 type="text"
                 sm
@@ -273,7 +277,7 @@ export default function StandardAllowanceDefault(props) {
             type="button"
             onClick={mutateSingleAllowance || addStandard}
             className={`btn btn-success btn-sm mr-1 ${
-              value.value === 0 || value.value === '' ? 'disabled' : null
+              value?.value === 0 || value?.value === '' ? 'disabled' : null
             }`}
           >
             {t('apply')}
@@ -282,7 +286,7 @@ export default function StandardAllowanceDefault(props) {
             type="button"
             onClick={() => delStandard(value)}
             className={`btn btn-danger btn-sm ${
-              value.value === 0 || value.value === '' ? 'disabled' : null
+              value?.value === 0 || value?.value === '' ? 'disabled' : null
             }`}
           >
             <FaTrash />
@@ -296,7 +300,6 @@ export default function StandardAllowanceDefault(props) {
 StandardAllowanceDefault.propTypes = {
   // distributions: PropTypes.array.isRequired,
   distributionsTypes: PropTypes.array.isRequired,
-  allowanceTypes: PropTypes.array,
   getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
@@ -305,6 +308,13 @@ StandardAllowanceDefault.propTypes = {
   changeType: PropTypes.func,
   options: PropTypes.object,
   title: PropTypes.string,
+  selectedProjection: PropTypes.object,
+  simulation: PropTypes.object.isRequired,
+  t: PropTypes.func,
+  dispatch: PropTypes.func,
+  typeKey: PropTypes.string,
+  getBaseValue: PropTypes.func,
+  getAllowanceTypes: PropTypes.func,
 };
 
 StandardAllowanceDefault.defaultProps = {
@@ -318,11 +328,10 @@ StandardAllowanceDefault.defaultProps = {
   mutateSingleAllowance: undefined,
   title: '',
   selectedTrain: 0,
-  allowanceTypes: [
-    {
-      id: 'time',
-      label: 'time',
-      unit: ALLOWANCE_UNITS_KEYS.time,
-    },
-  ],
+  selectedProjection: {},
+  t: identity,
+  dispatch: noop,
+  typeKey: '',
+  getBaseValue: noop,
+  getAllowanceTypes: noop,
 };
