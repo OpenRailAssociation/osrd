@@ -113,7 +113,11 @@ public class DelayManager {
             double startTime
     ) {
         var speedRatio = graph.getStandardAllowanceSpeedRatio(envelope);
-        var scaledEnvelope = LinearAllowance.scaleEnvelope(envelope, speedRatio);
+        Envelope scaledEnvelope;
+        if (envelope.getEndPos() == 0)
+            scaledEnvelope = envelope;
+        else
+            scaledEnvelope = LinearAllowance.scaleEnvelope(envelope, speedRatio);
         return routeAvailability.getAvailability(
                 path,
                 startOffset,

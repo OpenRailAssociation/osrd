@@ -11,6 +11,7 @@ import {
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { getConf, getVias } from 'reducers/osrdconf/selectors';
+import cx from 'classnames';
 
 function InputStopTime(props) {
   const { index, dispatchAndRun, setIndexSelected } = props;
@@ -46,6 +47,7 @@ function InputStopTime(props) {
 export default function DisplayVias(props) {
   const osrdconf = useSelector(getConf);
   const dispatch = useDispatch();
+  const vias = useSelector(getVias);
   const [indexSelected, setIndexSelected] = useState(undefined);
   const { zoomToFeaturePoint } = props;
 
@@ -74,10 +76,10 @@ export default function DisplayVias(props) {
                     ref={providedDraggable.innerRef}
                     {...providedDraggable.draggableProps}
                     {...providedDraggable.dragHandleProps}
-                    className="d-flex align-items-center w-100 osrd-config-place osrd-config-place-via"
+                    className={cx('place via', osrdconf.vias[index].duration !== 0 && 'is-a-stop')}
                   >
-                    <i className="text-info icons-itinerary-bullet mr-2" />
-                    <div className="pl-1 hover w-100 d-flex align-items-center">
+                    <div className="ring" />
+                    <div className="pl-1 w-100 d-flex align-items-center">
                       <div
                         className="flex-grow-1"
                         onClick={() => zoomToFeaturePoint(place.coordinates, place.id)}
@@ -89,12 +91,29 @@ export default function DisplayVias(props) {
                           {`${place.name || `KM ${Math.round(place.position) / 1000}`}`}
                         </small>
                       </div>
-                      <div
-                        className="osrd-config-stoptime"
-                        role="button"
-                        tabIndex="-1"
-                        onClick={() => setIndexSelected(index)}
-                      >
+                      {index !== indexSelected && (
+                        <div className="default-durations-button mr-1">
+                          <button
+                            type="button"
+                            onClick={() => dispatchAndRun(updateViaStopTime(vias, index, 30))}
+                          >
+                            30s
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => dispatchAndRun(updateViaStopTime(vias, index, 60))}
+                          >
+                            1min
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => dispatchAndRun(updateViaStopTime(vias, index, 120))}
+                          >
+                            2min
+                          </button>
+                        </div>
+                      )}
+                      <div role="button" tabIndex="-1" onClick={() => setIndexSelected(index)}>
                         {index === indexSelected ? (
                           <InputStopTime
                             index={index}
@@ -102,7 +121,9 @@ export default function DisplayVias(props) {
                             setIndexSelected={setIndexSelected}
                           />
                         ) : (
-                          <>{osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}s</>
+                          <div className="stoptime">
+                            {osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}s
+                          </div>
                         )}
                       </div>
                       <button

@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.Objects;
 
 public record STDCMEdge(
@@ -28,7 +29,11 @@ public record STDCMEdge(
         int minuteTimeStart,
         // Speed factor used to account for standard allowance.
         // e.g. if we have a 5% standard allowance, this value is 1/1.05
-        double standardAllowanceSpeedFactor
+        double standardAllowanceSpeedFactor,
+        // Index of the last waypoint passed by this train
+        int waypointIndex,
+        // True if the edge end is a stop
+        boolean endAtStop
 ) {
     @Override
     public boolean equals(Object other) {
@@ -55,18 +60,46 @@ public record STDCMEdge(
 
     /** Returns the node at the end of this edge */
     STDCMNode getEdgeEnd(STDCMGraph graph) {
-        return new STDCMNode(
-                getTotalTime() + timeStart(),
-                envelope().getEndSpeed(),
-                graph.infra.getSignalingRouteGraph().incidentNodes(route()).nodeV(),
-                totalDepartureTimeShift(),
-                maximumAddedDelayAfter(),
-                this
-        );
+        if (!endAtStop) {
+            // We move on to the next route
+            return new STDCMNode(
+                    getTotalTime() + timeStart(),
+                    envelope().getEndSpeed(),
+                    graph.infra.getSignalingRouteGraph().incidentNodes(route()).nodeV(),
+                    totalDepartureTimeShift(),
+                    maximumAddedDelayAfter(),
+                    this,
+                    waypointIndex,
+                    null,
+                    -1
+            );
+        } else {
+            // New edge on the same route, after a stop
+            double stopDuration = graph.steps.get(waypointIndex + 1).duration();
+            var newWaypointIndex = waypointIndex + 1;
+            while (newWaypointIndex + 1 < graph.steps.size() && !graph.steps.get(newWaypointIndex + 1).stop())
+                newWaypointIndex++; // Skip waypoints where we don't stop (not handled here)
+            return new STDCMNode(
+                    getTotalTime() + timeStart() + stopDuration,
+                    envelope.getEndSpeed(),
+                    null,
+                    totalDepartureTimeShift(),
+                    maximumAddedDelayAfter(),
+                    this,
+                    newWaypointIndex,
+                    new Pathfinding.EdgeLocation<>(route, envelopeStartOffset + getLength()),
+                    stopDuration
+            );
+        }
     }
 
     /** Returns how long it takes to go from the start to the end of the route, accounting standard allowance. */
     public double getTotalTime() {
         return envelope.getTotalTime() / standardAllowanceSpeedFactor;
+    }
+
+    /** Returns the length of the edge */
+    public double getLength() {
+        return envelope.getEndPos();
     }
 }
