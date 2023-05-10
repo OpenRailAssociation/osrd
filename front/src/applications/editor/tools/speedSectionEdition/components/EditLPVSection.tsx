@@ -6,7 +6,7 @@ import { Reducer } from '../../types';
 import { LpvPanelInformation, SpeedSectionEditionState, LPV_PANEL_TYPES } from '../types';
 import LpvPanelCard from './LpvPanelCard';
 import LpvPanelSubSection from './LpvPanelSubSection';
-import { msToKmh } from '../utils';
+import { msToKmh, selectLpvPanel } from '../utils';
 
 const getNewAnnouncementPanel = (
   trackRanges: NonNullable<SpeedSectionLpvEntity['properties']['track_ranges']>,
@@ -21,7 +21,7 @@ const getNewAnnouncementPanel = (
     position: firstRange.end,
     side: 'RIGHT',
     track: firstRange.track,
-    type: 'TIV_C',
+    type: 'TIV_D',
     value: `${speedMultipleOfFive}`,
   } as LPVPanel;
 };
@@ -52,6 +52,10 @@ const EditLPVSection = ({
 }) => {
   const { t } = useTranslation();
   const lpvExtension = entity.properties.extensions.lpv_sncf;
+
+  const selectPanel = (panelInformation: LpvPanelInformation) => {
+    selectLpvPanel(panelInformation, setState);
+  };
 
   const updateEntity = (newLpvExtension: LPVExtension) => {
     const newEntity = cloneDeep(entity);
@@ -107,13 +111,14 @@ const EditLPVSection = ({
   };
 
   return (
-    <div>
-      <h3>Liste des panneaux de la section</h3>
+    <div className="mt-3">
+      <h3>{t('Editor.tools.speed-edition.panels-section-list')}</h3>
       <LpvPanelCard
         panel={lpvExtension.z}
         panelInfo={{ panelType: LPV_PANEL_TYPES.Z }}
         t={t}
         updatePanel={updatePanel}
+        selectPanel={selectPanel}
       />
       <LpvPanelSubSection
         panelType={LPV_PANEL_TYPES.ANNOUNCEMENT}
@@ -122,6 +127,7 @@ const EditLPVSection = ({
         updatePanel={updatePanel}
         addPanel={addPanel}
         removePanel={removePanel}
+        selectPanel={selectPanel}
       />
       <LpvPanelSubSection
         panelType={LPV_PANEL_TYPES.R}
@@ -129,6 +135,7 @@ const EditLPVSection = ({
         updatePanel={updatePanel}
         addPanel={addPanel}
         removePanel={removePanel}
+        selectPanel={selectPanel}
         t={t}
       />
     </div>

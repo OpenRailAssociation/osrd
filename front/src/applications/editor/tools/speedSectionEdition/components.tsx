@@ -10,6 +10,7 @@ import { AiFillSave, AiOutlinePlusCircle, FaTimes, MdShowChart } from 'react-ico
 import { FaFlagCheckered } from 'react-icons/fa';
 import { MdSpeed } from 'react-icons/md';
 
+import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import EditorContext from '../../context';
 import { LpvPanelFeature, SpeedSectionEditionState, TrackState } from './types';
 import { ExtendedEditorContextType, LayerType } from '../types';
@@ -40,7 +41,6 @@ import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { save } from '../../../../reducers/editor';
 import EditLPVSection from './components/EditLPVSection';
-import ForceRemount from 'applications/editor/components/ForceRemount';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
@@ -434,11 +434,13 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
       <hr />
       <div>
         <div className="d-flex">
-          <input
-            id="is-lpv-checkbox"
+          <CheckboxRadioSNCF
             type="checkbox"
+            id="is-lpv-checkbox"
+            name="is-lpv-checkbox"
             checked={isLPV}
-            onChange={(e) => {
+            label={t('Editor.tools.speed-edition.toggle-lpv')}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               let newExtension: SpeedSectionEntity['properties']['extensions'] = { lpv_sncf: null };
               if (e.target.checked) {
                 const firstRange = (entity.properties?.track_ranges || [])[0];
@@ -462,35 +464,7 @@ export const SpeedSectionEditionLeftPanel: FC = () => {
               updateSpeedSectionExtensions(newExtension);
             }}
           />
-          <label className="form-check-label" htmlFor="is-lpv-checkbox">
-            Is LPV ?
-          </label>
         </div>
-        {/*
-          TODO: Afficher les panneaux, avec un bouton pour les supprimer, et un pour les créer
-          - créer un composant EditLPVSection
-
-          - créer un élément détails de panneau pour afficher un panneau de type annonce ou R
-            - position (input pour que l'utilisateur puisse changer) -> number sur la section
-              (compris entre 0 et la longueur de la trackrange)
-            - tracksection sur laquelle est le panneau
-            - calcul de la distance entre le panneau d'annonce et le panneau Z (pas input, juste indication)
-            - side (editable)
-            - si panneau de type annonce
-              - type (TIV_D, TIV_B etc)
-              - value par défaut la vitesse limite normale (pas changeable)
-              - dans un 2e temps, on ajoute un input pour les types de TIV qui acceptent 2 valeurs
-                (et on ajoute de la validation après discussion avec Florian)
-            - un bouton supprimer
-            -> pas besoin d'input pour modifier l'angle, par défaut il est à 0 et non modifiable
-          
-          - créer un composant conteneur des détails des panneaux de type annonce ou R
-            - un titre
-            - un bouton + (pour ajouter un paneau)
-            - la liste des panneaux de ce type
-          
-          - mettre tous ces composants dans EditLPVSection pour afficher tous les panneaux
-         */}
         {isLPV && <EditLPVSection entity={entity as SpeedSectionLpvEntity} setState={setState} />}
       </div>
       <hr />
@@ -627,8 +601,6 @@ export const SpeedSectionEditionLayers: FC = () => {
     }
   }, [hoveredItem]);
 
-  console.log(entity);
-
   const addPopUps = () => (
     <>
       {hoveredItem?.speedSectionItemType === 'TrackRangeExtremity' && (
@@ -699,7 +671,7 @@ export const SpeedSectionEditionLayers: FC = () => {
       />
       <Source type="geojson" data={speedSectionsFeature}>
         {layersProps.map((props, i) => (
-          <Layer {...props} key={props.id as string} />
+          <Layer {...props} key={i} />
         ))}
         <Layer
           type="circle"
@@ -712,7 +684,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           filter={['has', 'extremity']}
         />
       </Source>
-      {addPopUps()}
+      {!['moveRangeExtremity', 'movePanel'].includes(interactionState.type) && addPopUps()}
     </>
   );
 };

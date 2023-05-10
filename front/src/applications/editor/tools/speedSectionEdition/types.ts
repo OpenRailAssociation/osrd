@@ -75,15 +75,12 @@ export type TrackState =
   | { type: 'error' }
   | { type: 'success'; track: TrackSectionEntity };
 
-const TYPE_Z = 'z';
-const TYPE_R = 'r';
-const TYPE_ANNOUNCEMENT = 'announcement';
 export enum LPV_PANEL_TYPES {
-  Z = TYPE_Z,
-  R = TYPE_R,
-  ANNOUNCEMENT = TYPE_ANNOUNCEMENT,
+  Z = 'z',
+  R = 'r',
+  ANNOUNCEMENT = 'announcement',
 }
-export type LPV_PANEL_TYPE = typeof TYPE_Z | typeof TYPE_R | typeof TYPE_ANNOUNCEMENT;
+export type LPV_PANEL_TYPE = LPV_PANEL_TYPES.Z | LPV_PANEL_TYPES.R | LPV_PANEL_TYPES.ANNOUNCEMENT;
 
 export type LpvPanelInformation =
   | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }

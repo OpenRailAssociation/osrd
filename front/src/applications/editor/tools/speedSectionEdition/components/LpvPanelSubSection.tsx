@@ -10,6 +10,7 @@ const LpvPanelSubSection = ({
   panels,
   addPanel,
   removePanel,
+  selectPanel,
   t,
   updatePanel,
 }: {
@@ -18,30 +19,30 @@ const LpvPanelSubSection = ({
   addPanel: (panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R) => void;
   updatePanel: (panelInfo: LpvPanelInformation, panel: LPVPanel) => void;
   removePanel?: (panelInfo: Exclude<LpvPanelInformation, { panelType: LPV_PANEL_TYPES.Z }>) => void;
+  selectPanel: (panelInfo: LpvPanelInformation) => void;
   t: TFunction;
-}) => {
-  return (
-    <div>
-      <h4>{panelType}</h4>
-      <button
-        type="button"
-        className="btn btn-primary btn-sm px-2"
-        onClick={() => addPanel(panelType)}
-      >
-        <FaPlus /> ajouter un paneau de type {panelType}
-      </button>
-      {panels.map((panel, panelIndex) => (
-        <LpvPanelCard
-          key={`${panelType}-${panelIndex}`}
-          panel={panel}
-          panelInfo={{ panelType, panelIndex }}
-          removePanel={removePanel}
-          t={t}
-          updatePanel={updatePanel}
-        />
-      ))}
-    </div>
-  );
-};
+}) => (
+  <div>
+    <h4>{`${t('Editor.tools.speed-edition.panel-category', { panelType })}`}</h4>
+    <button
+      type="button"
+      className="btn btn-primary btn-sm px-2"
+      onClick={() => addPanel(panelType)}
+    >
+      <FaPlus /> ajouter un paneau de type {panelType}
+    </button>
+    {panels.map((panel, panelIndex) => (
+      <LpvPanelCard
+        key={`${panelType}-${panelIndex}`}
+        panel={panel}
+        panelInfo={{ panelType, panelIndex }}
+        removePanel={removePanel}
+        selectPanel={selectPanel}
+        t={t}
+        updatePanel={updatePanel}
+      />
+    ))}
+  </div>
+);
 
 export default LpvPanelSubSection;

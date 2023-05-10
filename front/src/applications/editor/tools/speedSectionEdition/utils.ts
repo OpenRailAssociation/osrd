@@ -60,7 +60,7 @@ export function getLpvPanelNewPosition(
     trackSection,
     nearestPoint.geometry
   );
-  return { trackId: trackSection.properties.id, position: distanceAlongTrack };
+  return { track: trackSection.properties.id, position: distanceAlongTrack };
 }
 
 export function getNewSpeedSection(): SpeedSectionEntity {
@@ -97,7 +97,7 @@ export function getPanelInformationFromInteractionState(
 export function getNewLpvExtension(
   newLpvExtension: LPVExtension,
   panelInformation: LpvPanelInformation,
-  newPosition: { trackId: string; position: number }
+  newPosition: { track: string; position: number }
 ) {
   const { panelType } = panelInformation;
   if (panelType === LPV_PANEL_TYPES.Z) {
@@ -125,7 +125,7 @@ export function getNewLpvExtension(
 export function getMovedLpvEntity(
   entity: SpeedSectionLpvEntity,
   panelInfo: LpvPanelInformation,
-  newPosition: { trackId: string; position: number }
+  newPosition: { track: string; position: number }
 ) {
   const newLpvExtension = getNewLpvExtension(
     cloneDeep(entity.properties.extensions.lpv_sncf),
@@ -290,25 +290,23 @@ export function kmhToMs(v: number): number {
   return v / 3.6;
 }
 
-export function clickOnLpvPanel(
-  lpvPanel: LpvPanelFeature,
+export function selectLpvPanel(
+  lpvPanel: LpvPanelInformation,
   setState: (
     stateOrReducer: Partial<SpeedSectionEditionState> | Reducer<SpeedSectionEditionState>
   ) => void
 ) {
-  const {
-    properties: { speedSectionPanelType, speedSectionPanelIndex },
-  } = lpvPanel;
+  const { panelType } = lpvPanel;
   const interactionState =
-    speedSectionPanelType === LPV_PANEL_TYPES.Z
+    panelType === LPV_PANEL_TYPES.Z
       ? ({ type: 'movePanel', panelType: LPV_PANEL_TYPES.Z } as {
           type: 'movePanel';
           panelType: LPV_PANEL_TYPES.Z;
         })
       : ({
           type: 'movePanel',
-          panelType: speedSectionPanelType,
-          panelIndex: speedSectionPanelIndex,
+          panelType,
+          panelIndex: lpvPanel.panelIndex,
         } as {
           type: 'movePanel';
           panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R;

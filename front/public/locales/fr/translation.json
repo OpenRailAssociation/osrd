@@ -302,27 +302,39 @@
         "show-more-speed-sections_other": "Voir {{count}} résultats de plus"
       },
       "speed-edition": {
-        "label": "Outil \"Vitesses limites\"",
         "actions": {
           "new-speed-section": "Créer une nouvelle vitesse limite",
           "reset-speed-section": "Annuler les modifications en cours"
         },
-        "speed-limits": "Limitations de vitesses",
-        "main-speed-limit": "Limitation de vitesse par défaut",
-        "additional-speed-limit": "Limitation de vitesse additionnelles",
         "add-new-speed-limit": "Ajouter une nouvelle limitation",
-        "linked-track-sections": "Sections de lignes liées",
-        "edit-track-range-start": "Modifier le point de départ",
+        "add-track-range": "Cliquer pour lier à :",
+        "additional-speed-limit": "Limitation de vitesse additionnelles",
         "edit-track-range-end": "Modifier le point d'arrivée",
+        "edit-track-range-start": "Modifier le point de départ",
+        "label": "Outil \"Vitesses limites\"",
+        "linked-track-sections": "Sections de lignes liées",
+        "main-speed-limit": "Limitation de vitesse par défaut",
+        "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
+        "new-tag": "Code de composition",
         "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
+        "panel-angle-geo": "Angle Geo",
+        "panel-angle-sch": "Angle Sch",
+        "panel-category": "Panneau(x) {{panelType}}",
+        "panel-select": "Sélectionner",
+        "panel-remove": "Supprimer le panneau",
+        "panel-position": "Position",
+        "panel-track-id": "Track section id",
+        "panel-type": "Type",
+        "panel-side": "Côté",
+        "panel-value": "Vitesse",
+        "panels-section-list": "Liste des panneaux de la section",
+        "remove-track-range": "Cliquer pour détacher de :",
+        "save-existing-speed-section": "Sauvegarder les modifications",
+        "save-new-speed-section": "Sauver la nouvelle limite de vitesse",
         "show-more-ranges_one": "Voir une section de ligne de plus",
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
-        "add-track-range": "Cliquer pour lier à :",
-        "remove-track-range": "Cliquer pour détacher de :",
-        "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
-        "save-new-speed-section": "Sauver la nouvelle limite de vitesse",
-        "save-existing-speed-section": "Sauvegarder les modifications",
-        "new-tag": "Code de composition"
+        "speed-limits": "Limitations de vitesses",
+        "toggle-lpv": "is LPV"
       }
     }
   }

@@ -1,6 +1,6 @@
 import { MdSpeed } from 'react-icons/md';
 import { IoMdAddCircleOutline } from 'react-icons/io';
-import { cloneDeep, isEmpty, isEqual } from 'lodash';
+import { cloneDeep, isEqual } from 'lodash';
 import { BiReset } from 'react-icons/bi';
 
 import {
@@ -20,12 +20,12 @@ import {
   TrackRangeFeature,
 } from './types';
 import {
-  clickOnLpvPanel,
   getEditSpeedSectionState,
   getLpvPanelNewPosition,
   getMovedLpvEntity,
   getNewSpeedSection,
   getPanelInformationFromInteractionState,
+  selectLpvPanel,
 } from './utils';
 import {
   SpeedSectionEditionLayers,
@@ -100,14 +100,13 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
           },
         });
       } else if (feature.properties?.speedSectionItemType === 'LPVPanel') {
-        /**
-         * TODO: Si on clique sur un panneau, on passe en mode "bouger le panneau"
-         * - tester si la feature est bien un panneau LPV
-         * - si oui, on update le state pour passer hoveredItem à null et updater le interactionState
-         *   (cf le travail de ce matin)
-         */
-        const lpvPanelFeature = feature as unknown as LpvPanelFeature;
-        clickOnLpvPanel(lpvPanelFeature, setState);
+        const {
+          properties: { speedSectionPanelType, speedSectionPanelIndex },
+        } = feature as unknown as LpvPanelFeature;
+        selectLpvPanel(
+          { panelType: speedSectionPanelType, panelIndex: speedSectionPanelIndex },
+          setState
+        );
       } else if (feature.properties?.speedSectionItemType === 'TrackRange') {
         const hoveredRange = feature as unknown as TrackRangeFeature;
         const newEntity = cloneDeep(entity);
@@ -220,7 +219,6 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
     }
   },
   onMove(e, { setState, state: { entity, interactionState, hoveredItem, trackSectionsCache } }) {
-    console.log('on move qqch');
     if (interactionState.type === 'moveRangeExtremity') {
       const range = (entity.properties?.track_ranges || [])[interactionState.rangeIndex];
       if (!range) return;
@@ -240,17 +238,6 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
         entity: newEntity,
       });
     } else if (interactionState.type === 'movePanel') {
-      /**
-       * TODO: Si on est mode "bouger le panneau", on doit bouger le panneau
-       * Copier le code de tool-factory.ts lines 126 à 137
-       * - à partir de la position de la souris, détecter les trackRanges autour
-       * - trouver le point le plus proche entre la souris et les trackRanges en question
-       *   (nouvelle position du panneau)
-       * - trouver la trackSection sur laquelle se trouve le point depuis nearestPoint
-       * - interpoler sur la nouvelle position (vérifier qu'il n'y a pas d'incohérence avec editoast)
-       * - modifier le state en lui donnant comme entity une nouvelle entity avec la nouvelle position
-       *   & la nouvelle trackRange si nécessaire
-       */
       if (entity.properties.extensions?.lpv_sncf) {
         const newPosition = getLpvPanelNewPosition(e, trackSectionsCache);
         if (newPosition) {
