@@ -95,7 +95,12 @@
 }
 
 .pathfinding-main-container {
-  margin-left: 1.5rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--coolgray1);
 
   .pathfinding-subsection {
     display: flex;

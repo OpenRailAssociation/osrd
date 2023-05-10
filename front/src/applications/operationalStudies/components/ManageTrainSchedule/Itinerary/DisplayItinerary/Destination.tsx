@@ -41,13 +41,13 @@ function Destination(props: DestinationProps) {
   const { isStdcm } = makeEnumBooleans(MODES, mode);
 
   return (
-    <div className="d-flex align-items-center w-100 place">
-      <span className="text-warning mr-2">
-        <IoFlag />
-      </span>
+    <div className="place">
       {destination !== undefined ? (
         <>
           <div className="pl-1 hover w-100 d-flex align-items-center">
+            <span className="text-warning mr-2">
+              <IoFlag />
+            </span>
             <div
               onClick={() => zoomToFeaturePoint(destination?.coordinates, destination?.id)}
               role="button"
@@ -74,7 +74,7 @@ function Destination(props: DestinationProps) {
           </div>
 
           {isStdcm && (
-            <div className="ml-auto d-flex mr-1">
+            <div className="d-flex align-items-center ml-4">
               <input
                 type="radio"
                 id="stdcmMode"
