@@ -2,7 +2,7 @@
   "allowances": "Margins",
   "departureTime": "Start",
   "errorMessages": {
-    "unableToRetrieveTrainSchedule": "Path calculation impossible"
+    "unableToRetrieveTrainSchedule": "Train schedule impossible"
   },
   "isWorking": "Simulation calculation in process...",
   "labels": "Tags",
