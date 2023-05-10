@@ -12,18 +12,27 @@
     }
   }
   .scenario-timetable-collapsed {
+    position: sticky;
     display: flex;
     align-items: center;
-    position: relative;
     top: 0;
-    left: 0;
-    background-color: var(--secondary);
-    color: var(--white);
-    border: unset;
-    border-radius: 4px;
-    font-size: 1.5rem;
-    padding: 0.5rem;
-    z-index: 2;
+    padding-bottom: 0.5rem;
+    z-index: 1;
+    background-color: var(--coolgray1);
+    .timetable-collapse-button {
+      display: flex;
+      align-items: center;
+      position: relative;
+      top: 0;
+      left: 0;
+      background-color: var(--secondary);
+      color: var(--white);
+      border: unset;
+      border-radius: 4px;
+      font-size: 1.5rem;
+      padding: 0.5rem;
+      z-index: 2;
+    }
   }
   .scenario-loader {
     position: absolute;
