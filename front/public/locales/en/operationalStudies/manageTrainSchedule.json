@@ -42,7 +42,7 @@
   "failedRequest": "Request failed",
   "gare": "Station, post",
   "importTrainSchedule": "Import",
-  "inverseOD": "Invert origin/destination",
+  "inverseOD": "Reverse origin/destination",
   "launchSimulation": "Start",
   "manageVias": "Steps management",
   "No path could be found": "No path found",
