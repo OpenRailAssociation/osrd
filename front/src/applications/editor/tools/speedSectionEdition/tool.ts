@@ -25,6 +25,7 @@ import {
   getMovedLpvEntity,
   getNewSpeedSection,
   getPanelInformationFromInteractionState,
+  isOnModeMove,
   selectLpvPanel,
 } from './utils';
 import {
@@ -79,14 +80,14 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   ],
 
   getCursor({ state: { hoveredItem, interactionState } }) {
-    if (interactionState.type !== 'moveRangeExtremity' && hoveredItem) return 'pointer';
-    if (interactionState.type === 'moveRangeExtremity') return 'grabbing';
+    if (isOnModeMove(interactionState.type)) return 'grabbing';
+    if (hoveredItem) return 'pointer';
     return 'default';
   },
   onClickMap(e, { setState, state: { entity, interactionState } }) {
     const feature = (e.features || [])[0];
 
-    if (['moveRangeExtremity', 'movePanel'].includes(interactionState.type)) {
+    if (isOnModeMove(interactionState.type)) {
       setState({ interactionState: { type: 'idle' } });
     } else if (feature) {
       if (feature.properties?.speedSectionItemType === 'TrackRangeExtremity') {

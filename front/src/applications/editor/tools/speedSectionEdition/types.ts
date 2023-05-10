@@ -32,7 +32,7 @@ export type LpvPanelFeature = Feature<
     angle_sch: number;
     angle_geo: number;
     position: number;
-    side: 'LEFT' | 'RIGHT';
+    side: 'LEFT' | 'CENTER' | 'RIGHT';
     track: string;
     type: string;
     value: string | null;

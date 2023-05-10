@@ -23,13 +23,18 @@ const LpvPanelSubSection = ({
   t: TFunction;
 }) => (
   <div>
-    <h4>{`${t('Editor.tools.speed-edition.panel-category', { panelType })}`}</h4>
+    <div>
+      <h4>{t('Editor.tools.speed-edition.panel-category', { panelType }).toString()}</h4>
+    </div>
     <button
       type="button"
-      className="btn btn-primary btn-sm px-2"
+      className="btn btn-primary btn-sm px-2 d-flex align-items-center"
       onClick={() => addPanel(panelType)}
     >
-      <FaPlus /> ajouter un paneau de type {panelType}
+      <FaPlus />
+      <span className="ml-1">
+        {t('Editor.tools.speed-edition.add-panel', { panelType }).toString()}
+      </span>
     </button>
     {panels.map((panel, panelIndex) => (
       <LpvPanelCard

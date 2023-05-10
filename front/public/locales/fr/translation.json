@@ -97,8 +97,7 @@
       "signals": "Signaux",
       "switches": "Aiguillages",
       "track_sections": "Sections de lignes",
-      "speed_sections": "Vitesses limites",
-      "lpv-lpv_panels": "Vitesses permanentes de vitesse"
+      "speed_sections": "Vitesses limites"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
@@ -128,7 +127,6 @@
     "obj-types": {
       "BufferStop": "Heurtoir",
       "Detector": "Détecteur",
-      "LPVPanel": "Panneau LPV",
       "Route": "Itinéraire",
       "Signal": "Signal",
       "Switch": "Aiguillage",
@@ -307,10 +305,12 @@
           "reset-speed-section": "Annuler les modifications en cours"
         },
         "add-new-speed-limit": "Ajouter une nouvelle limitation",
+        "add-panel": "Ajouter un panneau de type {{panelType}}",
         "add-track-range": "Cliquer pour lier à :",
         "additional-speed-limit": "Limitation de vitesse additionnelles",
         "edit-track-range-end": "Modifier le point d'arrivée",
         "edit-track-range-start": "Modifier le point de départ",
+        "hovered-panel": "Panneau {{panelType}}",
         "label": "Outil \"Vitesses limites\"",
         "linked-track-sections": "Sections de lignes liées",
         "main-speed-limit": "Limitation de vitesse par défaut",
@@ -330,7 +330,7 @@
         "panels-section-list": "Liste des panneaux de la section",
         "remove-track-range": "Cliquer pour détacher de :",
         "save-existing-speed-section": "Sauvegarder les modifications",
-        "save-new-speed-section": "Sauver la nouvelle limite de vitesse",
+        "save-new-speed-section": "Sauvegarder la nouvelle limite de vitesse",
         "show-more-ranges_one": "Voir une section de ligne de plus",
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
         "speed-limits": "Limitations de vitesses",

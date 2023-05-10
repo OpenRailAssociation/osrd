@@ -520,8 +520,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         trackSectionsCache
       );
     }
-    const result = featureCollection([...trackRangeFeatures, ...lpvPanelFeatures]);
-    return result;
+    return featureCollection([...trackRangeFeatures, ...lpvPanelFeatures]);
   }, [entity, trackSectionsCache]);
 
   const layersProps = useMemo(() => {
@@ -635,10 +634,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           latitude={hoveredItem.position[1]}
           closeButton={false}
         >
-          <div>
-            TODO: {hoveredItem.panelType},{' '}
-            {typeof hoveredItem.panelIndex === 'number' ? `${hoveredItem.panelIndex}nth` : ''}
-          </div>
+          {t('Editor.tools.speed-edition.hovered-panel', { panelType: hoveredItem.panelType })}
         </Popup>
       )}
       {interactionState.type !== 'moveRangeExtremity' &&
@@ -684,7 +680,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           filter={['has', 'extremity']}
         />
       </Source>
-      {!['moveRangeExtremity', 'movePanel'].includes(interactionState.type) && addPopUps()}
+      {!isOnModeMove(interactionState.type) && addPopUps()}
     </>
   );
 };

@@ -42,7 +42,7 @@ export interface LPVPanel {
   angle_sch: number;
   angle_geo: number;
   position: number;
-  side: 'LEFT' | 'RIGHT';
+  side: 'LEFT' | 'RIGHT' | 'CENTER';
   track: string;
   type: string;
   value: string | null;

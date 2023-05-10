@@ -35,20 +35,6 @@ export function getHoveredTrackRanges(hoverEvent: mapboxgl.MapLayerMouseEvent) {
   ) as Feature<LineString>[];
 }
 
-export function getTrackRangeFromPoint(point: Point, map: mapboxgl.Map) {
-  const { coordinates } = point;
-  const TOLERANCE = 2;
-  return map.queryRenderedFeatures(
-    [
-      [coordinates[0] - TOLERANCE / 2, coordinates[1] - TOLERANCE / 2],
-      [coordinates[0] + TOLERANCE / 2, coordinates[1] + TOLERANCE / 2],
-    ],
-    {
-      layers: ['editor/geo/track-main'],
-    }
-  ) as Feature<LineString>[];
-}
-
 export function getTrackSectionEntityFromNearestPoint(
   point: NearestPoint,
   trackRanges: Feature<LineString>[],

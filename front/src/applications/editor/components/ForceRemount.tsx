@@ -4,22 +4,20 @@ const ForceRemount: FC<{ fingerprint: string; renderChildren: () => ReactNode }>
   fingerprint,
   renderChildren,
 }) => {
-  const [renderState, setRenderState] = useState<
-    { skipRender: true } | { skipRender: false; renderChildren: () => ReactNode }
-  >({ skipRender: true });
+  const [skipRender, setSkipRender] = useState(false);
+
   useEffect(() => {
-    setRenderState({ skipRender: true });
-    const timeout = setTimeout(() => setRenderState({ skipRender: false, renderChildren }), 0);
+    setSkipRender(true);
+    const timeout = setTimeout(() => setSkipRender(true), 0);
     return () => {
       clearTimeout(timeout);
     };
   }, [fingerprint]);
 
-  if (renderState.skipRender) {
+  if (skipRender) {
     return null;
   }
-
-  return <>{renderState.renderChildren()}</>;
+  return <>{renderChildren()}</>;
 };
 
 export default ForceRemount;

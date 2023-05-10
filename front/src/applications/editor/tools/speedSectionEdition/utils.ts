@@ -321,3 +321,7 @@ export function selectLpvPanel(
 export function speedSectionIsLpv(entity: SpeedSectionEntity): boolean {
   return !!entity.properties?.extensions?.lpv_sncf;
 }
+
+export function isOnModeMove(interactionStateType: string): boolean {
+  return ['moveRangeExtremity', 'movePanel'].includes(interactionStateType);
+}
