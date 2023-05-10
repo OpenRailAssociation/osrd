@@ -14,7 +14,7 @@ import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
-import { jouleToKwh, m2kmOneDecimal } from 'utils/physics';
+import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
 
 type Props = {
   train: ScheduledTrain;
@@ -116,7 +116,7 @@ function TimetableTrainCard({
               </span>
             )}
             {train.pathLength && (
-              <span className="mr-xl-3 mr-lg-2">{m2kmOneDecimal(train.pathLength)}km</span>
+              <span className="mr-xl-3 mr-lg-2">{mToKmOneDecimal(train.pathLength)}km</span>
             )}
             <div className="text-nowrap text-right">
               <MdAvTimer />
