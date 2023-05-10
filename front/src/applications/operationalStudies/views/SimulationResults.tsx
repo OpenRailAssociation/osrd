@@ -27,10 +27,17 @@ import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
+import cx from 'classnames';
 
 const MAP_MIN_HEIGHT = 450;
 
-export default function SimulationResults({ isDisplayed }: { isDisplayed: boolean }) {
+export default function SimulationResults({
+  isDisplayed,
+  collapsedTimetable,
+}: {
+  isDisplayed: boolean;
+  collapsedTimetable: boolean;
+}) {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
@@ -113,7 +120,12 @@ export default function SimulationResults({ isDisplayed }: { isDisplayed: boolea
   return (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
-      <div className="osrd-simulation-sticky-bar">
+      <div
+        className={cx(
+          'osrd-simulation-sticky-bar',
+          collapsedTimetable && 'with-collapsed-timetable'
+        )}
+      >
         <div className="row">
           <div className="col-xl-4">
             <TimeButtons />

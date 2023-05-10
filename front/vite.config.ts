@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
           buildMode: true,
         },
         eslint: {
-          lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 124',
+          lintCommand: 'eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 69',
         },
         overlay: env.OSRD_VITE_OVERLAY !== 'false' && {
           initialIsOpen: env.OSRD_VITE_OVERLAY_OPEN_BY_DEFAULT === 'true',
@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       environment: 'happy-dom',
       coverage: {
+        all: true,
         reportsDirectory: './tests/unit/coverage',
       },
     },
