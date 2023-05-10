@@ -4,7 +4,7 @@
     "unableToRetrieveProjectsMessage": "Unable to retrieve projects"
   },
   "infraLegend": "infra",
-  "noScenarioSelected": "Click here to select a case study",
+  "noScenarioSelected": "Click here to select a scenario using an infrastructure and a dedicated timetable.",
   "projectLegend": "project",
   "projects": "Projects",
   "scenarioExplorator": "Scenario browser",
