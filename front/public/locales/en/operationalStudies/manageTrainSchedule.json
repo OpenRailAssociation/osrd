@@ -70,7 +70,7 @@
   "spaceSpeedGraphic": "Space-Velocity graph",
   "spaceTimeGraphic": "Space-Time graph",
   "speedLimitByTag": "Composition code",
-  "stdcmComputation": "Route calulation",
+  "stdcmComputation": "Pathfinding running",
   "stdcmNoResults": "No path found",
   "stdcmResults": "Results",
   "stopSimulation": "Stopper",
