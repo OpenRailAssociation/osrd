@@ -28,7 +28,6 @@
     "noTrainCountInput": "Must be > 0",
     "noTrainStep": "The increment step of the train must be greater than zero",
     "noTrainStepInput": "Must be > 0",
-    "powerRestrictionInvalidCombination": "{{powerRestrictionCode}} code is incompatible with electrification at {{electrification}} V of this route",
     "stdcmError": "Calculation error for last minute train path",
     "The requested train couldn't reach its destination": "The train cannot reach its destination",
     "trainScheduleTitle": "An error has occurred",
@@ -91,5 +90,9 @@
   "updateTrainSchedule": "Edit train",
   "usingElectricalProfiles": "Use electrical profiles",
   "via": "Via",
-  "vias": "Waypoints, stops"
+  "vias": "Waypoints, stops",
+  "warningMessages": {
+    "electrification": "Electrification",
+    "powerRestrictionInvalidCombination": "{{powerRestrictionCode}} code is incompatible with electrification at {{electrification}} V of this route"
+  }
 }
