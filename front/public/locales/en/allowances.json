@@ -1,0 +1,48 @@
+{
+  "apply": "Apply",
+  "baseTrainSchedule": "Base",
+  "blocks": "Blocks",
+  "ecoTrainSchedule": "Energy saving",
+  "end_position": "End",
+  "errors": {
+    "allowances": "Margin calculation error",
+    "eco": "Margin \"ECO\" calculation error"
+  },
+  "from": "From",
+  "begin_position": "Start",
+  "marecoWholePath": "Theoretical running profile to save energy (full path)",
+  "sandardAllowancesWholePath": "Recovery margin",
+  "engineeringAllowances": "Time allowance",
+  "margedTrainSchedule": "With margins",
+  "allowanceByInterval": "Margins by intervals",
+  "ecoAllowanceByInterval": "Theoretical running profile to save energy by intervals",
+  "allowanceModified": {
+    "standardAllowanceAdd": "Recovery margin added / changed",
+    "standardAllowanceDel": "Recovery margin deleted",
+    "anyAllowanceModified": "Margin changed",
+    "anyAllowanceModificationError": "Error when updating margin"
+  },
+  "specificValuesOnIntervals" : "Specific values for intervals",
+  "allowanceGlobalType": {
+    "standard": "Standard",
+    "engineering": "Construction"
+  },
+  "distributions": {
+    "mareco": "Mareco",
+    "linear": "Linear"
+  },
+  "perDefaultValue": "Default value",
+  "allowanceType": "Distribution",
+  "units": "Units",
+  "allowanceTypes": {
+    "time": "Time",
+    "percentage": "Percentage",
+    "time_per_distance": "Time/Distance"
+  },
+  "standardAllowance": "Regularity margin",
+  "gridMarginBefore": "Grid margin before",
+  "gridMarginAfter": "Grid margin after",
+  "op": "op",
+  "to": "to",
+  "trainSchedules": "Margin type"
+}
