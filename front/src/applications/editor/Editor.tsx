@@ -22,10 +22,10 @@ import {
   EditorState,
   ExtendedEditorContextType,
   FullTool,
+  ReadOnlyEditorContextType,
   Reducer,
-  Tool,
 } from './tools/types';
-import TOOLS from './tools/list';
+import TOOLS, { TOOL_TYPES, switchProps } from './tools/list';
 import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
 
 const Editor: FC = () => {
@@ -39,8 +39,8 @@ const Editor: FC = () => {
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [toolAndState, setToolAndState] = useState<FullTool<any>>({
-    tool: TOOLS[0],
-    state: TOOLS[0].getInitialState({ infraID, switchTypes }),
+    tool: TOOLS[TOOL_TYPES.SELECTION],
+    state: TOOLS[TOOL_TYPES.SELECTION].getInitialState({ infraID, switchTypes }),
   });
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
   const forceRender = useCallback(() => {
@@ -48,8 +48,9 @@ const Editor: FC = () => {
   }, [setRenderingFingerprint]);
 
   const switchTool = useCallback(
-    <S extends CommonToolState>(tool: Tool<S>, partialState?: Partial<S>) => {
-      const state = { ...tool.getInitialState({ infraID, switchTypes }), ...(partialState || {}) };
+    ({ toolType, toolState }: switchProps) => {
+      const tool = TOOLS[toolType];
+      const state = { ...tool.getInitialState({ infraID, switchTypes }), ...(toolState || {}) };
       setToolAndState({
         tool,
         state,
@@ -71,7 +72,7 @@ const Editor: FC = () => {
   );
 
   const resetState = useCallback(() => {
-    switchTool(TOOLS[0]);
+    switchTool({ toolType: TOOL_TYPES.SELECTION, toolState: {} });
     dispatch(reset());
     forceRender();
   }, [dispatch, switchTool, forceRender]);
@@ -177,7 +178,8 @@ const Editor: FC = () => {
       >
         <div className="layout">
           <div className="tool-box bg-primary">
-            {TOOLS.map((tool) => {
+            {Object.values(TOOL_TYPES).map((toolType: TOOL_TYPES) => {
+              const tool = TOOLS[toolType];
               const { id, icon: IconComponent, labelTranslationKey, isDisabled } = tool;
               const label = t(labelTranslationKey);
 
@@ -191,9 +193,12 @@ const Editor: FC = () => {
                       'editor-btn'
                     )}
                     onClick={() => {
-                      switchTool(tool);
+                      switchTool({ toolType, toolState: {} });
                     }}
-                    disabled={isDisabled && isDisabled(extendedContext)}
+                    disabled={
+                      // TODO: clarify the type of extendedContext
+                      isDisabled && isDisabled(extendedContext as ReadOnlyEditorContextType<any>)
+                    }
                   >
                     <span className="sr-only">{label}</span>
                     <IconComponent />

@@ -24,11 +24,10 @@ import InfraErrorsModal from './components/InfraErrors/InfraErrorsModal';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
 import { RouteEntity } from '../../types';
-import RouteEditionTool from './tools/routeEdition/tool';
 import { getEditRouteState } from './tools/routeEdition/utils';
 import { getEntity } from './data/api';
 import { InfraError } from './components/InfraErrors/types';
-import SelectionTool from './tools/selection/tool';
+import { TOOL_TYPES } from './tools/list';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
@@ -176,9 +175,12 @@ const NavButtons: NavButton[][] = [
               );
               // select the item in the editor scope
               if (entity.objType === 'Route') {
-                switchTool(RouteEditionTool, getEditRouteState(entity as RouteEntity));
+                switchTool({
+                  toolType: TOOL_TYPES.ROUTE_EDITION,
+                  toolState: getEditRouteState(entity as RouteEntity),
+                });
               } else {
-                switchTool(SelectionTool, { selection: [entity] });
+                switchTool({ toolType: TOOL_TYPES.SELECTION, toolState: { selection: [entity] } });
 
                 // center the map on the object
                 if (item.geographic) {
