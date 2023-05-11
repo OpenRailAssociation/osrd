@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 
 export default function SelectImprovedSNCF(props) {
-  const { title, options, selectedValue, onChange, sm, withSearch } = props;
+  const { inline, title, options, selectedValue, onChange, sm, withSearch } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState();
   const [filteredOptions, setFilteredOptions] = useState(options);
@@ -55,8 +55,12 @@ export default function SelectImprovedSNCF(props) {
   }, [filterText, options]);
 
   return (
-    <>
-      {title && <label htmlFor="select1">{title}</label>}
+    <div className={inline ? 'd-flex align-items-baseline' : ''}>
+      {title && (
+        <label htmlFor="select1" className={inline ? 'pr-2' : ''}>
+          {title}
+        </label>
+      )}
       <div className={`select-improved ${isOpen ? 'active' : ''}`}>
         <div className="select-control">
           <div
@@ -135,22 +139,24 @@ export default function SelectImprovedSNCF(props) {
           &nbsp;
         </div>
       )}
-    </>
+    </div>
   );
 }
 
 SelectImprovedSNCF.propTypes = {
-  title: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+  inline: PropTypes.bool,
   options: PropTypes.array.isRequired,
-  selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   onChange: PropTypes.func.isRequired,
   sm: PropTypes.bool,
+  selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+  title: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   withSearch: PropTypes.bool,
 };
 
 SelectImprovedSNCF.defaultProps = {
-  title: null,
+  inline: false,
   selectedValue: undefined,
   sm: false,
+  title: null,
   withSearch: false,
 };

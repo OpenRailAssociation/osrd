@@ -10,6 +10,7 @@ import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
+import lpvsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -22,15 +23,16 @@ import { getInfraID } from '../../../reducers/osrdconf/selectors';
 import { osrdEditoastApi } from '../../../common/api/osrdEditoastApi';
 import { updateLayersSettings } from '../../../reducers/map';
 
-const LAYERS: Array<{ id: LayerType; icon: string | JSX.Element }> = [
-  { id: 'track_sections', icon: trackSectionsIcon },
-  { id: 'signals', icon: signalsIcon },
-  { id: 'buffer_stops', icon: bufferStopIcon },
-  { id: 'detectors', icon: detectorsIcon },
-  { id: 'switches', icon: switchesIcon },
-  { id: 'speed_sections', icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
+const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
+  { layers: ['track_sections'], icon: trackSectionsIcon },
+  { layers: ['signals'], icon: signalsIcon },
+  { layers: ['buffer_stops'], icon: bufferStopIcon },
+  { layers: ['detectors'], icon: detectorsIcon },
+  { layers: ['switches'], icon: switchesIcon },
+  { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
+  { layers: ['lpv', 'lpv_panels'], icon: lpvsIcon },
   {
-    id: 'errors',
+    layers: ['errors'],
     icon: <BsFillExclamationOctagonFill style={{ width: '20px' }} className="mx-2 text-danger" />,
   },
 ];
@@ -65,6 +67,8 @@ const LayersModal: FC<LayersModalProps> = ({
     () =>
       selection
         ? mapKeys(
+            // TODO: ATM we don't know if a selected speed section should be considered as SpeedSection or LPV,
+            // which are two different layers.
             mapValues(groupBy(selection, 'objType'), (values) => values.length),
             (_values, key) => EDITOAST_TO_LAYER_DICT[key as EditoastType]
           )
@@ -74,8 +78,8 @@ const LayersModal: FC<LayersModalProps> = ({
   const unselectCount = useMemo(
     () =>
       sum(
-        LAYERS.filter((layer) => !selectedLayers.has(layer.id)).map(
-          (layer) => selectionCounts[layer.id] || 0
+        LAYERS.filter((layer) => layer.layers.some((id) => !selectedLayers.has(id))).flatMap(
+          (layer) => layer.layers.map((id) => selectionCounts[id] || 0)
         )
       ),
     [selectedLayers, selectionCounts]
@@ -88,47 +92,54 @@ const LayersModal: FC<LayersModalProps> = ({
           <h4>{t('Editor.nav.osrd-layers')}</h4>
         </div>
         <div className="row">
-          {LAYERS.map(({ id, icon }) => (
-            <div className="col-lg-6" key={id}>
-              <div className="d-flex align-items-center mt-2">
-                <SwitchSNCF
-                  type="switch"
-                  onChange={() =>
-                    setSelectedLayers((set) => {
-                      const newSet = new Set(set);
-                      if (newSet.has(id)) newSet.delete(id);
-                      else newSet.add(id);
-                      return newSet;
-                    })
-                  }
-                  name={`editor-layer-${id}`}
-                  id={`editor-layer-${id}`}
-                  checked={selectedLayers.has(id)}
-                  disabled={frozenLayers && frozenLayers.has(id)}
-                />
-                {isString(icon) ? (
-                  <img className="mx-2" src={icon} alt="" height="20" />
-                ) : (
-                  <div>{icon}</div>
-                )}
-                <div className="d-flex flex-column">
-                  <div>{t(`Editor.layers.${id}`)}</div>
-                  {!!selectionCounts[id] && (
-                    <div className="small text-muted font-italic">
-                      {t('Editor.layers-modal.layer-selected-items', {
-                        count: selectionCounts[id],
-                      })}
-                    </div>
+          {LAYERS.map(({ layers, icon }) => {
+            const layerKey = layers.join('-');
+            const count = sum(layers.map((id) => selectionCounts[id] || 0));
+            const disabled = frozenLayers && layers.some((id) => frozenLayers.has(id));
+            return (
+              <div className="col-lg-6" key={layerKey}>
+                <div className="d-flex align-items-center mt-2">
+                  <SwitchSNCF
+                    type="switch"
+                    onChange={() =>
+                      setSelectedLayers((set) => {
+                        const newSet = new Set(set);
+                        layers.forEach((id) => {
+                          if (newSet.has(id)) newSet.delete(id);
+                          else newSet.add(id);
+                        });
+                        return newSet;
+                      })
+                    }
+                    name={`editor-layer-${layerKey}`}
+                    id={`editor-layer-${layerKey}`}
+                    checked={layers.every((id) => selectedLayers.has(id))}
+                    disabled={disabled}
+                  />
+                  {isString(icon) ? (
+                    <img className="mx-2" src={icon} alt="" height="20" />
+                  ) : (
+                    <div>{icon}</div>
                   )}
-                  {frozenLayers && frozenLayers.has(id) && (
-                    <div className="small text-muted font-italic">
-                      {t('Editor.layers-modal.frozen-layer')}
-                    </div>
-                  )}
+                  <div className="d-flex flex-column">
+                    <div>{t(`Editor.layers.${layerKey}`)}</div>
+                    {!!count && (
+                      <div className="small text-muted font-italic">
+                        {t('Editor.layers-modal.layer-selected-items', {
+                          count,
+                        })}
+                      </div>
+                    )}
+                    {disabled && (
+                      <div className="small text-muted font-italic">
+                        {t('Editor.layers-modal.frozen-layer')}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <hr />
         <div>
