@@ -32,6 +32,7 @@ import {
   generateLpvPanelFeatures,
   getPointAt,
   getTrackRangeFeatures,
+  isOnModeMove,
   kmhToMs,
   msToKmh,
   speedSectionIsLpv,
