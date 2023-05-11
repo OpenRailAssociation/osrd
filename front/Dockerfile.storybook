@@ -4,6 +4,7 @@ FROM node:18-alpine as build
 WORKDIR /app
 
 ENV PATH /app/node_modules/.bin:$PATH
+ENV NODE_OPTIONS --max-old-space-size=3076
 
 # build dependencies
 COPY package.json yarn.lock /app/
