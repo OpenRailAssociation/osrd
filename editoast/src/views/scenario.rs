@@ -314,7 +314,6 @@ mod test {
         let req = TestRequest::get().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        println!("{project_id}");
         let response = call_service(&app, delete_project_request(project_id)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
         let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
