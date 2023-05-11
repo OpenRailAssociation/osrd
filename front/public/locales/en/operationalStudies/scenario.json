@@ -1,4 +1,5 @@
 {
+  "displayTrainsWithDetails": "Mask/unmask trains detail",
   "electricalProfileSet": "Electrical profiles set",
   "filterPlaceholder": "Filter, tags",
   "isUpdating": "Updating...",
@@ -25,6 +26,8 @@
     "delete": "Delete",
     "duplicate": "Clone",
     "importTrainSchedule": "Import",
+    "stopsCount_one": "1 stop",
+    "stopsCount_other": "{{ count }} stops",
     "trainAdded": "Train added",
     "trainDeleted": "{{ name }} train has been deleted.",
     "update": "Edit"
