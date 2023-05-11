@@ -18,8 +18,8 @@ import {
 import { RouteState } from '../types';
 import EditorContext from '../../../context';
 import { getEntity } from '../../../data/api';
-import { BufferStopEditionTool, DetectorEditionTool } from '../../pointEdition/tools';
 import EntitySumUp from '../../../components/EntitySumUp';
+import { TOOL_TYPES } from '../../list';
 
 export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteState) => void }> = ({
   state,
@@ -110,14 +110,20 @@ const ExtremityDisplay: FC<WayPoint> = ({ type, id }) => {
           onClick={() => {
             getEntity<WayPointEntity>(infraID as number, id, type).then((entity) => {
               if (type === 'Detector') {
-                switchTool(DetectorEditionTool, {
-                  initialEntity: entity as DetectorEntity,
-                  entity: entity as DetectorEntity,
+                switchTool({
+                  toolType: TOOL_TYPES.DETECTOR_EDITION,
+                  toolState: {
+                    initialEntity: entity as DetectorEntity,
+                    entity: entity as DetectorEntity,
+                  },
                 });
               } else {
-                switchTool(BufferStopEditionTool, {
-                  initialEntity: entity as BufferStopEntity,
-                  entity: entity as BufferStopEntity,
+                switchTool({
+                  toolType: TOOL_TYPES.BUFFER_STOP_EDITION,
+                  toolState: {
+                    initialEntity: entity as BufferStopEntity,
+                    entity: entity as BufferStopEntity,
+                  },
                 });
               }
             });

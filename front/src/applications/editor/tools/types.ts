@@ -8,6 +8,7 @@ import { flatMap } from 'lodash';
 import { Feature } from 'geojson';
 import { ModalContextType } from '../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
+import { switchProps } from './list';
 
 export interface EditorState {
   editorSchema: EditorSchema;
@@ -82,10 +83,7 @@ export type EditorContextType<S = any> = {
   setState: (stateOrReducer: Partial<S> | Reducer<S>) => void;
 
   // Switching tool:
-  switchTool: <NewToolState extends CommonToolState>(
-    tool: Tool<NewToolState>,
-    state?: Partial<NewToolState>
-  ) => void;
+  switchTool: (props: switchProps) => void;
 
   // Listen to this number's updates to rerender on specific cases, such as data
   // suppression:
