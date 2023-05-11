@@ -20,6 +20,7 @@ dependencies {
     ksp project(':kt-fast-collections-generator')
 
     api libs.kotlinx.coroutines.core
+    implementation libs.guava
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
 }

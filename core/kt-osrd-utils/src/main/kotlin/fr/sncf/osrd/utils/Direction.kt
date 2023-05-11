@@ -1,12 +1,19 @@
 package fr.sncf.osrd.utils
 
+/** A direction along an axis */
 enum class Direction {
-    NORMAL,
-    REVERSE;
+    /** The direction along which the position measure increases */
+    INCREASING,
+    /** The direction along which the position measure decreases */
+    DECREASING;
 
     val opposite: Direction get() = when (this) {
-        NORMAL -> REVERSE
-        REVERSE -> NORMAL
+        INCREASING -> DECREASING
+        DECREASING -> INCREASING
+    }
+
+    val toEndpoint: Endpoint get() = when(this) {
+        INCREASING -> Endpoint.END
+        DECREASING -> Endpoint.START
     }
 }
-
