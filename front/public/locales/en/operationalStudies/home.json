@@ -1,0 +1,16 @@
+{
+  "createProject": "Create a project",
+  "filterPlaceholder": "Search...",
+  "openProject": "Open",
+  "projectsCount_zero": "No project",
+  "projectsCount_one": "1 project",
+  "projectsCount_other": "{{count}} projects",
+  "projects": "Projects",
+  "sortOptions": {
+    "byName": "Sort by name",
+    "byRecentDate": "Latest"
+  },
+  "studiesCount_zero": "No study",
+  "studiesCount_one": "1 study",
+  "studiesCount_other": "{{count}} studies"
+}
