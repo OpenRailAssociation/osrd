@@ -29,9 +29,9 @@ import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntities, getEntity, getRoutesFromWaypoint } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
-import RouteEditionTool from '../routeEdition/tool';
 import { getEditRouteState } from '../routeEdition/utils';
 import { getMap } from '../../../../reducers/map/selectors';
+import { TOOL_TYPES } from '../list';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -113,7 +113,10 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
                     className="btn btn-primary btn-sm"
                     title={t('common.open')}
                     onClick={() => {
-                      switchTool(RouteEditionTool, getEditRouteState(route));
+                      switchTool({
+                        toolType: TOOL_TYPES.ROUTE_EDITION,
+                        toolState: getEditRouteState(route),
+                      });
                     }}
                   >
                     <BsBoxArrowInRight />
@@ -141,7 +144,10 @@ export const RoutesList: FC<{ type: EditoastType; id: string }> = ({ type, id })
                     className="btn btn-primary btn-sm"
                     title={t('common.open')}
                     onClick={() => {
-                      switchTool(RouteEditionTool, getEditRouteState(route));
+                      switchTool({
+                        toolType: TOOL_TYPES.ROUTE_EDITION,
+                        toolState: getEditRouteState(route),
+                      });
                     }}
                   >
                     <BsBoxArrowInRight />
