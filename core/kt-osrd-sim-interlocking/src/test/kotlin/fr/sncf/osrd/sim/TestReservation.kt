@@ -9,6 +9,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.mutableArenaMap
+import fr.sncf.osrd.utils.units.meters
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
@@ -37,8 +38,8 @@ class TestReservation {
         // region build the test infrastructure
         val builder = RawInfraBuilder()
         val switch = builder.movableElement(delay = 42L.milliseconds) {
-            config("a")
-            config("b")
+            config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+            config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
         }
 
         val zoneA = builder.zone(listOf())
@@ -47,22 +48,22 @@ class TestReservation {
         val zoneD = builder.zone(listOf())
 
         val detectorU = builder.detector("U")
-        builder.setNextZone(detectorU.normal, zoneA)
+        builder.setNextZone(detectorU.increasing, zoneA)
         val detectorV = builder.detector("V")
-        builder.setNextZone(detectorV.normal, zoneC)
-        builder.setNextZone(detectorV.reverse, zoneA)
+        builder.setNextZone(detectorV.increasing, zoneC)
+        builder.setNextZone(detectorV.decreasing, zoneA)
         val detectorW = builder.detector("W")
-        builder.setNextZone(detectorW.normal, zoneB)
+        builder.setNextZone(detectorW.increasing, zoneB)
         val detectorX = builder.detector("X")
-        builder.setNextZone(detectorX.normal, zoneC)
-        builder.setNextZone(detectorX.reverse, zoneB)
+        builder.setNextZone(detectorX.increasing, zoneC)
+        builder.setNextZone(detectorX.decreasing, zoneB)
         val detectorY = builder.detector("Y")
-        builder.setNextZone(detectorY.normal, zoneD)
-        builder.setNextZone(detectorY.reverse, zoneC)
+        builder.setNextZone(detectorY.increasing, zoneD)
+        builder.setNextZone(detectorY.decreasing, zoneC)
         val detectorZ = builder.detector("Z")
-        builder.setNextZone(detectorZ.reverse, zoneD)
+        builder.setNextZone(detectorZ.decreasing, zoneD)
 
-        val testZonePath = builder.zonePath(detectorU.normal, detectorV.normal, 42.meters) {}
+        val testZonePath = builder.zonePath(detectorU.increasing, detectorV.increasing, 42.meters) {}
 
         val infra = builder.build()
         // endregion
@@ -121,7 +122,7 @@ class TestReservation {
         reference.add(ZoneEvent(0L, zoneState(arena.clone())))
 
         // pre-reservation at time 0
-        val requirements = zoneRequirements(detectorU.normal, detectorV.normal, mapOf())
+        val requirements = zoneRequirements(detectorU.increasing, detectorV.increasing, mapOf())
         val reservationId = arena.allocate(zoneReservation(trainA, requirements, PRE_RESERVED))
         reference.add(ZoneEvent(0L, zoneState(arena.clone())))
 

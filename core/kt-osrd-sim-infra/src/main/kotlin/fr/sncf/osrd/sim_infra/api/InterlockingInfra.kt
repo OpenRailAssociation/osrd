@@ -1,67 +1,20 @@
 package fr.sncf.osrd.sim_infra.api
 
-import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
-import kotlin.time.Duration
+import fr.sncf.osrd.utils.units.*
 
 
 /* /!\ All these sealed interfaces are not meant to be implemented:
 * these are used to implement type-safe numerical identifiers /!\
 */
 
-/** Switches and crossings are movable elements */
-sealed interface MovableElement
-typealias MovableElementId = StaticIdx<MovableElement>
-
-/** A possible configuration for a movable element. Each movable element has its own configuration space */
-sealed interface MovableElementConfig
-typealias MovableElementConfigId = StaticIdx<MovableElementConfig>
-
-
-interface MovableElementsInfra {
-    val movableElements: StaticIdxSpace<MovableElement>
-    fun getMovableElementConfigs(movableElement: MovableElementId): StaticIdxSpace<MovableElementConfig>
-    fun getMovableElementDelay(movableElement: MovableElementId): Duration
-    fun getMovableElementConfigName(movableElement: MovableElementId, config: MovableElementConfigId): String
-}
-
-
-/** Detectors are notified when trains */
-sealed interface Detector
-typealias DetectorId = StaticIdx<Detector>
-
-
 /** A track vacancy detection section. These rely on detectors to operate. */
 sealed interface Zone
 typealias ZoneId = StaticIdx<Zone>
 
-
-/** A directional detector encodes a direction over a detector */
-@JvmInline
-value class DirDetectorId constructor(private val data: UInt) : NumIdx {
-    public constructor(detector: StaticIdx<Detector>, direction: Direction) : this(
-        (detector.index shl 1) or when (direction) {
-            Direction.NORMAL -> 0u
-            Direction.REVERSE -> 1u
-        })
-
-    override val index: UInt get() = data
-
-    val detector: DetectorId get() = StaticIdx(data shr 1)
-    val direction: Direction get() = when ((data and 1u) != 0u) {
-        false -> Direction.NORMAL
-        true -> Direction.REVERSE
-    }
-
-    val opposite: DirDetectorId get() = DirDetectorId(data xor 1u)
-}
-
-val DetectorId.normal get() = DirDetectorId(this, Direction.NORMAL)
-val DetectorId.reverse get() = DirDetectorId(this, Direction.REVERSE)
-
-interface LocationInfra : MovableElementsInfra {
+interface LocationInfra : TrackNetworkInfra, TrackInfra, TrackProperties {
     val zones: StaticIdxSpace<Zone>
-    fun getMovableElements(zone: ZoneId): StaticIdxSortedSet<MovableElement>
+    fun getMovableElements(zone: ZoneId): StaticIdxSortedSet<TrackNode>
     fun getZoneBounds(zone: ZoneId): List<DirDetectorId>
 
     val detectors: StaticIdxSpace<Detector>
@@ -71,28 +24,30 @@ interface LocationInfra : MovableElementsInfra {
 }
 
 fun LocationInfra.getZoneName(zone: ZoneId): String {
-    return "zone.${getZoneBounds(zone).map { "${getDetectorName(it.detector)}:${it.direction}" }.minOf { it }}"
+    return "zone.${getZoneBounds(zone).map { "${getDetectorName(it.value)}:${it.direction}" }.minOf { it }}"
 }
 
 fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
-    return getNextZone(detector.normal) == null || getNextZone(detector.reverse) == null
+    return getNextZone(detector.increasing) == null || getNextZone(detector.decreasing) == null
 }
 
 
 interface ReservationInfra : LocationInfra {
     val zonePaths: StaticIdxSpace<ZonePath>
     fun findZonePath(entry: DirDetectorId, exit: DirDetectorId,
-                     movableElements: StaticIdxList<MovableElement>,
-                     movableElementConfigs: StaticIdxList<MovableElementConfig>): ZonePathId?
+                     movableElements: StaticIdxList<TrackNode>,
+                     trackNodeConfigs: StaticIdxList<TrackNodeConfig>): ZonePathId?
     fun getZonePathEntry(zonePath: ZonePathId): DirDetectorId
     fun getZonePathExit(zonePath: ZonePathId): DirDetectorId
     fun getZonePathLength(zonePath: ZonePathId): Distance
     /** The movable elements in the order encountered when traversing the zone from entry to exit */
-    fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<MovableElement>
+    fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode>
     /** The movable element configs in the same order as movable elements */
-    fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<MovableElementConfig>
+    fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<TrackNodeConfig>
     /** The distances from the beginning of the zone path to its switches, in encounter order */
     fun getZonePathMovableElementsDistances(zonePath: ZonePathId): DistanceList
+    /** Returns the list of track chunks on the zone path */
+    fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>
 }
 
 /** A zone path is a path inside a zone */
@@ -112,6 +67,8 @@ interface RoutingInfra : ReservationInfra {
 
     /** Returns a list of indices of zones in the train path at which the reservations shall be released. */
     fun getRouteReleaseZones(route: RouteId): IntArray
+    fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
+    fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxCollection<Route>
 }
 
 fun ReservationInfra.findZonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePathId? {
