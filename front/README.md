@@ -33,6 +33,36 @@ Builds the app for production to the `build` folder.
 
 Update licenses attributions in /src/common/ReleaseInformations/json/
 
+### `yarn e2e-tests`
+
+Launches end to end tests.
+
+It requires:
+- Backend containers to be up: `docker compose build core redis api editoast postgres`
+- Running front
+- [`poetry`](https://python-poetry.org/docs/#installation) to be installed
+
+This command will execute all tests defined. The command can be changed in [`test_e2e.py`](../tests/tests/test_e2e.py) to execute only one test with or without debug mode.
+`test_e2e.py` is executing [playwright command](https://playwright.dev/docs/test-cli) in a python subprocess. Example of modification to apply to launch only `stdcm-page.spec.ts` in debug mode with chromium:
+
+```diff
+    result = subprocess.run(
+        [
+            "yarn",
+            "--cwd",
+            "front",
+            "playwright",
+            "test"
++           "stdcm-page.spec.ts",
+            "--reporter=line",
++           "--debug",
++           "--project=chromium"
+        ],
+        cwd=Path(__file__).parents[2],
+        check=False,
+    )
+```
+
 ## Design rules
 
 OSRD's front is based upon [SNCF Bootstrap](https://designmetier-bootstrap.sncf.fr/). It aims to
