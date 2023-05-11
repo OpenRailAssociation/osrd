@@ -140,7 +140,9 @@ const NavButtons: NavButton[][] = [
                 (setToolState as unknown as (newState: SelectionState) => void)({
                   ...currentState,
                   selection: currentState.selection.filter((entity) =>
-                    newLayers.has(EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType])
+                    EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType].every((layer) =>
+                      newLayers.has(layer)
+                    )
                   ),
                 } as SelectionState);
               }

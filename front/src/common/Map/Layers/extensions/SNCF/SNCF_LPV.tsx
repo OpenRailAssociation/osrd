@@ -1,53 +1,57 @@
 /* eslint-disable react/jsx-pascal-case */
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl';
-import { useTranslation } from 'react-i18next';
+import { Source } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
-import { Theme } from 'types';
+import { SourceLayer, LineLayer, SymbolLayer, Theme } from 'types';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
+import { MapState } from 'reducers/map';
+import { isNil } from 'lodash';
+import { Layer } from 'mapbox-gl';
+import { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import SNCF_LPV_Panels from './SNCF_LPV_PANELS';
+import { getSpeedSectionsTag, getSpeedSectionsName } from '../../SpeedLimits';
 
 interface SNCF_LPVProps {
-  geomType: string;
+  geomType: SourceLayer;
   colors: Theme;
   layerOrder?: number;
 }
 
-export default function SNCF_LPV(props: SNCF_LPVProps) {
-  const { t } = useTranslation('map-settings');
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { geomType, colors, layerOrder } = props;
+export function getLPVFilter(layersSettings: MapState['layersSettings']): Layer['filter'] {
+  return ['any', ['has', 'speed_limit'], ['has', getSpeedSectionsTag(layersSettings)]];
+}
 
-  const tag = `speed_limit_by_tag_${layersSettings.speedlimittag}`;
-  const speedLimitByTagName = [
-    'round',
-    ['*', 3.6, ['case', ['!=', ['get', tag], null], ['get', tag], ['get', 'speed_limit']]],
-  ];
-
-  const speedSectionFilter = ['any', ['has', 'speed_limit'], ['has', tag]];
-
-  const speedValueParams: LayerProps = {
+export function getLPVSpeedValueLayerProps({
+  colors,
+  sourceTable,
+  layersSettings,
+  t,
+}: {
+  colors: Theme;
+  sourceTable?: string;
+  layersSettings: MapState['layersSettings'];
+  t?: TFunction;
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
-    'source-layer': 'lpv',
     minzoom: 9,
     maxzoom: 24,
-    filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
       'text-font': ['Roboto Bold'],
       'symbol-placement': 'line-center',
       'text-field': [
         'concat',
-        t('zone').toUpperCase(),
+        t ? t('zone').toUpperCase() : 'zone',
         ' ',
-        ['to-string', speedLimitByTagName],
+        ['to-string', getSpeedSectionsName(layersSettings)],
         'km/h',
       ],
       'text-size': 10,
@@ -64,12 +68,22 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
     },
   };
 
-  const speedLineBGParams: LayerProps = {
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export function getLPVSpeedLineBGLayerProps({
+  sourceTable,
+}: {
+  colors?: Theme;
+  sourceTable?: string;
+  layersSettings?: MapState['layersSettings'];
+}): Omit<LineLayer, 'id'> {
+  const res: Omit<LineLayer, 'id'> = {
     type: 'line',
-    'source-layer': 'lpv',
     minzoom: 6,
     maxzoom: 24,
-    filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
       'line-cap': ['step', ['zoom'], 'round', 15, 'square'],
@@ -83,12 +97,23 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
     },
   };
 
-  const speedLineParams: LayerProps = {
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export function getLPVSpeedLineLayerProps({
+  sourceTable,
+  layersSettings,
+}: {
+  colors?: Theme;
+  sourceTable?: string;
+  layersSettings: MapState['layersSettings'];
+}): Omit<LineLayer, 'id'> {
+  const res: Omit<LineLayer, 'id'> = {
     type: 'line',
-    'source-layer': 'lpv',
     minzoom: 6,
     maxzoom: 24,
-    filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
       'line-cap': ['step', ['zoom'], 'round', 15, 'square'],
@@ -97,7 +122,7 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
       'line-color': [
         'let',
         'speed_limit',
-        speedLimitByTagName,
+        getSpeedSectionsName(layersSettings),
         [
           'case',
           ['all', ['>', ['var', 'speed_limit'], 220]],
@@ -123,6 +148,47 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
       'line-gap-width': 7,
       'line-dasharray': [1, 2],
     },
+  };
+
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export default function SNCF_LPV(props: SNCF_LPVProps) {
+  const { t } = useTranslation('map-settings');
+  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const infraID = useSelector(getInfraID);
+  const { geomType, colors, layerOrder } = props;
+
+  const speedSectionFilter = getLPVFilter(layersSettings);
+
+  const speedValueParams = {
+    ...getLPVSpeedValueLayerProps({
+      t,
+      colors,
+      layersSettings,
+      sourceTable: 'lpv',
+    }),
+    filter: speedSectionFilter,
+  };
+
+  const speedLineBGParams = {
+    ...getLPVSpeedLineBGLayerProps({
+      colors,
+      layersSettings,
+      sourceTable: 'lpv',
+    }),
+    filter: speedSectionFilter,
+  };
+
+  const speedLineParams = {
+    ...getLPVSpeedLineLayerProps({
+      colors,
+      layersSettings,
+      sourceTable: 'lpv',
+    }),
+    filter: speedSectionFilter,
   };
 
   if (layersSettings.sncf_lpv) {

@@ -14,7 +14,6 @@ import {
   getPointLayerProps,
   getSignalLayerProps,
   getSignalMatLayerProps,
-  SignalContext,
 } from './geoSignalsLayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { getBufferStopsLayerProps } from './BufferStops';
@@ -36,18 +35,21 @@ import {
   getSpeedSectionsTextLayerProps,
 } from './SpeedLimits';
 import { MapState } from '../../../reducers/map';
+import {
+  getLPVFilter,
+  getLPVSpeedLineBGLayerProps,
+  getLPVSpeedLineLayerProps,
+  getLPVSpeedValueLayerProps,
+} from './extensions/SNCF/SNCF_LPV';
+import {
+  getLPVPanelsLayerProps,
+  getLPVPanelsMastLayerProps,
+} from './extensions/SNCF/SNCF_LPV_PANELS';
+import { LayerContext } from './types';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
 const POINT_ENTITIES_MIN_ZOOM = 12;
-
-interface LayerContext extends SignalContext {
-  sourceTable?: string;
-  symbolsList: string[];
-  isEmphasized: boolean;
-  showIGNBDORTHO: boolean;
-  layersSettings: MapState['layersSettings'];
-}
 
 /**
  * Helper to recursively transform all colors of a given theme:
@@ -178,6 +180,43 @@ function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
     },
   ];
 }
+
+function getLPVPanelsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+  return [
+    {
+      ...getLPVPanelsLayerProps(context),
+      id: `${prefix}geo/lpv-panels`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...getLPVPanelsMastLayerProps(context),
+      id: `${prefix}geo/lpv-panels-mast`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+  ];
+}
+
+function getLPVLayers(context: LayerContext, prefix: string): AnyLayer[] {
+  const filter = getLPVFilter(context.layersSettings);
+  return [
+    {
+      ...getLPVSpeedValueLayerProps(context),
+      id: `${prefix}geo/lpv-value`,
+      filter,
+    },
+    {
+      ...getLPVSpeedLineBGLayerProps(context),
+      id: `${prefix}geo/lpv-line-bg`,
+      filter,
+    },
+    {
+      ...getLPVSpeedLineLayerProps(context),
+      id: `${prefix}geo/lpv-line`,
+      filter,
+    },
+  ];
+}
+
 function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     {
@@ -247,6 +286,8 @@ const SOURCES_DEFINITION: {
   { entityType: 'detectors', getLayers: getDetectorsLayers },
   { entityType: 'switches', getLayers: getSwitchesLayers },
   { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
+  { entityType: 'lpv', getLayers: getLPVLayers },
+  { entityType: 'lpv_panels', getLayers: getLPVPanelsLayers },
   { entityType: 'errors', getLayers: getErrorsLayers },
 ];
 
