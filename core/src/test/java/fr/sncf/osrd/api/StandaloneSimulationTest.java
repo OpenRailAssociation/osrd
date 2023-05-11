@@ -10,6 +10,8 @@ import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
@@ -29,20 +31,20 @@ public class StandaloneSimulationTest extends ApiTest {
 
     private static RJSTrainPath tinyInfraTrainPath() {
         var trainPath = new RJSTrainPath();
-        var tracksRoute1 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
+        var tracksRoute1 = new ArrayList<RJSDirectionalTrackRange>();
         tracksRoute1.add(
-                new RJSTrainPath.RJSDirectionalTrackRange("ne.micro.foo_b", 100, 175, EdgeDirection.START_TO_STOP));
-        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath(
+                new RJSDirectionalTrackRange("ne.micro.foo_b", 100, 175, EdgeDirection.START_TO_STOP));
+        trainPath.routePath.add(new RJSRoutePath(
                 "rt.buffer_stop_b->tde.foo_b-switch_foo", tracksRoute1, "BAL3"));
 
-        var tracksRoute2 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
-        tracksRoute2.add(new RJSTrainPath.RJSDirectionalTrackRange(
+        var tracksRoute2 = new ArrayList<RJSDirectionalTrackRange>();
+        tracksRoute2.add(new RJSDirectionalTrackRange(
                 "ne.micro.foo_b", 175, 200, EdgeDirection.START_TO_STOP));
-        tracksRoute2.add(new RJSTrainPath.RJSDirectionalTrackRange(
+        tracksRoute2.add(new RJSDirectionalTrackRange(
                 "ne.micro.foo_to_bar", 0, 10000, EdgeDirection.START_TO_STOP));
-        tracksRoute2.add(new RJSTrainPath.RJSDirectionalTrackRange(
+        tracksRoute2.add(new RJSDirectionalTrackRange(
                 "ne.micro.bar_a", 0, 100, EdgeDirection.START_TO_STOP));
-        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath(
+        trainPath.routePath.add(new RJSRoutePath(
                 "rt.tde.foo_b-switch_foo->buffer_stop_c",
                 tracksRoute2,
                 "BAL3")
@@ -53,22 +55,22 @@ public class StandaloneSimulationTest extends ApiTest {
     /** Returns a small train path on small infra */
     public static RJSTrainPath smallInfraTrainPath() {
         var trainPath = new RJSTrainPath();
-        var trackRanges1 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
-        trackRanges1.add(new RJSTrainPath.RJSDirectionalTrackRange("TA0", 1820, 2000, EdgeDirection.START_TO_STOP));
-        trackRanges1.add(new RJSTrainPath.RJSDirectionalTrackRange("TA6", 0, 1800, EdgeDirection.START_TO_STOP));
-        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath("rt.DA2->DA6_1", trackRanges1, "BAL3"));
+        var trackRanges1 = new ArrayList<RJSDirectionalTrackRange>();
+        trackRanges1.add(new RJSDirectionalTrackRange("TA0", 1820, 2000, EdgeDirection.START_TO_STOP));
+        trackRanges1.add(new RJSDirectionalTrackRange("TA6", 0, 1800, EdgeDirection.START_TO_STOP));
+        trainPath.routePath.add(new RJSRoutePath("rt.DA2->DA6_1", trackRanges1, "BAL3"));
 
         for (int i = 1; i < 5; i++) {
-            var trackRanges2 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
-            trackRanges2.add(new RJSTrainPath.RJSDirectionalTrackRange("TA6", 200 + 1600 * i, 200 + 1600 * (i + 1),
+            var trackRanges2 = new ArrayList<RJSDirectionalTrackRange>();
+            trackRanges2.add(new RJSDirectionalTrackRange("TA6", 200 + 1600 * i, 200 + 1600 * (i + 1),
                     EdgeDirection.START_TO_STOP));
             trainPath.routePath.add(
-                    new RJSTrainPath.RJSRoutePath("rt.DA6_" + i + "->DA6_" + (i + 1), trackRanges2, "BAL3"));
+                    new RJSRoutePath("rt.DA6_" + i + "->DA6_" + (i + 1), trackRanges2, "BAL3"));
         }
 
-        var trackRanges3 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
-        trackRanges3.add(new RJSTrainPath.RJSDirectionalTrackRange("TA6", 8200, 9820, EdgeDirection.START_TO_STOP));
-        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath("rt.DA6_5->DA5", trackRanges3, "BAL3"));
+        var trackRanges3 = new ArrayList<RJSDirectionalTrackRange>();
+        trackRanges3.add(new RJSDirectionalTrackRange("TA6", 8200, 9820, EdgeDirection.START_TO_STOP));
+        trainPath.routePath.add(new RJSRoutePath("rt.DA6_5->DA5", trackRanges3, "BAL3"));
 
         return trainPath;
     }
