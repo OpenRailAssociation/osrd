@@ -4,14 +4,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.stdcm.STDCMStep;
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Graph;
-import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 /** This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding implementation.
  * Most of the logic has been delegated to helper classes in this module:
@@ -26,7 +25,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     public final RollingStock rollingStock;
     public final RollingStock.Comfort comfort;
     public final double timeStep;
-    final Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations;
+    final List<STDCMStep> steps;
     final DelayManager delayManager;
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
@@ -42,7 +41,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             RouteAvailabilityInterface routeAvailability,
             double maxRunTime,
             double minScheduleTimeStart,
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            List<STDCMStep> steps,
             String tag,
             AllowanceValue standardAllowance
     ) {
@@ -50,7 +49,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         this.rollingStock = rollingStock;
         this.comfort = comfort;
         this.timeStep = timeStep;
-        this.endLocations = endLocations;
+        this.steps = steps;
         this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, routeAvailability, this);
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
@@ -81,14 +80,19 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
     @Override
     public Collection<STDCMEdge> getAdjacentEdges(STDCMNode node) {
-        var res = new ArrayList<STDCMEdge>();
-        var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector());
-        for (var neighbor : neighbors) {
-            res.addAll(
-                    STDCMEdgeBuilder.fromNode(this, node, neighbor)
-                            .makeAllEdges()
-            );
+        if (node.detector() == null)
+            return STDCMEdgeBuilder.fromNode(this, node, node.locationOnRoute().edge())
+                    .makeAllEdges();
+        else {
+            var res = new ArrayList<STDCMEdge>();
+            var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector());
+            for (var neighbor : neighbors) {
+                res.addAll(
+                        STDCMEdgeBuilder.fromNode(this, node, neighbor)
+                                .makeAllEdges()
+                );
+            }
+            return res;
         }
-        return res;
     }
 }

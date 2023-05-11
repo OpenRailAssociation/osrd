@@ -4,7 +4,9 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import java.util.List;
 
 /** This is the result of the STDCM computation.
  * It is made of a physical path part and envelope, as well as different representations
@@ -14,5 +16,6 @@ public record STDCMResult(
         Envelope envelope,
         TrainPath trainPath,
         PhysicsPath physicsPath,
-        double departureTime
+        double departureTime,
+        List<TrainStop> stopResults
 ) {}

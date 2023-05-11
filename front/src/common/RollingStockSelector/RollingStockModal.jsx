@@ -110,6 +110,14 @@ function RollingStockModal(props) {
     setIsFiltering(true);
   };
 
+  if (rollingStockID !== undefined) {
+    // Because of modal waiting for displaying, have to set a timeout to correctly scroll to ref
+    // BUT finally, it's great, it creates a micro-interaction (smooth scroll) !
+    setTimeout(() => {
+      ref2scroll.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 1000);
+  }
+
   const listOfRollingStocks = useMemo(
     () =>
       filteredRollingStockList.length > 0 ? (

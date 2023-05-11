@@ -1,4 +1,5 @@
 {
+  "displayTrainsWithDetails": "Afficher/masquer le détail des trains",
   "electricalProfileSet": "Set de profils électriques",
   "filterPlaceholder": "Filtre, étiquettes",
   "isUpdating": "Mise à jour...",
@@ -25,6 +26,8 @@
     "delete": "Supprimer",
     "duplicate": "Dupliquer",
     "importTrainSchedule": "Importer",
+    "stopsCount_one": "1 arrêt",
+    "stopsCount_other": "{{count}} arrêts",
     "trainAdded": "Train ajouté",
     "trainDeleted": "Le train {{name}} a bien été supprimé.",
     "update": "Modifier"

@@ -65,6 +65,7 @@
     "license-checker-rseidelsohn": "~3.3.0",
     "lodash": "^4.17.15",
     "maplibre-gl": "^2.4.0",
+    "openapi-typescript-codegen": "^0.24.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
@@ -158,15 +159,17 @@
     "react-error-overlay": "6.0.9",
     "@nivo/line": "^0.80.0",
     "@nivo/annotations": "^0.80.0",
-    "@nivo/core": "^0.80.0"
+    "@nivo/core": "^0.80.0",
+    "@rtk-query/oazapfts-patched": "anisometropie/oazapfts#master"
   },
   "scripts": {
     "compile": "tsc -b",
     "start": "import-meta-env-prepare -x .env.example && vite",
     "build": "vite build",
     "test": "import-meta-env-prepare -x .env.example && vitest",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 124",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx src --max-warnings 69",
     "lint-fix": "eslint --ext .ts,.tsx,.js,.jsx src --fix",
+    "lint-group-type": "eslint --ext .ts,.tsx,.js,.jsx src -f scripts/lint-formatter.js",
     "test-coverage": "import-meta-env-prepare -x .env.example && vitest run --coverage",
     "generate-types": "exec scripts/generate-types.sh",
     "storybook": "storybook dev -p 6006",

@@ -2,27 +2,34 @@ import React, { ComponentType, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { get, patch } from 'common/requests';
-import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
 
+import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
+import { TrainSchedule, Allowance } from 'common/api/osrdMiddlewareApi';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { setFailure, setSuccess } from 'reducers/main';
+import {
+  getPresentSimulation,
+  getAllowancesSettings,
+  getSelectedProjection,
+  getSelectedTrain,
+} from 'reducers/osrdsimulation/selectors';
 import Allowances from './Allowances';
 
-import { ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
+import { ALLOWANCE_UNITS_KEYS, AllowanceType } from './allowancesConsts';
 
 // Initialy try to implement https://react-typescript-cheatsheet.netlify.app/docs/hoc/, no success
 
 function withOSRDData<T>(Component: ComponentType<T>) {
-  return (hocProps: T) => {
+  return (hocProps: Partial<T>) => {
     const { t } = useTranslation(['allowances']);
     const dispatch = useDispatch();
-    const simulation = useSelector((state: any) => state.osrdsimulation.simulation.present);
-    const allowancesSettings = useSelector((state: any) => state.osrdsimulation.allowancesSettings);
-    const selectedProjection = useSelector((state: any) => state.osrdsimulation.selectedProjection);
-    const selectedTrain = useSelector((state: any) => state.osrdsimulation.selectedTrain);
+    const simulation = useSelector(getPresentSimulation);
+    const allowancesSettings = useSelector(getAllowancesSettings);
+    const selectedProjection = useSelector(getSelectedProjection);
+    const selectedTrain = useSelector(getSelectedTrain);
 
     const [, setSyncInProgress] = useState(false);
-    const [trainDetail, setTrainDetail] = useState<any>({ allowances: [] });
+    const [trainDetail, setTrainDetail] = useState<TrainSchedule>({ allowances: [] });
 
     const getAllowances = async () => {
       try {
@@ -40,7 +47,7 @@ function withOSRDData<T>(Component: ComponentType<T>) {
       }
     };
 
-    const allowanceTypes = [
+    const allowanceTypes: AllowanceType[] = [
       {
         id: 'time',
         label: t('allowanceTypes.time'),
@@ -61,7 +68,7 @@ function withOSRDData<T>(Component: ComponentType<T>) {
     const getAllowanceTypes = () => allowanceTypes;
 
     // Alowance mutation in REST strat
-    const mutateAllowances = async (newAllowances: any) => {
+    const mutateAllowances = async (newAllowances: Allowance[]) => {
       try {
         setSyncInProgress(true);
         await patch(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
@@ -74,7 +81,7 @@ function withOSRDData<T>(Component: ComponentType<T>) {
           {
             params: {
               id: simulation.trains[selectedTrain].id,
-              path: selectedProjection.path,
+              path: selectedProjection?.path,
             },
           }
         );

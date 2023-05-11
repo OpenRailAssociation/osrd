@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
@@ -69,8 +70,10 @@ public class STDCMSimulations {
             Double stopPosition,
             String tag
     ) {
-        if (stopPosition != null && stopPosition == 0)
+        if (stopPosition != null && Math.abs(stopPosition) < POSITION_EPSILON)
             return makeSinglePointEnvelope(0);
+        if (start >= route.getInfraRoute().getLength())
+            return makeSinglePointEnvelope(initialSpeed);
         var context = makeSimContext(List.of(route), start, rollingStock, comfort, timeStep);
         double[] stops = new double[]{};
         double length = context.path.getLength();
@@ -106,13 +109,11 @@ public class STDCMSimulations {
     /** Returns the time at which the offset on the given route is reached */
     public static double interpolateTime(
             Envelope envelope,
-            SignalingRoute route,
+            double envelopeStartOffset,
             double routeOffset,
             double startTime,
             double speedRatio
     ) {
-        var routeLength = route.getInfraRoute().getLength();
-        var envelopeStartOffset = routeLength - envelope.getEndPos();
         var envelopeOffset = Math.max(0, routeOffset - envelopeStartOffset);
         assert envelopeOffset <= envelope.getEndPos();
         return startTime + (envelope.interpolateTotalTime(envelopeOffset) / speedRatio);

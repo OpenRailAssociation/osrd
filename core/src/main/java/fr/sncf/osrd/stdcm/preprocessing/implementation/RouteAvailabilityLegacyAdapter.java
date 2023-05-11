@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.preprocessing.implementation;
 
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.stdcm.OccupancyBlock;
@@ -26,7 +26,7 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
             TrainPath path,
             double startOffset,
             double endOffset,
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             double startTime
     ) {
         assert Math.abs((endOffset - startOffset) - envelope.getEndPos()) < 1e-5;
@@ -42,7 +42,7 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
             TrainPath path,
             double startOffset,
             double endOffset,
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             double startTime
     ) {
         double minimumDelay = 0;
@@ -92,7 +92,7 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
             TrainPath path,
             double startOffset,
             double endOffset,
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             double startTime
     ) {
         double maximumDelay = Double.POSITIVE_INFINITY;
@@ -136,7 +136,7 @@ public class RouteAvailabilityLegacyAdapter implements RouteAvailabilityInterfac
             OccupancyBlock block,
             TrainPath.LocatedElement<SignalingRoute> route,
             double startOffset,
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             double startTime
     ) {
         var startRouteOffsetOnEnvelope = route.pathOffset() - startOffset;
