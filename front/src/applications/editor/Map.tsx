@@ -165,7 +165,18 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             }
 
             if (activeTool.onMove) {
-              activeTool.onMove(e, extendedContext);
+              activeTool.onMove(
+                nearestResult
+                  ? {
+                      ...e,
+                      // (don't remove this or TypeScript won't be happy)
+                      preventDefault: e.preventDefault,
+                      // Ensure there is a feature, and the good one:
+                      features: [nearestResult.feature],
+                    }
+                  : e,
+                extendedContext
+              );
             }
 
             if (!isEmpty(partialToolState)) setToolState(partialToolState);

@@ -251,7 +251,7 @@ const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
           setState({ entity: updatedEntity });
         }
       }
-    } else if (hoveredItem) {
+    } else if (hoveredItem && !e.features?.length) {
       setState({ hoveredItem: null });
     }
   },

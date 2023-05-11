@@ -238,6 +238,11 @@ export function getTrackRangeFeatures(
   ];
 }
 
+/**
+ * Given a LPV panel and the cached trackSections, generate a point feature to represent a SpeedSection Lpv Panel.
+ * If the panel's track is not in the trackSectionsCache object, then return null.
+ * This feature will be used to display the panel on the map.
+ */
 function generatePointFromLPVPanel(
   panel: LPVPanel,
   panelIndex: number,
@@ -258,7 +263,9 @@ function generatePointFromLPVPanel(
   return panelPoint as LpvPanelFeature;
 }
 
-/** Generate LPV panel Features (Point) from LPV panels and trackSectionCache */
+/**
+ * Given a LPV extension and cached trackSections, generate an array of Point Features to display the LPV panels on the map.
+ */
 export function generateLpvPanelFeatures(
   lpv: LPVExtension,
   trackSectionsCache: Record<string, TrackState>
@@ -290,6 +297,11 @@ export function kmhToMs(v: number): number {
   return v / 3.6;
 }
 
+/**
+ * Given a lpvPanel information, update the state to notify that the user is moving the panel.
+ * - set the interaction state on 'movePanel'
+ * - store in the interaction state the panel informations
+ */
 export function selectLpvPanel(
   lpvPanel: LpvPanelInformation,
   setState: (

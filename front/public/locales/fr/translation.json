@@ -334,7 +334,7 @@
         "show-more-ranges_one": "Voir une section de ligne de plus",
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
         "speed-limits": "Limitations de vitesses",
-        "toggle-lpv": "is LPV"
+        "toggle-lpv": "Limite permanente de vitesse"
       }
     }
   }

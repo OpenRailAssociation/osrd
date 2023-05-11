@@ -35,6 +35,10 @@ export function getHoveredTrackRanges(hoverEvent: mapboxgl.MapLayerMouseEvent) {
   ) as Feature<LineString>[];
 }
 
+/**
+ * Given a point and trackSectionsCache, return the cached trackSection on which the point is.
+ * If the trackSection is not in the cache, then return null.
+ */
 export function getTrackSectionEntityFromNearestPoint(
   point: NearestPoint,
   trackRanges: Feature<LineString>[],

@@ -601,7 +601,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     }
   }, [hoveredItem]);
 
-  const addPopUps = () => (
+  const popUps = !isOnModeMove(interactionState.type) ? (
     <>
       {hoveredItem?.speedSectionItemType === 'TrackRangeExtremity' && (
         <Popup
@@ -654,7 +654,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           </Popup>
         )}
     </>
-  );
+  ) : null;
 
   return (
     <>
@@ -666,7 +666,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         layersSettings={layersSettings}
         isEmphasized={false}
       />
-      <Source type="geojson" data={speedSectionsFeature}>
+      <Source type="geojson" data={speedSectionsFeature} key={isLPV ? 'lpv' : 'speed-section'}>
         {layersProps.map((props, i) => (
           <Layer {...props} key={i} />
         ))}
@@ -681,7 +681,7 @@ export const SpeedSectionEditionLayers: FC = () => {
           filter={['has', 'extremity']}
         />
       </Source>
-      {!isOnModeMove(interactionState.type) && addPopUps()}
+      {popUps}
     </>
   );
 };

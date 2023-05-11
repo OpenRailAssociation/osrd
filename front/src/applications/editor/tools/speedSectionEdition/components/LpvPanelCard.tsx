@@ -65,7 +65,7 @@ const LpvPanelCard = ({
         </div>
         <div className="my-2">
           <InputSNCF
-            type="string"
+            type="text"
             id="track-id"
             label={t('Editor.tools.speed-edition.panel-track-id')}
             value={!isNil(panel.track) ? panel.track : 0}
