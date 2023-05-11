@@ -3,7 +3,7 @@ import { Dispatch } from 'redux';
 import { ViewState } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
-import { reduce } from 'lodash';
+import { flatMap } from 'lodash';
 
 import { Feature } from 'geojson';
 import { ModalContextType } from '../../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -23,6 +23,8 @@ export const LAYERS = [
   'routes',
   'speed_sections',
   'errors',
+  'lpv',
+  'lpv_panels',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(LAYERS);
 export type LayerType = (typeof LAYERS)[number];
@@ -39,18 +41,19 @@ export const EDITOAST_TYPES = [
 export const EDITOAST_TYPES_SET: Set<string> = new Set(EDITOAST_TYPES);
 export type EditoastType = (typeof EDITOAST_TYPES)[number];
 
-export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, LayerType> = {
-  TrackSection: 'track_sections',
-  Signal: 'signals',
-  BufferStop: 'buffer_stops',
-  Detector: 'detectors',
-  Switch: 'switches',
-  Route: 'routes',
-  SpeedSection: 'speed_sections',
+export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, LayerType[]> = {
+  TrackSection: ['track_sections'],
+  Signal: ['signals'],
+  BufferStop: ['buffer_stops'],
+  Detector: ['detectors'],
+  Switch: ['switches'],
+  Route: ['routes'],
+  SpeedSection: ['speed_sections', 'lpv', 'lpv_panels'],
 };
-export const LAYER_TO_EDITOAST_DICT = reduce(
-  EDITOAST_TO_LAYER_DICT,
-  (iter, value, key) => ({
+export const LAYER_TO_EDITOAST_DICT = flatMap(EDITOAST_TO_LAYER_DICT, (values, key) =>
+  values.map((value) => [value, key])
+).reduce(
+  (iter, [value, key]) => ({
     ...iter,
     [value]: key,
   }),
