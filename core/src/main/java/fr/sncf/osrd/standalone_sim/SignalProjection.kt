@@ -15,6 +15,7 @@ import fr.sncf.osrd.standalone_sim.result.SignalUpdate
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Distance
 import java.awt.Color
 
 data class SignalAspectChangeEvent(val newAspect: String, val time: Long)

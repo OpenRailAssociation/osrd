@@ -143,7 +143,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 override fun remove(index: Int): $type {
                     assert(index < usedElements)
                     val oldValue = buffer[index]
-                    for (i in index until usedElements)
+                    for (i in index until usedElements - 1)
                         buffer[i] = buffer[i + 1]
                     usedElements--
                     return oldValue
