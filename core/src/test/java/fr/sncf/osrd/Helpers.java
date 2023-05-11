@@ -1,7 +1,6 @@
 package fr.sncf.osrd;
 
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
-import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
 
 import com.squareup.moshi.JsonAdapter;
 import fr.sncf.osrd.api.FullInfra;
@@ -21,10 +20,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class Helpers {
@@ -92,11 +88,8 @@ public class Helpers {
 
     /** Generates a full infra from rjs data */
     public static FullInfra fullInfraFromRJS(RJSInfra rjs) {
-        var signalingInfra = infraFromRJS(rjs);
+        var diagnosticRecorder = new DiagnosticRecorderImpl(true);
         var signalingSimulator = makeSignalingSimulator();
-        var rawInfra = adaptRawInfra(signalingInfra);
-        var loadedSignalInfra = signalingSimulator.loadSignals(rawInfra);
-        var blockInfra = signalingSimulator.buildBlocks(rawInfra, loadedSignalInfra);
-        return new FullInfra(signalingInfra, rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
+        return FullInfra.fromRJSInfra(rjs, diagnosticRecorder, signalingSimulator);
     }
 }

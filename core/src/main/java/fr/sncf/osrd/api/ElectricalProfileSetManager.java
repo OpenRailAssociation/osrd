@@ -4,11 +4,9 @@ import com.squareup.moshi.JsonDataException;
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import okhttp3.OkHttpClient;
-import okio.BufferedSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Manager that fetches and stores the different electrical profile sets used. */
@@ -24,9 +22,9 @@ public class ElectricalProfileSetManager extends APIClient {
     /**
      * Return the electrical profile set corresponding to the given id, in a ready-to-use format.
      */
-    public Optional<ElectricalProfileMapping> getProfileMap(String profileSetId) {
+    public ElectricalProfileMapping getProfileMap(String profileSetId) {
         if (profileSetId == null) {
-            return Optional.empty();
+            return null;
         }
 
         cache.putIfAbsent(profileSetId, new CacheEntry(null));
@@ -65,8 +63,8 @@ public class ElectricalProfileSetManager extends APIClient {
         }
 
         if (cacheEntry.status == CacheEntryStatus.CACHED)
-            return Optional.of(cacheEntry.mapping);
-        return Optional.empty();
+            return cacheEntry.mapping;
+        return null;
     }
 
     public enum CacheEntryStatus {
