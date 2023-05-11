@@ -54,7 +54,7 @@ pub struct Warning {
 
 impl AsCoreRequest<PathfindingResponse> for PathfindingRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
-    const URL_PATH: &'static str = "pathfinding/routes";
+    const URL_PATH: &'static str = "/pathfinding/routes";
 }
 
 impl Waypoint {

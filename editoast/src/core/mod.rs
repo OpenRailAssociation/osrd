@@ -1,43 +1,39 @@
+#[cfg(test)]
+pub mod mocking;
 pub mod pathfinding;
 
-#[cfg(test)]
-use std::{collections::VecDeque, sync::RwLock};
-use std::{ops::Deref, sync::Arc};
+use std::ops::Deref;
 
+use actix_http::Uri;
 use async_trait::async_trait;
 use editoast_derive::EditoastError;
+use reqwest::header;
 use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 
 use crate::error::Result;
 
-/// A client that can send requests to Core
-///
-/// Mocking functions are available on `cfg(test)`.
-#[async_trait]
-pub trait Client: Send + Sync + std::fmt::Debug {
-    /// Sends a request and returns the response
-    async fn run(
+#[derive(Debug, Clone)]
+pub enum Client {
+    Direct(DirectClient),
+    #[cfg(test)]
+    Mocked(mocking::MockingClient),
+}
+
+impl Client {
+    async fn fetch<B: Serialize, R: DeserializeOwned>(
         &self,
         method: reqwest::Method,
-        url_path: &str,
-        payload: &serde_json::Value,
-    ) -> Result<serde_json::Value>;
-
-    /// Enqueues an expected request payload for testing purposes
-    ///
-    /// Panics by default, should `assert!` if overriden.
-    #[cfg(test)]
-    fn queue_expected_request(&self, _: serde_json::Value) {
-        panic!("not supported by this client")
-    }
-
-    /// Enqueues an expected response payload for an upcoming request
-    ///
-    /// Panics by default, should `assert!` if overriden.
-    #[cfg(test)]
-    fn queue_expected_response(&self, _: serde_json::Value) {
-        panic!("not supported by this client")
+        uri: &Uri,
+        body: Option<&B>,
+    ) -> Result<R> {
+        match self {
+            Client::Direct(client) => client.fetch(method, uri, body).await,
+            #[cfg(test)]
+            Client::Mocked(client) => client
+                .fetch_mocked(method, uri, body)
+                .ok_or(CoreError::NoResponseContent.into()),
+        }
     }
 }
 
@@ -46,42 +42,63 @@ pub trait Client: Send + Sync + std::fmt::Debug {
 /// See also [AsCoreRequest]
 #[derive(Debug, Clone)]
 pub struct DirectClient {
-    pub address: String,
-    pub bearer_token: String,
+    pub address: Uri,
+    pub client: reqwest::Client,
 }
 
 impl Default for DirectClient {
     fn default() -> Self {
         let address = std::env::var("OSRD_BACKEND").unwrap_or("http://localhost:8080".to_owned());
         let bearer_token = std::env::var("OSRD_BACKEND_TOKEN").unwrap_or_default();
-        Self::new(address, bearer_token)
+        Self::new(
+            address.parse().expect("invalid OSRD_BACKEND URL format"),
+            bearer_token,
+        )
     }
 }
 
 impl DirectClient {
-    pub fn new(address: String, bearer_token: String) -> Self {
-        Self {
-            address,
-            bearer_token,
-        }
+    pub fn new(address: Uri, bearer_token: String) -> Self {
+        let mut header_map = header::HeaderMap::new();
+        header_map.insert(header::AUTHORIZATION, bearer_token.parse().unwrap());
+        let client = reqwest::Client::builder()
+            .default_headers(header_map)
+            .build()
+            .expect("client should build");
+        Self { address, client }
     }
-}
 
-#[async_trait]
-impl Client for DirectClient {
-    async fn run(
+    async fn fetch<B: Serialize, R: DeserializeOwned>(
         &self,
         method: reqwest::Method,
-        url_path: &str,
-        payload: &serde_json::Value,
-    ) -> Result<serde_json::Value> {
-        let response = reqwest::Client::new()
-            .request(method, format!("{0}/{1}", self.address, url_path))
-            .bearer_auth(&self.bearer_token)
-            .json(payload)
-            .send()
-            .await
-            .map_err(Into::<CoreError>::into)?;
+        uri: &Uri,
+        body: Option<&B>,
+    ) -> Result<R> {
+        let req_uri = Uri::builder()
+            .scheme(
+                self.address
+                    .scheme()
+                    .expect("invalid base client address")
+                    .clone(),
+            )
+            .authority(
+                self.address
+                    .authority()
+                    .expect("invalid base client address")
+                    .clone(),
+            )
+            .path_and_query(
+                uri.path_and_query()
+                    .expect("invalid base client address")
+                    .clone(),
+            )
+            .build()
+            .unwrap();
+        let mut request = self.client.request(method, req_uri.to_string());
+        if let Some(body) = body {
+            request = request.json(body)
+        }
+        let response = request.send().await.map_err(Into::<CoreError>::into)?;
         if !response.status().is_success() {
             return Err(CoreError::GenericCoreError {
                 status: response.status().to_string(),
@@ -90,51 +107,13 @@ impl Client for DirectClient {
             }
             .into());
         }
-        let payload = response.json().await.map_err(Into::<CoreError>::into)?;
+        let payload = response
+            .json()
+            .await
+            .map_err(|err| CoreError::CoreResponseFormatError {
+                msg: err.to_string(),
+            })?;
         Ok(payload)
-    }
-}
-
-/// A mocking core client with a queue to assert! [AsCoreRequest] payloads and
-/// another queue of simulated responses
-///
-/// See [Client], [DirectClient]
-#[cfg(test)]
-#[derive(Debug, Default)]
-pub struct MockingClient {
-    pub requests: RwLock<VecDeque<serde_json::Value>>,
-    pub responses: RwLock<VecDeque<serde_json::Value>>,
-}
-
-#[cfg(test)]
-#[async_trait]
-impl Client for MockingClient {
-    async fn run(
-        &self,
-        _method: reqwest::Method,
-        _url_path: &str,
-        payload: &serde_json::Value,
-    ) -> Result<serde_json::Value> {
-        if let Some(expected) = {
-            let mut requests = self.requests.write().unwrap();
-            requests.pop_front()
-        } {
-            assert_eq!(&expected, payload);
-        }
-        {
-            let mut responses = self.responses.write().unwrap();
-            Ok(responses.pop_front().expect("mocked reponse stack empty"))
-        }
-    }
-
-    fn queue_expected_request(&self, request: serde_json::Value) {
-        let mut requests = self.requests.write().unwrap();
-        requests.push_back(request);
-    }
-
-    fn queue_expected_response(&self, response: serde_json::Value) {
-        let mut responses = self.responses.write().unwrap();
-        responses.push_back(response);
     }
 }
 
@@ -143,41 +122,44 @@ impl Client for MockingClient {
 /// It is useful for substituting a [DirectClient] with a `MockingClient` in a
 /// testing context.
 #[derive(Debug, Clone)]
-pub struct CoreClient(Arc<dyn Client>);
+pub struct CoreClient(Client);
 
 impl CoreClient {
-    pub fn new(address: String, bearer_token: String) -> Self {
-        Self(Arc::new(DirectClient::new(address, bearer_token)))
+    pub fn new<C: Into<Client>>(client: C) -> Self {
+        Self(client.into())
+    }
+
+    pub fn new_direct(address: Uri, bearer_token: String) -> Self {
+        Self::new(DirectClient::new(address, bearer_token))
     }
 }
 
-#[cfg(test)]
-impl CoreClient {
-    pub fn new_mocked() -> Self {
-        Self(Arc::new(MockingClient::default()))
-    }
-
-    /// See [Client::queue_expected_request]
-    #[allow(unused)]
-    pub fn queue_expected_request(&self, request: serde_json::Value) {
-        self.0.queue_expected_request(request)
-    }
-
-    /// See [Client::queue_expected_response]
-    pub fn queue_expected_response(&self, response: serde_json::Value) {
-        self.0.queue_expected_response(response)
-    }
-}
-
-#[allow(clippy::derivable_impls)]
 impl Default for CoreClient {
     fn default() -> Self {
-        Self(Arc::<DirectClient>::default())
+        Self::new(DirectClient::default())
+    }
+}
+
+impl From<DirectClient> for Client {
+    fn from(value: DirectClient) -> Self {
+        Self::Direct(value)
+    }
+}
+
+impl From<Client> for CoreClient {
+    fn from(value: Client) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<DirectClient> for CoreClient {
+    fn from(value: DirectClient) -> Self {
+        Self::new(value)
     }
 }
 
 impl Deref for CoreClient {
-    type Target = Arc<dyn Client>;
+    type Target = Client;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -225,38 +207,44 @@ where
     }
 
     /// Returns the URL for this request, by default returns [Self::URL_PATH]
-    fn url(&self) -> String {
-        Self::URL_PATH.to_owned()
+    fn url(&self) -> Uri {
+        Self::URL_PATH.parse().expect("static URL_PATH in AsCoreRequest implementation should parse successfully (the leading / is required!)")
     }
 
-    /// Executes this request according to the settings in `core`
+    /// Returns whether or not `self` should be serialized as JSON and used as
+    /// the request body
     ///
-    /// 1. Builds the request
-    /// 2. Sets the json payload of the request to the serialization of the type implementing [Self]
-    /// 3. Deserializes the response into an `R` value
+    /// By default, returns true if [Self::method] returns POST, PUT, PATCH and CONNECT, and false
+    /// for every other method.
+    fn has_body(&self) -> bool {
+        use reqwest::Method;
+        [Method::POST, Method::PUT, Method::PATCH, Method::CONNECT].contains(&self.method())
+    }
+
+    /// Sends this request using the given [CoreClient] and returns the response content on success
     ///
     /// Raises a [CoreError] if the request is not a success.
+    ///
+    /// TODO: provide a mechanism in this trait to allow the implementer to
+    /// manage itself its expected errors. Maybe a bound error type defaulting
+    /// to CoreError and a trait function handle_errors would suffice?
     async fn fetch(&self, core: &CoreClient) -> Result<R> {
-        let payload = serde_json::to_value(self).expect("request types must serialize faultlessly");
-        let payload = core.run(self.method(), &self.url(), &payload).await?;
-        Ok(serde_json::from_value(payload.clone()).map_err(|err| {
-            CoreError::CoreResponseFormatError {
-                msg: err.to_string(),
-                response: payload,
-            }
-        })?)
+        core.fetch(
+            self.method(),
+            &self.url(),
+            if self.has_body() { Some(self) } else { None },
+        )
+        .await
     }
 }
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "coreclient")]
 enum CoreError {
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
-    CoreResponseFormatError {
-        msg: String,
-        response: serde_json::Value,
-    },
+    CoreResponseFormatError { msg: String },
     /// A fallback error variant for when no meaningful error could be parsed
     /// from core's output.
     #[error("Core returned {status} for '{url}': {msg}")]
@@ -266,6 +254,9 @@ enum CoreError {
         url: String,
         msg: String,
     },
+    #[cfg(test)]
+    #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
+    NoResponseContent,
 }
 
 impl From<reqwest::Error> for CoreError {

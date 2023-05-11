@@ -126,8 +126,8 @@ mod tests {
     }
 
     /// Creates a test client with 1 pg connection and a given [CoreClient]
-    pub async fn create_test_service_with_core_client(
-        core: CoreClient,
+    pub async fn create_test_service_with_core_client<C: Into<CoreClient>>(
+        core: C,
     ) -> impl Service<Request, Response = ServiceResponse<BoxBody>, Error = Error> {
         let pg_config = PostgresConfig::default();
         let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
@@ -142,6 +142,7 @@ mod tests {
             .limit(250 * 1024 * 1024) // 250MB
             .error_handler(|err, _| err.into());
 
+        let core: CoreClient = core.into();
         let app = App::new()
             .wrap(NormalizePath::trim())
             .app_data(json_cfg)
