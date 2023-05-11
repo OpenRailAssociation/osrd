@@ -417,7 +417,7 @@ mod test {
     use actix_web::web::Data;
     use serde_json::json;
 
-    use crate::core::CoreClient;
+    use crate::core::mocking::MockingClient;
     use crate::fixtures::tests::{
         db_pool, empty_infra, fast_rolling_stock, pathfinding, small_infra, TestFixture,
     };
@@ -485,14 +485,15 @@ mod test {
         .unwrap();
         *payload.get_mut("infra").unwrap() = json!(infra_id);
         *payload.get_mut("rolling_stocks").unwrap() = json!([rs_id]);
-        let core = CoreClient::new_mocked();
-        core.queue_expected_response(
-            serde_json::from_str(include_str!(
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/routes")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(include_str!(
                 "../../tests/small_infra/pathfinding_core_response.json"
             ))
-            .unwrap(),
-        );
-        let app = create_test_service_with_core_client(core.clone()).await;
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
         let req = TestRequest::post()
             .uri("/pathfinding")
             .set_json(payload)
