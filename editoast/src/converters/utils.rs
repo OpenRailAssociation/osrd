@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::schema::*;
+use log::debug;
 use osm4routing::{Coord, Edge, NodeId};
 
 pub fn default_switch_types() -> Vec<SwitchType> {
@@ -160,7 +161,7 @@ pub fn build_point_switch(
         (true, false, true) => Ok((track_endpoint_b, track_endpoint_a, track_endpoint_c)),
         (false, true, true) => Ok((track_endpoint_c, track_endpoint_a, track_endpoint_b)),
         _ => {
-            eprintln!("point switch {} impossible angles {ab}, {ac}, {bc}", node.0);
+            debug!("point switch {} impossible angles {ab}, {ac}, {bc}", node.0);
             Err(EdgeAngleError::InvalidAngle(*node))
         }
     }?;

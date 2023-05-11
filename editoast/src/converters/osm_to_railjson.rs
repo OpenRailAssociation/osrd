@@ -2,6 +2,7 @@ use osm4routing::Edge;
 
 use super::utils::*;
 use crate::schema::*;
+use log::info;
 
 use std::{error::Error, path::PathBuf};
 /// Run the osm-to-railjson subcommand
@@ -10,7 +11,8 @@ pub fn osm_to_railjson(
     osm_pbf_in: PathBuf,
     railjson_out: PathBuf,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    println!(
+    env_logger::init();
+    info!(
         "🗺️ Converting {} to {}",
         osm_pbf_in.display(),
         railjson_out.display()
@@ -35,7 +37,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .reject("railway", "subway")
         .reject("railway", "miniature")
         .read(osm_pbf_in.to_str().unwrap())?;
-    println!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
+    info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
     let rail_edges = edges
         .iter()
