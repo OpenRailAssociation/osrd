@@ -1,0 +1,37 @@
+{
+  "all": "All signals",
+  "bufferstops": "Buffer stops",
+  "catenaries": "Electrification",
+  "detectors": "Detectors",
+  "jdz": "Zone junction",
+  "layers": "Data layers",
+  "lights": "Light signals",
+  "mapSettings": "Map settings",
+  "mapstyles": {
+    "blueprint": "Blueprint",
+    "darkmode": "Dark",
+    "normal": "Normal"
+  },
+  "noSpeedLimitByTag": "No composition code",
+  "operationalpoints": "Operational points",
+  "routes": "Train blocks",
+  "signalingtype": "Signalling block type",
+  "signalisation": "Signaling",
+  "showIGNBDORTHO": "BD Ortho photo ©IGN",
+  "showIGNSCAN25": "SCAN PLAN/25/100 ©IGN",
+  "showIGNCadastre": "Cadastre ©IGN",
+  "showOSM": "Map background OSM",
+  "showOSMtracksections": "OSM tracks",
+  "sncf_lpv": "Permanent speed limits",
+  "speedlimits": "Speed limits",
+  "stops": "Stop signs",
+  "switches": "Switch",
+  "tags": "Compositions",
+  "tivs": "Speed limits",
+  "tracksources": {
+    "geographic": "Geographic",
+    "schematic": "Schematic"
+  },
+  "tvds": "Track circuits",
+  "zone": "Zone"
+}
