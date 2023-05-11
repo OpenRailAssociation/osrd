@@ -49,6 +49,10 @@ public class ResultPosition {
         var b = headPositions.get(rightIndex);
         return a.time + (position - a.pathOffset) * (b.time - a.time) / (b.pathOffset - a.pathOffset);
     }
+
+    public ResultPosition withAddedTime(double timeToAdd) {
+        return new ResultPosition(time + timeToAdd, pathOffset, trackSection, offset);
+    }
 }
 
 

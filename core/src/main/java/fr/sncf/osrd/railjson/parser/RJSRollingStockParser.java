@@ -10,6 +10,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.train.RollingStock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -17,7 +18,16 @@ import java.util.Objects;
 public class RJSRollingStockParser {
     static final Logger logger = LoggerFactory.getLogger(RJSRollingStockParser.class);
 
-    /** Parse the RailJSON  rolling stock into something the backend can work with */
+    /** Parse a collection of RailJSON rolling stock and gather them in a mapping by id */
+    public static HashMap<String, RollingStock> parseCollection(Collection<RJSRollingStock> rjsRollingStocks) {
+        var res = new HashMap<String, RollingStock>();
+        for (var rjsRollingStock : rjsRollingStocks) {
+            res.put(rjsRollingStock.getID(), RJSRollingStockParser.parse(rjsRollingStock));
+        }
+        return res;
+    }
+
+    /** Parse the RailJSON rolling stock into something the backend can work with */
     public static RollingStock parse(RJSRollingStock rjsRollingStock) throws InvalidRollingStock {
         // Check major version
         var inputMajor = rjsRollingStock.version.split("\\.")[0];

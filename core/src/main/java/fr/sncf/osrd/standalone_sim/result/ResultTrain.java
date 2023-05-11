@@ -2,7 +2,6 @@ package fr.sncf.osrd.standalone_sim.result;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -75,5 +74,10 @@ public class ResultTrain {
         this.mechanicalEnergyConsumed = mechanicalEnergyConsumed;
         this.signalSightings = signalSightings;
         this.zoneUpdates = zoneUpdates;
+    }
+
+    public ResultTrain withDepartureTime(Double departureTime) {
+        return new ResultTrain(speeds, headPositions.stream().map(pos -> pos.withAddedTime(departureTime)).toList(),
+                stops, routeOccupancies, mechanicalEnergyConsumed, signalSightings, zoneUpdates);
     }
 }

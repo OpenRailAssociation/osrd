@@ -8,15 +8,23 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
+import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
+import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.ElectrificationConditionsRange;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -85,6 +93,41 @@ public class StandaloneSim {
             result.electrificationConditions.add(cacheModeAndProfiles.get(trainSchedule));
         }
         return result;
+    }
+
+    /** Parse some railJSON arguments and run a standalone simulation */
+    public static StandaloneSimResult runFromRJS(
+            FullInfra infra,
+            ElectricalProfileMapping electricalProfileMap,
+            RJSTrainPath rjsTrainPath,
+            HashMap<String, RollingStock> rollingStocks,
+            List<RJSStandaloneTrainSchedule> rjsSchedules,
+            double timeStep
+    ) {
+        // Parse trainPath
+        var trainPath = TrainPathBuilder.from(infra.java(), rjsTrainPath);
+        var envelopePath = EnvelopeTrainPath.from(trainPath);
+
+        if (electricalProfileMap != null) {
+            envelopePath.setElectricalProfiles(
+                    electricalProfileMap.getProfilesOnPath(trainPath));
+        }
+
+        // Parse train schedules
+        var trainSchedules = new ArrayList<StandaloneTrainSchedule>();
+        for (var rjsTrainSchedule : rjsSchedules)
+            trainSchedules.add(RJSStandaloneTrainScheduleParser.parse(
+                    infra.java(), rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
+
+        // Compute envelopes and extract metadata
+        return StandaloneSim.run(
+                infra,
+                trainPath,
+                envelopePath,
+                trainSchedules,
+                timeStep,
+                new DriverBehaviour()
+        );
     }
 
     /**
