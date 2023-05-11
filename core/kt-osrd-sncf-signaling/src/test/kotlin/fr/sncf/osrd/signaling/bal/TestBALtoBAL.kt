@@ -4,12 +4,13 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.meters
-import fr.sncf.osrd.sim_infra.api.normal
-import fr.sncf.osrd.sim_infra.api.reverse
+import fr.sncf.osrd.sim_infra.api.TrackNodePortId
+import fr.sncf.osrd.sim_infra.api.increasing
+import fr.sncf.osrd.sim_infra.api.decreasing
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.meters
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
@@ -31,8 +32,8 @@ class TestBALtoBAL {
         val builder = RawInfraBuilder()
         // region switches
         val switch = builder.movableElement(delay = 10L.milliseconds) {
-            config("xy")
-            config("vy")
+            config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
+            config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
         }
         // endregion
 
@@ -43,20 +44,20 @@ class TestBALtoBAL {
         val zoneD = builder.zone(listOf())
 
         val detectorU = builder.detector("U")
-        builder.setNextZone(detectorU.normal, zoneA)
+        builder.setNextZone(detectorU.increasing, zoneA)
         val detectorV = builder.detector("V")
-        builder.setNextZone(detectorV.normal, zoneC)
-        builder.setNextZone(detectorV.reverse, zoneA)
+        builder.setNextZone(detectorV.increasing, zoneC)
+        builder.setNextZone(detectorV.decreasing, zoneA)
         val detectorW = builder.detector("W")
-        builder.setNextZone(detectorW.normal, zoneB)
+        builder.setNextZone(detectorW.increasing, zoneB)
         val detectorX = builder.detector("X")
-        builder.setNextZone(detectorX.normal, zoneC)
-        builder.setNextZone(detectorX.reverse, zoneB)
+        builder.setNextZone(detectorX.increasing, zoneC)
+        builder.setNextZone(detectorX.decreasing, zoneB)
         val detectorY = builder.detector("Y")
-        builder.setNextZone(detectorY.normal, zoneD)
-        builder.setNextZone(detectorY.reverse, zoneC)
+        builder.setNextZone(detectorY.increasing, zoneD)
+        builder.setNextZone(detectorY.decreasing, zoneC)
         val detectorZ = builder.detector("Z")
-        builder.setNextZone(detectorZ.reverse, zoneD)
+        builder.setNextZone(detectorZ.decreasing, zoneD)
         // endregion
 
         // region signals
@@ -69,17 +70,17 @@ class TestBALtoBAL {
         // endregion
 
         // region zone paths
-        val zonePathWX = builder.zonePath(detectorW.normal, detectorX.normal, 10.meters) {
+        val zonePathWX = builder.zonePath(detectorW.increasing, detectorX.increasing, 10.meters) {
             signal(signalX, 8.meters)
         }
-        val zonePathXY = builder.zonePath(detectorX.normal, detectorY.normal, 10.meters) {
+        val zonePathXY = builder.zonePath(detectorX.increasing, detectorY.increasing, 10.meters) {
             movableElement(switch, StaticIdx(0u), 5.meters)
         }
-        val zonePathYZ = builder.zonePath(detectorY.normal, detectorZ.normal, 10.meters)
-        val zonePathUV = builder.zonePath(detectorU.normal, detectorV.normal, 10.meters) {
+        val zonePathYZ = builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)
+        val zonePathUV = builder.zonePath(detectorU.increasing, detectorV.increasing, 10.meters) {
             signal(signalV, 8.meters)
         }
-        val zonePathVY = builder.zonePath(detectorV.normal, detectorY.normal, 10.meters) {
+        val zonePathVY = builder.zonePath(detectorV.increasing, detectorY.increasing, 10.meters) {
             movableElement(switch, StaticIdx(1u), 5.meters)
         }
         // endregion
@@ -114,8 +115,8 @@ class TestBALtoBAL {
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
         val fullPath = mutableStaticIdxArrayListOf<Block>()
-        fullPath.add(blockInfra.getBlocksAtDetector(detectorU.normal).first())
-        fullPath.add(blockInfra.getBlocksAtDetector(detectorV.normal).first())
+        fullPath.add(blockInfra.getBlocksAtDetector(detectorU.increasing).first())
+        fullPath.add(blockInfra.getBlocksAtDetector(detectorV.increasing).first())
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.CLEAR)
         val res = simulator.evaluate(infra, loadedSignalInfra, blockInfra, fullPath, 0, fullPath.size, zoneStates, ZoneStatus.INCOMPATIBLE)
         assertEquals("A", res[loadedSignalInfra.getLogicalSignals(signalV).first()]!!.getEnum("aspect"))

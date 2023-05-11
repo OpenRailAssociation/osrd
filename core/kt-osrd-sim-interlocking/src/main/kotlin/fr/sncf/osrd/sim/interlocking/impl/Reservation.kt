@@ -51,7 +51,7 @@ fun ReservationInfra.getRequirements(zonePath: ZonePathId): ZoneRequirements {
     val exit = getZonePathExit(zonePath)
     val movableElements = getZonePathMovableElements(zonePath)
     val movableElementsConfigs = getZonePathMovableElementsConfigs(zonePath)
-    val movableElementRequirements = HashMap<MovableElementId, MovableElementConfigId>(movableElements.size)
+    val movableElementRequirements = HashMap<TrackNodeId, TrackNodeConfigId>(movableElements.size)
     for (i in 0 until movableElements.size)
         movableElementRequirements[movableElements[i]] = movableElementsConfigs[i]
     return ZoneRequirementsImpl(
@@ -76,13 +76,13 @@ fun zoneReservation(train: TrainId, requirements: ZoneRequirements, status: Zone
 internal data class ZoneRequirementsImpl(
     override val entry: DirDetectorId,
     override val exit: DirDetectorId,
-    override val movableElements: Map<MovableElementId, MovableElementConfigId>,
+    override val movableElements: Map<TrackNodeId, TrackNodeConfigId>,
 ) : ZoneRequirements
 
 fun zoneRequirements(
     entry: DirDetectorId,
     exit: DirDetectorId,
-    movableElements: Map<MovableElementId, MovableElementConfigId>
+    movableElements: Map<TrackNodeId, TrackNodeConfigId>
 ): ZoneRequirements {
     return ZoneRequirementsImpl(entry, exit, movableElements)
 }

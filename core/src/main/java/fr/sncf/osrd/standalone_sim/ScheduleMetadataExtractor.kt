@@ -18,6 +18,8 @@ import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.*
 import kotlin.collections.*
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.meters
 import kotlin.math.abs
 import kotlin.math.max
 

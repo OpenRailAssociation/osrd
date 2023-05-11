@@ -1,9 +1,8 @@
 package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxMap
-import fr.sncf.osrd.utils.indexing.StaticPool
+import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.units.*
 
 
 interface BlockInfraBuilder {
