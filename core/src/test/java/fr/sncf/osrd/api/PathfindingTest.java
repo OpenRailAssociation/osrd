@@ -17,11 +17,11 @@ import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult;
+import fr.sncf.osrd.cli.StandaloneSimulationCommand;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
-import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
@@ -432,18 +432,6 @@ public class PathfindingTest extends ApiTest {
         return res.stream();
     }
 
-    /** Converts a location into a pair of PathfindingWaypoint (either way) */
-    private static PathfindingWaypoint[] convertLocToWaypoint(String trackID, double offset) {
-        var res = new PathfindingWaypoint[2];
-        for (var dir : EdgeDirection.values())
-            res[dir.id] = new PathfindingWaypoint(
-                    trackID,
-                    offset,
-                    dir
-            );
-        return res;
-    }
-
     /** Generates a pathfinding request from infra + simulation files.
      * The requested path follows the path of a train. */
     private static PathfindingRequest requestFromExampleInfra(
@@ -451,20 +439,14 @@ public class PathfindingTest extends ApiTest {
             String simPath,
             boolean inverted
     ) throws Exception {
-        var rjsInfra = Helpers.getExampleInfra(infraPath);
-        var infra = infraFromRJS(rjsInfra);
-        var simulation = MoshiUtils.deserialize(RJSSimulation.adapter, getResourcePath(simPath));
-        var schedule = simulation.trainSchedules.get(0);
-        var endRouteID = schedule.routes[schedule.routes.length - 1].id;
-        var endRoute = infra.getReservationRouteMap().get(endRouteID);
-        assert endRoute != null;
-        var endLoc = endRoute.getTrackRanges().get(endRoute.getTrackRanges().size() - 1).offsetLocation(0);
-        var startLoc = schedule.initialHeadLocation;
+        var simulation = MoshiUtils.deserialize(StandaloneSimulationCommand.Input.adapter,
+                getResourcePath(simPath));
+        var scheduleGroup = simulation.trainScheduleGroups.get(0);
         var waypoints = new PathfindingWaypoint[2][2];
         var startIndex = inverted ? 1 : 0;
         var endIndex = inverted ? 0 : 1;
-        waypoints[startIndex] = convertLocToWaypoint(startLoc.trackSection.id, startLoc.offset);
-        waypoints[endIndex] = convertLocToWaypoint(endLoc.track().getID(), endLoc.offset());
+        waypoints[startIndex] = scheduleGroup.waypoints[0];
+        waypoints[endIndex] = scheduleGroup.waypoints[scheduleGroup.waypoints.length - 1];
         return new PathfindingRequest(waypoints, infraPath, null, null);
     }
 
