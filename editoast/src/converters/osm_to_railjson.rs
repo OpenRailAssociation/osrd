@@ -21,7 +21,7 @@ pub fn osm_to_railjson(
     Ok(())
 }
 
-fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
+pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
     let (nodes, edges) = osm4routing::read(osm_pbf_in.to_str().unwrap())?;
     println!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
@@ -80,7 +80,9 @@ fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send + Syn
 
 #[cfg(test)]
 mod tests {
-    use crate::{converters::osm_to_railjson, schema::RailJson};
+    use crate::{converters::*, schema::RailJson};
+
+    use super::parse_osm;
     #[test]
     fn convert_osm_to_railjson() {
         let output = tempfile::NamedTempFile::new().unwrap();
@@ -93,5 +95,15 @@ mod tests {
         let data = std::fs::read_to_string(output.path()).unwrap();
         let railjson: RailJson = serde_json::from_str(&data).unwrap();
         assert_eq!(1, railjson.track_sections.len());
+    }
+
+    #[test]
+    fn parse_switches() {
+        let railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
+        assert_eq!(3, railjson.switch_types.len());
+        assert_eq!(1, railjson.switches.len());
+        let switch = &railjson.switches[0];
+        assert_eq!("point", switch.switch_type.as_str());
+        assert_eq!(3, switch.ports.len());
     }
 }
