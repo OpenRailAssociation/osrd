@@ -13,7 +13,7 @@ import { osrdEditoastApi, RollingStock } from 'common/api/osrdEditoastApi';
 import { osrdMiddlewareApi, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 import { setWarning } from 'reducers/main';
-import { compact, reduce, uniq } from 'lodash';
+import { compact, isEmpty, reduce, uniq } from 'lodash';
 
 type selectorOption = { key: string | undefined; value: string | undefined };
 
@@ -45,7 +45,7 @@ export default function PowerRestrictionSelector() {
 
   const powerRestrictions = useMemo(() => {
     let powerRestrictionsList: selectorOption[] = [];
-    if (rollingStock) {
+    if (rollingStock && !isEmpty(rollingStock.power_restrictions)) {
       powerRestrictionsList = Object.entries(rollingStock.power_restrictions).map(
         ([key, _]: [string | undefined, string]) => ({ key, value: key })
       );
@@ -82,11 +82,13 @@ export default function PowerRestrictionSelector() {
       const pathLength = Math.round(
         lengthFromLineCoordinates(pathFinding.geographic?.coordinates) * 1000
       );
-      const powerRestrictionRange: PowerRestrictionRange = {
-        begin_position: 0,
-        end_position: pathLength,
-        power_restriction_code: powerRestrictionCode,
-      };
+      const powerRestrictionRange: PowerRestrictionRange[] = [
+        {
+          begin_position: 0,
+          end_position: pathLength,
+          power_restriction_code: powerRestrictionCode,
+        },
+      ];
 
       dispatch(updatePowerRestriction(powerRestrictionRange));
     } else dispatch(updatePowerRestriction(undefined));
@@ -96,7 +98,7 @@ export default function PowerRestrictionSelector() {
     if (powerRestriction && rollingStock && pathWithCatenaries) {
       const parsedElectrification = cleanConditionalEffortCurves(rollingStock);
 
-      const powerRestrictionCode = powerRestriction.power_restriction_code;
+      const powerRestrictionCode = powerRestriction[0].power_restriction_code;
       const pathCatenaryRanges = pathWithCatenaries.catenary_ranges;
 
       if (pathCatenaryRanges && powerRestrictionCode) {
@@ -127,7 +129,7 @@ export default function PowerRestrictionSelector() {
     }
   }, [powerRestriction]);
 
-  return powerRestrictions.length > 1 && pathFindingID ? (
+  return powerRestrictions.length > 0 && pathFindingID ? (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container">
         <img width="32px" className="mr-2" src={icon} alt="PowerRestrictionIcon" />
@@ -136,7 +138,10 @@ export default function PowerRestrictionSelector() {
           sm
           options={powerRestrictions}
           onChange={(e: selectorOption) => definePowerRestrictionRange(e.key)}
-          selectedValue={powerRestriction?.power_restriction_code || t('noPowerRestriction')}
+          selectedValue={
+            (powerRestriction && powerRestriction[0].power_restriction_code) ||
+            t('noPowerRestriction')
+          }
         />
       </div>
     </div>

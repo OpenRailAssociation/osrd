@@ -133,7 +133,7 @@ export interface OsrdConfState {
   timetableID?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
-  powerRestriction?: PowerRestrictionRange;
+  powerRestriction?: PowerRestrictionRange[];
   origin?: PointOnMap;
   initialSpeed?: number;
   departureTime: string;
