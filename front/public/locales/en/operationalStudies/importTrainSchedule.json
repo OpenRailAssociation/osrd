@@ -1,0 +1,42 @@
+{
+  "closeOSRDConfig": "Close",
+  "completeTrackSectionID": "Complete coordinates",
+  "date": "DATE",
+  "datetime": "Date & time",
+  "endTime": "END",
+  "errorMessages": {
+    "error": "An error has occurred",
+    "errorNoDate": "You must enter a date.",
+    "errorNoFrom": "You must fill in an origin.",
+    "errorNoTo": "You must fill in a destination.",
+    "errorSameFromTo": "Origin and destination must be different",
+    "unableToRetrievePathfinding": "Impossible to create a path"
+  },
+  "from": "Origin",
+  "generatePaths": "Generate paths",
+  "generatePathsAuto": "Complete and generate paths automatically",
+  "generateTrainSchedules": "Generate train schedules",
+  "goToSTDCM": "Go to last minute paths",
+  "import": "Import",
+  "inputPlaceholder": "Name, trigram",
+  "launchImport": "Start import",
+  "noResults": "No results",
+  "startTime": "START",
+  "status": {
+    "calculatingTrainSchedule": "Calculating train schedules...",
+    "calculatingTrainScheduleComplete": "Calculating train schedules is over",
+    "calculatingTrainScheduleCompleteAll": "All train schedules have been calculated.",
+    "calculatingTrainScheduleError": "Calculating train schedules has failed",
+    "complete": "locate",
+    "missingInfra": "You must fill in an infrastructure",
+    "missingRollingStock": "You must choose a default rolling stock",
+    "missingTimetable": "You must choose a timetable",
+    "noImportationPossible": "Import is currently not available:",
+    "pathComplete": "Pathfinding complete",
+    "ready": "Ready.",
+    "searchingPath": "Search for a path",
+    "uicComplete": "All locations have been completed."
+  },
+  "to": "Destination",
+  "trainsFound": "train(s) found"
+}
