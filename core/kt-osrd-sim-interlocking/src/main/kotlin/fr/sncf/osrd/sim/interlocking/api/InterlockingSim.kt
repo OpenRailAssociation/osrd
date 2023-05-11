@@ -16,13 +16,13 @@ enum class MovableElementInitPolicy {
 }
 
 interface MovableElementSim {
-    fun watchMovableElement(movable: MovableElementId): StateFlow<MovableElementConfigId?>
-    suspend fun move(movable: MovableElementId, config: MovableElementConfigId)
-    suspend fun lockMovableElement(movable: MovableElementId)
-    suspend fun unlockMovableElement(movable: MovableElementId)
+    fun watchMovableElement(movable: TrackNodeId): StateFlow<TrackNodeConfigId?>
+    suspend fun move(movable: TrackNodeId, config: TrackNodeConfigId)
+    suspend fun lockMovableElement(movable: TrackNodeId)
+    suspend fun unlockMovableElement(movable: TrackNodeId)
 }
 
-suspend inline fun <T> MovableElementSim.withLock(movable: MovableElementId, action: () -> T): T {
+suspend inline fun <T> MovableElementSim.withLock(movable: TrackNodeId, action: () -> T): T {
     contract {
         callsInPlace(action, InvocationKind.EXACTLY_ONCE)
     }
@@ -79,7 +79,7 @@ typealias ZoneReservationId = DynIdx<ZoneReservation>
 interface ZoneRequirements {
     val entry: DirDetectorId
     val exit: DirDetectorId
-    val movableElements: Map<MovableElementId, MovableElementConfigId>
+    val movableElements: Map<TrackNodeId, TrackNodeConfigId>
 }
 
 fun ZoneRequirements.compatibleWith(other: ZoneRequirements): Boolean {
