@@ -154,7 +154,7 @@ def generate_random_infra(seed, n_tracks, n_trains, n_speed_categories, infra_pa
     infra.save(Path(infra_path))
 
     # GENERATE SIMULATION
-    builder = SimulationBuilder(infra)
+    builder = SimulationBuilder()
 
     for i in range(n_trains):
         _generate_random_schedule(builder, tracks, str(i))

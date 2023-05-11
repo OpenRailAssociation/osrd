@@ -15,6 +15,7 @@ from railjson_generator import (
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.track_section import TrackSection
+from railjson_generator.schema.simulation.stop import Stop
 
 OUTPUT_DIR = get_output_dir()
 
@@ -611,27 +612,29 @@ infra.save(OUTPUT_DIR / "infra.json")
 # Produce the simulation file
 # ================================
 
-builder = SimulationBuilder(infra)
+builder = SimulationBuilder()
+stop_locations = [Location(ta1, 500), Location(tc0, 500), Location(te1, 500), Location(tf1, 4300)]
 train_0 = builder.add_train_schedule(
-    Location(ta1, 500),
-    Location(tc0, 500),
-    Location(te1, 500),
-    Location(tf1, 4300),
+    *stop_locations,
     label="train.0",
+    departure_time=10 * 3600,
+    stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
+
+stop_locations = [Location(ta2, 500), Location(tc2, 500), Location(td1, 14000), Location(tg5, 1500)]
 train_1 = builder.add_train_schedule(
-    Location(ta2, 500),
-    Location(tc2, 500),
-    Location(td1, 14000),
-    Location(tg5, 1500),
+    *stop_locations,
     label="train.1",
+    departure_time=10 * 3600 + 20 * 60,
+    stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
+
+stop_locations = [Location(ta0, 500), Location(tc1, 500), Location(td0, 14000), Location(th1, 1500)]
 train_2 = builder.add_train_schedule(
-    Location(ta0, 500),
-    Location(tc1, 500),
-    Location(td0, 14000),
-    Location(th1, 4400),
+    *stop_locations,
     label="train.2",
+    departure_time=10 * 3600 + 40 * 60,
+    stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
 
 # Add train succession tables

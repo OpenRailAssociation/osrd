@@ -63,7 +63,7 @@ infra = builder.build()
 infra.save(CURRENT_DIR / Path("infra.json"))
 
 # GENERATE SIMULATION
-builder = SimulationBuilder(infra)
+builder = SimulationBuilder()
 
 first_train = builder.add_train_schedule(
     Location(tracks[0], 200), Location(tracks[5], 900), label="First", departure_time=10
