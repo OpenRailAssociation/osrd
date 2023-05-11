@@ -46,8 +46,8 @@ pub struct LightRollingStock {
     pub metadata: DieselJson<RollingStockMetadata>,
     #[diesel(sql_type = Nullable<Jsonb>)]
     pub power_restrictions: Option<JsonValue>,
-    #[diesel(sql_type = Array<Jsonb>)]
-    pub energy_sources: Vec<DieselJson<EnergySource>>,
+    #[diesel(sql_type = Jsonb)]
+    pub energy_sources: DieselJson<Vec<EnergySource>>,
 }
 
 #[derive(Debug, QueryableByName, Serialize)]

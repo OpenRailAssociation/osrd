@@ -77,7 +77,7 @@ pub struct RollingStockModel {
     pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = Option<JsonValue>)]
     pub power_restrictions: Option<Option<JsonValue>>,
-    #[diesel(deserialize_as = Vec<DieselJson<EnergySource>>)]
+    #[diesel(deserialize_as = DieselJson<Vec<EnergySource>>)]
     pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
 }
 
@@ -155,12 +155,7 @@ impl From<RollingStockModel> for RollingStock {
             loading_gauge: rolling_stock_model.loading_gauge.unwrap(),
             metadata: rolling_stock_model.metadata.unwrap().0,
             power_restrictions: rolling_stock_model.power_restrictions.unwrap(),
-            energy_sources: rolling_stock_model
-                .energy_sources
-                .unwrap()
-                .into_iter()
-                .map(|energy_source| (energy_source.0))
-                .collect(),
+            energy_sources: rolling_stock_model.energy_sources.unwrap().0,
         }
     }
 }

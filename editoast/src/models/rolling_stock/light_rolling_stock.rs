@@ -41,7 +41,7 @@ pub struct LightRollingStockModel {
     loading_gauge: String,
     metadata: DieselJson<RollingStockMetadata>,
     power_restrictions: Option<JsonValue>,
-    energy_sources: Vec<DieselJson<EnergySource>>,
+    energy_sources: DieselJson<Vec<EnergySource>>,
 }
 
 impl LightRollingStockModel {

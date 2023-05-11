@@ -180,7 +180,7 @@ pub enum EnergySourceType {
     Battery,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(tag = "energy_source_type", deny_unknown_fields)]
 pub enum EnergySource {
     Catenary {

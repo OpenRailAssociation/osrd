@@ -78,7 +78,7 @@ pub struct RollingStockForm {
     pub loading_gauge: String,
     pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<geos::geojson::JsonValue>,
-    pub energy_sources: Vec<DieselJson<EnergySource>>,
+    pub energy_sources: Vec<EnergySource>,
 }
 
 impl From<RollingStockForm> for RollingStockModel {
@@ -101,7 +101,7 @@ impl From<RollingStockForm> for RollingStockModel {
             loading_gauge: Some(rolling_stock.loading_gauge),
             metadata: Some(DieselJson(rolling_stock.metadata)),
             power_restrictions: Some(rolling_stock.power_restrictions),
-            energy_sources: Some(rolling_stock.energy_sources),
+            energy_sources: Some(DieselJson(rolling_stock.energy_sources)),
             ..Default::default()
         }
     }
@@ -152,6 +152,7 @@ impl RollingStockForm {
             loading_gauge: Some(self.loading_gauge),
             metadata: Some(DieselJson(self.metadata)),
             power_restrictions: Some(self.power_restrictions),
+            energy_sources: Some(DieselJson(self.energy_sources)),
         }
     }
 }

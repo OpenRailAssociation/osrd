@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional
+from typing import List, Literal, Mapping, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -176,6 +176,12 @@ class EnergySource(BaseModel, extra=Extra.forbid):
     """Energy sources used when simulating qualesi trains"""
 
     __root__: Union[Catenary, PowerPack, Battery] = Field(discriminator="energy_source_type")
+
+
+class EnergySourcesList(BaseModel):
+    """List of energy sources used when simulating qualesi trains"""
+
+    __root__: List[EnergySource]
 
 
 class RollingStock(BaseModel, extra=Extra.forbid):
