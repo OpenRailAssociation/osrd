@@ -93,13 +93,13 @@ infra = builder.build()
 infra.save(OUTPUT_DIR / "infra.json")
 
 # GENERATE SIMULATION
-builder = SimulationBuilder(infra)
+builder = SimulationBuilder()
 builder.add_train_schedule(Location(ne_micro_foo_b, 100), Location(ne_micro_bar_a, 100), label="Test.")
 sim = builder.build()
 sim.save(OUTPUT_DIR / Path("simulation.json"))
 
 # Simulation with 2 trains
-builder_2trains = SimulationBuilder(infra)
+builder_2trains = SimulationBuilder()
 builder_2trains.add_train_schedule(Location(ne_micro_foo_b, 100), Location(ne_micro_bar_a, 100), label="First")
 builder_2trains.add_train_schedule(Location(ne_micro_foo_a, 100), Location(ne_micro_bar_a, 100), label="Second")
 sim2 = builder_2trains.build()
