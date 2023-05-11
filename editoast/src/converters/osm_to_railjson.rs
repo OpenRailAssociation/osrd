@@ -1,4 +1,4 @@
-use osm4routing::models::Edge;
+use osm4routing::Edge;
 
 use super::utils::*;
 use crate::schema::*;
@@ -22,7 +22,19 @@ pub fn osm_to_railjson(
 }
 
 pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
-    let (nodes, edges) = osm4routing::read(osm_pbf_in.to_str().unwrap())?;
+    let (nodes, edges) = osm4routing::Reader::new()
+        .reject("building", "*")
+        .reject("railway", "turntable")
+        .reject("railway", "proposed")
+        .reject("railway", "disused")
+        .reject("railway", "abandoned")
+        .reject("railway", "razed")
+        .reject("railway", "platform")
+        .reject("railway", "platform_edge")
+        .reject("railway", "tram")
+        .reject("railway", "subway")
+        .reject("railway", "miniature")
+        .read(osm_pbf_in.to_str().unwrap())?;
     println!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
     let rail_edges = edges
