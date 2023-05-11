@@ -1,9 +1,9 @@
 package fr.sncf.osrd.api.pathfinding;
 
-import fr.sncf.osrd.api.pathfinding.response.DirTrackRange;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +13,7 @@ public class GeomUtils {
         var geoList = new ArrayList<LineString>();
         var schList = new ArrayList<LineString>();
 
-        DirTrackRange previousTrack = null;
+        RJSDirectionalTrackRange previousTrack = null;
         double previousBegin = 0;
         double previousEnd = 0;
 

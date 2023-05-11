@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
 import fr.sncf.osrd.railjson.schema.geom.Point;
@@ -19,7 +20,7 @@ public class PathfindingResult {
             .adapter(PathfindingResult.class)
             .failOnUnknown();
     @Json(name = "route_paths")
-    public final List<RoutePathResult> routePaths = new ArrayList<>();
+    public final List<RJSRoutePath> routePaths = new ArrayList<>();
     @Json(name = "path_waypoints")
     public final List<PathWaypointResult> pathWaypoints = new ArrayList<>();
 

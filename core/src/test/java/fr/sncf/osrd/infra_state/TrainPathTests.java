@@ -17,6 +17,8 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import org.junit.jupiter.api.Test;
 import java.util.EnumMap;
@@ -29,8 +31,8 @@ public class TrainPathTests {
         var rjsInfra = makeSingleTrackRJSInfra();
         var infra = infraFromRJS(rjsInfra);
         var rjsPath = new RJSTrainPath(List.of(
-                new RJSTrainPath.RJSRoutePath("route_forward", List.of(
-                        new RJSTrainPath.RJSDirectionalTrackRange("track", 20, 80, EdgeDirection.START_TO_STOP)
+                new RJSRoutePath("route_forward", List.of(
+                        new RJSDirectionalTrackRange("track", 20, 80, EdgeDirection.START_TO_STOP)
                 ), "BAL3")
         ));
         var path = TrainPathBuilder.from(infra, rjsPath);

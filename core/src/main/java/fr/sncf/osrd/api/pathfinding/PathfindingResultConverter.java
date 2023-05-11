@@ -13,6 +13,8 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.TrackSectionImpl;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.*;
@@ -150,10 +152,10 @@ public class PathfindingResultConverter {
     }
 
     /** Adds a single route to the result, including waypoints present on the route */
-    private static RoutePathResult makeRouteResult(
+    private static RJSRoutePath makeRouteResult(
             Pathfinding.EdgeRange<SignalingRoute> element
     ) {
-        var routeResult = new RoutePathResult(
+        var routeResult = new RJSRoutePath(
                 element.edge().getInfraRoute().getID(),
                 element.edge().getSignalingType()
         );
@@ -169,7 +171,7 @@ public class PathfindingResultConverter {
                 continue;
 
             // Add the track ranges to the result
-            routeResult.trackSections.add(new DirTrackRange(
+            routeResult.trackSections.add(new RJSDirectionalTrackRange(
                     trackSection.getID(),
                     truncatedRange.getStart(),
                     truncatedRange.getStop()
