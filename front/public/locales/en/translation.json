@@ -1,11 +1,327 @@
 {
-    "nav": {
-        "home": "Home",
-        "about": "About",
-        "map": "Map",
-        "contact": "Contact"
+  "common": {
+    "and": "and",
+    "asc": "Ascending",
+    "cancel": "Cancel",
+    "change": "Change",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "description": "Description",
+    "download": "Download",
+    "dsc": "Descending",
+    "edit": "Edit",
+    "erase": "Erase",
+    "error": "An error has occurred",
+    "filter": "Filter",
+    "help": "Help",
+    "help-display": "Show help",
+    "itinerary": "Route",
+    "loading": "Loading...",
+    "next": "Next",
+    "open": "Open",
+    "previous": "Previous",
+    "reset-north": "Reset camera",
+    "save": "Save",
+    "search": "Search",
+    "settings": "Settings",
+    "sort": "Sort",
+    "train(s)": "train(s)",
+    "zoom-in": "Zoom in",
+    "zoom-out": "Zoom out",
+    "zoom-reset": "Reset zoom"
+  },
+  "Editor": {
+    "entities": {
+      "track_section": "Track section",
+      "track_section-length": "Length"
     },
-    "common": {
-        "loading": "Loading..."
+    "directions": {
+      "START_TO_STOP": "Start to stop",
+      "STOP_TO_START": "Stop to start",
+      "BOTH": "Both"
+    },
+    "errors": {
+      "infra-not-found": "Infrastructure {{id}} not found",
+      "length-number-and-required": "Length is a required numeric field",
+      "length-out-of-sync-with-geometry": "The distance entered is too far from the geometry (Must be between {{min}} and {{max}})",
+      "no-infra-available": "Your account is not linked to any infrastructure",
+      "technical": "A technical error has occurred: {{msg}}"
+    },
+    "infra-errors": {
+      "error-level": {
+        "all": "All",
+        "errors": "Errors",
+        "warnings": "Warnings"
+      },
+      "error-type": {
+        "all": "All",
+        "duplicated_group": "Duplicated group",
+        "empty_object": "Empty object",
+        "invalid_group": "Invalid switch position",
+        "invalid_reference": "Invalid Reference",
+        "invalid_route": "Invalid path",
+        "invalid_switch_ports": "Invalid switch ports",
+        "missing_route": "Missing route",
+        "missing_buffer_stop": "Missing buffer stop",
+        "object_out_of_path": "Object out of path",
+        "odd_buffer_stop_location": "Odd buffer stop location",
+        "out_of_range": "Invalid value (out of range)",
+        "overlapping_speed_sections": "Speed limit superposition",
+        "overlapping_switches": "Overlapping switches",
+        "overlapping_track_links": "Overlapping track section links",
+        "unknown_port_name": "Unknown port name",
+        "unused_port": "Unused port"
+      },
+      "list": {
+        "error": "An error occurred while loading the data",
+        "filter-level": "Error level",
+        "filter-type": "Error type",
+        "total-error": "{{count}} errors found",
+        "total-error_one": "One error found",
+        "total-error_zero": "No error found"
+      },
+      "modal": {
+        "title": "Infrastructure {{id}} error list"
       }
+    },
+    "item-statuses": {
+      "edited": "currently edited",
+      "selected": "Selected"
+    },
+    "layers": {
+      "buffer_stops": "Buffer stops",
+      "detectors": "Detectors",
+      "errors": "Errors",
+      "routes": "Routes",
+      "signals": "Signals",
+      "switches": "Switches",
+      "track_sections": "Track sections",
+      "speed_sections": "Speed limits"
+    },
+    "layers-modal": {
+      "frozen-layer": "needed for the active tool",
+      "layer-selected-items_one": "One item selected",
+      "layer-selected-items_other": "{{count}} items selected",
+      "selection-warning_one": "An element will be deselected during confirmation.",
+      "selection-warning_other": "{{count}} elements will be deselected during confirmation.",
+      "no-speed-limit-tag": "No composition code"
+    },
+    "linear-metadata": {
+      "help": "This component allows you to view and modify a linear layout. You can zoom into the view using the provided buttons or the mouse wheel, and move around using drag'n'drop. To change the size of a segment, simply click on it and the edit form will be displayed below. You can also click on a border of a segment, and while keeping your finger pressed, move the border with the mouse.",
+      "merge-with-left": "Merge with the previous item",
+      "merge-with-right": "Merge with the next item",
+      "split": "Split the item in two",
+      "sync-length-with-geometry": "Synchronize with the geometry"
+    },
+    "nav": {
+      "infra-changed": "You are now editing the infra \"{{label}}\" (id \"{{id}}\").",
+      "infra-errors": "Display current infrastructure errors",
+      "recenter": "Recenter the map",
+      "select-infra": "Select the infrastructure to edit",
+      "toggle-layers": "Choose the types of elements to display",
+      "osrd-layers": "OSRD data layers",
+      "speed-limits": "Speed limits",
+      "map-layers": "Map layers"
+    },
+    "obj-types": {
+      "BufferStop": "Buffer stop",
+      "Detector": "Detector",
+      "Route": "Route",
+      "Signal": "Signal",
+      "Switch": "Switch",
+      "TrackSection": "Track section",
+      "SpeedSection": "Speed limit"
+    },
+    "title": "Editor",
+    "tool-help": "Show description for the active tool",
+    "tools": {
+      "buffer-stop-edition": {
+        "actions": {
+          "new-entity": "Create a new buffer stop",
+          "reset-entity": "Reset data"
+        },
+        "label": "Buffer stop tool"
+      },
+      "detector-edition": {
+        "actions": {
+          "new-entity": "Create a new detector",
+          "reset-entity": "Reset data"
+        },
+        "label": "Detector tool"
+      },
+      "point-edition": {
+        "default-routes-error": "An error occurred while loading linked routes.",
+        "help": {
+          "start-dragging": "Click on the item to start moving it.",
+          "stop-dragging-no-line": "The element must be placed on a track section.",
+          "stop-dragging-on-line": "Click to confirm the move of the element."
+        },
+        "linked-routes": "Linked routes",
+        "no-linked-route": "No linked routes",
+        "routes-ending-at": "Ending at...",
+        "routes-starting-from": "Starting from..."
+      },
+      "routes-edition": {
+        "actions": {
+          "delete-route": "Delete the route",
+          "new-route": "Create a new route",
+          "pick-entrypoint": "Starting point selection tool",
+          "pick-entrypoint-cancel": "Cancel the selection of the starting point",
+          "pick-exitpoint": "Ending point selection tool",
+          "pick-exitpoint-cancel": "Undo exit point selection."
+        },
+        "alternative-routes": "Search for alternative routes",
+        "confirm-delete-route": "Are you sure to delete this route?",
+        "create-route": "Create a new route",
+        "crossed-detectors": "{{count}} detectors",
+        "crossed-detectors_one": "One detector",
+        "crossed-detectors_zero": "No crossed detectors",
+        "crossed-track-ranges": "{{count}} track ranges",
+        "crossed-track-ranges_one": "Train block",
+        "crossed-track-ranges_zero": "No block",
+        "delete-route": "Delete the route",
+        "delete-route-success": "The route has been successfully deleted.",
+        "directions": {
+          "START_TO_STOP": "Normal direction",
+          "STOP_TO_START": "Inverse direction"
+        },
+        "edit-route": "Edit an existing route",
+        "end": "End",
+        "endpoint": "Endpoint:",
+        "from": "from",
+        "geometry-error": "An exception occured during calculation of this route",
+        "help": {
+          "actions-on-edit-route": "You can delete the route, edit it or create a new one.",
+          "select-endpoints": "The route must have a starting and ending point.",
+          "select-route": "Select a route.",
+          "select-waypoint": "Select a detector or a buffer stop.",
+          "validate-route": "You can validate this route, or select another one."
+        },
+        "include-release-detectors": "Rigid transit",
+        "label": "Route tool",
+        "locked-release-detectors": "This property cannot be re-enabled afterwards, and can only be disabled.",
+        "no-waypoint-picked-yet": "Click the button to select a detector or a knocker on the map",
+        "preview-candidate": "Select",
+        "routes": "{{count}} compatible routes found",
+        "routes_one": "One compatible route found",
+        "routes_zero": "No compatible route found",
+        "save-new-route": "Save the new route",
+        "save-route": "Save modifications",
+        "save-route-success": "The route was successfully saved.",
+        "search-routes": "Search for compatible routes",
+        "start": "Start",
+        "start_direction": "Start direction:",
+        "swap-endpoints": "Swap endpoints",
+        "to": "to",
+        "untitled-track": "Untitled track"
+      },
+      "select-items": {
+        "actions": {
+          "confirm-delete-selection": "Are you sure you want to remove the selection?",
+          "delete-selection": "Delete the selection",
+          "edit-info": "Edit the selection",
+          "polygon": "Polygon select",
+          "rectangle": "Rectangle select",
+          "single": "Simple select",
+          "unselect-all": "Deselect all"
+        },
+        "errors": {
+          "no-heterogenous-edition": "It's not possible to edit multiple elements of different types at the same time.",
+          "no-multi-edition": "It's not possible yet to edit multiple elements (TODO)."
+        },
+        "focus": "Focus",
+        "help": {
+          "polygon-selection": "Click to outline a polygon. Double-click to close it, and select all elements inside.",
+          "rectangle-selection": "Double-click to outline a rectangle. All elements in this rectangle will then be selected.",
+          "single-selection": "Click an item to select or deselect it. You can select multiple items by pressing the Control key."
+        },
+        "item": "Item",
+        "label": "Selection tool",
+        "linked-to-line_one": "linked to the line",
+        "linked-to-line_other": "linked to lines",
+        "linked-to-n-lines_zero": "linked to zero line",
+        "linked-to-n-lines_one": "linked to one line",
+        "linked-to-n-lines_other": "linked to {{count}} lines",
+        "no-selection": "No item selected",
+        "of-type": "of type",
+        "selection": "{{count}} item selected",
+        "selection_plural": "{{count}} items selected",
+        "title": "Select",
+        "unselect": "Deselect"
+      },
+      "signal-edition": {
+        "actions": {
+          "new-entity": "Create a new signal",
+          "reset-entity": "Reset data"
+        },
+        "label": "Signal tool"
+      },
+      "switch-edition": {
+        "actions": {
+          "delete-switch": "Delete the switch",
+          "new-switch": "Create a new switch",
+          "pick-track": "Track selection tool on the map",
+          "pick-track-cancel": "Undo line selection"
+        },
+        "endpoint": "Endpoint:",
+        "help": {
+          "no-move": "Switches cannot be moved, and are automatically placed on their first port.",
+          "select-track": "Select a line on the map"
+        },
+        "label": "Switch tool",
+        "no-track-picked-yet": "No line selected yet",
+        "switch-type": "Switch type",
+        "untitled-track": "Untitled track"
+      },
+      "track-edition": {
+        "actions": {
+          "add-at-end": "Add the new points at the end",
+          "add-at-start": "Add the new points at the beginning",
+          "cancel-line": "Undo current input",
+          "mode-add-point": "Add a point",
+          "mode-delete-point": "Delete points",
+          "mode-move-point": "Move points",
+          "toggle-anchoring": "Toggle anchoring on/off"
+        },
+        "help": {
+          "add-anchor-point": "Click to add a point at the end of the track section. Click on the track to add an intermediate point.",
+          "add-point": "Click to add a point at the end of the track section.",
+          "delete-point": "Click on a point to remove it from the line.",
+          "move-point": "Click a point once to start moving it.",
+          "move-point-end": "Click to confirm the move of the point."
+        },
+        "label": "Track tool",
+        "default-speed-sections-error": "An exception occured when loading speed limits related to this section.",
+        "no-linked-speed-section": "No speed limit entered",
+        "attached-speed-sections": "Speed limits",
+        "only-show-n": "Only show the first {{count}} results",
+        "show-more-speed-sections_one": "Show one more result",
+        "show-more-speed-sections_other": "Show {{count}} more results"
+      },
+      "speed-edition": {
+        "label": "\"Speed limits\" tool",
+        "actions": {
+          "new-speed-section": "Create a new speed limit",
+          "reset-speed-section": "Cancel the current modifications"
+        },
+        "speed-limits": "Speed limits",
+        "main-speed-limit": "Default speed limit",
+        "additional-speed-limit": "Additional speed limits",
+        "add-new-speed-limit": "Add new speed limit",
+        "linked-track-sections": "Linked track sections",
+        "edit-track-range-start": "Edit departure point",
+        "edit-track-range-end": "Edit arrival point",
+        "only-show-n": "Only show the first {{count}} track sections",
+        "show-more-ranges_one": "See an additional track section",
+        "show-more-ranges_other": "See {{count}} additional track sections",
+        "add-track-range": "Click to link to:",
+        "remove-track-range": "Click to detatch from:",
+        "move-range-extremity": "Click to move the end:",
+        "save-new-speed-section": "Save new speed limit",
+        "save-existing-speed-section": "Save modifications",
+        "new-tag": "Composition code"
+      }
+    }
+  }
 }
