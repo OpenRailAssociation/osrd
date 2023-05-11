@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::schema::*;
-use osm4routing::{models::Coord, models::Edge, NodeId};
+use osm4routing::{Coord, Edge, NodeId};
 
 pub fn default_switch_types() -> Vec<SwitchType> {
     let mut point_groups = std::collections::HashMap::new();
@@ -188,7 +188,7 @@ fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use osm4routing::models::Coord;
+    use osm4routing::Coord;
 
     use crate::converters::utils::*;
 
