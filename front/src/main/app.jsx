@@ -19,7 +19,7 @@ import { NotificationsState } from 'common/Notifications';
 import Project from 'applications/operationalStudies/views/Project';
 import Study from 'applications/operationalStudies/views/Study';
 import Scenario from 'applications/operationalStudies/views/Scenario';
-import HomeRollingStock from 'applications/rollingStock/Home';
+import HomeRollingStockEditor from 'applications/rollingStockEditor/Home';
 
 export default function App() {
   const user = useSelector((state) => state.user);
@@ -64,7 +64,7 @@ export default function App() {
               </Route>
               <Route path="/map/*" element={<HomeMap />} />
               <Route path="/editor/*" element={<HomeEditor />} />
-              <Route path="/rolling-stock/*" element={<HomeRollingStock />} />
+              <Route path="/rolling-stock-editor/*" element={<HomeRollingStockEditor />} />
               <Route path="/stdcm/*" element={<HomeStdcm />} />
               <Route path="/customget/*" element={<HomeCustomGET />} />
               <Route path="/*" element={<Home />} />
