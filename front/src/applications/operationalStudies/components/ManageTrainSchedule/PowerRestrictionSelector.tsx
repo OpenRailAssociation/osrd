@@ -139,7 +139,9 @@ export default function PowerRestrictionSelector() {
           options={powerRestrictions}
           onChange={(e: selectorOption) => definePowerRestrictionRange(e.key)}
           selectedValue={
-            (powerRestriction && powerRestriction[0].power_restriction_code) ||
+            (powerRestriction &&
+              powerRestriction[0] &&
+              powerRestriction[0].power_restriction_code) ||
             t('noPowerRestriction')
           }
         />
