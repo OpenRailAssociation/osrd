@@ -18,15 +18,16 @@ import { Dispatch } from 'redux';
 import { store } from 'Store';
 import { Path, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 import { ArrayElement } from 'utils/types';
+import { PointOnMap } from 'applications/operationalStudies/consts';
 
-function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>) {
+function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap {
   return step
     ? {
         ...step,
         id: step.track,
         coordinates: step.geo?.coordinates,
       }
-    : undefined;
+    : {};
 }
 
 export default function adjustConfWithTrainToModify(

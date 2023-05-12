@@ -6,16 +6,18 @@ import {
   MODES,
   DEFAULT_MODE,
   DEFAULT_STDCM_MODE,
+  STDCM_MODES,
   OsrdConfState,
   OsrdMultiConfState,
   OsrdStdcmConfState,
   PointOnMap,
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
+import { ValueOf } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from '../../common/api/osrdEditoastApi';
-import { ThunkAction } from '../../types';
+import { SwitchType, ThunkAction } from '../../types';
 /* eslint-disable default-case */
 
 // Action Types
@@ -356,7 +358,7 @@ export function updateMode(mode: string) {
     });
   };
 }
-export function updateStdcmMode(stdcmMode: any) {
+export function updateStdcmMode(stdcmMode: ValueOf<typeof STDCM_MODES>) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_STDCM_MODE,
@@ -372,7 +374,7 @@ export function updateLabels(labels?: string[]) {
     });
   };
 }
-export function updateSwitchTypes(switchTypes: any) {
+export function updateSwitchTypes(switchTypes: SwitchType[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SWITCH_TYPES,
@@ -415,7 +417,7 @@ export function updateInfraID(infraID: number | undefined): ThunkAction<ActionUp
       type: UPDATE_INFRA_ID,
       infraID,
     });
-    dispatch(updateSwitchTypes({}));
+    dispatch(updateSwitchTypes([]));
 
     if (infraID) {
       try {
@@ -423,7 +425,7 @@ export function updateInfraID(infraID: number | undefined): ThunkAction<ActionUp
         const { data: newSwitchTypes } = await dispatch(
           osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.initiate({ id: infraID })
         );
-        dispatch(updateSwitchTypes(newSwitchTypes));
+        dispatch(updateSwitchTypes(newSwitchTypes as SwitchType[]));
       } catch (e) {
         /* empty */
       }
@@ -535,7 +537,7 @@ export function updateOriginUpperBoundDate(originUpperBoundDate: string) {
   };
 }
 
-export function replaceVias(vias: any) {
+export function replaceVias(vias: PointOnMap[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: REPLACE_VIAS,
@@ -543,7 +545,7 @@ export function replaceVias(vias: any) {
     });
   };
 }
-export function updateVias(vias: any) {
+export function updateVias(vias: PointOnMap) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_VIAS,
@@ -551,7 +553,7 @@ export function updateVias(vias: any) {
     });
   };
 }
-export function permuteVias(vias: any, from: any, to: any) {
+export function permuteVias(vias: PointOnMap[], from: number, to: number) {
   const newVias = Array.from(vias); // Copy of vias to permit modification
   const item = newVias.slice(from, from + 1); // Get item to permute
   newVias.splice(from, 1); // Remove it from array
@@ -564,7 +566,7 @@ export function permuteVias(vias: any, from: any, to: any) {
     });
   };
 }
-export function updateSuggeredVias(suggeredVias: any) {
+export function updateSuggeredVias(suggeredVias: PointOnMap[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SUGGERED_VIAS,
