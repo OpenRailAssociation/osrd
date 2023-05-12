@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import logo from 'assets/pictures/home/rs_editor.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 
-const HomeRollingStock: FC = () => {
+const HomeRollingStockEditor: FC = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
 
-  return <NavBarSNCF appName={<>{t('rollingStock')}</>} logo={logo} />;
+  return <NavBarSNCF appName={<>{t('rollingStockEditor')}</>} logo={logo} />;
 };
 
-export default HomeRollingStock;
+export default HomeRollingStockEditor;
