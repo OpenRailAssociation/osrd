@@ -139,6 +139,12 @@ async fn runserver(
             .allow_any_method()
             .allow_any_header();
 
+        // Build Core client
+        let core_client = CoreClient::new_direct(
+            args.backend_url.parse().expect("invalid backend_url value"),
+            args.backend_token.clone(),
+        );
+
         App::new()
             .wrap(Condition::new(
                 is_sentry_initialized,
@@ -154,10 +160,7 @@ async fn runserver(
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
             .app_data(Data::new(SearchConfig::parse()))
-            .app_data(Data::new(CoreClient::new_direct(
-                args.backend_url.parse().expect("invalid backend_url value"),
-                args.backend_token.clone(),
-            )))
+            .app_data(Data::new(core_client))
             .service((views::routes(), views::study_routes()))
     });
 

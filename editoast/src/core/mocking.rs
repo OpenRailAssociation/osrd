@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use super::{Client, CoreClient};
-use actix_http::{StatusCode, Uri};
+use super::CoreClient;
+use actix_http::StatusCode;
 use reqwest::Body;
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -13,15 +13,9 @@ pub struct MockingClient {
     stubs: Vec<StubRequest>,
 }
 
-impl From<MockingClient> for Client {
-    fn from(value: MockingClient) -> Self {
-        Self::Mocked(value)
-    }
-}
-
 impl From<MockingClient> for CoreClient {
     fn from(value: MockingClient) -> Self {
-        Self::new(value)
+        Self::Mocked(value)
     }
 }
 
@@ -32,37 +26,35 @@ impl MockingClient {
 
     /// Creates a stub request
     #[must_use = "call .finish() to register the stub request"]
-    pub fn stub<U: TryInto<Uri>>(&mut self, uri: U) -> StubRequestBuilder {
-        let Ok(uri) = uri.try_into() else {
-            panic!("stub uri should be valid");
-        };
-        StubRequestBuilder::new(uri, self)
+    pub fn stub<U: AsRef<str>>(&mut self, path: U) -> StubRequestBuilder {
+        StubRequestBuilder::new(path.as_ref().into(), self)
     }
 
-    pub(super) fn fetch_mocked<B: Serialize, R: DeserializeOwned>(
+    pub(super) fn fetch_mocked<P: AsRef<str>, B: Serialize, R: DeserializeOwned>(
         &self,
         method: reqwest::Method,
-        req_uri: &Uri,
+        req_path: P,
         body: Option<&B>,
     ) -> Option<R> {
+        let req_path = req_path.as_ref().to_string();
         let stub = 'find_stub: {
             for stub in &self.stubs {
                 match stub {
                     StubRequest {
-                        uri, method: None, ..
-                    } if uri == req_uri => break 'find_stub Some(stub),
+                        path, method: None, ..
+                    } if path == &req_path => break 'find_stub Some(stub),
                     StubRequest {
-                        uri,
+                        path,
                         method: Some(meth),
                         ..
-                    } if uri == req_uri && meth == method => break 'find_stub Some(stub),
+                    } if path == &req_path && meth == method => break 'find_stub Some(stub),
                     _ => (),
                 };
             }
             None
         };
         let Some(stub) = stub else {
-            panic!("could not find stub for {method} resquest at URI {req_uri}")
+            panic!("could not find stub for {method} resquest at PATH {req_path}")
         };
         match (
             body.map(|b| serde_json::to_string(b).expect("could not serialize request body")),
@@ -103,7 +95,7 @@ impl Clone for MockingClient {
 /// A stub request used to assert the validity of an incoming request to mock
 #[derive(Debug, Clone)]
 pub struct StubRequest {
-    uri: Uri,
+    path: String,
     method: Option<reqwest::Method>,
     body: Option<Arc<Body>>,
     response: Option<StubResponse>,
@@ -122,7 +114,7 @@ pub struct StubResponse {
 
 #[derive(Debug)]
 pub struct StubRequestBuilder<'a> {
-    uri: Uri,
+    path: String,
     method: Option<reqwest::Method>,
     body: Option<Body>,
     client: &'a mut MockingClient,
@@ -136,9 +128,9 @@ pub struct StubResponseBuilder<'a> {
 }
 
 impl<'a> StubRequestBuilder<'a> {
-    fn new(uri: Uri, client: &'a mut MockingClient) -> Self {
+    fn new(path: String, client: &'a mut MockingClient) -> Self {
         Self {
-            uri,
+            path,
             method: None,
             body: None,
             client,
@@ -178,7 +170,7 @@ impl<'a> StubRequestBuilder<'a> {
     #[allow(unused)]
     pub fn finish(self) {
         self.client.stubs.push(StubRequest {
-            uri: self.uri,
+            path: self.path,
             method: self.method,
             body: self.body.map(Arc::new),
             response: None,
@@ -187,7 +179,7 @@ impl<'a> StubRequestBuilder<'a> {
 
     fn finish_with_response(self, response: StubResponse) {
         self.client.stubs.push(StubRequest {
-            uri: self.uri,
+            path: self.path,
             method: self.method,
             body: self.body.map(Arc::new),
             response: Some(response),
