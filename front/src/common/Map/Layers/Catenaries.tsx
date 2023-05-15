@@ -15,11 +15,8 @@ interface CatenariesProps {
   layerOrder: number;
 }
 
-export default function Catenaries(props: CatenariesProps) {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { geomType, colors, layerOrder } = props;
-  const catenariesParams: LayerProps = {
+export function getCatenariesProps({ colors }: { colors: Theme }) {
+  const res: LayerProps = {
     type: 'line',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -56,8 +53,11 @@ export default function Catenaries(props: CatenariesProps) {
       'line-dasharray': [0.1, 0.3],
     },
   };
+  return res;
+}
 
-  const catenariesTextParams: LayerProps = {
+export function getCatenariesTextParams({ colors }: { colors: Theme }) {
+  const res: LayerProps = {
     type: 'symbol',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -103,6 +103,15 @@ export default function Catenaries(props: CatenariesProps) {
       ],
     },
   };
+  return res;
+}
+
+export default function Catenaries(props: CatenariesProps) {
+  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const infraID = useSelector(getInfraID);
+  const { geomType, colors, layerOrder } = props;
+  const catenariesParams: LayerProps = getCatenariesProps({ colors });
+  const catenariesTextParams: LayerProps = getCatenariesTextParams({ colors });
 
   if (layersSettings.catenaries) {
     return (

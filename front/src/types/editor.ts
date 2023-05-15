@@ -1,7 +1,12 @@
 import { JSONSchema7 } from 'json-schema';
 import { Feature, GeoJsonProperties, Geometry, Point, LineString, MultiLineString } from 'geojson';
 
-import { Direction, ObjectType, DirectionalTrackRange } from '../common/api/osrdEditoastApi';
+import {
+  Direction,
+  ObjectType,
+  DirectionalTrackRange,
+  TrackRange,
+} from '../common/api/osrdEditoastApi';
 import { NullGeometry } from './geospatial';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,6 +80,21 @@ export interface SpeedSectionLpvEntity
 }
 export interface SpeedSectionEntity extends EditorEntity<MultiLineString, SpeedSectionProperties> {
   objType: 'SpeedSection';
+}
+
+export interface CatenaryProperties {
+  id: string;
+  track_ranges?: {
+    applicable_directions: ApplicableDirection;
+    begin: number;
+    end: number;
+    track: string;
+  }[];
+  voltage: string;
+}
+
+export interface CatenaryEntity extends EditorEntity<MultiLineString, CatenaryProperties> {
+  objType: 'Catenary';
 }
 export interface SignalEntity
   extends EditorEntity<

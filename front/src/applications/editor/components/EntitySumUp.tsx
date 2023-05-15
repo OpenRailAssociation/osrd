@@ -9,6 +9,7 @@ import { Spinner } from 'common/Loader';
 import { NEW_ENTITY_ID } from '../data/utils';
 import {
   BufferStopEntity,
+  CatenaryEntity,
   EditorEntity,
   RouteEntity,
   SignalEntity,
@@ -95,6 +96,9 @@ function getSumUpContent(
 ): JSX.Element {
   let type = t(`Editor.obj-types.${entity.objType}`);
   let text = '';
+  if (entity.objType === 'Catenary') {
+    console.log('entity', entity.properties);
+  }
   const subtexts: (string | JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
   switch (entity.objType) {
@@ -212,6 +216,26 @@ function getSumUpContent(
     }
     case 'SpeedSection': {
       const speedSection = entity as SpeedSectionEntity;
+      text = speedSection.properties.id;
+      subtexts.push(
+        <span className={classes.muted}>
+          {t('Editor.tools.select-items.linked-to-n-lines', {
+            count: speedSection.properties.track_ranges?.length || 0,
+          }).toString()}
+        </span>
+      );
+      forEach(speedSection.properties.speed_limit_by_tag, (limit, tag) => {
+        subtexts.push(
+          <>
+            <span className={cx(classes.muted, 'mr-2')}>{tag}</span>{' '}
+            <span>{isNumber(limit) ? getSpeedSectionsNameString(limit) : '-'}</span>
+          </>
+        );
+      });
+      break;
+    }
+    case 'Catenary': {
+      const speedSection = entity as CatenaryEntity;
       text = speedSection.properties.id;
       subtexts.push(
         <span className={classes.muted}>
