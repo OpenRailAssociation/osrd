@@ -33,3 +33,7 @@ export function time2sec(time: TimeString) {
 export function datetime2sec(time: Date) {
   return time2sec(datetime2time(time));
 }
+
+export function durationInSeconds(start: number, end: number) {
+  return end > start ? end - start : end + 86400 - start;
+}

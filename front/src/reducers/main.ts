@@ -46,6 +46,17 @@ export function setSuccess(msg?: Notification): ThunkAction<ActionSuccess> {
   };
 }
 
+export const ACTION_WARNING = 'main/ACTION_WARNING';
+export type ActionWarning = { type: typeof ACTION_WARNING; message: Notification | null };
+export function setWarning(msg?: Notification): ThunkAction<ActionWarning> {
+  return (dispatch) => {
+    dispatch({
+      type: ACTION_WARNING,
+      message: msg || null,
+    });
+  };
+}
+
 export const ACTION_FAILURE = 'main/ACTION_FAILURE';
 export type ActionFailure = { type: typeof ACTION_FAILURE; error: Error };
 export function setFailure(e: Error): ThunkAction<ActionFailure> {
@@ -82,14 +93,32 @@ export function deleteNotification(n: Notification): ThunkAction<ActionNotificat
   };
 }
 
+export const UPDATE_LAST_INTERFACE_VERSION = 'main/UPDATE_LAST_INTERFACE_VERSION';
+type ActionSetLastInterfaceVersion = {
+  type: typeof UPDATE_LAST_INTERFACE_VERSION;
+  lastInterfaceVersion: string;
+};
+export function updateLastInterfaceVersion(
+  lastInterfaceVersion: string
+): ThunkAction<ActionSetLastInterfaceVersion> {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_LAST_INTERFACE_VERSION,
+      lastInterfaceVersion,
+    });
+  };
+}
+
 export type MainActions =
   | ActionFailure
   | ActionSuccess
+  | ActionWarning
   | ActionLoading
   | ActionToggleDarkmode
   | ActionToggleFullscreen
   | ActionNotificationAdd
-  | ActionNotificationDelete;
+  | ActionNotificationDelete
+  | ActionSetLastInterfaceVersion;
 
 //
 // State definition
@@ -99,6 +128,7 @@ export interface MainState {
   fullscreen: boolean;
   loading: number;
   notifications: Array<Notification>;
+  lastInterfaceVersion: string;
 }
 export const initialState: MainState = {
   darkmode: false,
@@ -107,6 +137,7 @@ export const initialState: MainState = {
   loading: 0,
   // errors
   notifications: [],
+  lastInterfaceVersion: '',
 };
 
 //
@@ -136,6 +167,17 @@ export default function reducer(inputState: MainState | undefined, action: MainA
           });
         }
         break;
+      case ACTION_WARNING:
+        draft.loading = state.loading > 0 ? state.loading - 1 : 0;
+        if (action.message) {
+          draft.notifications.push({
+            type: action.message.type || 'warning',
+            title: action.message.title,
+            text: action.message.text,
+            date: action.message.date || new Date(),
+          });
+        }
+        break;
       case ACTION_FAILURE:
         draft.loading = state.loading > 0 ? state.loading - 1 : 0;
         draft.notifications.push({
@@ -159,6 +201,8 @@ export default function reducer(inputState: MainState | undefined, action: MainA
             )
         );
         break;
+      case UPDATE_LAST_INTERFACE_VERSION:
+        draft.lastInterfaceVersion = action.lastInterfaceVersion;
     }
   });
 }

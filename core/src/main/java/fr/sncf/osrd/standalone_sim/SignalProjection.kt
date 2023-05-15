@@ -162,6 +162,7 @@ private fun signalUpdates(
     // TODO: maybe have those be specific to the signaling system
     // FIXME: this doesn't work if the train goes through the same signal twice
     // This is probably a weird edge case anyway
+    @Suppress("UNUSED_PARAMETER")
     fun blinking(aspect: String): Boolean {
         return false
     }

@@ -12,6 +12,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
 import java.util.Collection;
+import java.util.List;
 
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public final class STDCMRequest {
@@ -50,17 +51,10 @@ public final class STDCMRequest {
     @Json(name = "route_occupancies")
     public Collection<RouteOccupancy> routeOccupancies;
 
-    /**
-     * List of possible start points for the train
+    /** A list of steps on the path. A step is a set of location with a stop duration.
+     *  The path only has to go through a single point per location.
      */
-    @Json(name = "start_points")
-    public Collection<PathfindingWaypoint> startPoints;
-
-    /**
-     * List of possible end points for the train
-     */
-    @Json(name = "end_points")
-    public Collection<PathfindingWaypoint> endPoints;
+    public List<STDCMStep> steps;
 
     /**
      * Train start time
@@ -133,7 +127,6 @@ public final class STDCMRequest {
                 null,
                 null,
                 null,
-                null,
                 Double.NaN,
                 Double.NaN,
                 null,
@@ -150,8 +143,7 @@ public final class STDCMRequest {
             String expectedVersion,
             RJSRollingStock rollingStock,
             Collection<RouteOccupancy> routeOccupancies,
-            Collection<PathfindingWaypoint> startPoints,
-            Collection<PathfindingWaypoint> endPoints,
+            List<STDCMStep> steps,
             double startTime,
             double endTime,
             String speedLimitComposition,
@@ -162,13 +154,33 @@ public final class STDCMRequest {
         this.expectedVersion = expectedVersion;
         this.rollingStock = rollingStock;
         this.routeOccupancies = routeOccupancies;
-        this.startPoints = startPoints;
-        this.endPoints = endPoints;
+        this.steps = steps;
         this.startTime = startTime;
         this.endTime = endTime;
         this.speedLimitComposition = speedLimitComposition;
         this.gridMarginBeforeSTDCM = marginBefore;
         this.gridMarginAfterSTDCM = marginAfter;
+    }
+
+    public static class STDCMStep {
+        /** Duration of the stop, if the train stops */
+        @Json(name = "stop_duration")
+        public double stopDuration;
+
+        /** If set to false, the train passes through the point without stopping */
+        public boolean stop;
+
+        /** List of possible points to validate the step: the train only has to pass through or stop at
+         * one of the points. */
+        public Collection<PathfindingWaypoint> waypoints;
+
+
+        /** Create a new step */
+        public STDCMStep(double stopDuration, boolean stop, Collection<PathfindingWaypoint> waypoints) {
+            this.stopDuration = stopDuration;
+            this.stop = stop;
+            this.waypoints = waypoints;
+        }
     }
 
     public static class RouteOccupancy {

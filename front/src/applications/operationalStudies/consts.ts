@@ -133,7 +133,7 @@ export interface OsrdConfState {
   timetableID?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
-  powerRestriction?: PowerRestrictionRange;
+  powerRestriction?: PowerRestrictionRange[];
   origin?: PointOnMap;
   initialSpeed?: number;
   departureTime: string;
@@ -152,6 +152,7 @@ export interface OsrdConfState {
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   gridMarginBefore: number;
   gridMarginAfter: number;
+  trainScheduleIDsToModify?: number[];
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {

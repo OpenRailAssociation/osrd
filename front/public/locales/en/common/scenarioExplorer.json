@@ -1,15 +1,15 @@
 {
   "errorMessages": {
-    "error": "An error has occured",
-    "unableToRetrieveProjectsMessage": "Failed to get projects"
+    "error": "An error has occurred",
+    "unableToRetrieveProjectsMessage": "Unable to retrieve projects"
   },
   "infraLegend": "infra",
-  "noScenarioSelected": "Click here to select a case study",
+  "noScenarioSelected": "Click here to select a scenario using an infrastructure and a dedicated timetable.",
   "projectLegend": "project",
   "projects": "Projects",
   "scenarioExplorator": "Scenario browser",
   "scenarioLegend": "scenario",
-  "scenarios": "Case studies",
+  "scenarios": "Scenarios",
   "studies": "Studies",
   "studyLegend": "study"
 }

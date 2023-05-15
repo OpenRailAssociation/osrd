@@ -811,7 +811,7 @@ paths:
                     schematic:
                       description: object's schematic in geojson format
                       $ref: "#/components/schemas/Geometry"
-  
+
   /infra/{id}/clone/:
     post:
       tags:
@@ -1093,8 +1093,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollingStock"
+    delete:
+      tags:
+        - rolling_stock
+      summary: Delete a rolling_stock and all entities linked to it
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: rolling_stock id
+          required: true
+      responses:
+        204:
+          description: No content
 
-  /rolling_stock/{id}/livery:
+  /rolling_stock/{id}/livery/:
     post:
       tags:
         - rolling_stock
@@ -1671,7 +1685,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object 
+                type: object
                 properties:
                   catenary_ranges:
                     type: array
@@ -2800,7 +2814,7 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
-    
+
     ScenarioRequest:
       properties:
         name:

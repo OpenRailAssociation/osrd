@@ -1,11 +1,10 @@
 package fr.sncf.osrd.railjson.schema.external_generated_inputs;
 
+import java.util.List;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
-
-import java.util.List;
 
 public class RJSElectricalProfileSet {
     public static final JsonAdapter<RJSElectricalProfileSet> adapter =

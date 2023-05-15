@@ -1,9 +1,11 @@
 package fr.sncf.osrd.envelope_sim;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 
+@SuppressFBWarnings({ "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" })
 public class SimpleRollingStock implements PhysicsRollingStock {
 
     public final double A; // in newtons
@@ -144,6 +146,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         return maxEffort / Math.max(1, speed);
     }
 
+    /** Creates the effort speed curve, from a given max speed and curve shape */
     public static TractiveEffortPoint[] createEffortSpeedCurve(double maxSpeed, CurveShape curveShape) {
         var newEffortCurve = new ArrayList<TractiveEffortPoint>();
 
@@ -155,6 +158,7 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         return newEffortCurve.toArray(new TractiveEffortPoint[0]);
     }
 
+    /** Creates a range of effort points, from a given max speed and curve shape */
     public static ImmutableRangeMap<Double, TractiveEffortPoint[]> createEffortCurveMap(double maxSpeed,
                                                                                         CurveShape curveShape) {
         var builder = ImmutableRangeMap.<Double, TractiveEffortPoint[]>builder();
@@ -186,15 +190,15 @@ public class SimpleRollingStock implements PhysicsRollingStock {
         );
     }
 
-    static final public ImmutableRangeMap<Double, TractiveEffortPoint[]> LINEAR_EFFORT_CURVE_MAP =
+    public static final ImmutableRangeMap<Double, TractiveEffortPoint[]> LINEAR_EFFORT_CURVE_MAP =
             createEffortCurveMap(MAX_SPEED, CurveShape.LINEAR);
 
-    static final public ImmutableRangeMap<Double, TractiveEffortPoint[]> HYPERBOLIC_EFFORT_CURVE_MAP =
+    public static final ImmutableRangeMap<Double, TractiveEffortPoint[]> HYPERBOLIC_EFFORT_CURVE_MAP =
             createEffortCurveMap(MAX_SPEED, CurveShape.HYPERBOLIC);
 
-    static final public SimpleRollingStock SHORT_TRAIN = SimpleRollingStock.build(1, .5, GammaType.CONST);
+    public static final SimpleRollingStock SHORT_TRAIN = SimpleRollingStock.build(1, .5, GammaType.CONST);
 
-    static final public SimpleRollingStock STANDARD_TRAIN = SimpleRollingStock.build(400, .5, GammaType.CONST);
+    public static final SimpleRollingStock STANDARD_TRAIN = SimpleRollingStock.build(400, .5, GammaType.CONST);
 
-    static final public SimpleRollingStock MAX_DEC_TRAIN = SimpleRollingStock.build(400, .95, GammaType.MAX);
+    public static final SimpleRollingStock MAX_DEC_TRAIN = SimpleRollingStock.build(400, .95, GammaType.MAX);
 }

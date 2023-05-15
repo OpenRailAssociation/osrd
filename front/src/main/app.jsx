@@ -4,6 +4,7 @@ import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-ro
 
 import 'i18n';
 import { attemptLoginOnLaunch } from 'reducers/user';
+import { updateLastInterfaceVersion } from 'reducers/main';
 
 import HomeCustomGET from 'applications/customget/Home';
 import HomeEditor from 'applications/editor/Home';
@@ -35,6 +36,8 @@ export default function App() {
       dispatch(attemptLoginOnLaunch());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Blindly dispatch current front version for storage
+    dispatch(updateLastInterfaceVersion(import.meta.env.OSRD_GIT_DESCRIBE));
   }, []);
 
   // Conditionnal theming

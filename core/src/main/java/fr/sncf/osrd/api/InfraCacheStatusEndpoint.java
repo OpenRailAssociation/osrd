@@ -9,16 +9,23 @@ import fr.sncf.osrd.api.InfraManager.InfraStatus;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
+import org.takes.rq.RqPrint;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class InfraCacheStatusEndpoint implements Take {
     private final InfraManager infraManager;
+
+    public static final JsonAdapter<InfraCacheRequest> adapterRequest = new Moshi
+            .Builder()
+            .build()
+            .adapter(InfraCacheRequest.class);
      
 
-    private static final JsonAdapter<Map<String, SerializedInfraCache>> adapter;
+    public static final JsonAdapter<Map<String, SerializedInfraCache>> adapter;
 
     static {
         Moshi moshi = new Moshi.Builder().build();
@@ -31,15 +38,30 @@ public final class InfraCacheStatusEndpoint implements Take {
     }
 
     @Override
-    public Response act(Request req) {
+    public Response act(Request req) throws IOException {
+
         Map<String, SerializedInfraCache> res = new HashMap<>();
-        infraManager.forEach((infraId, infraCacheEntry) -> {
-            res.put(infraId, SerializedInfraCache.from(infraCacheEntry));
-        });
-        return new RsJson(new RsWithBody(adapter.toJson(res)));
+        // Parse request input
+        try {
+            var body = new RqPrint(req).printBody();
+
+            if (body.equals("")) {
+                infraManager.forEach((infraId, infraCacheEntry) -> {
+                    res.put(infraId, SerializedInfraCache.from(infraCacheEntry));
+                });
+            } else {
+                var request = adapterRequest.fromJson(body);
+                var infraCacheEntry = infraManager.getInfraCache(request.infra);
+                res.put(request.infra, SerializedInfraCache.from(infraCacheEntry));
+            }
+            return new RsJson(new RsWithBody(adapter.toJson(res)));
+        } catch (Throwable ex) {
+            // TODO: include warnings in the response
+            return ExceptionHandler.handle(ex);
+        }
     }
 
-    private static final class SerializedInfraCache {
+    public static final class SerializedInfraCache {
         public InfraStatus status;
 
         @Json(name = "last_status")
@@ -54,6 +76,19 @@ public final class InfraCacheStatusEndpoint implements Take {
             return new SerializedInfraCache(
                 entry.status,
                 entry.lastStatus);
+        }
+    }
+
+    public static final class InfraCacheRequest {
+        /**
+         * Infra id
+         */
+        public String infra;
+
+        public InfraCacheRequest(
+                String infra
+        ) {
+            this.infra = infra;
         }
     }
 }

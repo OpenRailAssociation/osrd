@@ -13,7 +13,7 @@ import {
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
-import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
+import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from '../../common/api/osrdEditoastApi';
 import { ThunkAction } from '../../types';
 /* eslint-disable default-case */
@@ -63,6 +63,7 @@ export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
 export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
 export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
 export const UPDATE_POWER_RESTRICTION = 'osrdconf/UPDATE_POWER_RESTRICTION';
+export const UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY = 'osrdconf/UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY';
 
 // Reducer
 const defaultCommonConf = {
@@ -102,6 +103,7 @@ const defaultCommonConf = {
   featureInfoClick: { displayPopup: false },
   gridMarginBefore: 0,
   gridMarginAfter: 0,
+  trainScheduleIDsToModify: undefined,
 };
 
 export const initialState: OsrdMultiConfState = {
@@ -301,6 +303,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
       case UPDATE_POWER_RESTRICTION:
         draft[section].powerRestriction = action.powerRestriction;
         break;
+      case UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY:
+        draft[section].trainScheduleIDsToModify = action.trainScheduleIDsToModify;
+        break;
     }
   });
 }
@@ -343,7 +348,7 @@ export function toggleUsingElectricalProfiles() {
     type: TOGGLE_USING_ELECTRICAL_PROFILES,
   };
 }
-export function updateMode(mode: any) {
+export function updateMode(mode: string) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_MODE,
@@ -359,7 +364,7 @@ export function updateStdcmMode(stdcmMode: any) {
     });
   };
 }
-export function updateLabels(labels: any) {
+export function updateLabels(labels?: string[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_LABELS,
@@ -577,7 +582,7 @@ export function updateViaStopTime(vias: PointOnMap[], index: number, value: numb
     });
   };
 }
-export function deleteVias(index: any) {
+export function deleteVias(index: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: DELETE_VIAS,
@@ -617,7 +622,7 @@ export function updateTrainCompo(trainCompo: any) {
     });
   };
 }
-export function updateItinerary(geojson: any) {
+export function updateItinerary(geojson?: Path) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ITINERARY,
@@ -669,11 +674,19 @@ export function deleteItinerary() {
     });
   };
 }
-export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange) {
+export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_POWER_RESTRICTION,
       powerRestriction,
+    });
+  };
+}
+export function updateTrainScheduleIDsToModify(trainScheduleIDsToModify?: number[]) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY,
+      trainScheduleIDsToModify,
     });
   };
 }

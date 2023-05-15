@@ -1,12 +1,17 @@
 import { legacy_createStore as createStore, combineReducers } from 'redux';
 import { configureStore, Middleware } from '@reduxjs/toolkit';
 import thunk from 'redux-thunk';
-import { persistStore } from 'redux-persist';
+import { persistStore, getStoredState } from 'redux-persist';
 import { Config } from '@redux-devtools/extension';
 
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import persistedReducer, { rootReducer, rootInitialState, RootState } from 'reducers';
+import persistedReducer, {
+  rootReducer,
+  rootInitialState,
+  RootState,
+  persistConfig,
+} from 'reducers';
 
 const reduxDevToolsOptions: Config = {
   serialize: {
@@ -26,6 +31,26 @@ const store = configureStore({
 });
 
 const persistor = persistStore(store);
+
+// Retrieve the persisted state from storage and purge if new front version
+getStoredState(persistConfig)
+  .then((persistedState) => {
+    console.info('Front OSRD Version', import.meta.env.OSRD_GIT_DESCRIBE);
+
+    const envInterfaceVersion = import.meta.env.OSRD_GIT_DESCRIBE;
+    const persistedRootState = persistedState as RootState;
+
+    if (
+      envInterfaceVersion &&
+      persistedRootState?.main?.lastInterfaceVersion !== envInterfaceVersion
+    )
+      persistor.purge().then(() => {
+        console.warn('New Front Version since last launch, persisted Store purged');
+      });
+  })
+  .catch((err) => {
+    console.error('Error retrieving persisted state:', err);
+  });
 
 const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
   createStore(combineReducers<RootState>(rootReducer), {

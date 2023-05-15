@@ -150,43 +150,50 @@ processTestResources.configure {
 
 // region CODE_QUALITY
 
-checkstyle {
-    toolVersion '9.2'
-    configFile rootProject.file('config/checkstyle/checkstyle.xml')
-    ignoreFailures false
-    maxWarnings 0
-    showViolations true
-}
+allprojects {
 
-tasks.withType(Checkstyle) {
-    reports {
-        xml.required = true
+    apply plugin: 'checkstyle'
+    apply plugin: 'com.github.spotbugs'
+    checkstyle {
+        toolVersion '9.2'
+        configFile rootProject.file('config/checkstyle/checkstyle.xml')
+        ignoreFailures false
+        maxWarnings 0
+        showViolations true
     }
-}
 
-// enable all linter warnings, and error out on warnings
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:all" << "-Werror"
-    options.encoding = "UTF-8"
-}
+    tasks.withType(Checkstyle).configureEach {
+        reports {
+            xml.required = true
+        }
+    }
 
-spotbugs {
-    ignoreFailures = false
-    showStackTraces = true
-    showProgress = true
-    // can also be 'more' or 'default'
-    effort = 'max'
-    // report all diagnosed bugs
-    reportLevel = 'low'
-    maxHeapSize = '1g'
-    excludeFilter = file('config/spotbugs/exclude.xml')
-}
+    // enable all linter warnings, and error out on warnings
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs << "-Xlint:all" << "-Werror"
+        options.encoding = "UTF-8"
+    }
 
-tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
-    if (project.hasProperty("spotbugs_report_xml")) {
-        reports { xml.required = true }
-    } else {
-        reports { html.required = true }
+    spotbugs {
+        ignoreFailures = false
+        showStackTraces = true
+        showProgress = true
+        // can also be 'more' or 'default'
+        effort = 'max'
+        // report all diagnosed bugs
+        reportLevel = 'low'
+        maxHeapSize = '1g'
+        excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
+    }
+
+    tasks.withType(com.github.spotbugs.snom.SpotBugsTask).tap {
+        configureEach {
+            if (project.hasProperty("spotbugs_report_xml")) {
+                reports { xml.required = true }
+            } else {
+                reports { html.required = true }
+            }
+        }
     }
 }
 

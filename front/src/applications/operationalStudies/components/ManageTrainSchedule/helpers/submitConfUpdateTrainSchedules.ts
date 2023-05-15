@@ -7,6 +7,7 @@ import { patch } from 'common/requests';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
 import { Dispatch } from 'redux';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
+import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 
 const submitConfUpdateTrainSchedules = (
   dispatch: Dispatch,
@@ -33,7 +34,7 @@ const submitConfUpdateTrainSchedules = (
         );
         dispatch(
           setSuccess({
-            title: t('trainAdded'),
+            title: t('trainUpdated'),
             text: `${osrdconf.simulationConf.name}: ${osrdconf.simulationConf.departureTime}`,
           })
         );
@@ -41,6 +42,7 @@ const submitConfUpdateTrainSchedules = (
       setIsWorking(false);
       getTimetable(osrdconf.simulationConf.timetableID);
       setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
+      dispatch(updateTrainScheduleIDsToModify(undefined));
     } catch (e: unknown) {
       setIsWorking(false);
       if (e instanceof Error) {

@@ -93,16 +93,16 @@ function Origin(props: OriginProps) {
     </div>
   );
   return (
-    <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
-      <span className="text-success mr-2">
-        <RiMapPin2Fill />
-      </span>
+    <div className="mb-2 place">
       {origin !== undefined ? (
-        <div>
+        <>
           <div className="pl-1 hover w-100 origin-name-and-time-container">
-            {originPointName}
+            <span className="text-success mr-2">
+              <RiMapPin2Fill />
+            </span>
+            <span className="flex-grow-1">{originPointName}</span>
             <button
-              className="btn btn-sm btn-only-icon btn-white ml-auto"
+              className="btn btn-sm btn-only-icon btn-white"
               type="button"
               onClick={() => {
                 dispatch(updateOrigin(undefined));
@@ -116,56 +116,54 @@ function Origin(props: OriginProps) {
             </button>
           </div>
           {isStdcm && (
-            <>
-              <div className="ml-auto d-flex mr-1">
-                {radioButton}
-                <div className="d-flex flex-column">
-                  <div className="d-flex">
-                    <input
-                      type="date"
-                      className="form-control form-control-sm mx-1"
-                      onChange={(e) => dispatch(updateOriginDate(e.target.value))}
-                      value={originDate}
-                      disabled
-                    />
-                    <InputSNCF
-                      type="time"
-                      id="osrd-config-time-origin"
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        dispatch(updateOriginTime(e.target.value))
-                      }
-                      value={originTime}
-                      sm
-                      noMargin
-                      readonly={isByDestination}
-                    />
-                  </div>
-                  <div className="d-flex my-1">
-                    <input
-                      type="date"
-                      className="form-control form-control-sm mx-1"
-                      onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
-                      value={originUpperBoundDate}
-                      disabled
-                    />
-                    <InputSNCF
-                      type="time"
-                      id="osrd-config-time-origin"
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        dispatch(updateOriginUpperBoundTime(e.target.value))
-                      }
-                      value={originUpperBoundTime}
-                      sm
-                      noMargin
-                      readonly={isByDestination}
-                    />
-                  </div>
+            <div className="d-flex align-items-center ml-4">
+              {radioButton}
+              <div className="d-flex flex-column">
+                <div className="d-flex">
+                  <input
+                    type="date"
+                    className="form-control form-control-sm mx-1"
+                    onChange={(e) => dispatch(updateOriginDate(e.target.value))}
+                    value={originDate}
+                    disabled
+                  />
+                  <InputSNCF
+                    type="time"
+                    id="osrd-config-time-origin"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      dispatch(updateOriginTime(e.target.value))
+                    }
+                    value={originTime}
+                    sm
+                    noMargin
+                    readonly={isByDestination}
+                  />
+                </div>
+                <div className="d-flex my-1">
+                  <input
+                    type="date"
+                    className="form-control form-control-sm mx-1"
+                    onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
+                    value={originUpperBoundDate}
+                    disabled
+                  />
+                  <InputSNCF
+                    type="time"
+                    id="osrd-config-time-origin"
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      dispatch(updateOriginUpperBoundTime(e.target.value))
+                    }
+                    value={originUpperBoundTime}
+                    sm
+                    noMargin
+                    readonly={isByDestination}
+                  />
                 </div>
               </div>
               {toggleButton}
-            </>
+            </div>
           )}
-        </div>
+        </>
       ) : (
         <small>{t('noOriginChosen')}</small>
       )}

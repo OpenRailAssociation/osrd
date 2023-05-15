@@ -5,11 +5,10 @@ import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
-import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.DriverBehaviour;
-import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
+import fr.sncf.osrd.stdcm.STDCMStep;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
@@ -26,8 +25,9 @@ import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.stdcm.graph.STDCMPathfindingKt;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilderKt;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -89,8 +89,7 @@ public class STDCMEndpoint implements Take {
             final var infra = fullInfra.java();
             final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
-            final var startLocations = findRoutes(infra, request.startPoints);
-            final var endLocations = findRoutes(infra, request.endPoints);
+            final var steps = parseSteps(infra, request.steps);
             final String tag = request.speedLimitComposition;
             var occupancies = request.routeOccupancies;
             AllowanceValue standardAllowance = null;
@@ -104,7 +103,7 @@ public class STDCMEndpoint implements Take {
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
             occupancies = addWarningOccupancies(infra, occupancies);
-            var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
+            var unavailableSpace = UnavailableSpaceBuilderKt.computeUnavailableSpace(
                     infra,
                     occupancies,
                     rollingStock,
@@ -115,21 +114,19 @@ public class STDCMEndpoint implements Take {
                     fullInfra,
                     rollingStock,
                     comfort,
-                    startLocations,
-                    endLocations,
+                    steps,
                     request.timeStep,
                     standardAllowance
             );
 
             // Run the STDCM pathfinding
-            var res = STDCMPathfinding.findPath(
+            var res = STDCMPathfindingKt.findPath(
                     infra,
                     rollingStock,
                     comfort,
                     startTime,
                     endTime,
-                    startLocations,
-                    endLocations,
+                    steps,
                     new RouteAvailabilityLegacyAdapter(unavailableSpace),
                     request.timeStep,
                     request.maximumDepartureDelay,
@@ -145,21 +142,30 @@ public class STDCMEndpoint implements Take {
             // Build the response
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
-                    MRSP.from(res.trainPath(), rollingStock, false, tag)
+                    MRSP.from(res.trainPath, rollingStock, false, tag)
             ));
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
-                    res.envelope(),
-                    res.trainPath(),
-                    makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort),
+                    res.envelope,
+                    res.trainPath,
+                    makeTrainSchedule(res.envelope.getEndPos(), rollingStock, comfort, res.stopResults),
                     fullInfra
             ));
             simResult.ecoSimulations.add(null);
-            var pathfindingRes = PathfindingResultConverter.convert(res.routes(), infra, recorder);
-            var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
+            var pathfindingRes = PathfindingResultConverter.convert(res.routes, infra, recorder);
+            var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime);
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
         }
+    }
+
+    private List<STDCMStep> parseSteps(
+            SignalingInfra infra,
+            List<STDCMRequest.STDCMStep> steps
+    ) {
+        return steps.stream()
+                .map(step -> new STDCMStep(findRoutes(infra, step.waypoints), step.stopDuration, step.stop))
+                .toList();
     }
 
     /** The inputs only contains occupied blocks, we need to add the warning in the previous one (assuming BAL).
@@ -191,17 +197,19 @@ public class STDCMEndpoint implements Take {
             FullInfra fullInfra,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
-            Set<EdgeLocation<SignalingRoute>> startLocations,
-            Set<EdgeLocation<SignalingRoute>> endLocations,
+            List<STDCMStep> steps,
             double timeStep,
             AllowanceValue standardAllowance
     ) {
         var infra = fullInfra.java();
-        var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations, 0.);
+        var locations = steps.stream()
+                .map(step -> step.locations)
+                .toList();
+        var remainingDistanceEstimators = PathfindingRoutesEndpoint.makeHeuristics(locations);
         var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                .setRemainingDistanceEstimator(List.of(remainingDistanceEstimator))
-                .runPathfinding(List.of(startLocations, endLocations));
+                .setRemainingDistanceEstimator(remainingDistanceEstimators)
+                .runPathfinding(locations);
         if (rawPath == null)
             return 0;
         var routes = rawPath.ranges().stream()
@@ -221,7 +229,7 @@ public class STDCMEndpoint implements Take {
                 fullInfra,
                 path,
                 EnvelopeTrainPath.from(path),
-                List.of(makeTrainSchedule(path.length(), rollingStock, comfort)),
+                List.of(makeTrainSchedule(path.length(), rollingStock, comfort, new ArrayList<>())),
                 timeStep,
                 driverBehaviour
         );
@@ -236,9 +244,9 @@ public class STDCMEndpoint implements Take {
     private static StandaloneTrainSchedule makeTrainSchedule(
             double endPos,
             RollingStock rollingStock,
-            RollingStock.Comfort comfort
+            RollingStock.Comfort comfort,
+            List<TrainStop> trainStops
     ) {
-        List<TrainStop> trainStops = new ArrayList<>();
         trainStops.add(new TrainStop(endPos, 0.1));
         return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort, null, null);
     }

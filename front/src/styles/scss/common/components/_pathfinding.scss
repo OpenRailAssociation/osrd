@@ -1,5 +1,106 @@
+.pathfinding-details {
+  .place {
+    position: relative;
+    i {
+      z-index: 1;
+    }
+    .hover {
+      transition: 0.2s;
+      border-radius: 4px;
+      &:hover {
+        background-color: var(--coolgray1);
+      }
+      cursor: pointer;
+    }
+    .btn,
+    .btn:hover {
+      border: none;
+      background-color: transparent;
+    }
+    &:not(.via):last-child::after {
+      position: absolute;
+      margin-bottom: -2rem;
+      z-index: 0;
+      display: block;
+      width: 1rem;
+      height: 2.5rem;
+      content: '';
+      background-color: var(--white);
+    }
+
+    &.via {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0rem;
+      border-radius: 4px;
+      padding: 0 0.25rem;
+      .ring {
+        position: relative;
+        display: block;
+        height: 1rem;
+        width: 1rem;
+        border-radius: 50%;
+        background-color: var(--white);
+        border: 2px dotted var(--cyan);
+      }
+
+      .default-durations-button {
+        display: none;
+        align-items: center;
+        button {
+          display: flex;
+          align-items: center;
+          font-weight: 400;
+          background: none;
+          border: unset;
+          font-size: 0.7rem;
+          border-radius: 4px;
+          &:hover {
+            background-color: var(--primary);
+            color: var(--white);
+          }
+        }
+      }
+      .stoptime {
+        padding: 0rem 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 4px;
+        background-color: var(--coolgray1);
+        cursor: pointer;
+        &:hover {
+          background-color: var(--coolgray3);
+        }
+      }
+      .form-control {
+        width: 7rem;
+      }
+      &:hover {
+        background-color: var(--coolgray1);
+        .default-durations-button {
+          display: flex;
+        }
+      }
+      &.is-a-stop {
+        .ring {
+          border: 3px solid var(--cyan);
+        }
+        .stoptime {
+          background-color: var(--cyan);
+          color: var(--white);
+        }
+      }
+    }
+  }
+}
+
 .pathfinding-main-container {
-  margin-left: 1.5rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--coolgray1);
 
   .pathfinding-subsection {
     display: flex;

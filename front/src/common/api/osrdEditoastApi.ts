@@ -227,12 +227,18 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.rollingStockUpsertPayload,
       }),
     }),
+    deleteRollingStockById: build.mutation<
+      DeleteRollingStockByIdApiResponse,
+      DeleteRollingStockByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/`, method: 'DELETE' }),
+    }),
     postRollingStockByIdLivery: build.mutation<
       PostRollingStockByIdLiveryApiResponse,
       PostRollingStockByIdLiveryApiArg
     >({
       query: (queryArg) => ({
-        url: `/rolling_stock/${queryArg.id}/livery`,
+        url: `/rolling_stock/${queryArg.id}/livery/`,
         method: 'POST',
         body: queryArg.body,
       }),
@@ -699,6 +705,11 @@ export type PatchRollingStockByIdApiArg = {
   /** Rolling Stock ID */
   id: number;
   rollingStockUpsertPayload: RollingStockUpsertPayload;
+};
+export type DeleteRollingStockByIdApiResponse = unknown;
+export type DeleteRollingStockByIdApiArg = {
+  /** rolling_stock id */
+  id: number;
 };
 export type PostRollingStockByIdLiveryApiResponse =
   /** status 200 The rolling stock livery */ RollingStockLivery;

@@ -1,95 +1,122 @@
-import { mergeDatasAreaConstant } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
-import { ElectrificationConditions, SimulationSnapshot } from 'reducers/osrdsimulation/types';
-import { SPEED_SPACE_CHART_KEY_VALUES } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import {
+  ElectrificationConditions,
+  GradientPosition,
+  HeightPosition,
+  PositionSpeedTime,
+  RadiusPosition,
+  SpeedPosition,
+  Train,
+} from 'reducers/osrdsimulation/types';
 
-export interface GevPreparedata {
-  speed: Record<string, number>[];
-  margins_speed: Record<string, unknown>[];
-  eco_speed: Record<string, unknown>[];
-  areaBlock: any;
-  vmax: Record<string, unknown>[];
-  slopesCurve: Record<string, unknown>[];
-  slopesHistogram: Record<string, number>[];
-  areaSlopesHistogram: Record<string, unknown>[];
-  curvesHistogram: Record<string, unknown>[];
-  electrificationConditions: ElectrificationConditions[];
+interface IAreaBlock {
+  position: number;
+  value0: number;
+  value1: number[];
 }
 
-/// SpeedSpaceChart only
-function prepareData(simulation: SimulationSnapshot, selectedTrain: number): GevPreparedata {
-  const dataSimulation: GevPreparedata = {
-    speed: [],
-    margins_speed: [],
-    eco_speed: [],
-    areaBlock: undefined,
-    vmax: [],
-    slopesCurve: [],
-    slopesHistogram: [],
-    areaSlopesHistogram: [],
-    curvesHistogram: [],
-    electrificationConditions: [],
-  };
-  dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map((step) => ({
+export interface GevPreparedata {
+  areaBlock: IAreaBlock[];
+  areaSlopesHistogram: IAreaBlock[];
+  curvesHistogram: RadiusPosition[];
+  eco_speed: PositionSpeedTime[];
+  electrificationConditions: ElectrificationConditions[];
+  margins_speed: PositionSpeedTime[];
+  slopesCurve: HeightPosition[];
+  slopesHistogram: GradientPosition[];
+  speed: PositionSpeedTime[];
+  vmax: SpeedPosition[];
+}
+
+function buildAreaBlocks(speeds: PositionSpeedTime[]): IAreaBlock[] {
+  return speeds.map((step) => ({
+    position: step.position,
+    value0: step.speed,
+    value1: [0],
+  }));
+}
+
+function buildAreaSlopesHistograms(
+  slopesHistogram: GradientPosition[],
+  zeroLineSlope: number
+): IAreaBlock[] {
+  return slopesHistogram.map((step) => ({
+    position: step.position,
+    value0: step.gradient,
+    value1: [zeroLineSlope],
+  }));
+}
+
+/**
+ * Prepare data for SpeedSpaceChart only
+ * - convert all speeds from m/s to km/h
+ * - compute areaBlocks, slopesCurve and curvesHistogram
+ */
+function prepareData(trainSimulation: Train): GevPreparedata {
+  const speed = trainSimulation.base.speeds.map((step) => ({
     ...step,
     speed: step.speed * 3.6,
   }));
 
-  if (simulation.trains[selectedTrain].electrification_conditions) {
-    dataSimulation.electrificationConditions =
-      simulation.trains[selectedTrain].electrification_conditions;
-  }
+  const electrificationConditions = trainSimulation.electrification_conditions
+    ? trainSimulation.electrification_conditions
+    : [];
 
-  if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
-    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map((step) => ({
-      ...step,
-      speed: step.speed * 3.6,
-    }));
-  }
+  const margins_speed =
+    trainSimulation.margins && !trainSimulation.margins.error
+      ? trainSimulation.margins.speeds.map((step) => ({
+          ...step,
+          speed: step.speed * 3.6,
+        }))
+      : [];
 
-  if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
-    dataSimulation.eco_speed = simulation.trains[selectedTrain].eco.speeds.map((step) => ({
-      ...step,
-      speed: step.speed * 3.6,
-    }));
-  }
+  const eco_speed =
+    trainSimulation.eco && !trainSimulation.eco.error
+      ? trainSimulation.eco.speeds.map((step) => ({
+          ...step,
+          speed: step.speed * 3.6,
+        }))
+      : [];
 
-  dataSimulation.areaBlock = mergeDatasAreaConstant(
-    dataSimulation.speed,
-    [0],
-    SPEED_SPACE_CHART_KEY_VALUES
-  );
-  dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map((step) => ({
+  const vmax = trainSimulation.vmax.map((step) => ({
     speed: step.speed * 3.6,
     position: step.position,
   }));
 
+  const areaBlock = buildAreaBlocks(speed);
+
   // Slopes
-  dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.trains[selectedTrain].slopes,
-    dataSimulation.speed,
-    'speed'
-  );
-  const zeroLineSlope: number = dataSimulation.slopesCurve[0].height as number; // Start height of histogram
-  dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map((step) => ({
+  const slopesCurve = createSlopeCurve(trainSimulation.slopes, speed, 'speed');
+
+  const zeroLineSlope = slopesCurve[0].height as number; // Start height of histogram
+
+  const slopesHistogram = trainSimulation.slopes.map((step) => ({
     position: step.position,
     gradient: step.gradient * 4 + zeroLineSlope,
   }));
-  dataSimulation.areaSlopesHistogram = mergeDatasAreaConstant(
-    dataSimulation.slopesHistogram,
-    [zeroLineSlope],
-    ['position', 'gradient']
-  );
+
+  const areaSlopesHistogram = buildAreaSlopesHistograms(slopesHistogram, zeroLineSlope);
 
   // Curves
-  dataSimulation.curvesHistogram = createCurveCurve(
-    simulation.trains[selectedTrain].curves,
-    dataSimulation.speed,
+  const curvesHistogram: RadiusPosition[] = createCurveCurve(
+    trainSimulation.curves,
+    speed,
     'speed'
   );
 
-  return dataSimulation;
+  return {
+    areaBlock,
+    areaSlopesHistogram,
+    curvesHistogram,
+    eco_speed,
+    electrificationConditions,
+    margins_speed,
+    slopesCurve,
+    slopesHistogram,
+    speed,
+    vmax,
+  };
 }
 
 export default prepareData;

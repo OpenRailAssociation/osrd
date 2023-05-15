@@ -1,4 +1,5 @@
 {
+  "addVias": "Ajouter d'arrêts ou points de passage",
   "addTrainSchedule": "Ajouter un ou plusieurs trains",
   "apply": "Appliquer",
   "blocktype": "Type de block",
@@ -27,7 +28,6 @@
     "noTrainCountInput": "Doit être > 0",
     "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
     "noTrainStepInput": "Doit être > 0",
-    "powerRestrictionInvalidCombination": "Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} V de l'itinéraire",
     "stdcmError": "Erreur de calcul Sillon de dernière minute",
     "The requested train couldn't reach its destination": "Le train ne peut pas atteindre sa destination",
     "trainScheduleTitle": "Une erreur est survenue",
@@ -40,6 +40,7 @@
   },
   "failedRequest": "La requête a échoué",
   "gare": "Gare, poste",
+  "importTrainSchedule": "Importation",
   "inverseOD": "Inverser origine/destination",
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
@@ -85,8 +86,13 @@
   "trainScheduleInitialSpeed": "Vitesse initiale",
   "trainScheduleName": "Nom",
   "trainScheduleStep": "Pas d'incrément",
+  "trainUpdated": "Train modifié",
   "updateTrainSchedule": "Modifier le train",
   "usingElectricalProfiles": "Utiliser les profils électriques",
   "via": "Étape",
-  "vias": "Points de passage, arrêts"
+  "vias": "Points de passage, arrêts",
+  "warningMessages": {
+    "electrification": "Électrification",
+    "powerRestrictionInvalidCombination": "Code {{powerRestrictionCode}} incompatible avec l'électrification à {{electrification}} V de l'itinéraire"
+  }
 }

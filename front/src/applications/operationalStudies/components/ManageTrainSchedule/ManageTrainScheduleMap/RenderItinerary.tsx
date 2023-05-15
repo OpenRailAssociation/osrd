@@ -6,6 +6,7 @@ import { RootState } from 'reducers';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { getGeojson, getOrigin, getDestination } from 'reducers/osrdconf/selectors';
+import { GeoJSONFeature } from 'maplibre-gl';
 
 interface RenderItineraryProps {
   layerOrder: number;
@@ -19,7 +20,7 @@ export default function RenderItinerary(props: RenderItineraryProps) {
   const { mapTrackSources } = useSelector((state: RootState) => state.map);
   if (geojson && geojson[mapTrackSources] && origin !== undefined && destination !== undefined) {
     return (
-      <Source type="geojson" data={geojson[mapTrackSources] as any}>
+      <Source type="geojson" data={geojson[mapTrackSources] as GeoJSONFeature}>
         <OrderedLayer
           type="line"
           paint={{
