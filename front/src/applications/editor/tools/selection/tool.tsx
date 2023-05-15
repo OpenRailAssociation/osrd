@@ -10,6 +10,7 @@ import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import {
   BufferStopEntity,
+  CatenaryEntity,
   DetectorEntity,
   SignalEntity,
   SpeedSectionEntity,
@@ -86,9 +87,7 @@ const SelectionTool: Tool<SelectionState> = {
         icon: FiEdit,
         labelTranslationKey: 'Editor.tools.select-items.actions.edit-info',
         isDisabled({ state }) {
-          const types = new Set<string>();
-          state.selection.forEach((item) => types.add(item.objType));
-          return types.size !== 1;
+          return state.selection.length !== 1;
         },
         onClick({ state, switchTool }) {
           if (state.selection.length === 1) {
@@ -149,6 +148,15 @@ const SelectionTool: Tool<SelectionState> = {
                   toolState: {
                     initialEntity: selectedElement as SpeedSectionEntity,
                     entity: selectedElement as SpeedSectionEntity,
+                  },
+                });
+                break;
+              case 'Catenary':
+                switchTool({
+                  toolType: TOOL_TYPES.CATENARY_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as CatenaryEntity,
+                    entity: selectedElement as CatenaryEntity,
                   },
                 });
                 break;

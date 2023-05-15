@@ -76,6 +76,21 @@ export interface SpeedSectionLpvEntity
 export interface SpeedSectionEntity extends EditorEntity<MultiLineString, SpeedSectionProperties> {
   objType: 'SpeedSection';
 }
+
+export interface CatenaryProperties {
+  id: string;
+  track_ranges?: {
+    applicable_directions: ApplicableDirection;
+    begin: number;
+    end: number;
+    track: string;
+  }[];
+  voltage?: string;
+}
+
+export interface CatenaryEntity extends EditorEntity<MultiLineString, CatenaryProperties> {
+  objType: 'Catenary';
+}
 export interface SignalEntity
   extends EditorEntity<
     Point | NullGeometry,

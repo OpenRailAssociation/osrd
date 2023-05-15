@@ -9,6 +9,7 @@ import { Spinner } from 'common/Loader';
 import { NEW_ENTITY_ID } from '../data/utils';
 import {
   BufferStopEntity,
+  CatenaryEntity,
   EditorEntity,
   RouteEntity,
   SignalEntity,
@@ -97,6 +98,7 @@ function getSumUpContent(
   let text = '';
   const subtexts: (string | JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
+
   switch (entity.objType) {
     case 'TrackSection': {
       const trackSection = entity as TrackSectionEntity;
@@ -228,6 +230,26 @@ function getSumUpContent(
           </>
         );
       });
+      break;
+    }
+    case 'Catenary': {
+      const catenarySection = entity as CatenaryEntity;
+      text = catenarySection.properties.id;
+      const { voltage } = catenarySection.properties;
+      subtexts.push(
+        <>
+          <span className={(classes.muted, 'mr-2')}>
+            {t('Editor.tools.select-items.linked-to-n-lines', {
+              count: catenarySection.properties.track_ranges?.length || 0,
+            }).toString()}
+          </span>
+          <span className={classes.muted}>
+            {t('Editor.tools.catenary-edition.voltage', {
+              voltage,
+            }).toString()}
+          </span>
+        </>
+      );
       break;
     }
     default: {

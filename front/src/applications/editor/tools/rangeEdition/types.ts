@@ -1,11 +1,6 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 
-import {
-  SpeedSectionEntity,
-  SpeedSectionLpvEntity,
-  TrackRange,
-  TrackSectionEntity,
-} from '../../../../types';
+import { EditorEntity, TrackRange, TrackSectionEntity } from '../../../../types';
 import { CommonToolState } from '../commonToolState';
 
 export type TrackRangeFeature = Feature<
@@ -86,12 +81,9 @@ export type LpvPanelInformation =
   | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }
   | { panelType: LPV_PANEL_TYPES.Z };
 
-export type SpeedSectionEditionState = CommonToolState & {
-  initialEntity: SpeedSectionEntity;
-  entity: SpeedSectionEntity;
-
-  trackSectionsCache: Record<string, TrackState>;
-
+export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
+  initialEntity: E;
+  entity: E;
   hoveredItem:
     | null
     | HoveredExtremityState
@@ -102,8 +94,5 @@ export type SpeedSectionEditionState = CommonToolState & {
     | { type: 'idle' }
     | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
     | ({ type: 'movePanel' } & LpvPanelInformation);
-};
-
-export type SpeedSectionLpvEditionState = Omit<SpeedSectionEditionState, 'entity'> & {
-  entity: SpeedSectionLpvEntity;
+  trackSectionsCache: Record<string, TrackState>;
 };

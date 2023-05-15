@@ -1,6 +1,6 @@
 import React, { FC, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { groupBy, mapKeys, mapValues, sum, isString, isArray } from 'lodash';
+import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 import { MdSpeed } from 'react-icons/md';
@@ -15,6 +15,7 @@ import lpvsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { useModal, Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
+import { GiElectric } from 'react-icons/gi';
 import { LayerType, EDITOAST_TO_LAYER_DICT, EditoastType } from '../tools/types';
 import { selectLayers } from '../../../reducers/editor';
 import { EditorEntity } from '../../../types';
@@ -31,6 +32,7 @@ const LAYERS: Array<{ layers: LayerType[]; icon: string | JSX.Element }> = [
   { layers: ['switches'], icon: switchesIcon },
   { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
   { layers: ['lpv', 'lpv_panels'], icon: lpvsIcon },
+  { layers: ['catenaries'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
   {
     layers: ['errors'],
     icon: <BsFillExclamationOctagonFill style={{ width: '20px' }} className="mx-2 text-danger" />,
@@ -83,6 +85,11 @@ const LayersModal: FC<LayersModalProps> = ({
         )
       ),
     [selectedLayers, selectionCounts]
+  );
+
+  const memoOptions = useMemo(
+    () => uniq([NO_SPEED_LIMIT_TAG, ...(speedLimitTags || [])]),
+    [speedLimitTags]
   );
 
   return (
@@ -151,8 +158,8 @@ const LayersModal: FC<LayersModalProps> = ({
             disabled={!isArray(speedLimitTags) || !selectedLayers.has('speed_sections')}
             onChange={(e) => setSpeedLimitTag(e.target.value)}
           >
-            {[NO_SPEED_LIMIT_TAG, ...(speedLimitTags || [])].map((tag) => (
-              <option value={tag}>
+            {memoOptions.map((tag) => (
+              <option value={tag} key={tag}>
                 {tag === NO_SPEED_LIMIT_TAG ? t('Editor.layers-modal.no-speed-limit-tag') : tag}
               </option>
             ))}
