@@ -11,6 +11,8 @@ use std::pin::Pin;
 
 use self::edition::edit;
 use super::params::List;
+use crate::core::infra_loading::InfraLoadRequest;
+use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
@@ -42,7 +44,7 @@ use uuid::Uuid;
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
     scope("/infra")
-        .service((list, create, refresh, railjson::routes()))
+        .service((list, create, refresh, infra_load, railjson::routes()))
         .service(
             scope("/{infra}")
                 .service((
@@ -447,6 +449,41 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
     .await
     .unwrap()?;
     Ok(HttpResponse::NoContent().finish())
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct Payload {
+    infra: i64,
+}
+
+/// Builds a Core infra load request, runs it
+async fn call_core_infra_load(
+    payload: Json<Payload>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<()> {
+    let payload = payload.into_inner();
+    let infra_id = payload.infra;
+    let infra = Infra::retrieve(db_pool.clone(), infra_id)
+        .await?
+        .ok_or(InfraApiError::NotFound { infra_id })?;
+    let infra_request = InfraLoadRequest {
+        infra: infra.id.unwrap(),
+        expected_version: infra.version,
+    };
+
+    let response = infra_request.fetch(core.as_ref()).await?;
+    Ok(())
+}
+
+#[post("/infra_load")]
+async fn infra_load(
+    payload: Json<Payload>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<Json<()>> {
+    let infra_load = call_core_infra_load(payload, db_pool, core).await?;
+    Ok(Json(infra_load))
 }
 
 #[cfg(test)]
