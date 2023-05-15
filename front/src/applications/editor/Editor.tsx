@@ -16,17 +16,19 @@ import Tipped from './components/Tipped';
 import Map from './Map';
 import NavButtons from './nav';
 import EditorContext from './context';
+import TOOLS from './tools/tools';
+import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
+import TOOL_TYPES from './tools/toolTypes';
+import { EditorState } from './tools/types';
 import {
-  CommonToolState,
   EditorContextType,
-  EditorState,
   ExtendedEditorContextType,
   FullTool,
   ReadOnlyEditorContextType,
   Reducer,
-} from './tools/types';
-import TOOLS, { TOOL_TYPES, switchProps } from './tools/list';
-import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
+} from './tools/editorContextTypes';
+import { switchProps } from './tools/switchProps';
+import { CommonToolState } from './tools/commonToolState';
 
 const Editor: FC = () => {
   const { t } = useTranslation();

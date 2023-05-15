@@ -19,7 +19,7 @@ import { RouteState } from '../types';
 import EditorContext from '../../../context';
 import { getEntity } from '../../../data/api';
 import EntitySumUp from '../../../components/EntitySumUp';
-import { TOOL_TYPES } from '../../list';
+import TOOL_TYPES from '../../toolTypes';
 
 export const EditEndpoints: FC<{ state: RouteState; onChange: (newState: RouteState) => void }> = ({
   state,

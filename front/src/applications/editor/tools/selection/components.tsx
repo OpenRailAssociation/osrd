@@ -11,12 +11,12 @@ import { SelectionState } from './types';
 import { Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
-import { EditorContextType, ExtendedEditorContextType } from '../types';
 import EntitySumUp from '../../components/EntitySumUp';
 
 import './styles.scss';
 import { zoneToFeature } from '../../../../utils/mapboxHelper';
 import { getMap } from '../../../../reducers/map/selectors';
+import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;

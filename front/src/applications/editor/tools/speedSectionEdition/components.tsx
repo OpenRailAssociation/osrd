@@ -13,7 +13,6 @@ import { MdSpeed } from 'react-icons/md';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import EditorContext from '../../context';
 import { LpvPanelFeature, SpeedSectionEditionState, TrackState } from './types';
-import { ExtendedEditorContextType, LayerType } from '../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from '../../../../common/Map/Layers/GeoJSONs';
 import { getMap } from '../../../../reducers/map/selectors';
@@ -42,6 +41,8 @@ import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { save } from '../../../../reducers/editor';
 import EditLPVSection from './components/EditLPVSection';
+import { ExtendedEditorContextType } from '../editorContextTypes';
+import { LayerType } from '../types';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 

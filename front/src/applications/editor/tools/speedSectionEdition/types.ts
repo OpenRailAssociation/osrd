@@ -1,12 +1,12 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 
-import { CommonToolState } from '../types';
 import {
   SpeedSectionEntity,
   SpeedSectionLpvEntity,
   TrackRange,
   TrackSectionEntity,
 } from '../../../../types';
+import { CommonToolState } from '../commonToolState';
 
 export type TrackRangeFeature = Feature<
   LineString,

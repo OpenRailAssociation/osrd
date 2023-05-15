@@ -1,8 +1,8 @@
 import { Feature, LineString, Position } from 'geojson';
 
-import { CommonToolState } from '../types';
 import { Direction, EndPoint, RouteEntity, WayPoint, WayPointEntity } from '../../../../types';
 import { DirectionalTrackRange } from '../../../../common/api/osrdEditoastApi';
+import { CommonToolState } from '../commonToolState';
 
 export interface RouteCandidate {
   track_ranges: Required<DirectionalTrackRange>[];

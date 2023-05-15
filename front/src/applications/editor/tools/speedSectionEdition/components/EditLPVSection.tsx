@@ -2,11 +2,11 @@ import React from 'react';
 import { cloneDeep } from 'lodash';
 import { LPVExtension, LPVPanel, SpeedSectionLpvEntity } from 'types';
 import { useTranslation } from 'react-i18next';
-import { Reducer } from '../../types';
 import { LpvPanelInformation, SpeedSectionEditionState, LPV_PANEL_TYPES } from '../types';
 import LpvPanelCard from './LpvPanelCard';
 import LpvPanelSubSection from './LpvPanelSubSection';
 import { msToKmh, selectLpvPanel } from '../utils';
+import { Reducer } from '../../editorContextTypes';
 
 const getNewAnnouncementPanel = (
   trackRanges: NonNullable<SpeedSectionLpvEntity['properties']['track_ranges']>,
