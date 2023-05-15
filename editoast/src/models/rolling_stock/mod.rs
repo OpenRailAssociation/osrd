@@ -174,7 +174,7 @@ pub mod tests {
     use diesel::r2d2::{ConnectionManager, Pool};
 
     pub fn get_fast_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!("../../tests/example_rolling_stock.json"))
+        serde_json::from_str(include_str!("../../tests/example_rolling_stock_1.json"))
             .expect("Unable to parse")
     }
 

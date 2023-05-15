@@ -62,5 +62,6 @@
         "series": "",
         "subseries": "US",
         "unit": "1"
-    }
+    },
+    "energy_sources": []
 }

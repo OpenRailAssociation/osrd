@@ -162,7 +162,7 @@ pub struct EnergyStorage {
     soc: f64,
     soc_min: f64,
     soc_max: f64,
-    refill_law: RefillLaw,
+    refill_law: Option<RefillLaw>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -170,14 +170,6 @@ pub struct EnergyStorage {
 pub struct SpeedDependantPower {
     speeds: Vec<f64>,
     powers: Vec<f64>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum EnergySourceType {
-    Catenary,
-    PowerPack,
-    Battery,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

@@ -1150,6 +1150,50 @@ export type ConditionalEffortCurve = {
   } | null;
   curve?: EffortCurve;
 };
+export type SpeedDependantPower = {
+  speeds: number[];
+  powers: number[];
+};
+export type Catenary = {
+  energy_source_type: 'Catenary';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  efficiency: number;
+};
+export type EnergyStorage = {
+  capacity: number;
+  soc: number;
+  soc_min: number;
+  soc_max: number;
+  refill_law: {
+    tau: number;
+    soc_ref: number;
+  } | null;
+};
+export type PowerPack = {
+  energy_source_type: 'PowerPack';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage;
+  efficiency: number;
+};
+export type Battery = {
+  energy_source_type: 'Battery';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage;
+  efficiency: number;
+};
+export type EnergySource =
+  | ({
+      energy_source_type: 'Catenary';
+    } & Catenary)
+  | ({
+      energy_source_type: 'PowerPack';
+    } & PowerPack)
+  | ({
+      energy_source_type: 'Battery';
+    } & Battery);
 export type RollingStockUpsertPayload = {
   version: string;
   name: string;
@@ -1186,6 +1230,7 @@ export type RollingStockUpsertPayload = {
   power_restrictions: {
     [key: string]: string;
   };
+  energy_sources: EnergySource[];
   metadata: {
     detail: string;
     family: string;

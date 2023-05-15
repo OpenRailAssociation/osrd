@@ -137,16 +137,10 @@ class SpeedDependantPower(BaseModel, extra=Extra.forbid):
         return v
 
 
-class EnergySourceType(str, Enum):
-    CATENARY = "CATENARY"
-    POWER_PACK = "POWER_PACK"
-    BATTERY = "BATTERY"
-
-
 class Catenary(BaseModel, extra=Extra.forbid):
     """Catenary used when simulating qualesi trains"""
 
-    energy_source_type: Literal["catenary"] = Field(default="catenary")
+    energy_source_type: Literal["Catenary"] = Field(default="Catenary")
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
     efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the catenary / pantograph transmission")
@@ -155,7 +149,7 @@ class Catenary(BaseModel, extra=Extra.forbid):
 class PowerPack(BaseModel, extra=Extra.forbid):
     """Power pack, either diesel or hydrogen, used when simulating qualesi trains"""
 
-    energy_source_type: Literal["power_pack"] = Field(default="power_pack")
+    energy_source_type: Literal["PowerPack"] = Field(default="PowerPack")
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
     energy_storage: EnergyStorage
@@ -165,10 +159,10 @@ class PowerPack(BaseModel, extra=Extra.forbid):
 class Battery(BaseModel, extra=Extra.forbid):
     """Battery used when simulating qualesi trains"""
 
-    energy_source_type: Literal["catenary"] = Field(default="catenary")
+    energy_source_type: Literal["Battery"] = Field(default="Battery")
     max_input_power: SpeedDependantPower
     max_output_power: SpeedDependantPower
-    energy_storage: Optional[EnergyStorage]
+    energy_storage: EnergyStorage
     efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the battery")
 
 

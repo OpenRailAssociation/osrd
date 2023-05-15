@@ -1713,14 +1713,14 @@ components:
         - $ref: '#/components/schemas/PowerPack'
         - $ref: '#/components/schemas/Battery'
       discriminator:
-        propertyName: energySourceType
+        propertyName: energy_source_type
     Catenary:
       type: object
       required: [energy_source_type, max_input_power, max_output_power, efficiency]
       properties:
         energy_source_type:
           type: string
-          enum: ["catenary"]
+          enum: ["Catenary"]
         max_input_power:
           $ref: "#/components/schemas/SpeedDependantPower"
         max_output_power:
@@ -1728,13 +1728,15 @@ components:
         efficiency:
           type: number
           format: float
+          minimum: 0
+          maximum: 1
     PowerPack:
       type: object
       required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
       properties:
         energy_source_type:
           type: string
-          enum: ["power_pack"]
+          enum: ["PowerPack"]
         max_input_power:
           $ref: "#/components/schemas/SpeedDependantPower"
         max_output_power:
@@ -1744,13 +1746,15 @@ components:
         efficiency:
           type: number
           format: float
+          minimum: 0
+          maximum: 1
     Battery:
       type: object
       required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
       properties:
         energy_source_type:
           type: string
-          enum: ["battery"]
+          enum: ["Battery"]
         max_input_power:
           $ref: "#/components/schemas/SpeedDependantPower"
         max_output_power:
@@ -1760,6 +1764,8 @@ components:
         efficiency:
           type: number
           format: float
+          minimum: 0
+          maximum: 1
     EnergyStorage:
       type: object
       required: [capacity, soc, soc_min, soc_max, refill_law]
@@ -1770,12 +1776,18 @@ components:
         soc:
           type: number
           format: float
+          minimum: 0
+          maximum: 1
         soc_min:
           type: number
           format: float
+          minimum: 0
+          maximum: 1
         soc_max:
           type: number
           format: float
+          minimum: 0
+          maximum: 1
         refill_law:
           type: object
           nullable: true
@@ -1783,9 +1795,12 @@ components:
             tau:
               type: number
               format: float
+              minimum: 0
             soc_ref:
               type: number
               format: float
+              minimum: 0
+              maximum: 1
           required: [tau, soc_ref]
     SpeedDependantPower:
       type: object

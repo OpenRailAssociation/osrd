@@ -127,6 +127,7 @@ impl From<RollingStock> for RollingStockForm {
             loading_gauge: value.loading_gauge,
             metadata: value.metadata,
             power_restrictions: value.power_restrictions,
+            energy_sources: value.energy_sources,
         }
     }
 }

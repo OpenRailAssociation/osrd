@@ -809,6 +809,12 @@ export type SpeedDependantPower = {
   speeds: number[];
   powers: number[];
 };
+export type Catenary = {
+  energy_source_type: 'Catenary';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  efficiency: number;
+};
 export type EnergyStorage = {
   capacity: number;
   soc: number;
@@ -819,13 +825,30 @@ export type EnergyStorage = {
     soc_ref: number;
   } | null;
 };
-export type EnergySource = {
-  energy_source_type: string;
+export type PowerPack = {
+  energy_source_type: 'PowerPack';
   max_input_power: SpeedDependantPower;
   max_output_power: SpeedDependantPower;
-  energy_storage: EnergyStorage | null;
+  energy_storage: EnergyStorage;
   efficiency: number;
 };
+export type Battery = {
+  energy_source_type: 'Battery';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage;
+  efficiency: number;
+};
+export type EnergySource =
+  | ({
+      energy_source_type: 'Catenary';
+    } & Catenary)
+  | ({
+      energy_source_type: 'PowerPack';
+    } & PowerPack)
+  | ({
+      energy_source_type: 'Battery';
+    } & Battery);
 export type RollingStock = LightRollingStock & {
   effort_curves: {
     default_mode?: string;
@@ -837,7 +860,7 @@ export type RollingStock = LightRollingStock & {
       };
     };
   };
-  energy_sources: EnergySource[] | null;
+  energy_sources: EnergySource[];
 };
 export type AllowanceTimePerDistanceValue = {
   value_type?: 'time_per_distance';
