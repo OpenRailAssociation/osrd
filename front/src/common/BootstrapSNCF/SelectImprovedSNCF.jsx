@@ -5,7 +5,18 @@ import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 
 export default function SelectImprovedSNCF(props) {
-  const { inline, title, options, selectedValue, onChange, sm, withSearch } = props;
+  const {
+    inline,
+    title,
+    options,
+    selectedValue,
+    onChange,
+    sm,
+    withSearch,
+    withNewValueInput,
+    addButtonTitle,
+    bgWhite,
+  } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState();
   const [filteredOptions, setFilteredOptions] = useState(options);
@@ -28,6 +39,24 @@ export default function SelectImprovedSNCF(props) {
         </span>
       );
     });
+
+  const renderNewValueInput = (currentValue) => (
+    <div className="select-menu-item" role="listitem">
+      <div className="d-flex flex-column flex-sm-row" data-role="add">
+        <div className="form-control-container w-100 has-left-icon">
+          <button
+            type="button"
+            className="btn btn-primary btn-block btn-sm"
+            onClick={() => {
+              selectItem(currentValue);
+            }}
+          >
+            {addButtonTitle}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderSelectedItem = () => {
     if (selectedItem) {
@@ -70,7 +99,9 @@ export default function SelectImprovedSNCF(props) {
             onClick={() => setIsOpen(!isOpen)}
           >
             <p
-              className="form-control is-placeholder d-flex align-items-center"
+              className={`form-control is-placeholder d-flex align-items-center ${
+                bgWhite ? 'bg-white' : ''
+              }`}
               style={sm ? { minHeight: '1.813rem' } : undefined}
             >
               {renderSelectedItem()}
@@ -107,6 +138,7 @@ export default function SelectImprovedSNCF(props) {
                     <button
                       type="button"
                       className="btn-clear btn-primary"
+                      style={{ width: '2em', height: '2em' }}
                       onClick={() => setFilterText('')}
                     >
                       <span className="sr-only">Clear text</span>
@@ -117,6 +149,10 @@ export default function SelectImprovedSNCF(props) {
               )}
               <div className="flex-fluid overflow-y" role="list" data-role="menu">
                 {renderOptions()}
+                {withNewValueInput &&
+                  filterText &&
+                  !filteredOptions.includes(filterText) &&
+                  renderNewValueInput(filterText)}
               </div>
             </div>
           </div>
@@ -151,6 +187,9 @@ SelectImprovedSNCF.propTypes = {
   selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   title: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   withSearch: PropTypes.bool,
+  withNewValueInput: PropTypes.bool,
+  addButtonTitle: PropTypes.string,
+  bgWhite: PropTypes.bool,
 };
 
 SelectImprovedSNCF.defaultProps = {
@@ -159,4 +198,7 @@ SelectImprovedSNCF.defaultProps = {
   sm: false,
   title: null,
   withSearch: false,
+  withNewValueInput: false,
+  addButtonTitle: null,
+  bgWhite: false,
 };
