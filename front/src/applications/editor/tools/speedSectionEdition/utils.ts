@@ -7,7 +7,6 @@ import lineSliceAlong from '@turf/line-slice-along';
 
 import { getNearestPoint } from 'utils/mapboxHelper';
 import { NEW_ENTITY_ID } from '../../data/utils';
-import { DEFAULT_COMMON_TOOL_STATE, Reducer } from '../types';
 import {
   LPVExtension,
   LPVPanel,
@@ -31,6 +30,8 @@ import {
   getHoveredTrackRanges,
   getTrackSectionEntityFromNearestPoint,
 } from '../utils';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { Reducer } from '../editorContextTypes';
 
 // Tool functions
 /**

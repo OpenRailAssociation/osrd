@@ -12,7 +12,6 @@ import { FiSearch } from 'react-icons/fi';
 
 import { EditRoutePathState, RouteEditionState } from '../types';
 import EditorContext from '../../../context';
-import { ExtendedEditorContextType } from '../../types';
 import { getCompatibleRoutes, getEntity } from '../../../data/api';
 import { EditorEntity, RouteEntity, WayPointEntity } from '../../../../../types';
 import { LoaderFill } from '../../../../../common/Loader';
@@ -25,6 +24,7 @@ import EntitySumUp from '../../../components/EntitySumUp';
 import { EditEndpoints } from './Endpoints';
 import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
 import { getMapStyle } from '../../../../../reducers/map/selectors';
+import { ExtendedEditorContextType } from '../../editorContextTypes';
 
 export const EditRoutePathLeftPanel: FC<{ state: EditRoutePathState }> = ({ state }) => {
   const { t } = useTranslation();

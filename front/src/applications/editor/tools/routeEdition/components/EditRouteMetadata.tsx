@@ -11,7 +11,6 @@ import { MdDelete, MdSave } from 'react-icons/md';
 import { FiSearch } from 'react-icons/fi';
 
 import { EditRoutePathState, EditRouteMetadataState, RouteEditionState } from '../types';
-import { ExtendedEditorContextType } from '../../types';
 import {
   getRoutesLineLayerProps,
   getRoutesPointLayerProps,
@@ -29,6 +28,7 @@ import { save } from '../../../../../reducers/editor';
 import { DisplayEndpoints } from './Endpoints';
 import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
 import { getMapStyle } from '../../../../../reducers/map/selectors';
+import { ExtendedEditorContextType } from '../../editorContextTypes';
 
 export const EditRouteMetadataPanel: FC<{ state: EditRouteMetadataState }> = ({ state }) => {
   const dispatch = useDispatch();

@@ -1,7 +1,8 @@
 import { Feature, Point } from 'geojson';
 
-import { CommonToolState, LayerType } from '../types';
 import { EditorEntity } from '../../../../types';
+import { CommonToolState } from '../commonToolState';
+import { LayerType } from '../types';
 
 export type PointEditionState<E extends EditorEntity> = CommonToolState & {
   initialEntity: E;

@@ -13,7 +13,6 @@ import { Position } from 'geojson';
 
 import EditorContext from '../../context';
 import Tipped from '../../components/Tipped';
-import { ExtendedEditorContextType } from '../types';
 import {
   EntityObjectOperationResult,
   DEFAULT_ENDPOINT,
@@ -46,6 +45,7 @@ import EntitySumUp from '../../components/EntitySumUp';
 import { getEntity } from '../../data/api';
 import { getInfraID, getSwitchTypes } from '../../../../reducers/osrdconf/selectors';
 import { getMap } from '../../../../reducers/map/selectors';
+import { ExtendedEditorContextType } from '../editorContextTypes';
 
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
