@@ -4,7 +4,6 @@ import { lineString, point } from '@turf/helpers';
 import lineSlice from '@turf/line-slice';
 
 import { RouteCandidate, RouteEditionState } from './types';
-import { DEFAULT_COMMON_TOOL_STATE } from '../types';
 import {
   PartialButFor,
   RouteEntity,
@@ -14,6 +13,7 @@ import {
   WayPointEntity,
 } from '../../../../types';
 import { getEntities, getEntity, getMixedEntities, getRouteTrackRanges } from '../../data/api';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 
 export function getEmptyCreateRouteState(): RouteEditionState {
   return {

@@ -24,14 +24,15 @@ import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
-import { EditoastType, EditorContextType, ExtendedEditorContextType } from '../types';
+import { EditoastType } from '../types';
 import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEntities, getEntity, getRoutesFromWaypoint } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import { getEditRouteState } from '../routeEdition/utils';
 import { getMap } from '../../../../reducers/map/selectors';
-import { TOOL_TYPES } from '../list';
+import TOOL_TYPES from '../toolTypes';
+import { EditorContextType, ExtendedEditorContextType } from '../editorContextTypes';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 

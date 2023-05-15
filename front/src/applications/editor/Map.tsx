@@ -25,19 +25,12 @@ import IGN_BD_ORTHO from '../../common/Map/Layers/IGN_BD_ORTHO';
 import { Viewport } from '../../reducers/map';
 import { getMapMouseEventNearestFeature } from '../../utils/mapboxHelper';
 import EditorContext from './context';
-import {
-  CommonToolState,
-  EditorContextType,
-  EditorState,
-  ExtendedEditorContextType,
-  LAYER_TO_EDITOAST_DICT,
-  LAYERS_SET,
-  LayerType,
-  Tool,
-} from './tools/types';
+import { EditorState, LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from './tools/types';
 import { getEntity } from './data/api';
 import { getInfraID, getSwitchTypes } from '../../reducers/osrdconf/selectors';
 import { getShowOSM } from '../../reducers/map/selectors';
+import { CommonToolState } from './tools/commonToolState';
+import { EditorContextType, ExtendedEditorContextType, Tool } from './tools/editorContextTypes';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;

@@ -4,7 +4,7 @@ import { PointLike } from 'mapbox-gl';
 import { isEqual, max, min } from 'lodash';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
-import { DEFAULT_COMMON_TOOL_STATE, LAYER_TO_EDITOAST_DICT, LayerType, Tool } from '../types';
+import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
 import { save } from '../../../../reducers/editor';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
@@ -18,8 +18,10 @@ import {
 } from '../../../../types';
 import { getMixedEntities } from '../../data/api';
 import { selectInZone } from '../../../../utils/mapboxHelper';
-import { TOOL_TYPES } from '../list';
+import TOOL_TYPES from '../toolTypes';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 import { TrackEditionState } from '../trackEdition/types';
+import { Tool } from '../editorContextTypes';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',

@@ -1,7 +1,7 @@
 import { Feature, Point } from 'geojson';
 
-import { CommonToolState } from '../types';
 import { TrackSectionEntity } from '../../../../types';
+import { CommonToolState } from '../commonToolState';
 
 export type TrackEditionState = CommonToolState & {
   track: TrackSectionEntity;

@@ -17,7 +17,6 @@ import {
   SpeedSectionEntity,
   TrackSectionEntity,
 } from '../../../../types';
-import { ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import { getMap } from '../../../../reducers/map/selectors';
@@ -26,7 +25,8 @@ import { getAttachedItems, getEntities } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { getEditSpeedSectionState } from '../speedSectionEdition/utils';
-import { TOOL_TYPES } from '../list';
+import TOOL_TYPES from '../toolTypes';
+import { ExtendedEditorContextType } from '../editorContextTypes';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';

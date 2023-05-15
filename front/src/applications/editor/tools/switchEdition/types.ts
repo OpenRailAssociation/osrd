@@ -1,7 +1,7 @@
 import { Position } from 'geojson';
 
-import { CommonToolState } from '../types';
 import { EndPoint, SwitchEntity } from '../../../../types';
+import { CommonToolState } from '../commonToolState';
 
 export type PortEndPointCandidate = {
   endPoint: EndPoint;

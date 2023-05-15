@@ -3,13 +3,7 @@ import { IoMdAddCircleOutline } from 'react-icons/io';
 import { cloneDeep, isEqual } from 'lodash';
 import { BiReset } from 'react-icons/bi';
 
-import {
-  DEFAULT_COMMON_TOOL_STATE,
-  LAYER_TO_EDITOAST_DICT,
-  LAYERS_SET,
-  LayerType,
-  Tool,
-} from '../types';
+import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from '../types';
 import {
   HoveredExtremityState,
   HoveredPanelState,
@@ -36,6 +30,8 @@ import {
 import { SpeedSectionLpvEntity, TrackSectionEntity } from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { approximateDistanceWithEditoastData } from '../utils';
+import { Tool } from '../editorContextTypes';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 
 const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
   id: 'speed-edition',

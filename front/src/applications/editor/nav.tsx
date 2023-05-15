@@ -12,13 +12,7 @@ import { NavigateFunction } from 'react-router-dom';
 
 import { Viewport } from 'reducers/map';
 import { ModalContextType } from '../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import {
-  EditorState,
-  EDITOAST_TO_LAYER_DICT,
-  Tool,
-  EditoastType,
-  EditorContextType,
-} from './tools/types';
+import { EditorState, EDITOAST_TO_LAYER_DICT, EditoastType } from './tools/types';
 import InfraSelectorModal from '../../common/InfraSelector/InfraSelectorModal';
 import InfraErrorsModal from './components/InfraErrors/InfraErrorsModal';
 import LayersModal from './components/LayersModal';
@@ -27,7 +21,8 @@ import { RouteEntity } from '../../types';
 import { getEditRouteState } from './tools/routeEdition/utils';
 import { getEntity } from './data/api';
 import { InfraError } from './components/InfraErrors/types';
-import { TOOL_TYPES } from './tools/list';
+import TOOL_TYPES from './tools/toolTypes';
+import { EditorContextType, Tool } from './tools/editorContextTypes';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
