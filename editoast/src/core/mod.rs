@@ -1,4 +1,5 @@
 mod http_client;
+pub mod infra_loading;
 #[cfg(test)]
 pub mod mocking;
 pub mod pathfinding;
