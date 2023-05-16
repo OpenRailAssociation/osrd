@@ -85,15 +85,17 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
             }
         }
 
-        match (adj.edges.len(), adj.tracks.len()) {
-            (0, _) => error!("osm-to-railjson: node {} without edge", node.0),
+        let id = node.0;
+        let edges_count = adj.edges.len();
+        let branches_count = adj.branches.len();
+        match (edges_count, branches_count) {
+            (0, _) => error!("node {id} without edge"),
             (1, _) => {} // TODO: handle buffer stops
             (2, 1) => railjson.track_section_links.push(TrackSectionLink {
                 id: node.0.to_string().into(),
-                src: adj.tracks[0].0.clone(),
-                dst: adj.tracks[0].1.clone(),
+                src: adj.branches[0].0.clone(),
+                dst: adj.branches[0].1.clone(),
             }),
-            (2, _) => log::debug!("osm-to-railjson: node {} with 2 edges, not 1 track", node.0),
             (3, 2) => railjson.switches.push(point_switch(node, &adj.tracks)),
             (4, 2) => railjson
                 .switches
@@ -128,6 +130,7 @@ mod tests {
         let railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
         assert_eq!(3, railjson.switch_types.len());
         assert_eq!(2, railjson.switches.len());
+
         let switch = &railjson.switches[0];
         assert_eq!("point", switch.switch_type.as_str());
         assert_eq!(3, switch.ports.len());
