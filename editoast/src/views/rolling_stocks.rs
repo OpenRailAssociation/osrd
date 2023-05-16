@@ -324,7 +324,7 @@ async fn create_compound_image(
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::RollingStockError;
     use crate::error::InternalError;
     use crate::fixtures::tests::{fast_rolling_stock, other_rolling_stock, TestFixture};
@@ -411,7 +411,7 @@ mod tests {
             .to_request()
     }
 
-    fn rolling_stock_delete_request(rolling_stock_id: i64) -> Request {
+    pub fn rolling_stock_delete_request(rolling_stock_id: i64) -> Request {
         TestRequest::delete()
             .uri(format!("/rolling_stock/{rolling_stock_id}").as_str())
             .to_request()

@@ -102,7 +102,10 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
     }),
     getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/voltages/` }),
+      query: (queryArg) => ({
+        url: `/infra/${queryArg.id}/voltages/`,
+        params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
+      }),
     }),
     getInfraByIdAttachedAndTrackId: build.query<
       GetInfraByIdAttachedAndTrackIdApiResponse,
@@ -550,10 +553,12 @@ export type GetInfraByIdSpeedLimitTagsApiArg = {
   /** Infra id */
   id: number;
 };
-export type GetInfraByIdVoltagesApiResponse = /** status 200 Voltages list */ number[];
+export type GetInfraByIdVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraByIdVoltagesApiArg = {
   /** Infra ID */
   id: number;
+  /** include rolling stocks modes or not */
+  includeRollingStockModes?: boolean;
 };
 export type GetInfraByIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
