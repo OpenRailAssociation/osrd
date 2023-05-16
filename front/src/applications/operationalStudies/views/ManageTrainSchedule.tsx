@@ -14,9 +14,14 @@ import { FaPen, FaPlus } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
-import { getShouldRunPathfinding, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
-import { updateShouldRunPathfinding } from 'reducers/osrdconf';
+import {
+  getPathfindingID,
+  getShouldRunPathfinding,
+  getTrainScheduleIDsToModify,
+} from 'reducers/osrdconf/selectors';
+import { updatePathWithCatenaries, updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
+import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
 import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
 
 type Props = {
@@ -31,9 +36,22 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
   );
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const [isWorking, setIsWorking] = useState(false);
+  const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
+
+  const { pathWithCatenaries } = osrdEditoastApi.useGetPathfindingByPathIdCatenariesQuery(
+    { pathId: pathFindingID as number },
+    {
+      skip: !pathFindingID,
+      refetchOnMountOrArgChange: true,
+      selectFromResult: (response) => ({
+        ...response,
+        pathWithCatenaries: response.data?.catenary_ranges,
+      }),
+    }
+  );
 
   function confirmButton() {
     return trainScheduleIDsToModify ? (
@@ -83,6 +101,10 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
           }
         });
   }, [trainScheduleIDsToModify]);
+
+  useEffect(() => {
+    dispatch(updatePathWithCatenaries(pathWithCatenaries as CatenaryRange[]));
+  }, [pathWithCatenaries]);
 
   useEffect(() => {
     setMustUpdatePathfinding(false);
