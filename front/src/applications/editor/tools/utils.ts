@@ -4,7 +4,7 @@ import length from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import { TrackSectionEntity } from 'types';
 import { NearestPoint } from '@turf/nearest-point';
-import { TrackState } from './speedSectionEdition/types';
+import { TrackState } from './rangeEdition/types';
 
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)

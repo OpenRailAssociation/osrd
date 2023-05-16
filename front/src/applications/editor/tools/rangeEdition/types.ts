@@ -1,12 +1,14 @@
 import { Feature, LineString, Point, Position } from 'geojson';
 
 import {
+  EditorEntity,
   SpeedSectionEntity,
   SpeedSectionLpvEntity,
   TrackRange,
   TrackSectionEntity,
 } from '../../../../types';
 import { CommonToolState } from '../commonToolState';
+import { LayerType } from '../types';
 
 export type TrackRangeFeature = Feature<
   LineString,
@@ -106,4 +108,20 @@ export type SpeedSectionEditionState = CommonToolState & {
 
 export type SpeedSectionLpvEditionState = Omit<SpeedSectionEditionState, 'entity'> & {
   entity: SpeedSectionLpvEntity;
+};
+
+export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
+  initialEntity: E;
+  entity: E;
+  hoveredItem:
+    | null
+    | HoveredExtremityState
+    | HoveredRangeState
+    | HoveredPanelState
+    | (NonNullable<CommonToolState['hovered']> & { speedSectionItemType?: undefined });
+  interactionState:
+    | { type: 'idle' }
+    | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
+    | ({ type: 'movePanel' } & LpvPanelInformation);
+  trackSectionsCache: Record<string, TrackState>;
 };

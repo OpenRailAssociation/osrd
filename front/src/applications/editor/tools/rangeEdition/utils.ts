@@ -31,7 +31,7 @@ import {
   getTrackSectionEntityFromNearestPoint,
 } from '../utils';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { Reducer } from '../editorContextTypes';
+import { PartialOrReducer, Reducer } from '../editorContextTypes';
 
 // Tool functions
 /**
@@ -305,9 +305,7 @@ export function kmhToMs(v: number): number {
  */
 export function selectLpvPanel(
   lpvPanel: LpvPanelInformation,
-  setState: (
-    stateOrReducer: Partial<SpeedSectionEditionState> | Reducer<SpeedSectionEditionState>
-  ) => void
+  setState: (stateOrReducer: PartialOrReducer<SpeedSectionEditionState>) => void
 ) {
   const { panelType } = lpvPanel;
   const interactionState =
