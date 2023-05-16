@@ -127,9 +127,13 @@ mod tests {
     fn parse_switches() {
         let railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
         assert_eq!(3, railjson.switch_types.len());
-        assert_eq!(1, railjson.switches.len());
+        assert_eq!(2, railjson.switches.len());
         let switch = &railjson.switches[0];
         assert_eq!("point", switch.switch_type.as_str());
         assert_eq!(3, switch.ports.len());
+
+        let cross = &railjson.switches[1];
+        assert_eq!("cross_over", cross.switch_type.as_str());
+        assert_eq!(4, cross.ports.len());
     }
 }
