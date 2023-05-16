@@ -23,7 +23,7 @@ use actix_web::web::{block, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, post, put, HttpResponse, Responder};
 use chashmap::CHashMap;
 use chrono::Utc;
-use diesel::sql_types::{BigInt, Double, Text};
+use diesel::sql_types::{BigInt, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use editoast_derive::EditoastError;
 use futures::future::join_all;
@@ -99,8 +99,8 @@ struct SpeedLimitTags {
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 struct Voltage {
-    #[diesel(sql_type = Double)]
-    voltage: f64,
+    #[diesel(sql_type = Text)]
+    voltage: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -350,21 +350,30 @@ async fn get_speed_limit_tags(
     ))
 }
 
-/// Returns the set of voltages for a given infra
+#[derive(Debug, Clone, Deserialize)]
+struct GetVoltagesQueryParams {
+    #[serde(default)]
+    include_rolling_stock_modes: bool,
+}
+
+/// Returns the set of voltages for a given infra and/or rolling_stocks modes.
+/// If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
 #[get("/voltages")]
-async fn get_voltages(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<Json<Vec<f64>>> {
+async fn get_voltages(
+    infra: Path<i64>,
+    param: Query<GetVoltagesQueryParams>,
+    db_pool: Data<DbPool>,
+) -> Result<Json<Vec<String>>> {
     let infra = infra.into_inner();
+    let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
     let voltages: Vec<Voltage> = block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        match sql_query(
-            "SELECT DISTINCT ((data->'voltage')->>0)::float AS voltage
-                FROM osrd_infra_catenarymodel
-                WHERE infra_id = $1
-                ORDER BY voltage",
-        )
-        .bind::<BigInt, _>(infra)
-        .load(&mut conn)
-        {
+        let query = if !include_rolling_stock_modes {
+            include_str!("sql/get_voltages_without_rolling_stocks_modes.sql")
+        } else {
+            include_str!("sql/get_voltages_with_rolling_stocks_modes.sql")
+        };
+        match sql_query(query).bind::<BigInt, _>(infra).load(&mut conn) {
             Ok(voltages) => Ok(voltages),
             Err(err) => Err(err.into()),
         }
@@ -414,9 +423,11 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
 
 #[cfg(test)]
 pub mod tests {
-    use crate::models::Infra;
+    use crate::models::rolling_stock::tests::get_other_rolling_stock;
+    use crate::models::{Infra, RollingStockModel};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};
+    use crate::views::rolling_stocks::tests::rolling_stock_delete_request;
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
@@ -586,20 +597,57 @@ pub mod tests {
         let infra: Infra =
             call_and_read_body_json(&app, create_infra_request("get_voltages_test")).await;
 
+        let test_cases = vec![true, false];
+        // Create catenary
         let catenary = Catenary {
             id: "test".into(),
             voltage: "0".into(),
             track_ranges: vec![],
         };
+
         let req = create_object_request(infra.id.unwrap(), catenary.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}/voltages/", infra.id.unwrap()).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        // Create rolling_stock
+        let rolling_stock: RollingStockModel = get_other_rolling_stock();
+        let post_response = call_service(
+            &app,
+            TestRequest::post()
+                .uri("/rolling_stock")
+                .set_json(rolling_stock)
+                .to_request(),
+        )
+        .await;
+        let rolling_stock: RollingStockModel = read_body_json(post_response).await;
+        let rolling_stock_id = rolling_stock.id.unwrap();
 
+        for include_rolling_stock_modes in test_cases {
+            let req = TestRequest::get()
+                .uri(
+                    format!(
+                        "/infra/{}/voltages/?include_rolling_stock_modes={}",
+                        infra.id.unwrap(),
+                        include_rolling_stock_modes
+                    )
+                    .as_str(),
+                )
+                .to_request();
+            let response = call_service(&app, req).await;
+            assert_eq!(response.status(), StatusCode::OK);
+
+            if !include_rolling_stock_modes {
+                let voltages: Vec<String> = read_body_json(response).await;
+                assert_eq!(voltages[0], "0");
+                assert_eq!(voltages.len(), 1);
+            } else {
+                let voltages: Vec<String> = read_body_json(response).await;
+                assert_eq!(voltages[1], "25000");
+            }
+        }
+        // Delete Rolling_stock
+        let delete_request = rolling_stock_delete_request(rolling_stock_id);
+        let delete_response = call_service(&app, delete_request).await;
+        assert_eq!(delete_response.status(), StatusCode::NO_CONTENT);
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
