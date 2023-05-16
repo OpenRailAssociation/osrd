@@ -12,23 +12,17 @@ import { NavigateFunction } from 'react-router-dom';
 
 import { Viewport } from 'reducers/map';
 import { ModalContextType } from '../../common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import {
-  EditorState,
-  EDITOAST_TO_LAYER_DICT,
-  Tool,
-  EditoastType,
-  EditorContextType,
-} from './tools/types';
+import { EditorState, EDITOAST_TO_LAYER_DICT, EditoastType } from './tools/types';
 import InfraSelectorModal from '../../common/InfraSelector/InfraSelectorModal';
 import InfraErrorsModal from './components/InfraErrors/InfraErrorsModal';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
 import { RouteEntity } from '../../types';
-import RouteEditionTool from './tools/routeEdition/tool';
 import { getEditRouteState } from './tools/routeEdition/utils';
 import { getEntity } from './data/api';
 import { InfraError } from './components/InfraErrors/types';
-import SelectionTool from './tools/selection/tool';
+import TOOL_TYPES from './tools/toolTypes';
+import { EditorContextType, Tool } from './tools/editorContextTypes';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
@@ -140,7 +134,9 @@ const NavButtons: NavButton[][] = [
                 (setToolState as unknown as (newState: SelectionState) => void)({
                   ...currentState,
                   selection: currentState.selection.filter((entity) =>
-                    newLayers.has(EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType])
+                    EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType].every((layer) =>
+                      newLayers.has(layer)
+                    )
                   ),
                 } as SelectionState);
               }
@@ -174,9 +170,12 @@ const NavButtons: NavButton[][] = [
               );
               // select the item in the editor scope
               if (entity.objType === 'Route') {
-                switchTool(RouteEditionTool, getEditRouteState(entity as RouteEntity));
+                switchTool({
+                  toolType: TOOL_TYPES.ROUTE_EDITION,
+                  toolState: getEditRouteState(entity as RouteEntity),
+                });
               } else {
-                switchTool(SelectionTool, { selection: [entity] });
+                switchTool({ toolType: TOOL_TYPES.SELECTION, toolState: { selection: [entity] } });
 
                 // center the map on the object
                 if (item.geographic) {

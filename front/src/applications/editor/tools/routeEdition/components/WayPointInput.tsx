@@ -6,12 +6,12 @@ import { Position } from 'geojson';
 
 import { EndPoint, WayPoint, WayPointEntity } from '../../../../../types';
 import EditorContext from '../../../context';
-import { ExtendedEditorContextType } from '../../types';
 import { EditRoutePathState } from '../types';
 import { getEntity } from '../../../data/api';
 import EntitySumUp from '../../../components/EntitySumUp';
 import Tipped from '../../../components/Tipped';
 import { getInfraID } from '../../../../../reducers/osrdconf/selectors';
+import { ExtendedEditorContextType } from '../../editorContextTypes';
 
 const WayPointInput: FC<{
   endPoint: EndPoint;

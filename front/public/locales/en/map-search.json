@@ -2,7 +2,8 @@
   "linecode": "Line code",
   "name": "Name",
   "noresult": "No results",
-  "placeholderline": "Line number",
+  "placeholderline": "Line name or number",
+  "placeholdersignal": "Signal name",
   "placeholdername": "Name, label",
   "pk": "PK",
   "resultsCount_zero": "No results",
@@ -16,9 +17,9 @@
   "type": "Type",
   "line": "Line",
   "reset": "Reset",
-  "aspect": "Aspect",
-  "noAspectSelected": "No selected aspect",
+  "aspects": "States",
+  "noAspectSelected": "No state selected",
   "errorMessages": {
-    "unableToSearchSignal": "Impossible to search signal"
+    "unableToSearchSignal": "Signal search impossible"
   }
 }

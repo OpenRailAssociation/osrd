@@ -1,0 +1,7 @@
+{
+  "missingInfoTitle": "Pathfinding impossible: missing informations",
+  "missingInfra": "You have to select an infrastructure",
+  "missingTimeTable": "You have to select a timetable",
+  "missingRollingStock": "You have to select a rolling stock",
+  "missingSpeedLimitByTag": "You have to select a composition code"
+}

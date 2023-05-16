@@ -1,3 +1,4 @@
+pub mod geometry;
 mod identifier;
 mod non_blank_string;
 

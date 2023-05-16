@@ -43,6 +43,8 @@ poetry --directory=python/railjson_generator shell
 xdg-open http://localhost:3000/
 ```
 
+(Linux users can use `docker-compose-host.yml` to enable host networking)
+
 ## Get in touch
 
 - Chat with us on IRC at [libera.chat#osrd](https://web.libera.chat/#osrd)

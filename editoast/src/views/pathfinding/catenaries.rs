@@ -231,7 +231,8 @@ pub mod tests {
     use crate::{
         fixtures::tests::{db_pool, empty_infra, TestFixture},
         models::{
-            infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding, Create,
+            infra_objects::catenary::Catenary, pathfinding::tests::simple_pathfinding,
+            pathfinding::PathfindingChangeset, Create,
         },
         schema::{
             ApplicableDirections, ApplicableDirectionsTrackRange, Catenary as CatenarySchema,
@@ -515,9 +516,15 @@ pub mod tests {
     ) {
         let infra_with_catenaries = infra_with_catenaries.await;
         let pathfinding = simple_pathfinding(infra_with_catenaries.id());
+        let pathfinding: Pathfinding = PathfindingChangeset::from(pathfinding)
+            .create(db_pool.clone())
+            .await
+            .unwrap()
+            .into();
         let pathfinding = TestFixture {
-            model: pathfinding.create(db_pool.clone()).await.unwrap(),
+            model: pathfinding,
             db_pool,
+            infra: None,
         };
 
         let app = create_test_service().await;

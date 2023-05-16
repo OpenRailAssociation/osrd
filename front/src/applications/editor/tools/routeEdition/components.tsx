@@ -3,13 +3,13 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import EditorContext from '../../context';
-import { ExtendedEditorContextType } from '../types';
 import colors from '../../../../common/Map/Consts/colors';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import { RouteEditionState } from './types';
 import { EditRoutePathEditionLayers, EditRoutePathLeftPanel } from './components/EditRoutePath';
 import { EditRouteMetadataLayers, EditRouteMetadataPanel } from './components/EditRouteMetadata';
 import { getMap } from '../../../../reducers/map/selectors';
+import { ExtendedEditorContextType } from '../editorContextTypes';
 
 export const RouteEditionLeftPanel: FC = () => {
   const { state } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;

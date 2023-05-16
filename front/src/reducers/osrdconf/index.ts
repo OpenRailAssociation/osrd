@@ -674,7 +674,7 @@ export function deleteItinerary() {
     });
   };
 }
-export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange) {
+export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_POWER_RESTRICTION,

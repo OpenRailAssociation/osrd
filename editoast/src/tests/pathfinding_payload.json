@@ -1,0 +1,350 @@
+{
+    "route_paths": [
+        {
+            "route": "rt.buffer_stop.3->DB0",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 2820.0,
+                    "begin": 819.0899794930589,
+                    "track": "TB0",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DB0->DA7_2",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 3000.0,
+                    "begin": 2820.0,
+                    "track": "TB0",
+                    "direction": "START_TO_STOP"
+                },
+                {
+                    "end": 50.0,
+                    "begin": 0.0,
+                    "track": "TA5",
+                    "direction": "START_TO_STOP"
+                },
+                {
+                    "end": 3400.0,
+                    "begin": 0.0,
+                    "track": "TA7",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DA7_2->DA7_5",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 8200.0,
+                    "begin": 3400.0,
+                    "track": "TA7",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DA7_5->DA6",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 9820.0,
+                    "begin": 8200.0,
+                    "track": "TA7",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DA6->DC6",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 10000.0,
+                    "begin": 9820.0,
+                    "track": "TA7",
+                    "direction": "START_TO_STOP"
+                },
+                {
+                    "end": 820.0,
+                    "begin": 0.0,
+                    "track": "TC2",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DC6->DD1_2",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 1000.0,
+                    "begin": 820.0,
+                    "track": "TC2",
+                    "direction": "START_TO_STOP"
+                },
+                {
+                    "end": 3275.0,
+                    "begin": 0.0,
+                    "track": "TD1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DD1_2->DD1_5",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 7887.5,
+                    "begin": 3275.0,
+                    "track": "TD1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DD1_5->DD1_8",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 12500.0,
+                    "begin": 7887.5,
+                    "track": "TD1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DD1_8->DD1_11",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 17112.5,
+                    "begin": 12500.0,
+                    "track": "TD1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DD1_11->DD1_14",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 21725.0,
+                    "begin": 17112.5,
+                    "track": "TD1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DD1_14->DD3",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 24820.0,
+                    "begin": 21725.0,
+                    "track": "TD1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DD3->DH0",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 25000.0,
+                    "begin": 24820.0,
+                    "track": "TD1",
+                    "direction": "START_TO_STOP"
+                },
+                {
+                    "end": 2820.0,
+                    "begin": 0.0,
+                    "track": "TD3",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DH0->DH2",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 3000.0,
+                    "begin": 2820.0,
+                    "track": "TD3",
+                    "direction": "START_TO_STOP"
+                },
+                {
+                    "end": 820.0,
+                    "begin": 0.0,
+                    "track": "TH0",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DH2->DH1_1",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 1000.0,
+                    "begin": 820.0,
+                    "track": "TH0",
+                    "direction": "START_TO_STOP"
+                },
+                {
+                    "end": 1800.0,
+                    "begin": 0.0,
+                    "track": "TH1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DH1_1->DH1_2",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 3400.0,
+                    "begin": 1800.0,
+                    "track": "TH1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        },
+        {
+            "route": "rt.DH1_2->buffer_stop.7",
+            "signaling_type": "BAL3",
+            "track_sections": [
+                {
+                    "end": 4545.276310898475,
+                    "begin": 3400.0,
+                    "track": "TH1",
+                    "direction": "START_TO_STOP"
+                }
+            ]
+        }
+    ],
+    "path_waypoints": [
+        {
+            "id": null,
+            "geo": {
+                "type": "Point",
+                "coordinates": [
+                    -0.389514132597789,
+                    49.49
+                ]
+            },
+            "sch": {
+                "type": "Point",
+                "coordinates": [
+                    -0.389514132597789,
+                    49.49
+                ]
+            },
+            "name": null,
+            "track": "TB0",
+            "duration": 0.0,
+            "position": 819.0899794930589,
+            "suggestion": false
+        },
+        {
+            "id": "Mid_West_station",
+            "geo": {
+                "type": "Point",
+                "coordinates": [
+                    -0.3037,
+                    49.4999
+                ]
+            },
+            "sch": {
+                "type": "Point",
+                "coordinates": [
+                    -0.3037,
+                    49.4999
+                ]
+            },
+            "name": "Mid_West_station",
+            "track": "TC2",
+            "duration": 0.0,
+            "position": 450.0,
+            "suggestion": true
+        },
+        {
+            "id": "Mid_East_station",
+            "geo": {
+                "type": "Point",
+                "coordinates": [
+                    -0.22656,
+                    49.4999
+                ]
+            },
+            "sch": {
+                "type": "Point",
+                "coordinates": [
+                    -0.22656,
+                    49.4999
+                ]
+            },
+            "name": "Mid_East_station",
+            "track": "TD1",
+            "duration": 0.0,
+            "position": 14000.0,
+            "suggestion": true
+        },
+        {
+            "id": "South_East_station",
+            "geo": {
+                "type": "Point",
+                "coordinates": [
+                    -0.094993330836179,
+                    49.484
+                ]
+            },
+            "sch": {
+                "type": "Point",
+                "coordinates": [
+                    -0.094993330836179,
+                    49.484
+                ]
+            },
+            "name": "South_East_station",
+            "track": "TH1",
+            "duration": 0.0,
+            "position": 4400.0,
+            "suggestion": true
+        },
+        {
+            "id": null,
+            "geo": {
+                "type": "Point",
+                "coordinates": [
+                    -0.093784309697886,
+                    49.484
+                ]
+            },
+            "sch": {
+                "type": "Point",
+                "coordinates": [
+                    -0.093784309697886,
+                    49.484
+                ]
+            },
+            "name": null,
+            "track": "TH1",
+            "duration": 1.0,
+            "position": 4545.276310898475,
+            "suggestion": false
+        }
+    ]
+}
