@@ -96,9 +96,6 @@ function getSumUpContent(
 ): JSX.Element {
   let type = t(`Editor.obj-types.${entity.objType}`);
   let text = '';
-  if (entity.objType === 'Catenary') {
-    console.log('entity', entity.properties);
-  }
   const subtexts: (string | JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
   switch (entity.objType) {
@@ -235,23 +232,23 @@ function getSumUpContent(
       break;
     }
     case 'Catenary': {
-      const speedSection = entity as CatenaryEntity;
-      text = speedSection.properties.id;
+      const catenarySection = entity as CatenaryEntity;
+      text = catenarySection.properties.id;
+      const { voltage } = catenarySection.properties;
       subtexts.push(
-        <span className={classes.muted}>
-          {t('Editor.tools.select-items.linked-to-n-lines', {
-            count: speedSection.properties.track_ranges?.length || 0,
-          }).toString()}
-        </span>
+        <>
+          <span className={(classes.muted, 'mr-2')}>
+            {t('Editor.tools.select-items.linked-to-n-lines', {
+              count: catenarySection.properties.track_ranges?.length || 0,
+            }).toString()}
+          </span>
+          <span className={classes.muted}>
+            {t('Editor.tools.catenary-edition.voltage', {
+              voltage,
+            }).toString()}
+          </span>
+        </>
       );
-      forEach(speedSection.properties.speed_limit_by_tag, (limit, tag) => {
-        subtexts.push(
-          <>
-            <span className={cx(classes.muted, 'mr-2')}>{tag}</span>{' '}
-            <span>{isNumber(limit) ? getSpeedSectionsNameString(limit) : '-'}</span>
-          </>
-        );
-      });
       break;
     }
     default: {
