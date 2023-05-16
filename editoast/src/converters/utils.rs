@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use crate::schema::*;
-use log::debug;
 use osm4routing::{Coord, Edge, NodeId};
 
 pub fn default_switch_types() -> Vec<SwitchType> {
@@ -90,98 +89,91 @@ pub fn default_switch_types() -> Vec<SwitchType> {
     ]
 }
 
-pub enum EdgeAngleError {
-    InvalidAngle(NodeId),
-}
-
-fn build_track_endpoint((edge, endpoint): (&Edge, Endpoint)) -> TrackEndpoint {
-    TrackEndpoint {
-        track: edge.id.as_str().into(),
-        endpoint,
-    }
-}
-
-pub fn build_track_section_link(
-    edge_a: (&Edge, Endpoint),
-    edge_b: (&Edge, Endpoint),
-) -> TrackSectionLink {
-    let id = if edge_a.1 == Endpoint::Begin {
-        edge_a.0.source
-    } else {
-        edge_a.0.target
-    };
-    let src = build_track_endpoint(edge_a);
-    let dst = build_track_endpoint(edge_b);
-    TrackSectionLink {
-        id: id.0.to_string().into(),
-        src,
-        dst,
-    }
-}
-
-/// Given an edge and it’s enpoint, returns the coordinates used to compute the angle
-/// It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop
-/// that would result in a bad angle
-fn reference_coord((edge, endpoint): (&Edge, Endpoint)) -> Coord {
-    if endpoint == Endpoint::Begin {
+// Given an edge and a coordinate, returns the coordinates used to compute the angle
+// It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop
+// that would result in a bad angle
+fn reference_coord(n: NodeId, edge: &Edge) -> Coord {
+    if edge.source == n {
         edge.geometry[1]
     } else {
         edge.geometry[edge.geometry.len() - 2]
     }
 }
 
-/// In order for a train to be able to go from one edge to another
-/// The angle must be as flat as possible (180°)
+// In order for a train to be able to go from one edge to another
+// The angle must be as flat as possible (180°)
 fn flat(angle: f64) -> bool {
     (180.0 - angle).abs() <= 30.0
 }
 
-pub fn build_point_switch(
-    (node, edges): (&NodeId, &Vec<(&Edge, Endpoint)>),
-) -> Result<Switch, EdgeAngleError> {
-    let center = if edges[0].1 == Endpoint::Begin {
-        edges[0].0.geometry[0]
+/// A brnanch it a pair of two edges that share a node
+/// and whose angle is flat enough for a train to go from one edge to an other
+type Branch = (TrackEndpoint, TrackEndpoint);
+
+/// Tries to convert two edges into a branch
+/// Will return None if the angle between the two edges isn’t right
+pub fn try_into_branch(center: osm4routing::NodeId, e1: &Edge, e2: &Edge) -> Option<Branch> {
+    let center_coord = if e1.source == center {
+        e1.geometry[0]
     } else {
-        edges[0].0.geometry[edges[0].0.geometry.len() - 1]
+        e1.geometry[e1.geometry.len() - 1]
     };
-    let a = reference_coord(edges[0]);
-    let b = reference_coord(edges[1]);
-    let c = reference_coord(edges[2]);
 
-    let ab = angle(center, a, b);
-    let ac = angle(center, a, c);
-    let bc = angle(center, b, c);
+    if flat(angle(
+        center_coord,
+        reference_coord(center, e1),
+        reference_coord(center, e2),
+    )) {
+        Some((track_section(center, e1), track_section(center, e2)))
+    } else {
+        None
+    }
+}
 
-    let track_endpoint_a = build_track_endpoint(edges[0]);
-    let track_endpoint_b = build_track_endpoint(edges[1]);
-    let track_endpoint_c = build_track_endpoint(edges[1]);
+fn track_section(n: NodeId, edge: &Edge) -> TrackEndpoint {
+    let endpoint = if n == edge.source {
+        Endpoint::Begin
+    } else {
+        Endpoint::End
+    };
 
-    let (base, left, right) = match (flat(ab), flat(ac), flat(bc)) {
-        (true, true, false) => Ok((track_endpoint_a, track_endpoint_b, track_endpoint_c)),
-        (true, false, true) => Ok((track_endpoint_b, track_endpoint_a, track_endpoint_c)),
-        (false, true, true) => Ok((track_endpoint_c, track_endpoint_a, track_endpoint_b)),
-        _ => {
-            debug!("point switch {} impossible angles {ab}, {ac}, {bc}", node.0);
-            Err(EdgeAngleError::InvalidAngle(*node))
-        }
-    }?;
+    TrackEndpoint::new(edge.id.clone(), endpoint)
+}
 
+// When building the network topology, most things happen around a Node (in the OpenStreetMap sense)
+// That’s where buffer stops, section links and switches happen
+// To do that, we count how many edges are adjacent to that node and how many branches go through that node
+#[derive(Default)]
+pub struct NodeAdjacencies<'a> {
+    pub edges: Vec<&'a Edge>,
+    pub branches: Vec<Branch>,
+}
+
+pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
+    let mut endpoint_count = HashMap::<&TrackEndpoint, u64>::new();
+    for (src, dst) in branches {
+        *endpoint_count.entry(src).or_default() += 1;
+        *endpoint_count.entry(dst).or_default() += 1;
+    }
+
+    let mut sorted_endpoint: Vec<(&TrackEndpoint, u64)> = endpoint_count.into_iter().collect();
+    sorted_endpoint.sort_by(|(_, count_a), (_, count_b)| count_a.cmp(count_b));
     let mut ports = HashMap::new();
-    ports.insert("BASE".into(), base);
-    ports.insert("LEFT".into(), left);
-    ports.insert("RIGHT".into(), right);
+    ports.insert("BASE".into(), sorted_endpoint[0].0.clone());
+    ports.insert("LEFT".into(), sorted_endpoint[1].0.clone());
+    ports.insert("RIGHT".into(), sorted_endpoint[2].0.clone());
 
-    Ok(Switch {
+    Switch {
         id: node.0.to_string().into(),
         switch_type: "point".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()
-    })
+    }
 }
 
 // Computes the angle betwen the segments [oa] and [ob]
-fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
+pub fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.lat - o.lat).atan2(a.lon - o.lon).to_degrees()
         - (b.lat - o.lat).atan2(b.lon - o.lon).to_degrees())
     .abs()
