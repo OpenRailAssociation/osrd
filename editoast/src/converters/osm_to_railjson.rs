@@ -2,9 +2,9 @@ use osm4routing::Edge;
 
 use super::utils::*;
 use crate::schema::*;
-use log::info;
+use log::{error, info};
 
-use std::{error::Error, path::PathBuf};
+use std::{collections::HashMap, error::Error, path::PathBuf};
 /// Run the osm-to-railjson subcommand
 /// Converts OpenStreetMap pbf file to railjson
 pub fn osm_to_railjson(
@@ -43,7 +43,12 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .iter()
         .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed);
 
-    let track_sections: Vec<_> = rail_edges
+    let mut railjson = RailJson {
+        switch_types: default_switch_types(),
+        ..Default::default()
+    };
+
+    railjson.track_sections = rail_edges
         .clone()
         .map(|e| {
             let geo = geos::geojson::Geometry::new(geos::geojson::Value::LineString(
@@ -61,35 +66,40 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         })
         .collect();
 
-    let mut nodes = std::collections::HashMap::<osm4routing::NodeId, Vec<(&Edge, Endpoint)>>::new();
+    let mut adjacencies = HashMap::<osm4routing::NodeId, NodeAdjacencies>::new();
     for edge in rail_edges {
-        let source = nodes.entry(edge.source).or_default();
-        source.push((edge, Endpoint::Begin));
-        let target = nodes.entry(edge.target).or_default();
-        target.push((edge, Endpoint::End));
+        adjacencies.entry(edge.source).or_default().edges.push(edge);
+        adjacencies.entry(edge.target).or_default().edges.push(edge);
     }
 
-    let track_section_links = nodes
-        .values()
-        .filter(|edges| edges.len() == 2)
-        .map(|edges| build_track_section_link(edges[0], edges[1]))
-        .collect();
+    for (node, mut adj) in adjacencies {
+        for e1 in &adj.edges {
+            for e2 in &adj.edges {
+                if e1.id < e2.id {
+                    if let Some(branch) = try_into_branch(node, e1, e2) {
+                        adj.branches.push(branch);
+                    }
+                }
+            }
+        }
 
-    let point_switches = nodes
-        .iter()
-        .filter(|(_, edges)| edges.len() == 3)
-        .map(build_point_switch)
-        .filter_map(|e| e.ok())
-        .collect();
-
-    // TODO: handle other switch types
-    Ok(RailJson {
-        track_sections,
-        track_section_links,
-        switch_types: default_switch_types(),
-        switches: point_switches,
-        ..Default::default()
-    })
+        match (adj.edges.len(), adj.tracks.len()) {
+            (0, _) => error!("osm-to-railjson: node {} without edge", node.0),
+            (1, _) => {} // TODO: handle buffer stops
+            (2, 1) => railjson.track_section_links.push(TrackSectionLink {
+                id: node.0.to_string().into(),
+                src: adj.tracks[0].0.clone(),
+                dst: adj.tracks[0].1.clone(),
+            }),
+            (2, _) => log::debug!("osm-to-railjson: node {} with 2 edges, not 1 track", node.0),
+            (3, 2) => railjson.switches.push(point_switch(node, &adj.tracks)),
+            (4, 2) => railjson
+                .switches
+                .push(build_cross_switch(node, &adj.tracks)),
+            _ => {} // TODO: handle other switch types and buffers
+        }
+    }
+    Ok(railjson)
 }
 
 #[cfg(test)]
