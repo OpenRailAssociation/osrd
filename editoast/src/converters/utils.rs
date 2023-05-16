@@ -72,7 +72,7 @@ pub fn default_switch_types() -> Vec<SwitchType> {
             groups: point_groups,
         },
         SwitchType {
-            id: "cross_ever".into(),
+            id: "cross_over".into(),
             ports: vec!["NORTH".into(), "SOUTH".into(), "EAST".into(), "WEST".into()],
             groups: cross_groups,
         },
@@ -166,6 +166,22 @@ pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
     Switch {
         id: node.0.to_string().into(),
         switch_type: "point".into(),
+        ports,
+        group_change_delay: 4.,
+        ..Default::default()
+    }
+}
+
+pub fn cross_switch(node: NodeId, branches: &[Branch]) -> Switch {
+    let mut ports = HashMap::new();
+    ports.insert("NORTH".into(), branches[0].0.clone());
+    ports.insert("SOUTH".into(), branches[0].1.clone());
+    ports.insert("EAST".into(), branches[1].0.clone());
+    ports.insert("WEST".into(), branches[1].1.clone());
+
+    Switch {
+        id: node.0.to_string().into(),
+        switch_type: "cross_over".into(),
         ports,
         group_change_delay: 4.,
         ..Default::default()
