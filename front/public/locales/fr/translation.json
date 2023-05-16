@@ -128,6 +128,7 @@
     },
     "obj-types": {
       "BufferStop": "Heurtoir",
+      "Catenary": "Électrification",
       "Detector": "Détecteur",
       "Route": "Itinéraire",
       "Signal": "Signal",
@@ -144,6 +145,9 @@
           "reset-entity": "Réinitialiser les données"
         },
         "label": "Outil \"Heurtoir\""
+      },
+      "catenary-edition": {
+        "voltage": "{{voltage}}V"
       },
       "detector-edition": {
         "actions": {
