@@ -18,7 +18,6 @@ use geos::Geom;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::views::rolling_stocks::RollingStockForm;
 use crate::{
     core::{
         pathfinding::{PathfindingRequest, PathfindingResponse, PathfindingWaypoints, Waypoint},
@@ -26,9 +25,11 @@ use crate::{
     },
     error::Result,
     models::{
-        infra_objects::track_section::TrackSectionModel, Create, CurveGraph, Delete, Infra,
-        PathWaypoint, Pathfinding, PathfindingChangeset, PathfindingPayload, Retrieve,
-        RollingStockModel, SlopeGraph, Update,
+        infra_objects::{
+            operational_point::OperationalPointModel, track_section::TrackSectionModel,
+        },
+        Create, CurveGraph, Delete, Infra, PathWaypoint, Pathfinding, PathfindingChangeset,
+        PathfindingPayload, Retrieve, RollingStockModel, SlopeGraph, Update,
     },
     schema::ApplicableDirectionsTrackRange,
     schema::{
@@ -38,6 +39,7 @@ use crate::{
     },
     tables, DbPool,
 };
+use crate::{schema::OperationalPoint, views::rolling_stocks::RollingStockForm};
 
 #[derive(Debug, Error, EditoastError, Serialize)]
 #[editoast_error(base_id = "pathfinding")]
@@ -58,6 +60,9 @@ enum PathfindingError {
     #[error("Track sections do not exist: {track_sections:?}")]
     #[editoast_error(status = 404)]
     TrackSectionsNotFound { track_sections: HashSet<String> },
+    #[error("Operational points do not exist: {operational_points:?}")]
+    #[editoast_error(status = 404)]
+    OperationalPointNotFound { operational_points: HashSet<String> },
     #[error("Rolling stock with id {rolling_stock_id} doesn't exist")]
     #[editoast_error(status = 404)]
     RollingStockNotFound { rolling_stock_id: i64 },
@@ -162,6 +167,7 @@ impl WaypointPayload {
 }
 
 type TrackMap = HashMap<String, TrackSection>;
+type OpMap = HashMap<String, OperationalPoint>;
 
 /// Computes a hash map (obj_id => TrackSection) for each obj_id in an iterator
 fn track_map<I: Iterator<Item = String>>(
@@ -185,6 +191,37 @@ fn track_map<I: Iterator<Item = String>>(
             let diff = expected.difference(&got).collect::<HashSet<_>>();
             return Err(PathfindingError::TrackSectionsNotFound {
                 track_sections: diff.into_iter().map(|s| s.to_owned()).collect(),
+            }
+            .into());
+        }
+        res => res,
+    }?;
+    Ok(HashMap::from_iter(
+        tracksections.into_iter().map(|ts| (ts.obj_id, ts.data.0)),
+    ))
+}
+
+fn op_map<I: Iterator<Item = String>>(
+    conn: &mut diesel::PgConnection,
+    infra: i64,
+    it: I,
+) -> Result<OpMap> {
+    use diesel::prelude::*;
+    use tables::osrd_infra_operationalpointmodel::dsl;
+    // TODO: implement a BatchRetrieve trait for tracksections for a better error handling + check all tracksections are there
+    let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
+    let expected_count = ids.len();
+    let tracksections: Vec<_> = match dsl::osrd_infra_operationalpointmodel
+        .filter(dsl::infra_id.eq(infra))
+        .filter(dsl::obj_id.eq_any(&ids))
+        .get_results::<OperationalPointModel>(conn)
+    {
+        Ok(ts) if ts.len() != expected_count => {
+            let got = HashSet::<String>::from_iter(ts.into_iter().map(|ts| ts.obj_id));
+            let expected = HashSet::<String>::from_iter(ids.into_iter());
+            let diff = expected.difference(&got).collect::<HashSet<_>>();
+            return Err(PathfindingError::OperationalPointNotFound {
+                operational_points: diff.into_iter().map(|s| s.to_owned()).collect(),
             }
             .into());
         }
@@ -242,6 +279,14 @@ impl PathfindingResponse {
             self.path_waypoints.iter().map(|wp| wp.track.clone()),
         )
     }
+
+    fn fetch_op_map(&self, infra: i64, conn: &mut diesel::PgConnection) -> Result<OpMap> {
+        op_map(
+            conn,
+            infra,
+            self.path_waypoints.iter().filter_map(|wp| wp.id.clone()),
+        )
+    }
 }
 
 impl Pathfinding {
@@ -250,12 +295,15 @@ impl Pathfinding {
         payload: Payload,
         response: PathfindingResponse,
         track_map: &TrackMap,
+        op_map: &OpMap,
     ) -> Result<Self> {
         let PathfindingResponse {
             geographic,
             schematic,
             route_paths,
             path_waypoints,
+            slopes,
+            curves,
             ..
         } = response;
         let mut steps_duration = payload
@@ -272,7 +320,12 @@ impl Pathfinding {
                 } else {
                     steps_duration.next().unwrap()
                 };
-                // TODO: set the waypoint's 'name' to operationalpoint[waypoint.id].extensions.sncf.name
+                let op_name = waypoint
+                    .id
+                    .as_ref()
+                    .map(|op_id| op_map.get(op_id).expect("unexpected OP id"))
+                    .and_then(|op| op.extensions.identifier.as_ref())
+                    .map(|ident| ident.name.as_ref().to_owned());
                 let track = track_map.get(&waypoint.track).expect("unexpected track id");
                 let normalized_offset = waypoint.position / track.length;
                 let geo = geos::Geometry::try_from(&track.geo)
@@ -287,7 +340,7 @@ impl Pathfinding {
                 let sch = geos::geojson::Geometry::try_from(sch).unwrap();
                 PathWaypoint {
                     id: waypoint.id,
-                    name: waypoint.name,
+                    name: op_name,
                     track: waypoint.track,
                     duration,
                     position: waypoint.position,
@@ -297,15 +350,16 @@ impl Pathfinding {
                 }
             })
             .collect();
-        // TODO: forward core graph calculations in the response. This will come shortly.
         Ok(Pathfinding {
-            geographic: geojson_to_diesel_linestring(&geographic),
-            schematic: geojson_to_diesel_linestring(&schematic),
             payload: diesel_json::Json(PathfindingPayload {
                 route_paths,
                 path_waypoints,
             }),
-            ..Default::default()
+            slopes: diesel_json::Json(slopes),
+            curves: diesel_json::Json(curves),
+            geographic: geojson_to_diesel_linestring(&geographic),
+            schematic: geojson_to_diesel_linestring(&schematic),
+            ..Default::default() // creation date, uuid, id, infra_id
         })
     }
 }
@@ -328,7 +382,6 @@ async fn call_core_pf_and_save_result(
     let infra = Infra::retrieve(db_pool.clone(), infra_id)
         .await?
         .ok_or(PathfindingError::InfraNotFound { infra_id })?;
-    // TODO: graph plotting in core
     let pathfinding = block::<_, Result<_>>(move || {
         // HACK: async closures are unstable, so we need to do this in order to .await
         // inside the block
@@ -344,7 +397,13 @@ async fn call_core_pf_and_save_result(
                     .fetch(core.as_ref())
                     .await?;
                 let response_track_map = response.fetch_track_map(infra_id, conn)?;
-                Pathfinding::from_core_response(payload, response, &response_track_map)?
+                let response_op_map = response.fetch_op_map(infra_id, conn)?;
+                Pathfinding::from_core_response(
+                    payload,
+                    response,
+                    &response_track_map,
+                    &response_op_map,
+                )?
             };
             let changeset = PathfindingChangeset {
                 id: None,
