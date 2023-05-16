@@ -24,7 +24,7 @@ import { getInfraID } from '../../../../reducers/osrdconf/selectors';
 import { getAttachedItems, getEntities } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
-import { getEditSpeedSectionState } from '../speedSectionEdition/utils';
+import { getEditSpeedSectionState } from '../rangeEdition/utils';
 import TOOL_TYPES from '../toolTypes';
 import { ExtendedEditorContextType } from '../editorContextTypes';
 

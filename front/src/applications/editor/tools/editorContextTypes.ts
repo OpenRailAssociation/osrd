@@ -9,7 +9,9 @@ import { EditorEntity, SwitchType, MapLayerMouseEvent } from '../../../types';
 import { EditorState, LayerType } from './types';
 import { switchProps } from './switchProps';
 
-export type Reducer<T> = (v: T) => T;
+export type Reducer<T> = (value: T) => T;
+export type ValueOrReducer<T> = T | Reducer<T>;
+export type PartialOrReducer<T> = Partial<T> | Reducer<T>;
 
 export interface MapState {
   mapStyle: string;
@@ -28,7 +30,7 @@ export type EditorContextType<S = any> = {
   // Tool logic:
   activeTool: Tool<S>;
   state: S;
-  setState: (stateOrReducer: Partial<S> | Reducer<S>) => void;
+  setState: (stateOrReducer: PartialOrReducer<S>) => void;
 
   // Switching tool:
   switchTool: (props: switchProps) => void;
