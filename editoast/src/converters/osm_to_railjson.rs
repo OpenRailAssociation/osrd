@@ -1,5 +1,3 @@
-use osm4routing::Edge;
-
 use super::utils::*;
 use crate::schema::*;
 use log::{error, info};
