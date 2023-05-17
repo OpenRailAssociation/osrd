@@ -6,6 +6,7 @@ from osrd_schemas import infra
 
 from railjson_generator.rjs_static import SWITCH_TYPES
 from railjson_generator.schema.infra.catenary import Catenary
+from railjson_generator.schema.infra.dead_section import DeadSection
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
@@ -24,6 +25,7 @@ class Infra:
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
     catenaries: List[Catenary] = field(default_factory=list)
+    dead_sections: List[DeadSection] = field(default_factory=list)
 
     VERSION = "3.2.1"
 
