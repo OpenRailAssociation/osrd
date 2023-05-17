@@ -179,8 +179,10 @@ pub mod tests {
     }
 
     pub fn get_other_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!("../../tests/example_rolling_stock_2.json"))
-            .expect("Unable to parse")
+        serde_json::from_str(include_str!(
+            "../../tests/example_rolling_stock_2_energy_sources.json"
+        ))
+        .expect("Unable to parse")
     }
 
     pub fn get_invalid_effort_curves() -> &'static str {

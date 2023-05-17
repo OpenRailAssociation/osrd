@@ -67,7 +67,7 @@ pub mod tests {
     ) -> TestFixture<RollingStockModel> {
         TestFixture {
             model: serde_json::from_str::<RollingStockModel>(include_str!(
-                "./tests/example_rolling_stock_2.json"
+                "./tests/example_rolling_stock_2_energy_sources.json"
             ))
             .expect("Unable to parse")
             .create(db_pool.clone())
