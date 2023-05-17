@@ -89,7 +89,15 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         let branches_count = adj.branches.len();
         match (edges_count, branches_count) {
             (0, _) => error!("node {id} without edge"),
-            (1, _) => {} // TODO: handle buffer stops
+            (1, 0) => railjson.buffer_stops.push(BufferStop {
+                id: id.to_string().into(),
+                track: adj.edges[0].id.clone().into(),
+                position: if adj.edges[0].source == node {
+                    0.
+                } else {
+                    adj.edges[0].length()
+                },
+            }),
             (2, 1) => railjson.track_section_links.push(TrackSectionLink {
                 id: node.0.to_string().into(),
                 src: adj.branches[0].0.clone(),
@@ -130,6 +138,7 @@ mod tests {
         let mut railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
         assert_eq!(3, railjson.switch_types.len());
         assert_eq!(3, railjson.switches.len());
+        assert_eq!(18, railjson.buffer_stops.len());
 
         // Switches can be in a random order, we sort them to be sure to extract the expected ones
         railjson
