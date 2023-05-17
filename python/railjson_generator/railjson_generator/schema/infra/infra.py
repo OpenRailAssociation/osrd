@@ -45,8 +45,13 @@ class Infra:
             detectors=self.make_rjs_detectors(),
             operational_points=self.make_rjs_operational_points(),
             switch_types=SWITCH_TYPES,
-            speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
+            speed_sections=[
+                speed_section.to_rjs() for speed_section in self.speed_sections
+            ],
             catenaries=[catenary.to_rjs() for catenary in self.catenaries],
+            dead_sections=[
+                dead_section.to_rjs() for dead_section in self.dead_sections
+            ],
         )
 
     def save(self, path):
@@ -74,7 +79,9 @@ class Infra:
         parts_per_op = defaultdict(list)
         for track in self.track_sections:
             for op_part in track.operational_points:
-                parts_per_op[op_part.operational_point.label].append(op_part.to_rjs(track))
+                parts_per_op[op_part.operational_point.label].append(
+                    op_part.to_rjs(track)
+                )
         ops = []
         for op in self.operational_points:
             new_op = infra.OperationalPoint(
@@ -83,9 +90,15 @@ class Infra:
                 name=op.label,
             )
             new_op.extensions["sncf"] = infra.OperationalPointSncfExtension(
-                ci=0, ch="aa", ch_short_label="aa", ch_long_label="0", trigram=op.trigram
+                ci=0,
+                ch="aa",
+                ch_short_label="aa",
+                ch_long_label="0",
+                trigram=op.trigram,
             )
-            new_op.extensions["identifier"] = infra.OperationalPointIdentifierExtension(uic=0, name=op.label)
+            new_op.extensions["identifier"] = infra.OperationalPointIdentifierExtension(
+                uic=0, name=op.label
+            )
             ops.append(new_op)
         return ops
 

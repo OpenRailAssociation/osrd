@@ -455,10 +455,10 @@ class DeadSection(BaseObjectTrait):
     a special "REV" panel (for reversible) to start pulling power from catenaries again.
     """
 
-    track_ranges: List[ApplicableDirectionsTrackRange] = Field(
+    track_ranges: List[TrackRange] = Field(
         description="List of locations where the train cannot pull power from catenaries"
     )
-    push_pull_track_ranges: List[ApplicableDirectionsTrackRange] = Field(
+    push_pull_track_ranges: List[TrackRange] = Field(
         description="List of locations where the push-pull train cannot pull power from catenaries"
     )
     is_pantograph_drop_zone: bool = Field(description="precise if the deadSection is a pantograph drop zone or not")
@@ -483,6 +483,7 @@ class RailJsonInfra(BaseModel):
     signals: List[Signal] = Field(description="Signals of the infra")
     buffer_stops: List[BufferStop] = Field(description="Buffer stops of the infra")
     detectors: List[Detector] = Field(description="Detectors of the infra")
+    dead_sections: List[DeadSection] = Field(description="Dead sections of the infra")
 
 
 for t in BaseObjectTrait.__subclasses__():
