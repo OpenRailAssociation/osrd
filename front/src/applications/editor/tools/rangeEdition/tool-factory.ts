@@ -1,8 +1,9 @@
-import { MdSpeed } from 'react-icons/md';
 import { IoMdAddCircleOutline } from 'react-icons/io';
 import { cloneDeep, isEqual } from 'lodash';
 import { BiReset } from 'react-icons/bi';
 
+import { IconType } from 'react-icons';
+import { ComponentType } from 'react';
 import { LAYER_TO_EDITOAST_DICT, LAYERS_SET, LayerType } from '../types';
 import {
   HoveredExtremityState,
@@ -10,45 +11,44 @@ import {
   HoveredRangeState,
   LpvPanelFeature,
   RangeEditionState,
-  SpeedSectionEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
 } from './types';
 import {
-  getEditSpeedSectionState,
   getLpvPanelNewPosition,
   getMovedLpvEntity,
-  getNewSpeedSection,
   getPanelInformationFromInteractionState,
   isOnModeMove,
   selectLpvPanel,
 } from './utils';
 import {
-  SpeedSectionEditionLayers,
-  SpeedSectionEditionLeftPanel,
-  SpeedSectionMessages,
-} from './components';
-import { IconType } from 'react-icons';
-import { ComponentType } from 'react';
-import { SpeedSectionEntity, SpeedSectionLpvEntity, TrackSectionEntity } from '../../../../types';
+  CatenaryEntity,
+  SpeedSectionEntity,
+  SpeedSectionLpvEntity,
+  TrackSectionEntity,
+} from '../../../../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { approximateDistanceWithEditoastData } from '../utils';
-import { PartialOrReducer, Reducer, Tool } from '../editorContextTypes';
+import { PartialOrReducer, Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 
-type EditorRange = SpeedSectionEntity;
+type EditorRange = SpeedSectionEntity | CatenaryEntity;
 interface RangeEditionToolParams<T extends EditorRange> {
   id: T['objType'];
   icon: IconType;
   getNewEntity: () => T;
+  messagesComponent: ComponentType;
   layersComponent: ComponentType<{ map: mapboxgl.Map }>;
+  leftPanelComponent: ComponentType;
 }
 
 function getRangeEditionTool<T extends EditorRange>({
   id,
   icon,
   getNewEntity,
+  messagesComponent,
   layersComponent,
+  leftPanelComponent,
 }: RangeEditionToolParams<T>): Tool<RangeEditionState<T>> {
   function getInitialState(): RangeEditionState<T> {
     const entity = getNewEntity();
@@ -56,7 +56,6 @@ function getRangeEditionTool<T extends EditorRange>({
       ...DEFAULT_COMMON_TOOL_STATE,
       entity,
       initialEntity: entity,
-      // Ok like that ?
       hoveredItem: null,
       interactionState: { type: 'idle' },
       trackSectionsCache: {},
@@ -64,7 +63,6 @@ function getRangeEditionTool<T extends EditorRange>({
   }
 
   return {
-    // const SpeedSectionEditionTool: Tool<SpeedSectionEditionState> = {
     id,
     icon,
     labelTranslationKey: 'Editor.tools.speed-edition.label',
@@ -263,7 +261,7 @@ function getRangeEditionTool<T extends EditorRange>({
           entity: newEntity,
         });
       } else if (interactionState.type === 'movePanel') {
-        if (entity.properties.extensions?.lpv_sncf) {
+        if (entity.objType === 'SpeedSection' && entity.properties.extensions?.lpv_sncf) {
           const newPosition = getLpvPanelNewPosition(e, trackSectionsCache);
           if (newPosition) {
             const panelInfo = getPanelInformationFromInteractionState(interactionState);
@@ -280,9 +278,9 @@ function getRangeEditionTool<T extends EditorRange>({
       }
     },
 
-    messagesComponent: SpeedSectionMessages,
-    layersComponent: SpeedSectionEditionLayers,
-    leftPanelComponent: SpeedSectionEditionLeftPanel,
+    messagesComponent,
+    layersComponent,
+    leftPanelComponent,
     getInteractiveLayers() {
       return ['editor/geo/track-main'];
     },
