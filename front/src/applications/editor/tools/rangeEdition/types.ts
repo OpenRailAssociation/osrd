@@ -8,7 +8,6 @@ import {
   TrackSectionEntity,
 } from '../../../../types';
 import { CommonToolState } from '../commonToolState';
-import { LayerType } from '../types';
 
 export type TrackRangeFeature = Feature<
   LineString,
@@ -88,27 +87,27 @@ export type LpvPanelInformation =
   | { panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R; panelIndex: number }
   | { panelType: LPV_PANEL_TYPES.Z };
 
-export type SpeedSectionEditionState = CommonToolState & {
-  initialEntity: SpeedSectionEntity;
-  entity: SpeedSectionEntity;
+// export type SpeedSectionEditionState = CommonToolState & {
+//   initialEntity: SpeedSectionEntity;
+//   entity: SpeedSectionEntity;
 
-  trackSectionsCache: Record<string, TrackState>;
+//   trackSectionsCache: Record<string, TrackState>;
 
-  hoveredItem:
-    | null
-    | HoveredExtremityState
-    | HoveredRangeState
-    | HoveredPanelState
-    | (NonNullable<CommonToolState['hovered']> & { speedSectionItemType?: undefined });
-  interactionState:
-    | { type: 'idle' }
-    | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
-    | ({ type: 'movePanel' } & LpvPanelInformation);
-};
+//   hoveredItem:
+//     | null
+//     | HoveredExtremityState
+//     | HoveredRangeState
+//     | HoveredPanelState
+//     | (NonNullable<CommonToolState['hovered']> & { speedSectionItemType?: undefined });
+//   interactionState:
+//     | { type: 'idle' }
+//     | { type: 'moveRangeExtremity'; rangeIndex: number; extremity: 'BEGIN' | 'END' }
+//     | ({ type: 'movePanel' } & LpvPanelInformation);
+// };
 
-export type SpeedSectionLpvEditionState = Omit<SpeedSectionEditionState, 'entity'> & {
-  entity: SpeedSectionLpvEntity;
-};
+// export type SpeedSectionLpvEditionState = Omit<SpeedSectionEditionState, 'entity'> & {
+//   entity: SpeedSectionLpvEntity;
+// };
 
 export type RangeEditionState<E extends EditorEntity> = CommonToolState & {
   initialEntity: E;

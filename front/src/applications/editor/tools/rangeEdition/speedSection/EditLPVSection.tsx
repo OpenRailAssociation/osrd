@@ -6,7 +6,7 @@ import { LpvPanelInformation, SpeedSectionEditionState, LPV_PANEL_TYPES } from '
 import LpvPanelCard from './LpvPanelCard';
 import LpvPanelSubSection from './LpvPanelSubSection';
 import { msToKmh, selectLpvPanel } from '../utils';
-import { PartialOrReducer, Reducer } from '../../editorContextTypes';
+import { PartialOrReducer } from '../../editorContextTypes';
 
 const getNewAnnouncementPanel = (
   trackRanges: NonNullable<SpeedSectionLpvEntity['properties']['track_ranges']>,
