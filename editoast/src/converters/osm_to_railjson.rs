@@ -41,7 +41,8 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
 
     let rail_edges = edges
         .iter()
-        .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed);
+        .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed)
+        .filter(|e| e.source != e.target);
 
     let mut railjson = RailJson {
         switch_types: default_switch_types(),
