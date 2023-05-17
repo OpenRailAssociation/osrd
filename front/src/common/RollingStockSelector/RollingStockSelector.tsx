@@ -29,7 +29,7 @@ const RollingStockSelector = ({
 }: RollingStockProps) => {
   const { openModal } = useModal();
 
-  const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
+  const ref2scroll = useRef<HTMLDivElement>(null);
 
   return (
     <div className="osrd-config-item mb-2">
