@@ -5,7 +5,7 @@ operationalpoint:
     obj_id: string
     infra_id: integer
     name: string
-    uic: integer
+    uic: string
     trigram: string
   result:
     joins: |
