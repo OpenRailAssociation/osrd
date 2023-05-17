@@ -13,6 +13,7 @@ import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import {
+  CatenaryEntity,
   EntityObjectOperationResult,
   SpeedSectionEntity,
   TrackSectionEntity,
@@ -24,7 +25,7 @@ import { getInfraID } from '../../../../reducers/osrdconf/selectors';
 import { getAttachedItems, getEntities } from '../../data/api';
 import { Spinner } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
-import { getEditSpeedSectionState } from '../rangeEdition/utils';
+import { getEditCatenaryState, getEditSpeedSectionState } from '../rangeEdition/utils';
 import TOOL_TYPES from '../toolTypes';
 import { ExtendedEditorContextType } from '../editorContextTypes';
 
@@ -44,7 +45,7 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
   const [speedSectionsState, setSpeedSectionsState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }
-    | { type: 'ready'; speedSections: SpeedSectionEntity[] }
+    | { type: 'ready'; rangeEntities: (SpeedSectionEntity | CatenaryEntity)[] }
     | { type: 'error'; message: string }
   >({ type: 'idle' });
   const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
@@ -60,14 +61,14 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
               .then((entities) => {
                 setSpeedSectionsState({
                   type: 'ready',
-                  speedSections: (res.SpeedSection || []).map((s) => entities[s]),
+                  rangeEntities: (res.SpeedSection || []).map((s) => entities[s]),
                 });
               })
               .catch((err) => {
                 setSpeedSectionsState({ type: 'error', message: err.message });
               });
           } else {
-            setSpeedSectionsState({ type: 'ready', speedSections: [] });
+            setSpeedSectionsState({ type: 'ready', rangeEntities: [] });
           }
         })
         .catch((err) => {
@@ -98,36 +99,42 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
 
   return (
     <>
-      {!!speedSectionsState.speedSections.length && (
+      {!!speedSectionsState.rangeEntities.length && (
         <>
           <ul className="list-unstyled">
             {(showAll
-              ? speedSectionsState.speedSections
-              : speedSectionsState.speedSections.slice(0, DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT)
-            ).map((speedSection) => (
-              <li key={speedSection.properties.id} className="d-flex align-items-center mb-2">
+              ? speedSectionsState.rangeEntities
+              : speedSectionsState.rangeEntities.slice(0, DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT)
+            ).map((entity) => (
+              <li key={entity.properties.id} className="d-flex align-items-center mb-2">
                 <div className="flex-shrink-0 mr-3">
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
                     title={t('common.open')}
                     onClick={() => {
-                      switchTool({
-                        toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
-                        toolState: getEditSpeedSectionState(speedSection),
-                      });
+                      if (entity.objType === 'SpeedSection')
+                        switchTool({
+                          toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
+                          toolState: getEditSpeedSectionState(entity),
+                        });
+                      else
+                        switchTool({
+                          toolType: TOOL_TYPES.CATENARY_EDITION,
+                          toolState: getEditCatenaryState(entity),
+                        });
                     }}
                   >
                     <BsBoxArrowInRight />
                   </button>
                 </div>
                 <div className="flex-grow-1 flex-shrink-1">
-                  <EntitySumUp entity={speedSection} />
+                  <EntitySumUp entity={entity} />
                 </div>
               </li>
             ))}
           </ul>
-          {speedSectionsState.speedSections.length > DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT && (
+          {speedSectionsState.rangeEntities.length > DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT && (
             <div className="mt-4">
               <button
                 type="button"
@@ -140,7 +147,7 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
                     })
                   : t('Editor.tools.track-edition.show-more-speed-sections', {
                       count:
-                        speedSectionsState.speedSections.length -
+                        speedSectionsState.rangeEntities.length -
                         DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT,
                     })}
               </button>
@@ -148,7 +155,7 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
           )}
         </>
       )}
-      {!speedSectionsState.speedSections.length && (
+      {!speedSectionsState.rangeEntities.length && (
         <div className="text-center">{t('Editor.tools.track-edition.no-linked-speed-section')}</div>
       )}
     </>

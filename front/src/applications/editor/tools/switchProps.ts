@@ -8,11 +8,7 @@ import {
 import { RouteEditionState } from './routeEdition/types';
 import { SelectionState } from './selection/types';
 import { TrackEditionState } from './trackEdition/types';
-import {
-  CatenaryEditionState,
-  RangeEditionState,
-  // SpeedSectionEditionState,
-} from './rangeEdition/types';
+import { RangeEditionState } from './rangeEdition/types';
 import { PointEditionState } from './pointEdition/types';
 import TOOL_TYPES from './toolTypes';
 import { SwitchEditionState } from './switchEdition/types';

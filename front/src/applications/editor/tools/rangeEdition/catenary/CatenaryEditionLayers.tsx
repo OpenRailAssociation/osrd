@@ -7,31 +7,26 @@ import { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { flattenEntity } from 'applications/editor/data/utils';
 import { featureCollection } from '@turf/helpers';
-import { SourceLayer, SpeedSectionEntity, TrackSectionEntity } from 'types';
+import { CatenaryEntity, SourceLayer, TrackSectionEntity } from 'types';
 import colors from 'common/Map/Consts/colors';
 import GeoJSONs, { SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import { getEntities, getEntity } from 'applications/editor/data/api';
 import { mapValues } from 'lodash';
 import { Layer, Popup, Source } from 'react-map-gl';
-import {
-  generateLpvPanelFeatures,
-  getTrackRangeFeatures,
-  isOnModeMove,
-  speedSectionIsLpv,
-} from '../utils';
-import { LpvPanelFeature, RangeEditionState, TrackState } from '../types';
+import { getTrackRangeFeatures, isOnModeMove } from '../utils';
+import { RangeEditionState, TrackState } from '../types';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 import EntitySumUp from '../../../components/EntitySumUp';
 import { LayerType } from '../../types';
 
-export const SpeedSectionEditionLayers: FC = () => {
+export const CatenaryEditionLayers: FC = () => {
   const { t } = useTranslation();
   const {
     renderingFingerprint,
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
-  } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
-  const isLPV = speedSectionIsLpv(entity);
+  } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<CatenaryEntity>>;
+
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector(getMap);
   const infraId = useSelector(getInfraID);
   const selection = useMemo(() => {
@@ -52,7 +47,7 @@ export const SpeedSectionEditionLayers: FC = () => {
     return undefined;
   }, [interactionState, hoveredItem, entity]);
 
-  const speedSectionsFeature: FeatureCollection = useMemo(() => {
+  const catenariesFeature: FeatureCollection = useMemo(() => {
     const flatEntity = flattenEntity(entity);
     // generate trackRangeFeatures
     const trackRanges = entity.properties?.track_ranges || [];
@@ -63,15 +58,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         : [];
     }) as Feature<LineString | Point>[];
 
-    // generate lpvPanelFeatures
-    let lpvPanelFeatures = [] as LpvPanelFeature[];
-    if (entity.properties?.extensions?.lpv_sncf) {
-      lpvPanelFeatures = generateLpvPanelFeatures(
-        entity.properties?.extensions?.lpv_sncf,
-        trackSectionsCache
-      );
-    }
-    return featureCollection([...trackRangeFeatures, ...lpvPanelFeatures]);
+    return featureCollection([...trackRangeFeatures]);
   }, [entity, trackSectionsCache]);
 
   const layersProps = useMemo(() => {
@@ -85,16 +72,8 @@ export const SpeedSectionEditionLayers: FC = () => {
       showIGNBDORTHO,
       layersSettings,
     };
-    if (!isLPV) {
-      return SourcesDefinitionsIndex.speed_sections(context, 'speedSectionsEditor/speedSection/');
-    }
-    const lpvLayers = SourcesDefinitionsIndex.lpv(context, 'speedSectionsEditor/lpv/');
-    const lpvPanelLayers = SourcesDefinitionsIndex.lpv_panels(
-      context,
-      'speedSectionsEditor/lpv_panels/'
-    );
-    return [...lpvLayers, ...lpvPanelLayers];
-  }, [isLPV, mapStyle, showIGNBDORTHO, layersSettings]);
+    return SourcesDefinitionsIndex.catenaries(context, 'rangeEditors/catenaries/');
+  }, [mapStyle, showIGNBDORTHO, layersSettings]);
 
   const layers = useMemo(() => new Set(['track_sections']) as Set<LayerType>, []);
 
@@ -177,17 +156,6 @@ export const SpeedSectionEditionLayers: FC = () => {
           <EntitySumUp entity={hoveredItem.track} />
         </Popup>
       )}
-      {hoveredItem?.speedSectionItemType === 'LPVPanel' && (
-        <Popup
-          className="popup"
-          anchor="bottom"
-          longitude={hoveredItem.position[0]}
-          latitude={hoveredItem.position[1]}
-          closeButton={false}
-        >
-          {t('Editor.tools.speed-edition.hovered-panel', { panelType: hoveredItem.panelType })}
-        </Popup>
-      )}
       {interactionState.type !== 'moveRangeExtremity' &&
         hoveredItem?.type === 'TrackSection' &&
         !(entity.properties.track_ranges || []).find((range) => range.track === hoveredItem.id) &&
@@ -216,7 +184,7 @@ export const SpeedSectionEditionLayers: FC = () => {
         layersSettings={layersSettings}
         isEmphasized={false}
       />
-      <Source type="geojson" data={speedSectionsFeature} key={isLPV ? 'lpv' : 'speed-section'}>
+      <Source type="geojson" data={catenariesFeature} key="catenaries">
         {layersProps.map((props, i) => (
           <Layer {...props} key={i} />
         ))}
@@ -236,9 +204,9 @@ export const SpeedSectionEditionLayers: FC = () => {
   );
 };
 
-export const SpeedSectionMessages: FC = () => null;
+export const CatenaryMessages: FC = () => null;
 
-// export const SpeedSectionMessages: FC = () => {
+// export const CatenaryMessages: FC = () => {
 //   const { t } = useTranslation();
 //   const {
 //     state: {

@@ -50,6 +50,7 @@ function getRangeEditionTool<T extends EditorRange>({
   layersComponent,
   leftPanelComponent,
 }: RangeEditionToolParams<T>): Tool<RangeEditionState<T>> {
+  const layersEntity = getNewEntity();
   function getInitialState(): RangeEditionState<T> {
     const entity = getNewEntity();
     return {
@@ -65,9 +66,15 @@ function getRangeEditionTool<T extends EditorRange>({
   return {
     id,
     icon,
-    labelTranslationKey: 'Editor.tools.speed-edition.label',
-    requiredLayers: new Set(['speed_sections', 'lpv', 'lpv_panels']),
-
+    labelTranslationKey:
+      layersEntity.objType === 'SpeedSection'
+        ? 'Editor.tools.speed-edition.label'
+        : 'Editor.tools.catenary-edition.label',
+    requiredLayers: new Set(
+      layersEntity.objType === 'SpeedSection'
+        ? ['speed_sections', 'lpv', 'lpv_panels']
+        : ['catenaries']
+    ),
     getInitialState,
 
     actions: [
