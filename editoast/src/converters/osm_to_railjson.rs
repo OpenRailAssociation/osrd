@@ -96,11 +96,12 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
                 src: adj.branches[0].0.clone(),
                 dst: adj.branches[0].1.clone(),
             }),
-            (3, 2) => railjson.switches.push(point_switch(node, &adj.tracks)),
-            (4, 2) => railjson
+            (3, 2) => railjson.switches.push(point_switch(node, &adj.branches)),
+            (4, 2) => railjson.switches.push(cross_switch(node, &adj.branches)),
+            (4, 4) => railjson
                 .switches
-                .push(build_cross_switch(node, &adj.tracks)),
-            _ => {} // TODO: handle other switch types and buffers
+                .push(double_slip_switch(node, &adj.branches)),
+            _ => log::debug!("node {id} with {edges_count} edges and {branches_count} branches"),
         }
     }
     Ok(railjson)
@@ -127,16 +128,25 @@ mod tests {
 
     #[test]
     fn parse_switches() {
-        let railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
+        let mut railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
         assert_eq!(3, railjson.switch_types.len());
-        assert_eq!(2, railjson.switches.len());
+        assert_eq!(3, railjson.switches.len());
 
-        let switch = &railjson.switches[0];
+        // Switches can be in a random order, we sort them to be sure to extract the expected ones
+        railjson
+            .switches
+            .sort_by(|a, b| a.switch_type.as_str().cmp(b.switch_type.as_str()));
+
+        let switch = &railjson.switches[2];
         assert_eq!("point", switch.switch_type.as_str());
         assert_eq!(3, switch.ports.len());
 
-        let cross = &railjson.switches[1];
+        let cross = &railjson.switches[0];
         assert_eq!("cross_over", cross.switch_type.as_str());
         assert_eq!(4, cross.ports.len());
+
+        let double = &railjson.switches[1];
+        assert_eq!("double_slip", double.switch_type.as_str());
+        assert_eq!(4, double.ports.len());
     }
 }
