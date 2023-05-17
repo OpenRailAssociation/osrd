@@ -587,6 +587,15 @@ speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 electrified_tracks_25000 = set(builder.infra.track_sections) - {td1, ta0}
 builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks_25000))
 builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", {ta0}))
+
+# ================================
+#  Dead sections
+# ================================
+drop_pantograph_section = builder.add_dead_section(True)
+drop_pantograph_section.add_track_range(tg1, 3000, tg1.length, ApplicableDirection.BOTH)
+drop_pantograph_section.add_track_range(tg4, 0, 500, ApplicableDirection.BOTH)
+
+
 # ================================
 # Produce the railjson
 # ================================
