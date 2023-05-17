@@ -58,7 +58,7 @@ export function rollingStockPassesEnergeticModeFilters(
 }
 
 interface RollingStockModal {
-  ref2scroll: MutableRefObject<HTMLDivElement>;
+  ref2scroll: MutableRefObject<HTMLDivElement | null>;
 }
 
 function RollingStockModal({ ref2scroll }: RollingStockModal) {
