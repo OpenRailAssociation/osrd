@@ -188,6 +188,32 @@ pub fn cross_switch(node: NodeId, branches: &[Branch]) -> Switch {
     }
 }
 
+fn different_branches(a: &Branch, b: &Branch) -> bool {
+    a.0 != b.0 && a.0 != b.1 && a.1 != b.0 && a.1 != b.1
+}
+
+pub fn double_slip_switch(node: NodeId, branches: &[Branch]) -> Switch {
+    let (north1, south1) = &branches[0];
+    let (north2, south2) = branches
+        .iter()
+        .find(|t| different_branches(t, &branches[0]))
+        .expect("Double slips must have two different branches");
+
+    let mut ports = HashMap::new();
+    ports.insert("NORTH-1".into(), north1.clone());
+    ports.insert("SOUTH-1".into(), south1.clone());
+    ports.insert("NORTH-2".into(), north2.clone());
+    ports.insert("SOUTH-2".into(), south2.clone());
+
+    Switch {
+        id: node.0.to_string().into(),
+        switch_type: "double_slip".into(),
+        ports,
+        group_change_delay: 4.,
+        ..Default::default()
+    }
+}
+
 // Computes the angle betwen the segments [oa] and [ob]
 pub fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.lat - o.lat).atan2(a.lon - o.lon).to_degrees()
