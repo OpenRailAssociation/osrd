@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use super::CoreClient;
+use super::{CoreClient, CoreResponse};
 use actix_http::StatusCode;
 use reqwest::Body;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::Serialize;
 
 /// A mocking core client maintaining a list of stub requests to simulate
 ///
@@ -30,12 +30,12 @@ impl MockingClient {
         StubRequestBuilder::new(path.as_ref().into(), self)
     }
 
-    pub(super) fn fetch_mocked<P: AsRef<str>, B: Serialize, R: DeserializeOwned>(
+    pub(super) fn fetch_mocked<P: AsRef<str>, B: Serialize, R: CoreResponse>(
         &self,
         method: reqwest::Method,
         req_path: P,
         body: Option<&B>,
-    ) -> Option<R> {
+    ) -> Option<R::Response> {
         let req_path = req_path.as_ref().to_string();
         let stub = 'find_stub: {
             for stub in &self.stubs {
@@ -75,7 +75,7 @@ impl MockingClient {
             .as_ref()
             .and_then(|r| r.body.as_ref())
             .map(|b| {
-                serde_json::from_slice(
+                R::from_bytes(
                     b.as_bytes()
                         .expect("mocked response body should not be empty when specified"),
                 )
