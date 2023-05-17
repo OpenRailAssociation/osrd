@@ -3,6 +3,8 @@ mod http_client;
 pub mod mocking;
 pub mod pathfinding;
 
+use std::marker::PhantomData;
+
 use crate::error::Result;
 use async_trait::async_trait;
 use editoast_derive::EditoastError;
@@ -34,12 +36,12 @@ impl CoreClient {
         Self::Direct(client)
     }
 
-    async fn fetch<B: Serialize, R: DeserializeOwned>(
+    async fn fetch<B: Serialize, R: CoreResponse>(
         &self,
         method: reqwest::Method,
         path: &str,
         body: Option<&B>,
-    ) -> Result<R> {
+    ) -> Result<R::Response> {
         match self {
             CoreClient::Direct(client) => {
                 let mut request = client.request(method, path);
@@ -55,18 +57,18 @@ impl CoreClient {
                     }
                     .into());
                 }
-                let payload =
+                let bytes =
                     response
-                        .json()
+                        .bytes()
                         .await
-                        .map_err(|err| CoreError::CoreResponseFormatError {
+                        .map_err(|err| CoreError::CannotExtractResponseBody {
                             msg: err.to_string(),
                         })?;
-                Ok(payload)
+                R::from_bytes(bytes.as_ref())
             }
             #[cfg(test)]
             CoreClient::Mocked(client) => client
-                .fetch_mocked(method, path, body)
+                .fetch_mocked::<_, B, R>(method, path, body)
                 .ok_or(CoreError::NoResponseContent.into()),
         }
     }
@@ -111,7 +113,7 @@ impl Default for CoreClient {
 pub trait AsCoreRequest<R>
 where
     Self: Serialize + Sized + Sync,
-    R: DeserializeOwned + Send,
+    R: CoreResponse,
 {
     /// A shorthand for [Self::method]
     const METHOD: reqwest::Method;
@@ -145,8 +147,8 @@ where
     /// TODO: provide a mechanism in this trait to allow the implementer to
     /// manage itself its expected errors. Maybe a bound error type defaulting
     /// to CoreError and a trait function handle_errors would suffice?
-    async fn fetch(&self, core: &CoreClient) -> Result<R> {
-        core.fetch(
+    async fn fetch(&self, core: &CoreClient) -> Result<R::Response> {
+        core.fetch::<Self, R>(
             self.method(),
             self.url(),
             if self.has_body() { Some(self) } else { None },
@@ -155,10 +157,57 @@ where
     }
 }
 
+/// A trait meant to encapsulate the behaviour of response deserializing
+pub trait CoreResponse {
+    /// The type of the deserialized response
+    type Response;
+
+    /// Reads the content of `bytes` and produces the response object
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response>;
+}
+
+/// Indicates that the response that deserializes to `T` is expected to have a Json body
+pub struct Json<T>(PhantomData<T>);
+
+/// Forwards the response body
+pub struct Bytes;
+
+impl<T: DeserializeOwned> CoreResponse for Json<T> {
+    type Response = T;
+
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response> {
+        serde_json::from_slice(bytes).map_err(|err| {
+            CoreError::CoreResponseFormatError {
+                msg: err.to_string(),
+            }
+            .into()
+        })
+    }
+}
+
+impl CoreResponse for Bytes {
+    type Response = Vec<u8>;
+
+    fn from_bytes(bytes: &[u8]) -> Result<Self::Response> {
+        Ok(Vec::from_iter(bytes.iter().cloned()))
+    }
+}
+
+impl CoreResponse for () {
+    type Response = ();
+
+    fn from_bytes(_: &[u8]) -> Result<Self::Response> {
+        Ok(())
+    }
+}
+
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "coreclient")]
 enum CoreError {
+    #[error("Cannot extract Core response body: {msg}")]
+    #[editoast_error(status = 500)]
+    CannotExtractResponseBody { msg: String },
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },
@@ -188,5 +237,50 @@ impl From<reqwest::Error> for CoreError {
                 .to_owned(),
             msg: value.to_string(),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use actix_http::StatusCode;
+    use reqwest::Method;
+    use serde_derive::Serialize;
+
+    use crate::core::{mocking::MockingClient, AsCoreRequest, Bytes};
+
+    #[rstest::rstest]
+    async fn test_expected_empty_response() {
+        #[derive(Serialize)]
+        struct Req;
+        impl AsCoreRequest<()> for Req {
+            const METHOD: Method = Method::GET;
+            const URL_PATH: &'static str = "/test";
+        }
+        let mut core = MockingClient::default();
+        core.stub("/test")
+            .method(Method::GET)
+            .response(StatusCode::OK)
+            .body("")
+            .finish();
+        // Should not yield any warning as the result type is ().
+        Req.fetch(&core.into()).await.unwrap();
+    }
+
+    #[rstest::rstest]
+    async fn test_bytes_response() {
+        #[derive(Serialize)]
+        struct Req;
+        impl AsCoreRequest<Bytes> for Req {
+            const METHOD: Method = Method::GET;
+            const URL_PATH: &'static str = "/test";
+        }
+        let mut core = MockingClient::default();
+        core.stub("/test")
+            .method(Method::GET)
+            .response(StatusCode::OK)
+            .body("not JSON :)")
+            .finish();
+        let bytes = Req.fetch(&core.into()).await.unwrap();
+        assert_eq!(&String::from_utf8(bytes).unwrap(), "not JSON :)");
     }
 }

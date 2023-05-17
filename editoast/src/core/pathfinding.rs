@@ -6,7 +6,7 @@ use crate::models::{CurveGraph, SlopeGraph};
 use crate::views::rolling_stocks::RollingStockForm;
 use crate::{models::RoutePath, schema::Direction};
 
-use super::AsCoreRequest;
+use super::{AsCoreRequest, Json};
 
 pub type PathfindingWaypoints = Vec<Vec<Waypoint>>;
 
@@ -55,7 +55,7 @@ pub struct Warning {
     message: String,
 }
 
-impl AsCoreRequest<PathfindingResponse> for PathfindingRequest {
+impl AsCoreRequest<Json<PathfindingResponse>> for PathfindingRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/pathfinding/routes";
 }
