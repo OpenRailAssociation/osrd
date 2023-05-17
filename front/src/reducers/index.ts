@@ -1,4 +1,4 @@
-import { Action, ReducersMapObject } from 'redux';
+import { Action, ReducersMapObject, CombinedState } from 'redux';
 import { persistCombineReducers, persistReducer, PersistConfig } from 'redux-persist';
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
@@ -19,6 +19,7 @@ import osrdsimulationReducer, {
 import { OsrdSimulationState } from './osrdsimulation/types';
 
 import { EditorState } from '../applications/editor/tools/types';
+import { TypeOfExpression } from 'typescript';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],
@@ -74,8 +75,8 @@ export interface RootState {
   main: MainState;
   osrdconf: OsrdMultiConfState;
   osrdsimulation: OsrdSimulationState;
-  [osrdMiddlewareApi.reducerPath]: any;
-  [osrdEditoastApi.reducerPath]: any;
+  [osrdMiddlewareApi.reducerPath]: any // ReturnType<typeof osrdEditoastApi.reducer>;
+  [osrdEditoastApi.reducerPath]: any // ReturnType<typeof osrdEditoastApi.reducer>;
 }
 
 export const rootInitialState: RootState = {

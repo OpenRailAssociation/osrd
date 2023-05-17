@@ -38,7 +38,7 @@ function getSpeedAndTimeLabel(isSelectedTrain: boolean, ecoBlocks: boolean, poin
           km/h
         </span>
         <span className="ml-2 small">
-          {point.speedTime && datetime2time(point.speedTime.time as any)}
+          {point.speedTime && datetime2time(point.speedTime.time as unknown as Date)}
         </span>
       </>
     );

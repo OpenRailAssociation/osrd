@@ -12,7 +12,7 @@ export function datetime2time(datetime: Date) {
 }
 
 export function time2datetime(time: TimeString) {
-  return d3.timeParse('%H:%M:%S')(time);
+  return d3.timeParse('%H:%M:%S')(time as string);
 }
 
 export function sec2time(sec: number) {

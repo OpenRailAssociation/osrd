@@ -10,7 +10,6 @@ import along from '@turf/along';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import { CgLoadbar } from 'react-icons/cg';
 import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
@@ -85,6 +84,19 @@ interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
 
+interface InterpoledTrainIds {
+  name: string;
+  id: number;
+}
+
+interface InterpolatedTrainValues {
+  head_positions?: PositionSpeedTime;
+  tail_positions?: PositionSpeedTime;
+  speeds?: PositionSpeedTime;
+}
+
+type InterpoledTrain = InterpoledTrainIds & InterpolatedTrainValues;
+
 const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM } = useSelector(
@@ -115,9 +127,9 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
 
   const createOtherPoints = () => {
-    const actualTime = datetime2sec(timePosition);
+    const actualTime = datetime2sec(timePosition as Date);
     // First find trains where actual time from position is between start & stop
-    const concernedTrains: any[] = [];
+    const concernedTrains: InterpoledTrain[] = [];
     simulation.trains.forEach((train, idx: number) => {
       const key = getRegimeKey(train.id);
       if (train[key].head_positions[0]) {
@@ -176,12 +188,12 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       // Found trains including timePosition, and organize them with geojson collection of points
       setOtherTrainsHoverPosition(
         createOtherPoints().map((train) => {
-          const headDistanceAlong = train.head_positions.position / 1000;
-          const tailDistanceAlong = train.tail_positions.position / 1000;
+          const headDistanceAlong = train.head_positions?.position ?? 0 / 1000;
+          const tailDistanceAlong = train.tail_positions?.position ?? 0 / 1000;
           const headPosition = along(line, headDistanceAlong, {
             units: 'kilometers',
           });
-          const tailPosition = train.tail_position
+          const tailPosition = train.tail_positions
             ? along(line, tailDistanceAlong, { units: 'kilometers' })
             : headPosition;
           const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
@@ -264,7 +276,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         ['position', 'speed'] as const,
         positionLocal
       );
-      dispatch(updateTimePositionValues(timePositionLocal));
+      dispatch(updateTimePositionValues(timePositionLocal as Date));
     }
     if (e?.features?.[0] && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);

@@ -17,4 +17,4 @@ export const DATA_TYPES = {
 // type Minute = number;
 // type Second = number;
 
-export type TimeString = any; // `${Year}-${Month}-${Day}T${Hour}:${Minute}:${Second}`;
+export type TimeString = string | Date | undefined; // `${Year}-${Month}-${Day}T${Hour}:${Minute}:${Second}`;

@@ -126,7 +126,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
-          state.timePosition
+          state.timePosition as unknown as number
         );
         break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:

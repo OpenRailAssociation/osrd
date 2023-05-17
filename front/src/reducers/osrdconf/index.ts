@@ -58,7 +58,6 @@ export const DELETE_ITINERARY = 'osrdconfDELETE_ITINERARY';
 export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
 export const UPDATE_DESTINATION_TIME = 'osrdconf/UPDATE_UPDATE_DESTINATION_TIME';
 export const UPDATE_DESTINATION_DATE = 'osrdconf/UPDATE_UPDATE_DESTINATION_DATE';
-export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
 export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
@@ -283,9 +282,6 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_DESTINATION_TIME:
         draft[section].destinationTime = action.destinationTime;
-        break;
-      case UPDATE_TRAINCOMPO:
-        draft[section].trainCompo = action.trainCompo;
         break;
       case UPDATE_ITINERARY:
         draft[section].geojson = action.geojson;
@@ -613,14 +609,6 @@ export function updateDestinationDate(destinationDate: string) {
     dispatch({
       type: UPDATE_DESTINATION_DATE,
       destinationDate,
-    });
-  };
-}
-export function updateTrainCompo(trainCompo: any) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_TRAINCOMPO,
-      trainCompo,
     });
   };
 }
