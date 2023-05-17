@@ -91,7 +91,7 @@
     },
     "layers": {
       "buffer_stops": "Heurtoirs",
-      "catenaries": "Électrification",
+      "catenaries": "Électrifications",
       "detectors": "Détecteurs",
       "errors": "Erreurs",
       "lpv-lpv_panels": "Limites permanentes de vitesse",
@@ -147,6 +147,12 @@
         "label": "Outil \"Heurtoir\""
       },
       "catenary-edition": {
+        "add-new-catenary": "Ajouter une nouvelle électrification",
+        "catenaries": "Électrification",
+        "catenary-default": "Électrification par défaut",
+        "label": "Outil \"Électrification\"",
+        "save-existing-catenary": "Sauvegarder les modifications",
+        "save-new-catenary": "Sauvegarder la nouvelle électrification",
         "voltage": "{{voltage}}V"
       },
       "detector-edition": {
@@ -317,7 +323,7 @@
         "edit-track-range-end": "Modifier le point d'arrivée",
         "edit-track-range-start": "Modifier le point de départ",
         "hovered-panel": "Panneau {{panelType}}",
-        "label": "Outil \"Vitesses limites\"",
+        "label": "Outil \"Vitesse limite\"",
         "linked-track-sections": "Sections de lignes liées",
         "main-speed-limit": "Limitation de vitesse par défaut",
         "move-range-extremity": "Cliquer pour déplacer l'extrémité :",

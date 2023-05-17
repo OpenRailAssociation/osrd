@@ -85,7 +85,7 @@ export interface CatenaryProperties {
     end: number;
     track: string;
   }[];
-  voltage: string;
+  voltage?: string;
 }
 
 export interface CatenaryEntity extends EditorEntity<MultiLineString, CatenaryProperties> {

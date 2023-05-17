@@ -170,6 +170,17 @@ export function getEditSpeedSectionState(
   };
 }
 
+export function getEditCatenaryState(entity: CatenaryEntity): RangeEditionState<CatenaryEntity> {
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    initialEntity: cloneDeep(entity),
+    entity: cloneDeep(entity),
+    trackSectionsCache: {},
+    interactionState: { type: 'idle' },
+    hoveredItem: null,
+  };
+}
+
 export function getTrackRangeFeatures(
   track: TrackSectionEntity,
   range: Pick<TrackRange, 'begin' | 'end' | 'track'>,

@@ -10,6 +10,7 @@ import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import {
   BufferStopEntity,
+  CatenaryEntity,
   DetectorEntity,
   SignalEntity,
   SpeedSectionEntity,
@@ -149,6 +150,15 @@ const SelectionTool: Tool<SelectionState> = {
                   toolState: {
                     initialEntity: selectedElement as SpeedSectionEntity,
                     entity: selectedElement as SpeedSectionEntity,
+                  },
+                });
+                break;
+              case 'Catenary':
+                switchTool({
+                  toolType: TOOL_TYPES.CATENARY_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as CatenaryEntity,
+                    entity: selectedElement as CatenaryEntity,
                   },
                 });
                 break;
