@@ -57,13 +57,8 @@ paths:
               $ref: "#/components/schemas/InfraLoadRequest"
         required: true
       responses:
-        200:
-          description: Infra Loaded
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Infra is loaded
+        204:
+          description: No content
         400:
           description: The request body is invalid
   /pathfinding/routes:
