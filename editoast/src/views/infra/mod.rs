@@ -44,7 +44,7 @@ use uuid::Uuid;
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
     scope("/infra")
-        .service((list, create, refresh, infra_load, railjson::routes()))
+        .service((list, create, refresh, railjson::routes()))
         .service(
             scope("/{infra}")
                 .service((
@@ -199,28 +199,6 @@ async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
         Some(infra) => Ok(Json(infra)),
         None => Err(InfraApiError::NotFound { infra_id }.into()),
     }
-}
-
-/// Load an infra
-#[post("/load")]
-async fn load(
-    db_pool: Data<DbPool>,
-    infra_caches: Data<CHashMap<i64, InfraCache>>,
-    infra: Path<i64>,
-) -> Result<Json<String>> {
-    let infra_id = infra.into_inner();
-    let infra: Result<Infra> = match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => Ok(infra),
-        None => Err(InfraApiError::NotFound { infra_id }.into()),
-    };
-    let infra = infra.unwrap();
-    block::<_, Result<_>>(move || {
-        let conn = &mut db_pool.get()?;
-        InfraCache::get_or_load(conn, &infra_caches, &infra)?;
-        Ok(Json(format!("Infra {infra_id} loaded")))
-    })
-    .await
-    .unwrap()
 }
 
 /// Create an infra
@@ -469,32 +447,34 @@ async fn call_core_infra_load(
         .ok_or(InfraApiError::NotFound { infra_id })?;
     let infra_request = InfraLoadRequest {
         infra: infra.id.unwrap(),
-        expected_version: infra.version,
+        expected_version: infra.version.unwrap(),
     };
-
-    let response = infra_request.fetch(core.as_ref()).await?;
+    infra_request.fetch(core.as_ref()).await?;
     Ok(())
 }
 
-#[post("/infra_load")]
-async fn infra_load(
-    payload: Json<Payload>,
+#[post("/load")]
+async fn load(
+    infra: Path<i64>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
-) -> Result<Json<()>> {
-    let infra_load = call_core_infra_load(payload, db_pool, core).await?;
-    Ok(Json(infra_load))
+) -> Result<HttpResponse> {
+    let infra = infra.into_inner();
+    let payload = Json(Payload { infra });
+    call_core_infra_load(payload, db_pool, core).await?;
+    Ok(HttpResponse::NoContent().finish())
 }
 
 #[cfg(test)]
 pub mod tests {
+    use crate::core::mocking::MockingClient;
     use crate::models::infra::INFRA_VERSION;
     use crate::models::rolling_stock::tests::get_other_rolling_stock;
     use crate::models::{Infra, RollingStockModel, RAILJSON_VERSION};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};
     use crate::views::rolling_stocks::tests::rolling_stock_delete_request;
-    use crate::views::tests::create_test_service;
+    use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
@@ -537,20 +517,6 @@ pub mod tests {
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
         let response = call_service(&app, delete_infra_request(cloned_infra_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-    }
-
-    #[actix_test]
-    async fn infra_load() {
-        let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("loaded_infra")).await;
-        let req = TestRequest::post()
-            .uri(format!("/infra/{}/load/", infra.id.unwrap()).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
@@ -755,7 +721,6 @@ pub mod tests {
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let switch_types: Vec<SwitchType> = read_body_json(response).await;
-        println!("{:#?}", switch_types);
         assert_eq!(switch_types.len(), 1);
         assert_eq!(switch_types[0].id, switch_type_id);
 
@@ -796,6 +761,27 @@ pub mod tests {
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
         assert!(!infra.locked.unwrap());
+
+        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn infra_load_core() {
+        let app = create_test_service().await;
+        let infra: Infra = call_and_read_body_json(&app, create_infra_request("lock_test")).await;
+        let mut core = MockingClient::new();
+        core.stub("/infra_load")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::NO_CONTENT)
+            .body("")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/load", infra.id.unwrap()).as_str())
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);

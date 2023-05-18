@@ -1,10 +1,5 @@
-use actix_web::web::{Data, Json};
-use derivative::Derivative;
-use serde::{Deserialize, Serialize};
-
-use crate::{error::Result, models::Infra, DbPool};
-
-use super::{AsCoreRequest, CoreClient};
+use super::AsCoreRequest;
+use serde::Serialize;
 
 /// A Core infra load request
 #[derive(Debug, Serialize)]

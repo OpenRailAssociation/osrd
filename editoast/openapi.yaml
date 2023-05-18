@@ -305,16 +305,11 @@ paths:
           name: id
           schema:
             type: integer
-          description: Infra id
+          description: infra id
           required: true
       responses:
         200:
-          description: message that said that the infra is loaded
-          content:
-            application/json:
-              schema:
-                type: string
-                example: Infra 1 is loaded
+          description: No content
 
   /infra/{id}/railjson/:
     get:
