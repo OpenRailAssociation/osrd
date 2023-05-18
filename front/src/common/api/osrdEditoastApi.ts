@@ -47,6 +47,9 @@ const injectedRtkApi = api.injectEndpoints({
     putInfraById: build.mutation<PutInfraByIdApiResponse, PutInfraByIdApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'PUT', body: queryArg.body }),
     }),
+    postInfraByIdLoad: build.mutation<PostInfraByIdLoadApiResponse, PostInfraByIdLoadApiArg>({
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/load/`, method: 'POST' }),
+    }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
     }),
@@ -480,6 +483,11 @@ export type PutInfraByIdApiArg = {
   body: {
     name?: string;
   };
+};
+export type PostInfraByIdLoadApiResponse = unknown;
+export type PostInfraByIdLoadApiArg = {
+  /** infra id */
+  id: number;
 };
 export type GetInfraByIdRailjsonApiResponse =
   /** status 200 The infra in railjson format */ RailjsonFile;

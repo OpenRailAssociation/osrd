@@ -162,7 +162,7 @@ public class PathfindingTest extends ApiTest {
         var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
-        assert contains400(res);
+        assertTrue(res.get(0).contains("400"));
 
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
 
@@ -192,7 +192,7 @@ public class PathfindingTest extends ApiTest {
         var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
-        assert contains400(res);
+        assertTrue(res.get(0).contains("400"));
     }
 
     @Test
@@ -511,18 +511,6 @@ public class PathfindingTest extends ApiTest {
     @MethodSource("provideInfraParameters")
     public void testMachingRouteOffsets(String path, boolean inverted) throws Exception {
         testAllMatchingRouteOffsets(path, inverted);
-    }
-
-    /** Returns true if the response is a 400 */
-    private static boolean contains400(List<String> res) {
-        var contains400 = false;
-        for (var header : res) {
-            if (header.contains("400")) {
-                contains400 = true;
-                break;
-            }
-        }
-        return contains400;
     }
 
     @Test
