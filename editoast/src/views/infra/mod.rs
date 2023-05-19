@@ -7,11 +7,13 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
+use std::collections::HashMap;
 use std::pin::Pin;
 
 use self::edition::edit;
 use super::params::List;
 use crate::core::infra_loading::InfraLoadRequest;
+use crate::core::infra_state::{InfraStateRequest, InfraStateResponse};
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
@@ -44,7 +46,7 @@ use uuid::Uuid;
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
     scope("/infra")
-        .service((list, create, refresh, railjson::routes()))
+        .service((list, create, refresh, cache_status, railjson::routes()))
         .service(
             scope("/{infra}")
                 .service((
@@ -430,13 +432,19 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
 }
 
 #[derive(Debug, Default, Deserialize)]
-pub struct Payload {
+pub struct LoadPayload {
     infra: i64,
+}
+
+#[derive(Debug, Default, Deserialize)]
+
+pub struct StatePayload {
+    infra: Option<i64>,
 }
 
 /// Builds a Core infra load request, runs it
 async fn call_core_infra_load(
-    payload: Json<Payload>,
+    payload: Json<LoadPayload>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<()> {
@@ -460,9 +468,28 @@ async fn load(
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
     let infra = infra.into_inner();
-    let payload = Json(Payload { infra });
+    let payload = Json(LoadPayload { infra });
     call_core_infra_load(payload, db_pool, core).await?;
     Ok(HttpResponse::NoContent().finish())
+}
+
+#[get("/cache_status")]
+async fn cache_status(
+    payload: Option<Json<StatePayload>>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<Json<HashMap<String, InfraStateResponse>>> {
+    let payload = payload.unwrap_or(Json(StatePayload { infra: None }));
+    if let Some(infra_id) = payload.infra {
+        Infra::retrieve(db_pool.clone(), infra_id)
+            .await?
+            .ok_or(InfraApiError::NotFound { infra_id })?;
+    };
+    let infra_request = InfraStateRequest {
+        infra: payload.infra,
+    };
+    let response = infra_request.fetch(core.as_ref()).await?;
+    Ok(Json(response))
 }
 
 #[cfg(test)]
@@ -785,5 +812,56 @@ pub mod tests {
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn infra_get_state_no_result() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_state_test")).await;
+
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let payload = json!({"infra": infra.id.unwrap()});
+        let req = TestRequest::get()
+            .uri("/infra/cache_status")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[actix_test]
+    async fn infra_get_state_with_result() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_state_test")).await;
+        let infra_id = infra.id.unwrap();
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(format!(
+                "{{
+                \"{infra_id}\": {{
+        \"last_status\": \"BUILDING_BLOCKS\",
+        \"status\": \"CACHED\"
+        }}
+        }}"
+            ))
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let payload = json!({ "infra": infra_id });
+        let req = TestRequest::get()
+            .uri("/infra/cache_status")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
     }
 }
