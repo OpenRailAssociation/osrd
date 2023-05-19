@@ -1,8 +1,8 @@
 import React from 'react';
 import { cloneDeep } from 'lodash';
-import { LPVExtension, LPVPanel, SpeedSectionLpvEntity } from 'types';
+import { LPVExtension, LPVPanel, SpeedSectionEntity, SpeedSectionLpvEntity } from 'types';
 import { useTranslation } from 'react-i18next';
-import { LpvPanelInformation, SpeedSectionEditionState, LPV_PANEL_TYPES } from '../types';
+import { LpvPanelInformation, LPV_PANEL_TYPES, RangeEditionState } from '../types';
 import LpvPanelCard from './LpvPanelCard';
 import LpvPanelSubSection from './LpvPanelSubSection';
 import { msToKmh, selectLpvPanel } from '../utils';
@@ -46,7 +46,7 @@ const EditLPVSection = ({
   setState,
 }: {
   entity: SpeedSectionLpvEntity;
-  setState: (stateOrReducer: PartialOrReducer<SpeedSectionEditionState>) => void;
+  setState: (stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>) => void;
 }) => {
   const { t } = useTranslation();
   const lpvExtension = entity.properties.extensions.lpv_sncf;
