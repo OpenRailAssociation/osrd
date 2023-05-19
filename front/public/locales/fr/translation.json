@@ -303,13 +303,16 @@
           "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
-        "label": "Outil \"Ligne\"",
-        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
-        "no-linked-speed-section": "Aucune vitesse limite renseignée",
+        "attached-catenaries": "Électrifications",
         "attached-speed-sections": "Vitesses limites",
+        "default-catenaries-error": "Une erreur est survenue lors du chargement des {{type}} liées à cette section de ligne.",
+        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
+        "label": "Outil \"Ligne\"",
+        "no-linked-catenary": "Aucune électrification renseignée",
+        "no-linked-speed-section": "Aucune vitesse limite renseignée",
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
-        "show-more-speed-sections_one": "Voir un résultat de plus",
-        "show-more-speed-sections_other": "Voir {{count}} résultats de plus"
+        "show-more-ranges_one": "Voir un résultat de plus",
+        "show-more-ranges_other": "Voir {{count}} résultats de plus"
       },
       "speed-edition": {
         "actions": {

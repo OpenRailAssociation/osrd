@@ -34,78 +34,83 @@ export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
 
 const TRACK_COLOR = '#666';
 const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
-const DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT = 5;
+const DEFAULT_DISPLAYED_RANGES_COUNT = 3;
 
 /**
- * Generic component to show speed sections attached to edited track section:
+ * Generic component to show attached ranges items of a specific type for an edited track section:
  */
-export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
+export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' | 'Catenary' }> = ({
+  id,
+  itemType,
+}) => {
   const { t } = useTranslation();
   const infraID = useSelector(getInfraID);
-  const [speedSectionsState, setSpeedSectionsState] = useState<
+  const [itemsState, setItemsState] = useState<
     | { type: 'idle' }
     | { type: 'loading' }
-    | { type: 'ready'; rangeEntities: (SpeedSectionEntity | CatenaryEntity)[] }
+    | { type: 'ready'; itemEntities: SpeedSectionEntity[] | CatenaryEntity[] }
     | { type: 'error'; message: string }
   >({ type: 'idle' });
   const { switchTool } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    if (speedSectionsState.type === 'idle') {
-      setSpeedSectionsState({ type: 'loading' });
+    if (itemsState.type === 'idle') {
+      setItemsState({ type: 'loading' });
       getAttachedItems(`${infraID}`, id)
-        .then((res: { SpeedSection?: string[] }) => {
-          if (res.SpeedSection?.length) {
-            getEntities<SpeedSectionEntity>(`${infraID}`, res.SpeedSection, 'SpeedSection')
+        .then((res: { [key: string]: string[] }) => {
+          if (res[itemType]?.length) {
+            getEntities<any>(`${infraID}`, res[itemType], itemType)
               .then((entities) => {
-                setSpeedSectionsState({
+                setItemsState({
                   type: 'ready',
-                  rangeEntities: (res.SpeedSection || []).map((s) => entities[s]),
+                  itemEntities: (res[itemType] || []).map((s) => entities[s]),
                 });
               })
               .catch((err) => {
-                setSpeedSectionsState({ type: 'error', message: err.message });
+                setItemsState({ type: 'error', message: err.message });
               });
           } else {
-            setSpeedSectionsState({ type: 'ready', rangeEntities: [] });
+            setItemsState({ type: 'ready', itemEntities: [] });
           }
         })
         .catch((err) => {
-          setSpeedSectionsState({ type: 'error', message: err.message });
+          setItemsState({ type: 'error', message: err.message });
         });
     }
-  }, [speedSectionsState]);
+  }, [itemsState]);
 
   useEffect(() => {
-    setSpeedSectionsState({ type: 'idle' });
+    setItemsState({ type: 'idle' });
   }, [id]);
 
-  if (speedSectionsState.type === 'loading' || speedSectionsState.type === 'idle')
+  if (itemsState.type === 'loading' || itemsState.type === 'idle')
     return (
       <div className="loader mt-4">
         <Spinner />
       </div>
     );
-  if (speedSectionsState.type === 'error')
+  if (itemsState.type === 'error')
     return (
       <div className="form-error mt-3 mb-3">
         <p>
-          {speedSectionsState.message ||
-            t('Editor.tools.track-edition.default-speed-sections-error')}
+          {itemsState.message ||
+            (itemType === 'SpeedSection'
+              ? t('Editor.tools.track-edition.default-speed-sections-error')
+              : t('Editor.tools.track-edition.default-catenaries-error'))}
         </p>
       </div>
     );
 
   return (
     <>
-      {!!speedSectionsState.rangeEntities.length && (
+      {!!itemsState.itemEntities.length && (
         <>
           <ul className="list-unstyled">
             {(showAll
-              ? speedSectionsState.rangeEntities
-              : speedSectionsState.rangeEntities.slice(0, DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT)
-            ).map((entity) => (
+              ? itemsState.itemEntities
+              : itemsState.itemEntities.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT)
+            ).map((entity: any) => (
               <li key={entity.properties.id} className="d-flex align-items-center mb-2">
                 <div className="flex-shrink-0 mr-3">
                   <button
@@ -113,12 +118,12 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
                     className="btn btn-primary btn-sm"
                     title={t('common.open')}
                     onClick={() => {
-                      if (entity.objType === 'SpeedSection')
+                      if (entity.objType === itemType) {
                         switchTool({
                           toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
                           toolState: getEditSpeedSectionState(entity),
                         });
-                      else
+                      } else
                         switchTool({
                           toolType: TOOL_TYPES.CATENARY_EDITION,
                           toolState: getEditCatenaryState(entity),
@@ -134,7 +139,7 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
               </li>
             ))}
           </ul>
-          {speedSectionsState.rangeEntities.length > DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT && (
+          {itemsState.itemEntities.length > DEFAULT_DISPLAYED_RANGES_COUNT && (
             <div className="mt-4">
               <button
                 type="button"
@@ -143,20 +148,22 @@ export const SpeedSectionsList: FC<{ id: string }> = ({ id }) => {
               >
                 {showAll
                   ? t('Editor.tools.track-edition.only-show-n', {
-                      count: DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT,
+                      count: DEFAULT_DISPLAYED_RANGES_COUNT,
                     })
-                  : t('Editor.tools.track-edition.show-more-speed-sections', {
-                      count:
-                        speedSectionsState.rangeEntities.length -
-                        DEFAULT_DISPLAYED_SPEED_SECTIONS_COUNT,
+                  : t('Editor.tools.track-edition.show-more-ranges', {
+                      count: itemsState.itemEntities.length - DEFAULT_DISPLAYED_RANGES_COUNT,
                     })}
               </button>
             </div>
           )}
         </>
       )}
-      {!speedSectionsState.rangeEntities.length && (
-        <div className="text-center">{t('Editor.tools.track-edition.no-linked-speed-section')}</div>
+      {!itemsState.itemEntities.length && (
+        <div className="text-center">
+          {itemType === 'SpeedSection'
+            ? t('Editor.tools.track-edition.no-linked-speed-section')
+            : t('Editor.tools.track-edition.no-linked-catenary')}
+        </div>
       )}
     </>
   );
@@ -337,7 +344,10 @@ export const TrackEditionLeftPanel: FC = () => {
       {!isNew && (
         <>
           <h3>{t('Editor.tools.track-edition.attached-speed-sections')}</h3>
-          <SpeedSectionsList id={track.properties.id} />
+          <AttachedRangesItemsList id={track.properties.id} itemType="SpeedSection" />
+          <div className="border-bottom" />
+          <h3>{t('Editor.tools.track-edition.attached-catenaries')}</h3>
+          <AttachedRangesItemsList id={track.properties.id} itemType="Catenary" />
           <div className="border-bottom" />
         </>
       )}
