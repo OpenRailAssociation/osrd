@@ -23,7 +23,7 @@ public final class InfraCacheStatusEndpoint implements Take {
             .Builder()
             .build()
             .adapter(InfraCacheRequest.class);
-     
+
 
     public static final JsonAdapter<Map<String, SerializedInfraCache>> adapter;
 
@@ -44,15 +44,18 @@ public final class InfraCacheStatusEndpoint implements Take {
         // Parse request input
         try {
             var body = new RqPrint(req).printBody();
-
-            if (body.equals("")) {
-                infraManager.forEach((infraId, infraCacheEntry) -> {
-                    res.put(infraId, SerializedInfraCache.from(infraCacheEntry));
-                });
-            } else {
+            String infra = null;
+            if (!body.equals("")) {
+                infra = adapterRequest.fromJson(body).infra;
+            }
+            if (infra != null) {
                 var request = adapterRequest.fromJson(body);
                 var infraCacheEntry = infraManager.getInfraCache(request.infra);
                 res.put(request.infra, SerializedInfraCache.from(infraCacheEntry));
+            } else {
+                infraManager.forEach((infraId, infraCacheEntry) -> {
+                    res.put(infraId, SerializedInfraCache.from(infraCacheEntry));
+                });
             }
             return new RsJson(new RsWithBody(adapter.toJson(res)));
         } catch (Throwable ex) {
@@ -66,7 +69,7 @@ public final class InfraCacheStatusEndpoint implements Take {
 
         @Json(name = "last_status")
         public InfraStatus lastStatus;
-        
+
         public SerializedInfraCache(InfraStatus status, InfraStatus lastStatus) {
             this.status = status;
             this.lastStatus = lastStatus;
@@ -74,8 +77,8 @@ public final class InfraCacheStatusEndpoint implements Take {
 
         static SerializedInfraCache from(InfraCacheEntry entry) {
             return new SerializedInfraCache(
-                entry.status,
-                entry.lastStatus);
+                    entry.status,
+                    entry.lastStatus);
         }
     }
 
