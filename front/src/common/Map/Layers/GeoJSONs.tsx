@@ -172,11 +172,11 @@ function getCatenariesLayers(context: LayerContext, prefix: string): AnyLayer[] 
   return [
     {
       ...getCatenariesProps(context),
-      id: `${prefix}geo/catenaries`,
+      id: `${prefix}geo/catenaries-main`,
     },
     {
       ...getCatenariesTextParams(context),
-      id: `${prefix}geo/catenaries_names`,
+      id: `${prefix}geo/catenaries-names`,
     },
   ];
 }

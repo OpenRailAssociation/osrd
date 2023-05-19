@@ -1,14 +1,11 @@
-import { cloneDeep, isEqual, map, isEmpty, mapKeys, omit } from 'lodash';
+import { cloneDeep, isEqual } from 'lodash';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import React, { FC, useContext, useState } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
-import { AiFillSave, AiOutlinePlusCircle, FaTimes, GiElectric, MdShowChart } from 'react-icons/all';
+import { AiFillSave, FaTimes, MdShowChart } from 'react-icons/all';
 import { FaFlagCheckered } from 'react-icons/fa';
-import { MdSpeed } from 'react-icons/md';
-
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import EditorContext from '../../context';
 import { RangeEditionState } from './types';
 import {
@@ -24,9 +21,10 @@ import { LoaderFill } from '../../../../common/Loader';
 import EntitySumUp from '../../components/EntitySumUp';
 import { save } from '../../../../reducers/editor';
 import EditLPVSection from './speedSection/EditLPVSection';
-import { ExtendedEditorContextType } from '../editorContextTypes';
-import SpeedInput from './speedSection/SpeedInput';
-import { getPointAt, kmhToMs, speedSectionIsLpv } from './utils';
+import { ExtendedEditorContextType, PartialOrReducer } from '../editorContextTypes';
+import { getPointAt, speedSectionIsLpv } from './utils';
+import SpeedSectionMetadataForm from './speedSection/SpeedSectionMetadataForm';
+import CatenaryMetadataForm from './catenary/CatenaryMetadataForm';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 5;
 
@@ -44,6 +42,7 @@ export const TrackRangesList: FC = () => {
   return (
     <div>
       <h4 className="pb-0">
+        {/* Change translation.json into "range-edition.linked-track-sections ?" */}
         <MdShowChart className="me-1" /> {t('Editor.tools.speed-edition.linked-track-sections')}
       </h4>
       <ul className="list-unstyled">
@@ -64,6 +63,7 @@ export const TrackRangesList: FC = () => {
                       <button
                         type="button"
                         className="btn btn-primary btn-sm px-2 mb-1"
+                        // Change translation.json into "range-edition.edit-track-range-start ?"
                         title={t('Editor.tools.speed-edition.edit-track-range-start')}
                         onClick={() => {
                           setState({
@@ -94,6 +94,7 @@ export const TrackRangesList: FC = () => {
                       <button
                         type="button"
                         className="btn btn-primary btn-sm px-2 mb-1"
+                        // Change translation.json into "range-edition.edit-track-range-end ?"
                         title={t('Editor.tools.speed-edition.edit-track-range-end')}
                         onClick={() => {
                           setState({
@@ -184,175 +185,17 @@ export const TrackRangesList: FC = () => {
             onClick={() => setShowAll((v) => !v)}
           >
             {showAll
-              ? t('Editor.tools.speed-edition.only-show-n', {
+              ? // Change translation.json into "range-edition.only-show-n ?"
+                t('Editor.tools.speed-edition.only-show-n', {
                   count: DEFAULT_DISPLAYED_RANGES_COUNT,
                 })
-              : t('Editor.tools.speed-edition.show-more-ranges', {
+              : // Change translation.json into "range-edition.show-more-ranges ?"
+                t('Editor.tools.speed-edition.show-more-ranges', {
                   count: ranges.length - DEFAULT_DISPLAYED_RANGES_COUNT,
                 })}
           </button>
         </div>
       )}
-    </div>
-  );
-};
-
-export const MetadataForm: FC = () => {
-  const { t } = useTranslation();
-  const {
-    state: { entity },
-    setState,
-  } = useContext(EditorContext) as ExtendedEditorContextType<
-    RangeEditionState<SpeedSectionEntity | CatenaryEntity>
-  >;
-
-  return (
-    <div>
-      <h4 className="pb-0">
-        {entity.objType === 'SpeedSection' ? (
-          <MdSpeed className="me-1" />
-        ) : (
-          <GiElectric className="me-1" />
-        )}{' '}
-        {t(
-          `Editor.tools.${
-            entity.objType === 'SpeedSection'
-              ? 'speed-edition.speed-limits'
-              : 'catenary-edition.catenaries'
-          }`
-        )}
-      </h4>
-      {/* The following tag is here to mimick other tools' forms style: */}
-      <form className="rjsf" onSubmit={(e) => e.preventDefault()}>
-        {entity.objType === 'SpeedSection' ? (
-          <div className="form-group field field-string mb-2">
-            <label className="control-label" htmlFor="speed-section.main-limit">
-              {t(
-                `Editor.tools.${
-                  entity.objType === 'SpeedSection'
-                    ? 'speed-edition.main-speed-limit'
-                    : 'catenary-edition.catenary-default'
-                }`
-              )}
-            </label>
-            <div className="d-flex flex-row align-items-center">
-              <SpeedInput
-                className="form-control flex-grow-1 flex-shrink-1"
-                id="speed-section.main-limit"
-                placeholder=""
-                msSpeed={entity.properties.speed_limit || undefined}
-                onChange={(newMsSpeed) => {
-                  const newEntity = cloneDeep(entity);
-                  newEntity.properties.speed_limit = newMsSpeed;
-                  setState({ entity: newEntity });
-                }}
-              />
-              <span className="text-muted ml-2">km/h</span>
-            </div>
-          </div>
-        ) : (
-          <div className="form-group field field-string mb-2">
-            <label className="control-label" htmlFor="catenary.default">
-              {t('Editor.tools.catenary-edition.catenary-default')}
-            </label>
-            <div className="d-flex flex-row align-items-center">
-              <InputSNCF id="catenary.default" type="text" />
-            </div>
-          </div>
-        )}
-        {entity.objType === 'SpeedSection' && !isEmpty(entity.properties.speed_limit_by_tag) && (
-          <div className="control-label mb-1">
-            {t('Editor.tools.speed-edition.additional-speed-limit')}
-          </div>
-        )}
-        {entity.objType === 'SpeedSection' &&
-          map(entity.properties.speed_limit_by_tag || {}, (value, key) => (
-            <div className="form-group field field-string">
-              <div className="d-flex flex-row align-items-center">
-                <input
-                  className="form-control flex-grow-2 flex-shrink-1 mr-2"
-                  placeholder=""
-                  type="text"
-                  value={key}
-                  onChange={(e) => {
-                    const newEntity = cloneDeep(entity);
-                    const newKey = e.target.value;
-                    newEntity.properties.speed_limit_by_tag = mapKeys(
-                      newEntity.properties.speed_limit_by_tag || {},
-                      (_v, k) => (k === key ? newKey : k)
-                    );
-                    setState({ entity: newEntity });
-                  }}
-                />
-                <SpeedInput
-                  className="form-control flex-shrink-0 px-2"
-                  style={{ width: '5em' }}
-                  placeholder=""
-                  msSpeed={value}
-                  onChange={(newMsSpeed) => {
-                    const newEntity = cloneDeep(entity);
-                    newEntity.properties.speed_limit_by_tag =
-                      newEntity.properties.speed_limit_by_tag || {};
-                    newEntity.properties.speed_limit_by_tag[key] = newMsSpeed;
-                    setState({ entity: newEntity });
-                  }}
-                />
-                <span className="text-muted ml-2">km/h</span>
-                <small>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm px-2 ml-2"
-                    title={t('commons.delete')}
-                    onClick={() => {
-                      const newEntity = cloneDeep(entity);
-                      newEntity.properties.speed_limit_by_tag = omit(
-                        newEntity.properties.speed_limit_by_tag || {},
-                        key
-                      );
-                      setState({ entity: newEntity });
-                    }}
-                  >
-                    <FaTimes />
-                  </button>
-                </small>
-              </div>
-            </div>
-          ))}
-        {entity.objType === 'SpeedSection' ? (
-          <button
-            type="button"
-            className="btn btn-secondary w-100 text-wrap small mb-2"
-            onClick={async () => {
-              const newEntity = cloneDeep(entity);
-              newEntity.properties.speed_limit_by_tag =
-                newEntity.properties.speed_limit_by_tag || {};
-              let key = t('Editor.tools.speed-edition.new-tag');
-              let i = 1;
-              if (newEntity.properties.speed_limit_by_tag[key]) {
-                while (newEntity.properties.speed_limit_by_tag[`${key} ${i}`]) i += 1;
-                key += ` ${i}`;
-              }
-              newEntity.properties.speed_limit_by_tag[key] = kmhToMs(80);
-              setState({ entity: newEntity });
-            }}
-          >
-            <AiOutlinePlusCircle className="mr-2" />
-            {t('Editor.tools.speed-edition.add-new-speed-limit')}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="btn btn-secondary w-100 text-wrap small mb-2"
-            onClick={async () => {
-              const newEntity = cloneDeep(entity);
-              setState({ entity: newEntity });
-            }}
-          >
-            <AiOutlinePlusCircle className="mr-2" />
-            {t('Editor.tools.catenary-edition.add-new-catenary')}
-          </button>
-        )}
-      </form>
     </div>
   );
 };
@@ -444,7 +287,11 @@ export const RangeEditionLeftPanel: FC = () => {
           {saveMessage}
         </button>
       </div>
-      <MetadataForm />
+      {initialEntity.objType === 'SpeedSection' ? (
+        <SpeedSectionMetadataForm />
+      ) : (
+        <CatenaryMetadataForm />
+      )}
       <hr />
       {initialEntity.objType === 'SpeedSection' && (
         <div>
@@ -482,7 +329,16 @@ export const RangeEditionLeftPanel: FC = () => {
               }}
             />
           </div>
-          {isLPV && <EditLPVSection entity={entity as SpeedSectionLpvEntity} setState={setState} />}
+          {isLPV && (
+            <EditLPVSection
+              entity={entity as SpeedSectionLpvEntity}
+              setState={
+                setState as (
+                  stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
+                ) => void
+              }
+            />
+          )}
         </div>
       )}
       <hr />
