@@ -14,7 +14,10 @@ use super::params::List;
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::models::{Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update};
+use crate::models::infra::INFRA_VERSION;
+use crate::models::{
+    Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update, RAILJSON_VERSION,
+};
 use crate::schema::{ObjectType, SwitchType};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
@@ -86,6 +89,10 @@ impl From<InfraForm> for Infra {
             name: Some(infra.name),
             owner: Some(Uuid::nil()),
             created: Some(Utc::now().naive_utc()),
+            railjson_version: Some(RAILJSON_VERSION.into()),
+            version: Some(INFRA_VERSION.into()),
+            generated_version: Some(Some(INFRA_VERSION.into())),
+            locked: Some(false),
             ..Default::default()
         }
     }
@@ -267,7 +274,6 @@ async fn delete(
 #[derive(Serialize, Deserialize)]
 struct InfraPatchForm {
     pub name: Option<String>,
-    pub generated_version: Option<Option<String>>,
 }
 
 impl InfraPatchForm {
@@ -275,7 +281,6 @@ impl InfraPatchForm {
         Infra {
             id: Some(infra_id),
             name: self.name,
-            generated_version: self.generated_version,
             ..Default::default()
         }
     }
@@ -393,7 +398,7 @@ async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
             Ok(infra) => infra,
             Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
         };
-        infra.locked = true;
+        infra.locked = Some(true);
         infra.update_conn(&mut conn, infra_id)?;
         Ok(())
     })
@@ -412,7 +417,7 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
             Ok(infra) => infra,
             Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
         };
-        infra.locked = false;
+        infra.locked = Some(false);
         infra.update_conn(&mut conn, infra_id)?;
         Ok(())
     })
@@ -423,8 +428,9 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
 
 #[cfg(test)]
 pub mod tests {
+    use crate::models::infra::INFRA_VERSION;
     use crate::models::rolling_stock::tests::get_other_rolling_stock;
-    use crate::models::{Infra, RollingStockModel};
+    use crate::models::{Infra, RollingStockModel, RAILJSON_VERSION};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};
     use crate::views::rolling_stocks::tests::rolling_stock_delete_request;
@@ -483,12 +489,16 @@ pub mod tests {
     }
 
     #[actix_test]
-    async fn infra_create_delete() {
+    async fn default_infra_create_delete() {
         let app = create_test_service().await;
         let response = call_service(&app, create_infra_request("create_infra_test")).await;
         assert_eq!(response.status(), StatusCode::CREATED);
         let infra: Infra = read_body_json(response).await;
         assert_eq!(infra.name.unwrap(), "create_infra_test");
+        assert_eq!(infra.railjson_version.unwrap(), RAILJSON_VERSION);
+        assert_eq!(infra.version.unwrap(), INFRA_VERSION);
+        assert_eq!(infra.generated_version.unwrap().unwrap(), INFRA_VERSION);
+        assert!(!infra.locked.unwrap());
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -524,6 +534,8 @@ pub mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+        let infra: Infra = read_body_json(response).await;
+        assert_eq!(infra.name.unwrap(), "rename_test");
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -680,7 +692,7 @@ pub mod tests {
     async fn infra_lock() {
         let app = create_test_service().await;
         let infra: Infra = call_and_read_body_json(&app, create_infra_request("lock_test")).await;
-        assert!(!infra.locked);
+        assert!(!infra.locked.unwrap());
 
         // Lock infra
         let req = TestRequest::post()
@@ -694,7 +706,7 @@ pub mod tests {
             .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
-        assert!(infra.locked);
+        assert!(infra.locked.unwrap());
 
         // Unlock infra
         let req = TestRequest::post()
@@ -708,7 +720,7 @@ pub mod tests {
             .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
-        assert!(!infra.locked);
+        assert!(!infra.locked.unwrap());
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
