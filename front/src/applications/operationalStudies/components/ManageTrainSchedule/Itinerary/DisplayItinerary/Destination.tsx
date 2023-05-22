@@ -111,7 +111,12 @@ function Destination(props: DestinationProps) {
           )}
         </>
       ) : (
-        <small>{t('noDestinationChosen')}</small>
+        <>
+          <span className="text-warning mr-2">
+            <IoFlag />
+          </span>
+          <small>{t('noDestinationChosen')}</small>
+        </>
       )}
     </div>
   );
