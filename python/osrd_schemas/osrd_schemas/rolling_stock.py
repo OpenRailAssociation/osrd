@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional
+from typing import List, Literal, Mapping, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -35,7 +35,9 @@ class RollingResistance(BaseModel, extra=Extra.forbid):
 
 
 class EffortCurve(BaseModel, extra=Extra.forbid):
-    speeds: conlist(confloat(ge=0), min_items=2)
+    speeds: conlist(confloat(ge=0), min_items=2) = Field(
+        description="Curves mapping speed (in m/s) to maximum traction (in newtons)"
+    )
     max_efforts: conlist(confloat(ge=0), min_items=2)
 
     @root_validator(skip_on_failure=True)
@@ -102,6 +104,80 @@ class PowerRestrictions(BaseModel):
     __root__: Mapping[str, str]
 
 
+class RefillLaw(BaseModel, extra=Extra.forbid):
+    """The EnergyStorage refilling behavior"""
+
+    tau: confloat(ge=0) = Field(description="Time constant of the refill behavior (in seconds)")
+    soc_ref: confloat(ge=0, le=1) = Field(description="Reference (target) value of state of charge")
+
+
+class EnergyStorage(BaseModel, extra=Extra.forbid):
+    """If the EnergySource is capable of storing some energy"""
+
+    capacity: confloat(ge=0) = Field(description="How much energy the source can store (in Joules)")
+    soc: confloat(ge=0, le=1) = Field(description="The state of charge, SoC·capacity = actual stock of energy")
+    soc_min: confloat(ge=0, le=1) = Field(description="The minimum SoC, where the available energy is zero")
+    soc_max: confloat(ge=0, le=1) = Field(description="The maximum SoC, where the available energy is capacity")
+    refill_law: Optional[RefillLaw]
+
+
+class SpeedDependantPower(BaseModel, extra=Extra.forbid):
+    """
+    A curve that account for speed-related power (output/availability) behavior of specific energy sources,
+    - the pantograph power is lowered at low speed to avoid welding the pantograph to the catenary
+    - the power outputted by Hydrogen fuel cells increases with speed
+    """
+
+    speeds: conlist(confloat(ge=0), min_items=1) = Field(description="speed values")
+    powers: conlist(confloat(ge=0), min_items=1) = Field(description="power values")
+
+    @root_validator(skip_on_failure=True)
+    def check_size(cls, v):
+        assert len(v["speeds"]) == len(v["powers"]), "speeds and powers must have the same length"
+        return v
+
+
+class Catenary(BaseModel, extra=Extra.forbid):
+    """Catenary used when simulating qualesi trains"""
+
+    energy_source_type: Literal["Catenary"] = Field(default="Catenary")
+    max_input_power: SpeedDependantPower
+    max_output_power: SpeedDependantPower
+    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the catenary / pantograph transmission")
+
+
+class PowerPack(BaseModel, extra=Extra.forbid):
+    """Power pack, either diesel or hydrogen, used when simulating qualesi trains"""
+
+    energy_source_type: Literal["PowerPack"] = Field(default="PowerPack")
+    max_input_power: SpeedDependantPower
+    max_output_power: SpeedDependantPower
+    energy_storage: EnergyStorage
+    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the power pack")
+
+
+class Battery(BaseModel, extra=Extra.forbid):
+    """Battery used when simulating qualesi trains"""
+
+    energy_source_type: Literal["Battery"] = Field(default="Battery")
+    max_input_power: SpeedDependantPower
+    max_output_power: SpeedDependantPower
+    energy_storage: EnergyStorage
+    efficiency: confloat(ge=0, le=1) = Field(description="Efficiency of the battery")
+
+
+class EnergySource(BaseModel, extra=Extra.forbid):
+    """Energy sources used when simulating qualesi trains"""
+
+    __root__: Union[Catenary, PowerPack, Battery] = Field(discriminator="energy_source_type")
+
+
+class EnergySourcesList(BaseModel):
+    """List of energy sources used when simulating qualesi trains"""
+
+    __root__: List[EnergySource]
+
+
 class RollingStock(BaseModel, extra=Extra.forbid):
     """Electrical profiles and power classes are used to model the power loss along a catenary:
     * Rolling stocks are attributed a power class depending on their power usage.
@@ -138,6 +214,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
+    energy_sources: List[EnergySource] = Field(default_factory=list)
 
 
 if __name__ == "__main__":

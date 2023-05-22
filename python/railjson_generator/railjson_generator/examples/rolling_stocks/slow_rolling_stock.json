@@ -75,5 +75,6 @@
       }
     }
   },
-  "base_power_class": "1"
+  "base_power_class": "1",
+  "energy_sources": []
 }

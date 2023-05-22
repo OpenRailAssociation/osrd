@@ -27,6 +27,8 @@ pub struct RollingStock {
     pub loading_gauge: String,
     pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<JsonValue>,
+    #[serde(default)]
+    pub energy_sources: Vec<EnergySource>,
 }
 
 #[derive(Debug, Serialize)]
@@ -142,6 +144,54 @@ pub struct ModeEffortCurves {
 pub struct EffortCurves {
     modes: HashMap<String, ModeEffortCurves>,
     default_mode: String,
+}
+
+// Energy sources schema
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RefillLaw {
+    tau: f64,
+    soc_ref: f64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EnergyStorage {
+    capacity: f64,
+    soc: f64,
+    soc_min: f64,
+    soc_max: f64,
+    refill_law: Option<RefillLaw>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpeedDependantPower {
+    speeds: Vec<f64>,
+    powers: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(tag = "energy_source_type", deny_unknown_fields)]
+pub enum EnergySource {
+    Catenary {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        efficiency: f64,
+    },
+    PowerPack {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        energy_storage: EnergyStorage,
+        efficiency: f64,
+    },
+    Battery {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        energy_storage: EnergyStorage,
+        efficiency: f64,
+    },
 }
 
 #[cfg(test)]
