@@ -338,7 +338,7 @@ async fn call_core_pf_and_save_result(
                 let track_map = payload.fetch_track_map(conn)?;
                 let mut waypoints = payload.parse_waypoints(&track_map)?;
                 let mut rolling_stocks = payload.parse_rolling_stocks(conn)?;
-                let response = PathfindingRequest::new(infra.id.unwrap(), infra.version.clone())
+                let response = PathfindingRequest::new(infra.id.unwrap(), infra.version.unwrap())
                     .with_waypoints(&mut waypoints)
                     .with_rolling_stocks(&mut rolling_stocks)
                     .fetch(core.as_ref())

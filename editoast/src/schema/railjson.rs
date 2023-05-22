@@ -139,7 +139,7 @@ pub mod test {
 
         let s_railjson = find_railjson(&mut conn, &infra).unwrap();
 
-        assert_eq!(infra.railjson_version, railjson.version);
+        assert_eq!(infra.railjson_version.unwrap(), railjson.version);
         assert!(check_objects_eq(
             &s_railjson.buffer_stops,
             &railjson.buffer_stops
@@ -196,7 +196,7 @@ pub mod test {
 
     fn find_railjson(conn: &mut PgConnection, infra: &Infra) -> Result<RailJson> {
         let railjson = RailJson {
-            version: infra.clone().railjson_version,
+            version: infra.clone().railjson_version.unwrap(),
             operational_points: find_objects(conn, infra.id.unwrap()),
             routes: find_objects(conn, infra.id.unwrap()),
             switch_types: find_objects(conn, infra.id.unwrap()),
