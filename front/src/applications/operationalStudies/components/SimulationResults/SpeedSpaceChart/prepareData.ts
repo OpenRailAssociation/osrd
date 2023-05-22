@@ -1,4 +1,7 @@
-import { mergeDatasAreaConstant } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import {
+  MergedBlock,
+  mergeDatasAreaConstant,
+} from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
 import { ElectrificationConditions, SimulationSnapshot } from 'reducers/osrdsimulation/types';
@@ -8,7 +11,7 @@ export interface GevPreparedata {
   speed: Record<string, number>[];
   margins_speed: Record<string, unknown>[];
   eco_speed: Record<string, unknown>[];
-  areaBlock: any;
+  areaBlock: MergedBlock<string>[];
   vmax: Record<string, unknown>[];
   slopesCurve: Record<string, unknown>[];
   slopesHistogram: Record<string, number>[];
@@ -23,7 +26,7 @@ function prepareData(simulation: SimulationSnapshot, selectedTrain: number): Gev
     speed: [],
     margins_speed: [],
     eco_speed: [],
-    areaBlock: undefined,
+    areaBlock: [],
     vmax: [],
     slopesCurve: [],
     slopesHistogram: [],

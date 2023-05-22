@@ -1,4 +1,4 @@
-import { Action, ReducersMapObject, CombinedState } from 'redux';
+import { Action, Reducer, ReducersMapObject, AnyAction } from 'redux';
 import { persistCombineReducers, persistReducer, PersistConfig } from 'redux-persist';
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
@@ -8,6 +8,7 @@ import { OsrdConfState, OsrdMultiConfState } from 'applications/operationalStudi
 
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+
 import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
 import userReducer, { UserState, initialState as userInitialState } from './user';
 import mapReducer, { MapState, initialState as mapInitialState } from './map';
@@ -19,7 +20,6 @@ import osrdsimulationReducer, {
 import { OsrdSimulationState } from './osrdsimulation/types';
 
 import { EditorState } from '../applications/editor/tools/types';
-import { TypeOfExpression } from 'typescript';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],
@@ -52,7 +52,7 @@ const saveMainFilter = createFilter('main', mainWhiteList);
 const saveSimulationFilter = createFilter('osrdsimulation', simulationWhiteList);
 
 // Useful to only blacklist a sub-propertie of osrdconf
-const osrdconfPersistConfig: PersistConfig<OsrdConfState> = {
+const osrdconfPersistConfig: PersistConfig<OsrdMultiConfState> = {
   key: 'osrdconf',
   storage,
   blacklist: ['featureInfoClick', 'switchTypes'],
@@ -75,8 +75,8 @@ export interface RootState {
   main: MainState;
   osrdconf: OsrdMultiConfState;
   osrdsimulation: OsrdSimulationState;
-  [osrdMiddlewareApi.reducerPath]: any // ReturnType<typeof osrdEditoastApi.reducer>;
-  [osrdEditoastApi.reducerPath]: any // ReturnType<typeof osrdEditoastApi.reducer>;
+  [osrdMiddlewareApi.reducerPath]: ReturnType<typeof osrdMiddlewareApi.reducer>;
+  [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
 }
 
 export const rootInitialState: RootState = {
@@ -86,8 +86,8 @@ export const rootInitialState: RootState = {
   main: mainInitialState,
   osrdconf: osrdconfInitialState,
   osrdsimulation: osrdSimulationInitialState,
-  [osrdMiddlewareApi.reducerPath]: {},
-  [osrdEditoastApi.reducerPath]: {},
+  [osrdMiddlewareApi.reducerPath]: {} as ReturnType<typeof osrdMiddlewareApi.reducer>,
+  [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
 };
 
 export type AnyReducerState =
@@ -103,13 +103,13 @@ export const rootReducer: ReducersMapObject<RootState> = {
   map: mapReducer,
   editor: editorReducer,
   main: mainReducer,
-  // @ts-ignore
-  osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer),
+  osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer) as unknown as Reducer<
+    OsrdMultiConfState,
+    AnyAction
+  >,
   osrdsimulation: osrdsimulationReducer,
   [osrdMiddlewareApi.reducerPath]: osrdMiddlewareApi.reducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
 };
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore: temporary
 export default persistCombineReducers<RootState, AllActions>(persistConfig, rootReducer);

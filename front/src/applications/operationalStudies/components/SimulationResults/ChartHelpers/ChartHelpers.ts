@@ -213,6 +213,13 @@ export const mergeDatasArea = <T>(
   return [];
 };
 
+export type MergedBlock<Keys extends string> = {
+  [K in Keys]: Keys extends K ? number : never;
+} & {
+  value0: number;
+  value1: number | number[];
+};
+
 // called with keyValues
 // ['position', 'gradient']
 // ['position', 'speed']
@@ -220,12 +227,12 @@ export const mergeDatasAreaConstant = <Keys extends string>(
   data1: Record<Keys, number>[],
   data2: number | number[],
   keyValues: Keys[]
-) =>
+): MergedBlock<Keys>[] =>
   data1.map((step) => ({
     [keyValues[0]]: step[keyValues[0]],
     value0: step[keyValues[1]],
     value1: data2,
-  }));
+  })) as MergedBlock<Keys>[];
 
 export const gridX = (x: d3.ScaleTime<number, number>, height: number) =>
   d3
