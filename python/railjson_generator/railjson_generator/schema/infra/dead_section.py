@@ -3,9 +3,7 @@ from typing import List
 
 from osrd_schemas import infra
 
-from railjson_generator.schema.infra.range_elements import (
-    TrackRange,
-)
+from railjson_generator.schema.infra.range_elements import TrackRange
 
 
 def _dead_section_id():
@@ -36,8 +34,6 @@ class DeadSection:
         return infra.DeadSection(
             id=self.label,
             track_ranges=[track.to_rjs() for track in self.track_ranges],
-            push_pull_track_ranges=[
-                track.to_rjs() for track in self.push_pull_track_ranges
-            ],
+            push_pull_track_ranges=[track.to_rjs() for track in self.push_pull_track_ranges],
             is_pantograph_drop_zone=self.is_pantograph_drop_zone,
         )

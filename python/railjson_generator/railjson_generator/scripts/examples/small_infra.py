@@ -76,12 +76,8 @@ def add_signal_on_ports(switch, ports: Mapping[str, Tuple[str, str]]):
     DETECTOR_TO_SWITCH = 180
 
     for port, (det_label, sig_label) in ports.items():
-        detector = switch.add_detector_on_port(
-            port, DETECTOR_TO_SWITCH, label=det_label
-        )
-        signal = switch.add_signal_on_port(
-            port, SIGNAL_TO_SWITCH, label=sig_label, linked_detector=detector
-        )
+        detector = switch.add_detector_on_port(port, DETECTOR_TO_SWITCH, label=det_label)
+        signal = switch.add_signal_on_port(port, SIGNAL_TO_SWITCH, label=sig_label, linked_detector=detector)
         signal.add_logical_signal(signaling_system="BAL", settings={"Nf": "true"})
 
 
@@ -121,23 +117,15 @@ builder = InfraBuilder()
 # track sections
 ta0 = builder.add_track_section(length=2000, label="TA0", **V1, **west_parking)
 ta1 = builder.add_track_section(length=1950, label="TA1", **V2, **west_parking)
-ta2 = builder.add_track_section(
-    length=1950, label="TA2", track_name="A", track_number=3, **west_parking
-)
-ta3 = builder.add_track_section(
-    length=50, label="TA3", track_name="J1", track_number=4, **west_parking
-)
+ta2 = builder.add_track_section(length=1950, label="TA2", track_name="A", track_number=3, **west_parking)
+ta3 = builder.add_track_section(length=50, label="TA3", track_name="J1", track_number=4, **west_parking)
 ta4 = builder.add_track_section(length=50, label="TA4", **V2, **west_parking)
-ta5 = builder.add_track_section(
-    length=50, label="TA5", track_name="J2", track_number=3, **west_parking
-)
+ta5 = builder.add_track_section(length=50, label="TA5", track_name="J2", track_number=3, **west_parking)
 ta6 = builder.add_track_section(length=10000, label="TA6", **V1, **west_to_east_road)
 ta7 = builder.add_track_section(length=10000, label="TA7", **V2, **west_to_east_road)
 
 # I create this track section here to be able to add points using it
-tb0 = builder.add_track_section(
-    length=3000, label="TB0", track_name="A", track_number=1, **south_west_parking
-)
+tb0 = builder.add_track_section(length=3000, label="TB0", track_name="A", track_number=1, **south_west_parking)
 
 # switches
 pa0 = builder.add_point_switch(
@@ -222,14 +210,10 @@ south_west.add_part(tb0, 500)
 #  Around station C: Mid - West
 # ================================
 # track sections
-tc0 = builder.add_track_section(
-    length=1050, label="TC0", track_name="V1bis", track_number=3, **west_to_east_road
-)
+tc0 = builder.add_track_section(length=1050, label="TC0", track_name="V1bis", track_number=3, **west_to_east_road)
 tc1 = builder.add_track_section(length=1000, label="TC1", **V1, **west_to_east_road)
 tc2 = builder.add_track_section(length=1000, label="TC2", **V2, **west_to_east_road)
-tc3 = builder.add_track_section(
-    length=1050, label="TC3", track_name="V2bis", track_number=4, **west_to_east_road
-)
+tc3 = builder.add_track_section(length=1050, label="TC3", track_name="V2bis", track_number=4, **west_to_east_road)
 
 # I have to create them here in order to create switches
 td0 = builder.add_track_section(length=25000, label="TD0", **V1, **west_to_east_road)
@@ -300,12 +284,8 @@ add_signal_on_ports(
 pc3.set_coords(-0.296, LAT_1)
 
 
-tc0.set_remaining_coords(
-    [[-0.309, LAT_0 + LAT_LINE_SPACE], [-0.297, LAT_0 + LAT_LINE_SPACE]]
-)
-tc3.set_remaining_coords(
-    [[-0.309, LAT_1 - LAT_LINE_SPACE], [-0.297, LAT_1 - LAT_LINE_SPACE]]
-)
+tc0.set_remaining_coords([[-0.309, LAT_0 + LAT_LINE_SPACE], [-0.297, LAT_0 + LAT_LINE_SPACE]])
+tc3.set_remaining_coords([[-0.309, LAT_1 - LAT_LINE_SPACE], [-0.297, LAT_1 - LAT_LINE_SPACE]])
 
 # Station
 mid_west = builder.add_operational_point(label="Mid_West_station")
@@ -386,9 +366,7 @@ td1.add_slope(begin=16000, end=17000, slope=-3)
 #  Around station E: North
 # ================================
 # track sections
-te1 = builder.add_track_section(
-    length=2000, label="TE1", track_name="V1bis", track_number=2, **north_to_south_loop
-)
+te1 = builder.add_track_section(length=2000, label="TE1", track_name="V1bis", track_number=2, **north_to_south_loop)
 te2 = builder.add_track_section(length=2050, label="TE2", **V1, **north_to_south_loop)
 te3 = builder.add_track_section(length=2000, label="TE3", **V1, **north_to_south_loop)
 
@@ -487,9 +465,7 @@ tf1.add_curve(begin=3100, end=4400, curve=9500)
 # track sections
 tg1 = builder.add_track_section(length=4000, label="TG1", **V1, **north_east_road)
 tg2 = builder.add_track_section(length=3000, label="TG2", **V2, **north_east_road)
-tg3 = builder.add_track_section(
-    length=50, label="TG3", track_name="J4", track_number=3, **north_east_parking
-)
+tg3 = builder.add_track_section(length=50, label="TG3", track_name="J4", track_number=3, **north_east_parking)
 tg4 = builder.add_track_section(length=2000, label="TG4", **V1, **north_east_parking)
 tg5 = builder.add_track_section(length=2000, label="TG5", **V2, **north_east_parking)
 
@@ -584,9 +560,7 @@ tg2.set_remaining_coords(
     ]
 )
 th0.set_remaining_coords([[-0.1346, LAT_1]])
-th1.set_remaining_coords(
-    [[-0.115, 49.497], [-0.115, 49.487], [-0.11, 49.484], [-0.09, 49.484]]
-)
+th1.set_remaining_coords([[-0.115, 49.497], [-0.115, 49.487], [-0.11, 49.484], [-0.09, 49.484]])
 
 # Station
 south_east = builder.add_operational_point(label="South_East_station")
@@ -597,9 +571,7 @@ south_east.add_part(th1, 4400)
 # ================================
 speed_0 = builder.add_speed_section(300 / 3.6)
 for track_section in builder.infra.track_sections:
-    speed_0.add_track_range(
-        track_section, 0, track_section.length, ApplicableDirection.BOTH
-    )
+    speed_0.add_track_range(track_section, 0, track_section.length, ApplicableDirection.BOTH)
 
 
 speed_1 = builder.add_speed_section(142 / 3.6)
@@ -613,9 +585,7 @@ speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 #  Catenaries
 # ================================
 electrified_tracks_25000 = set(builder.infra.track_sections) - {td1, ta0}
-builder.infra.catenaries.append(
-    Catenary("catenary_25k", "25000", electrified_tracks_25000)
-)
+builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks_25000))
 builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", {ta0}))
 
 # ================================
@@ -703,10 +673,7 @@ ep_o = external_inputs.add_electrical_profile(value="O", power_class="5")
 ep_o.add_track_range(ta0, 0, ta0.length)
 # We voluntarily leave ta0 empty for other power classes
 
-other_eps = [
-    external_inputs.add_electrical_profile(value="25000", power_class=str(i))
-    for i in range(1, 6)
-]
+other_eps = [external_inputs.add_electrical_profile(value="25000", power_class=str(i)) for i in range(1, 6)]
 for track_section in electrified_tracks_25000 - {ta6}:
     for ep in other_eps:
         ep.add_track_range(track_section, 0, track_section.length)
