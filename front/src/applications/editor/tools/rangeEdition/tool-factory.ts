@@ -79,27 +79,50 @@ function getRangeEditionTool<T extends EditorRange>({
 
     actions: [
       [
-        {
-          id: 'new-speed-section',
-          icon: IoMdAddCircleOutline,
-          labelTranslationKey: 'Editor.tools.speed-edition.actions.new-speed-section',
-          onClick({ setState }) {
-            setState(getInitialState());
-          },
-        },
-        {
-          id: 'reset-speed-section',
-          icon: BiReset,
-          labelTranslationKey: 'Editor.tools.speed-edition.actions.reset-speed-section',
-          isDisabled({ state: { entity, initialEntity } }) {
-            return isEqual(entity, initialEntity);
-          },
-          onClick({ setState, state: { initialEntity } }) {
-            setState({
-              entity: cloneDeep(initialEntity),
-            });
-          },
-        },
+        layersEntity.objType === 'SpeedSection'
+          ? {
+              id: 'new-speed-section',
+              icon: IoMdAddCircleOutline,
+              labelTranslationKey: 'Editor.tools.speed-edition.actions.new-speed-section',
+              onClick({ setState }) {
+                setState(getInitialState());
+              },
+            }
+          : {
+              id: 'new-catenary',
+              icon: IoMdAddCircleOutline,
+              labelTranslationKey: 'Editor.tools.catenary-edition.actions.new-catenary',
+              onClick({ setState }) {
+                setState(getInitialState());
+              },
+            },
+        layersEntity.objType === 'SpeedSection'
+          ? {
+              id: 'reset-speed-section',
+              icon: BiReset,
+              labelTranslationKey: 'Editor.tools.speed-edition.actions.reset-speed-section',
+              isDisabled({ state: { entity, initialEntity } }) {
+                return isEqual(entity, initialEntity);
+              },
+              onClick({ setState, state: { initialEntity } }) {
+                setState({
+                  entity: cloneDeep(initialEntity),
+                });
+              },
+            }
+          : {
+              id: 'reset-catenary',
+              icon: BiReset,
+              labelTranslationKey: 'Editor.tools.catenary-edition.actions.reset-catenary',
+              isDisabled({ state: { entity, initialEntity } }) {
+                return isEqual(entity, initialEntity);
+              },
+              onClick({ setState, state: { initialEntity } }) {
+                setState({
+                  entity: cloneDeep(initialEntity),
+                });
+              },
+            },
       ],
     ],
 
