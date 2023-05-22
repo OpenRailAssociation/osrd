@@ -2,32 +2,27 @@ import { MAP_URL } from 'common/Map/const';
 import React from 'react';
 import { LayerProps, Source } from 'react-map-gl';
 import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { SourceLayer, SymbolLayer } from 'types';
+import { isNil } from 'lodash';
+import { getMap } from 'reducers/map/selectors';
 import OrderedLayer from '../../OrderedLayer';
+import { LayerContext } from '../../types';
 
 interface SNCF_LPV_PanelsProps {
-  geomType: string;
+  geomType: SourceLayer;
   layerOrder?: number;
 }
 
-export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
-  const { mapStyle } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { geomType, layerOrder } = props;
-
-  const angleName = geomType === 'sch' ? 'angle_sch' : 'angle_geo';
-  let prefix;
-  if (mapStyle === 'blueprint') {
-    prefix = 'SCHB ';
-  } else {
-    prefix = geomType === 'sch' ? 'SCH ' : '';
-  }
-
-  const panelsParams: LayerProps = {
+export function getLPVPanelsLayerProps({
+  sourceTable,
+  prefix,
+  sourceLayer,
+}: Pick<LayerContext, 'sourceTable' | 'prefix' | 'sourceLayer'>): SymbolLayer {
+  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
+  const res: SymbolLayer = {
     id: 'panelParams',
     type: 'symbol',
-    'source-layer': 'lpv_panels',
     minzoom: 11,
     paint: {},
     layout: {
@@ -65,9 +60,19 @@ export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
     },
   };
 
-  const mastsParams: LayerProps = {
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export function getLPVPanelsMastLayerProps({
+  sourceTable,
+  sourceLayer,
+}: Pick<LayerContext, 'sourceTable' | 'sourceLayer'>): Omit<SymbolLayer, 'id'> {
+  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
+
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
-    'source-layer': 'lpv_panels',
     minzoom: 13,
     paint: {},
     layout: {
@@ -87,6 +92,34 @@ export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
       'icon-ignore-placement': true,
     },
   };
+
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export default function SNCF_LPV_Panels(props: SNCF_LPV_PanelsProps) {
+  const infraID = useSelector(getInfraID);
+  const { geomType, layerOrder } = props;
+
+  const { mapStyle } = useSelector(getMap);
+  let prefix: string;
+  if (mapStyle === 'blueprint') {
+    prefix = 'SCHB ';
+  } else {
+    prefix = geomType === 'sch' ? 'SCH ' : '';
+  }
+
+  const panelsParams: LayerProps = getLPVPanelsLayerProps({
+    sourceTable: 'lpv_panels',
+    sourceLayer: geomType,
+    prefix,
+  });
+
+  const mastsParams: LayerProps = getLPVPanelsMastLayerProps({
+    sourceTable: 'lpv_panels',
+    sourceLayer: geomType,
+  });
 
   return (
     <Source

@@ -300,27 +300,41 @@
         "show-more-speed-sections_other": "Show {{count}} more results"
       },
       "speed-edition": {
-        "label": "\"Speed limits\" tool",
         "actions": {
           "new-speed-section": "Create a new speed limit",
           "reset-speed-section": "Cancel the current modifications"
         },
-        "speed-limits": "Speed limits",
-        "main-speed-limit": "Default speed limit",
-        "additional-speed-limit": "Additional speed limits",
         "add-new-speed-limit": "Add new speed limit",
-        "linked-track-sections": "Linked track sections",
-        "edit-track-range-start": "Edit departure point",
+        "add-panel": "Add a panel from {{panelType}} type",
+        "add-track-range": "Click to link to:",
+        "additional-speed-limit": "Additional speed limits",
         "edit-track-range-end": "Edit arrival point",
+        "edit-track-range-start": "Edit departure point",
+        "hovered-panel": "Panel {{panelType}}",
+        "label": "\"Speed limits\" tool",
+        "linked-track-sections": "Linked track sections",
+        "main-speed-limit": "Default speed limit",
+        "move-range-extremity": "Click to move the end:",
+        "new-tag": "Composition code",
         "only-show-n": "Only show the first {{count}} track sections",
+        "panel-angle-geo": "Angle Geo",
+        "panel-angle-sch": "Angle Sch",
+        "panel-category": "Panel(s) {{panelType}}",
+        "panel-select": "Select",
+        "panel-remove": "Remove panel",
+        "panel-position": "Position",
+        "panel-track-id": "Track section id",
+        "panel-type": "Type",
+        "panel-side": "Side",
+        "panel-value": "Speed",
+        "panels-section-list": "Section panels list",
+        "remove-track-range": "Click to detatch from:",
+        "save-existing-speed-section": "Save modifications",
+        "save-new-speed-section": "Save the new speed limit",
         "show-more-ranges_one": "See an additional track section",
         "show-more-ranges_other": "See {{count}} additional track sections",
-        "add-track-range": "Click to link to:",
-        "remove-track-range": "Click to detatch from:",
-        "move-range-extremity": "Click to move the end:",
-        "save-new-speed-section": "Save new speed limit",
-        "save-existing-speed-section": "Save modifications",
-        "new-tag": "Composition code"
+        "speed-limits": "Speed limits",
+        "toggle-lpv": "Permanent speed limit"
       }
     }
   }

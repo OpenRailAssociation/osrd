@@ -52,8 +52,6 @@ pub struct SignalExtensions {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SignalSncfExtension {
-    pub angle_geo: f64,
-    pub angle_sch: f64,
     pub aspects: Vec<String>,
     pub comment: String,
     pub default_aspect: String,

@@ -3,6 +3,7 @@ import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
+import { CatenaryRange } from 'common/api/osrdEditoastApi';
 
 export const BLOCKTYPES = [
   {
@@ -134,11 +135,12 @@ export interface OsrdConfState {
   infraID?: number;
   switchTypes?: SwitchType[];
   pathfindingID?: number;
+  pathWithCatenaries?: CatenaryRange[];
   shouldRunPathfinding: boolean;
   timetableID?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
-  powerRestriction?: PowerRestrictionRange;
+  powerRestriction?: PowerRestrictionRange[];
   origin?: PointOnMap;
   initialSpeed?: number;
   departureTime: string;

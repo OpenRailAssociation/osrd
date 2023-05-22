@@ -3,6 +3,7 @@ extern crate diesel;
 
 mod client;
 mod converters;
+mod core;
 mod error;
 mod fixtures;
 mod generated_data;
@@ -13,6 +14,7 @@ mod schema;
 mod tables;
 mod views;
 
+use crate::core::CoreClient;
 use crate::error::InternalError;
 use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
@@ -33,6 +35,7 @@ use diesel::r2d2::{self, ConnectionManager, Pool};
 use diesel::{Connection, PgConnection};
 use diesel_json::Json as DieselJson;
 use infra_cache::InfraCache;
+use log::{error, info, warn};
 use map::MapLayers;
 use models::Retrieve;
 use sentry::ClientInitGuard;
@@ -52,7 +55,7 @@ async fn main() {
     match run().await {
         Ok(_) => (),
         Err(e) => {
-            eprintln!("{e}");
+            error!("{e}");
             exit(2);
         }
     }
@@ -89,11 +92,11 @@ fn init_sentry(args: &RunserverArgs) -> Option<ClientInitGuard> {
             },
         ))),
         (None, Some(_)) => {
-            println!("SENTRY_DSN must be set to send events to Sentry.");
+            warn!("SENTRY_DSN must be set to send events to Sentry.");
             None
         }
         (Some(_), None) => {
-            println!("SENTRY_ENV must be set to send events to Sentry.");
+            warn!("SENTRY_ENV must be set to send events to Sentry.");
             None
         }
         _ => None,
@@ -106,7 +109,7 @@ async fn runserver(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    println!("Building server...");
+    info!("Building server...");
     // Config databases
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
     let pool = Pool::builder()
@@ -137,6 +140,12 @@ async fn runserver(
             .allow_any_method()
             .allow_any_header();
 
+        // Build Core client
+        let core_client = CoreClient::new_direct(
+            args.backend_url.parse().expect("invalid backend_url value"),
+            args.backend_token.clone(),
+        );
+
         App::new()
             .wrap(Condition::new(
                 is_sentry_initialized,
@@ -152,11 +161,12 @@ async fn runserver(
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
             .app_data(Data::new(SearchConfig::parse()))
+            .app_data(Data::new(core_client))
             .service((views::routes(), views::study_routes()))
     });
 
     // Run server
-    println!("Running server...");
+    info!("Running server...");
     server
         .bind((args.address.clone(), args.port))?
         .run()
@@ -214,7 +224,7 @@ async fn generate(
 
     // Refresh each infras
     for infra in infras {
-        println!(
+        info!(
             "🍞 Infra {}[{}] is generating:",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
@@ -223,13 +233,13 @@ async fn generate(
         if infra.refresh(&mut conn, args.force, &infra_cache)? {
             build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap())
                 .await;
-            println!(
+            info!(
                 "✅ Infra {}[{}] generated!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
             );
         } else {
-            println!(
+            info!(
                 "✅ Infra {}[{}] already generated!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
@@ -266,7 +276,7 @@ async fn import_railjson(
             }
         };
 
-        println!(
+        info!(
             "✅ Infra {}[{}] saved!",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
@@ -275,7 +285,7 @@ async fn import_railjson(
         if args.generate {
             let infra_cache = InfraCache::load(&mut conn, &infra)?;
             infra.refresh(&mut conn, true, &infra_cache)?;
-            println!(
+            info!(
                 "✅ Infra {}[{}] generated data refreshed!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
@@ -305,7 +315,7 @@ async fn add_electrical_profile_set(
 
     let created_ep_set = ep_set.create(pool).await.unwrap();
     let ep_set_id = created_ep_set.id.unwrap();
-    println!("✅ Electrical profile set {ep_set_id} created");
+    info!("✅ Electrical profile set {ep_set_id} created");
     Ok(())
 }
 
@@ -347,14 +357,14 @@ async fn clear(
     };
 
     for infra in infras {
-        println!(
+        info!(
             "🍞 Infra {}[{}] is clearing:",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
         );
         build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap()).await;
         infra.clear(&mut conn)?;
-        println!(
+        info!(
             "✅ Infra {}[{}] cleared!",
             infra.name.unwrap().bold(),
             infra.id.unwrap()

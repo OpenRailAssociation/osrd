@@ -1,10 +1,10 @@
 import { GiPathDistance } from 'react-icons/gi';
 
-import { Tool } from '../types';
 import { RouteEditionState } from './types';
 import { WayPointEntity } from '../../../../types';
 import { RouteEditionLayers, RouteEditionLeftPanel, RouteMessages } from './components';
 import { getEmptyCreateRouteState } from './utils';
+import { Tool } from '../editorContextTypes';
 
 const RouteEditionTool: Tool<RouteEditionState> = {
   id: 'route-edition',

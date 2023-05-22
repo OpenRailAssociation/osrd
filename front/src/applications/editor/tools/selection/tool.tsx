@@ -4,11 +4,10 @@ import { PointLike } from 'mapbox-gl';
 import { isEqual, max, min } from 'lodash';
 
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF/ConfirmModal';
-import { DEFAULT_COMMON_TOOL_STATE, LAYER_TO_EDITOAST_DICT, LayerType, Tool } from '../types';
+import { LAYER_TO_EDITOAST_DICT, LayerType } from '../types';
 import { save } from '../../../../reducers/editor';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
-import TrackEditionTool from '../trackEdition/tool';
 import {
   BufferStopEntity,
   DetectorEntity,
@@ -17,15 +16,12 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../../types';
-import {
-  BufferStopEditionTool,
-  DetectorEditionTool,
-  SignalEditionTool,
-} from '../pointEdition/tools';
-import SwitchEditionTool from '../switchEdition/tool';
 import { getMixedEntities } from '../../data/api';
 import { selectInZone } from '../../../../utils/mapboxHelper';
-import SpeedSectionEditionTool from '../speedSectionEdition/tool';
+import TOOL_TYPES from '../toolTypes';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { TrackEditionState } from '../trackEdition/types';
+import { Tool } from '../editorContextTypes';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -99,42 +95,61 @@ const SelectionTool: Tool<SelectionState> = {
             const selectedElement = state.selection[0];
             switch (selectedElement.objType) {
               case 'TrackSection':
-                switchTool(TrackEditionTool, {
-                  initialTrack: selectedElement as TrackSectionEntity,
-                  track: selectedElement as TrackSectionEntity,
-                  editionState: {
-                    type: 'movePoint',
-                  },
+                switchTool({
+                  // be careful with type here
+                  toolType: TOOL_TYPES.TRACK_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as TrackSectionEntity,
+                    track: selectedElement as TrackSectionEntity,
+                    editionState: {
+                      type: 'movePoint',
+                    },
+                  } as Partial<TrackEditionState>,
                 });
                 break;
               case 'Signal':
-                switchTool(SignalEditionTool, {
-                  initialEntity: selectedElement as SignalEntity,
-                  entity: selectedElement as SignalEntity,
+                switchTool({
+                  toolType: TOOL_TYPES.SIGNAL_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as SignalEntity,
+                    entity: selectedElement as SignalEntity,
+                  },
                 });
                 break;
               case 'BufferStop':
-                switchTool(BufferStopEditionTool, {
-                  initialEntity: selectedElement as BufferStopEntity,
-                  entity: selectedElement as BufferStopEntity,
+                switchTool({
+                  toolType: TOOL_TYPES.BUFFER_STOP_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as BufferStopEntity,
+                    entity: selectedElement as BufferStopEntity,
+                  },
                 });
                 break;
               case 'Detector':
-                switchTool(DetectorEditionTool, {
-                  initialEntity: selectedElement as DetectorEntity,
-                  entity: selectedElement as DetectorEntity,
+                switchTool({
+                  toolType: TOOL_TYPES.DETECTOR_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as DetectorEntity,
+                    entity: selectedElement as DetectorEntity,
+                  },
                 });
                 break;
               case 'Switch':
-                switchTool(SwitchEditionTool, {
-                  initialEntity: selectedElement as SwitchEntity,
-                  entity: selectedElement as SwitchEntity,
+                switchTool({
+                  toolType: TOOL_TYPES.SWITCH_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as SwitchEntity,
+                    entity: selectedElement as SwitchEntity,
+                  },
                 });
                 break;
               case 'SpeedSection':
-                switchTool(SpeedSectionEditionTool, {
-                  initialEntity: selectedElement as SpeedSectionEntity,
-                  entity: selectedElement as SpeedSectionEntity,
+                switchTool({
+                  toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
+                  toolState: {
+                    initialEntity: selectedElement as SpeedSectionEntity,
+                    entity: selectedElement as SpeedSectionEntity,
+                  },
                 });
                 break;
               default:

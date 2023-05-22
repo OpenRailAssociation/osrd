@@ -3,6 +3,7 @@ import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import mapImg from 'assets/pictures/home/map.svg';
 import editorImg from 'assets/pictures/home/editor.svg';
+import rollingStockEditorImg from 'assets/pictures/home/rollingstockeditor.svg';
 import stdcmImg from 'assets/pictures/home/stdcm.svg';
 import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import customgetImg from 'assets/pictures/home/customget.svg';
@@ -38,6 +39,9 @@ export default function Home() {
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={editorImg} title={t('editor')} link="/editor" />
+            </div>
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={rollingStockEditorImg} title={t('rollingStockEditor')} link="/rolling-stock-editor" />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" />

@@ -1,14 +1,68 @@
 import { Position } from 'geojson';
-import { last, cloneDeep } from 'lodash';
+import { last, cloneDeep, compact, isEmpty } from 'lodash';
 import along from '@turf/along';
 import length from '@turf/length';
 import { Feature, feature, lineString, LineString, point } from '@turf/helpers';
 import lineSliceAlong from '@turf/line-slice-along';
 
+import { getNearestPoint } from 'utils/mapboxHelper';
 import { NEW_ENTITY_ID } from '../../data/utils';
-import { DEFAULT_COMMON_TOOL_STATE } from '../types';
-import { SpeedSectionEntity, TrackRange, TrackSectionEntity } from '../../../../types';
-import { SpeedSectionEditionState, TrackRangeExtremityFeature, TrackRangeFeature } from './types';
+import {
+  LPVExtension,
+  LPVPanel,
+  SpeedSectionEntity,
+  SpeedSectionLpvEntity,
+  TrackRange,
+  TrackSectionEntity,
+} from '../../../../types';
+import {
+  LPV_PANEL_TYPE,
+  LPV_PANEL_TYPES,
+  LpvPanelFeature,
+  LpvPanelInformation,
+  SpeedSectionEditionState,
+  TrackRangeExtremityFeature,
+  TrackRangeFeature,
+  TrackState,
+} from './types';
+import {
+  approximateDistanceWithEditoastData,
+  getHoveredTrackRanges,
+  getTrackSectionEntityFromNearestPoint,
+} from '../utils';
+import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
+import { Reducer } from '../editorContextTypes';
+
+// Tool functions
+/**
+ * Given a hover event and a trackSectionCache when moving a LpvPanel, return the new position of the panel, with the trackRange's id on which the panel is and its distance from the beginning of the trackRange.
+ * - retrieve the trackRanges around the mouse
+ * - retrieve the nearest point of the mouse (and the trackRange it belongs to)
+ * - compute the distance between the beginning of the track and the nearest point (with approximation because of Editoast data)
+ */
+export function getLpvPanelNewPosition(
+  e: mapboxgl.MapLayerMouseEvent,
+  trackSectionsCache: Record<string, TrackState>
+) {
+  const hoveredTrackRanges = getHoveredTrackRanges(e);
+  if (isEmpty(hoveredTrackRanges)) {
+    return null;
+  }
+  const nearestPoint = getNearestPoint(hoveredTrackRanges, e.lngLat.toArray());
+  const trackSection = getTrackSectionEntityFromNearestPoint(
+    nearestPoint,
+    hoveredTrackRanges,
+    trackSectionsCache
+  );
+  if (!trackSection) {
+    return null;
+  }
+  const distanceAlongTrack = approximateDistanceWithEditoastData(
+    trackSection,
+    nearestPoint.geometry
+  );
+  return { track: trackSection.properties.id, position: distanceAlongTrack };
+}
 
 export function getNewSpeedSection(): SpeedSectionEntity {
   return {
@@ -27,6 +81,61 @@ export function getNewSpeedSection(): SpeedSectionEntity {
       coordinates: [],
     },
   };
+}
+
+/** return the LPV panel type and its index (if the panel is not a Z panel) */
+export function getPanelInformationFromInteractionState(
+  interactionState: { type: 'movePanel' } & LpvPanelInformation
+) {
+  const { panelType } = interactionState;
+  return (
+    panelType === LPV_PANEL_TYPES.Z
+      ? { panelType: LPV_PANEL_TYPES.Z }
+      : { panelType, panelIndex: interactionState.panelIndex }
+  ) as LpvPanelInformation;
+}
+
+export function getNewLpvExtension(
+  newLpvExtension: LPVExtension,
+  panelInformation: LpvPanelInformation,
+  newPosition: { track: string; position: number }
+) {
+  const { panelType } = panelInformation;
+  if (panelType === LPV_PANEL_TYPES.Z) {
+    newLpvExtension.z = {
+      ...newLpvExtension.z,
+      ...newPosition,
+    };
+  } else {
+    const { panelIndex } = panelInformation;
+    if (panelType === LPV_PANEL_TYPES.ANNOUNCEMENT) {
+      newLpvExtension.announcement[panelIndex] = {
+        ...newLpvExtension.announcement[panelIndex],
+        ...newPosition,
+      };
+    } else {
+      newLpvExtension.r[panelIndex] = {
+        ...newLpvExtension.r[panelIndex],
+        ...newPosition,
+      };
+    }
+  }
+  return newLpvExtension;
+}
+
+export function getMovedLpvEntity(
+  entity: SpeedSectionLpvEntity,
+  panelInfo: LpvPanelInformation,
+  newPosition: { track: string; position: number }
+) {
+  const newLpvExtension = getNewLpvExtension(
+    cloneDeep(entity.properties.extensions.lpv_sncf),
+    panelInfo,
+    newPosition
+  );
+  const updatedEntity = cloneDeep(entity);
+  updatedEntity.properties.extensions.lpv_sncf = newLpvExtension;
+  return updatedEntity;
 }
 
 export function getEditSpeedSectionState(entity: SpeedSectionEntity): SpeedSectionEditionState {
@@ -130,6 +239,49 @@ export function getTrackRangeFeatures(
   ];
 }
 
+/**
+ * Given a LPV panel and the cached trackSections, generate a point feature to represent a SpeedSection Lpv Panel.
+ * If the panel's track is not in the trackSectionsCache object, then return null.
+ * This feature will be used to display the panel on the map.
+ */
+function generatePointFromLPVPanel(
+  panel: LPVPanel,
+  panelIndex: number,
+  panelType: LPV_PANEL_TYPE,
+  trackSectionsCache: Record<string, TrackState>
+): LpvPanelFeature | null {
+  const trackState = trackSectionsCache[panel.track];
+  if (trackState?.type !== 'success') {
+    return null;
+  }
+  const panelPoint = along(trackState.track, panel.position, { units: 'meters' });
+  panelPoint.properties = {
+    ...panel,
+    speedSectionItemType: 'LPVPanel',
+    speedSectionPanelIndex: panelIndex,
+    speedSectionPanelType: panelType,
+  };
+  return panelPoint as LpvPanelFeature;
+}
+
+/**
+ * Given a LPV extension and cached trackSections, generate an array of Point Features to display the LPV panels on the map.
+ */
+export function generateLpvPanelFeatures(
+  lpv: LPVExtension,
+  trackSectionsCache: Record<string, TrackState>
+) {
+  const panelsLists = [
+    { type: LPV_PANEL_TYPES.Z, panels: lpv.z ? [lpv.z] : [] },
+    { type: LPV_PANEL_TYPES.R, panels: lpv.r },
+    { type: LPV_PANEL_TYPES.ANNOUNCEMENT, panels: lpv.announcement },
+  ];
+  const panelPoints = panelsLists.flatMap(({ type, panels }) =>
+    panels.map((panel, i) => generatePointFromLPVPanel(panel, i, type, trackSectionsCache))
+  );
+  return compact(panelPoints);
+}
+
 export function getPointAt(track: TrackSectionEntity, at: number): Position {
   const dataLength = track.properties.length;
   if (at <= 0) return track.geometry.coordinates[0];
@@ -144,4 +296,45 @@ export function msToKmh(v: number): number {
 }
 export function kmhToMs(v: number): number {
   return v / 3.6;
+}
+
+/**
+ * Given a lpvPanel information, update the state to notify that the user is moving the panel.
+ * - set the interaction state on 'movePanel'
+ * - store in the interaction state the panel informations
+ */
+export function selectLpvPanel(
+  lpvPanel: LpvPanelInformation,
+  setState: (
+    stateOrReducer: Partial<SpeedSectionEditionState> | Reducer<SpeedSectionEditionState>
+  ) => void
+) {
+  const { panelType } = lpvPanel;
+  const interactionState =
+    panelType === LPV_PANEL_TYPES.Z
+      ? ({ type: 'movePanel', panelType: LPV_PANEL_TYPES.Z } as {
+          type: 'movePanel';
+          panelType: LPV_PANEL_TYPES.Z;
+        })
+      : ({
+          type: 'movePanel',
+          panelType,
+          panelIndex: lpvPanel.panelIndex,
+        } as {
+          type: 'movePanel';
+          panelType: LPV_PANEL_TYPES.ANNOUNCEMENT | LPV_PANEL_TYPES.R;
+          panelIndex: number;
+        });
+  setState({
+    hoveredItem: null,
+    interactionState,
+  });
+}
+
+export function speedSectionIsLpv(entity: SpeedSectionEntity): boolean {
+  return !!entity.properties?.extensions?.lpv_sncf;
+}
+
+export function isOnModeMove(interactionStateType: string): boolean {
+  return ['moveRangeExtremity', 'movePanel'].includes(interactionStateType);
 }

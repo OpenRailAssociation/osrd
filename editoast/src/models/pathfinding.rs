@@ -8,29 +8,23 @@ use crate::schema::DirectionalTrackRange;
 use crate::tables::osrd_infra_pathmodel;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
-use diesel::prelude::*;
-use diesel::result::Error as DieselError;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
+use diesel::{prelude::*, result::Error as DieselError, ExpressionMethods, QueryDsl};
 use editoast_derive::Model;
+use geos::geojson;
 use postgis_diesel::types::*;
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Describes a pathfinding that resulted from a simulation and stored in the DB
 ///
 /// It differs from infra/pathfinding that performs a topological pathfinding
 /// meant to be used with the infra editor.
-#[derive(
-    Debug, Clone, Serialize, Insertable, Derivative, Queryable, QueryableByName, AsChangeset, Model,
-)]
+#[derive(Debug, Clone, PartialEq, Serialize, Derivative, Queryable, QueryableByName, Model)]
 #[derivative(Default(new = "true"))]
 #[model(table = "osrd_infra_pathmodel")]
-#[model(create, delete, retrieve, update)]
+#[model(retrieve, delete)]
 #[diesel(table_name = osrd_infra_pathmodel)]
 pub struct Pathfinding {
-    #[diesel(deserialize_as = i64)]
-    pub id: Option<i64>,
+    pub id: i64,
     pub owner: uuid::Uuid,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub created: NaiveDateTime,
@@ -47,29 +41,87 @@ pub struct Pathfinding {
     pub infra_id: i64,
 }
 
+#[derive(Clone, Debug, Serialize, Queryable, Insertable, Derivative, AsChangeset, Model)]
+#[derivative(Default(new = "true"))]
+#[model(table = "osrd_infra_pathmodel")]
+#[model(create, update)]
+#[diesel(table_name = osrd_infra_pathmodel)]
+pub struct PathfindingChangeset {
+    #[diesel(deserialize_as=i64)]
+    pub id: Option<i64>,
+    #[diesel(deserialize_as=uuid::Uuid)]
+    pub owner: Option<uuid::Uuid>,
+    #[diesel(deserialize_as=NaiveDateTime)]
+    pub created: Option<NaiveDateTime>,
+    #[diesel(deserialize_as=diesel_json::Json<PathfindingPayload>)]
+    pub payload: Option<diesel_json::Json<PathfindingPayload>>,
+    #[diesel(deserialize_as=diesel_json::Json<SlopeGraph>)]
+    pub slopes: Option<diesel_json::Json<SlopeGraph>>,
+    #[diesel(deserialize_as=diesel_json::Json<CurveGraph>)]
+    pub curves: Option<diesel_json::Json<CurveGraph>>,
+    #[diesel(deserialize_as=LineString<Point>)]
+    pub geographic: Option<LineString<Point>>,
+    #[diesel(deserialize_as=LineString<Point>)]
+    pub schematic: Option<LineString<Point>>,
+    #[diesel(deserialize_as=i64)]
+    pub infra_id: Option<i64>,
+}
+
+impl From<Pathfinding> for PathfindingChangeset {
+    fn from(value: Pathfinding) -> Self {
+        Self {
+            id: Some(value.id),
+            owner: Some(value.owner),
+            created: Some(value.created),
+            payload: Some(value.payload),
+            slopes: Some(value.slopes),
+            curves: Some(value.curves),
+            geographic: Some(value.geographic),
+            schematic: Some(value.schematic),
+            infra_id: Some(value.infra_id),
+        }
+    }
+}
+
+impl From<PathfindingChangeset> for Pathfinding {
+    fn from(value: PathfindingChangeset) -> Self {
+        Self {
+            id: value.id.expect("invalid changeset result"),
+            owner: value.owner.expect("invalid changeset result"),
+            created: value.created.expect("invalid changeset result"),
+            payload: value.payload.expect("invalid changeset result"),
+            slopes: value.slopes.expect("invalid changeset result"),
+            curves: value.curves.expect("invalid changeset result"),
+            geographic: value.geographic.expect("invalid changeset result"),
+            schematic: value.schematic.expect("invalid changeset result"),
+            infra_id: value.infra_id.expect("invalid changeset result"),
+        }
+    }
+}
+
 pub type SlopeGraph = Vec<Slope>;
 pub type CurveGraph = Vec<Curve>;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Slope {
     gradient: f64,
     position: f64,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Curve {
     radius: f64,
     position: f64,
 }
 
-#[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct PathfindingPayload {
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 pub struct RoutePath {
     pub route: String,
     pub signaling_type: String,
@@ -77,15 +129,23 @@ pub struct RoutePath {
     pub track_ranges: Vec<DirectionalTrackRange>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Derivative, Deserialize, Serialize)]
+#[derivative(Default)]
 pub struct PathWaypoint {
     pub id: Option<String>,
     pub name: Option<String>,
     pub track: String,
-    #[serde(default)]
     pub duration: f64,
     pub position: f64,
     pub suggestion: bool,
+    #[derivative(Default(
+        value = "geojson::Geometry::new(geojson::Value::LineString(Default::default()))"
+    ))]
+    pub geo: geojson::Geometry,
+    #[derivative(Default(
+        value = "geojson::Geometry::new(geojson::Value::LineString(Default::default()))"
+    ))]
+    pub sch: geojson::Geometry,
 }
 
 impl Pathfinding {
@@ -136,7 +196,7 @@ impl Pathfinding {
 
 impl Identifiable for Pathfinding {
     fn get_id(&self) -> i64 {
-        self.id.unwrap()
+        self.id
     }
 }
 

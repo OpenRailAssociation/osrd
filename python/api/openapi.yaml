@@ -1683,6 +1683,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/LightRollingStock"
         - type: object
+          required: [effort_curves, energy_sources]
           properties:
             effort_curves:
               type: object
@@ -1702,6 +1703,119 @@ components:
                         $ref: "#/components/schemas/EffortCurve"
                       is_electric:
                         type: boolean
+            energy_sources:
+              type: array
+              items:
+                $ref: "#/components/schemas/EnergySource"
+    EnergySource:
+      oneOf:
+        - $ref: '#/components/schemas/Catenary'
+        - $ref: '#/components/schemas/PowerPack'
+        - $ref: '#/components/schemas/Battery'
+      discriminator:
+        propertyName: energy_source_type
+    Catenary:
+      type: object
+      required: [energy_source_type, max_input_power, max_output_power, efficiency]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Catenary"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+    PowerPack:
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["PowerPack"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+    Battery:
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Battery"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+    EnergyStorage:
+      type: object
+      required: [capacity, soc, soc_min, soc_max, refill_law]
+      properties:
+        capacity:
+          type: number
+          format: float
+        soc:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_min:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_max:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        refill_law:
+          type: object
+          nullable: true
+          properties:
+            tau:
+              type: number
+              format: float
+              minimum: 0
+            soc_ref:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+          required: [tau, soc_ref]
+    SpeedDependantPower:
+      type: object
+      required: [speeds, powers]
+      properties:
+        speeds:
+          type: array
+          items:
+            type: number
+            format: float
+        powers:
+          type: array
+          items:
+            type: number
+            format: float
     ConditionalEffortCurve:
       type: object
       properties:

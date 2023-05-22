@@ -16,8 +16,10 @@ import { formatIsoDate } from 'utils/date';
 import { ValueOf } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-import { osrdEditoastApi } from '../../common/api/osrdEditoastApi';
+import { CatenaryRange, osrdEditoastApi } from '../../common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from '../../types';
+import { CatenaryRange, osrdEditoastApi } from '../../common/api/osrdEditoastApi';
+
 /* eslint-disable default-case */
 
 // Action Types
@@ -35,6 +37,7 @@ export const UPDATE_SCENARIO_ID = 'osrdconf/UPDATE_SCENARIO_ID';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
+export const UPDATE_PATH_WITH_CATENARIES = 'osrdconf/UPDATE_PATH_WITH_CATENARIES';
 export const UPDATE_SHOULD_RUN_PATHFINDING = 'osrdconf/UPDATE_SHOULD_RUN_PATHFINDING';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
@@ -176,6 +179,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_PATHFINDING_ID:
         draft[section].pathfindingID = action.pathfindingID;
+        break;
+      case UPDATE_PATH_WITH_CATENARIES:
+        draft[section].pathWithCatenaries = action.pathWithCatenaries;
         break;
       case UPDATE_SHOULD_RUN_PATHFINDING:
         draft[section].shouldRunPathfinding = action.shouldRunPathfinding;
@@ -436,6 +442,14 @@ export function updatePathfindingID(pathfindingID?: number) {
     });
   };
 }
+export function updatePathWithCatenaries(pathWithCatenaries?: CatenaryRange[]) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_PATH_WITH_CATENARIES,
+      pathWithCatenaries,
+    });
+  };
+}
 export function updateShouldRunPathfinding(shouldRunPathfinding: boolean) {
   return (dispatch: Dispatch) => {
     dispatch({
@@ -664,7 +678,7 @@ export function deleteItinerary() {
     });
   };
 }
-export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange) {
+export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_POWER_RESTRICTION,

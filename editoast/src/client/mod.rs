@@ -52,6 +52,11 @@ pub struct RunserverArgs {
     #[derivative(Default(value = r#""0.0.0.0".into()"#))]
     #[arg(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
     pub address: String,
+    #[derivative(Default(value = r#""http://localhost:8080".into()"#))]
+    #[clap(long, env = "OSRD_BACKEND_URL", default_value_t = String::from("http://localhost:8080"))]
+    pub backend_url: String,
+    #[clap(long, env = "OSRD_BACKEND_TOKEN", default_value_t = String::from(""))]
+    pub backend_token: String,
     #[arg(long, env = "SENTRY_DSN")]
     pub sentry_dsn: Option<String>,
     #[arg(long, env = "SENTRY_ENV")]

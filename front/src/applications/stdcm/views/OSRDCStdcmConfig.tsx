@@ -9,7 +9,6 @@ import Itinerary from 'applications/operationalStudies/components/ManageTrainSch
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import ScenarioExplorer from 'common/ScenarioExplorer/ScenarioExplorer';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
-import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
 import {
   getInfraID,
   getProjectID,
@@ -19,6 +18,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
+import STDCMAllowances from '../components/STDCMAllowances';
 import OSRDStdcmResults from './OSRDStdcmResults';
 
 type OSRDStdcmConfigProps = {
@@ -40,7 +40,6 @@ export default function OSRDConfig({
   const { t } = useTranslation([
     'translation',
     'operationalStudies/manageTrainSchedule',
-    'allowances',
     'simulation',
   ]);
 
@@ -66,33 +65,7 @@ export default function OSRDConfig({
               <RollingStockSelector condensed />
               <SpeedLimitByTagSelector condensed />
               <Itinerary />
-              <div className="row">
-                <div className="col-xl-6">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:gridMarginBefore')}
-                      typeKey="gridMarginBefore"
-                    />
-                  </div>
-                </div>
-                <div className="col-xl-6">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:gridMarginAfter')}
-                      typeKey="gridMarginAfter"
-                    />
-                  </div>
-                </div>
-                <div className="col-xl-12">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:standardAllowance')}
-                      typeKey="standardStdcmAllowance"
-                    />
-                  </div>
-                </div>
-              </div>
-
+              <STDCMAllowances />
               <div className="osrd-config-stdcm-apply">
                 {/* TODO: use RTK request status */}
                 <button

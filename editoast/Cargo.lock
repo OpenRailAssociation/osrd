@@ -1120,6 +1120,7 @@ dependencies = [
  "geos",
  "image",
  "json-patch",
+ "log",
  "mvt",
  "osm4routing",
  "pathfinding",
@@ -1129,6 +1130,7 @@ dependencies = [
  "rand 0.8.5",
  "rangemap",
  "redis",
+ "reqwest",
  "rstest",
  "sentry",
  "sentry-actix",
@@ -2248,9 +2250,9 @@ dependencies = [
 
 [[package]]
 name = "osm4routing"
-version = "0.5.0"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b8e9223996bbfdb45548f28eac23adf3a0d5257670bdfa7d777d500350f1354"
+checksum = "56ca52a8f55e73c02d9d38faa9c0579d311582560f28aa7ea978765085e84c41"
 dependencies = [
  "csv",
  "docopt",

@@ -38,27 +38,42 @@ export interface TrackSectionEntity
 
 export const APPLICABLE_DIRECTIONS = ['BOTH', 'START_TO_STOP', 'STOP_TO_START'] as const;
 export type ApplicableDirection = (typeof APPLICABLE_DIRECTIONS)[number];
-export interface SpeedSectionEntity
+export interface LPVPanel {
+  angle_sch: number;
+  angle_geo: number;
+  position: number;
+  side: 'LEFT' | 'RIGHT' | 'CENTER';
+  track: string;
+  type: string;
+  value: string | null;
+}
+
+export interface LPVExtension {
+  announcement: LPVPanel[];
+  z: LPVPanel;
+  r: LPVPanel[];
+}
+export interface SpeedSectionProperties {
+  speed_limit?: number;
+  speed_limit_by_tag?: Record<string, number | undefined>;
+  track_ranges?: {
+    applicable_directions: ApplicableDirection;
+    begin: number;
+    end: number;
+    track: string;
+  }[];
+  extensions?: {
+    lpv_sncf: null | LPVExtension;
+  };
+}
+export interface SpeedSectionLpvEntity
   extends EditorEntity<
     MultiLineString,
-    {
-      speed_limit?: number;
-      speed_limit_by_tag?: Record<string, number | undefined>;
-      track_ranges?: {
-        applicable_directions: ApplicableDirection;
-        begin: number;
-        end: number;
-        track: string;
-      }[];
-      extensions?: {
-        lpv_sncf: null | {
-          announcement: unknown;
-          z: unknown;
-          r: unknown;
-        };
-      };
-    }
+    Omit<SpeedSectionProperties, 'extensions'> & { extensions: { lpv_sncf: LPVExtension } }
   > {
+  objType: 'SpeedSection';
+}
+export interface SpeedSectionEntity extends EditorEntity<MultiLineString, SpeedSectionProperties> {
   objType: 'SpeedSection';
 }
 export interface SignalEntity

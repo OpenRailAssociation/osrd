@@ -46,6 +46,17 @@ export function setSuccess(msg?: Notification): ThunkAction<ActionSuccess> {
   };
 }
 
+export const ACTION_WARNING = 'main/ACTION_WARNING';
+export type ActionWarning = { type: typeof ACTION_WARNING; message: Notification | null };
+export function setWarning(msg?: Notification): ThunkAction<ActionWarning> {
+  return (dispatch) => {
+    dispatch({
+      type: ACTION_WARNING,
+      message: msg || null,
+    });
+  };
+}
+
 export const ACTION_FAILURE = 'main/ACTION_FAILURE';
 export type ActionFailure = { type: typeof ACTION_FAILURE; error: Error };
 export function setFailure(e: Error): ThunkAction<ActionFailure> {
@@ -101,6 +112,7 @@ export function updateLastInterfaceVersion(
 export type MainActions =
   | ActionFailure
   | ActionSuccess
+  | ActionWarning
   | ActionLoading
   | ActionToggleDarkmode
   | ActionToggleFullscreen
@@ -149,6 +161,17 @@ export default function reducer(inputState: MainState | undefined, action: MainA
         if (action.message) {
           draft.notifications.push({
             type: action.message.type || 'success',
+            title: action.message.title,
+            text: action.message.text,
+            date: action.message.date || new Date(),
+          });
+        }
+        break;
+      case ACTION_WARNING:
+        draft.loading = state.loading > 0 ? state.loading - 1 : 0;
+        if (action.message) {
+          draft.notifications.push({
+            type: action.message.type || 'warning',
             title: action.message.title,
             text: action.message.text,
             date: action.message.date || new Date(),
