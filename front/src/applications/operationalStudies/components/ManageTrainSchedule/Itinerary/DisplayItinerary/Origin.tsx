@@ -165,7 +165,12 @@ function Origin(props: OriginProps) {
           )}
         </>
       ) : (
-        <small>{t('noOriginChosen')}</small>
+        <>
+          <span className="text-success mr-2">
+            <RiMapPin2Fill />
+          </span>
+          <small>{t('noOriginChosen')}</small>
+        </>
       )}
     </div>
   );
