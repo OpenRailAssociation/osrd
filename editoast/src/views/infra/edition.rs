@@ -59,7 +59,7 @@ fn apply_edit(
     infra_cache: &mut InfraCache,
 ) -> Result<(Vec<OperationResult>, Zone)> {
     // Check if the infra is locked
-    if infra.locked {
+    if infra.locked.unwrap() {
         return Err(EditionError::InfraIsLocked(infra.id.unwrap()).into());
     }
 
@@ -91,7 +91,7 @@ fn apply_edit(
 
     // Bump infra generated version to the infra version
     let mut infra_bump = infra.clone();
-    infra_bump.generated_version = Some(Some(infra.version.clone()));
+    infra_bump.generated_version = Some(Some(infra.version.unwrap()));
     match infra_bump.update_conn(conn, infra.id.unwrap()) {
         Ok(infra) => infra.unwrap(),
         Err(_) => {
