@@ -1,20 +1,23 @@
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import React, { InputHTMLAttributes, useState } from 'react';
 
+const FAKEDATA = ['25000V A', '25000V B', '1500V', '850V'];
+
 type CatenaryInputProps = {
+  value: string;
   onChange: (newCatenary?: string) => void;
 } & Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'>;
 
-const CatenaryInput = ({ onChange, ...attrs }: CatenaryInputProps) => {
-  const [catenary, setCatenary] = useState<string>('');
+const CatenaryInput = ({ onChange, value, ...attrs }: CatenaryInputProps) => {
   return (
-    <input
-      type="text"
+    <SelectImprovedSNCF
       {...attrs}
-      value={catenary}
+      options={FAKEDATA}
+      selectedValue={value}
       onChange={(e) => {
-        setCatenary(e.target.value);
         onChange(e.target.value);
       }}
+      withSearch={true}
     />
   );
 };

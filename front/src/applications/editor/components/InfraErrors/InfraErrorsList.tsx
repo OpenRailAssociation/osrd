@@ -126,9 +126,11 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID, onErrorClick
                   <ul className="list-unstyled">
                     <li>
                       <button
-                        className="dropdown-item"
+                        className="dropdown-item no-close-modal"
                         type="button"
-                        onClick={() => onErrorClick(infraID, item)}
+                        onClick={() => {
+                          onErrorClick(infraID, item);
+                        }}
                       >
                         Sélectionner sur la carte
                       </button>

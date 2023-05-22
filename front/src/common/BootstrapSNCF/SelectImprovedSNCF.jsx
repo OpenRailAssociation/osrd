@@ -29,6 +29,24 @@ export default function SelectImprovedSNCF(props) {
       );
     });
 
+  const addNewValue = (currentValue) => (
+    <div className="d-flex pt-4 flex-column flex-sm-row" data-role="add">
+      <div className="form-control-container w-100">
+        <span className="form-control-state">{currentValue}</span>
+      </div>
+      <div className="pt-2 pt-sm-0 pl-sm-2">
+        <button
+          type="button"
+          className="btn btn-primary btn-sm btn-block d-sm-inline-block"
+          data-role="add-btn"
+          title="Ajouter cet agent"
+        >
+          Ajouter
+        </button>
+      </div>
+    </div>
+  );
+
   const renderSelectedItem = () => {
     if (selectedItem) {
       return typeof selectedItem === 'string' ? selectedItem : selectedItem.value;
@@ -118,6 +136,7 @@ export default function SelectImprovedSNCF(props) {
               <div className="flex-fluid overflow-y" role="list" data-role="menu">
                 {renderOptions()}
               </div>
+              {filterText && !filteredOptions.includes(filterText) && addNewValue(filterText)}
             </div>
           </div>
         </div>
