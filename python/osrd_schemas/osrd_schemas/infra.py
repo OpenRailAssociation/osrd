@@ -14,7 +14,7 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.2.1"
+RAILJSON_INFRA_VERSION = "3.3.0"
 
 
 # Traits
