@@ -57,15 +57,16 @@ export const ModalSNCF: FC = () => {
         event.target &&
         isOpen &&
         modalRef.current &&
+        !(event.target as HTMLElement).classList.contains('no-close-modal') &&
         !modalRef.current.contains(event.target as HTMLElement)
       ) {
         closeModal();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.body.addEventListener('mousedown', handleClickOutside);
     return function cleanup() {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, closeModal]);
 

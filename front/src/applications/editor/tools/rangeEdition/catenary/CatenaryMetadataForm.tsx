@@ -26,10 +26,11 @@ const CatenaryMetadataForm: FC = () => {
           <label className="control-label" htmlFor="catenary.default">
             {t('Editor.tools.catenary-edition.catenary-default')}
           </label>
-          <div className="d-flex flex-row align-items-center">
+          <div className="">
             <CatenaryInput
               className="form-control flex-grow-1 flex-shrink-1"
               id="catenary.default"
+              value={entity.properties.voltage || ''}
               onChange={(newCatenary) => {
                 const newEntity = cloneDeep(entity);
                 newEntity.properties.voltage = newCatenary;

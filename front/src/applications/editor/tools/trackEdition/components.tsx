@@ -60,7 +60,7 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
       getAttachedItems(`${infraID}`, id)
         .then((res: { [key: string]: string[] }) => {
           if (res[itemType]?.length) {
-            getEntities<SpeedSectionEntity | CatenaryEntity>(`${infraID}`, res[itemType], itemType)
+            getEntities(`${infraID}`, res[itemType], itemType)
               .then((entities) => {
                 if (itemType === 'SpeedSection') {
                   setItemsState({

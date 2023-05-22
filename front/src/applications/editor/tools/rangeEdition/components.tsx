@@ -294,54 +294,56 @@ export const RangeEditionLeftPanel: FC = () => {
       )}
       <hr />
       {initialEntity.objType === 'SpeedSection' && (
-        <div>
-          <div className="d-flex">
-            <CheckboxRadioSNCF
-              type="checkbox"
-              id="is-lpv-checkbox"
-              name="is-lpv-checkbox"
-              checked={isLPV}
-              label={t('Editor.tools.speed-edition.toggle-lpv')}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                let newExtension: SpeedSectionEntity['properties']['extensions'] = {
-                  lpv_sncf: null,
-                };
-                if (e.target.checked) {
-                  const firstRange = (entity.properties?.track_ranges || [])[0];
-                  if (!firstRange) return;
-                  newExtension = {
-                    lpv_sncf: initialEntity.properties?.extensions?.lpv_sncf || {
-                      announcement: [],
-                      r: [],
-                      z: {
-                        angle_sch: 0,
-                        angle_geo: 0,
-                        position: firstRange.begin,
-                        side: 'LEFT',
-                        track: firstRange.track,
-                        type: 'Z',
-                        value: null,
-                      },
-                    },
+        <>
+          <div>
+            <div className="d-flex">
+              <CheckboxRadioSNCF
+                type="checkbox"
+                id="is-lpv-checkbox"
+                name="is-lpv-checkbox"
+                checked={isLPV}
+                label={t('Editor.tools.speed-edition.toggle-lpv')}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  let newExtension: SpeedSectionEntity['properties']['extensions'] = {
+                    lpv_sncf: null,
                   };
+                  if (e.target.checked) {
+                    const firstRange = (entity.properties?.track_ranges || [])[0];
+                    if (!firstRange) return;
+                    newExtension = {
+                      lpv_sncf: initialEntity.properties?.extensions?.lpv_sncf || {
+                        announcement: [],
+                        r: [],
+                        z: {
+                          angle_sch: 0,
+                          angle_geo: 0,
+                          position: firstRange.begin,
+                          side: 'LEFT',
+                          track: firstRange.track,
+                          type: 'Z',
+                          value: null,
+                        },
+                      },
+                    };
+                  }
+                  updateSpeedSectionExtensions(newExtension);
+                }}
+              />
+            </div>
+            {isLPV && (
+              <EditLPVSection
+                entity={entity as SpeedSectionLpvEntity}
+                setState={
+                  setState as (
+                    stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
+                  ) => void
                 }
-                updateSpeedSectionExtensions(newExtension);
-              }}
-            />
+              />
+            )}
           </div>
-          {isLPV && (
-            <EditLPVSection
-              entity={entity as SpeedSectionLpvEntity}
-              setState={
-                setState as (
-                  stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
-                ) => void
-              }
-            />
-          )}
-        </div>
+          <hr />
+        </>
       )}
-      <hr />
       <TrackRangesList />
     </div>
   );

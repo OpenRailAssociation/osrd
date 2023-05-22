@@ -87,9 +87,7 @@ const SelectionTool: Tool<SelectionState> = {
         icon: FiEdit,
         labelTranslationKey: 'Editor.tools.select-items.actions.edit-info',
         isDisabled({ state }) {
-          const types = new Set<string>();
-          state.selection.forEach((item) => types.add(item.objType));
-          return types.size !== 1;
+          return state.selection.length !== 1;
         },
         onClick({ state, switchTool }) {
           if (state.selection.length === 1) {
