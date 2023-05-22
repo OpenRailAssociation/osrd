@@ -298,11 +298,11 @@ files = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 category = "dev"
 optional = false
-python-versions = ">=3.9,<3.11"
+python-versions = ">=3.9,<3.12"
 files = []
 develop = false
 
@@ -493,7 +493,7 @@ version = "0.1.0"
 description = ""
 category = "dev"
 optional = false
-python-versions = ">=3.9,<3.11"
+python-versions = ">=3.9,<3.12"
 files = []
 develop = false
 
@@ -569,5 +569,5 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.9,<3.11"
-content-hash = "d6ca27a2d63ba55d9a5a6e4fb43aa890f03de08f9d14447eb63318a903decaaf"
+python-versions = ">=3.9,<3.12"
+content-hash = "ccea86871a66281bbe7e26fffa6ba7524e8aaebf837d2c9edc0ce671b8b831f5"

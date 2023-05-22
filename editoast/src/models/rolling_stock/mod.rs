@@ -10,7 +10,7 @@ use crate::error::Result;
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::models::{Identifiable, Update};
 use crate::schema::rolling_stock::{
-    EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
+    EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
     RollingStockWithLiveries,
 };
 use crate::tables::osrd_infra_rollingstock;
@@ -77,6 +77,8 @@ pub struct RollingStockModel {
     pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = Option<JsonValue>)]
     pub power_restrictions: Option<Option<JsonValue>>,
+    #[diesel(deserialize_as = DieselJson<Vec<EnergySource>>)]
+    pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
 }
 
 impl Identifiable for RollingStockModel {
@@ -153,6 +155,7 @@ impl From<RollingStockModel> for RollingStock {
             loading_gauge: rolling_stock_model.loading_gauge.unwrap(),
             metadata: rolling_stock_model.metadata.unwrap().0,
             power_restrictions: rolling_stock_model.power_restrictions.unwrap(),
+            energy_sources: rolling_stock_model.energy_sources.unwrap().0,
         }
     }
 }
@@ -171,13 +174,15 @@ pub mod tests {
     use diesel::r2d2::{ConnectionManager, Pool};
 
     pub fn get_fast_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!("../../tests/example_rolling_stock.json"))
+        serde_json::from_str(include_str!("../../tests/example_rolling_stock_1.json"))
             .expect("Unable to parse")
     }
 
     pub fn get_other_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!("../../tests/example_rolling_stock_2.json"))
-            .expect("Unable to parse")
+        serde_json::from_str(include_str!(
+            "../../tests/example_rolling_stock_2_energy_sources.json"
+        ))
+        .expect("Unable to parse")
     }
 
     pub fn get_invalid_effort_curves() -> &'static str {

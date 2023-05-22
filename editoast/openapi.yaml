@@ -1708,6 +1708,26 @@ paths:
 
 components:
   schemas:
+    Battery:
+      description: energy source for a rolling stock representing a battery
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Battery"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
     BoundingBox:
       description: A bounding box
       type: array
@@ -1719,6 +1739,24 @@ components:
         maxItems: 2
         items:
           type: integer
+
+    Catenary:
+      description: energy source for a rolling stock representing a catenary
+      type: object
+      required: [energy_source_type, max_input_power, max_output_power, efficiency]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Catenary"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
 
     Comfort:
       description: Train comfort that will be used for the simulation
@@ -1762,6 +1800,54 @@ components:
           items:
             type: number
             format: float
+
+    EnergySource:
+      description: enery source of a rolling stock
+      oneOf:
+        - $ref: '#/components/schemas/Catenary'
+        - $ref: '#/components/schemas/PowerPack'
+        - $ref: '#/components/schemas/Battery'
+      discriminator:
+        propertyName: energy_source_type
+
+    EnergyStorage:
+      description: energy storage of an energy source (of a rolling stock, can be a electrical battery or a hydrogen/fuel powerPack)
+      type: object
+      required: [capacity, soc, soc_min, soc_max, refill_law]
+      properties:
+        capacity:
+          type: number
+          format: float
+        soc:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_min:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_max:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        refill_law:
+          description: physical law defining how the storage can be refilled
+          nullable: true
+          type: object
+          properties:
+            tau:
+              type: number
+              format: float
+              minimum: 0
+            soc_ref:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+          required: [tau, soc_ref]
 
     Infra:
       properties:
@@ -2143,6 +2229,26 @@ components:
               required: [default_mode, modes]
           required: [effort_curves]
 
+    PowerPack:
+      description: energy source for a rolling stock representing a power pack (hydrogen, fuel...)
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["PowerPack"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
     RollingStock:
       allOf:
         - $ref: "#/components/schemas/RollingStockUpsertPayload"
@@ -2254,6 +2360,10 @@ components:
           example:
             "C1US": "4"
             "C2US": "3"
+        energy_sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnergySource"
         metadata:
           type: object
           properties:
@@ -2315,6 +2425,7 @@ components:
         - base_power_class
         - power_restrictions
         - metadata
+        - energy_sources
 
     RollingStockLivery:
       properties:
@@ -2364,6 +2475,22 @@ components:
           type: string
           enum:
             - CantComputePath
+
+    SpeedDependantPower:
+      description: power-speed curve (in an energy source)
+      type: object
+      required: [speeds, powers]
+      properties:
+        speeds:
+          type: array
+          items:
+            type: number
+            format: float
+        powers:
+          type: array
+          items:
+            type: number
+            format: float
 
     ElectricalProfile:
       type: object
