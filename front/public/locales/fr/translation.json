@@ -147,6 +147,10 @@
         "label": "Outil \"Heurtoir\""
       },
       "catenary-edition": {
+        "actions": {
+          "new-catenary": "Créer une nouvelle électrification",
+          "reset-catenary": "Annuler les modifications en cours"
+        },
         "add-new-catenary": "Ajouter une nouvelle électrification",
         "catenaries": "Électrification",
         "catenary-default": "Électrification par défaut",
