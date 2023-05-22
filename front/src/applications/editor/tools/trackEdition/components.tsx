@@ -60,12 +60,21 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
       getAttachedItems(`${infraID}`, id)
         .then((res: { [key: string]: string[] }) => {
           if (res[itemType]?.length) {
-            getEntities<any>(`${infraID}`, res[itemType], itemType)
+            getEntities<SpeedSectionEntity | CatenaryEntity>(`${infraID}`, res[itemType], itemType)
               .then((entities) => {
-                setItemsState({
-                  type: 'ready',
-                  itemEntities: (res[itemType] || []).map((s) => entities[s]),
-                });
+                if (itemType === 'SpeedSection') {
+                  setItemsState({
+                    type: 'ready',
+                    itemEntities: (res[itemType] || []).map(
+                      (s) => entities[s] as SpeedSectionEntity
+                    ),
+                  });
+                } else {
+                  setItemsState({
+                    type: 'ready',
+                    itemEntities: (res[itemType] || []).map((s) => entities[s] as CatenaryEntity),
+                  });
+                }
               })
               .catch((err) => {
                 setItemsState({ type: 'error', message: err.message });
@@ -110,7 +119,7 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
             {(showAll
               ? itemsState.itemEntities
               : itemsState.itemEntities.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT)
-            ).map((entity: any) => (
+            ).map((entity: SpeedSectionEntity | CatenaryEntity) => (
               <li key={entity.properties.id} className="d-flex align-items-center mb-2">
                 <div className="flex-shrink-0 mr-3">
                   <button
@@ -121,12 +130,12 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
                       if (entity.objType === itemType) {
                         switchTool({
                           toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
-                          toolState: getEditSpeedSectionState(entity),
+                          toolState: getEditSpeedSectionState(entity as SpeedSectionEntity),
                         });
                       } else
                         switchTool({
                           toolType: TOOL_TYPES.CATENARY_EDITION,
-                          toolState: getEditCatenaryState(entity),
+                          toolState: getEditCatenaryState(entity as CatenaryEntity),
                         });
                     }}
                   >
