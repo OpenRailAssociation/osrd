@@ -1,0 +1,64 @@
+.tabs-container {
+  &.full-width {
+    width: 100%;
+    .tabs {
+      justify-content: space-between;
+      .tab {
+        flex-grow: 1;
+      }
+    }
+  }
+  .tabs {
+    display: flex;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    .tab {
+      padding-bottom: 1rem;
+      position: relative;
+      border-bottom: 3px solid transparent;
+      transition: text-shadow 0.3s;
+      &::after {
+        transition: all ease 0.3s;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 0.3125rem;
+        content: '';
+        background-color: transparent;
+        border-radius: 3px;
+      }
+
+      &:hover {
+        cursor: pointer;
+        color: var(--primary);
+      }
+
+      &.active {
+        text-shadow: 0 0 0.65px var(--primary);
+        color: var(--primary);
+
+        &::after {
+          background-color: var(--primary);
+        }
+      }
+    }
+    &.pills {
+      .tab {
+        font-weight: 500;
+        transition: all ease 0.3s;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius);
+        background-color: var(--white);
+        color: var(--primary);
+        &::after {
+          content: none;
+        }
+        &:hover, &.active {
+          background-color: var(--primary);
+          color: var(--white);
+        }
+      }    
+    }
+  }
+}
