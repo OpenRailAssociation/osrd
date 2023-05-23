@@ -380,29 +380,43 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     [!maximumRunTime, t('maximumRunTime')],
   ]);
   return (
-    <div className="pathfinding-main-container">
-      {pathfindingState.done && !pathfindingState.error && (
-        <div className="pathfinding-done">
-          <div className="title">
-            <BiCheckCircle />
-            {t('pathfindingDone')}
-          </div>
-          {pathDetailsToggleButton}
-        </div>
+    <div className="pathfinding-state-main-container">
+      {Object.values(pathfindingState).every((state) => state === false || state === '') ? (
+        <div className="content pathfinding-none">{t('pathfindingNoState')}</div>
+      ) : (
+        <>
+          {pathfindingState.done && !pathfindingState.error && (
+            <div className="content pathfinding-done">
+              <span className="lead">
+                <BiCheckCircle />
+              </span>
+              <span className="flex-grow-1">{t('pathfindingDone')}</span>
+              {pathDetailsToggleButton}
+            </div>
+          )}
+          {pathfindingState.error && (
+            <div className="content pathfinding-error">
+              <span className="lead">
+                <BiXCircle />
+              </span>
+              <span className="flex-grow-1">
+                {t('pathfindingError', { errorMessage: t(pathfindingState.error) })}
+              </span>
+            </div>
+          )}
+          {pathfindingState.missingParam && (
+            <div className="content missing-params">
+              <span className="lead">
+                <BiErrorCircle />
+              </span>
+              <span className="flex-grow-1">
+                {t('pathfindingMissingParams', { missingElements })}
+              </span>
+            </div>
+          )}
+          {pathfindingState.running && loaderPathfindingInProgress}
+        </>
       )}
-      {pathfindingState.error && (
-        <div className="pathfinding-error">
-          <BiXCircle />
-          {t('pathfindingError', { errorMessage: t(pathfindingState.error) })}
-        </div>
-      )}
-      {pathfindingState.missingParam && (
-        <div className="missing-params">
-          <BiErrorCircle />
-          {t('pathfindingMissingParams', { missingElements })}
-        </div>
-      )}
-      {pathfindingState.running && loaderPathfindingInProgress}
     </div>
   );
 }

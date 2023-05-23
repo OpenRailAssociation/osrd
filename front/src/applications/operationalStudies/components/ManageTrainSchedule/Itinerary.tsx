@@ -10,6 +10,7 @@ import DisplayItinerary from 'applications/operationalStudies/components/ManageT
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
 import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
+import Pathfinding from 'common/Pathfinding/Pathfinding';
 
 type Props = {
   mustUpdate?: boolean;
@@ -92,13 +93,14 @@ function Itinerary({ mustUpdate }: Props) {
   }, [extViewport]);
 
   return (
-    <div className="osrd-config-item mb-2">
+    <div className="osrd-config-item">
+      <div className="mb-2">
+        <Pathfinding mustUpdate={mustUpdate} zoomToFeature={zoomToFeature} />
+      </div>
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
         <DisplayItinerary
-          mustUpdate={mustUpdate}
           data-testid="display-itinerary"
           zoomToFeaturePoint={zoomToFeaturePoint}
-          zoomToFeature={zoomToFeature}
           viaModalContent={viaModalContent}
         />
       </div>
