@@ -572,6 +572,12 @@ paths:
             type: integer
           description: Infra ID
           required: true
+        - in: query
+          name: include_rolling_stock_modes
+          schema:
+            type: boolean
+          description: include rolling stocks modes or not
+          required: false
       responses:
         200:
           description: Voltages list
@@ -580,9 +586,8 @@ paths:
               schema:
                 type: array
                 items:
-                  type: number
-                  format: float
-                example: [750.0, 1500.0, 2500.50]
+                  type: string
+                example: ["750", "1500", "2500.5"]
 
   /infra/{id}/attached/{track_id}/:
     get:
@@ -2434,8 +2439,8 @@ components:
         name:
           type: string
         compound_image_id:
-                    type: number
-                    nullable: true
+          type: number
+          nullable: true
       required: [id, name, compound_image_id]
 
     RouteTrackRangesComputed:

@@ -1,4 +1,5 @@
 pub mod buffer_stops;
+pub mod catenaries;
 pub mod detectors;
 pub mod operational_points;
 pub mod routes;
@@ -154,7 +155,7 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
         ObjectType::BufferStop => include_str!("sql/buffer_stops_insert_errors.sql"),
         ObjectType::Route => include_str!("sql/routes_insert_errors.sql"),
         ObjectType::OperationalPoint => include_str!("sql/operational_points_insert_errors.sql"),
-        ObjectType::Catenary => todo!(),
+        ObjectType::Catenary => include_str!("sql/catenaries_insert_errors.sql"),
     }
 }
 
@@ -265,6 +266,13 @@ impl GeneratedData for ErrorLayer {
             &switches::OBJECT_GENERATORS,
             &[],
         ));
+        infra_errors.extend(generate_errors(
+            ObjectType::Catenary,
+            infra_cache,
+            &graph,
+            &catenaries::OBJECT_GENERATORS,
+            &[],
+        ));
 
         // Insert errors in DB
         insert_errors(conn, infra_id, infra_errors)?;
@@ -286,7 +294,7 @@ impl GeneratedData for ErrorLayer {
 #[cfg(test)]
 mod test {
     use super::{
-        buffer_stops, detectors, generate_errors, operational_points, routes, signals,
+        buffer_stops, catenaries, detectors, generate_errors, operational_points, routes, signals,
         speed_sections, switch_types, switches, track_section_links, track_sections, Graph,
     };
 
@@ -378,6 +386,14 @@ mod test {
             &small_infra_cache,
             &graph,
             &switches::OBJECT_GENERATORS,
+            &[],
+        )
+        .is_empty());
+        assert!(generate_errors(
+            ObjectType::Catenary,
+            &small_infra_cache,
+            &graph,
+            &catenaries::OBJECT_GENERATORS,
             &[],
         )
         .is_empty());

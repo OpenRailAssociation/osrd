@@ -10,11 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.Range;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
-import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
+import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
-import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
+import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
@@ -521,5 +523,185 @@ public class PathfindingTest extends ApiTest {
             }
         }
         return contains400;
+    }
+
+    @Test
+    public void testCurveGraph() throws IOException {
+        var waypointStart = new PathfindingWaypoint(
+                "TF1",
+                0,
+                EdgeDirection.START_TO_STOP
+        );
+        var waypointEnd = new PathfindingWaypoint(
+                "TF1",
+                6500,
+                EdgeDirection.START_TO_STOP
+        );
+        var waypointsStart = makeBidirectionalEndPoint(waypointStart);
+        var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
+        var waypoints = new PathfindingWaypoint[2][];
+        waypoints[0] = waypointsStart;
+        waypoints[1] = waypointsEnd;
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
+
+        var result = readBodyResponse(
+                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/routes", requestBody))
+        );
+        var response = PathfindingResult.adapterResult.fromJson(result);
+        assert response != null;
+        assertIterableEquals(
+                Arrays.asList(
+                        new CurveChartPointResult(0, 0),
+                        new CurveChartPointResult(3100, 0),
+                        new CurveChartPointResult(3100, 9500),
+                        new CurveChartPointResult(4400, 9500),
+                        new CurveChartPointResult(4400, 0),
+                        new CurveChartPointResult(6500, 0)
+                ),
+                response.curves
+        );
+    }
+
+    @Test
+    public void testCurveGraphStopToStart() throws IOException {
+        var waypointStart = new PathfindingWaypoint(
+                "TF1",
+                6500,
+                EdgeDirection.STOP_TO_START
+        );
+        var waypointEnd = new PathfindingWaypoint(
+                "TF1",
+                0,
+                EdgeDirection.STOP_TO_START
+        );
+        var waypointsStart = makeBidirectionalEndPoint(waypointStart);
+        var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
+        var waypoints = new PathfindingWaypoint[2][];
+        waypoints[0] = waypointsStart;
+        waypoints[1] = waypointsEnd;
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
+
+        var result = readBodyResponse(
+                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/routes", requestBody))
+        );
+        var response = PathfindingResult.adapterResult.fromJson(result);
+        assert response != null;
+        assertIterableEquals(
+                Arrays.asList(
+                        new CurveChartPointResult(0, 0),
+                        new CurveChartPointResult(2100, 0),
+                        new CurveChartPointResult(2100, -9500),
+                        new CurveChartPointResult(3400, -9500),
+                        new CurveChartPointResult(3400, 0),
+                        new CurveChartPointResult(6500, 0)
+                ),
+                response.curves
+        );
+    }
+
+    @Test
+    public void testSlopeGraph() throws IOException {
+        var waypointStart = new PathfindingWaypoint(
+                "TD0",
+                0,
+                EdgeDirection.START_TO_STOP
+        );
+        var waypointEnd = new PathfindingWaypoint(
+                "TD0",
+                25000,
+                EdgeDirection.START_TO_STOP
+        );
+        var waypointsStart = makeBidirectionalEndPoint(waypointStart);
+        var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
+        var waypoints = new PathfindingWaypoint[2][];
+        waypoints[0] = waypointsStart;
+        waypoints[1] = waypointsEnd;
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
+
+        var result = readBodyResponse(
+                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/routes", requestBody))
+        );
+        var response = PathfindingResult.adapterResult.fromJson(result);
+        assert response != null;
+        assertIterableEquals(
+                Arrays.asList(
+                        new SlopeChartPointResult(0, 0),
+                        new SlopeChartPointResult(6000, 0),
+                        new SlopeChartPointResult(6000, 3),
+                        new SlopeChartPointResult(7000, 3),
+                        new SlopeChartPointResult(7000, 6),
+                        new SlopeChartPointResult(8000, 6),
+                        new SlopeChartPointResult(8000, 3),
+                        new SlopeChartPointResult(9000, 3),
+                        new SlopeChartPointResult(9000, 0),
+                        new SlopeChartPointResult(14000, 0),
+                        new SlopeChartPointResult(14000, -3),
+                        new SlopeChartPointResult(15000, -3),
+                        new SlopeChartPointResult(15000, -6),
+                        new SlopeChartPointResult(16000, -6),
+                        new SlopeChartPointResult(16000, -3),
+                        new SlopeChartPointResult(17000, -3),
+                        new SlopeChartPointResult(17000, 0),
+                        new SlopeChartPointResult(25000, 0)
+                ),
+                response.slopes
+        );
+    }
+
+    @Test
+    public void testSlopeGraphStopToStart() throws IOException {
+        var waypointStart = new PathfindingWaypoint(
+                "TD0",
+                25000,
+                EdgeDirection.STOP_TO_START
+        );
+        var waypointEnd = new PathfindingWaypoint(
+                "TD0",
+                0,
+                EdgeDirection.STOP_TO_START
+        );
+        var waypointsStart = makeBidirectionalEndPoint(waypointStart);
+        var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
+        var waypoints = new PathfindingWaypoint[2][];
+        waypoints[0] = waypointsStart;
+        waypoints[1] = waypointsEnd;
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
+
+        var result = readBodyResponse(
+                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/routes", requestBody))
+        );
+        var response = PathfindingResult.adapterResult.fromJson(result);
+        assert response != null;
+        assertIterableEquals(
+                Arrays.asList(
+                        new SlopeChartPointResult(0, 0),
+                        new SlopeChartPointResult(8000, 0),
+                        new SlopeChartPointResult(8000, 3),
+                        new SlopeChartPointResult(9000, 3),
+                        new SlopeChartPointResult(9000, 6),
+                        new SlopeChartPointResult(10000, 6),
+                        new SlopeChartPointResult(10000, 3),
+                        new SlopeChartPointResult(11000, 3),
+                        new SlopeChartPointResult(11000, 0),
+                        new SlopeChartPointResult(16000, 0),
+                        new SlopeChartPointResult(16000, -3),
+                        new SlopeChartPointResult(17000, -3),
+                        new SlopeChartPointResult(17000, -6),
+                        new SlopeChartPointResult(18000, -6),
+                        new SlopeChartPointResult(18000, -3),
+                        new SlopeChartPointResult(19000, -3),
+                        new SlopeChartPointResult(19000, 0),
+                        new SlopeChartPointResult(25000, 0)
+                ),
+                response.slopes
+        );
     }
 }
