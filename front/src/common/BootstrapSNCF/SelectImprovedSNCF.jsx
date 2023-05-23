@@ -5,7 +5,17 @@ import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 
 export default function SelectImprovedSNCF(props) {
-  const { inline, title, options, selectedValue, onChange, sm, withSearch } = props;
+  const {
+    inline,
+    title,
+    options,
+    selectedValue,
+    onChange,
+    sm,
+    withSearch,
+    withNewValueInput,
+    addButtonTitle,
+  } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState();
   const [filteredOptions, setFilteredOptions] = useState(options);
@@ -29,20 +39,25 @@ export default function SelectImprovedSNCF(props) {
       );
     });
 
-  const addNewValue = (currentValue) => (
-    <div className="d-flex pt-4 flex-column flex-sm-row" data-role="add">
-      <div className="form-control-container w-100">
-        <span className="form-control-state">{currentValue}</span>
+  const renderNewValueInput = (currentValue) => (
+    <div className="select-menu-item" role="listitem">
+      <div className="d-flex flex-column flex-sm-row mb-2" data-role="add">
+        <div className="form-control-container w-100 ">
+          <input type="" className="form-control" id="inputIcon4" disabled value={currentValue} />
+        </div>
       </div>
-      <div className="pt-2 pt-sm-0 pl-sm-2">
-        <button
-          type="button"
-          className="btn btn-primary btn-sm btn-block d-sm-inline-block"
-          data-role="add-btn"
-          title="Ajouter cet agent"
-        >
-          Ajouter
-        </button>
+      <div className="d-flex flex-column flex-sm-row" data-role="add">
+        <div className="form-control-container w-100 has-left-icon">
+          <button
+            type="button"
+            className="btn btn-primary btn-block"
+            onClick={() => {
+              selectItem(currentValue);
+            }}
+          >
+            {addButtonTitle}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -135,8 +150,11 @@ export default function SelectImprovedSNCF(props) {
               )}
               <div className="flex-fluid overflow-y" role="list" data-role="menu">
                 {renderOptions()}
+                {withNewValueInput &&
+                  filterText &&
+                  !filteredOptions.includes(filterText) &&
+                  renderNewValueInput(filterText)}
               </div>
-              {filterText && !filteredOptions.includes(filterText) && addNewValue(filterText)}
             </div>
           </div>
         </div>
@@ -170,6 +188,8 @@ SelectImprovedSNCF.propTypes = {
   selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   title: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   withSearch: PropTypes.bool,
+  withNewValueInput: PropTypes.bool,
+  addButtonTitle: PropTypes.string,
 };
 
 SelectImprovedSNCF.defaultProps = {
@@ -178,4 +198,6 @@ SelectImprovedSNCF.defaultProps = {
   sm: false,
   title: null,
   withSearch: false,
+  withNewValueInput: false,
+  addButtonTitle: null,
 };
