@@ -9,7 +9,11 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterElec = false;
       const filterThermal = false;
       const modes = {};
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(true);
     });
   });
@@ -18,14 +22,22 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterElec = true;
       const filterThermal = false;
       const modes: Modes = { '25000': { is_electric: true } };
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(true);
     });
     it('should return false if no mode is electrical', () => {
       const filterElec = true;
       const filterThermal = false;
       const modes: Modes = { '25000': { is_electric: false } };
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(false);
     });
   });
@@ -34,14 +46,22 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterElec = false;
       const filterThermal = true;
       const modes: Modes = { '25000': { is_electric: false } };
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(true);
     });
     it('should return false if no mode is thermal', () => {
       const filterElec = false;
       const filterThermal = true;
       const modes: Modes = { '25000': { is_electric: true } };
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(false);
     });
   });
@@ -50,21 +70,33 @@ describe('rollingStockPassEnergeticModeFilters', () => {
       const filterElec = true;
       const filterThermal = true;
       const modes: Modes = { '25000': { is_electric: true }, '99999': { is_electric: false } };
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(true);
     });
     it('should return false if there is no thermal', () => {
       const filterElec = true;
       const filterThermal = true;
       const modes: Modes = { '25000': { is_electric: true }, '99999': { is_electric: true } };
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(false);
     });
     it('should return false if there is no electric', () => {
       const filterElec = true;
       const filterThermal = true;
       const modes: Modes = { '25000': { is_electric: false }, '99999': { is_electric: false } };
-      const result = rollingStockPassesEnergeticModeFilters(filterElec, filterThermal, modes);
+      const result = rollingStockPassesEnergeticModeFilters(modes, {
+        text: '',
+        elec: filterElec,
+        thermal: filterThermal,
+      });
       expect(result).toBe(false);
     });
   });
