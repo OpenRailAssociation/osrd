@@ -12,15 +12,14 @@ import { RollingStockInfos } from './RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
 function RollingStockCard(props) {
+  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected } = props;
   const [tractionModes, setTractionModes] = useState({
     electric: false,
     thermal: false,
     voltages: [],
   });
   const [curvesComfortList, setCurvesComfortList] = useState();
-  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected } = props;
   const ref2scrollWhenOpened = useRef();
-
   function displayCardDetail() {
     if (!isOpen) {
       setOpenedRollingStockCardId(data.id);
