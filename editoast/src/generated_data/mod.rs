@@ -2,6 +2,7 @@ mod utils;
 
 mod buffer_stop;
 mod catenary;
+mod dead_section;
 mod detector;
 mod error;
 mod lpv_panel;
@@ -14,6 +15,7 @@ mod track_section_link;
 
 use buffer_stop::BufferStopLayer;
 use catenary::CatenaryLayer;
+use dead_section::{BacksidePantographDeadSectionLayer, DeadSectionLayer};
 use detector::DetectorLayer;
 use error::ErrorLayer;
 use lpv_panel::LPVPanelLayer;
@@ -73,6 +75,8 @@ pub fn refresh_all(conn: &mut PgConnection, infra: i64, infra_cache: &InfraCache
     TrackSectionLinkLayer::refresh(conn, infra, infra_cache)?;
     LPVPanelLayer::refresh(conn, infra, infra_cache)?;
     ErrorLayer::refresh(conn, infra, infra_cache)?;
+    DeadSectionLayer::refresh(conn, infra, infra_cache)?;
+    BacksidePantographDeadSectionLayer::refresh(conn, infra, infra_cache)?;
     Ok(())
 }
 
@@ -89,6 +93,8 @@ pub fn clear_all(conn: &mut PgConnection, infra: i64) -> Result<()> {
     TrackSectionLinkLayer::clear(conn, infra)?;
     LPVPanelLayer::clear(conn, infra)?;
     ErrorLayer::clear(conn, infra)?;
+    DeadSectionLayer::clear(conn, infra)?;
+    BacksidePantographDeadSectionLayer::clear(conn, infra)?;
     Ok(())
 }
 
@@ -110,6 +116,8 @@ pub fn update_all(
     TrackSectionLinkLayer::update(conn, infra, operations, infra_cache)?;
     LPVPanelLayer::update(conn, infra, operations, infra_cache)?;
     ErrorLayer::update(conn, infra, operations, infra_cache)?;
+    DeadSectionLayer::update(conn, infra, operations, infra_cache)?;
+    BacksidePantographDeadSectionLayer::update(conn, infra, operations, infra_cache)?;
     Ok(())
 }
 
