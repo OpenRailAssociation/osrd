@@ -115,7 +115,7 @@ function Destination(props: DestinationProps) {
           <span className="text-warning mr-2">
             <IoFlag />
           </span>
-          <small>{t('noDestinationChosen')}</small>
+          {t('noDestinationChosen')}
         </>
       )}
     </div>
