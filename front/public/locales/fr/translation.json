@@ -327,15 +327,11 @@
         "add-panel": "Ajouter un panneau de type {{panelType}}",
         "add-track-range": "Cliquer pour lier à :",
         "additional-speed-limit": "Limitation de vitesse additionnelles",
-        "edit-track-range-end": "Modifier le point d'arrivée",
-        "edit-track-range-start": "Modifier le point de départ",
         "hovered-panel": "Panneau {{panelType}}",
         "label": "Outil \"Vitesse limite\"",
-        "linked-track-sections": "Sections de lignes liées",
         "main-speed-limit": "Limitation de vitesse par défaut",
         "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
         "new-tag": "Code de composition",
-        "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
         "panel-angle-geo": "Angle Geo",
         "panel-angle-sch": "Angle Sch",
         "panel-category": "Panneau(x) {{panelType}}",
@@ -350,10 +346,16 @@
         "remove-track-range": "Cliquer pour détacher de :",
         "save-existing-speed-section": "Sauvegarder les modifications",
         "save-new-speed-section": "Sauvegarder la nouvelle limite de vitesse",
-        "show-more-ranges_one": "Voir une section de ligne de plus",
-        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
         "speed-limits": "Limitations de vitesses",
         "toggle-lpv": "Limite permanente de vitesse"
+      },
+      "range-edition": {
+        "edit-track-range-start": "Modifier le point de départ",
+        "edit-track-range-end": "Modifier le point d'arrivée",
+        "linked-track-sections": "Sections de lignes liées",
+        "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
+        "show-more-ranges_one": "Voir une section de ligne de plus",
+        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"
       }
     }
   }

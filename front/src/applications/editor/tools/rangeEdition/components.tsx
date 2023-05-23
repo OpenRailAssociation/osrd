@@ -42,8 +42,7 @@ export const TrackRangesList: FC = () => {
   return (
     <div>
       <h4 className="pb-0">
-        {/* Change translation.json into "range-edition.linked-track-sections ?" */}
-        <MdShowChart className="me-1" /> {t('Editor.tools.speed-edition.linked-track-sections')}
+        <MdShowChart className="me-1" /> {t('Editor.tools.range-edition.linked-track-sections')}
       </h4>
       <ul className="list-unstyled">
         {(showAll ? ranges : ranges.slice(0, DEFAULT_DISPLAYED_RANGES_COUNT)).map((range, i) => {
@@ -63,8 +62,7 @@ export const TrackRangesList: FC = () => {
                       <button
                         type="button"
                         className="btn btn-primary btn-sm px-2 mb-1"
-                        // Change translation.json into "range-edition.edit-track-range-start ?"
-                        title={t('Editor.tools.speed-edition.edit-track-range-start')}
+                        title={t('Editor.tools.range-edition.edit-track-range-start')}
                         onClick={() => {
                           setState({
                             hoveredItem: null,
@@ -94,8 +92,7 @@ export const TrackRangesList: FC = () => {
                       <button
                         type="button"
                         className="btn btn-primary btn-sm px-2 mb-1"
-                        // Change translation.json into "range-edition.edit-track-range-end ?"
-                        title={t('Editor.tools.speed-edition.edit-track-range-end')}
+                        title={t('Editor.tools.range-edition.edit-track-range-end')}
                         onClick={() => {
                           setState({
                             hoveredItem: null,
@@ -185,12 +182,10 @@ export const TrackRangesList: FC = () => {
             onClick={() => setShowAll((v) => !v)}
           >
             {showAll
-              ? // Change translation.json into "range-edition.only-show-n ?"
-                t('Editor.tools.speed-edition.only-show-n', {
+              ? t('Editor.tools.range-edition.only-show-n', {
                   count: DEFAULT_DISPLAYED_RANGES_COUNT,
                 })
-              : // Change translation.json into "range-edition.show-more-ranges ?"
-                t('Editor.tools.speed-edition.show-more-ranges', {
+              : t('Editor.tools.range-edition.show-more-ranges', {
                   count: ranges.length - DEFAULT_DISPLAYED_RANGES_COUNT,
                 })}
           </button>
