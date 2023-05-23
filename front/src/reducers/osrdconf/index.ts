@@ -18,7 +18,6 @@ import { sec2time, time2sec } from 'utils/timeManipulation';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { CatenaryRange, osrdEditoastApi } from '../../common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from '../../types';
-import { CatenaryRange, osrdEditoastApi } from '../../common/api/osrdEditoastApi';
 
 /* eslint-disable default-case */
 
