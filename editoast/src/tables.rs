@@ -93,6 +93,22 @@ table! {
     }
 }
 
+table! {
+    osrd_infra_deadsectionlayer {
+        id -> BigInt,
+        obj_id -> Text,
+        infra_id -> BigInt,
+    }
+}
+
+table! {
+    osrd_infra_backwardpantographdeadsectionlayer {
+        id -> BigInt,
+        obj_id -> Text,
+        infra_id -> BigInt,
+    }
+}
+
 // Models
 
 table! {
@@ -115,15 +131,6 @@ table! {
 
 table! {
     osrd_infra_speedsectionmodel(id) {
-        id -> BigInt,
-        obj_id -> Text,
-        data -> Jsonb,
-        infra_id -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_deadsectionmodel(id) {
         id -> BigInt,
         obj_id -> Text,
         data -> Jsonb,
@@ -196,6 +203,15 @@ table! {
 
 table! {
     osrd_infra_catenarymodel(id) {
+        id -> BigInt,
+        obj_id -> Text,
+        data -> Jsonb,
+        infra_id -> BigInt,
+    }
+}
+
+table! {
+    osrd_infra_deadsectionmodel(id) {
         id -> BigInt,
         obj_id -> Text,
         data -> Jsonb,
