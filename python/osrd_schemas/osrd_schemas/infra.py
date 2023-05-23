@@ -43,10 +43,7 @@ class TrackLocationTrait(BaseModel):
     """
 
     track: Identifier = Field(description="Reference to the track section on which the object is located")
-    position: float = Field(
-        description="Offset of the point in meters to the beginning of the track section",
-        ge=0,
-    )
+    position: float = Field(description="Offset of the point in meters to the beginning of the track section", ge=0)
 
 
 class BaseObjectTrait(BaseModel):
@@ -257,8 +254,7 @@ class Switch(BaseObjectTrait):
 
     switch_type: Identifier = Field(description="Identifier and type of the switch type")
     group_change_delay: float = Field(
-        description="Time it takes to change which group of the switch is activated",
-        ge=0,
+        description="Time it takes to change which group of the switch is activated", ge=0
     )
     ports: Mapping[Identifier, TrackEndpoint] = Field(
         description="Location of differents ports according to track sections"
@@ -285,8 +281,7 @@ class SpeedSection(BaseObjectTrait):
     """
 
     speed_limit: Optional[float] = Field(
-        description="Speed limit (m/s) applied by default to trains that aren't in any specified category",
-        gt=0,
+        description="Speed limit (m/s) applied by default to trains that aren't in any specified category", gt=0
     )
     speed_limit_by_tag: Mapping[NonBlankStr, float] = Field(
         description="Speed limit (m/s) applied to trains with a given tag"
@@ -318,8 +313,7 @@ class Curve(BaseModel):
         ge=0,
     )
     end: float = Field(
-        description="Offset in meters corresponding at the end of the corresponding radius in a track section",
-        ge=0,
+        description="Offset in meters corresponding at the end of the corresponding radius in a track section", ge=0
     )
 
     @root_validator(skip_on_failure=True)
@@ -341,8 +335,7 @@ class Slope(BaseModel):
         ge=0,
     )
     end: float = Field(
-        description="Offset in meters corresponding at the end of the corresponding gradient in a track section",
-        ge=0,
+        description="Offset in meters corresponding at the end of the corresponding gradient in a track section", ge=0
     )
 
     @root_validator(skip_on_failure=True)
@@ -359,12 +352,10 @@ class LoadingGaugeLimit(BaseModel):
 
     category: LoadingGaugeType = Field(description="Category of loading gauge for the corresponding rolling stock")
     begin: float = Field(
-        description="Offset in meters corresponding at the beginning of the corresponding loading gauge limit",
-        ge=0,
+        description="Offset in meters corresponding at the beginning of the corresponding loading gauge limit", ge=0
     )
     end: float = Field(
-        description="Offset in meters corresponding at the end of the corresponding loading gauge limit",
-        ge=0,
+        description="Offset in meters corresponding at the end of the corresponding loading gauge limit", ge=0
     )
 
 
@@ -378,8 +369,7 @@ class TrackSection(BaseObjectTrait, GeometryLineTrait):
     slopes: List[Slope] = Field(description="List of slopes of corresponding track section")
     curves: List[Curve] = Field(description="List of curves of corresponding track section")
     loading_gauge_limits: List[LoadingGaugeLimit] = Field(
-        default_factory=list,
-        description="List of loading gauge limits of corresponding track section",
+        default_factory=list, description="List of loading gauge limits of corresponding track section"
     )
 
 
