@@ -1,0 +1,16 @@
+{
+    "id": 0,
+    "name": "Test scenario",
+    "description": "scenario description",
+    "tags": [
+      "string"
+    ],
+    "infra": 0,
+    "creation_date": "2023-02-02T23:31:08.218Z",
+    "last_modification": "2023-02-02T23:31:08.218Z",
+    "timetable": 0,
+    "trains_count": 0,
+    "trains_schedules": [
+      "string"
+    ]
+  }

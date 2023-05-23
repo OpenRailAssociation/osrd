@@ -1,0 +1,23 @@
+{
+    "id": 0,
+    "name": "Test e2e étude",
+    "description": "Ceci est un test e2e pour la description de l'étude",
+    "budget": 1234567890,
+    "service_code": "A1234",
+    "business_code": "B1234",
+    "creation_date": "2023-02-02T23:37:21.271Z",
+    "last_modification": "2023-02-02T23:37:21.271Z",
+    "scenarios": [
+      0
+    ],
+    "start_date_study": "2023-02-02T23:37:21.271Z",
+    "expected_end_date_study": "2023-02-02T23:37:21.271Z",
+    "actual_end_date_study": "2023-02-02T23:37:21.271Z",
+    "state": "Démarrage",
+    "type": "Débit",
+    "tags": [
+        "tag1",
+        "tag2",
+        "tag3"
+      ]
+  }
