@@ -1,11 +1,13 @@
 import { cloneDeep, isEqual } from 'lodash';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import React, { FC, useContext, useState } from 'react';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { AiFillSave, FaTimes, MdShowChart } from 'react-icons/all';
 import { FaFlagCheckered } from 'react-icons/fa';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 import EditorContext from '../../context';
 import { RangeEditionState } from './types';
 import {
@@ -208,6 +210,15 @@ export const RangeEditionLeftPanel: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const isLPV = speedSectionIsLpv(entity as SpeedSectionEntity);
 
+  const infraID = useSelector(getInfraID);
+
+  const { data: voltages } = osrdEditoastApi.useGetInfraByIdVoltagesQuery(
+    {
+      id: infraID as number,
+    },
+    { skip: !infraID }
+  );
+
   const updateSpeedSectionExtensions = (
     extensions: SpeedSectionEntity['properties']['extensions']
   ) => {
@@ -285,7 +296,7 @@ export const RangeEditionLeftPanel: FC = () => {
       {initialEntity.objType === 'SpeedSection' ? (
         <SpeedSectionMetadataForm />
       ) : (
-        <CatenaryMetadataForm />
+        voltages && <CatenaryMetadataForm voltages={voltages} />
       )}
       <hr />
       {initialEntity.objType === 'SpeedSection' && (
