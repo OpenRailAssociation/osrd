@@ -169,7 +169,7 @@ function Origin(props: OriginProps) {
           <span className="text-success mr-2">
             <RiMapPin2Fill />
           </span>
-          <small>{t('noOriginChosen')}</small>
+          {t('noOriginChosen')}
         </>
       )}
     </div>
