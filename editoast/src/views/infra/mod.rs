@@ -188,19 +188,46 @@ async fn list(
 ) -> Result<Json<PaginatedResponse<Infra>>> {
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let infras = Infra::list(db_pool, page, per_page, NoParams).await?;
+    let infras = Infra::list(db_pool.clone(), page, per_page, NoParams).await?;
     Ok(Json(infras))
+}
+
+#[derive(Debug, Clone, Serialize, QueryableByName)]
+pub struct InfraWithState {
+    #[serde(flatten)]
+    #[diesel(embed)]
+    pub infra: Infra,
+    #[diesel(sql_type = Text)]
+    pub state: String,
 }
 
 /// Return a specific infra
 #[get("")]
-async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
+async fn get(
+    db_pool: Data<DbPool>,
+    infra: Path<i64>,
+    core: Data<CoreClient>,
+) -> Result<Json<InfraWithState>> {
     let infra_id = infra.into_inner();
 
-    match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => Ok(Json(infra)),
-        None => Err(InfraApiError::NotFound { infra_id }.into()),
-    }
+    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
+        Some(infra) => infra,
+        None => return Err(InfraApiError::NotFound { infra_id }.into()),
+    };
+    let payload = Json(StatePayload {
+        infra: Some(infra_id),
+    });
+    let infra_state = call_core_infra_state(payload, db_pool, core).await?;
+    let state = if infra_state.contains_key(&infra_id.to_string()) {
+        infra_state
+            .get(&infra_id.to_string())
+            .unwrap()
+            .status
+            .clone()
+    } else {
+        "Infra not downloaded".to_string()
+    };
+    Ok(Json(InfraWithState { infra, state }))
 }
 
 /// Create an infra
@@ -474,13 +501,12 @@ async fn load(
     Ok(HttpResponse::NoContent().finish())
 }
 
-#[get("/cache_status")]
-async fn cache_status(
-    payload: Option<Json<StatePayload>>,
+/// Builds a Core infra load request, runs it
+async fn call_core_infra_state(
+    payload: Json<StatePayload>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
-) -> Result<Json<HashMap<String, InfraStateResponse>>> {
-    let payload = payload.unwrap_or(Json(StatePayload { infra: None }));
+) -> Result<HashMap<String, InfraStateResponse>> {
     if let Some(infra_id) = payload.infra {
         Infra::retrieve(db_pool.clone(), infra_id)
             .await?
@@ -490,7 +516,17 @@ async fn cache_status(
         infra: payload.infra,
     };
     let response = infra_request.fetch(core.as_ref()).await?;
-    Ok(Json(response))
+    Ok(response)
+}
+
+#[get("/cache_status")]
+async fn cache_status(
+    payload: Option<Json<StatePayload>>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<Json<HashMap<String, InfraStateResponse>>> {
+    let payload = payload.unwrap_or(Json(StatePayload { infra: None }));
+    Ok(Json(call_core_infra_state(payload, db_pool, core).await?))
 }
 
 #[cfg(test)]
