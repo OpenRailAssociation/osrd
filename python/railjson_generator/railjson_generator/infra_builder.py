@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Mapping, Tuple, Type
 
+from .schema.infra.dead_section import DeadSection
 from .schema.infra.endpoint import Endpoint, TrackEndpoint
 from .schema.infra.infra import Infra
 from .schema.infra.link import Link
@@ -111,6 +112,10 @@ class InfraBuilder:
     def add_speed_section(self, *args, **kwargs):
         self.infra.speed_sections.append(SpeedSection(*args, **kwargs))
         return self.infra.speed_sections[-1]
+
+    def add_dead_section(self, *args, **kwargs):
+        self.infra.dead_sections.append(DeadSection(*args, **kwargs))
+        return self.infra.dead_sections[-1]
 
     def _auto_gen_buffer_stops(self):
         for track in self.infra.track_sections:

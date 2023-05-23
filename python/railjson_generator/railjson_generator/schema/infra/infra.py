@@ -6,6 +6,7 @@ from osrd_schemas import infra
 
 from railjson_generator.rjs_static import SWITCH_TYPES
 from railjson_generator.schema.infra.catenary import Catenary
+from railjson_generator.schema.infra.dead_section import DeadSection
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
@@ -24,8 +25,9 @@ class Infra:
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
     catenaries: List[Catenary] = field(default_factory=list)
+    dead_sections: List[DeadSection] = field(default_factory=list)
 
-    VERSION = "3.2.1"
+    VERSION = "3.3.0"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -45,6 +47,7 @@ class Infra:
             switch_types=SWITCH_TYPES,
             speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
             catenaries=[catenary.to_rjs() for catenary in self.catenaries],
+            dead_sections=[dead_section.to_rjs() for dead_section in self.dead_sections],
         )
 
     def save(self, path):
@@ -81,7 +84,11 @@ class Infra:
                 name=op.label,
             )
             new_op.extensions["sncf"] = infra.OperationalPointSncfExtension(
-                ci=0, ch="aa", ch_short_label="aa", ch_long_label="0", trigram=op.trigram
+                ci=0,
+                ch="aa",
+                ch_short_label="aa",
+                ch_long_label="0",
+                trigram=op.trigram,
             )
             new_op.extensions["identifier"] = infra.OperationalPointIdentifierExtension(uic=0, name=op.label)
             ops.append(new_op)

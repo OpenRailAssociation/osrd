@@ -53,7 +53,7 @@
 
 ## Example
 
-You can find a complete example [here](./railjson_generator/scripts/example_script.py).
+You can find a complete example [here](./railjson_generator/scripts/examples/example_script.py).
 
 ## Run the generation script
 
