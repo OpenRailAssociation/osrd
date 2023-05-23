@@ -2,6 +2,7 @@
   &.full-width {
     width: 100%;
     .tabs {
+      overflow: auto;
       justify-content: space-between;
       .tab {
         flex-grow: 1;
@@ -10,7 +11,7 @@
   }
   .tabs {
     display: flex;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     gap: 1rem;
     .tab {
       padding-bottom: 1rem;
@@ -45,9 +46,11 @@
     }
     &.pills {
       .tab {
+        display: flex;
+        align-items: center;
         font-weight: 500;
         transition: all ease 0.3s;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1rem 0.25rem;
         border-radius: var(--border-radius);
         background-color: var(--white);
         color: var(--primary);

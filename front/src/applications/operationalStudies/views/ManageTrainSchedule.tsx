@@ -8,10 +8,7 @@ import Itinerary from 'applications/operationalStudies/components/ManageTrainSch
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
-import submitConfAddTrainSchedules from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/submitConfAddTrainSchedules';
 import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
-import { FaPen, FaPlus } from 'react-icons/fa';
-import DotsLoader from 'common/DotsLoader/DotsLoader';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import {
@@ -22,22 +19,22 @@ import {
 import { updatePathWithCatenaries, updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
-import submitConfUpdateTrainSchedules from '../components/ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
+import Tabs from 'common/Tabs';
+import rollingStockPic from 'assets/pictures/components/train.svg';
+import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
+import allowancesPic from 'assets/pictures/components/allowances.svg';
+import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
+import addingSettingsPic from 'assets/pictures/components/addingSettings.svg';
 
-type Props = {
-  setDisplayTrainScheduleManagement: (arg0: string) => void;
-};
-
-export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
+export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
   const shouldRunPathfinding = useSelector(getShouldRunPathfinding);
   const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState<boolean | undefined>(
     undefined
   );
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
-  const [isWorking, setIsWorking] = useState(false);
   const pathFindingID = useSelector(getPathfindingID);
-  const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
+  const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdMiddlewareApi.endpoints.getPathfindingById.useLazyQuery({});
 
@@ -52,40 +49,81 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
       }),
     }
   );
+  const tabRollingStock = {
+    title: (
+      <>
+        <img src={rollingStockPic} alt="rolling stock" height={24} />
+        <span className="ml-2">{t('tabs.rollingStock')}</span>
+      </>
+    ),
+    label: t('tabs.rollingStock'),
+    content: <RollingStockSelector />,
+  };
 
-  function confirmButton() {
-    return trainScheduleIDsToModify ? (
-      <button
-        className="btn btn-warning"
-        type="button"
-        onClick={() =>
-          submitConfUpdateTrainSchedules(
-            dispatch,
-            t,
-            setIsWorking,
-            trainScheduleIDsToModify,
-            setDisplayTrainScheduleManagement
-          )
-        }
-      >
-        <span className="mr-2">
-          <FaPen />
-        </span>
-        {t('updateTrainSchedule')}
-      </button>
-    ) : (
-      <button
-        className="btn btn-primary"
-        type="button"
-        onClick={() => submitConfAddTrainSchedules(dispatch, t, setIsWorking)}
-      >
-        <span className="mr-2">
-          <FaPlus />
-        </span>
-        {t('addTrainSchedule')}
-      </button>
-    );
-  }
+  const tabPathFinding = {
+    title: (
+      <>
+        <img src={pahtFindingPic} alt="path finding" height={24} />
+        <span className="ml-2">{t('tabs.pathFinding')}</span>
+      </>
+    ),
+    label: t('tabs.pathFinding'),
+    content: (
+      <div className="row no-gutters">
+        <div className="col-xl-6 pr-xl-2">
+          {mustUpdatePathfinding !== undefined && <Itinerary mustUpdate={mustUpdatePathfinding} />}
+        </div>
+        <div className="col-xl-6">
+          <div className="osrd-config-item mb-2">
+            <div className="osrd-config-item-container osrd-config-item-container-map">
+              <Map />
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+  };
+
+  const tabSimulationSettings = {
+    title: (
+      <>
+        <img src={simulationSettings} alt="simulation settings" height={24} />
+        <span className="ml-2">{t('tabs.simulationSettings')}</span>
+      </>
+    ),
+    label: t('tabs.simulationSettings'),
+    content: (
+      <div className="row no-gutters">
+        <div className="col-lg-6 pr-lg-2">
+          <ElectricalProfiles />
+          <SpeedLimitByTagSelector />
+          <PowerRestrictionSelector />
+        </div>
+      </div>
+    ),
+  };
+
+  const tabAllowances = {
+    title: (
+      <>
+        <img src={allowancesPic} alt="allowances" height={24} />
+        <span className="ml-2">{t('tabs.allowances')}</span>
+      </>
+    ),
+    label: t('tabs.allowances'),
+    content: 'marges',
+  };
+
+  const tabAddingSettings = {
+    title: (
+      <>
+        <img src={addingSettingsPic} alt="adding settings" height={24} />
+        <span className="ml-2">{t('tabs.addingSettings')}</span>
+      </>
+    ),
+    label: t('tabs.addingSettings'),
+    content: !trainScheduleIDsToModify && <TrainAddingSettings />,
+  };
 
   useEffect(() => {
     if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
@@ -123,42 +161,17 @@ export default function ManageTrainSchedule({ setDisplayTrainScheduleManagement 
         <TrainSettings />
       </div>
 
-      <div className="row no-gutters">
-        <div className="col-lg-6 pr-lg-2">
-          <RollingStockSelector />
-          <ElectricalProfiles />
-        </div>
-        <div className="col-lg-6">
-          <SpeedLimitByTagSelector />
-          <PowerRestrictionSelector />
-        </div>
-      </div>
-
-      <div className="row no-gutters">
-        <div className="col-xl-6 pr-xl-2">
-          {mustUpdatePathfinding !== undefined && <Itinerary mustUpdate={mustUpdatePathfinding} />}
-        </div>
-        <div className="col-xl-6">
-          <div className="osrd-config-item mb-2">
-            <div className="osrd-config-item-container osrd-config-item-container-map">
-              <Map />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {!trainScheduleIDsToModify && <TrainAddingSettings />}
-      <div className="osrd-config-item" data-testid="add-train-schedules">
-        <div className="d-flex justify-content-end">
-          {isWorking ? (
-            <button className="btn btn-primary disabled" type="button">
-              <DotsLoader />
-            </button>
-          ) : (
-            confirmButton()
-          )}
-        </div>
-      </div>
+      <Tabs
+        pills
+        fullWidth
+        tabs={[
+          tabRollingStock,
+          tabPathFinding,
+          tabSimulationSettings,
+          tabAllowances,
+          tabAddingSettings,
+        ]}
+      />
     </>
   );
 }
