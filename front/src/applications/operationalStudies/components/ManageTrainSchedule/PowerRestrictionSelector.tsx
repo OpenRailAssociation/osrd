@@ -43,16 +43,13 @@ export default function PowerRestrictionSelector() {
     { skip: !rollingStockID }
   );
 
-  const powerRestrictions = useMemo(() => {
-    let powerRestrictionsList: selectorOption[] = [];
-    if (rollingStock && !isEmpty(rollingStock.power_restrictions)) {
-      powerRestrictionsList = Object.entries(rollingStock.power_restrictions).map(
-        ([key, _]: [string | undefined, string]) => ({ key, value: key })
-      );
-      powerRestrictionsList.unshift({ key: undefined, value: t('noPowerRestriction') });
-    }
-    return powerRestrictionsList;
-  }, [rollingStock]);
+  const powerRestrictions = useMemo(
+    () =>
+      rollingStock && !isEmpty(rollingStock.power_restrictions)
+        ? [t('noPowerRestriction'), ...Object.keys(rollingStock.power_restrictions)]
+        : [],
+    [rollingStock?.power_restrictions]
+  );
 
   // Extract unique rollingstock's power restriction codes allowed by each electrification mode
   const cleanConditionalEffortCurves = (rollingStockToClean: RollingStock) => {
