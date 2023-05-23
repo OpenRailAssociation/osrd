@@ -3,6 +3,7 @@ import cx from 'classnames';
 
 type TabProps = {
   label: string;
+  title?: React.ReactNode;
   content: React.ReactNode;
 };
 
@@ -36,7 +37,7 @@ const Tabs = ({ tabs, pills = false, fullWidth = false }: TabsProps) => {
             tabIndex={0}
             onClick={() => handleTabClick(index)}
           >
-            {tab.label}
+            {tab.title || tab.label}
           </div>
         ))}
       </div>

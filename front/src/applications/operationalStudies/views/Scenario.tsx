@@ -185,9 +185,7 @@ export default function Scenario() {
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
-                  <ManageTrainSchedule
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  />
+                  <ManageTrainSchedule />
                 </div>
               )}
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (

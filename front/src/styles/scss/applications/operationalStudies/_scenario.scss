@@ -61,18 +61,16 @@
     background-color: #d7d7d7aa;
     border-radius: 4px;
     animation: fadein 1s;
+    backdrop-filter: blur(4px);
     .scenario-timetable-managetrainschedule-header {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      height: 11rem;
-      font-size: 2rem;
-      font-weight: 500;
-      backdrop-filter: blur(4px);
+      height: 3rem;
       padding: 0.5rem;
     }
     .scenario-timetable-managetrainschedule-body {
       padding: 0.5rem;
+      height: 100%;
     }
   }
   .scenario-sidemenu {
