@@ -28,6 +28,9 @@ function rollingStockPassesSearchedStringFilter(
   metadata: LightRollingStock['metadata'],
   filters: Filters
 ) {
+  if (!filters.text) {
+    return true;
+  }
   function includesSearchedString(str: string) {
     return str && str.toLowerCase().includes(filters.text);
   }
@@ -42,19 +45,33 @@ function rollingStockPassesSearchedStringFilter(
 }
 
 export function rollingStockPassesEnergeticModeFilters(
-  filterElec: boolean,
-  filterThermal: boolean,
-  modes: LightRollingStock['effort_curves']['modes']
+  modes: LightRollingStock['effort_curves']['modes'],
+  { elec, thermal }: Filters
 ) {
-  if (filterElec || filterThermal) {
+  if (elec || thermal) {
     const effortCurveModes = Object.values(modes).map(({ is_electric: isElec }) => isElec);
     const hasAnElectricMode = effortCurveModes.includes(true);
     const hasAThermalMode = effortCurveModes.includes(false);
-    if ((filterElec && !hasAnElectricMode) || (filterThermal && !hasAThermalMode)) {
+    if ((elec && !hasAnElectricMode) || (thermal && !hasAThermalMode)) {
       return false;
     }
   }
   return true;
+}
+
+function filterRollingStocks(rollingStocks: LightRollingStock[], filters: Filters) {
+  return rollingStocks?.filter(({ name, metadata, effort_curves: effortCurves }) => {
+    const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
+      name,
+      metadata,
+      filters
+    );
+    const passEnergeticModesFilter = rollingStockPassesEnergeticModeFilters(
+      effortCurves.modes,
+      filters
+    );
+    return passSearchedStringFilter && passEnergeticModesFilter;
+  });
 }
 
 interface RollingStockModal {
@@ -66,14 +83,13 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   const darkmode = useSelector((state: RootState) => state.main.darkmode);
   const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [filteredRollingStockList, setFilteredRollingStockList] = useState<LightRollingStock[]>([]);
   const [filters, setFilters] = useState({
     text: '',
     elec: false,
     thermal: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState();
+  const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockID);
   const { closeModal } = useContext(ModalContext);
 
   if (darkmode) {
@@ -91,35 +107,31 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
       }),
     }
   );
+  const [filteredRollingStockList, setFilteredRollingStockList] = useState<LightRollingStock[]>(
+    () => filterRollingStocks(rollingStocks, filters)
+  );
+
+  function handleRollingStockLoaded() {
+    const newFilteredRollingStock = filterRollingStocks(rollingStocks, filters);
+    setFilteredRollingStockList(newFilteredRollingStock);
+  }
+
+  const updateSearch = () => {
+    if (filters.text !== '' || filters.elec !== false || filters.thermal !== false) {
+      setOpenRollingStockCardId(undefined);
+    } else {
+      setOpenRollingStockCardId(rollingStockID);
+    }
+    const newFilteredRollingStock = filterRollingStocks(rollingStocks, filters);
+    setTimeout(() => {
+      setFilteredRollingStockList(newFilteredRollingStock);
+      setIsLoading(false);
+    }, 0);
+  };
 
   const searchMateriel = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, text: e.target.value.toLowerCase() });
     setIsLoading(true);
-  };
-
-  const updateSearch = () => {
-    setOpenedRollingStockCardId(undefined);
-    const newFilteredRollingStock = rollingStocks?.filter(
-      ({ name, metadata, effort_curves: effortCurves }) => {
-        const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
-          name,
-          metadata,
-          filters
-        );
-        const passEnergeticModesFilter = rollingStockPassesEnergeticModeFilters(
-          filters.elec,
-          filters.thermal,
-          effortCurves.modes
-        );
-        return passSearchedStringFilter && passEnergeticModesFilter;
-      }
-    );
-    if (newFilteredRollingStock) {
-      setTimeout(() => {
-        setFilteredRollingStockList(newFilteredRollingStock);
-        setIsLoading(false);
-      }, 0);
-    }
   };
 
   const toggleFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,32 +139,19 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     setIsLoading(true);
   };
 
-  if (rollingStockID !== undefined) {
-    // Because of modal waiting for displaying, have to set a timeout to correctly scroll to ref
-    // BUT finally, it's great, it creates a micro-interaction (smooth scroll) !
-    setTimeout(() => {
-      ref2scroll.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 1000);
-  }
+  useEffect(() => {
+    if (openRollingStockCardId !== undefined) {
+      // Because of modal waiting for displaying, have to set a timeout to correctly scroll to ref
+      // BUT finally, it's great, it creates a micro-interaction (smooth scroll) !
+      setTimeout(() => {
+        ref2scroll.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 1000);
+    }
+  }, [ref2scroll.current]);
 
-  const listOfRollingStocks = useMemo(
-    () =>
-      filteredRollingStockList.length > 0 ? (
-        filteredRollingStockList.map((item) => (
-          <RollingStockCard
-            data={item}
-            key={item.id}
-            noCardSelected={openedRollingStockCardId === undefined}
-            isOpen={item.id === openedRollingStockCardId}
-            setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-            ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
-          />
-        ))
-      ) : (
-        <RollingStockEmpty />
-      ),
-    [filteredRollingStockList, openedRollingStockCardId, ref2scroll, rollingStockID]
-  );
+  useEffect(() => {
+    handleRollingStockLoaded();
+  }, [isSuccess]);
 
   useEffect(() => {
     if (isError && error && 'status' in error) {
@@ -173,7 +172,26 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
       updateSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, isSuccess]);
+  }, [filters]);
+
+  const listOfRollingStocks = useMemo(
+    () =>
+      filteredRollingStockList.length > 0 ? (
+        filteredRollingStockList.map((item) => (
+          <RollingStockCard
+            data={item}
+            key={item.id}
+            noCardSelected={openRollingStockCardId === undefined}
+            isOpen={item.id === openRollingStockCardId}
+            setOpenedRollingStockCardId={setOpenRollingStockCardId}
+            ref2scroll={openRollingStockCardId === item.id ? ref2scroll : undefined}
+          />
+        ))
+      ) : (
+        <RollingStockEmpty />
+      ),
+    [filteredRollingStockList, openRollingStockCardId, ref2scroll, openRollingStockCardId]
+  );
 
   function displayList() {
     if (isEmpty(filteredRollingStockList)) {
