@@ -4,6 +4,7 @@ from osrd_schemas.infra import (
     RAILJSON_INFRA_VERSION,
     BufferStop,
     Catenary,
+    DeadSection,
     Detector,
     OperationalPoint,
     Route,
@@ -142,6 +143,16 @@ class DetectorModel(models.Model):
 
     class Meta:
         verbose_name_plural = "detectors"
+        unique_together = (("infra", "obj_id"),)
+
+
+class DeadSectionModel(models.Model):
+    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    data = models.JSONField(validators=[PydanticValidator(DeadSection)])
+
+    class Meta:
+        verbose_name_plural = "dead sections"
         unique_together = (("infra", "obj_id"),)
 
 

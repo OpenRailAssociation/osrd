@@ -121,6 +121,7 @@ paths:
                 signals: []
                 buffer_stops: []
                 speed_sections: []
+                dead_sections: []
                 catenaries: []
                 detectors: []
         required: true
