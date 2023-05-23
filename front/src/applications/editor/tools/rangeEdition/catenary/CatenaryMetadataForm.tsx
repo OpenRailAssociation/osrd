@@ -1,4 +1,4 @@
-import React, { FC, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import EditorContext from 'applications/editor/context';
 import { CatenaryEntity } from 'types';
@@ -8,9 +8,7 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 import { RangeEditionState } from '../types';
 
-const FAKEDATA = ['25000V A', '25000V B', '1500V', '850V'];
-
-const CatenaryMetadataForm: FC = () => {
+const CatenaryMetadataForm = ({ voltages }: { voltages: string[] }) => {
   const { t } = useTranslation();
   const {
     state: { entity },
@@ -24,7 +22,7 @@ const CatenaryMetadataForm: FC = () => {
           <GiElectric className="me-1" /> {t('Editor.tools.catenary-edition.catenaries')}
         </>
       }
-      options={FAKEDATA}
+      options={voltages}
       selectedValue={entity.properties.voltage || ''}
       onChange={(newCatenary) => {
         const newEntity = cloneDeep(entity);
