@@ -127,7 +127,7 @@ export const AttachedRangesItemsList: FC<{ id: string; itemType: 'SpeedSection' 
                     className="btn btn-primary btn-sm"
                     title={t('common.open')}
                     onClick={() => {
-                      if (entity.objType === itemType) {
+                      if (entity.objType === 'SpeedSection') {
                         switchTool({
                           toolType: TOOL_TYPES.SPEED_SECTION_EDITION,
                           toolState: getEditSpeedSectionState(entity as SpeedSectionEntity),
