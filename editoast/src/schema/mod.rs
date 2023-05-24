@@ -28,7 +28,7 @@ pub use operational_point::{OperationalPoint, OperationalPointCache, Operational
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
 use serde::{Deserialize, Serialize};
-pub use signal::{Signal, SignalCache};
+pub use signal::{LogicalSignal, Signal, SignalCache, SignalExtensions, SignalSncfExtension};
 pub use speed_section::SpeedSection;
 use strum_macros::Display;
 use strum_macros::EnumIter;
