@@ -15,6 +15,7 @@ export default function SelectImprovedSNCF(props) {
     withSearch,
     withNewValueInput,
     addButtonTitle,
+    bgWhite,
   } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState();
@@ -41,16 +42,11 @@ export default function SelectImprovedSNCF(props) {
 
   const renderNewValueInput = (currentValue) => (
     <div className="select-menu-item" role="listitem">
-      <div className="d-flex flex-column flex-sm-row mb-2" data-role="add">
-        <div className="form-control-container w-100 ">
-          <input type="" className="form-control" id="inputIcon4" disabled value={currentValue} />
-        </div>
-      </div>
       <div className="d-flex flex-column flex-sm-row" data-role="add">
         <div className="form-control-container w-100 has-left-icon">
           <button
             type="button"
-            className="btn btn-primary btn-block"
+            className="btn btn-primary btn-block btn-sm"
             onClick={() => {
               selectItem(currentValue);
             }}
@@ -103,7 +99,9 @@ export default function SelectImprovedSNCF(props) {
             onClick={() => setIsOpen(!isOpen)}
           >
             <p
-              className="form-control is-placeholder d-flex align-items-center"
+              className={`form-control is-placeholder d-flex align-items-center ${
+                bgWhite ? 'bg-white' : ''
+              }`}
               style={sm ? { minHeight: '1.813rem' } : undefined}
             >
               {renderSelectedItem()}
@@ -140,6 +138,7 @@ export default function SelectImprovedSNCF(props) {
                     <button
                       type="button"
                       className="btn-clear btn-primary"
+                      style={{ width: '2em', height: '2em' }}
                       onClick={() => setFilterText('')}
                     >
                       <span className="sr-only">Clear text</span>
@@ -190,6 +189,7 @@ SelectImprovedSNCF.propTypes = {
   withSearch: PropTypes.bool,
   withNewValueInput: PropTypes.bool,
   addButtonTitle: PropTypes.string,
+  bgWhite: PropTypes.bool,
 };
 
 SelectImprovedSNCF.defaultProps = {
@@ -200,4 +200,5 @@ SelectImprovedSNCF.defaultProps = {
   withSearch: false,
   withNewValueInput: false,
   addButtonTitle: null,
+  bgWhite: false,
 };
