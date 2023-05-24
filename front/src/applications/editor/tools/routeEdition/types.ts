@@ -21,22 +21,25 @@ export type EditRouteMetadataState = CommonToolState & {
   initialRouteEntity: RouteEntity;
   routeEntity: RouteEntity;
 };
+
+export type OptionsStateType =
+  | { type: 'idle'; options?: undefined }
+  | { type: 'loading'; options?: undefined }
+  | {
+      type: 'options';
+      focusedOptionIndex?: number | undefined;
+      options: {
+        data: RouteCandidate;
+        color: string;
+        feature: Feature<LineString, { index: number; color: string }>;
+      }[];
+    };
+
 export type EditRoutePathState = CommonToolState & {
   type: 'editRoutePath';
   initialRouteEntity?: RouteEntity;
   routeState: RouteState;
-  optionsState:
-    | { type: 'idle'; options?: undefined }
-    | { type: 'loading'; options?: undefined }
-    | {
-        type: 'options';
-        focusedOptionIndex?: number | undefined;
-        options: {
-          data: RouteCandidate;
-          color: string;
-          feature: Feature<LineString, { index: number; color: string }>;
-        }[];
-      };
+  optionsState: OptionsStateType;
   extremityEditionState:
     | { type: 'idle' }
     | {

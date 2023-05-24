@@ -22,7 +22,6 @@ import {
   LpvPanelFeature,
   LpvPanelInformation,
   RangeEditionState,
-  // SpeedSectionEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
   TrackState,
