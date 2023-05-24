@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { get } from 'common/requests';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { setFailure } from 'reducers/main';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { getPathfindingID } from 'reducers/osrdconf/selectors';
@@ -12,39 +12,45 @@ import { getPathfindingID } from 'reducers/osrdconf/selectors';
 export default function ModalPathJSONDetail() {
   const dispatch = useDispatch();
   const pathfindingID = useSelector(getPathfindingID);
-  const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
-  const textareaRef = useRef(null);
-  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const [pathJSONDetail, setPathJSONDetail] = useState<object>({ undefined });
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { closeModal } = useContext(ModalContext);
+  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
 
-  const getPathJSON = async (zoom, params) => {
+  const pathJSON = osrdMiddlewareApi.useGetPathfindingByIdQuery({
+    id: pathfindingID as number,
+  });
+
+  async function getPathJSON() {
     try {
-      const pathJSON = await get(`/pathfinding/${pathfindingID}/`, { params });
+      await pathJSON;
       setPathJSONDetail(pathJSON);
-    } catch (e) {
+    } catch (e: unknown) {
+      const err = e as Error;
       dispatch(
         setFailure({
           name: t('errorMessages.unableToRetrievePath'),
-          message: `${e.message} : ${e.response && e.response.data.detail}`,
+          message: `${err.message}`,
         })
       );
     }
-  };
+  }
 
-  const copyToClipboard = (e) => {
-    textareaRef.current.select();
-    document.execCommand('copy');
-    // This is just personal preference.
-    // I prefer to not show the whole text area selected.
-    e.target.focus();
+  const copyToClipboard = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (textareaRef.current) {
+      textareaRef.current.select();
+      document.execCommand('copy');
+      // This is just personal preference.
+      // I prefer to not show the whole text area selected.
+      e.currentTarget.focus();
+    }
   };
 
   useEffect(() => {
     if (pathfindingID) {
       getPathJSON();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathfindingID]);
+  }, [pathfindingID, pathJSON]);
 
   return (
     <>
@@ -66,7 +72,7 @@ export default function ModalPathJSONDetail() {
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <button className="btn btn-primary" type="button" onClick={copyToClipboard}>
-          Copy to clipboard
+          {t('copy')}
         </button>
       </ModalFooterSNCF>
     </>

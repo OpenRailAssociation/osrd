@@ -10,6 +10,7 @@
   "cancelRequest": "Cancel request",
   "chooseOnMap": "Choose on the map",
   "composition": "Composition",
+  "copy": "Copy to clipboard",
   "deleteVias": "Delete steps",
   "destination": "Destination",
   "errorMessages": {
