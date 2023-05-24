@@ -256,36 +256,12 @@ pub fn signals(osm_pbf_in: std::path::PathBuf, edges: &Vec<Edge>) -> Vec<Signal>
         .filter(main_signal)
         .flat_map(|obj| {
             if let osmpbfreader::OsmObj::Node(node) = obj {
-                if main_signal(&node) {
-                    if let Some(current_edges) = nodes_edges.get(&node.id) {
-                        if current_edges.empty() {
-                            error!("Missing edge for node {}", node.id.0);
-                            return None;
-                        } else if current_edges.len() >= 3 {
-                            warn!("Too many edges for node {}", node.id.0);
-                        }
-
-                        let mut settings = HashMap::new();
-                        settings.insert("Nf".into(), "true".into());
-
-                        Some(Signal {
-                            id: node.id.0.to_string().into(),
-                            direction: direction(&node),
-                            track: current_edges[0].id.clone().into(),
-                            position: current_edges[0].length_until(&node.id),
-                            sight_distance: 400.,
-                            logical_signals: Some(vec![LogicalSignal {
-                                signaling_system: "BAL".to_string(),
-                                settings,
-                                ..Default::default()
-                            }]),
-                            linked_detector: None,
-                            extensions: SignalExtensions {
-                                sncf: Some(sncf_extensions(&node)),
-                            },
-                        })
-                    } else {
-                        None
+                if let Some(current_edges) = nodes_edges.get(&node.id) {
+                    if current_edges.is_empty() {
+                        error!("Missing edge for node {}", node.id.0);
+                        return None;
+                    } else if current_edges.len() >= 3 {
+                        warn!("Too many edges for node {}", node.id.0);
                     }
 
                     let mut settings = HashMap::new();
@@ -352,6 +328,16 @@ fn sncf_extensions(node: &Node) -> SignalSncfExtension {
         is_operational: true,
         label,
         side,
+        ..Default::default()
+    }
+}
+
+/// Builds a detector that is located on the same position as the signal
+pub fn detector(signal: &Signal) -> Detector {
+    Detector {
+        id: signal.id.clone(),
+        track: signal.track.clone(),
+        position: signal.position,
         ..Default::default()
     }
 }
