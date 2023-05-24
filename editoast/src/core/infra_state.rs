@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::views::infra::InfraState;
+
 use super::{AsCoreRequest, Json};
 use derivative::Derivative;
 use serde::Serialize;
@@ -13,11 +15,10 @@ pub struct InfraStateRequest {
     pub infra: Option<i64>,
 }
 
-#[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
-#[derivative(Default)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct InfraStateResponse {
-    pub last_status: String,
-    pub status: String,
+    pub last_status: Option<InfraState>,
+    pub status: InfraState,
 }
 
 impl AsCoreRequest<Json<HashMap<String, InfraStateResponse>>> for InfraStateRequest {
