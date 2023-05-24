@@ -159,7 +159,7 @@ pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
     }
 
     let mut sorted_endpoint: Vec<(&TrackEndpoint, u64)> = endpoint_count.into_iter().collect();
-    sorted_endpoint.sort_by(|(_, count_a), (_, count_b)| count_a.cmp(count_b));
+    sorted_endpoint.sort_by(|(_, count_a), (_, count_b)| count_b.cmp(count_a));
     let mut ports = HashMap::new();
     ports.insert("BASE".into(), sorted_endpoint[0].0.clone());
     ports.insert("LEFT".into(), sorted_endpoint[1].0.clone());
