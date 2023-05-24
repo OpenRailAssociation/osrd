@@ -239,8 +239,9 @@ async fn clone(
         });
         futures.push(Box::pin(model));
 
-        if object != ObjectType::SwitchType && object != ObjectType::Route {
-            let layer_table = object.get_geometry_layer_table().unwrap().to_string();
+        let layer_table = object.get_geometry_layer_table();
+        if layer_table.is_some() {
+            let layer_table = layer_table.unwrap().to_string();
             let db_pool_ref = db_pool.clone();
             let layer = block::<_, Result<_>>(move || {
                 let mut conn = db_pool_ref.get()?;

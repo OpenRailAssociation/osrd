@@ -123,6 +123,15 @@ table! {
 }
 
 table! {
+    osrd_infra_deadsectionmodel(id) {
+        id -> BigInt,
+        obj_id -> Text,
+        data -> Jsonb,
+        infra_id -> BigInt,
+    }
+}
+
+table! {
     osrd_infra_tracksectionlinkmodel(id) {
         id -> BigInt,
         obj_id -> Text,
