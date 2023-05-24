@@ -1902,8 +1902,22 @@ components:
           format: date
         locked:
           type: boolean
+        state:
+          type: string
+          enum:
+            - NotLoaded
+            - Initializing
+            - Downloading
+            - ParsingJson
+            - ParsingInfra
+            - AdaptingKotlin
+            - LoadingSignals
+            - BuildingBlocks
+            - Cached
+            - TransientError
+            - Error
       required:
-        [id, name, version, generated_version, created, modified, locked]
+        [id, name, version, generated_version, created, modified, locked, state]
 
     Zone:
       type: object
@@ -2333,7 +2347,7 @@ components:
                     required: [curves, default_curve, is_electric]
               required: [default_mode, modes]
           required: [effort_curves]
-    
+
     RollingStockBase:
       properties:
         version:

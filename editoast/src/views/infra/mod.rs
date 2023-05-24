@@ -27,7 +27,7 @@ use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, scope, Data, Json, Path, Query};
-use actix_web::{delete, get, post, put, HttpResponse, Responder};
+use actix_web::{delete, get, post, put, Either, HttpResponse, Responder};
 use chashmap::CHashMap;
 use chrono::Utc;
 use diesel::sql_types::{BigInt, Text};
@@ -184,21 +184,57 @@ async fn refresh(
 #[get("")]
 async fn list(
     db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
     pagination_params: Query<PaginationQueryParam>,
-) -> Result<Json<PaginatedResponse<Infra>>> {
+) -> Result<Json<PaginatedResponse<InfraWithState>>> {
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
     let infras = Infra::list(db_pool.clone(), page, per_page, NoParams).await?;
-    Ok(Json(infras))
+    let infra_state = call_core_infra_state(None, db_pool, core).await?;
+    let infras_with_state: Vec<InfraWithState> = infras
+        .results
+        .into_iter()
+        .map(|infra| {
+            let infra_id = infra.id.unwrap();
+            let state = infra_state
+                .get(&infra_id.to_string())
+                .unwrap_or(&InfraStateResponse::default())
+                .status;
+            InfraWithState { infra, state }
+        })
+        .collect();
+    let infras_with_state = PaginatedResponse::<InfraWithState> {
+        count: infras.count,
+        previous: infras.previous,
+        next: infras.next,
+        results: infras_with_state,
+    };
+
+    Ok(Json(infras_with_state))
 }
 
-#[derive(Debug, Clone, Serialize, QueryableByName)]
-pub struct InfraWithState {
+#[derive(Debug, Clone, Copy, Serialize, Default, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum InfraState {
+    #[default]
+    NotLoaded,
+    Initializing,
+    Downloading,
+    ParsingJson,
+    ParsingInfra,
+    AdaptingKotlin,
+    LoadingSignals,
+    BuildingBlocks,
+    Cached,
+    TransientError,
+    Error,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct InfraWithState {
     #[serde(flatten)]
-    #[diesel(embed)]
     pub infra: Infra,
-    #[diesel(sql_type = Text)]
-    pub state: String,
+    pub state: InfraState,
 }
 
 /// Return a specific infra
@@ -214,19 +250,11 @@ async fn get(
         Some(infra) => infra,
         None => return Err(InfraApiError::NotFound { infra_id }.into()),
     };
-    let payload = Json(StatePayload {
-        infra: Some(infra_id),
-    });
-    let infra_state = call_core_infra_state(payload, db_pool, core).await?;
-    let state = if infra_state.contains_key(&infra_id.to_string()) {
-        infra_state
-            .get(&infra_id.to_string())
-            .unwrap()
-            .status
-            .clone()
-    } else {
-        "Infra not downloaded".to_string()
-    };
+    let infra_state = call_core_infra_state(Some(infra_id), db_pool, core).await?;
+    let state = infra_state
+        .get(&infra_id.to_string())
+        .unwrap_or(&InfraStateResponse::default())
+        .status;
     Ok(Json(InfraWithState { infra, state }))
 }
 
@@ -501,32 +529,34 @@ async fn load(
     Ok(HttpResponse::NoContent().finish())
 }
 
-/// Builds a Core infra load request, runs it
+/// Builds a Core cache_status request, runs it
 async fn call_core_infra_state(
-    payload: Json<StatePayload>,
+    infra_id: Option<i64>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<HashMap<String, InfraStateResponse>> {
-    if let Some(infra_id) = payload.infra {
+    if let Some(infra_id) = infra_id {
         Infra::retrieve(db_pool.clone(), infra_id)
             .await?
             .ok_or(InfraApiError::NotFound { infra_id })?;
     };
-    let infra_request = InfraStateRequest {
-        infra: payload.infra,
-    };
+    let infra_request = InfraStateRequest { infra: infra_id };
     let response = infra_request.fetch(core.as_ref()).await?;
     Ok(response)
 }
 
 #[get("/cache_status")]
 async fn cache_status(
-    payload: Option<Json<StatePayload>>,
+    payload: Either<Json<StatePayload>, ()>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<HashMap<String, InfraStateResponse>>> {
-    let payload = payload.unwrap_or(Json(StatePayload { infra: None }));
-    Ok(Json(call_core_infra_state(payload, db_pool, core).await?))
+    let payload = match payload {
+        Either::Left(state) => state.into_inner(),
+        Either::Right(_) => Default::default(),
+    };
+    let infra_id = payload.infra;
+    Ok(Json(call_core_infra_state(infra_id, db_pool, core).await?))
 }
 
 #[cfg(test)]
@@ -586,7 +616,13 @@ pub mod tests {
 
     #[actix_test]
     async fn infra_list() {
-        let app = create_test_service().await;
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
         let req = TestRequest::get().uri("/infra/").to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
@@ -610,7 +646,13 @@ pub mod tests {
 
     #[actix_test]
     async fn infra_get() {
-        let app = create_test_service().await;
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
         let infra: Infra =
             call_and_read_body_json(&app, create_infra_request("get_infra_test")).await;
 
@@ -794,7 +836,13 @@ pub mod tests {
 
     #[actix_test]
     async fn infra_lock() {
-        let app = create_test_service().await;
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
         let infra: Infra = call_and_read_body_json(&app, create_infra_request("lock_test")).await;
         assert!(!infra.locked.unwrap());
 
