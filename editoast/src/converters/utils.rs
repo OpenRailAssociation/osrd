@@ -24,14 +24,14 @@ pub fn default_switch_types() -> Vec<SwitchType> {
 
     let mut cross_groups = std::collections::HashMap::new();
     cross_groups.insert(
-        "default".into(),
+        "DEFAULT".into(),
         vec![
             SwitchPortConnection {
                 src: "NORTH".into(),
                 dst: "SOUTH".into(),
             },
             SwitchPortConnection {
-                src: "EASTH".into(),
+                src: "EAST".into(),
                 dst: "WEST".into(),
             },
         ],
@@ -39,28 +39,28 @@ pub fn default_switch_types() -> Vec<SwitchType> {
 
     let mut double_cross_groups = std::collections::HashMap::new();
     double_cross_groups.insert(
-        "n1-s1".into(),
+        "N1-S1".into(),
         vec![SwitchPortConnection {
             src: "NORTH-1".into(),
             dst: "SOUTH-1".into(),
         }],
     );
     double_cross_groups.insert(
-        "n2-s1".into(),
+        "N2-S1".into(),
         vec![SwitchPortConnection {
             src: "NORTH-1".into(),
             dst: "SOUTH-2".into(),
         }],
     );
     double_cross_groups.insert(
-        "n1-s2".into(),
+        "N1-S2".into(),
         vec![SwitchPortConnection {
             src: "NORTH-2".into(),
             dst: "SOUTH-1".into(),
         }],
     );
     double_cross_groups.insert(
-        "n2-s2".into(),
+        "N2-S2".into(),
         vec![SwitchPortConnection {
             src: "NORTH-2".into(),
             dst: "SOUTH-2".into(),
