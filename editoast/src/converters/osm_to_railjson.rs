@@ -47,9 +47,11 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed)
         .filter(|e| e.source != e.target);
 
+    let signals = signals(osm_pbf_in, &edges);
     let mut railjson = RailJson {
         switch_types: default_switch_types(),
-        signals: signals(osm_pbf_in, &edges),
+        detectors: signals.iter().map(detector).collect(),
+        signals,
         ..Default::default()
     };
 
@@ -166,5 +168,10 @@ mod tests {
     fn parse_signals() {
         let railjson = parse_osm("src/tests/signals.osm.pbf".into()).unwrap();
         assert_eq!(1, railjson.signals.len());
+        assert_eq!(1, railjson.detectors.len());
+        assert_eq!(
+            railjson.signals[0].linked_detector,
+            Some(railjson.detectors[0].id.to_string())
+        )
     }
 }
