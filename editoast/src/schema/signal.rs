@@ -36,7 +36,7 @@ pub struct Signal {
     pub extensions: SignalExtensions,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct LogicalSignal {
     pub signaling_system: String,
     pub next_signaling_systems: Vec<String>,
