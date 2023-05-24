@@ -77,7 +77,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
         })
         .collect();
 
-    // Here we avoid avoid the deserialization of the whole RailJson object
+    // Here we avoid the deserialization of the whole RailJson object
     let railjson = format!(
         r#"{{
             "version": "{version}",
@@ -91,7 +91,8 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             "buffer_stops": {buffer_stops},
             "routes": {routes},
             "operational_points": {operational_points},
-            "catenaries": {catenaries}
+            "catenaries": {catenaries},
+            "dead_sections": {dead_sections}
         }}"#,
         version = infra_meta.railjson_version.unwrap(),
         track_sections = res[ObjectType::TrackSection],
@@ -105,6 +106,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
         routes = res[ObjectType::Route],
         operational_points = res[ObjectType::OperationalPoint],
         catenaries = res[ObjectType::Catenary],
+        dead_sections = res[ObjectType::DeadSection]
     );
 
     Ok(HttpResponse::Ok()

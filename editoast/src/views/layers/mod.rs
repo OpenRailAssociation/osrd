@@ -96,7 +96,7 @@ async fn layer_view(
     })))
 }
 
-/// Gets mvt tile from the cache if possible, otherwise gets data fro the data base and caches it in redis
+/// Gets mvt tile from the cache if possible, otherwise gets data from the data base and caches it in redis
 #[get("/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}")]
 async fn cache_and_get_mvt_tile(
     path: Path<(String, String, u64, u64, u64)>,

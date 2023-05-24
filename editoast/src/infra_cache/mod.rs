@@ -510,6 +510,9 @@ impl InfraCache {
             }
             RailjsonObject::Signal { railjson } => self.add::<SignalCache>(railjson.clone().into()),
             RailjsonObject::SpeedSection { railjson } => self.add(railjson.clone()),
+            RailjsonObject::DeadSection { railjson: _ } => {
+                // TODO
+            }
             RailjsonObject::TrackSectionLink { railjson } => {
                 self.add::<TrackSectionLink>(railjson.clone())
             }

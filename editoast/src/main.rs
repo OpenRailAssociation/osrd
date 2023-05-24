@@ -52,6 +52,9 @@ type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 #[actix_web::main]
 async fn main() {
+    // Set the default log level to 'info'
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
     match run().await {
         Ok(_) => (),
         Err(e) => {
@@ -122,9 +125,6 @@ async fn runserver(
     let json_cfg = JsonConfig::default()
         .limit(250 * 1024 * 1024) // 250MB
         .error_handler(|err, _| InternalError::from(err).into());
-
-    // Set the default log level to 'info'
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
     // Setup shared states
     let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
