@@ -1008,6 +1008,18 @@ export type Infra = {
   created: string;
   modified: string;
   locked: boolean;
+  state:
+    | 'NotLoaded'
+    | 'Initializing'
+    | 'Downloading'
+    | 'ParsingJson'
+    | 'ParsingInfra'
+    | 'AdaptingKotlin'
+    | 'LoadingSignals'
+    | 'BuildingBlocks'
+    | 'Cached'
+    | 'TransientError'
+    | 'Error';
 };
 export type ObjectType =
   | 'TrackSection'
