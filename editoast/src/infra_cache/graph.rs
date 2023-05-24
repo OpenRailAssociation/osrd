@@ -32,15 +32,18 @@ impl<'a> Graph<'a> {
 
         for switch in infra_cache.switches().values() {
             let switch = switch.unwrap_switch();
-            let switch_type = infra_cache
-                .switch_types()
-                .get(&switch.switch_type)
-                .unwrap()
-                .unwrap_switch_type();
+            let switch_type = match infra_cache.switch_types().get(&switch.switch_type) {
+                Some(switch_type) => switch_type.unwrap_switch_type(),
+                None => continue,
+            };
             for (group, connections) in switch_type.groups.iter() {
                 for connection in connections {
-                    let src = switch.ports.get::<String>(&connection.src).unwrap();
-                    let dst = switch.ports.get::<String>(&connection.dst).unwrap();
+                    let Some(src) = switch.ports.get::<String>(&connection.src) else {
+                        continue;
+                    };
+                    let Some(dst) = switch.ports.get::<String>(&connection.dst) else {
+                        continue;
+                    };
                     graph.link(Some(group), src, dst);
                     graph.link(Some(group), dst, src);
                     graph.switches.insert(src, switch);
