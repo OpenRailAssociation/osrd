@@ -32,6 +32,7 @@ const CatenaryMetadataForm = ({ voltages }: { voltages: string[] }) => {
       withSearch
       withNewValueInput
       addButtonTitle={t('Editor.tools.catenary-edition.add-new-catenary')}
+      bgWhite
     />
   );
 };
