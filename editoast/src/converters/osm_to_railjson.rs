@@ -46,6 +46,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
 
     let mut railjson = RailJson {
         switch_types: default_switch_types(),
+        signals: signals(osm_pbf_in, &edges),
         ..Default::default()
     };
 
@@ -156,5 +157,11 @@ mod tests {
         let double = &railjson.switches[1];
         assert_eq!("double_slip", double.switch_type.as_str());
         assert_eq!(4, double.ports.len());
+    }
+
+    #[test]
+    fn parse_signals() {
+        let railjson = parse_osm("src/tests/signals.osm.pbf".into()).unwrap();
+        assert_eq!(1, railjson.signals.len());
     }
 }
