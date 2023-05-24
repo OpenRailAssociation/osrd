@@ -26,6 +26,7 @@ pub fn check_empty(speed_section: &ObjectCache, _: &InfraCache, _: &Graph) -> Ve
         vec![]
     }
 }
+
 /// Retrieve invalid refs and out of range errors for speed sections
 pub fn check_speed_section_track_ranges(
     speed_section: &ObjectCache,

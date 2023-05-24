@@ -1,5 +1,6 @@
 mod buffer_stop;
 mod catenary;
+mod dead_section;
 mod detector;
 pub mod electrical_profiles;
 mod errors;
@@ -19,6 +20,7 @@ mod track_section_link;
 pub mod utils;
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
+pub use dead_section::DeadSection;
 use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
 use enum_map::Enum;
@@ -73,6 +75,7 @@ pub enum ObjectType {
     Signal,
     SpeedSection,
     Detector,
+    DeadSection,
     TrackSectionLink,
     Switch,
     SwitchType,
@@ -87,6 +90,7 @@ impl ObjectType {
         match *self {
             ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
             ObjectType::Signal => "osrd_infra_signalmodel",
+            ObjectType::DeadSection => "osrd_infra_deadsectionmodel",
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
             ObjectType::Detector => "osrd_infra_detectormodel",
             ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",

@@ -147,6 +147,8 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
     match obj_type {
         ObjectType::TrackSection => include_str!("sql/track_sections_insert_errors.sql"),
         ObjectType::Signal => include_str!("sql/signals_insert_errors.sql"),
+        // TODO: update dead_sections_insert_errors.sql when layers are set up
+        ObjectType::DeadSection => include_str!("sql/dead_sections_insert_errors.sql"),
         ObjectType::SpeedSection => include_str!("sql/speed_sections_insert_errors.sql"),
         ObjectType::Detector => include_str!("sql/detectors_insert_errors.sql"),
         ObjectType::TrackSectionLink => include_str!("sql/track_section_links_insert_errors.sql"),
@@ -273,6 +275,8 @@ impl GeneratedData for ErrorLayer {
             &catenaries::OBJECT_GENERATORS,
             &[],
         ));
+
+        // TODO: generer les erreurs pour les deadSections
 
         // Insert errors in DB
         insert_errors(conn, infra_id, infra_errors)?;
