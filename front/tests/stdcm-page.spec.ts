@@ -8,13 +8,11 @@ test.describe('STDCM page', () => {
   let playwrightHomePage: PlaywrightHomePage;
   let playwrightSTDCMPage: PlaywrightSTDCMPage;
 
-  // This function will run before all the tests in this suite
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
+  test('should be correctly displays the rolling stock list and select one', async ({page}) => {
 
     // Create an instance of the PlaywrightHomePage class
     playwrightHomePage = new PlaywrightHomePage(page);
-
+    
     // Create an instance of the PlaywrightSTDCMPage class
     playwrightSTDCMPage = new PlaywrightSTDCMPage(page);
 
@@ -31,9 +29,7 @@ test.describe('STDCM page', () => {
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration study');
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration scenario');
-  });
-
-  test('should be correctly displays the rolling stock list and select one', async () => {
+    
     const rollingStockTranslation =
       playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
     const rollingStockTranslationRegEx = new RegExp(rollingStockTranslation as string);
