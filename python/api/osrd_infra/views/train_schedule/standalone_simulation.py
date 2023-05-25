@@ -129,17 +129,20 @@ def process_simulation_response(
     track_sections = TrackSectionModel.objects.filter(infra=infra, obj_id__in=[stop["track"] for stop in stops])
     id_to_tracks = {track.obj_id: track for track in track_sections}
 
-    stops_additional_information = [
-        {
-            "id": stop.get("id"),
-            "name": stop.get("name"),
-            "line_code": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("line_code"),
-            "track_number": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("track_number"),
-            "line_name": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("line_name"),
-            "track_name": id_to_tracks[stop["track"]].data.get("extensions", {}).get("sncf", {}).get("track_name"),
-        }
-        for stop in stops
-    ]
+    stops_additional_information = []
+    for stop in stops:
+        extensions = id_to_tracks[stop["track"]].data.get("extensions") or {}
+        ext_sncf = extensions.get("sncf") or {}
+        stops_additional_information.append(
+            {
+                "id": stop.get("id"),
+                "name": stop.get("name"),
+                "line_code": ext_sncf.get("line_code"),
+                "track_number": ext_sncf.get("track_number"),
+                "line_name": ext_sncf.get("line_name"),
+                "track_name": ext_sncf.get("track_name"),
+            }
+        )
 
     return [
         _create_and_fill_simulation_output(
