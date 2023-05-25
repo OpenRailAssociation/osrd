@@ -124,7 +124,6 @@ struct PathfindingStep {
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     position: f64,
     direction: Direction,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
     switch_direction: Option<(Identifier, Identifier)>,
     found: bool,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
