@@ -37,11 +37,12 @@ async fn get(
     Ok(Json(timetable_with_schedules))
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Conflict {
     train_ids: Vec<i64>,
-    start_time: f64,
-    end_time: f64,
+    train_names: Vec<String>,
+    start_time: u64,
+    end_time: u64,
     conflict_type: String,
 }
 
@@ -64,16 +65,19 @@ async fn get_conflicts(
         return Ok(Json(vec![]));
     }
 
-    let train_ids = timetable_with_schedules
+    let (train_ids, train_names) = timetable_with_schedules
         .train_schedules
         .into_iter()
         .take(2)
-        .map(|ts| ts.id)
-        .collect::<Vec<_>>();
-    Ok(Json(vec![Conflict {
+        .map(|ts| (ts.id, ts.train_name))
+        .unzip();
+    let conflict = Conflict {
         train_ids,
-        start_time: 17.3,
-        end_time: 103.6,
+        train_names,
+        start_time: 173,
+        end_time: 1036,
         conflict_type: "Spacing".to_owned(),
-    }]))
+    };
+    let conflict2 = conflict.clone();
+    Ok(Json(vec![conflict, conflict2]))
 }
