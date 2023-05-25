@@ -1378,6 +1378,40 @@ paths:
                         train_path:
                           type: number
 
+  /timetable/{id}/conflicts/:
+    get:
+      tags:
+        - timetable
+      summary: Retrieve all conflicts for a specific timetable
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Timetable ID
+          required: true
+      responses:
+        200:
+          description: The timetable conflicts content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    train_ids:
+                      type: array
+                      items:
+                        type: number
+                    start_time:
+                      type: string
+                    end_time:
+                      type: string
+                    conflict_type:
+                      type: string     
+                  required: [train_ids, start_time, end_time, conflict_type]            
+
   /projects/{project_id}/studies/:
     post:
       tags:
