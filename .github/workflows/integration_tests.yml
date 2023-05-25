@@ -82,3 +82,10 @@ jobs:
         run: |
           cd front
           yarn e2e-tests
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: front/test-results/
+          retention-days: 30

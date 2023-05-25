@@ -1,20 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 
 // Describe the test suite for the home page of OSDR
 test.describe('Home page OSRD', () => {
-  // Declare the necessary variable for the test
   let playwrightHomePage: PlaywrightHomePage;
 
-  // This function will run before all the tests in this suite
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
+  test.beforeEach(async ({ page }) => {
     // Create an instance of the PlaywrightHomePage class
     playwrightHomePage = new PlaywrightHomePage(page);
     // Go to the home page of OSDR
     await playwrightHomePage.goToHomePage();
   });
-  // This function will run after each test in this suite
+
   test.afterEach(async () => {
     // Navigate back to the home page of OSDR
     await playwrightHomePage.backToHomePage();
@@ -28,7 +25,6 @@ test.describe('Home page OSRD', () => {
   test('should be correctly redirected to the  "Operational Studies" page after clicking on the link', async () => {
     // Navigate to the "Operational Studies" page
     await playwrightHomePage.goToOperationalStudiesPage();
-
     // Check that the URL of the page matches the expected pattern
     await expect(playwrightHomePage.page).toHaveURL(/.*\/operational-studies/);
   });
