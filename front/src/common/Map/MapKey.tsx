@@ -26,9 +26,8 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
         <i
           className="powerline"
           style={{
-            background: `repeating-linear-gradient(to right, ${
-              colors[mapStyle].powerline[key.color]
-            } 20px, #333 22px, #333 24px)`,
+            background: `repeating-linear-gradient(to right, ${colors[mapStyle].powerline[key.color]
+              } 20px, #333 22px, #333 24px)`,
           }}
         />
       </div>
@@ -52,6 +51,27 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
           <div className="mapkey">
             <div className="mapkey-title">{t('map-key:catenaries')}</div>
             {catenaries}
+          </div>
+        </div>
+        <div className="col-lg-6">
+          <div className="mapkey">
+            <div className="mapkey-title">{t('map-key:dead_sections')}</div>
+            <div className="mapkey-item" key='drop_pantograph'>
+              <div className="mapkey-icon">
+                <i className="mapkey-line" style={{ background: colors[mapStyle].dead_sections.drop_pantograph }} />
+              </div>
+              <div className="mapkey-text">
+                {t('map-key:drop_pantograph')}
+              </div>
+            </div>
+            <div className="mapkey-item" key='cut_off'>
+              <div className="mapkey-icon">
+                <i className="mapkey-line" style={{ background: colors[mapStyle].dead_sections.cut_off }} />
+              </div>
+              <div className="mapkey-text">
+                {t('map-key:cut_off')}
+              </div>
+            </div>
           </div>
         </div>
       </div>
