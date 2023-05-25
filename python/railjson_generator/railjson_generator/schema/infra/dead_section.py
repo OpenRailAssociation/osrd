@@ -3,7 +3,7 @@ from typing import List
 
 from osrd_schemas import infra
 
-from railjson_generator.schema.infra.range_elements import TrackRange
+from railjson_generator.utils.pathfinding import PathElement
 
 
 def _dead_section_id():
@@ -14,19 +14,20 @@ def _dead_section_id():
 
 @dataclass
 class DeadSection:
-    track_ranges: List[TrackRange] = field(default_factory=list)
-    backside_pantograph_track_ranges: List[TrackRange] = field(default_factory=list)
+    track_ranges: List[PathElement] = field(default_factory=list)
+    backside_pantograph_track_ranges: List[PathElement] = field(default_factory=list)
     is_pantograph_drop_zone: bool = field(default=False)
     label: str = field(default_factory=_dead_section_id)
 
     _INDEX = 0
 
-    def add_track_range(self, track, begin, end):
+    def add_track_range(self, track, begin, end, direction):
         self.track_ranges.append(
-            TrackRange(
+            PathElement(
                 begin=begin,
                 end=end,
                 track=track,
+                direction=direction,
             )
         )
 
