@@ -133,7 +133,7 @@
       "Route": "Itinéraire",
       "Signal": "Signal",
       "Switch": "Aiguillage",
-      "TrackSection": "Section de ligne",
+      "TrackSection": "Tronçon d'itinéraire de voie",
       "SpeedSection": "Vitesse limite"
     },
     "title": "Éditeur",
@@ -352,7 +352,7 @@
       "range-edition": {
         "edit-track-range-start": "Modifier le point de départ",
         "edit-track-range-end": "Modifier le point d'arrivée",
-        "linked-track-sections": "Sections de lignes liées",
+        "linked-track-sections": "Tronçons d'itinénaire de voie associés",
         "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
         "show-more-ranges_one": "Voir une section de ligne de plus",
         "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"
