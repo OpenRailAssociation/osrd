@@ -8,6 +8,7 @@ import { MAP_URL } from 'common/Map/const';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { isNil } from 'lodash';
 
 interface CatenariesProps {
   colors: Theme;
@@ -15,13 +16,15 @@ interface CatenariesProps {
   layerOrder: number;
 }
 
-export default function Catenaries(props: CatenariesProps) {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-  const infraID = useSelector(getInfraID);
-  const { geomType, colors, layerOrder } = props;
-  const catenariesParams: LayerProps = {
+export function getCatenariesProps({
+  colors,
+  sourceTable,
+}: {
+  colors: Theme;
+  sourceTable?: string;
+}) {
+  const res: LayerProps = {
     type: 'line',
-    'source-layer': 'catenaries',
     minzoom: 5,
     maxzoom: 24,
     layout: {
@@ -35,6 +38,8 @@ export default function Catenaries(props: CatenariesProps) {
         ['to-string', ['get', 'voltage']],
         [
           'case',
+          ['==', ['var', 'voltageString'], '25000'],
+          colors.powerline.color25000V,
           ['==', ['var', 'voltageString'], '15000'],
           colors.powerline.color15000V1623,
           ['==', ['var', 'voltageString'], '3000'],
@@ -47,7 +52,7 @@ export default function Catenaries(props: CatenariesProps) {
           colors.powerline.color800V,
           ['==', ['var', 'voltageString'], '750'],
           colors.powerline.color750V,
-          colors.powerline.color25000V,
+          colors.powerline.colorOther,
         ],
       ],
       'line-width': 6,
@@ -57,9 +62,20 @@ export default function Catenaries(props: CatenariesProps) {
     },
   };
 
-  const catenariesTextParams: LayerProps = {
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export function getCatenariesTextParams({
+  colors,
+  sourceTable,
+}: {
+  colors: Theme;
+  sourceTable?: string;
+}) {
+  const res: LayerProps = {
     type: 'symbol',
-    'source-layer': 'catenaries',
     minzoom: 5,
     maxzoom: 24,
     layout: {
@@ -86,6 +102,8 @@ export default function Catenaries(props: CatenariesProps) {
         ['to-string', ['get', 'voltage']],
         [
           'case',
+          ['==', ['var', 'voltageString'], '25000'],
+          colors.powerline.color25000V,
           ['==', ['var', 'voltageString'], '15000'],
           colors.powerline.color15000V1623,
           ['==', ['var', 'voltageString'], '3000'],
@@ -98,11 +116,26 @@ export default function Catenaries(props: CatenariesProps) {
           colors.powerline.color800V,
           ['==', ['var', 'voltageString'], '750'],
           colors.powerline.color750V,
-          colors.powerline.color25000V,
+          colors.powerline.colorOther,
         ],
       ],
     },
   };
+
+  if (!isNil(sourceTable)) res['source-layer'] = sourceTable;
+
+  return res;
+}
+
+export default function Catenaries(props: CatenariesProps) {
+  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const infraID = useSelector(getInfraID);
+  const { geomType, colors, layerOrder } = props;
+  const catenariesParams: LayerProps = getCatenariesProps({ colors, sourceTable: 'catenaries' });
+  const catenariesTextParams: LayerProps = getCatenariesTextParams({
+    colors,
+    sourceTable: 'catenaries',
+  });
 
   if (layersSettings.catenaries) {
     return (

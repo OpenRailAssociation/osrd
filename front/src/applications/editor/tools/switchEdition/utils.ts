@@ -5,9 +5,6 @@ import { Point } from 'geojson';
 import { EditorEntity, SwitchEntity, SwitchType, TrackEndpoint } from '../../../../types';
 import { NEW_ENTITY_ID } from '../../data/utils';
 
-export type Reducer<T> = (value: T) => T;
-export type ValueOrReducer<T> = T | Reducer<T>;
-
 export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
   return {
     type: 'Feature',

@@ -8,6 +8,7 @@ import lineSliceAlong from '@turf/line-slice-along';
 import { getNearestPoint } from 'utils/mapboxHelper';
 import { NEW_ENTITY_ID } from '../../data/utils';
 import {
+  CatenaryEntity,
   LPVExtension,
   LPVPanel,
   SpeedSectionEntity,
@@ -20,7 +21,7 @@ import {
   LPV_PANEL_TYPES,
   LpvPanelFeature,
   LpvPanelInformation,
-  SpeedSectionEditionState,
+  RangeEditionState,
   TrackRangeExtremityFeature,
   TrackRangeFeature,
   TrackState,
@@ -31,9 +32,26 @@ import {
   getTrackSectionEntityFromNearestPoint,
 } from '../utils';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { Reducer } from '../editorContextTypes';
+import { PartialOrReducer } from '../editorContextTypes';
 
 // Tool functions
+
+export function getNewCatenary(): CatenaryEntity {
+  return {
+    type: 'Feature',
+    objType: 'Catenary',
+    properties: {
+      id: NEW_ENTITY_ID,
+      track_ranges: [],
+      voltage: '',
+    },
+    geometry: {
+      type: 'MultiLineString',
+      coordinates: [],
+    },
+  };
+}
+
 /**
  * Given a hover event and a trackSectionCache when moving a LpvPanel, return the new position of the panel, with the trackRange's id on which the panel is and its distance from the beginning of the trackRange.
  * - retrieve the trackRanges around the mouse
@@ -138,7 +156,20 @@ export function getMovedLpvEntity(
   return updatedEntity;
 }
 
-export function getEditSpeedSectionState(entity: SpeedSectionEntity): SpeedSectionEditionState {
+export function getEditSpeedSectionState(
+  entity: SpeedSectionEntity
+): RangeEditionState<SpeedSectionEntity> {
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    initialEntity: cloneDeep(entity),
+    entity: cloneDeep(entity),
+    trackSectionsCache: {},
+    interactionState: { type: 'idle' },
+    hoveredItem: null,
+  };
+}
+
+export function getEditCatenaryState(entity: CatenaryEntity): RangeEditionState<CatenaryEntity> {
   return {
     ...DEFAULT_COMMON_TOOL_STATE,
     initialEntity: cloneDeep(entity),
@@ -305,9 +336,7 @@ export function kmhToMs(v: number): number {
  */
 export function selectLpvPanel(
   lpvPanel: LpvPanelInformation,
-  setState: (
-    stateOrReducer: Partial<SpeedSectionEditionState> | Reducer<SpeedSectionEditionState>
-  ) => void
+  setState: (stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>) => void
 ) {
   const { panelType } = lpvPanel;
   const interactionState =
