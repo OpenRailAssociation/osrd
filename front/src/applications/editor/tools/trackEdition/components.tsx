@@ -350,16 +350,6 @@ export const TrackEditionLeftPanel: FC = () => {
 
   return (
     <>
-      {!isNew && (
-        <>
-          <h3>{t('Editor.tools.track-edition.attached-speed-sections')}</h3>
-          <AttachedRangesItemsList id={track.properties.id} itemType="SpeedSection" />
-          <div className="border-bottom" />
-          <h3>{t('Editor.tools.track-edition.attached-catenaries')}</h3>
-          <AttachedRangesItemsList id={track.properties.id} itemType="Catenary" />
-          <div className="border-bottom" />
-        </>
-      )}
       <EditorForm
         data={track}
         onSubmit={async (savedEntity) => {
@@ -402,6 +392,16 @@ export const TrackEditionLeftPanel: FC = () => {
           </button>
         </div>
       </EditorForm>
+      <div className="border-bottom" />
+      {!isNew && (
+        <>
+          <h3>{t('Editor.tools.track-edition.attached-speed-sections')}</h3>
+          <AttachedRangesItemsList id={track.properties.id} itemType="SpeedSection" />
+          <div className="border-bottom" />
+          <h3>{t('Editor.tools.track-edition.attached-catenaries')}</h3>
+          <AttachedRangesItemsList id={track.properties.id} itemType="Catenary" />
+        </>
+      )}
     </>
   );
 };
