@@ -170,6 +170,9 @@
       }
     }
     .scenario-timetable {
+      display: flex;
+      flex-direction: column;
+      height: calc(var(--content-height) - 8rem);
       .scenario-timetable-addtrains-buttons {
         display: flex;
         align-items: center;
@@ -190,7 +193,8 @@
       }
       .scenario-timetable-trains {
         overflow: auto;
-        height: calc(var(--content-height) - 13rem);
+        height: auto;
+
         @media screen and (max-width: 1023px) {
           height: auto;
           max-height: 50vh;
@@ -389,6 +393,91 @@
               .scenario-timetable-train-tags {
                 display: none;
               }
+            }
+          }
+        }
+      }
+      .conflicts-list {
+        border: 2px solid var(--orange);
+        border-radius: 4px;
+        background-color: var(--white);
+        height: auto;
+        margin-top: auto;
+        max-height: 35%;
+        min-height: 43px;
+        overflow: hidden;
+        .conflicts-container {
+          padding: 0.2rem;
+          display: none;
+
+          &.expanded {
+            display: block;
+            min-height: 72px;
+            overflow: auto;
+            max-height: 200px;
+          }
+        }
+        .conflicts-list-header {
+          margin: 0;
+          padding: 0.5rem;
+          background-color: var(--orange);
+          color: var(--white);
+          font-size: 1rem;
+          font-weight: 600;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          height: 43px;
+          .icons-arrow-up {
+            @media screen and (max-width: 1023px) {
+              transform: rotate(180deg);
+            }
+            transition: all 0.2s ease-in-out;
+            &.expanded {
+              transition: all 0.2s ease-in-out;
+              transform: rotate(180deg);
+              @media screen and (max-width: 1023px) {
+                &.expanded {
+                  transform: none;
+                }
+              }
+            }
+          }
+          h2 {
+            color: white;
+          }
+          &:hover {
+            cursor: pointer;
+          }
+        }
+        .conflict-card {
+          display: flex;
+          border: solid rgba(var(--orange-rgb), 0.1) 2px;
+          align-items: center;
+          padding: 0rem 0.5rem;
+          border-radius: 4px;
+          background-color: white;
+          margin-bottom: 0.2rem;
+          &:hover {
+            background-color: rgba(var(--orange-rgb), 0.1);
+          }
+          .conflict-trains {
+            width: 15%;
+            text-align: left;
+            font-size: 0.9rem;
+            font-weight: 600;
+          }
+          .conflict-type {
+            width: 70%;
+            text-align: left;
+          }
+          .conflict-times {
+            width: 15%;
+            text-align: right;
+            font-size: 0.8rem;
+            .start-time{
+              font-weight: 600;
+              font-size: 0.9rem;
             }
           }
         }
