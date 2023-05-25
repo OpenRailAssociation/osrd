@@ -22,7 +22,7 @@ use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
-use actix_web::web::{block, Data, JsonConfig};
+use actix_web::web::{block, Data, JsonConfig, PayloadConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
@@ -123,8 +123,11 @@ async fn runserver(
 
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
-        .limit(250 * 1024 * 1024) // 250MB
+        .limit(250 * 1024 * 1024) // 250MiB
         .error_handler(|err, _| InternalError::from(err).into());
+
+    // Custom Bytes and String extractor configuration
+    let payload_config = PayloadConfig::new(64 * 1024 * 1024); // 64MiB
 
     // Setup shared states
     let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
@@ -155,6 +158,7 @@ async fn runserver(
             .wrap(NormalizePath::trim())
             .wrap(Logger::default())
             .app_data(json_cfg.clone())
+            .app_data(payload_config.clone())
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(redis.clone()))
             .app_data(infra_caches.clone())
