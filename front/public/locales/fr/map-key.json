@@ -3,5 +3,8 @@
   "directCurrent": "Continu",
   "catenaries": "Électrification",
   "keyTitle": "Légende",
-  "speedlimit": "Vitesse"
+  "speedlimit": "Vitesse",
+  "dead_sections": "BP / CC",
+  "drop_pantograph": "Baissez Panto",
+  "cut_off": "Coupez Courant"
 }

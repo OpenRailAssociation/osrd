@@ -2,6 +2,7 @@
   "all": "All signals",
   "bufferstops": "Buffer stops",
   "catenaries": "Electrification",
+  "dead_sections": "Dead sections",
   "detectors": "Detectors",
   "jdz": "Zone junction",
   "layers": "Data layers",
