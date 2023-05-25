@@ -151,7 +151,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
 
   useEffect(() => {
     handleRollingStockLoaded();
-  }, [isSuccess]);
+  }, [isSuccess, rollingStocks]);
 
   useEffect(() => {
     if (isError && error && 'status' in error) {
