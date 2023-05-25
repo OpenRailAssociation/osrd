@@ -48,7 +48,7 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TrainHoverPosition from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/TrainHoverPosition';
 
 import colors from 'common/Map/Consts/colors';
-import { datetime2sec } from 'utils/timeManipulation';
+import { datetime2Isostring, datetime2sec, timeString2datetime } from 'utils/timeManipulation';
 import { get } from 'common/requests';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import {
@@ -127,7 +127,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
 
   const createOtherPoints = () => {
-    const actualTime = datetime2sec(timePosition as Date);
+    const actualTime = datetime2sec(timeString2datetime(timePosition) as Date);
     // First find trains where actual time from position is between start & stop
     const concernedTrains: InterpoledTrain[] = [];
     simulation.trains.forEach((train, idx: number) => {
@@ -276,7 +276,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         ['position', 'speed'] as const,
         positionLocal
       );
-      dispatch(updateTimePositionValues(timePositionLocal as Date));
+      dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal as Date)));
     }
     if (e?.features?.[0] && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);

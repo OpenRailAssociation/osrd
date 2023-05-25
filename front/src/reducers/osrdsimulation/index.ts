@@ -71,7 +71,7 @@ export const initialState: OsrdSimulationState = {
     electricalProfiles: false,
   },
   signalBase: SIGNAL_BASE_DEFAULT,
-  timePosition: undefined,
+  timePosition: '',
   consolidatedSimulation: [],
   departureArrivalTimes: [],
   displaySimulation: false,

@@ -211,13 +211,14 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         if (draft[section].originLinkedBounds) {
           const difference =
             draft[section].originTime && draft[section].originUpperBoundTime
-              ? time2sec(draft[section].originUpperBoundTime) - time2sec(draft[section].originTime)
+              ? time2sec(draft[section].originUpperBoundTime as string) -
+                time2sec(draft[section].originTime as string)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft[section].originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
         }
         if (
           draft[section].originUpperBoundTime &&
-          time2sec(action.originTime) > time2sec(draft[section].originUpperBoundTime)
+          time2sec(action.originTime) > time2sec(draft[section].originUpperBoundTime as string)
         ) {
           draft[section].originTime = draft[section].originUpperBoundTime;
         } else {
@@ -230,13 +231,14 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         if (draft[section].originLinkedBounds) {
           const difference =
             draft[section].originTime && draft[section].originUpperBoundTime
-              ? time2sec(draft[section].originUpperBoundTime) - time2sec(draft[section].originTime)
+              ? time2sec(draft[section].originUpperBoundTime as string) -
+                time2sec(draft[section].originTime as string)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft[section].originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
         }
         if (
           draft[section].originTime &&
-          time2sec(action.originUpperBoundTime) < time2sec(draft[section].originTime)
+          time2sec(action.originUpperBoundTime) < time2sec(draft[section].originTime as string)
         ) {
           draft[section].originUpperBoundTime = draft[section].originTime;
         } else {
