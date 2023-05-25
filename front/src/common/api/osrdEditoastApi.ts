@@ -305,6 +305,12 @@ const injectedRtkApi = api.injectEndpoints({
     getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
       query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
     }),
+    getTimetableByIdConflicts: build.query<
+      GetTimetableByIdConflictsApiResponse,
+      GetTimetableByIdConflictsApiArg
+    >({
+      query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts/` }),
+    }),
     postProjectsByProjectIdStudies: build.mutation<
       PostProjectsByProjectIdStudiesApiResponse,
       PostProjectsByProjectIdStudiesApiArg
@@ -814,6 +820,17 @@ export type GetTimetableByIdApiResponse = /** status 200 The timetable content *
   }[];
 };
 export type GetTimetableByIdApiArg = {
+  /** Timetable ID */
+  id: number;
+};
+export type GetTimetableByIdConflictsApiResponse =
+  /** status 200 The timetable conflicts content */ {
+    train_ids: number[];
+    start_time: string;
+    end_time: string;
+    conflict_type: string;
+  }[];
+export type GetTimetableByIdConflictsApiArg = {
   /** Timetable ID */
   id: number;
 };

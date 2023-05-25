@@ -5,7 +5,6 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { Dispatch } from 'redux';
 import { noop } from 'lodash';
 import { RxLapTimer } from 'react-icons/rx';
-import 'styles/main.css';
 
 interface RunningTimeProps {
   dispatch?: Dispatch;

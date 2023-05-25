@@ -25,13 +25,19 @@ import { valueToInterval } from 'utils/numbers';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
+import ConflictsList, { Conflict } from './ConflictsList';
 
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   trainsWithDetails: boolean;
+  conflicts: Conflict[];
 };
 
-export default function Timetable({ setDisplayTrainScheduleManagement, trainsWithDetails }: Props) {
+export default function Timetable({
+  setDisplayTrainScheduleManagement,
+  trainsWithDetails,
+  conflicts,
+}: Props) {
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
   );
@@ -44,6 +50,7 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
   const [trainsDurationsIntervals, setTrainsDurationsIntervals] = useState<number[]>();
+  const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/scenario']);
@@ -137,6 +144,9 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
       );
     }
   };
+  const toggleConflictsListExpanded = () => {
+    setConflictsListExpanded(!conflictsListExpanded);
+  };
 
   useEffect(() => {
     if (debouncedTerm !== '' && departureArrivalTimes) {
@@ -211,7 +221,13 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
           />
         </div>
       </div>
-      <div className={cx('scenario-timetable-trains', trainsWithDetails && 'with-details')}>
+      <div
+        className={cx(
+          'scenario-timetable-trains',
+          trainsWithDetails && 'with-details',
+          conflictsListExpanded && 'expanded'
+        )}
+      >
         {trainsList &&
           selectedProjection &&
           trainsDurationsIntervals &&
@@ -235,6 +251,11 @@ export default function Timetable({ setDisplayTrainScheduleManagement, trainsWit
               )
           )}
       </div>
+      <ConflictsList
+        conflicts={conflicts}
+        expanded={conflictsListExpanded}
+        toggleConflictsList={toggleConflictsListExpanded}
+      />
     </div>
   );
 }

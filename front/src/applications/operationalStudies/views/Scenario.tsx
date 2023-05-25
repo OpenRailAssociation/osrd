@@ -30,6 +30,7 @@ import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
 import InfraLoadingState from '../components/Scenario/InfraLoadingState';
+import { Conflict } from '../components/Scenario/ConflictsList';
 
 export default function Scenario() {
   const dispatch = useDispatch();
@@ -50,6 +51,7 @@ export default function Scenario() {
   const scenarioId = useSelector(getScenarioID);
   const timetableId = useSelector(getTimetableID);
   const infraId = useSelector(getInfraID);
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
 
   const [getProject, { data: project }] =
     osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
@@ -59,6 +61,9 @@ export default function Scenario() {
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useLazyQuery(
       {}
     );
+  const [getTimetableConflicts] = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useLazyQuery(
+    {}
+  );
 
   const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
     { id: infraId as number },
@@ -100,9 +105,17 @@ export default function Scenario() {
           dispatch(updateTimetableID(result.timetable_id));
           dispatch(updateInfraID(result.infra_id));
 
-          const preferedTimetableId = result.timetable_id || timetableId;
+          const preferredTimetableId = result.timetable_id || timetableId;
 
-          getTimetable(preferedTimetableId);
+          getTimetable(preferredTimetableId);
+
+          if (preferredTimetableId) {
+            getTimetableConflicts({ id: preferredTimetableId })
+              .unwrap()
+              .then((data) => {
+                setConflicts(data as Conflict[]);
+              });
+          }
           if (withNotification) {
             dispatch(
               setSuccess({
@@ -232,6 +245,7 @@ export default function Scenario() {
                 <Timetable
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   trainsWithDetails={trainsWithDetails}
+                  conflicts={conflicts}
                 />
               </div>
             </div>
