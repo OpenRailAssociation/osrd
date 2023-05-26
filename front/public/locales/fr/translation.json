@@ -91,8 +91,10 @@
     },
     "layers": {
       "buffer_stops": "Heurtoirs",
+      "catenaries": "Électrifications",
       "detectors": "Détecteurs",
       "errors": "Erreurs",
+      "lpv-lpv_panels": "Limites permanentes de vitesse",
       "routes": "Itinéraires",
       "signals": "Signaux",
       "switches": "Aiguillages",
@@ -126,11 +128,12 @@
     },
     "obj-types": {
       "BufferStop": "Heurtoir",
+      "Catenary": "Électrification",
       "Detector": "Détecteur",
       "Route": "Itinéraire",
       "Signal": "Signal",
       "Switch": "Aiguillage",
-      "TrackSection": "Section de ligne",
+      "TrackSection": "Tronçon d'itinéraire de voie",
       "SpeedSection": "Vitesse limite"
     },
     "title": "Éditeur",
@@ -142,6 +145,19 @@
           "reset-entity": "Réinitialiser les données"
         },
         "label": "Outil \"Heurtoir\""
+      },
+      "catenary-edition": {
+        "actions": {
+          "new-catenary": "Créer une nouvelle électrification",
+          "reset-catenary": "Annuler les modifications en cours"
+        },
+        "add-new-catenary": "Ajouter une nouvelle électrification",
+        "catenaries": "Électrification",
+        "catenary-default": "Électrification par défaut",
+        "label": "Outil \"Électrification\"",
+        "save-existing-catenary": "Sauvegarder les modifications",
+        "save-new-catenary": "Sauvegarder la nouvelle électrification",
+        "voltage": "{{voltage}}V"
       },
       "detector-edition": {
         "actions": {
@@ -238,11 +254,11 @@
         },
         "item": "Élément",
         "label": "Outil \"Sélection\"",
-        "linked-to-line_one": "lié à la ligne",
-        "linked-to-line_other": "lié aux lignes",
-        "linked-to-n-lines_zero": "relatif à aucune ligne",
-        "linked-to-n-lines_one": "relatif à une ligne",
-        "linked-to-n-lines_other": "relatif à {{count}} lignes",
+        "linked-to-line_one": "associé au TIV",
+        "linked-to-line_other": "associé aux TIV",
+        "linked-to-n-lines_zero": "relatif à aucun TIV",
+        "linked-to-n-lines_one": "relatif à un TIV",
+        "linked-to-n-lines_other": "relatif à {{count}} TIV",
         "no-selection": "Aucun élément sélectionné",
         "of-type": "de type",
         "selection": "{{count}} élément sélectionné",
@@ -291,13 +307,16 @@
           "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
           "move-point-end": "Cliquez pour valider le déplacement du point."
         },
-        "label": "Outil \"Ligne\"",
-        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
-        "no-linked-speed-section": "Aucune vitesse limite renseignée",
+        "attached-catenaries": "Électrifications",
         "attached-speed-sections": "Vitesses limites",
+        "default-catenaries-error": "Une erreur est survenue lors du chargement des {{type}} liées à cette section de ligne.",
+        "default-speed-sections-error": "Une erreur est survenue lors du chargement des vitesses limites liées à cette section de ligne.",
+        "label": "Outil \"Ligne\"",
+        "no-linked-catenary": "Aucune électrification renseignée",
+        "no-linked-speed-section": "Aucune vitesse limite renseignée",
         "only-show-n": "Ne montrer que les {{count}} premiers résultats",
-        "show-more-speed-sections_one": "Voir un résultat de plus",
-        "show-more-speed-sections_other": "Voir {{count}} résultats de plus"
+        "show-more-ranges_one": "Voir un résultat de plus",
+        "show-more-ranges_other": "Voir {{count}} résultats de plus"
       },
       "speed-edition": {
         "actions": {
@@ -308,15 +327,11 @@
         "add-panel": "Ajouter un panneau de type {{panelType}}",
         "add-track-range": "Cliquer pour lier à :",
         "additional-speed-limit": "Limitation de vitesse additionnelles",
-        "edit-track-range-end": "Modifier le point d'arrivée",
-        "edit-track-range-start": "Modifier le point de départ",
         "hovered-panel": "Panneau {{panelType}}",
-        "label": "Outil \"Vitesses limites\"",
-        "linked-track-sections": "Sections de lignes liées",
+        "label": "Outil \"Vitesse limite\"",
         "main-speed-limit": "Limitation de vitesse par défaut",
         "move-range-extremity": "Cliquer pour déplacer l'extrémité :",
         "new-tag": "Code de composition",
-        "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
         "panel-angle-geo": "Angle Geo",
         "panel-angle-sch": "Angle Sch",
         "panel-category": "Panneau(x) {{panelType}}",
@@ -331,10 +346,16 @@
         "remove-track-range": "Cliquer pour détacher de :",
         "save-existing-speed-section": "Sauvegarder les modifications",
         "save-new-speed-section": "Sauvegarder la nouvelle limite de vitesse",
-        "show-more-ranges_one": "Voir une section de ligne de plus",
-        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus",
         "speed-limits": "Limitations de vitesses",
         "toggle-lpv": "Limite permanente de vitesse"
+      },
+      "range-edition": {
+        "edit-track-range-start": "Modifier le point de départ",
+        "edit-track-range-end": "Modifier le point d'arrivée",
+        "linked-track-sections": "Tronçons d'itinénaire de voie associés",
+        "only-show-n": "Ne montrer que les {{count}} premières sections de lignes",
+        "show-more-ranges_one": "Voir une section de ligne de plus",
+        "show-more-ranges_other": "Voir {{count}} sections de lignes de plus"
       }
     }
   }

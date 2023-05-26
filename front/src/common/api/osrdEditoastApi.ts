@@ -1142,19 +1142,6 @@ export type ElectricalProfile = {
   power_class?: string;
   track_ranges?: TrackRange[];
 };
-export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
-export type EffortCurve = {
-  speeds?: number[];
-  max_efforts?: number[];
-};
-export type ConditionalEffortCurve = {
-  cond?: {
-    comfort?: Comfort | null;
-    electrical_profile_level?: string | null;
-    power_restriction_code?: string | null;
-  } | null;
-  curve?: EffortCurve;
-};
 export type SpeedDependantPower = {
   speeds: number[];
   powers: number[];
@@ -1199,7 +1186,7 @@ export type EnergySource =
   | ({
       energy_source_type: 'Battery';
     } & Battery);
-export type RollingStockUpsertPayload = {
+export type RollingStockBase = {
   version: string;
   name: string;
   length: number;
@@ -1221,16 +1208,6 @@ export type RollingStockUpsertPayload = {
     type: 'davis';
   };
   loading_gauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  effort_curves: {
-    default_mode: string;
-    modes: {
-      [key: string]: {
-        curves: ConditionalEffortCurve[];
-        default_curve: EffortCurve;
-        is_electric: boolean;
-      };
-    };
-  };
   base_power_class: string;
   power_restrictions: {
     [key: string]: string;
@@ -1253,11 +1230,9 @@ export type RollingStockLivery = {
   name: string;
   compound_image_id: number | null;
 };
-export type RollingStock = RollingStockUpsertPayload & {
+export type LightRollingStock = RollingStockBase & {
   id: number;
   liveries: RollingStockLivery[];
-};
-export type LightRollingStock = RollingStock & {
   effort_curves: {
     default_mode: string;
     modes: {
@@ -1266,6 +1241,35 @@ export type LightRollingStock = RollingStock & {
       };
     };
   };
+};
+export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
+export type EffortCurve = {
+  speeds?: number[];
+  max_efforts?: number[];
+};
+export type ConditionalEffortCurve = {
+  cond?: {
+    comfort?: Comfort | null;
+    electrical_profile_level?: string | null;
+    power_restriction_code?: string | null;
+  } | null;
+  curve?: EffortCurve;
+};
+export type RollingStockUpsertPayload = RollingStockBase & {
+  effort_curves: {
+    default_mode: string;
+    modes: {
+      [key: string]: {
+        curves: ConditionalEffortCurve[];
+        default_curve: EffortCurve;
+        is_electric: boolean;
+      };
+    };
+  };
+};
+export type RollingStock = RollingStockUpsertPayload & {
+  id: number;
+  liveries: RollingStockLivery[];
 };
 export type ProjectResult = {
   id?: number;
