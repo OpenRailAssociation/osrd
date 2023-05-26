@@ -85,7 +85,7 @@ const defaultCommonConf = {
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
-  rollingStockComfort: 'STANDARD',
+  rollingStockComfort: 'STANDARD' as const,
   powerRestriction: undefined,
   speedLimitByTag: undefined,
   origin: undefined,

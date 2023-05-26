@@ -3,7 +3,7 @@ import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
-import { CatenaryRange } from 'common/api/osrdEditoastApi';
+import { CatenaryRange, Comfort } from 'common/api/osrdEditoastApi';
 
 export const BLOCKTYPES = [
   {
@@ -122,7 +122,7 @@ export interface PointOnMap {
 }
 
 export interface OsrdConfState {
-  rollingStockComfort: string;
+  rollingStockComfort: Comfort;
   name: string;
   trainCount: number;
   trainStep: number;
