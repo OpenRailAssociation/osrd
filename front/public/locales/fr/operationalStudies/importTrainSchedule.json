@@ -10,7 +10,8 @@
     "errorNoFrom": "Vous devez renseigner une origine.",
     "errorNoTo": "Vous devez renseigner une destination.",
     "errorSameFromTo": "L'origine et la destination doivent être différentes.",
-    "unableToRetrievePathfinding": "Impossible de créer un chemin"
+    "unableToRetrievePathfinding": "Impossible de créer un chemin",
+    "unableToRetrieveTrainSchedule": "Impossible de réaliser les calculs de marche"
   },
   "from": "Origine",
   "generatePaths": "Générer les pathfinding",
@@ -26,7 +27,6 @@
     "calculatingTrainSchedule": "Calculs de marches en cours…",
     "calculatingTrainScheduleComplete": "Calculs de marches terminés",
     "calculatingTrainScheduleCompleteAll": "Tous les calculs de marches sont terminés.",
-    "calculatingTrainScheduleError": "Le calcul de marche a échoué",
     "complete": "positionnez",
     "missingInfra": "Vous devez renseigner une infrastructure",
     "missingRollingStock": "Vous devez choisir un matériel roulant par défaut",
