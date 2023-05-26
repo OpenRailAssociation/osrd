@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaPen, FaPlus } from 'react-icons/fa';
+import { FaPen } from 'react-icons/fa';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { useTranslation } from 'react-i18next';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
@@ -8,8 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
 import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
 import { Infra } from 'common/api/osrdEditoastApi';
-import submitConfAddTrainSchedules from '../ManageTrainSchedule/helpers/submitConfAddTrainSchedules';
 import submitConfUpdateTrainSchedules from '../ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
+import SubmitConfAddTrainSchedule from '../ManageTrainSchedule/SubmitConfAddTrainSchedule';
 
 type Props = {
   displayTrainScheduleManagement: string;
@@ -64,17 +64,7 @@ export default function TimetableManageTrainSchedule({
                 <DotsLoader />
               </button>
             ) : (
-              <button
-                className="btn btn-primary mb-2"
-                type="button"
-                disabled={infraState !== 'CACHED'}
-                onClick={() => submitConfAddTrainSchedules(dispatch, t, setIsWorking)}
-              >
-                <span className="mr-2">
-                  <FaPlus />
-                </span>
-                {t('addTrainSchedule')}
-              </button>
+              <SubmitConfAddTrainSchedule infraState={infraState} setIsWorking={setIsWorking} />
             )}
             <TrainAddingSettings />
           </>
