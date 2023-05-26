@@ -456,9 +456,9 @@ export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
 };
 export type GetInfraApiResponse = /** status 200 The infra list */ {
   count: number;
-  next: any;
-  previous: any;
-  results?: Infra[];
+  next: number | null;
+  previous: number | null;
+  results: Infra[];
 };
 export type GetInfraApiArg = void;
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
@@ -507,34 +507,35 @@ export type GetInfraByIdRailjsonApiArg = {
   id: number;
 };
 export type PostInfraRailjsonApiResponse = /** status 201 The imported infra id */ {
-  id?: string;
+  id: string;
 };
 export type PostInfraRailjsonApiArg = {
   /** Infra name */
   name: string;
-  generateData?: boolean;
+  /** whether the layer should be generated or no */
+  generateData: boolean;
   /** Railjson infra */
   railjsonFile: RailjsonFile;
 };
 export type GetInfraByIdErrorsApiResponse = /** status 200 A paginated list of errors */ {
-  count?: number;
-  next?: number | null;
-  previous?: number | null;
-  results?: InfraError[];
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: InfraError[];
 };
 export type GetInfraByIdErrorsApiArg = {
   /** infra id */
   id: number;
   /** The page number */
-  page?: number;
+  page: number;
   /** The number of item per page */
-  pageSize?: number;
+  pageSize: number | null;
   /** The type of error to filter on */
-  errorType?: InfraErrorType;
+  errorType: InfraErrorType;
   /** errors and warnings that only part of a given object */
-  objectId?: string;
+  objectId: string | null;
   /** Whether the response should include errors or warnings */
-  level?: 'errors' | 'warnings' | 'all';
+  level: ('errors' | 'warnings' | 'all') | null;
 };
 export type GetInfraByIdSwitchTypesApiResponse = /** status 200 A list of switch types */ object[];
 export type GetInfraByIdSwitchTypesApiArg = {
@@ -696,10 +697,10 @@ export type PostDocumentsApiResponse = /** status 201 The key of the added docum
 };
 export type PostDocumentsApiArg = void;
 export type GetLightRollingStockApiResponse = /** status 200 The rolling stock list */ {
-  count?: number;
-  next?: any;
-  previous?: any;
-  results?: LightRollingStock[];
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: LightRollingStock[];
 };
 export type GetLightRollingStockApiArg = {
   /** Page number */
@@ -761,10 +762,10 @@ export type PostProjectsApiArg = {
   projectCreateRequest: ProjectCreateRequest;
 };
 export type GetProjectsApiResponse = /** status 200 the project list */ {
-  count?: number;
-  next?: any;
-  previous?: any;
-  results?: ProjectResult[];
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: ProjectResult[];
 };
 export type GetProjectsApiArg = {
   ordering?:
@@ -824,10 +825,10 @@ export type PostProjectsByProjectIdStudiesApiArg = {
   studyCreateRequest: StudyCreateRequest;
 };
 export type GetProjectsByProjectIdStudiesApiResponse = /** status 200 the studies list */ {
-  count?: number;
-  next?: any;
-  previous?: any;
-  results?: StudyResult[];
+  count: number;
+  next: number | null;
+  previous: number | null;
+  results: StudyResult[];
 };
 export type GetProjectsByProjectIdStudiesApiArg = {
   projectId: number;
@@ -883,10 +884,10 @@ export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
   /** status 200 list of scenarios */ {
-    count?: number;
-    next?: any;
-    previous?: any;
-    results?: ScenarioListResult[];
+    count: number;
+    next: number | null;
+    previous: number | null;
+    results: ScenarioListResult[];
   };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   projectId: number;
@@ -1090,18 +1091,18 @@ export type UpdateOperation = {
 };
 export type Operation = RailjsonObject | DeleteOperation | UpdateOperation;
 export type RailjsonFile = {
-  version?: string;
-  operational_points?: any;
-  routes?: any;
-  switch_types?: any;
-  switches?: any;
-  track_section_links?: any;
-  track_sections?: any;
-  signals?: any;
-  buffer_stops?: any;
-  speed_sections?: any;
-  catenaries?: any;
-  detectors?: any;
+  version: string;
+  operational_points: any;
+  routes: any;
+  switch_types: any;
+  switches: any;
+  track_section_links: any;
+  track_sections: any;
+  signals: any;
+  buffer_stops: any;
+  speed_sections: any;
+  catenaries: any;
+  detectors: any;
 };
 export type LineString = {
   type: 'LineString';
@@ -1138,8 +1139,8 @@ export type InfraErrorType =
   | 'unknown_port_name'
   | 'unused_port';
 export type InfraError = {
-  geographic?: Geometry | null;
-  schematic?: object | null;
+  geographic: Geometry | null;
+  schematic: object | null;
   information: {
     obj_id: string;
     obj_type: 'TrackSection' | 'Signal' | 'BufferStop' | 'Detector' | 'Switch' | 'Route';
@@ -1287,16 +1288,16 @@ export type LightRollingStock = RollingStockBase & {
 };
 export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type EffortCurve = {
-  speeds?: number[];
-  max_efforts?: number[];
+  speeds: number[];
+  max_efforts: number[];
 };
 export type ConditionalEffortCurve = {
-  cond?: {
-    comfort?: Comfort | null;
-    electrical_profile_level?: string | null;
-    power_restriction_code?: string | null;
+  cond: {
+    comfort: Comfort | null;
+    electrical_profile_level: string | null;
+    power_restriction_code: string | null;
   } | null;
-  curve?: EffortCurve;
+  curve: EffortCurve;
 };
 export type RollingStockUpsertPayload = RollingStockBase & {
   effort_curves: {
@@ -1315,17 +1316,17 @@ export type RollingStock = RollingStockUpsertPayload & {
   liveries: RollingStockLivery[];
 };
 export type ProjectResult = {
-  id?: number;
-  name?: string;
-  objectives?: string;
-  description?: string;
-  funders?: string;
-  budget?: number;
-  image?: number | null;
-  creation_date?: string;
-  last_modification?: string;
-  studies_count?: number;
-  tags?: string[];
+  id: number;
+  name: string;
+  objectives: string;
+  description: string;
+  funders: string;
+  budget: number;
+  image: number | null;
+  creation_date: string;
+  last_modification: string;
+  studies_count: number;
+  tags: string[];
 };
 export type ProjectCreateRequest = {
   name: string;
@@ -1346,22 +1347,22 @@ export type ProjectPatchRequest = {
   tags?: string[];
 };
 export type StudyResult = {
-  id?: number;
-  name?: string;
-  project_id?: number;
-  description?: string;
-  budget?: number;
-  tags?: string[];
-  service_code?: string;
-  business_code?: string;
-  creation_date?: string;
-  last_modification?: string;
-  scenarios_count?: number;
-  start_date?: string | null;
-  expected_end_date?: string | null;
-  actual_end_date?: string | null;
-  state?: 'started' | 'inProgress' | 'finish';
-  study_type?:
+  id: number;
+  name: string;
+  project_id: number;
+  description: string;
+  budget: number;
+  tags: string[];
+  service_code: string;
+  business_code: string;
+  creation_date: string;
+  last_modification: string;
+  scenarios_count: number;
+  start_date: string | null;
+  expected_end_date: string | null;
+  actual_end_date: string | null;
+  state: 'started' | 'inProgress' | 'finish';
+  study_type:
     | 'timeTables'
     | 'flowRate'
     | 'parkSizing'

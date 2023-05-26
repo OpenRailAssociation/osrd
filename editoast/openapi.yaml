@@ -176,13 +176,17 @@ paths:
                 properties:
                   count:
                     type: number
-                  next: {}
-                  previous: {}
+                  next:
+                    type: number
+                    nullable: true
+                  previous:
+                    type: number
+                    nullable: true
                   results:
                     type: array
                     items:
                       $ref: "#/components/schemas/Infra"
-                required: [count, next, previous]
+                required: [count, next, previous, results]
     post:
       tags:
         - infra
@@ -347,8 +351,9 @@ paths:
           name: generate_data
           schema:
             type: boolean
-            description: whether the layer should be generated or no
             default: false
+          description: whether the layer should be generated or no
+          required: true
       requestBody:
         description: Railjson infra
         content:
@@ -366,6 +371,7 @@ paths:
                 properties:
                   id:
                     type: string
+                required: [id]
 
   /infra/{id}/errors/:
     get:
@@ -385,30 +391,38 @@ paths:
             type: integer
             default: 1
           description: The page number
+          required: true
         - in: query
           name: page_size
           schema:
             type: integer
             default: 25
             minimum: 10
+            nullable: true
           description: The number of item per page
+          required: true
         - in: query
           name: error_type
           schema:
             $ref: "#/components/schemas/InfraErrorType"
           description: The type of error to filter on
+          required: true
         - in: query
           name: object_id
           schema:
             type: string
+            nullable: true
           description: errors and warnings that only part of a given object
+          required: true
         - in: query
           name: level
           schema:
             type: string
             enum: [errors, warnings, all]
             default: all
+            nullable: true
           description: Whether the response should include errors or warnings
+          required: true
       responses:
         200:
           description: A paginated list of errors
@@ -435,6 +449,7 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/InfraError"
+                required: [count, next, previous, results]
 
   /infra/{id}/switch_types/:
     get:
@@ -884,6 +899,7 @@ paths:
                     name:
                       type: string
                       example: "France 2023"
+                  required: [id, name]
 
     post:
       tags:
@@ -1030,12 +1046,17 @@ paths:
                 properties:
                   count:
                     type: number
-                  next: {}
-                  previous: {}
+                  next:
+                    type: integer
+                    nullable: true 
+                  previous:
+                    type: integer
+                    nullable: true
                   results:
                     type: array
                     items:
                       $ref: "#/components/schemas/LightRollingStock"
+                required: [count, next, previous, results]
 
   /light_rolling_stock/{id}/:
     get:
@@ -1275,12 +1296,17 @@ paths:
                 properties:
                   count:
                     type: number
-                  next: {}
-                  previous: {}
+                  next:
+                    type: integer
+                    nullable: true
+                  previous:
+                    type: integer
+                    nullable: true
                   results:
                     type: array
                     items:
                       $ref: "#/components/schemas/ProjectResult"
+                required: [count, next, previous, results]
 
   /projects/{project_id}/:
     get:
@@ -1463,12 +1489,17 @@ paths:
                 properties:
                   count:
                     type: number
-                  next: {}
-                  previous: {}
+                  next:
+                    type: number
+                    nullable: true
+                  previous:
+                    type: number
+                    nullable: true
                   results:
                     type: array
                     items:
                       $ref: "#/components/schemas/StudyResult"
+                required: [count, next, previous, results]
 
   /projects/{project_id}/studies/{study_id}/:
     get:
@@ -1626,12 +1657,17 @@ paths:
                 properties:
                   count:
                     type: number
-                  next: {}
-                  previous: {}
+                  next:
+                    type: number
+                    nullable: true
+                  previous:
+                    type: number
+                    nullable: true
                   results:
                     type: array
                     items:
                       $ref: "#/components/schemas/ScenarioListResult"
+                required: [count, next, previous, results]
 
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/:
     get:
@@ -1847,8 +1883,10 @@ components:
             power_restriction_code:
               type: string
               nullable: true
+          required: [comfort, electrical_profile_level, power_restriction_code]
         curve:
           $ref: "#/components/schemas/EffortCurve"
+      required: [cond, curve]
 
     EffortCurve:
       type: object
@@ -1867,6 +1905,7 @@ components:
           items:
             type: number
             format: float
+      required: [speeds, max_efforts]
 
     EnergySource:
       description: enery source of a rolling stock
@@ -2004,6 +2043,19 @@ components:
           type: array
         detectors:
           type: array
+      required:
+        - version
+        - operational_points
+        - routes
+        - switch_types
+        - switches
+        - track_section_links
+        - track_sections
+        - signals
+        - buffer_stops
+        - speed_sections
+        - catenaries
+        - detectors
 
     Operation:
       oneOf:
@@ -2201,7 +2253,7 @@ components:
     InfraError:
       type: object
       description: An infra error or warning
-      required: [information]
+      required: [geographic, schematic, information]
       properties:
         geographic:
           nullable: true
@@ -2825,8 +2877,7 @@ components:
           items:
             type: string
             maxLength: 255
-      required:
-        - name
+      required: [name]
 
     ProjectPatchRequest:
       properties:
@@ -2883,6 +2934,18 @@ components:
           type: array
           items:
             type: string
+      required:
+        - id
+        - name
+        - objectives
+        - description
+        - funders
+        - budget
+        - image
+        - creation_date
+        - last_modification
+        - studies_count
+        - tags
 
     StudyCreateRequest:
       properties:
@@ -2934,8 +2997,7 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
-      required:
-        - "name"
+      required: [name]
 
     StudyPatchRequest:
       properties:
@@ -3045,6 +3107,25 @@ components:
               "chartStability",
               "disturbanceTests",
             ]
+      required:
+        - id
+        - name
+        - project_id
+        - description
+        - budget
+        - tags
+        - service_code
+        - scenarios_count
+        - business_code
+        - creation_date
+        - last_modification
+        - scenario_count
+        - start_date
+        - expected_end_date
+        - actual_end_date
+        - state
+        - study_type
+
 
     ScenarioRequest:
       properties:
