@@ -12,16 +12,16 @@ const STDCMAllowances = () => {
           <div>{t('allowances:gridMarginBeforeAfter')}</div>
           <div className="row">
             <div className="col-6">
-              <StdcmSingleAllowance typeKey="gridMarginBefore" isStdcm />
+              <StdcmSingleAllowance typeKey="gridMarginBefore" isCondensed />
             </div>
             <div className="col-6">
-              <StdcmSingleAllowance typeKey="gridMarginAfter" isStdcm />
+              <StdcmSingleAllowance typeKey="gridMarginAfter" isCondensed />
             </div>
           </div>
         </div>
         <div className="col-6">
           <div>{t('allowances:standardAllowance')}</div>
-          <StdcmSingleAllowance typeKey="standardStdcmAllowance" isStdcm />
+          <StdcmSingleAllowance typeKey="standardStdcmAllowance" isCondensed />
         </div>
       </div>
     </div>

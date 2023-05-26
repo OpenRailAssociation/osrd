@@ -4,7 +4,7 @@ import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 
 export default function InputGroupSNCF(props) {
-  const { id, handleType, options, orientation, placeholder, sm, title, value, type, allowance } =
+  const { id, handleType, options, orientation, placeholder, sm, title, value, type, condensed } =
     props;
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -29,7 +29,7 @@ export default function InputGroupSNCF(props) {
     <div className={`form-control-container ${selected.unit && 'has-right-icon'}`}>
       <input
         type="text"
-        className={`form-control ${allowance ? 'px-2' : ''}`}
+        className={`form-control ${condensed ? 'px-2' : ''}`}
         title={placeholder}
         placeholder={placeholder}
         onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
@@ -37,7 +37,7 @@ export default function InputGroupSNCF(props) {
       />
       <span className="form-control-state" />
       {selected.unit && (
-        <span className={`form-control-icon small ${allowance ? 'stdcm-allowance-icon' : ''}`}>
+        <span className={`form-control-icon small ${condensed ? 'condensed-icon' : ''}`}>
           {selected.unit}
         </span>
       )}
@@ -52,7 +52,7 @@ export default function InputGroupSNCF(props) {
         <div className="btn-group dropdown">
           <button
             type="button"
-            className={`btn btn-secondary dropdown-toggle ${allowance ? 'p-1' : ''}`}
+            className={`btn btn-secondary dropdown-toggle ${condensed ? 'p-1' : ''}`}
             onClick={() => setIsDropdownShown(!isDropdownShown)}
             aria-haspopup="true"
             aria-expanded="false"
@@ -131,7 +131,7 @@ InputGroupSNCF.propTypes = {
   title: PropTypes.string,
   value: PropTypes.number.isRequired,
   type: PropTypes.string,
-  allowance: PropTypes.bool,
+  condensed: PropTypes.bool,
 };
 
 InputGroupSNCF.defaultProps = {
@@ -140,5 +140,5 @@ InputGroupSNCF.defaultProps = {
   sm: false,
   title: undefined,
   type: undefined,
-  allowance: false,
+  condensed: false,
 };
