@@ -8,14 +8,12 @@ import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf
 import generatePathfindingPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generateTrainSchedulesPayload';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
-import { post } from 'common/requests';
-import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import {
   initialViewport,
   initialStatus,
-  itineraryURI,
 } from 'applications/operationalStudies/components/ImportTrainSchedule//consts';
 import { refactorUniquePaths } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
+import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
 
 /* METHOD
@@ -34,6 +32,10 @@ export default function ImportTrainScheduleModal(props) {
   const infraID = useSelector(getInfraID);
   const rollingStockID = useSelector(getRollingStockID);
   const timetableID = useSelector(getTimetableID);
+
+  const [postPathFindingOp] = osrdMiddlewareApi.usePostPathfindingOpMutation();
+  const [postPathFinding] = osrdMiddlewareApi.usePostPathfindingMutation();
+  const [postTrainSchedule] = osrdMiddlewareApi.usePostTrainScheduleStandaloneSimulationMutation();
 
   const [trainsWithPathRef, setTrainsWithPathRef] = useState([]);
 
@@ -127,8 +129,9 @@ export default function ImportTrainScheduleModal(props) {
   ) {
     try {
       const itineraryCreated = autoComplete
-        ? await post(`${itineraryURI}op/`, params, {}, true)
-        : await post(itineraryURI, params, {}, true);
+        ? await postPathFindingOp({ pathOpQuery: params }).unwrap()
+        : await postPathFinding({ pathQuery: params }).unwrap();
+
       continuePath(
         pathNumberToComplete + 1,
         {
@@ -196,17 +199,16 @@ export default function ImportTrainScheduleModal(props) {
 
   async function launchTrainSchedules(params) {
     try {
-      await post(scheduleURL, params, {});
+      await postTrainSchedule({ standaloneSimulationParameters: params }).unwrap();
       getTimetable(timetableID);
       return `${t(
         'operationalStudies/importTrainSchedule:status.calculatingTrainScheduleComplete'
       )} (${params.path})`;
     } catch (error) {
-      /* empty */
+      return `${t(
+        'operationalStudies/importTrainSchedule:errorMessages.unableToRetrieveTrainSchedule'
+      )} (${params.path})`;
     }
-    return `${t('operationalStudies/importTrainSchedule:status.calculatingTrainScheduleError')} (${
-      params.path
-    })`;
   }
   async function generateTrainSchedules() {
     const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
