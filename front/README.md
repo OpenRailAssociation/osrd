@@ -214,7 +214,7 @@ All common code (and shared components) supposed to be in `common/`.
 
 - ESLint is used as linter and prettier as formatter. Both are configured as devDependencies to
   enforce default eslint configuration eventually overidden by
-  [airbnb rules](https://https://airbnb.io/javascript/) translation. A few rules (see eslintrc) has
+  [airbnb rules](https://airbnb.io/javascript/) translation. A few rules (see eslintrc) has
   been disabled and will be re-enabled in the near future):
   - 'no-named-as-default': 'off',
   - 'react/jsx-props-no-spreading': 0,
