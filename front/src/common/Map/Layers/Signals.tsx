@@ -81,9 +81,9 @@ function Signals(props: PlatformProps) {
           (signalAspect) =>
             signalAspect.signal_id === renderedDynamicStopsFeature.id &&
             !isNil(signalAspect.time_start) &&
-            signalAspect.time_start <= new Date(timePosition as string) &&
+            signalAspect.time_start <= new Date(timePosition) &&
             !isNil(signalAspect.time_end) &&
-            signalAspect.time_end >= new Date(timePosition as string)
+            signalAspect.time_end >= new Date(timePosition)
         );
 
         if (matchingSignalAspect) {

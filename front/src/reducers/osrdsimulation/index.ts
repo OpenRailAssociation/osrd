@@ -12,6 +12,7 @@ import {
   interpolateOnTime,
   makeTrainListWithAllTrainsOffset,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import { time2sec } from 'utils/timeManipulation';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 
 import { OsrdSimulationState, SimulationTrain } from './types';
@@ -126,7 +127,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
-          state.timePosition as unknown as number
+          time2sec(state.timePosition)
         );
         break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:

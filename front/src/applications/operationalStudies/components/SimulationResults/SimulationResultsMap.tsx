@@ -188,8 +188,8 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       // Found trains including timePosition, and organize them with geojson collection of points
       setOtherTrainsHoverPosition(
         createOtherPoints().map((train) => {
-          const headDistanceAlong = train.head_positions?.position ?? 0 / 1000;
-          const tailDistanceAlong = train.tail_positions?.position ?? 0 / 1000;
+          const headDistanceAlong = (train.head_positions?.position ?? 0) / 1000;
+          const tailDistanceAlong = (train.tail_positions?.position ?? 0) / 1000;
           const headPosition = along(line, headDistanceAlong, {
             units: 'kilometers',
           });
@@ -276,7 +276,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         ['position', 'speed'] as const,
         positionLocal
       );
-      dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal as Date)));
+      if (timePositionLocal instanceof Date) {
+        dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal)));
+      } else {
+        throw new Error('Map onFeatureHover, try to update TimePositionValue with incorrect imput');
+      }
     }
     if (e?.features?.[0] && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);
