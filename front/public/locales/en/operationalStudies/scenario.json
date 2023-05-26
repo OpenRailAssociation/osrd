@@ -19,6 +19,12 @@
   "scenarioTags": "Tags",
   "scenarioUpdated": "Successful update!",
   "scenarioUpdatedDetails": "Scenario {{ name }} has been updated.",
+  "errorMessages": {
+    "error": "An error has occurred",
+    "unableToCreateScenarioMessage": "Unable to create a scenario",
+    "unableToUpdateScenarioMessage": "Unable to update the scenario",
+    "unableToDeleteScenarioMessage": "Unable to delete the scenario"
+  },
   "timetable": {
     "addTrainSchedule": "Add",
     "choosePath": "Use this path",

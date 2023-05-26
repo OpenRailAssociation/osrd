@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import scenarioLogo from 'assets/pictures/views/studies.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -15,11 +15,11 @@ import { GiElectric } from 'react-icons/gi';
 import { MdDescription, MdTitle } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setSuccess } from 'reducers/main';
+import { setFailure, setSuccess } from 'reducers/main';
 import { updateScenarioID } from 'reducers/osrdconf';
 import { getInfraID, getProjectID, getStudyID } from 'reducers/osrdconf/selectors';
-import { ScenarioListResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { ScenarioRequest } from 'common/api/osrdMiddlewareApi';
+import { ScenarioListResult, osrdEditoastApi, ScenarioRequest } from 'common/api/osrdEditoastApi';
+import { sortBy } from 'lodash';
 
 const scenarioTypesDefaults = {
   name: '',
@@ -42,16 +42,13 @@ export default function AddOrEditScenarioModal({
 }: AddOrEditScenarioModalProps) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
+
   const [deleteScenarioRTK] =
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
-      {}
-    );
+    osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMutation({});
   const [patchScenario] =
-    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
-      {}
-    );
+    osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMutation({});
   const [postScenario] =
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
+    osrdEditoastApi.usePostProjectsByProjectIdStudiesAndStudyIdScenariosMutation({});
 
   const noElectricalProfileSetOption = {
     key: undefined,
@@ -61,48 +58,37 @@ export default function AddOrEditScenarioModal({
     scenario || scenarioTypesDefaults
   );
   const { data: electricalProfils, isError } = osrdEditoastApi.useGetElectricalProfileSetQuery();
+  console.log('electricalProfils:', electricalProfils);
 
   const [displayErrors, setDisplayErrors] = useState(false);
-  const [electricalProfileSetOptions, setElectricalProfileSetOptions] = useState<
-    SelectOptionsType[]
-  >([noElectricalProfileSetOption]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const projectID = useSelector(getProjectID);
   const studyID = useSelector(getStudyID);
   const infraID = useSelector(getInfraID);
-  const [selectedValue, setSelectedValue] = useState<SelectOptionsType | undefined>(
-    noElectricalProfileSetOption
+
+  const electricalProfileSetOptions = useMemo(() => {
+    if (isError || (electricalProfils && electricalProfils.length < 2)) return [];
+
+    const sortedElecticalProfils = sortBy(electricalProfils, ['name']);
+    return [
+      noElectricalProfileSetOption,
+      ...sortedElecticalProfils.map((option: ElectricalProfileSetType) => ({
+        key: option.id,
+        value: option.name,
+      })),
+    ];
+  }, [electricalProfils]);
+
+  const selectedValue: SelectOptionsType = useMemo(
+    () =>
+      electricalProfileSetOptions.find(
+        (option) => option.key === currentScenario.electrical_profile_set_id
+      ) || noElectricalProfileSetOption,
+    [currentScenario.electrical_profile_set_id, electricalProfileSetOptions]
   );
 
   type ElectricalProfileSetType = { id: number; name: string };
-
-  const createElectricalProfileSetOptions = async () => {
-    try {
-      if (isError) throw new Error();
-      if (!electricalProfils) return;
-
-      const electricalProfilsSorted = electricalProfils
-        ?.slice()
-        .sort((a: ElectricalProfileSetType, b: ElectricalProfileSetType) =>
-          a.name.localeCompare(b.name)
-        );
-      const options = [
-        noElectricalProfileSetOption,
-        ...electricalProfilsSorted.map((option: ElectricalProfileSetType) => ({
-          key: option.id,
-          value: option.name,
-        })),
-      ];
-
-      setSelectedValue(
-        options.find((option) => option.key === currentScenario.electrical_profile_set_id)
-      );
-      setElectricalProfileSetOptions(options);
-    } catch (error) {
-      /* empty */
-    }
-  };
 
   const removeTag = (idx: number) => {
     const newTags = currentScenario.tags ? Array.from(currentScenario.tags) : [];
@@ -119,11 +105,11 @@ export default function AddOrEditScenarioModal({
   const createScenario = async () => {
     if (!currentScenario.name || !currentScenario.infra_id) {
       setDisplayErrors(true);
-    } else if (infraID && projectID && studyID && currentScenario && infraID) {
+    } else if (projectID && studyID && currentScenario) {
       postScenario({
         projectId: projectID,
         studyId: studyID,
-        scenarioRequest: { ...(currentScenario as ScenarioRequest), infra_id: infraID },
+        scenarioRequest: currentScenario as ScenarioRequest,
       })
         .unwrap()
         .then(({ id }) => {
@@ -132,7 +118,15 @@ export default function AddOrEditScenarioModal({
           closeModal();
         })
 
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          dispatch(
+            setFailure({
+              name: t('errorMessages.error'),
+              message: t('errorMessages.unableToCreateScenarioMessage'),
+            })
+          );
+        });
     }
   };
 
@@ -151,12 +145,20 @@ export default function AddOrEditScenarioModal({
           if (getScenarioTimetable) getScenarioTimetable(true);
           closeModal();
         })
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          dispatch(
+            setFailure({
+              name: t('errorMessages.error'),
+              message: t('errorMessages.unableToUpdateScenarioMessage'),
+            })
+          );
+        });
     }
   };
 
   const deleteScenario = async () => {
-    if (scenario && projectID && studyID && scenario.id) {
+    if (projectID && studyID && scenario?.id) {
       deleteScenarioRTK({ projectId: projectID, studyId: studyID, scenarioId: scenario.id })
         .unwrap()
         .then(() => {
@@ -170,7 +172,15 @@ export default function AddOrEditScenarioModal({
             })
           );
         })
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          dispatch(
+            setFailure({
+              name: t('errorMessages.error'),
+              message: t('errorMessages.unableToDeleteScenarioMessage'),
+            })
+          );
+        });
     }
   };
 
@@ -178,11 +188,6 @@ export default function AddOrEditScenarioModal({
     setCurrentScenario({ ...currentScenario, infra_id: infraID });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
-
-  useEffect(() => {
-    createElectricalProfileSetOptions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return electricalProfileSetOptions ? (
     <div className="scenario-edition-modal">

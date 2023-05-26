@@ -19,6 +19,12 @@
   "scenarioTags": "Étiquettes",
   "scenarioUpdated": "Mise à jour réussie !",
   "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
+  "errorMessages": {
+    "error": "Une erreur est survenue",
+    "unableToCreateScenarioMessage": "Impossible de créer un scénario",
+    "unableToUpdateScenarioMessage": "Impossible de mettre à jour le scénario",
+    "unableToDeleteScenarioMessage": "Impossible de supprimer le scénario"
+  },
   "timetable": {
     "addTrainSchedule": "Ajouter",
     "choosePath": "Utiliser ce chemin",
