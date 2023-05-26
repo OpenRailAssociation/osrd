@@ -126,8 +126,16 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const getRegimeKey = (trainId: number) =>
     allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
 
-  const createOtherPoints = () => {
-    const actualTime = datetime2sec(timeString2datetime(timePosition) as Date);
+  const createOtherPoints = (): InterpoledTrain[] => {
+    const timePositionDate = timeString2datetime(timePosition);
+    let actualTime = 0;
+    if (timePositionDate instanceof Date) {
+      actualTime = datetime2sec(timePositionDate);
+    } else {
+      console.warn('Try to create Other Train Point from unspecified current time Position');
+      return [];
+    }
+
     // First find trains where actual time from position is between start & stop
     const concernedTrains: InterpoledTrain[] = [];
     simulation.trains.forEach((train, idx: number) => {
