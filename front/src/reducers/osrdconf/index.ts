@@ -425,7 +425,7 @@ export function updateInfraID(infraID: number | undefined): ThunkAction<ActionUp
     if (infraID) {
       try {
         // get switch types  with rtk query
-        const { data: newSwitchTypes } = await dispatch(
+        const { data: newSwitchTypes = [] } = await dispatch(
           osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.initiate({ id: infraID })
         );
         dispatch(updateSwitchTypes(newSwitchTypes as SwitchType[]));

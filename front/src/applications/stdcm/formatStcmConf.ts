@@ -98,6 +98,7 @@ export default function formatStdcmConf(
       : null;
 
   if (!error) {
+    // TODO: refactor: have a clearer way to set dynamics units
     const standardAllowanceType: string =
       (osrdconf.standardStdcmAllowance?.type as string) || ALLOWANCE_UNIT_TYPES.PERCENTAGE;
     const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;

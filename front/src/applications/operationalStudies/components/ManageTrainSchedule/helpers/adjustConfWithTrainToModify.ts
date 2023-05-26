@@ -19,15 +19,16 @@ import { store } from 'Store';
 import { Path, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
+import { compact } from 'lodash';
 
-function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap {
+function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap | undefined {
   return step
     ? {
         ...step,
         id: step.track,
         coordinates: step.geo?.coordinates,
       }
-    : {};
+    : undefined;
 }
 
 export default function adjustConfWithTrainToModify(
@@ -62,8 +63,8 @@ export default function adjustConfWithTrainToModify(
           (via, idx) => idx !== 0 && path.steps && idx < path.steps.length - 1 && !via.suggestion
         )
         .map((via) => convertStepToPointOnMap(via));
-      dispatch(replaceVias(vias));
-      dispatch(updateSuggeredVias(path.steps.map((via) => convertStepToPointOnMap(via))));
+      dispatch(replaceVias(compact(vias)));
+      dispatch(updateSuggeredVias(compact(path.steps.map((via) => convertStepToPointOnMap(via)))));
     } else {
       dispatch(replaceVias([]));
     }
