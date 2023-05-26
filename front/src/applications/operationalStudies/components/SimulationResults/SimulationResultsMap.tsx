@@ -84,18 +84,13 @@ interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
 
-interface InterpoledTrainIds {
+type InterpoledTrain = {
   name: string;
   id: number;
-}
-
-interface InterpolatedTrainValues {
   head_positions?: PositionSpeedTime;
   tail_positions?: PositionSpeedTime;
   speeds?: PositionSpeedTime;
-}
-
-type InterpoledTrain = InterpoledTrainIds & InterpolatedTrainValues;
+};
 
 const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);

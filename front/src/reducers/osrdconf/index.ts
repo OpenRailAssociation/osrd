@@ -208,11 +208,11 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_ORIGIN_TIME: {
         const newOriginTimeSeconds = time2sec(action.originTime);
-        if (draft[section].originLinkedBounds) {
+        const { originLinkedBounds, originTime, originUpperBoundTime } = draft[section];
+        if (originLinkedBounds) {
           const difference =
-            draft[section].originTime && draft[section].originUpperBoundTime
-              ? time2sec(draft[section].originUpperBoundTime as string) -
-                time2sec(draft[section].originTime as string)
+            originTime && originUpperBoundTime
+              ? time2sec(originUpperBoundTime) - time2sec(originTime)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft[section].originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
         }
