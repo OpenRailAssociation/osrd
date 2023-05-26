@@ -45,7 +45,7 @@ interface StandardAllowanceDefaultProps {
     value: number;
   };
   getAllowanceTypes?: (typeKey: string) => AllowanceType[];
-  isStdcm?: boolean;
+  isCondensed?: boolean;
 }
 
 const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
@@ -66,7 +66,7 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
     typeKey,
     getBaseValue,
     getAllowanceTypes,
-    isStdcm,
+    isCondensed,
   } = props;
 
   const [value, setValue] = useState<{ type: keyof typeof TYPES_UNITS; value: number }>({
@@ -281,12 +281,14 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
 
   return (
     <div className={`${options?.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
-      <label
-        htmlFor={`standardAllowanceType-${title}`}
-        className={`${options?.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}
-      >
-        {title || (t && t('sandardAllowancesWholePath'))}
-      </label>
+      {!isCondensed && (
+        <label
+          htmlFor={`standardAllowanceType-${title}`}
+          className={`${options?.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}
+        >
+          {title || (t && t('sandardAllowancesWholePath'))}
+        </label>
+      )}
 
       <div className="col">
         <div className="row">
@@ -312,7 +314,7 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
               handleType={handleType}
               value={value.value}
               type={value.type}
-              allowance={isStdcm}
+              condensed={isCondensed}
               sm
             />
           ) : (
@@ -327,7 +329,7 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
               value={value.value}
               unit={allowanceTypes[0].unit}
               type="text"
-              allowance={isStdcm}
+              condensed={isCondensed}
               sm
               noMargin
             />
