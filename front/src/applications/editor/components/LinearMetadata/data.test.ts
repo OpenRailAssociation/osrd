@@ -76,7 +76,7 @@ const wrapperTests = [
 /**
  * Check the validity of linear metadata.
  */
-function checkWrapperValidity<T = any>(
+function checkWrapperValidity<T>(
   result: Array<LinearMetadataItem<T>>,
   newLine?: LineString,
   _message?: string
