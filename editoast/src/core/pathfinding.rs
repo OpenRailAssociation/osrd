@@ -2,6 +2,7 @@ use derivative::Derivative;
 use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
 
+use crate::models::{CurveGraph, SlopeGraph};
 use crate::views::rolling_stocks::RollingStockForm;
 use crate::{models::RoutePath, schema::Direction};
 
@@ -35,6 +36,8 @@ pub struct PathfindingResponse {
     pub schematic: Geometry,
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
+    pub slopes: SlopeGraph,
+    pub curves: CurveGraph,
     pub warnings: Vec<Warning>,
 }
 

@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use crate::schema::*;
+use log::{error, warn};
 use osm4routing::{Coord, Edge, NodeId};
+use osmpbfreader::Node;
 
 pub fn default_switch_types() -> Vec<SwitchType> {
     let mut point_groups = std::collections::HashMap::new();
@@ -22,14 +24,14 @@ pub fn default_switch_types() -> Vec<SwitchType> {
 
     let mut cross_groups = std::collections::HashMap::new();
     cross_groups.insert(
-        "default".into(),
+        "DEFAULT".into(),
         vec![
             SwitchPortConnection {
                 src: "NORTH".into(),
                 dst: "SOUTH".into(),
             },
             SwitchPortConnection {
-                src: "EASTH".into(),
+                src: "EAST".into(),
                 dst: "WEST".into(),
             },
         ],
@@ -37,28 +39,28 @@ pub fn default_switch_types() -> Vec<SwitchType> {
 
     let mut double_cross_groups = std::collections::HashMap::new();
     double_cross_groups.insert(
-        "n1-s1".into(),
+        "N1-S1".into(),
         vec![SwitchPortConnection {
             src: "NORTH-1".into(),
             dst: "SOUTH-1".into(),
         }],
     );
     double_cross_groups.insert(
-        "n2-s1".into(),
+        "N2-S1".into(),
         vec![SwitchPortConnection {
             src: "NORTH-1".into(),
             dst: "SOUTH-2".into(),
         }],
     );
     double_cross_groups.insert(
-        "n1-s2".into(),
+        "N1-S2".into(),
         vec![SwitchPortConnection {
             src: "NORTH-2".into(),
             dst: "SOUTH-1".into(),
         }],
     );
     double_cross_groups.insert(
-        "n2-s2".into(),
+        "N2-S2".into(),
         vec![SwitchPortConnection {
             src: "NORTH-2".into(),
             dst: "SOUTH-2".into(),
@@ -157,7 +159,7 @@ pub fn point_switch(node: NodeId, branches: &[Branch]) -> Switch {
     }
 
     let mut sorted_endpoint: Vec<(&TrackEndpoint, u64)> = endpoint_count.into_iter().collect();
-    sorted_endpoint.sort_by(|(_, count_a), (_, count_b)| count_a.cmp(count_b));
+    sorted_endpoint.sort_by(|(_, count_a), (_, count_b)| count_b.cmp(count_a));
     let mut ports = HashMap::new();
     ports.insert("BASE".into(), sorted_endpoint[0].0.clone());
     ports.insert("LEFT".into(), sorted_endpoint[1].0.clone());
@@ -219,6 +221,125 @@ pub fn angle(o: Coord, a: Coord, b: Coord) -> f64 {
     ((a.lat - o.lat).atan2(a.lon - o.lon).to_degrees()
         - (b.lat - o.lat).atan2(b.lon - o.lon).to_degrees())
     .abs()
+}
+
+fn direction(node: &osmpbfreader::Node) -> Direction {
+    let direction_tag = node
+        .tags
+        .get("railway:signal:direction")
+        .map(|tag| tag.as_str())
+        .unwrap_or("forward");
+    if direction_tag == "forward" || direction_tag == "both" {
+        Direction::StartToStop
+    } else {
+        Direction::StopToStart
+    }
+}
+
+fn main_signal(node: &osmpbfreader::OsmObj) -> bool {
+    node.tags().contains_key("railway:signal:main")
+        || node.tags().contains_key("railway:signal:combined")
+}
+
+pub fn signals(osm_pbf_in: std::path::PathBuf, edges: &Vec<Edge>) -> Vec<Signal> {
+    let mut nodes_edges = HashMap::<NodeId, Vec<&Edge>>::new();
+    for edge in edges {
+        for node in &edge.nodes {
+            nodes_edges.entry(*node).or_default().push(edge);
+        }
+    }
+
+    let file = std::fs::File::open(osm_pbf_in).unwrap();
+    let mut pbf = osmpbfreader::OsmPbfReader::new(file);
+    pbf.iter()
+        .flatten()
+        .filter(main_signal)
+        .flat_map(|obj| {
+            if let osmpbfreader::OsmObj::Node(node) = obj {
+                if let Some(current_edges) = nodes_edges.get(&node.id) {
+                    if current_edges.is_empty() {
+                        error!("Missing edge for node {}", node.id.0);
+                        return None;
+                    } else if current_edges.len() >= 3 {
+                        warn!("Too many edges for node {}", node.id.0);
+                    }
+
+                    let mut settings = HashMap::new();
+                    settings.insert("Nf".into(), "true".into());
+
+                    Some(Signal {
+                        id: node.id.0.to_string().into(),
+                        direction: direction(&node),
+                        track: current_edges[0].id.clone().into(),
+                        position: current_edges[0].length_until(&node.id),
+                        sight_distance: 400.,
+                        logical_signals: Some(vec![LogicalSignal {
+                            signaling_system: "BAL".to_string(),
+                            settings,
+                            ..Default::default()
+                        }]),
+                        linked_detector: Some(node.id.0.to_string()),
+                        extensions: SignalExtensions {
+                            sncf: Some(sncf_extensions(&node)),
+                        },
+                    })
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn sncf_extensions(node: &Node) -> SignalSncfExtension {
+    let label = node
+        .tags
+        .get("ref")
+        .map(|r| r.as_str())
+        .unwrap_or_default()
+        .into();
+    let side = node
+        .tags
+        .get("railway:signal:position")
+        .map(|s| {
+            if s == "left" {
+                Side::Left
+            } else if s == "right" {
+                Side::Right
+            } else {
+                Side::Center
+            }
+        })
+        .unwrap_or_default();
+    SignalSncfExtension {
+        aspects: vec![
+            "Carré".to_string(),
+            "Feu Rouge Clignotant".to_string(),
+            "Sémaphore".to_string(),
+            "Avertissement".to_string(),
+            "Feu Vert".to_string(),
+        ],
+        default_aspect: "CARRE".to_string(),
+        installation_type: "CARRE".to_string(),
+        is_in_service: true,
+        is_lightable: true,
+        is_operational: true,
+        label,
+        side,
+        ..Default::default()
+    }
+}
+
+/// Builds a detector that is located on the same position as the signal
+pub fn detector(signal: &Signal) -> Detector {
+    Detector {
+        id: signal.id.clone(),
+        track: signal.track.clone(),
+        position: signal.position,
+        ..Default::default()
+    }
 }
 
 #[cfg(test)]

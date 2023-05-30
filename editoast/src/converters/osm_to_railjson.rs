@@ -24,9 +24,12 @@ pub fn osm_to_railjson(
 pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
     let (nodes, edges) = osm4routing::Reader::new()
         .reject("building", "*")
+        .reject("railway", "Rangierbezirk")
+        .reject("railway", "station_area")
         .reject("railway", "workshop")
         .reject("railway", "container_terminal")
         .reject("railway", "turntable")
+        .reject("railway", "traverser")
         .reject("railway", "proposed")
         .reject("railway", "disused")
         .reject("railway", "abandoned")
@@ -44,8 +47,11 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed)
         .filter(|e| e.source != e.target);
 
+    let signals = signals(osm_pbf_in, &edges);
     let mut railjson = RailJson {
         switch_types: default_switch_types(),
+        detectors: signals.iter().map(detector).collect(),
+        signals,
         ..Default::default()
     };
 
@@ -116,7 +122,11 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
 
 #[cfg(test)]
 mod tests {
-    use crate::{converters::*, schema::RailJson};
+    use crate::{
+        converters::*,
+        schema::{utils::Identifier, *},
+    };
+    use std::collections::HashMap;
 
     use super::parse_osm;
     #[test]
@@ -135,6 +145,9 @@ mod tests {
 
     #[test]
     fn parse_switches() {
+        fn port_eq(ports: &HashMap<Identifier, TrackEndpoint>, name: &str, expected: &str) -> bool {
+            ports.get(&name.into()).unwrap().track.0 == expected
+        }
         let mut railjson = parse_osm("src/tests/switches.osm.pbf".into()).unwrap();
         assert_eq!(3, railjson.switch_types.len());
         assert_eq!(3, railjson.switches.len());
@@ -148,13 +161,52 @@ mod tests {
         let switch = &railjson.switches[2];
         assert_eq!("point", switch.switch_type.as_str());
         assert_eq!(3, switch.ports.len());
+        assert!(port_eq(&switch.ports, "BASE", "-103478-0"));
+        let a = port_eq(&switch.ports, "LEFT", "-103478-1")
+            && port_eq(&switch.ports, "RIGHT", "-103477-0");
+        let b = port_eq(&switch.ports, "LEFT", "-103477-0")
+            && port_eq(&switch.ports, "RIGHT", "-103478-1");
+        assert!(a || b);
 
         let cross = &railjson.switches[0];
         assert_eq!("cross_over", cross.switch_type.as_str());
         assert_eq!(4, cross.ports.len());
+        let a = port_eq(&cross.ports, "NORTH", "-103476-0")
+            && port_eq(&cross.ports, "SOUTH", "-103476-1");
+        let b = port_eq(&cross.ports, "NORTH", "-103476-1")
+            && port_eq(&cross.ports, "SOUTH", "-103476-0");
+        let c = port_eq(&cross.ports, "NORTH", "103475-0")
+            && port_eq(&cross.ports, "SOUTH", "103475-1");
+        let d = port_eq(&cross.ports, "NORTH", "103475-1")
+            && port_eq(&cross.ports, "SOUTH", "103475-0");
+        assert!(a || b || c || d);
 
         let double = &railjson.switches[1];
         assert_eq!("double_slip", double.switch_type.as_str());
         assert_eq!(4, double.ports.len());
+        let a = ["-103474-0", "-103474-1"]
+            .iter()
+            .any(|t| port_eq(&double.ports, "NORTH-1", t))
+            && ["-103473-0", "-103473-1"]
+                .iter()
+                .any(|t| port_eq(&double.ports, "NORTH-2", t));
+        let b = ["-103473-0", "-103473-1"]
+            .iter()
+            .any(|t| port_eq(&double.ports, "NORTH-1", t))
+            && ["-103474-0", "-103474-1"]
+                .iter()
+                .any(|t| port_eq(&double.ports, "NORTH-2", t));
+        assert!(a || b);
+    }
+
+    #[test]
+    fn parse_signals() {
+        let railjson = parse_osm("src/tests/signals.osm.pbf".into()).unwrap();
+        assert_eq!(1, railjson.signals.len());
+        assert_eq!(1, railjson.detectors.len());
+        assert_eq!(
+            railjson.signals[0].linked_detector,
+            Some(railjson.detectors[0].id.to_string())
+        )
     }
 }

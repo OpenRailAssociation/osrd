@@ -14,7 +14,7 @@ operationalpoint:
     columns:
       obj_id: opm.obj_id
       infra_id: opm.infra_id
-      uic: opm.data#>>'{extensions,identifier,uic}'
+      uic: opm.data->'extensions'->'identifier'->'uic'
       name: opm.data#>>'{extensions,identifier,name}'
       trigram: opm.data#>>'{extensions,sncf,trigram}'
       ch: opm.data#>>'{extensions,sncf,ch}'

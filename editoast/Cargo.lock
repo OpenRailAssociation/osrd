@@ -1123,6 +1123,7 @@ dependencies = [
  "log",
  "mvt",
  "osm4routing",
+ "osmpbfreader",
  "pathfinding",
  "pointy",
  "postgis_diesel",
@@ -2250,9 +2251,9 @@ dependencies = [
 
 [[package]]
 name = "osm4routing"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56ca52a8f55e73c02d9d38faa9c0579d311582560f28aa7ea978765085e84c41"
+checksum = "845e5d88b64864c130d6f008c7cff6f81625408e8f8ca5f3034b7e3822711c3d"
 dependencies = [
  "csv",
  "docopt",

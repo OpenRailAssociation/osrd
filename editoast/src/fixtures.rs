@@ -178,7 +178,10 @@ pub mod tests {
         let pf_cs = PathfindingChangeset {
             infra_id: small_infra.id,
             payload: Some(
-                serde_json::from_str(include_str!("tests/pathfinding_payload.json")).unwrap(),
+                serde_json::from_str(include_str!(
+                    "tests/small_infra/pathfinding_fixture_payload.json"
+                ))
+                .unwrap(),
             ),
             slopes: Some(diesel_json::Json(vec![])),
             curves: Some(diesel_json::Json(vec![])),
