@@ -14,8 +14,7 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.3.0"
-
+RAILJSON_INFRA_VERSION = "3.3.1"
 
 # Traits
 # Used as an input model in the definition of the following classes.
@@ -445,10 +444,10 @@ class DeadSection(BaseObjectTrait):
     mode, it will have to wait a special "REV" panel (for reversible) to start pulling power from catenaries again.
     """
 
-    track_ranges: List[TrackRange] = Field(
+    track_ranges: List[DirectionalTrackRange] = Field(
         description="List of locations where the train cannot pull power from catenaries"
     )
-    backside_pantograph_track_ranges: List[TrackRange] = Field(
+    backside_pantograph_track_ranges: List[DirectionalTrackRange] = Field(
         description="List of locations where the push-pull train moving in reverse cannot pull power from catenaries"
     )
     is_pantograph_drop_zone: bool = Field(description="precise if the deadSection is a pantograph drop zone or not")
