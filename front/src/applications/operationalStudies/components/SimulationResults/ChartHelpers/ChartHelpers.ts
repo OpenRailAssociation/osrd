@@ -213,19 +213,27 @@ export const mergeDatasArea = <T>(
   return [];
 };
 
+// A merged Block is an array of objects, containing a dynamic key and a value associated to it, plus two values; first one is the projection of the value of a second key in another enumeration, and the second one is arbitrary number (often 0). It can help to create areas from values pairs.
+export type MergedBlock<Keys extends string> = {
+  [K in Keys]: Keys extends K ? number : never;
+} & {
+  value0: number;
+  value1: number;
+};
+
 // called with keyValues
 // ['position', 'gradient']
 // ['position', 'speed']
 export const mergeDatasAreaConstant = <Keys extends string>(
   data1: Record<Keys, number>[],
-  data2: number | number[],
+  data2: number,
   keyValues: Keys[]
-) =>
+): MergedBlock<Keys>[] =>
   data1.map((step) => ({
     [keyValues[0]]: step[keyValues[0]],
     value0: step[keyValues[1]],
     value1: data2,
-  }));
+  })) as MergedBlock<Keys>[];
 
 export const gridX = (x: d3.ScaleTime<number, number>, height: number) =>
   d3

@@ -99,6 +99,11 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
   noresults: 'NORESULTS',
 });
 
+export interface StandardAllowance {
+  type: string;
+  value: number;
+}
+
 export interface PointOnMap {
   id?: string;
   name?: string;
@@ -159,7 +164,7 @@ export interface OsrdConfState {
 
 export interface OsrdStdcmConfState extends OsrdConfState {
   stdcmMode: ValueOf<typeof STDCM_MODES>;
-  standardStdcmAllowance: any; // We wait for auto generated types
+  standardStdcmAllowance?: StandardAllowance; // We wait for auto generated types
 }
 
 export interface OsrdMultiConfState {

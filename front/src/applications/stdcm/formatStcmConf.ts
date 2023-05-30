@@ -11,7 +11,7 @@ import { makeEnumBooleans } from 'utils/constants';
 
 import { ActionFailure } from 'reducers/main';
 import { ThunkAction } from 'types';
-import { getOpenApiSteps } from 'common/Pathfinding/Pathfinding'
+import { getOpenApiSteps } from 'common/Pathfinding/Pathfinding';
 
 export default function formatStdcmConf(
   dispatch: Dispatch,
@@ -98,11 +98,12 @@ export default function formatStdcmConf(
       : null;
 
   if (!error) {
+    // TODO: refactor: have a clearer way to set dynamics units
     const standardAllowanceType: string =
       (osrdconf.standardStdcmAllowance?.type as string) || ALLOWANCE_UNIT_TYPES.PERCENTAGE;
     const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
-    const standardAllowance: { [index: string]: any } = {};
-    const typeUnitTanslationIndex: { [index: string]: any } = TYPES_UNITS;
+    const standardAllowance: { [index: string]: string | number } = {};
+    const typeUnitTanslationIndex: { [index: string]: string } = TYPES_UNITS;
     const correspondantTypesForApi: string = typeUnitTanslationIndex[standardAllowanceType];
     standardAllowance[correspondantTypesForApi] = standardAllowanceValue;
     standardAllowance.value_type = standardAllowanceType;
@@ -122,7 +123,6 @@ export default function formatStdcmConf(
       standard_allowance: standardAllowance,
     };
 
-    if (standardAllowance.value > 0) osrdConfStdcm.standard_allowance = standardAllowance;
     return osrdConfStdcm;
   }
   return false;
