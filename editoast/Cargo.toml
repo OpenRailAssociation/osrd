@@ -11,7 +11,7 @@ license = "LGPL-3.0"
 [dependencies]
 async-trait = "0.1"
 chashmap = "2.2.2"
-clap = { version = "4.2", features = ["derive", "env"] }
+clap = { version = "4.3", features = ["derive", "env"] }
 colored = "2.0.0"
 chrono = { version = "0.4", features = ["serde"] }
 derivative = "2.2.0"
