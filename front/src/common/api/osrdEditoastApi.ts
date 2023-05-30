@@ -647,8 +647,8 @@ export type PostInfraByIdCloneApiArg = {
 };
 export type GetElectricalProfileSetApiResponse =
   /** status 200 The list of ids and names of electrical profile sets available */ {
-    id?: number;
-    name?: string;
+    id: number;
+    name: string;
   }[];
 export type GetElectricalProfileSetApiArg = void;
 export type PostElectricalProfileSetApiResponse =
