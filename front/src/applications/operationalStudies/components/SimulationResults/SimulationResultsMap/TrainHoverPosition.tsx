@@ -14,7 +14,7 @@ import { mapValues, get } from 'lodash';
 import { RootState } from 'reducers';
 import { Viewport } from 'reducers/map';
 import { AllowancesSetting } from 'reducers/osrdsimulation/types';
-import { datetime2time } from 'utils/timeManipulation';
+import { sec2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
 import { getCurrentBearing } from 'utils/geometry';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
@@ -37,9 +37,7 @@ function getSpeedAndTimeLabel(isSelectedTrain: boolean, ecoBlocks: boolean, poin
           {Math.round(point?.speedTime?.speed ?? 0)}
           km/h
         </span>
-        <span className="ml-2 small">
-          {point.speedTime && datetime2time(point.speedTime.time as any)}
-        </span>
+        <span className="ml-2 small">{point.speedTime && sec2time(point.speedTime.time)}</span>
       </>
     );
   }

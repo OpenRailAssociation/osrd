@@ -15,6 +15,7 @@ import {
 import SingleAllowance from './StandardAllowanceDefault';
 
 import { ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
+import { StandardAllowance } from 'applications/operationalStudies/consts';
 
 function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
@@ -57,7 +58,7 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
       },
     ];
 
-    const [trainDetail] = useState<any>({ allowances: [] });
+    const [trainDetail] = useState({ allowances: [] });
 
     // @TODO implement this behaviour or refacto
     // Alowance mutation in REST strat
@@ -65,7 +66,7 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
       /* empty */
     };
 
-    const changeType = (type: any, typeKey: string) => {
+    const changeType = (type: StandardAllowance, typeKey: string) => {
       if (typeKey === 'gridMarginBefore') {
         dispatch(updateGridMarginBefore(type.value || 0));
       } else if (typeKey === 'gridMarginAfter') {
