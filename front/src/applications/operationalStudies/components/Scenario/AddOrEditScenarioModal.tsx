@@ -42,6 +42,10 @@ export default function AddOrEditScenarioModal({
 }: AddOrEditScenarioModalProps) {
   const { t } = useTranslation('operationalStudies/scenario');
   const { closeModal } = useContext(ModalContext);
+  const noElectricalProfileSetOption = {
+    key: undefined,
+    value: t('noElectricalProfileSet'),
+  };
 
   const [deleteScenarioRTK] =
     osrdEditoastApi.useDeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMutation({});
@@ -49,16 +53,25 @@ export default function AddOrEditScenarioModal({
     osrdEditoastApi.usePatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMutation({});
   const [postScenario] =
     osrdEditoastApi.usePostProjectsByProjectIdStudiesAndStudyIdScenariosMutation({});
+  const { electricalProfilOptions = [] } = osrdEditoastApi.useGetElectricalProfileSetQuery(
+    undefined,
+    {
+      selectFromResult: (response) => ({
+        ...response,
+        electricalProfilOptions: [
+          noElectricalProfileSetOption,
+          ...sortBy(response.data, ['name']).map((option: ElectricalProfileSetType) => ({
+            key: option.id,
+            value: option.name,
+          })),
+        ],
+      }),
+    }
+  );
 
-  const noElectricalProfileSetOption = {
-    key: undefined,
-    value: t('noElectricalProfileSet'),
-  };
   const [currentScenario, setCurrentScenario] = useState<ScenarioListResult>(
     scenario || scenarioTypesDefaults
   );
-  const { data: electricalProfils, isError } = osrdEditoastApi.useGetElectricalProfileSetQuery();
-  console.log('electricalProfils:', electricalProfils);
 
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
@@ -67,25 +80,12 @@ export default function AddOrEditScenarioModal({
   const studyID = useSelector(getStudyID);
   const infraID = useSelector(getInfraID);
 
-  const electricalProfileSetOptions = useMemo(() => {
-    if (isError || (electricalProfils && electricalProfils.length < 2)) return [];
-
-    const sortedElecticalProfils = sortBy(electricalProfils, ['name']);
-    return [
-      noElectricalProfileSetOption,
-      ...sortedElecticalProfils.map((option: ElectricalProfileSetType) => ({
-        key: option.id,
-        value: option.name,
-      })),
-    ];
-  }, [electricalProfils]);
-
   const selectedValue: SelectOptionsType = useMemo(
     () =>
-      electricalProfileSetOptions.find(
+      electricalProfilOptions.find(
         (option) => option.key === currentScenario.electrical_profile_set_id
       ) || noElectricalProfileSetOption,
-    [currentScenario.electrical_profile_set_id, electricalProfileSetOptions]
+    [currentScenario.electrical_profile_set_id, electricalProfilOptions]
   );
 
   type ElectricalProfileSetType = { id: number; name: string };
@@ -189,7 +189,7 @@ export default function AddOrEditScenarioModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
-  return electricalProfileSetOptions ? (
+  return (
     <div className="scenario-edition-modal">
       <ModalHeaderSNCF withCloseButton withBorderBottom>
         <h1 className="scenario-edition-modal-title">
@@ -238,7 +238,7 @@ export default function AddOrEditScenarioModal({
                 }
               />
             </div>
-            {!editionMode && (
+            {!editionMode && electricalProfilOptions.length > 1 && (
               <div className="scenario-edition-modal-description">
                 <SelectImprovedSNCF
                   title={
@@ -250,7 +250,7 @@ export default function AddOrEditScenarioModal({
                     </div>
                   }
                   selectedValue={selectedValue}
-                  options={electricalProfileSetOptions}
+                  options={electricalProfilOptions}
                   onChange={(e: SelectOptionsType) =>
                     setCurrentScenario({ ...currentScenario, electrical_profile_set_id: e.key })
                   }
@@ -315,5 +315,5 @@ export default function AddOrEditScenarioModal({
         </div>
       </ModalFooterSNCF>
     </div>
-  ) : null;
+  );
 }
