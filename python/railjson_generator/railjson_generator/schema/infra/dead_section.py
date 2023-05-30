@@ -26,7 +26,7 @@ class DeadSection:
             PathElement(
                 begin=begin,
                 end=end,
-                track=track,
+                track_section=track,
                 direction=direction,
             )
         )

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("osrd_infra", "0029_railjson_3_2_2"),
+        ("osrd_infra", "0030_search_op_fix_uic_type"),
     ]
 
     operations = [
@@ -14,5 +14,9 @@ class Migration(migrations.Migration):
             model_name="infra",
             name="railjson_version",
             field=models.CharField(default="3.3.1", editable=False, max_length=16),
+        ),
+        migrations.RunSQL(
+            sql=[("UPDATE osrd_infra_infra SET railjson_version = '3.3.1'")],
+            reverse_sql=[("UPDATE osrd_infra_infra SET railjson_version = '3.3.0'")],
         ),
     ]
