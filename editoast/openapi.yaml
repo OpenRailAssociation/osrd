@@ -875,6 +875,9 @@ paths:
                 type: array
                 items:
                   type: object
+                  required:
+                    - id
+                    - name
                   properties:
                     id:
                       type: integer
@@ -1732,7 +1735,14 @@ components:
     Battery:
       description: energy source for a rolling stock representing a battery
       type: object
-      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      required:
+        [
+          energy_source_type,
+          max_input_power,
+          max_output_power,
+          energy_storage,
+          efficiency,
+        ]
       properties:
         energy_source_type:
           type: string
@@ -1764,7 +1774,8 @@ components:
     Catenary:
       description: energy source for a rolling stock representing a catenary
       type: object
-      required: [energy_source_type, max_input_power, max_output_power, efficiency]
+      required:
+        [energy_source_type, max_input_power, max_output_power, efficiency]
       properties:
         energy_source_type:
           type: string
@@ -1825,9 +1836,9 @@ components:
     EnergySource:
       description: enery source of a rolling stock
       oneOf:
-        - $ref: '#/components/schemas/Catenary'
-        - $ref: '#/components/schemas/PowerPack'
-        - $ref: '#/components/schemas/Battery'
+        - $ref: "#/components/schemas/Catenary"
+        - $ref: "#/components/schemas/PowerPack"
+        - $ref: "#/components/schemas/Battery"
       discriminator:
         propertyName: energy_source_type
 
@@ -2259,7 +2270,14 @@ components:
     PowerPack:
       description: energy source for a rolling stock representing a power pack (hydrogen, fuel...)
       type: object
-      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      required:
+        [
+          energy_source_type,
+          max_input_power,
+          max_output_power,
+          energy_storage,
+          efficiency,
+        ]
       properties:
         energy_source_type:
           type: string
