@@ -5,7 +5,7 @@ operationalpoint:
     obj_id: string
     infra_id: integer
     name: string
-    uic: integer
+    uic: string
     trigram: string
   result:
     joins: |
@@ -20,6 +20,7 @@ operationalpoint:
       ch: opm.data#>>'{extensions,sncf,ch}'
       geographic: ST_AsGeoJSON(ST_Transform(opl.geographic, 4326))::json
       schematic: ST_AsGeoJSON(ST_Transform(opl.schematic, 4326))::json
+      track_sections: opm.data->'parts'
 
 track:
   table: osrd_search_track
