@@ -12,10 +12,13 @@ import {
   interpolateOnTime,
   makeTrainListWithAllTrainsOffset,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
+import {
+  SPEED_SPACE_SETTINGS_KEYS,
+  OsrdSimulationState,
+  SimulationTrain,
+} from 'reducers/osrdsimulation/types';
 import { time2sec } from 'utils/timeManipulation';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
-
-import { OsrdSimulationState, SimulationTrain } from './types';
 
 import {
   UPDATE_CHART,
@@ -65,11 +68,12 @@ export const initialState: OsrdSimulationState = {
   selectedProjection: undefined,
   selectedTrain: 0,
   speedSpaceSettings: {
-    altitude: false,
-    curves: false,
-    maxSpeed: true,
-    slopes: false,
-    electricalProfiles: false,
+    [SPEED_SPACE_SETTINGS_KEYS.ALTITUDE]: false,
+    [SPEED_SPACE_SETTINGS_KEYS.CURVES]: false,
+    [SPEED_SPACE_SETTINGS_KEYS.MAX_SPEED]: false,
+    [SPEED_SPACE_SETTINGS_KEYS.SLOPES]: false,
+    [SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES]: false,
+    [SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION]: false,
   },
   signalBase: SIGNAL_BASE_DEFAULT,
   timePosition: '',
