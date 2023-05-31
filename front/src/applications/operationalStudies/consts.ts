@@ -177,10 +177,6 @@ export interface OsrdMultiConfState {
 export const RUNTIME_CAP = 43200;
 
 // electrical profiles
-export interface ElecProfileProps {
-  isActive: boolean;
-  setIsActive: Function;
-}
 interface Profile {
   mode: string;
   color: string[];

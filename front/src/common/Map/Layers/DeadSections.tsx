@@ -38,8 +38,7 @@ export default function DeadSections(props: DeadSectionsProps) {
       ],
       'line-width': 6,
       'line-offset': 0,
-      'line-opacity': .5,
-      // 'line-dasharray': [3.0, 3.0],
+      'line-opacity': 0.5,
     },
   };
 
