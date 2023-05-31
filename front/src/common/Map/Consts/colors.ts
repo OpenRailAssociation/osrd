@@ -80,8 +80,8 @@ const colors: Record<string, Theme> = {
       colorOther: '#000000',
     },
     dead_sections: {
-      drop_pantograph: "#ff0000",
-      cut_off: "#000000"
+      drop_pantograph: '#ff0000',
+      cut_off: '#000000',
     },
     radio: {
       text: '#5596c8',
@@ -229,8 +229,8 @@ const colors: Record<string, Theme> = {
       colorOther: '#FFFFFF',
     },
     dead_sections: {
-      drop_pantograph: "#ff0000",
-      cut_off: "#000000"
+      drop_pantograph: '#ff0000',
+      cut_off: '#000000',
     },
     radio: {
       text: '#5596c8',
@@ -370,8 +370,8 @@ const colors: Record<string, Theme> = {
       colorOther: bpLight,
     },
     dead_sections: {
-      drop_pantograph: "#ff0000",
-      cut_off: "#000000"
+      drop_pantograph: '#ff0000',
+      cut_off: '#000000',
     },
     radio: {
       text: bpMedium,
