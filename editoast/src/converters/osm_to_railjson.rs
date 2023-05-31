@@ -1,5 +1,5 @@
 use super::utils::*;
-use crate::schema::*;
+use crate::{converters::generate_routes, schema::*};
 use log::{error, info};
 
 use std::{collections::HashMap, error::Error, path::PathBuf};
@@ -9,7 +9,6 @@ pub fn osm_to_railjson(
     osm_pbf_in: PathBuf,
     railjson_out: PathBuf,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    env_logger::init();
     info!(
         "🗺️ Converting {} to {}",
         osm_pbf_in.display(),
@@ -95,7 +94,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         match (edges_count, branches_count) {
             (0, _) => error!("node {id} without edge"),
             (1, 0) => railjson.buffer_stops.push(BufferStop {
-                id: id.to_string().into(),
+                id: format!("buffer-{id}").into(),
                 track: adj.edges[0].id.clone().into(),
                 position: if adj.edges[0].source == node {
                     0.
@@ -116,6 +115,9 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
             _ => log::debug!("node {id} with {edges_count} edges and {branches_count} branches"),
         }
     }
+    log::debug!("Start generating routes");
+    railjson.routes = generate_routes::routes(&railjson);
+    log::debug!("Done, got {} routes", railjson.routes.len());
     Ok(railjson)
 }
 
