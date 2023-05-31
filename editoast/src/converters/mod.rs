@@ -1,3 +1,4 @@
+mod generate_routes;
 mod osm_to_railjson;
 mod utils;
 

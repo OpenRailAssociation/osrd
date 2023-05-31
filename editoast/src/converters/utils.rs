@@ -108,7 +108,7 @@ fn flat(angle: f64) -> bool {
     (180.0 - angle).abs() <= 30.0
 }
 
-/// A brnanch it a pair of two edges that share a node
+/// A branch it a pair of two edges that share a node
 /// and whose angle is flat enough for a train to go from one edge to an other
 type Branch = (TrackEndpoint, TrackEndpoint);
 
