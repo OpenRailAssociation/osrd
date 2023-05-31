@@ -195,6 +195,22 @@ export interface SimulationTrain<DateType = Date> {
   eco_speed?: ConsolidatePositionSpeed<DateType>[];
 }
 
+export enum SPEED_SPACE_SETTINGS_KEYS {
+  ALTITUDE = 'altitude',
+  CURVES = 'curves',
+  MAX_SPEED = 'maxSpeed',
+  SLOPES = 'slopes',
+  ELECTRICAL_PROFILES = 'electricalProfiles',
+  POWER_RESTRICTION = 'powerRestriction',
+}
+export type SpeedSpaceSettingKey =
+  | SPEED_SPACE_SETTINGS_KEYS.ALTITUDE
+  | SPEED_SPACE_SETTINGS_KEYS.CURVES
+  | SPEED_SPACE_SETTINGS_KEYS.MAX_SPEED
+  | SPEED_SPACE_SETTINGS_KEYS.SLOPES
+  | SPEED_SPACE_SETTINGS_KEYS.ELECTRICAL_PROFILES
+  | SPEED_SPACE_SETTINGS_KEYS.POWER_RESTRICTION;
+
 export interface OsrdSimulationState {
   redirectToGraph?: boolean;
   chart?: Chart;
@@ -215,11 +231,7 @@ export interface OsrdSimulationState {
   };
   selectedTrain: number;
   speedSpaceSettings: {
-    altitude: boolean;
-    curves: boolean;
-    maxSpeed: boolean;
-    slopes: boolean;
-    electricalProfiles: boolean;
+    [key in SpeedSpaceSettingKey]: boolean;
   };
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
