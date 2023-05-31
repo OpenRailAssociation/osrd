@@ -12,10 +12,10 @@ import {
   getGridMarginAfter,
   getStandardStdcmAllowance,
 } from 'reducers/osrdconf/selectors';
+import { StandardAllowance } from 'applications/operationalStudies/consts';
 import SingleAllowance from './StandardAllowanceDefault';
 
 import { ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
-import { StandardAllowance } from 'applications/operationalStudies/consts';
 
 function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {

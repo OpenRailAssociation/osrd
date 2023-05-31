@@ -1,6 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ElecProfileProps, legend } from 'applications/operationalStudies/consts';
+import { legend } from 'applications/operationalStudies/consts';
+
+interface ElecProfileProps {
+  isActive: boolean;
+  setIsActive: (isActive: boolean) => void;
+}
 
 const ElectricalProfilesLegend = ({ isActive, setIsActive }: ElecProfileProps) => {
   const { t } = useTranslation('simulation');

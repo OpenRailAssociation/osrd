@@ -32,14 +32,7 @@ export const displayGuide = (chart, opacity) => {
   }
 };
 
-export const updatePointers = (
-  chart,
-  keyValues,
-  listValues,
-  positionValues,
-  rotate,
-  doGuideLines = false
-) => {
+export const updatePointers = (chart, keyValues, listValues, positionValues, rotate) => {
   listValues.forEach((name) => {
     if (positionValues[name]) {
       chart.svg
@@ -56,16 +49,6 @@ export const updatePointers = (
             ? chart.y(positionValues[name][keyValues[0]])
             : chart.y(positionValues[name][keyValues[1]])
         );
-    }
-    if (doGuideLines) {
-      chart.svg
-        .selectAll('#vertical-line')
-        .attr('x1', pointer(event, event.currentTarget)[0])
-        .attr('x2', pointer(event, event.currentTarget)[0]);
-      chart.svg
-        .selectAll('#horizontal-line')
-        .attr('y1', pointer(event, event.currentTarget)[1])
-        .attr('y2', pointer(event, event.currentTarget)[1]);
     }
   });
 };
