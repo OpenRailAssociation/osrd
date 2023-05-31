@@ -8,6 +8,7 @@
 
 # --- EDITOAST ---
 /editoast                                                @DGEXSolutions/editoast-maintainers
+/editoast/openapi.yaml
 /chartos                                                 @DGEXSolutions/editoast-maintainers
 /python                                                  @DGEXSolutions/editoast-maintainers
 
