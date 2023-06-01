@@ -188,11 +188,13 @@ public class PathfindingTest extends ApiTest {
         var waypoints = new PathfindingWaypoint[2][1];
         waypoints[0][0] = waypoint;
         waypoints[1][0] = waypoint;
+
         var requestBody = PathfindingRequest.adapter.toJson(
                 new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
         var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
+
         assertTrue(res.get(0).contains("400"));
     }
 

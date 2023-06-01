@@ -55,7 +55,7 @@ public final class ApiServerCommand implements CliCommand {
         var authorizationToken = System.getenv("FETCH_INFRA_AUTHORIZATION");
         var middleWareBaseUrl = getMiddlewareBaseUrl();
         var httpClient = new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
-        var infraManager = new InfraManager(middleWareBaseUrl, authorizationToken, httpClient);
+        var infraManager = new InfraManager(middleWareBaseUrl, authorizationToken, httpClient, false);
         var electricalProfileSetManager =
                 new ElectricalProfileSetManager(middleWareBaseUrl, authorizationToken, httpClient);
 

@@ -85,7 +85,8 @@ public class STDCMEndpoint implements Take {
                 );
             if (Double.isNaN(startTime))
                 throw new RuntimeException("STDCM requests with unspecified start time are not supported yet");
-            final var fullInfra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            // TODO : change with get infra when the front is ready
+            final var fullInfra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
             final var infra = fullInfra.java();
             final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);

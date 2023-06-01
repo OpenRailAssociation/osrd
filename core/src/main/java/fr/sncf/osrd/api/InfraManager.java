@@ -25,6 +25,7 @@ public class InfraManager extends APIClient {
 
     private final ConcurrentHashMap<String, InfraCacheEntry> infraCache = new ConcurrentHashMap<>();
     private final SignalingSimulator signalingSimulator = makeSignalingSimulator();
+    private final boolean loadIfMissing;
 
     public void forEach(BiConsumer<String, InfraCacheEntry> action) {
         infraCache.forEach(action);
@@ -49,6 +50,15 @@ public class InfraManager extends APIClient {
         @Override
         public String toString() {
             return getMessage() + " in state " + sourceOperation.name() + ": " + super.getCause();
+        }
+    }
+
+    public static final class InfraGetException extends OSRDError {
+        private static final long serialVersionUID = 4291184310194002894L;
+        public static final String osrdErrorType = "get_infra";
+
+        InfraGetException(String message) {
+            super(message, ErrorCause.USER);
         }
     }
 
@@ -118,8 +128,9 @@ public class InfraManager extends APIClient {
     }
 
 
-    public InfraManager(String baseUrl, String authorizationToken, OkHttpClient httpClient) {
+    public InfraManager(String baseUrl, String authorizationToken, OkHttpClient httpClient, boolean loadIfMissing) {
         super(baseUrl, authorizationToken, httpClient);
+        this.loadIfMissing = loadIfMissing;
     }
 
     @ExcludeFromGeneratedCodeCoverage
@@ -233,5 +244,39 @@ public class InfraManager extends APIClient {
 
     public InfraCacheEntry getInfraCache(String infraId) {
         return infraCache.get(infraId);
+    }
+
+    public InfraCacheEntry deleteFromInfraCache(String infraId) {
+        return infraCache.remove(infraId);
+    }
+
+    /**
+     * Get an infra given an id
+     */
+    public FullInfra getInfra(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
+            throws InfraLoadException, InterruptedException {
+        try {
+            infraCache.putIfAbsent(infraId, new InfraCacheEntry());
+            var cacheEntry = infraCache.get(infraId);
+            // download the infra for tests
+            if (loadIfMissing) {
+                return load(infraId, expectedVersion, diagnosticRecorder);
+            }
+            var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
+            if (!cacheEntry.status.isStable)
+                throw new InfraGetException("Infra not loaded");
+            if (obsoleteVersion) {
+                deleteFromInfraCache(infraId);
+                throw new InfraGetException("Invalid version");
+            }
+            if (cacheEntry.status == InfraStatus.CACHED)
+                return cacheEntry.infra;
+            throw new InfraLoadException("invalid status", cacheEntry.status);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("exception while getting infra", e);
+            throw e;
+        }
     }
 }
