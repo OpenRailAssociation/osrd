@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 @ExtendWith(MockitoExtension.class)
 public class ApiTest {
-    InfraManager infraHandlerMock = null;
+    public InfraManager infraHandlerMock = null;
 
     ElectricalProfileSetManager electricalProfileSetManagerMock = null;
 

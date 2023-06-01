@@ -16,6 +16,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDeadSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
@@ -92,6 +93,8 @@ public class UndirectedInfraBuilder {
 
         loadCatenaries(infra.catenaries, trackSectionsByID);
 
+        loadDeadSections(infra.deadSections, trackSectionsByID);
+
         return TrackInfraImpl.from(switches.build(), builder.build());
     }
 
@@ -101,6 +104,18 @@ public class UndirectedInfraBuilder {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
                 assert track != null;
                 track.getVoltages().put(Range.open(trackRange.begin, trackRange.end), catenary.voltage);
+            }
+        }
+    }
+
+    private void loadDeadSections(List<RJSDeadSection> deadSections,
+                                  HashMap<String, TrackSectionImpl> trackSectionsByID) {
+        for (var deadSection : deadSections) {
+            for (var trackRange : deadSection.trackRanges) {
+                var track = trackSectionsByID.get(trackRange.trackSectionID);
+                assert track != null;
+                track.getDeadSections(Direction.fromEdgeDir(trackRange.direction))
+                        .add(Range.closed(trackRange.begin, trackRange.end));
             }
         }
     }

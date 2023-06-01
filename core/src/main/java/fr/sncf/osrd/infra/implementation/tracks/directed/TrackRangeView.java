@@ -1,13 +1,19 @@
 package fr.sncf.osrd.infra.implementation.tracks.directed;
 
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
+import com.google.common.collect.RangeSet;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
-import fr.sncf.osrd.infra.api.tracks.undirected.*;
+import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.LoadingGaugeConstraint;
+import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
+import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
@@ -176,6 +182,28 @@ public class TrackRangeView {
         return track.getDirection().equals(Direction.FORWARD) ? end : begin;
     }
 
+    /** Converts a position on the original track to one referring to the range itself.*/
+    private double convertPosition(double position) {
+        if (track.getDirection() == Direction.FORWARD)
+            return position - begin;
+        return end - position;
+    }
+
+    /** Converts a single range based on the original track so that the positions refer to the range */
+    public Range<Double> convertRange(Range<Double> range) {
+        var rangeStart = convertPosition(range.lowerEndpoint());
+        var rangeEnd = convertPosition(range.upperEndpoint());
+        if (rangeStart > rangeEnd) {
+            var tmp = rangeStart;
+            rangeStart = rangeEnd;
+            rangeEnd = tmp;
+        }
+        if (rangeStart != rangeEnd)
+            return Range.open(rangeStart, rangeEnd);
+        else
+            return null;
+    }
+
     /** Converts a RangeMap based on the original track so that the positions refer to the range */
     public <T> ImmutableRangeMap<Double, T> convertMap(RangeMap<Double, T> map) {
         if (getLength() == 0)
@@ -183,15 +211,23 @@ public class TrackRangeView {
         var builder = ImmutableRangeMap.<Double, T>builder();
         var subMap = map.subRangeMap(Range.open(begin, end));
         for (var entry : subMap.asMapOfRanges().entrySet()) {
-            var rangeStart = convertPosition(entry.getKey().lowerEndpoint());
-            var rangeEnd = convertPosition(entry.getKey().upperEndpoint());
-            if (rangeStart > rangeEnd) {
-                var tmp = rangeStart;
-                rangeStart = rangeEnd;
-                rangeEnd = tmp;
-            }
-            if (rangeStart != rangeEnd)
-                builder.put(Range.open(rangeStart, rangeEnd), entry.getValue());
+            var newRange = convertRange(entry.getKey());
+            if (newRange != null)
+                builder.put(newRange, entry.getValue());
+        }
+        return builder.build();
+    }
+
+    /** Converts a RangeSet based on the original track so that the positions refer to the range */
+    public ImmutableRangeSet<Double> convertSet(RangeSet<Double> set) {
+        if (getLength() == 0)
+            return ImmutableRangeSet.of();
+        var builder = ImmutableRangeSet.<Double>builder();
+        var subSet = set.subRangeSet(Range.open(begin, end));
+        for (var range : subSet.asRanges()) {
+            var newRange = convertRange(range);
+            if (newRange != null)
+                builder.add(newRange);
         }
         return builder.build();
     }
@@ -206,11 +242,9 @@ public class TrackRangeView {
         return convertMap(track.getEdge().getVoltages());
     }
 
-    /** Converts a position on the original track to one referring to the range itself.*/
-    private double convertPosition(double position) {
-        if (track.getDirection() == Direction.FORWARD)
-            return position - begin;
-        return end - position;
+    /** Returns the ranges marked as dead section on the track */
+    public RangeSet<Double> getDeadSections() {
+        return convertSet(track.getEdge().getDeadSections(track.getDirection()));
     }
 
     /** Returns true if the element is inside the range */
