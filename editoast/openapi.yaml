@@ -1062,6 +1062,13 @@ paths:
       tags:
         - rolling_stock
       summary: Create a rolling stock
+      parameters:
+        - in: query
+          name: locked
+          description: whether or not the rolling_stock can be edited/deleted.
+          default: false
+          schema:
+            type: bool
       requestBody:
         content:
           application/json:
@@ -1131,6 +1138,34 @@ paths:
       responses:
         204:
           description: No content
+
+  /rolling_stock/{id}/locked/:
+    patch:
+      tags:
+        - rolling_stock
+      summary: Update rolling_stock locked field
+      parameters:
+        - in: path
+          name: id
+          description: Rolling_stock id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: New locked value
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locked:
+                  type: boolean
+      responses:
+        204:
+          description: No content
+        404:
+          description: Not found
 
   /rolling_stock/{id}/livery/:
     post:
@@ -2355,6 +2390,10 @@ components:
           example: "3.0"
         name:
           type: string
+        locked:
+          type: boolean
+          default: false
+          description: Whether the rolling stock can be edited/deleted or not.
         length:
           type: number
           format: float

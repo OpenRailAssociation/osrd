@@ -26,6 +26,7 @@ pub struct LightRollingStockModel {
     pub id: i64,
     name: String,
     version: String,
+    locked: bool,
     effort_curves: DieselJson<LightEffortCurves>,
     base_power_class: String,
     length: f64,
