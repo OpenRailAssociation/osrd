@@ -68,6 +68,7 @@ export default function AddOrEditScenarioModal({
       }),
     }
   );
+  const [loadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioListResult>(
     scenario || scenarioTypesDefaults
@@ -114,6 +115,7 @@ export default function AddOrEditScenarioModal({
         .unwrap()
         .then(({ id }) => {
           dispatch(updateScenarioID(id));
+          loadInfra({ id: infraID as number }).unwrap();
           navigate('/operational-studies/scenario');
           closeModal();
         })

@@ -118,6 +118,52 @@
         img {
           height: 1rem;
         }
+        .scenario-details-infra-loading-state {
+          font-size: 0.9rem;
+          display: flex;
+          align-items: center;
+          margin-right: 0.5rem;
+
+          .infra-loader:first-child {
+            animation: dot-flashing 0.5s infinite linear alternate;
+            animation-delay: 0s;
+          }
+          .infra-loader:nth-child(2) {
+            animation: dot-flashing 0.5s infinite linear alternate;
+            animation-delay: 0.25s;
+          }
+          .infra-loader:nth-child(3) {
+            animation: dot-flashing 0.5s infinite linear alternate;
+            animation-delay: 0.5s;
+          }
+
+          @keyframes dot-flashing {
+            0% {
+              color: var(--orange);
+            }
+            50%,
+            100% {
+              color: #f8e3d8;
+            }
+          }
+
+          .steps {
+            font-weight: 500;
+            margin-left: 0.5rem;
+            margin-top: 0.1rem;
+          }
+        }
+        .cached {
+          color: var(--green);
+        }
+        .loading {
+          color: var(--orange);
+        }
+      }
+      .scenario-details-infra-error {
+        color: var(--red);
+        font-weight: 500;
+        font-size: 0.9rem;
       }
       .scenario-details-description {
         overflow: auto;
@@ -321,7 +367,7 @@
                 display: flex;
               }
             }
-            
+
             // DURATION BAR
             &.with-colored-border {
               border-right: 3px solid var(--secondary);
