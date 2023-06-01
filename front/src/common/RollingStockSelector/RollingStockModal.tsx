@@ -60,7 +60,7 @@ export function rollingStockPassesEnergeticModeFilters(
 }
 
 function filterRollingStocks(rollingStocks: LightRollingStock[], filters: Filters) {
-  return rollingStocks?.filter(({ name, metadata, effort_curves: effortCurves }) => {
+  return rollingStocks.filter(({ name, metadata, effort_curves: effortCurves }) => {
     const passSearchedStringFilter = rollingStockPassesSearchedStringFilter(
       name,
       metadata,
@@ -88,7 +88,8 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     elec: false,
     thermal: false,
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [rollingStocks, setRollingStocks] = useState<LightRollingStock[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [openRollingStockCardId, setOpenRollingStockCardId] = useState(rollingStockID);
   const { closeModal } = useContext(ModalContext);
 
@@ -96,47 +97,53 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     import('./RollingStockDarkMode.scss');
   }
 
-  const { rollingStocks, isSuccess, isError, error } = osrdEditoastApi.useGetLightRollingStockQuery(
-    {
-      pageSize: 1000,
-    },
-    {
-      selectFromResult: (response) => ({
-        ...response,
-        rollingStocks: sortBy(response.data?.results, ['metadata.reference', 'name']) || [],
-      }),
+  const { apiRollingStocks, isError, error, requestIsLoading } =
+    osrdEditoastApi.useGetLightRollingStockQuery(
+      {
+        pageSize: 1000,
+      },
+      {
+        selectFromResult: (response) => ({
+          ...response,
+          requestIsLoading: !response.data,
+          apiRollingStocks: sortBy(response.data?.results, ['metadata.reference', 'name']) || [],
+        }),
+      }
+    );
+
+  // this useEffect is needed to avoid extra renderings when the filters are updated
+  // (apiRollingStocks is re-instantiated at each re-render)
+  useEffect(() => {
+    if (!requestIsLoading) setRollingStocks(apiRollingStocks);
+  }, [requestIsLoading]);
+
+  const filteredRollingStockList = useMemo(
+    () => filterRollingStocks(rollingStocks, filters),
+    [rollingStocks, filters]
+  );
+
+  useEffect(() => {
+    if (isLoading && !requestIsLoading) {
+      setIsLoading(false);
     }
-  );
-  const [filteredRollingStockList, setFilteredRollingStockList] = useState<LightRollingStock[]>(
-    () => filterRollingStocks(rollingStocks, filters)
-  );
+  }, [filteredRollingStockList]);
 
-  function handleRollingStockLoaded() {
-    const newFilteredRollingStock = filterRollingStocks(rollingStocks, filters);
-    setFilteredRollingStockList(newFilteredRollingStock);
-  }
-
-  const updateSearch = () => {
+  const manageSelectedCardOnFiltersUpdate = () => {
     if (filters.text !== '' || filters.elec !== false || filters.thermal !== false) {
       setOpenRollingStockCardId(undefined);
     } else {
       setOpenRollingStockCardId(rollingStockID);
     }
-    const newFilteredRollingStock = filterRollingStocks(rollingStocks, filters);
-    setTimeout(() => {
-      setFilteredRollingStockList(newFilteredRollingStock);
-      setIsLoading(false);
-    }, 0);
   };
 
   const searchMateriel = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({ ...filters, text: e.target.value.toLowerCase() });
     setIsLoading(true);
+    setFilters({ ...filters, text: e.target.value.toLowerCase() });
   };
 
   const toggleFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({ ...filters, [e.target.name]: !filters[e.target.name as 'elec' | 'thermal'] });
     setIsLoading(true);
+    setFilters({ ...filters, [e.target.name]: !filters[e.target.name as 'elec' | 'thermal'] });
   };
 
   useEffect(() => {
@@ -148,10 +155,6 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
       }, 1000);
     }
   }, [ref2scroll.current]);
-
-  useEffect(() => {
-    handleRollingStockLoaded();
-  }, [isSuccess, rollingStocks]);
 
   useEffect(() => {
     if (isError && error && 'status' in error) {
@@ -168,10 +171,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   }, [isError]);
 
   useEffect(() => {
-    if (rollingStocks !== undefined) {
-      updateSearch();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    manageSelectedCardOnFiltersUpdate();
   }, [filters]);
 
   const listOfRollingStocks = useMemo(
