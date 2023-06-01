@@ -8,6 +8,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDeadSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.ArrayList;
@@ -64,49 +65,28 @@ public class RJSInfra {
 
     public List<RJSCatenary> catenaries;
 
+    @Json(name = "dead_sections")
+    public List<RJSDeadSection> deadSections;
+
     /** Create a new serialized RailJSON file */
     public RJSInfra(
             Collection<RJSTrackSection> trackSections,
-            Collection<RJSTrackSectionLink> trackSectionLinks,
-            Collection<RJSSwitch> switches,
-            Collection<RJSOperationalPoint> operationalPoints,
             Collection<RJSRoute> routes,
-            List<RJSSwitchType> switchTypes,
             List<RJSSignal> signals,
             List<RJSBufferStop> bufferStops,
-            List<RJSTrainDetector> detectors,
-            List<RJSSpeedSection> speedSections,
-            List<RJSCatenary> catenaries
+            List<RJSTrainDetector> detectors
     ) {
         this.trackSections = trackSections;
-        this.trackSectionLinks = trackSectionLinks;
-        this.switches = switches;
-        this.operationalPoints = operationalPoints;
+        this.trackSectionLinks = new ArrayList<>();
+        this.switches = new ArrayList<>();
+        this.operationalPoints = new ArrayList<>();
         this.routes = routes;
-        this.switchTypes = switchTypes;
+        this.switchTypes = new ArrayList<>();
         this.signals = signals;
         this.bufferStops = bufferStops;
         this.detectors = detectors;
-        this.speedSections = speedSections;
-        this.catenaries = catenaries;
-    }
-
-    /**
-     * Create an empty RailJSON file
-     */
-    public RJSInfra() {
-        this(
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>()
-        );
+        this.speedSections = new ArrayList<>();
+        this.catenaries = new ArrayList<>();
+        this.deadSections = new ArrayList<>();
     }
 }

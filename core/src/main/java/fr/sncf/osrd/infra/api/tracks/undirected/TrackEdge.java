@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.RangeMap;
+import com.google.common.collect.RangeSet;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.EnumMap;
@@ -50,4 +51,7 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
 
     /** Returns a voltage usable at any position */
     RangeMap<Double, String> getVoltages();
+
+    /** Returns the ranges covered by dead sections */
+    RangeSet<Double> getDeadSections(Direction direction);
 }

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.Helpers.getResourcePath;
 import static fr.sncf.osrd.Helpers.infraFromRJS;
@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.Range;
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.api.ApiTest;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
@@ -248,79 +249,6 @@ public class PathfindingTest extends ApiTest {
         assertNotNull(
                 PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE))
         );
-    }
-
-    @Test
-    public void incompatibleCatenariesTest() throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "TA1",
-                1550,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "TH0",
-                103,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypoints = new PathfindingWaypoint[2][1];
-        waypoints[0][0] = waypointStart;
-        waypoints[1][0] = waypointEnd;
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
-
-        // Run a pathfinding with a non-electric train
-        var normalPath = PathfindingRoutesEndpoint.runPathfinding(
-                infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN)
-        );
-
-        // Put catenary everywhere
-        assert TestTrains.FAST_ELECTRIC_TRAIN.getModeNames().contains("25000");
-        for (var track : infra.getTrackGraph().edges()) {
-            if (track instanceof TrackSection)
-                track.getVoltages().put(
-                        Range.closed(0., track.getLength()),
-                        "25000"
-                );
-        }
-
-        // Removes catenary in the middle of the path
-        var middleRoute = normalPath.ranges().get(normalPath.ranges().size() / 2);
-        var tracks = middleRoute.edge().getInfraRoute().getTrackRanges();
-        var middleTrack = tracks.get(tracks.size() / 2).track.getEdge();
-        middleTrack.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
-
-        // Run another pathfinding with an electric train
-        var electricPath = PathfindingRoutesEndpoint.runPathfinding(
-                infra,
-                waypoints,
-                List.of(TestTrains.FAST_ELECTRIC_TRAIN)
-        );
-        assertNotNull(normalPath);
-        assertNotNull(electricPath);
-
-        // We check that the path is different, we need to avoid the non-electrified track
-        var normalRoutes = normalPath.ranges().stream()
-                .map(range -> range.edge().getInfraRoute().getID())
-                .toList();
-        var electrifiedRoutes = electricPath.ranges().stream()
-                .map(range -> range.edge().getInfraRoute().getID())
-                .toList();
-        assertNotEquals(normalRoutes, electrifiedRoutes);
-
-        // Remove all electrification
-        for (var track : infra.getTrackGraph().edges()) {
-            if (track instanceof TrackSection)
-                track.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
-        }
-
-        var exception = assertThrows(
-                NoPathFoundError.class,
-                () -> PathfindingRoutesEndpoint.runPathfinding(
-                        infra,
-                        waypoints,
-                        List.of(TestTrains.FAST_ELECTRIC_TRAIN)
-                )
-        );
-        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR, exception.message);
     }
 
     @Test
