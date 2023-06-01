@@ -111,6 +111,7 @@ def fast_rolling_stock() -> int:
 @pytest.fixture
 def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> TrainPath:
     """west_to_south_east_path screenshot in `tests/README.md`"""
+    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     response = requests.post(
         f"{API_URL}pathfinding/",
         json={
