@@ -273,7 +273,7 @@ impl GeneratedData for ErrorLayer {
             infra_cache,
             &graph,
             &catenaries::OBJECT_GENERATORS,
-            &[],
+            &catenaries::GLOBAL_GENERATORS,
         ));
 
         // TODO: generer les erreurs pour les deadSections
@@ -398,7 +398,7 @@ mod test {
             &small_infra_cache,
             &graph,
             &catenaries::OBJECT_GENERATORS,
-            &[],
+            &catenaries::GLOBAL_GENERATORS,
         )
         .is_empty());
     }
