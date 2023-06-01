@@ -27,6 +27,10 @@ class RollingStock(models.Model):
         unique=True,
         help_text=_("A unique identifier for this rolling stock"),
     )
+    locked = models.BooleanField(
+        default=False,
+        help_text=_("Whether the rolling stock can be edited/deleted or not."),
+    )
     effort_curves = models.JSONField(
         help_text=_("A group of curves mapping speed (in m/s) to maximum traction (in newtons)"),
         validators=[PydanticValidator(EffortCurves)],

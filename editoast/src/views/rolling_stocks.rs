@@ -5,13 +5,12 @@ use crate::models::{
 };
 use crate::schema::rolling_stock::rolling_stock_livery::RollingStockLivery;
 use crate::schema::rolling_stock::{
-    EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
-    RollingStockWithLiveries,
+    RollingStock, RollingStockCommon, RollingStockMetadata, RollingStockWithLiveries,
 };
 use crate::DbPool;
 use actix_multipart::form::text::Text;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{scope, Data, Json, Path};
+use actix_web::web::{scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
@@ -39,95 +38,56 @@ pub enum RollingStockError {
     #[error("Name '{name}' already used")]
     #[editoast_error(status = 400)]
     NameAlreadyUsed { name: String },
+    #[error("RollingStock '{rolling_stock_id}' is locked")]
+    #[editoast_error(status = 400)]
+    RollingStockIsLocked { rolling_stock_id: i64 },
 }
 
 pub fn routes() -> impl HttpServiceFactory {
     scope("/rolling_stock")
         .service((get, create, update, delete))
-        .service(scope("/{rolling_stock_id}").service(create_livery))
+        .service(scope("/{rolling_stock_id}").service((create_livery, update_locked)))
 }
 
 #[get("/{rolling_stock_id}")]
 async fn get(db_pool: Data<DbPool>, path: Path<i64>) -> Result<Json<RollingStockWithLiveries>> {
     let rolling_stock_id = path.into_inner();
-    let rolling_stock = match RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await?
-    {
-        Some(rolling_stock) => rolling_stock,
-        None => return Err(RollingStockError::NotFound { rolling_stock_id }.into()),
-    };
+    let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?;
     let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
     Ok(Json(rolling_stock_with_liveries))
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RollingStockForm {
-    pub name: String,
-    pub version: String,
-    pub effort_curves: EffortCurves,
-    pub base_power_class: String,
-    pub length: f64,
-    pub max_speed: f64,
-    pub startup_time: f64,
-    pub startup_acceleration: f64,
-    pub comfort_acceleration: f64,
-    pub gamma: Gamma,
-    pub inertia_coefficient: f64,
-    pub features: Vec<String>,
-    pub mass: f64,
-    pub rolling_resistance: RollingResistance,
-    pub loading_gauge: String,
+    #[serde(flatten)]
+    pub common: RollingStockCommon,
+    pub locked: Option<bool>,
     pub metadata: RollingStockMetadata,
-    pub power_restrictions: Option<geos::geojson::JsonValue>,
-    pub energy_sources: Vec<EnergySource>,
 }
 
 impl From<RollingStockForm> for RollingStockModel {
     fn from(rolling_stock: RollingStockForm) -> Self {
         RollingStockModel {
-            name: Some(rolling_stock.name),
-            version: Some(rolling_stock.version),
-            effort_curves: Some(DieselJson(rolling_stock.effort_curves)),
-            base_power_class: Some(rolling_stock.base_power_class),
-            length: Some(rolling_stock.length),
-            max_speed: Some(rolling_stock.max_speed),
-            startup_time: Some(rolling_stock.startup_time),
-            startup_acceleration: Some(rolling_stock.startup_acceleration),
-            comfort_acceleration: Some(rolling_stock.comfort_acceleration),
-            gamma: Some(DieselJson(rolling_stock.gamma)),
-            inertia_coefficient: Some(rolling_stock.inertia_coefficient),
-            features: Some(rolling_stock.features),
-            mass: Some(rolling_stock.mass),
-            rolling_resistance: Some(DieselJson(rolling_stock.rolling_resistance)),
-            loading_gauge: Some(rolling_stock.loading_gauge),
+            name: Some(rolling_stock.common.name),
+            version: Some(rolling_stock.common.version),
+            locked: rolling_stock.locked,
+            effort_curves: Some(DieselJson(rolling_stock.common.effort_curves)),
+            base_power_class: Some(rolling_stock.common.base_power_class),
+            length: Some(rolling_stock.common.length),
+            max_speed: Some(rolling_stock.common.max_speed),
+            startup_time: Some(rolling_stock.common.startup_time),
+            startup_acceleration: Some(rolling_stock.common.startup_acceleration),
+            comfort_acceleration: Some(rolling_stock.common.comfort_acceleration),
+            gamma: Some(DieselJson(rolling_stock.common.gamma)),
+            inertia_coefficient: Some(rolling_stock.common.inertia_coefficient),
+            features: Some(rolling_stock.common.features),
+            mass: Some(rolling_stock.common.mass),
+            rolling_resistance: Some(DieselJson(rolling_stock.common.rolling_resistance)),
+            loading_gauge: Some(rolling_stock.common.loading_gauge),
             metadata: Some(DieselJson(rolling_stock.metadata)),
-            power_restrictions: Some(rolling_stock.power_restrictions),
-            energy_sources: Some(DieselJson(rolling_stock.energy_sources)),
+            power_restrictions: Some(rolling_stock.common.power_restrictions),
+            energy_sources: Some(DieselJson(rolling_stock.common.energy_sources)),
             ..Default::default()
-        }
-    }
-}
-
-impl From<RollingStock> for RollingStockForm {
-    fn from(value: RollingStock) -> Self {
-        Self {
-            name: value.name,
-            version: value.version,
-            effort_curves: value.effort_curves,
-            base_power_class: value.base_power_class,
-            length: value.length,
-            max_speed: value.max_speed,
-            startup_time: value.startup_time,
-            startup_acceleration: value.startup_acceleration,
-            comfort_acceleration: value.comfort_acceleration,
-            gamma: value.gamma,
-            inertia_coefficient: value.inertia_coefficient,
-            features: value.features,
-            mass: value.mass,
-            rolling_resistance: value.rolling_resistance,
-            loading_gauge: value.loading_gauge,
-            metadata: value.metadata,
-            power_restrictions: value.power_restrictions,
-            energy_sources: value.energy_sources,
         }
     }
 }
@@ -136,31 +96,44 @@ impl RollingStockForm {
     fn into_rolling_stock_model(self, rolling_stock_id: i64) -> RollingStockModel {
         RollingStockModel {
             id: Some(rolling_stock_id),
-            name: Some(self.name),
-            version: Some(self.version),
-            effort_curves: Some(DieselJson(self.effort_curves)),
-            base_power_class: Some(self.base_power_class),
-            length: Some(self.length),
-            max_speed: Some(self.max_speed),
-            startup_time: Some(self.startup_time),
-            startup_acceleration: Some(self.startup_acceleration),
-            comfort_acceleration: Some(self.comfort_acceleration),
-            gamma: Some(DieselJson(self.gamma)),
-            inertia_coefficient: Some(self.inertia_coefficient),
-            features: Some(self.features),
-            mass: Some(self.mass),
-            rolling_resistance: Some(DieselJson(self.rolling_resistance)),
-            loading_gauge: Some(self.loading_gauge),
+            name: Some(self.common.name),
+            version: Some(self.common.version),
+            locked: self.locked,
+            effort_curves: Some(DieselJson(self.common.effort_curves)),
+            base_power_class: Some(self.common.base_power_class),
+            length: Some(self.common.length),
+            max_speed: Some(self.common.max_speed),
+            startup_time: Some(self.common.startup_time),
+            startup_acceleration: Some(self.common.startup_acceleration),
+            comfort_acceleration: Some(self.common.comfort_acceleration),
+            gamma: Some(DieselJson(self.common.gamma)),
+            inertia_coefficient: Some(self.common.inertia_coefficient),
+            features: Some(self.common.features),
+            mass: Some(self.common.mass),
+            rolling_resistance: Some(DieselJson(self.common.rolling_resistance)),
+            loading_gauge: Some(self.common.loading_gauge),
             metadata: Some(DieselJson(self.metadata)),
-            power_restrictions: Some(self.power_restrictions),
-            energy_sources: Some(DieselJson(self.energy_sources)),
+            power_restrictions: Some(self.common.power_restrictions),
+            energy_sources: Some(DieselJson(self.common.energy_sources)),
         }
     }
 }
 
+#[derive(Debug, Deserialize)]
+struct PostQueryParams {
+    #[serde(default)]
+    locked: bool,
+}
+
 #[post("")]
-async fn create(db_pool: Data<DbPool>, data: Json<RollingStockForm>) -> Result<Json<RollingStock>> {
-    let rolling_stock: RollingStockModel = data.into_inner().into();
+async fn create(
+    db_pool: Data<DbPool>,
+    data: Json<RollingStockForm>,
+    query_params: Query<PostQueryParams>,
+) -> Result<Json<RollingStock>> {
+    let mut rolling_stock: RollingStockModel = data.into_inner().into();
+    rolling_stock.locked = Some(query_params.locked);
+
     let rolling_stock: RollingStock = rolling_stock.create(db_pool).await?.into();
 
     Ok(Json(rolling_stock))
@@ -174,29 +147,68 @@ async fn update(
 ) -> Result<Json<RollingStockWithLiveries>> {
     let data = data.into_inner();
     let rolling_stock_id = path.into_inner();
+    assert_rolling_stock_unlocked(
+        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
+    )?;
+
     let rolling_stock = data.into_rolling_stock_model(rolling_stock_id);
 
     let rolling_stock = rolling_stock
         .update(db_pool.clone(), rolling_stock_id)
         .await?
         .unwrap();
-    let rollig_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
-    Ok(Json(rollig_stock_with_liveries))
+    let rolling_stock_with_liveries = rolling_stock.with_liveries(db_pool).await?;
+    Ok(Json(rolling_stock_with_liveries))
+}
+
+#[delete("/{rolling_stock_id}")]
+async fn delete(db_pool: Data<DbPool>, path: Path<i64>) -> Result<HttpResponse> {
+    let rolling_stock_id = path.into_inner();
+    assert_rolling_stock_unlocked(
+        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
+    )?;
+    if !RollingStockModel::delete(db_pool, rolling_stock_id).await? {
+        return Err(RollingStockError::NotFound { rolling_stock_id }.into());
+    }
+    Ok(HttpResponse::NoContent().finish())
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RollingStockLockedUpdateForm {
+    pub locked: bool,
+}
+
+impl RollingStockLockedUpdateForm {
+    fn into_rolling_stock_model(self, rolling_stock_id: i64) -> RollingStockModel {
+        RollingStockModel {
+            id: Some(rolling_stock_id),
+            locked: Some(self.locked),
+            ..Default::default()
+        }
+    }
+}
+
+#[patch("/locked")]
+async fn update_locked(
+    db_pool: Data<DbPool>,
+    rolling_stock_id: Path<i64>,
+    data: Json<RollingStockLockedUpdateForm>,
+) -> Result<HttpResponse> {
+    let data = data.into_inner();
+    let rolling_stock_id = rolling_stock_id.into_inner();
+    let rolling_stock = data.into_rolling_stock_model(rolling_stock_id);
+
+    rolling_stock
+        .update(db_pool.clone(), rolling_stock_id)
+        .await?;
+    Ok(HttpResponse::NoContent().finish())
 }
 
 #[derive(Debug, MultipartForm)]
 struct RollingStockLiveryCreateForm {
     pub name: Text<String>,
     pub images: Vec<TempFile>,
-}
-
-#[delete("/{rolling_stock_id}")]
-async fn delete(db_pool: Data<DbPool>, path: Path<i64>) -> Result<HttpResponse> {
-    let rolling_stock_id = path.into_inner();
-    if !RollingStockModel::delete(db_pool, rolling_stock_id).await? {
-        return Err(RollingStockError::NotFound { rolling_stock_id }.into());
-    }
-    Ok(HttpResponse::NoContent().finish())
 }
 
 #[post("/livery")]
@@ -206,10 +218,9 @@ async fn create_livery(
     MultipartForm(form): MultipartForm<RollingStockLiveryCreateForm>,
 ) -> Result<Json<RollingStockLivery>> {
     let rolling_stock_id = rolling_stock_id.into_inner();
-    let rolling_stock = RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await?;
-    if rolling_stock.is_none() {
-        return Err(RollingStockError::NotFound { rolling_stock_id }.into());
-    }
+    assert_rolling_stock_unlocked(
+        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
+    )?;
 
     let formatted_images = format_images(form.images)?;
 
@@ -246,6 +257,25 @@ async fn create_livery(
     }
 
     Ok(Json(rolling_stock_livery))
+}
+
+async fn retrieve_existing_rolling_stock(
+    db_pool: &Data<DbPool>,
+    rolling_stock_id: i64,
+) -> Result<RollingStockModel> {
+    RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
+        .await?
+        .ok_or(RollingStockError::NotFound { rolling_stock_id }.into())
+}
+
+fn assert_rolling_stock_unlocked(rolling_stock: RollingStockModel) -> Result<()> {
+    if rolling_stock.locked.unwrap() {
+        return Err(RollingStockError::RollingStockIsLocked {
+            rolling_stock_id: rolling_stock.id.unwrap(),
+        }
+        .into());
+    }
+    Ok(())
 }
 
 #[derive(Clone, Debug)]
@@ -326,19 +356,22 @@ async fn create_compound_image(
 #[cfg(test)]
 pub mod tests {
     use super::RollingStockError;
-    use crate::error::InternalError;
-    use crate::fixtures::tests::{fast_rolling_stock, other_rolling_stock, TestFixture};
+    use crate::fixtures::tests::{db_pool, fast_rolling_stock, other_rolling_stock, TestFixture};
     use crate::models::rolling_stock::tests::{
         get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
     };
-    use crate::models::RollingStockModel;
-    use crate::views::rolling_stocks::RollingStock;
+    use crate::models::{Delete, RollingStockModel};
+    use crate::views::rolling_stocks::{retrieve_existing_rolling_stock, RollingStock};
     use crate::views::tests::create_test_service;
+    use crate::{assert_editoast_error_type, assert_status_and_read};
     use actix_http::{Request, StatusCode};
     use actix_web::http::header::ContentType;
-    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use actix_web::test::{call_service, TestRequest};
+    use actix_web::web::Data;
+    use diesel::r2d2::ConnectionManager;
+    use r2d2::Pool;
     use rstest::rstest;
-    use serde_json::{to_value, Value as JsonValue};
+    use serde_json::json;
 
     #[rstest]
     async fn get_returns_corresponding_rolling_stock(
@@ -346,15 +379,11 @@ pub mod tests {
     ) {
         let app = create_test_service().await;
         let rolling_stock = fast_rolling_stock.await;
-
-        let req = TestRequest::get()
-            .uri(format!("/rolling_stock/{}", rolling_stock.id()).as_str())
-            .to_request();
-
+        let req = rolling_stock_get_request(rolling_stock.id());
         let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let rolling_stock: RollingStock = read_body_json(response).await;
-        assert_eq!(rolling_stock.name, "fast_rolling_stock");
+
+        let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
+        assert_eq!(response_body.common.name, "fast_rolling_stock");
     }
 
     #[rstest]
@@ -367,33 +396,87 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_and_delete_rolling_stock_successfully() {
+    async fn create_and_delete_unlocked_rolling_stock_successfully() {
         let app = create_test_service().await;
-        let rolling_stock: RollingStockModel = get_fast_rolling_stock();
+        let mut rolling_stock: RollingStockModel = get_fast_rolling_stock();
 
         let post_response = call_service(
             &app,
             TestRequest::post()
                 .uri("/rolling_stock")
-                .set_json(rolling_stock)
+                .set_json(&rolling_stock)
                 .to_request(),
         )
         .await;
 
         //Check rolling_stock creation
-        assert_eq!(post_response.status(), StatusCode::OK);
-        let rolling_stock: RollingStock = read_body_json(post_response).await;
-        assert_eq!(rolling_stock.name, "fast_rolling_stock");
+        let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
+        let rolling_stock_id = response_body.id;
+        rolling_stock.id = Some(response_body.id);
+        println!("{:?}", rolling_stock);
+        let expected_body = RollingStock::from(rolling_stock.clone());
+        assert_eq!(response_body, expected_body);
 
         //Check rolling_stock deletion
-        let delete_request = rolling_stock_delete_request(rolling_stock.id);
+        let delete_request = rolling_stock_delete_request(rolling_stock_id);
         let delete_response = call_service(&app, delete_request).await;
         assert_eq!(delete_response.status(), StatusCode::NO_CONTENT);
 
-        //Check object does not exist anymore
-        let get_request = rolling_stock_get_request(0);
+        //Check rolling_stock does not exist anymore
+        let get_request = rolling_stock_get_request(rolling_stock_id);
         let get_response = call_service(&app, get_request).await;
         assert_eq!(get_response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn update_and_delete_locked_rolling_stock_fails(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) {
+        let app = create_test_service().await;
+        let rolling_stock: RollingStockModel = get_fast_rolling_stock();
+        let post_response = call_service(
+            &app,
+            TestRequest::post()
+                .uri("/rolling_stock?locked=true")
+                .set_json(rolling_stock)
+                .to_request(),
+        )
+        .await;
+        let locked_rolling_stock: RollingStock =
+            assert_status_and_read!(post_response, StatusCode::OK);
+        let rolling_stock_id = locked_rolling_stock.id;
+
+        //Check rolling_stock update fails
+        let patch_response = call_service(
+            &app,
+            TestRequest::patch()
+                .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
+                .set_json(locked_rolling_stock)
+                .to_request(),
+        )
+        .await;
+        assert_eq!(patch_response.status(), StatusCode::BAD_REQUEST);
+        assert_editoast_error_type!(
+            patch_response,
+            RollingStockError::RollingStockIsLocked { rolling_stock_id }
+        );
+
+        //Check rolling_stock deletion fails
+        let delete_request = rolling_stock_delete_request(rolling_stock_id);
+        let delete_response = call_service(&app, delete_request).await;
+        assert_eq!(delete_response.status(), StatusCode::BAD_REQUEST);
+        assert_editoast_error_type!(
+            delete_response,
+            RollingStockError::RollingStockIsLocked { rolling_stock_id }
+        );
+
+        //Check rolling_stock still exists
+        let get_request = rolling_stock_get_request(rolling_stock_id);
+        let get_response = call_service(&app, get_request).await;
+        assert_eq!(get_response.status(), StatusCode::OK);
+
+        //Delete rolling_stock to clean db
+        let _ = RollingStockModel::delete(db_pool, rolling_stock_id).await;
     }
 
     #[rstest]
@@ -417,6 +500,13 @@ pub mod tests {
             .to_request()
     }
 
+    fn rolling_stock_locked_request(rolling_stock_id: i64, locked: bool) -> Request {
+        TestRequest::patch()
+            .uri(format!("/rolling_stock/{rolling_stock_id}/locked").as_str())
+            .set_json(json!({ "locked": locked }))
+            .to_request()
+    }
+
     #[rstest]
     async fn create_rolling_stock_failure_invalid_effort_curve() {
         let app = create_test_service().await;
@@ -436,7 +526,9 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn update_rolling_stock(#[future] fast_rolling_stock: TestFixture<RollingStockModel>) {
+    async fn update_unlocked_rolling_stock(
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
         let app = create_test_service().await;
         let fast_rolling_stock = fast_rolling_stock.await;
         let rolling_stock_id = fast_rolling_stock.id();
@@ -448,14 +540,14 @@ pub mod tests {
             &app,
             TestRequest::patch()
                 .uri(format!("/rolling_stock/{}", rolling_stock_id).as_str())
-                .set_json(rolling_stock)
+                .set_json(&rolling_stock)
                 .to_request(),
         )
         .await;
-        assert_eq!(response.status(), StatusCode::OK);
 
-        let rolling_stock: RollingStock = read_body_json(response).await;
-        assert_eq!(rolling_stock.name, "other_rolling_stock");
+        let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
+        let expected_body = RollingStock::from(rolling_stock.clone());
+        assert_eq!(response_body, expected_body);
     }
 
     #[rstest]
@@ -480,12 +572,53 @@ pub mod tests {
         )
         .await;
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        assert_editoast_error_type!(
+            response,
+            RollingStockError::NameAlreadyUsed {
+                name: String::from("other_rolling_stock"),
+            }
+        );
+    }
 
-        let body: JsonValue = read_body_json(response).await;
-        let error: InternalError = RollingStockError::NameAlreadyUsed {
-            name: String::from("other_rolling_stock"),
-        }
-        .into();
-        assert_eq!(to_value(error).unwrap(), body);
+    #[rstest]
+    async fn update_locked_successfully(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) {
+        let app = create_test_service().await;
+        let rolling_stock = get_fast_rolling_stock();
+        let post_response = call_service(
+            &app,
+            TestRequest::post()
+                .uri("/rolling_stock")
+                .set_json(rolling_stock)
+                .to_request(),
+        )
+        .await;
+        let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
+        let rolling_stock_id = response_body.id;
+        assert!(!response_body.locked);
+
+        //Lock rolling_stock
+        let request = rolling_stock_locked_request(rolling_stock_id, true);
+        let response = call_service(&app, request).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        //Assert rolling_stock is locked
+        let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
+            .await
+            .unwrap();
+        assert!(rolling_stock.locked.unwrap());
+
+        //Unlock rolling_stock
+        let request = rolling_stock_locked_request(rolling_stock_id, false);
+        let response = call_service(&app, request).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        //Assert rolling_stock is unlocked
+        let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
+            .await
+            .unwrap();
+        assert!(!rolling_stock.locked.unwrap());
+
+        //Delete rolling_stock
+        call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
     }
 }

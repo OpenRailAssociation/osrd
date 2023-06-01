@@ -218,6 +218,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/rolling_stock/`,
         method: 'POST',
         body: queryArg.rollingStockUpsertPayload,
+        params: { locked: queryArg.locked },
       }),
     }),
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
@@ -238,6 +239,16 @@ const injectedRtkApi = api.injectEndpoints({
       DeleteRollingStockByIdApiArg
     >({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/`, method: 'DELETE' }),
+    }),
+    patchRollingStockByIdLocked: build.mutation<
+      PatchRollingStockByIdLockedApiResponse,
+      PatchRollingStockByIdLockedApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/rolling_stock/${queryArg.id}/locked/`,
+        method: 'PATCH',
+        body: queryArg.body,
+      }),
     }),
     postRollingStockByIdLivery: build.mutation<
       PostRollingStockByIdLiveryApiResponse,
@@ -704,6 +715,8 @@ export type GetLightRollingStockByIdApiArg = {
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
+  /** whether or not the rolling_stock can be edited/deleted. */
+  locked?: any;
   rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
 export type GetRollingStockByIdApiResponse =
@@ -723,6 +736,15 @@ export type DeleteRollingStockByIdApiResponse = unknown;
 export type DeleteRollingStockByIdApiArg = {
   /** rolling_stock id */
   id: number;
+};
+export type PatchRollingStockByIdLockedApiResponse = unknown;
+export type PatchRollingStockByIdLockedApiArg = {
+  /** Rolling_stock id */
+  id: number;
+  /** New locked value */
+  body: {
+    locked?: boolean;
+  };
 };
 export type PostRollingStockByIdLiveryApiResponse =
   /** status 200 The rolling stock livery */ RollingStockLivery;
@@ -1209,6 +1231,7 @@ export type EnergySource =
 export type RollingStockBase = {
   version: string;
   name: string;
+  locked?: boolean;
   length: number;
   max_speed: number;
   startup_time: number;
