@@ -51,7 +51,8 @@ public final class InfraCacheStatusEndpoint implements Take {
             if (infra != null) {
                 var request = adapterRequest.fromJson(body);
                 var infraCacheEntry = infraManager.getInfraCache(request.infra);
-                res.put(request.infra, SerializedInfraCache.from(infraCacheEntry));
+                if (infraCacheEntry != null)
+                    res.put(request.infra, SerializedInfraCache.from(infraCacheEntry));
             } else {
                 infraManager.forEach((infraId, infraCacheEntry) -> {
                     res.put(infraId, SerializedInfraCache.from(infraCacheEntry));
