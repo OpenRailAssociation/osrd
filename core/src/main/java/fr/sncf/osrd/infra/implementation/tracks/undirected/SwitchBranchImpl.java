@@ -3,6 +3,7 @@ package fr.sncf.osrd.infra.implementation.tracks.undirected;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
@@ -80,6 +81,11 @@ public class SwitchBranchImpl implements SwitchBranch {
     @Override
     public ImmutableRangeMap<Double, String> getVoltages() {
         return ImmutableRangeMap.of();
+    }
+
+    @Override
+    public ImmutableRangeSet<Double> getDeadSections(Direction direction) {
+        return ImmutableRangeSet.of();
     }
 
     @Override

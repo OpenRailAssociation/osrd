@@ -100,7 +100,7 @@ public class DummyRouteGraphBuilder {
         private final ImmutableList<DiDetector> detectors;
         private final ImmutableList<TrackRangeView> trackRanges;
 
-        DummyRoute(
+        public DummyRoute(
                 String id,
                 double length,
                 Signal<? extends SignalState> entrySignal,
