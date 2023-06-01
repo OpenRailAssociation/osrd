@@ -12,13 +12,21 @@ import { RollingStockInfos } from './RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
 function RollingStockCard(props) {
-  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected } = props;
+  const {
+    data,
+    ref2scroll,
+    setOpenedRollingStockCardId,
+    isOpen,
+    noCardSelected,
+    displayEditorButtons,
+  } = props;
   const [tractionModes, setTractionModes] = useState({
     electric: false,
     thermal: false,
     voltages: [],
   });
   const [curvesComfortList, setCurvesComfortList] = useState();
+
   const ref2scrollWhenOpened = useRef();
   function displayCardDetail() {
     if (!isOpen) {
@@ -132,7 +140,7 @@ function RollingStockCard(props) {
             </div>
           </div>
         </div>
-        {isOpen && curvesComfortList ? (
+        {isOpen && curvesComfortList && !displayEditorButtons ? (
           <RollingStockCardButtons
             id={data.id}
             curvesComfortList={curvesComfortList}
@@ -146,6 +154,7 @@ function RollingStockCard(props) {
 
 RollingStockCard.defaultProps = {
   ref2scroll: undefined,
+  displayEditorButtons: false,
 };
 
 RollingStockCard.propTypes = {
@@ -154,6 +163,7 @@ RollingStockCard.propTypes = {
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
   ref2scroll: PropTypes.object,
   noCardSelected: PropTypes.bool.isRequired,
+  displayEditorButtons: PropTypes.bool,
 };
 
 const MemoizedRollingStockCard = React.memo(RollingStockCard);
