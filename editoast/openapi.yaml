@@ -1065,10 +1065,10 @@ paths:
       parameters:
         - in: query
           name: locked
+          description: whether or not the rolling_stock can be edited/deleted.
           schema:
-            type: boolean
             default: false
-          description: Whether or not the rolling_stock can be edited/deleted.
+            type: boolean
       requestBody:
         content:
           application/json:
@@ -1925,6 +1925,9 @@ components:
         version:
           type: string
           example: "1"
+        railjson_version:
+          type: string
+          example: "3.3.1"
         generated_version:
           type: string
           nullable: true
@@ -1940,19 +1943,29 @@ components:
         state:
           type: string
           enum:
-            - NotLoaded
-            - Initializing
-            - Downloading
-            - ParsingJson
-            - ParsingInfra
-            - AdaptingKotlin
-            - LoadingSignals
-            - BuildingBlocks
-            - Cached
-            - TransientError
-            - Error
+            - NOT_LOADED
+            - INITIALIZING
+            - DOWNLOADING
+            - PARSING_JSON
+            - PARSING_INFRA
+            - ADAPTING_KOTLIN
+            - LOADING_SIGNALS
+            - BUILDING_BLOCKS
+            - CACHED
+            - TRANSIENT_ERROR
+            - ERROR
       required:
-        [id, name, version, generated_version, created, modified, locked, state]
+        [
+          id,
+          name,
+          version,
+          railjson_version,
+          generated_version,
+          created,
+          modified,
+          locked,
+          state,
+        ]
 
     Zone:
       type: object

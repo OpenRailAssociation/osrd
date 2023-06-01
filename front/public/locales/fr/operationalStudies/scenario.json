@@ -1,7 +1,17 @@
 {
   "displayTrainsWithDetails": "Afficher/masquer le détail des trains",
   "electricalProfileSet": "Set de profils électriques",
+  "errorMessages": {
+    "error": "Une erreur est survenue",
+    "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
+    "softErrorInfra": "L'application est indisponible, une erreur serveur est survenue, veuillez réessayer ultérieurement.",
+    "unableToCreateScenarioMessage": "Impossible de créer un scénario",
+    "unableToLoadInfra": "Erreur de chargement, nouvelle tentative en cours ({{reloadCount}})",
+    "unableToUpdateScenarioMessage": "Impossible de mettre à jour le scénario",
+    "unableToDeleteScenarioMessage": "Impossible de supprimer le scénario"
+  },
   "filterPlaceholder": "Filtre, étiquettes",
+  "infraLoadingState": "{{step}}/8",
   "isUpdating": "Mise à jour...",
   "modifyScenario": "Modifier le scénario",
   "noElectricalProfileSet": "Pas de profils électriques",
@@ -19,12 +29,6 @@
   "scenarioTags": "Étiquettes",
   "scenarioUpdated": "Mise à jour réussie !",
   "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
-  "errorMessages": {
-    "error": "Une erreur est survenue",
-    "unableToCreateScenarioMessage": "Impossible de créer un scénario",
-    "unableToUpdateScenarioMessage": "Impossible de mettre à jour le scénario",
-    "unableToDeleteScenarioMessage": "Impossible de supprimer le scénario"
-  },
   "timetable": {
     "addTrainSchedule": "Ajouter",
     "choosePath": "Utiliser ce chemin",
