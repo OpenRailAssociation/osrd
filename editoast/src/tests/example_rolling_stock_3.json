@@ -1,5 +1,6 @@
 {
     "version": "3.2",
+    "locked": false,
     "length": 200.0,
     "max_speed": 40.0,
     "startup_time": 5.0,
@@ -63,5 +64,6 @@
         "subseries": "US",
         "unit": "1"
     },
-    "energy_sources": []
+    "energy_sources": [],
+    "power_restrictions": {}
 }

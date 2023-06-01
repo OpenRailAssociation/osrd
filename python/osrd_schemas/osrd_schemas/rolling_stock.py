@@ -195,6 +195,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
 
     version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
+    locked: bool = Field(default=False, description="Whether the rolling stock can be edited/deleted or not")
     effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
     base_power_class: Optional[str] = Field(
         description="The power usage class of the train (optional because it is specific to SNCF)"

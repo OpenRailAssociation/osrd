@@ -3,7 +3,7 @@ use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
 
 use crate::models::{CurveGraph, SlopeGraph};
-use crate::views::rolling_stocks::RollingStockForm;
+use crate::schema::rolling_stock::RollingStock;
 use crate::{models::RoutePath, schema::Direction};
 
 use super::{AsCoreRequest, Json};
@@ -16,7 +16,7 @@ pub struct PathfindingRequest {
     infra: i64,
     expected_version: String,
     waypoints: PathfindingWaypoints,
-    rolling_stocks: Vec<RollingStockForm>,
+    rolling_stocks: Vec<RollingStock>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -92,7 +92,7 @@ impl PathfindingRequest {
         self
     }
 
-    pub fn with_rolling_stocks(&mut self, rolling_stocks: &mut Vec<RollingStockForm>) -> &mut Self {
+    pub fn with_rolling_stocks(&mut self, rolling_stocks: &mut Vec<RollingStock>) -> &mut Self {
         self.rolling_stocks.append(rolling_stocks);
         self
     }

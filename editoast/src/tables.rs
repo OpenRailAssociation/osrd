@@ -292,6 +292,7 @@ table! {
         id -> BigInt,
         name -> Text,
         version -> Text,
+        locked -> Bool,
         effort_curves -> Jsonb,
         base_power_class -> Text,
         length -> Double,

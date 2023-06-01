@@ -18,6 +18,7 @@ use geos::Geom;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::schema::OperationalPoint;
 use crate::{
     core::{
         pathfinding::{PathfindingRequest, PathfindingResponse, PathfindingWaypoints, Waypoint},
@@ -39,7 +40,6 @@ use crate::{
     },
     tables, DbPool,
 };
-use crate::{schema::OperationalPoint, views::rolling_stocks::RollingStockForm};
 
 #[derive(Debug, Error, EditoastError, Serialize)]
 #[editoast_error(base_id = "pathfinding")]
@@ -257,7 +257,7 @@ impl Payload {
     }
 
     /// Fetches all payload's rolling stocks
-    fn parse_rolling_stocks(&self, conn: &mut PgConnection) -> Result<Vec<RollingStockForm>> {
+    fn parse_rolling_stocks(&self, conn: &mut PgConnection) -> Result<Vec<RollingStock>> {
         let mut rolling_stocks = vec![];
         for id in &self.rolling_stocks {
             let rs: RollingStock = RollingStockModel::retrieve_conn(conn, *id)?
@@ -265,7 +265,7 @@ impl Payload {
                     rolling_stock_id: *id,
                 })?
                 .into();
-            rolling_stocks.push(rs.into());
+            rolling_stocks.push(rs);
         }
         Ok(rolling_stocks)
     }
