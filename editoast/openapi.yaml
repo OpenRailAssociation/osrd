@@ -1065,10 +1065,10 @@ paths:
       parameters:
         - in: query
           name: locked
-          description: whether or not the rolling_stock can be edited/deleted.
-          default: false
           schema:
-            type: bool
+            type: boolean
+            default: false
+          description: Whether or not the rolling_stock can be edited/deleted.
       requestBody:
         content:
           application/json:
