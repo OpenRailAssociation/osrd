@@ -1,4 +1,4 @@
-import React, { ComponentType, useState, useEffect, useMemo } from 'react';
+import React, { ComponentType, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateSpeedLimitByTag } from 'reducers/osrdconf';
@@ -16,7 +16,7 @@ type SpeedLimitByTagSelectorProps = {
   t?: (key: string) => string;
   condensed?: boolean;
   speedLimitByTag?: string;
-  speedLimitsByTagsFromApi?: string[];
+  speedLimitsByTags?: string[];
   dispatchUpdateSpeedLimitByTag?: (tag: string) => Dispatch | void;
 };
 
@@ -26,12 +26,13 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
     const dispatch = useDispatch();
     const infraID = useSelector(getInfraID);
     const speedLimitByTag = useSelector(getSpeedLimitByTag);
-    const { data, error } = osrdEditoastApi.useGetInfraByIdSpeedLimitTagsQuery(
-      {
-        id: infraID as number,
-      },
-      { skip: !infraID }
-    );
+    const { data: speedLimitsByTags = [], error } =
+      osrdEditoastApi.useGetInfraByIdSpeedLimitTagsQuery(
+        {
+          id: infraID as number,
+        },
+        { skip: !infraID }
+      );
     const dispatchUpdateSpeedLimitByTag = (newTag: string) => {
       dispatch(updateSpeedLimitByTag(newTag));
     };
@@ -54,8 +55,7 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
       <Component
         {...(hocProps as T)}
         t={t}
-        dispatch={dispatch}
-        speedLimitsByTagsFromApi={data}
+        speedLimitsByTags={speedLimitsByTags}
         speedLimitByTag={speedLimitByTag}
         dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
       />
@@ -66,24 +66,19 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
 export function IsolatedSpeedLimitByTagSelector({
   speedLimitByTag,
   condensed = false,
-  speedLimitsByTagsFromApi = [],
+  speedLimitsByTags = [],
   dispatchUpdateSpeedLimitByTag = noop,
   t = (key) => key,
 }: SpeedLimitByTagSelectorProps) {
-  const [speedLimitsTags, setSpeedLimitByTags] = useState<string[]>(speedLimitsByTagsFromApi);
-
   const speedLimitsTagsList = useMemo(
     () =>
-      !isEmpty(speedLimitsTags) ? [t('noSpeedLimitByTag'), ...Object.values(speedLimitsTags)] : [],
-    [speedLimitsTags]
+      !isEmpty(speedLimitsByTags)
+        ? [t('noSpeedLimitByTag'), ...Object.values(speedLimitsByTags)]
+        : [],
+    [speedLimitsByTags]
   );
 
-  useEffect(() => {
-    // Update the document title using the browser API
-    setSpeedLimitByTags(speedLimitsByTagsFromApi);
-  }, [speedLimitsByTagsFromApi]);
-
-  return speedLimitsTags.length > 0 ? (
+  return speedLimitsTagsList.length > 0 ? (
     <div className="osrd-config-item mb-2">
       <div
         className={`osrd-config-item-container ${
