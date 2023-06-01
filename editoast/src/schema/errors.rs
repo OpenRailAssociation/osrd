@@ -43,6 +43,9 @@ pub enum InfraErrorType {
         position: f64,
         expected_range: [f64; 2],
     },
+    OverlappingCatenaries {
+        reference: ObjectRef,
+    },
     OverlappingSpeedSections {
         reference: ObjectRef,
     },
@@ -249,6 +252,21 @@ impl InfraError {
             field: Default::default(),
             is_warning: true,
             sub_type: InfraErrorType::OverlappingSpeedSections { reference },
+        }
+    }
+
+    pub fn new_overlapping_catenaries<T1: AsRef<str>, T2: AsRef<str>>(sc1: T1, sc2: T2) -> Self {
+        // Ensure sc1 is the smallest ID
+        if sc1.as_ref() > sc2.as_ref() {
+            return Self::new_overlapping_catenaries(sc2, sc1);
+        }
+        let reference = ObjectRef::new(ObjectType::Catenary, sc1.as_ref());
+        Self {
+            obj_id: sc2.as_ref().into(),
+            obj_type: ObjectType::Catenary,
+            field: Default::default(),
+            is_warning: true,
+            sub_type: InfraErrorType::OverlappingCatenaries { reference },
         }
     }
 

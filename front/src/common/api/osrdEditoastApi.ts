@@ -1135,6 +1135,7 @@ export type InfraErrorType =
   | 'overlapping_speed_sections'
   | 'overlapping_switches'
   | 'overlapping_track_links'
+  | 'overlapping_catenaries'
   | 'unknown_port_name'
   | 'unused_port';
 export type InfraError = {
