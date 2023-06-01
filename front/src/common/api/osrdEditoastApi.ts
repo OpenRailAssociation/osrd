@@ -715,7 +715,7 @@ export type GetLightRollingStockByIdApiArg = {
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
-  /** Whether or not the rolling_stock can be edited/deleted. */
+  /** whether or not the rolling_stock can be edited/deleted. */
   locked?: boolean;
   rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
@@ -1026,22 +1026,23 @@ export type Infra = {
   id: number;
   name: string;
   version: string;
+  railjson_version: string;
   generated_version: string | null;
   created: string;
   modified: string;
   locked: boolean;
   state:
-    | 'NotLoaded'
-    | 'Initializing'
-    | 'Downloading'
-    | 'ParsingJson'
-    | 'ParsingInfra'
-    | 'AdaptingKotlin'
-    | 'LoadingSignals'
-    | 'BuildingBlocks'
-    | 'Cached'
-    | 'TransientError'
-    | 'Error';
+    | 'NOT_LOADED'
+    | 'INITIALIZING'
+    | 'DOWNLOADING'
+    | 'PARSING_JSON'
+    | 'PARSING_INFRA'
+    | 'ADAPTING_KOTLIN'
+    | 'LOADING_SIGNALS'
+    | 'BUILDING_BLOCKS'
+    | 'CACHED'
+    | 'TRANSIENT_ERROR'
+    | 'ERROR';
 };
 export type ObjectType =
   | 'TrackSection'
