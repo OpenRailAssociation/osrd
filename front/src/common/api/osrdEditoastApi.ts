@@ -715,8 +715,8 @@ export type GetLightRollingStockByIdApiArg = {
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
-  /** whether or not the rolling_stock can be edited/deleted. */
-  locked?: any;
+  /** Whether or not the rolling_stock can be edited/deleted. */
+  locked?: boolean;
   rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
 export type GetRollingStockByIdApiResponse =
