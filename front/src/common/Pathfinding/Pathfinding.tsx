@@ -387,7 +387,9 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   return (
     <div className="pathfinding-state-main-container">
       {isPathFindingActive ? (
-        <div className="content pathfinding-none">{t('pathfindingNoState')}</div>
+        <div className={`content pathfinding-none ${infra && infra.state !== 'CACHED' && 'mt-2'}`}>
+          {t('pathfindingNoState')}
+        </div>
       ) : (
         <>
           {pathfindingState.done && !pathfindingState.error && (
@@ -400,7 +402,9 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
             </div>
           )}
           {pathfindingState.error && (
-            <div className="content pathfinding-error">
+            <div
+              className={`content pathfinding-error ${infra && infra.state !== 'CACHED' && 'mt-2'}`}
+            >
               <span className="lead">
                 <BiXCircle />
               </span>
