@@ -12,7 +12,7 @@
   --coolgray5: #b9b9b9;
   --coolgray3: #d7d7d7;
   --coolgray1: #f2f2f2;
-  --modal-gray-transparent-background: rgba(0,0,0,0.1);
+  --modal-gray-transparent-background: rgba(0, 0, 0, 0.1);
 }
 
 /*
@@ -112,7 +112,7 @@ blockquote {
   left: 0;
   width: 100%;
   height: 0.3125rem;
-  content: "";
+  content: '';
   background-color: transparent;
   border-radius: 3px;
 }
@@ -448,7 +448,9 @@ body {
   color: var(--coolgray5);
   cursor: pointer;
 }
-.projects-list-project-card.empty:hover, .projects-list-project-card.empty:focus, .projects-list-project-card.empty:active {
+.projects-list-project-card.empty:hover,
+.projects-list-project-card.empty:focus,
+.projects-list-project-card.empty:active {
   border-color: var(--coolgray3);
   background-color: var(--coolgray3);
   color: var(--coolgray7);
@@ -588,7 +590,11 @@ body {
   font-size: 2rem;
   font-weight: 500;
 }
-.project-details .project-details-title .project-details-title-content .project-details-title-name .project-details-title-modify-button {
+.project-details
+  .project-details-title
+  .project-details-title-content
+  .project-details-title-name
+  .project-details-title-modify-button {
   background-color: transparent;
   border: none;
   color: var(--purple);
@@ -597,17 +603,31 @@ body {
   font-size: 1.5rem;
   border-radius: 4px;
 }
-.project-details .project-details-title .project-details-title-content .project-details-title-name .project-details-title-modify-button .project-details-title-modify-button-text {
+.project-details
+  .project-details-title
+  .project-details-title-content
+  .project-details-title-name
+  .project-details-title-modify-button
+  .project-details-title-modify-button-text {
   transition: opacity 0.2s;
   opacity: 0;
   font-size: 1.25rem;
   margin-right: 1rem;
 }
-.project-details .project-details-title .project-details-title-content .project-details-title-name .project-details-title-modify-button:hover {
+.project-details
+  .project-details-title
+  .project-details-title-content
+  .project-details-title-name
+  .project-details-title-modify-button:hover {
   background-color: var(--purple);
   color: var(--white);
 }
-.project-details .project-details-title .project-details-title-content .project-details-title-name .project-details-title-modify-button:hover .project-details-title-modify-button-text {
+.project-details
+  .project-details-title
+  .project-details-title-content
+  .project-details-title-name
+  .project-details-title-modify-button:hover
+  .project-details-title-modify-button-text {
   opacity: 1;
 }
 .project-details .project-details-title .project-details-title-content h3 {
@@ -740,7 +760,9 @@ body {
   cursor: pointer;
   background-color: transparent;
 }
-.studies-list .studies-list-card.empty:hover, .studies-list .studies-list-card.empty:focus, .studies-list .studies-list-card.empty:active {
+.studies-list .studies-list-card.empty:hover,
+.studies-list .studies-list-card.empty:focus,
+.studies-list .studies-list-card.empty:active {
   border-color: var(--coolgray3);
   background-color: var(--coolgray3);
   color: var(--coolgray7);
@@ -884,7 +906,8 @@ body {
   align-items: baseline;
   justify-content: space-between;
 }
-.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-scenarios-count, .studies-list .studies-list-card .studies-list-card-footer .studies-list-card-date {
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-scenarios-count,
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-date {
   display: flex;
   align-items: baseline;
   height: 1rem;
@@ -896,7 +919,8 @@ body {
   font-weight: 500;
   color: var(--coolgray9);
 }
-.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-scenarios-count svg, .studies-list .studies-list-card .studies-list-card-footer .studies-list-card-date svg {
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-scenarios-count svg,
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-date svg {
   margin-bottom: 0.15rem;
 }
 
@@ -973,7 +997,10 @@ body {
   background-color: var(--primary);
   color: var(--white);
 }
-.study-details .study-details-name .study-details-modify-button:hover .study-details-modify-button-text {
+.study-details
+  .study-details-name
+  .study-details-modify-button:hover
+  .study-details-modify-button-text {
   opacity: 1;
 }
 .study-details .study-details-type {
@@ -1048,11 +1075,17 @@ body {
   font-weight: 500;
   color: var(--secondary);
 }
-.study-details .study-details-state .study-details-state-step:hover .study-details-state-step-number {
+.study-details
+  .study-details-state
+  .study-details-state-step:hover
+  .study-details-state-step-number {
   background-color: var(--primary);
   color: var(--white);
 }
-.study-details .study-details-state .study-details-state-step:hover .study-details-state-step-label {
+.study-details
+  .study-details-state
+  .study-details-state-step:hover
+  .study-details-state-step-label {
   color: var(--primary);
 }
 .study-details .study-details-files {
@@ -1225,7 +1258,9 @@ body {
   cursor: pointer;
   background-color: transparent;
 }
-.scenarios-list .scenarios-list-card.empty:hover, .scenarios-list .scenarios-list-card.empty:focus, .scenarios-list .scenarios-list-card.empty:active {
+.scenarios-list .scenarios-list-card.empty:hover,
+.scenarios-list .scenarios-list-card.empty:focus,
+.scenarios-list .scenarios-list-card.empty:active {
   border-color: var(--coolgray3);
   background-color: var(--coolgray3);
   color: var(--coolgray7);
@@ -1300,7 +1335,8 @@ body {
   height: 1rem;
   margin-right: 0.5rem;
 }
-.scenarios-list .scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-trains-count, .scenarios-list .scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-date {
+.scenarios-list .scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-trains-count,
+.scenarios-list .scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-date {
   display: flex;
   align-items: baseline;
   height: 1rem;
@@ -1311,7 +1347,12 @@ body {
   text-align: right;
   padding: 0.25rem 0.5rem;
 }
-.scenarios-list .scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-trains-count svg, .scenarios-list .scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-date svg {
+.scenarios-list
+  .scenarios-list-card
+  .scenarios-list-card-footer
+  .scenarios-list-card-trains-count
+  svg,
+.scenarios-list .scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-date svg {
   margin-bottom: 0.15rem;
 }
 
@@ -1387,7 +1428,11 @@ body {
   font-weight: 500;
   font-size: 1.5rem;
 }
-.scenario .scenario-sidemenu .scenario-details .scenario-details-name .scenario-details-modify-button {
+.scenario
+  .scenario-sidemenu
+  .scenario-details
+  .scenario-details-name
+  .scenario-details-modify-button {
   background-color: transparent;
   border: none;
   color: var(--secondary);
@@ -1396,17 +1441,31 @@ body {
   font-size: 1rem;
   border-radius: 4px;
 }
-.scenario .scenario-sidemenu .scenario-details .scenario-details-name .scenario-details-modify-button .scenario-details-modify-button-text {
+.scenario
+  .scenario-sidemenu
+  .scenario-details
+  .scenario-details-name
+  .scenario-details-modify-button
+  .scenario-details-modify-button-text {
   transition: opacity 0.2s;
   opacity: 0;
   font-size: 0.9rem;
   margin-right: 0.5rem;
 }
-.scenario .scenario-sidemenu .scenario-details .scenario-details-name .scenario-details-modify-button:hover {
+.scenario
+  .scenario-sidemenu
+  .scenario-details
+  .scenario-details-name
+  .scenario-details-modify-button:hover {
   background-color: var(--secondary);
   color: var(--white);
 }
-.scenario .scenario-sidemenu .scenario-details .scenario-details-name .scenario-details-modify-button:hover .scenario-details-modify-button-text {
+.scenario
+  .scenario-sidemenu
+  .scenario-details
+  .scenario-details-name
+  .scenario-details-modify-button:hover
+  .scenario-details-modify-button-text {
   opacity: 1;
 }
 .scenario .scenario-sidemenu .scenario-details .scenario-details-infra-name {
@@ -2074,7 +2133,8 @@ body {
   z-index: 2;
 }
 @media screen and (min-width: 768px) {
-  .import-train-schedule .osrd-config-item-from, .import-train-schedule .osrd-config-item-to {
+  .import-train-schedule .osrd-config-item-from,
+  .import-train-schedule .osrd-config-item-to {
     position: absolute;
     width: 100%;
   }
@@ -2098,7 +2158,8 @@ body {
 .import-train-schedule .results-stations .station-card {
   margin-bottom: 0.25rem;
 }
-.import-train-schedule .results-stations, .import-train-schedule .result-station-selected {
+.import-train-schedule .results-stations,
+.import-train-schedule .result-station-selected {
   border-radius: 4px;
   position: relative;
   margin-top: 0.5rem;
@@ -2120,58 +2181,107 @@ body {
   overflow: auto;
   max-height: calc(100vh - 17.5rem);
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail {
   position: relative;
   margin-bottom: 0.5rem;
   border: 2px solid var(--coolgray3);
   border-radius: 4px;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main {
   display: flex;
   align-items: baseline;
   background-color: var(--coolgray1);
   padding: 0.5rem;
   transition: 0.2s;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-idx {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-idx {
   width: 1.5rem;
   font-size: 0.7rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-num {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-num {
   width: 4.5rem;
   font-size: 1.2rem;
   font-weight: bold;
   color: var(--coolgray9);
   height: 2rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-num .import-train-schedule-traindetail-activity {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-num
+  .import-train-schedule-traindetail-activity {
   display: block;
   font-weight: normal;
   text-transform: uppercase;
   font-size: 0.6rem;
   line-height: 0.5rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-startend {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-startend {
   width: 9rem;
   font-size: 0.9rem;
   text-align: center;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-duration {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-duration {
   width: 3.5rem;
   font-size: 0.8rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-rollingstock {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-rollingstock {
   align-self: flex-start;
   overflow: hidden;
   height: 2rem;
   width: 50%;
   padding-left: 10%;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-rollingstock img {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-rollingstock
+  img {
   height: 2rem;
   padding: 0.25rem 0;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-transilien {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-transilien {
   color: var(--blue);
   font-weight: 500;
   margin-left: auto;
@@ -2179,7 +2289,12 @@ body {
   margin-right: 0.5rem;
   font-size: 0.8rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-main .import-train-schedule-traindetail-stepnb {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-main
+  .import-train-schedule-traindetail-stepnb {
   color: var(--light);
   font-weight: bold;
   font-size: 0.8rem;
@@ -2190,45 +2305,95 @@ body {
   height: 2rem;
   text-align: center;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-with-hover {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-with-hover {
   cursor: pointer;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-with-hover:hover {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-with-hover:hover {
   background-color: var(--coolgray3);
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps {
   overflow: auto;
   max-height: 0rem;
   transition: 0.2s;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps.opened {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps.opened {
   max-height: 10rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps .import-train-schedule-traindetail-step {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps
+  .import-train-schedule-traindetail-step {
   display: flex;
   align-items: baseline;
   margin-left: 5rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps .import-train-schedule-traindetail-step:hover {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps
+  .import-train-schedule-traindetail-step:hover {
   background-color: var(--coolgray1);
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps .import-train-schedule-traindetail-step .import-train-schedule-traindetail-step-nb {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps
+  .import-train-schedule-traindetail-step
+  .import-train-schedule-traindetail-step-nb {
   width: 2rem;
   text-align: right;
   padding: 0 0.5rem;
   font-size: 0.6rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps .import-train-schedule-traindetail-step .import-train-schedule-traindetail-step-startend {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps
+  .import-train-schedule-traindetail-step
+  .import-train-schedule-traindetail-step-startend {
   width: 8.5rem;
   font-size: 0.9rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps .import-train-schedule-traindetail-step .import-train-schedule-traindetail-step-duration {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps
+  .import-train-schedule-traindetail-step
+  .import-train-schedule-traindetail-step-duration {
   width: 2rem;
   margin-right: 0.5rem;
   text-align: right;
   font-size: 0.8rem;
 }
-.import-train-schedule .import-train-schedule-trainlist .import-train-schedule-trainlist-results .import-train-schedule-traindetail .import-train-schedule-traindetail-steps .import-train-schedule-traindetail-step .import-train-schedule-traindetail-step-name {
+.import-train-schedule
+  .import-train-schedule-trainlist
+  .import-train-schedule-trainlist-results
+  .import-train-schedule-traindetail
+  .import-train-schedule-traindetail-steps
+  .import-train-schedule-traindetail-step
+  .import-train-schedule-traindetail-step-name {
   font-size: 0.9rem;
 }
 
@@ -2956,7 +3121,10 @@ thead {
   height: 100%;
   transition: 0.2s;
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder label {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  label {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2965,16 +3133,25 @@ thead {
   height: 100%;
   cursor: pointer;
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder label .project-edition-modal-picture-placeholder-text {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  label
+  .project-edition-modal-picture-placeholder-text {
   font-weight: 500;
   font-size: 1rem;
   color: var(--coolgray9);
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder:hover {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder:hover {
   background-color: var(--coolgray3);
   color: var(--coolgray9);
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder .project-edition-modal-picture-placeholder-buttons {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  .project-edition-modal-picture-placeholder-buttons {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -2985,7 +3162,11 @@ thead {
   bottom: 0.5rem;
   flex-wrap: wrap;
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder .project-edition-modal-picture-placeholder-buttons button {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  .project-edition-modal-picture-placeholder-buttons
+  button {
   display: flex;
   align-items: center;
   background-color: var(--white);
@@ -2996,17 +3177,34 @@ thead {
   padding: 0.25rem;
   transition: 0.2s;
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder .project-edition-modal-picture-placeholder-buttons button img {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  .project-edition-modal-picture-placeholder-buttons
+  button
+  img {
   height: 1.5rem;
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder .project-edition-modal-picture-placeholder-buttons button:hover {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  .project-edition-modal-picture-placeholder-buttons
+  button:hover {
   background-color: var(--coolgray11);
   color: var(--coolgray1);
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder .project-edition-modal-picture-placeholder-buttons button.remove {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  .project-edition-modal-picture-placeholder-buttons
+  button.remove {
   color: var(--red);
 }
-.project-edition-modal .project-edition-modal-picture .project-edition-modal-picture-placeholder .project-edition-modal-picture-placeholder-buttons button.remove:hover {
+.project-edition-modal
+  .project-edition-modal-picture
+  .project-edition-modal-picture-placeholder
+  .project-edition-modal-picture-placeholder-buttons
+  button.remove:hover {
   background-color: var(--red);
   color: var(--white);
 }
@@ -3041,7 +3239,9 @@ thead {
 .project-edition-modal .project-edition-modal-objectives-md {
   height: 100%;
 }
-.project-edition-modal .project-edition-modal-objectives-md .project-edition-modal-objectives-md-render {
+.project-edition-modal
+  .project-edition-modal-objectives-md
+  .project-edition-modal-objectives-md-render {
   overflow: auto;
   height: 20vh;
   padding: 0.5rem;
@@ -3080,10 +3280,12 @@ thead {
 .scenario-edition-modal .scenario-edition-modal-description textarea {
   min-height: auto;
 }
-.scenario-edition-modal .scenario-edition-modal-infraselector .modal-header, .scenario-edition-modal .scenario-edition-modal-infraselector .modal-body {
+.scenario-edition-modal .scenario-edition-modal-infraselector .modal-header,
+.scenario-edition-modal .scenario-edition-modal-infraselector .modal-body {
   padding: 0 !important;
 }
-.scenario-edition-modal .scenario-edition-modal-infraselector.scenario-edition-modal-infraselector-missing {
+.scenario-edition-modal
+  .scenario-edition-modal-infraselector.scenario-edition-modal-infraselector-missing {
   padding: 0.5rem;
   border-radius: 4px;
   border: 2px solid var(--red);
@@ -3150,7 +3352,10 @@ thead {
 .pathfinding-main-container {
   margin-left: 1.5rem;
 }
-.pathfinding-main-container .pathfinding-subsection, .pathfinding-main-container .missing-params, .pathfinding-main-container .pathfinding-error, .pathfinding-main-container .pathfinding-done {
+.pathfinding-main-container .pathfinding-subsection,
+.pathfinding-main-container .missing-params,
+.pathfinding-main-container .pathfinding-error,
+.pathfinding-main-container .pathfinding-done {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -3192,14 +3397,25 @@ thead {
   justify-content: center;
   align-items: center;
 }
-.pathfinding-main-container .pathfinding-in-progress .pathfinding-in-progress-card .pathfinding-in-progress-title-container {
+.pathfinding-main-container
+  .pathfinding-in-progress
+  .pathfinding-in-progress-card
+  .pathfinding-in-progress-title-container {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
 }
-.pathfinding-main-container .pathfinding-in-progress .pathfinding-in-progress-card .pathfinding-in-progress-title-container .pathfinding-in-progress-title {
+.pathfinding-main-container
+  .pathfinding-in-progress
+  .pathfinding-in-progress-card
+  .pathfinding-in-progress-title-container
+  .pathfinding-in-progress-title {
   margin: 0 1rem;
+}
+
+.max-run-time-error {
+  color: var(--warning);
 }
 
 .scenario-explorator-card {
@@ -3241,19 +3457,30 @@ thead {
   height: 4.5rem;
   font-weight: 500;
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item {
   display: flex;
   align-items: center;
   margin-bottom: 0.25rem;
   height: 1.5rem;
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item img {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  img {
   border-radius: 4px 0 0 4px;
   background-color: var(--coolgray3);
   padding: 0.25rem;
   height: 1.5rem;
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item div {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  div {
   display: flex;
   align-items: center;
   height: 100%;
@@ -3263,7 +3490,11 @@ thead {
   border-radius: 0 4px 4px 0;
   font-size: 0.8rem;
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item .scenario-explorator-card-head-legend {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  .scenario-explorator-card-head-legend {
   display: flex;
   align-items: center;
   border-radius: 0;
@@ -3275,32 +3506,55 @@ thead {
   height: 100%;
   width: 5rem;
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item .scenario-explorator-card-head-project {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  .scenario-explorator-card-head-project {
   border-radius: 0 4px 4px 0;
   background-color: var(--purple);
   width: 100%;
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item .scenario-explorator-card-head-study {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  .scenario-explorator-card-head-study {
   background-color: var(--primary);
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item .scenario-explorator-card-head-scenario {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  .scenario-explorator-card-head-scenario {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 1rem;
   background-color: var(--secondary);
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item .scenario-explorator-card-head-scenario .scenario-explorator-card-head-scenario-traincount {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  .scenario-explorator-card-head-scenario
+  .scenario-explorator-card-head-scenario-traincount {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   padding: 0 0.25rem;
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content .scenario-explorator-card-head-content-item .scenario-explorator-card-head-infra {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content
+  .scenario-explorator-card-head-content-item
+  .scenario-explorator-card-head-infra {
   color: var(--secondary);
   border: 1px solid var(--coolgray3);
 }
-.scenario-explorator-card .scenario-explorator-card-head .scenario-explorator-card-head-content.no-image {
+.scenario-explorator-card
+  .scenario-explorator-card-head
+  .scenario-explorator-card-head-content.no-image {
   margin-left: 0;
 }
 .scenario-explorator-card:hover {
@@ -3330,10 +3584,16 @@ thead {
   background-color: var(--coolgray3);
   border-radius: 4px 4px 0 0;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-title img {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-title
+  img {
   height: 1.25rem;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-title h2 {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-title
+  h2 {
   flex-grow: 1;
   font-size: 0.9rem;
   font-weight: 400;
@@ -3342,7 +3602,10 @@ thead {
   padding: 0;
   text-align: center;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-title .scenario-explorator-modal-part-title-count {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-title
+  .scenario-explorator-modal-part-title-count {
   font-size: 0.7rem;
   font-weight: bold;
   width: 1.5rem;
@@ -3352,13 +3615,19 @@ thead {
   line-height: 1.5rem;
   padding: 0 0.25rem;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part.projects .scenario-explorator-modal-part-title {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part.projects
+  .scenario-explorator-modal-part-title {
   border-bottom: 4px solid var(--purple);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part.studies .scenario-explorator-modal-part-title {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part.studies
+  .scenario-explorator-modal-part-title {
   border-bottom: 4px solid var(--primary);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part.scenarios .scenario-explorator-modal-part-title {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part.scenarios
+  .scenario-explorator-modal-part-title {
   border-bottom: 4px solid var(--coolgray9);
 }
 .scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-arrow {
@@ -3371,14 +3640,19 @@ thead {
   font-size: 6rem;
   color: var(--coolgray1);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist {
   position: relative;
   width: 100%;
   height: 20vh;
   padding: 0.5rem 0 0;
   overflow: auto;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard {
   display: flex;
   align-items: center;
   font-size: 0.8rem;
@@ -3392,7 +3666,11 @@ thead {
   border: 2px solid var(--white);
   border-left: none;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard .scenario-explorator-modal-part-itemslist-minicard-img {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard
+  .scenario-explorator-modal-part-itemslist-minicard-img {
   position: absolute;
   overflow: hidden;
   border-radius: 4px 0 0 4px;
@@ -3400,7 +3678,12 @@ thead {
   width: 2rem;
   left: 0.5rem;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard .scenario-explorator-modal-part-itemslist-minicard-img img {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard
+  .scenario-explorator-modal-part-itemslist-minicard-img
+  img {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3409,34 +3692,61 @@ thead {
   height: 100%;
   object-fit: cover;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard:not(.selected, .empty) {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard:not(.selected, .empty) {
   cursor: pointer;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard:not(.selected, .empty):hover {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard:not(.selected, .empty):hover {
   background-color: var(--coolgray3);
   border-color: var(--coolgray3);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard:not(.with-image) {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard:not(.with-image) {
   border-radius: 4px;
   border-left: 2px solid var(--white);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard.with-image {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard.with-image {
   margin: 0 0 0.5rem 2.5rem;
   width: calc(100% - 3rem);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard.selected {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard.selected {
   cursor: not-allowed;
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard.selected.project {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard.selected.project {
   border-color: var(--purple);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard.selected.study {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard.selected.study {
   border-color: var(--primary);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard.selected.scenario {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard.selected.scenario {
   border-color: var(--coolgray9);
 }
-.scenario-explorator-modal .scenario-explorator-modal-part .scenario-explorator-modal-part-itemslist .scenario-explorator-modal-part-itemslist-minicard.empty {
+.scenario-explorator-modal
+  .scenario-explorator-modal-part
+  .scenario-explorator-modal-part-itemslist
+  .scenario-explorator-modal-part-itemslist-minicard.empty {
   cursor: not-allowed;
   opacity: 0.5;
 }

@@ -116,11 +116,11 @@ export default function formatStdcmConf(
       start_time: originDate, // Build a date
       end_time: destinationDate, // Build a date
       maximum_departure_delay: maximumDepartureDelay,
-      maximum_relative_run_time: 2,
       speed_limit_tags: osrdconf.speedLimitByTag,
       margin_before: osrdconf.gridMarginBefore,
       margin_after: osrdconf.gridMarginAfter,
       standard_allowance: standardAllowance,
+      maximum_run_time: osrdconf.maximumRunTime,
     };
 
     return osrdConfStdcm;

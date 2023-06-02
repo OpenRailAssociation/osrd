@@ -5,6 +5,7 @@ import Pathfinding from 'common/Pathfinding';
 import Origin from './Origin';
 import Vias from './Vias';
 import Destination from './Destination';
+import RunningTime from './RunningTime';
 
 interface DisplayItineraryProps {
   mustUpdate?: boolean;
@@ -25,7 +26,7 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
         viaModalContent={viaModalContent}
       />
       <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
-
+      <RunningTime />
       <Pathfinding mustUpdate={mustUpdate} zoomToFeature={zoomToFeature} />
     </>
   );
