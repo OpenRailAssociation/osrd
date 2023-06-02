@@ -7,7 +7,6 @@ import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  * A mapping from track sections to electrical profile values
@@ -29,7 +28,7 @@ public class ElectricalProfileMapping {
         for (var rjsProfile : rjsProfileSet.levels) {
             var trackMapping = mapping.computeIfAbsent(rjsProfile.powerClass, k -> new HashMap<>());
             for (var trackRange : rjsProfile.trackRanges) {
-                var rangeMapping = trackMapping.computeIfAbsent(trackRange.track, k -> TreeRangeMap.create());
+                var rangeMapping = trackMapping.computeIfAbsent(trackRange.trackSectionID, k -> TreeRangeMap.create());
                 rangeMapping.put(Range.closedOpen(trackRange.begin, trackRange.end), rjsProfile.value);
             }
         }

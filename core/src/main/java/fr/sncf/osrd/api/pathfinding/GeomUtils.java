@@ -30,9 +30,9 @@ public class GeomUtils {
                     continue;
                 }
 
-                if (previousTrack.trackSection.compareTo(trackSection.trackSection) != 0) {
+                if (previousTrack.trackSectionID.compareTo(trackSection.trackSectionID) != 0) {
                     if (Double.compare(previousBegin, previousEnd) != 0) {
-                        var track = infra.getTrackSection(previousTrack.trackSection);
+                        var track = infra.getTrackSection(previousTrack.trackSectionID);
                         sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
                         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
                     }
@@ -44,7 +44,7 @@ public class GeomUtils {
         }
 
         assert previousTrack != null;
-        var track = infra.getTrackSection(previousTrack.trackSection);
+        var track = infra.getTrackSection(previousTrack.trackSectionID);
         sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
 
