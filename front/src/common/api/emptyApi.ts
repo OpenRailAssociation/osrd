@@ -4,7 +4,7 @@ import { isNil } from 'lodash';
 import { MAIN_API } from 'config/config';
 import { getAuthConfig } from 'common/requests';
 
-interface ApiError {
+export interface ApiError {
   data: {
     type: string;
     message: string;
