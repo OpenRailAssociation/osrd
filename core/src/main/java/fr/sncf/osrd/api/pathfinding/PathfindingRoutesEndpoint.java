@@ -206,7 +206,7 @@ public class PathfindingRoutesEndpoint implements Take {
         // Checks that at least one waypoint of each step is on the path
         var tracksOnPath = res.routePaths.stream()
                 .flatMap(route -> route.trackSections.stream())
-                .map(track -> track.trackSection)
+                .map(track -> track.trackSectionID)
                 .collect(Collectors.toSet());
         for (var step : reqWaypoints) {
             assert Arrays.stream(step)

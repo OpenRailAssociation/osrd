@@ -98,7 +98,7 @@ public class UndirectedInfraBuilder {
     private void loadCatenaries(List<RJSCatenary> catenaries, HashMap<String, TrackSectionImpl> trackSectionsByID) {
         for (var catenary : catenaries) {
             for (var trackRange : catenary.trackRanges) {
-                var track = trackSectionsByID.get(trackRange.track);
+                var track = trackSectionsByID.get(trackRange.trackSectionID);
                 assert track != null;
                 track.getVoltages().put(Range.open(trackRange.begin, trackRange.end), catenary.voltage);
             }
@@ -158,7 +158,7 @@ public class UndirectedInfraBuilder {
         for (var speedSection : speedSections) {
             var value = SpeedLimits.from(speedSection);
             for (var trackRange : speedSection.trackRanges) {
-                var track = trackSectionsByID.get(trackRange.track);
+                var track = trackSectionsByID.get(trackRange.trackSectionID);
                 var speedSectionMaps = track.getSpeedSections();
                 if (trackRange.applicableDirections.appliesToNormal()) {
                     speedSectionMaps.get(Direction.FORWARD).merge(
