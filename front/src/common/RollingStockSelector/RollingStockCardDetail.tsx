@@ -9,12 +9,16 @@ import RollingStockCurves from './RollingStockCurves';
 
 type RollingStockCardDetailProps = {
   id: number;
+  hideCurves?: boolean;
+  form?: string;
   curvesComfortList?: string[];
   setCurvesComfortList: (curvesComfortList: string[]) => void;
 };
 
 export default function RollingStockCardDetail({
   id,
+  hideCurves,
+  form,
   curvesComfortList,
   setCurvesComfortList,
 }: RollingStockCardDetailProps) {
@@ -91,8 +95,8 @@ export default function RollingStockCardDetail({
   }, [error]);
 
   return rollingStock && curvesComfortList ? (
-    <div className="rollingstock-body">
-      <div className="row pt-2">
+    <div className={`rollingstock-body ${form ? 'px-4' : ''}`}>
+      <div className={`row pt-2  ${form}`}>
         <div className="col-sm-6">
           <table className="rollingstock-details-table">
             <tbody>
@@ -100,21 +104,21 @@ export default function RollingStockCardDetail({
                 <td className="text-primary">{t('startupTime')}</td>
                 <td>
                   {rollingStock.startup_time}
-                  <span className="small text-muted ml-1">s</span>
+                  <span className="small ml-1 text-muted">s</span>
                 </td>
               </tr>
               <tr>
                 <td className="text-primary">{t('startupAcceleration')}</td>
                 <td>
                   {rollingStock.startup_acceleration}
-                  <span className="small text-muted ml-1">m/s²</span>
+                  <span className="small ml-1 text-muted">m/s²</span>
                 </td>
               </tr>
               <tr>
                 <td className="text-primary">{t('comfortAcceleration')}</td>
                 <td>
                   {rollingStock.comfort_acceleration}
-                  <span className="small text-muted ml-1">m/s²</span>
+                  <span className="small ml-1 text-muted">m/s²</span>
                 </td>
               </tr>
               <tr>
@@ -125,7 +129,7 @@ export default function RollingStockCardDetail({
                 <td className="text-primary">{t('timetableGamma')}</td>
                 <td>
                   {rollingStock.gamma.value * -1}
-                  <span className="small text-muted ml-1">m/s²</span>
+                  <span className="small ml-1 text-muted">m/s²</span>
                 </td>
               </tr>
               <tr>
@@ -136,12 +140,12 @@ export default function RollingStockCardDetail({
           </table>
         </div>
         <div className="col-sm-6">
-          {rollingStock.features && rollingStock.features.length > 0 ? (
+          {rollingStock.features && rollingStock.features.length > 0 && (
             <div className="pb-1">
               {t('features')}
               <span className="ml-1">{rollingStock.features.join(', ')}</span>
             </div>
-          ) : null}
+          )}
           {rollingStock.power_restrictions &&
             Object.keys(rollingStock.power_restrictions).length !== 0 && (
               <table className="rollingstock-details-table mb-1">
@@ -153,17 +157,18 @@ export default function RollingStockCardDetail({
                       })}
                     </td>
                     <td>
-                      {rollingStock.power_restrictions !== null
-                        ? Object.keys(rollingStock.power_restrictions).join(' ')
-                        : null}
+                      {rollingStock.power_restrictions !== null &&
+                        Object.keys(rollingStock.power_restrictions).join(' ')}
                     </td>
                   </tr>
                 </tbody>
               </table>
             )}
           <div>
-            {t('rollingResistance')}
-            <div className="text-muted small">{t('rollingResistanceFormula')}</div>
+            <div className={form ? 'formResistance ml-2' : ''}>{t('rollingResistance')}</div>
+            <div className={`text-primary text-muted ${form ? 'formResistance ml-4' : ''}`}>
+              {t('rollingResistanceFormula')}
+            </div>
           </div>
           <table className="rollingstock-details-table ml-2">
             <tbody>
@@ -207,15 +212,19 @@ export default function RollingStockCardDetail({
           </table>
         </div>
       </div>
-      <RollingStockCurves
-        data={transformCurves(rollingStock.effort_curves.modes)}
-        curvesComfortList={curvesComfortList}
-      />
-      <div className="rollingstock-detail-container-img">
-        <div className="rollingstock-detail-img">
-          <RollingStock2Img rollingStock={rollingStock} />
-        </div>
-      </div>
+      {!hideCurves && (
+        <>
+          <RollingStockCurves
+            data={transformCurves(rollingStock.effort_curves.modes)}
+            curvesComfortList={curvesComfortList}
+          />
+          <div className="rollingstock-detail-container-img">
+            <div className="rollingstock-detail-img">
+              <RollingStock2Img rollingStock={rollingStock} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   ) : (
     <div className="rollingstock-body">

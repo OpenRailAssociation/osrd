@@ -37,7 +37,7 @@
       position: absolute;
       width: 7rem;
       filter: blur(2px);
-      opacity: .20;
+      opacity: 0.2;
     }
   }
 }
@@ -54,7 +54,7 @@
         flex-grow: 1;
         background-color: var(--coolgray1);
         border-radius: 4px;
-        padding: .25rem .5rem;
+        padding: 0.25rem 0.5rem;
         position: relative;
         min-height: 1.5rem;
         .rollingstock-infos-series {
@@ -70,15 +70,15 @@
             color: #a1006b;
           }
           font-weight: bold;
-          margin-left: .25rem;
-          font-size: .7rem;
+          margin-left: 0.25rem;
+          font-size: 0.7rem;
         }
         .rollingstock-infos-subseries {
           position: relative;
-          margin-left: .25rem;
+          margin-left: 0.25rem;
           text-transform: uppercase;
           vertical-align: text-bottom;
-          font-size: .7rem;
+          font-size: 0.7rem;
         }
       }
     }
@@ -87,7 +87,9 @@
       .rollingstock-img {
         height: 2rem;
         white-space: nowrap;
-        transform: scale(.4); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+        transform: scale(
+          0.4
+        ); // Have to scale whole <img> because electric trains with pantograph have taller pictures
         transform-origin: left;
         img {
           display: inline-block;
@@ -99,18 +101,19 @@
     .rollingstock-minicard-end {
       display: flex;
       justify-content: space-between;
-      margin-top: .5rem;
-      gap: .5rem;
+      margin-top: 0.5rem;
+      gap: 0.5rem;
       .rollingstock-infos-comfort {
         display: flex;
         align-items: center;
         background-color: var(--coolgray1);
         height: 1.5rem;
         margin-left: auto;
-        padding: 0rem .5rem;
+        padding: 0rem 0.5rem;
         border-radius: 4px;
       }
-      .comfort-AC, .comfort-HEATING {
+      .comfort-AC,
+      .comfort-HEATING {
         display: flex;
       }
       .rollingstock-infos-end {
@@ -121,8 +124,8 @@
         border: 1px solid var(--coolgray3);
         color: var(--coolgray9);
         border-radius: 4px;
-        padding: 0 .5rem;
-        font-size: .8rem;
+        padding: 0 0.5rem;
+        font-size: 0.8rem;
       }
     }
   }
@@ -138,19 +141,24 @@
     opacity: 1 !important;
   }
   &.inactive:not(:hover) {
-    transition: .5s;
-    opacity: .5;
+    transition: 0.5s;
+    opacity: 0.5;
   }
   &:hover:not(.active) {
-    .rollingstock-header, .rollingstock-body, .rollingstock-body-container-img, .rollingstock-footer {
-      transition: .5s;
+    .rollingstock-header,
+    .rollingstock-body,
+    .rollingstock-body-container-img,
+    .rollingstock-footer {
+      transition: 0.5s;
       border-color: #333;
     }
   }
   &.active {
     cursor: default;
-    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
-      border-color: #303383;;
+    .rollingstock-header,
+    .rollingstock-body,
+    .rollingstock-footer {
+      border-color: #303383;
     }
   }
 }
@@ -158,7 +166,7 @@
 .rollingstock-header {
   border-radius: 4px 4px 0 0;
   background-color: var(--coolgray3);
-  padding: .15rem .5rem;
+  padding: 0.15rem 0.5rem;
   overflow: hidden;
   border-top: 2px solid var(--coolgray3);
   border-left: 2px solid var(--coolgray3);
@@ -189,13 +197,13 @@
             color: #a1006b;
           }
           font-weight: bold;
-          margin-left: .25rem;
-          font-size: .7rem;
+          margin-left: 0.25rem;
+          font-size: 0.7rem;
         }
         .rollingstock-infos-subseries {
-          margin-left: .25rem;
+          margin-left: 0.25rem;
           text-transform: uppercase;
-          font-size: .7rem;
+          font-size: 0.7rem;
         }
       }
       .rollingstock-infos-middle {
@@ -205,40 +213,48 @@
         max-width: 55%;
         text-transform: uppercase;
         color: #303383;
-        font-size: .6rem;
-        line-height: .6rem;
+        font-size: 0.6rem;
+        line-height: 0.6rem;
       }
       .rollingstock-infos-end {
         display: flex;
         align-items: center;
         color: #4d4d4d;
-        font-size: .8rem;
+        font-size: 0.8rem;
       }
     }
   }
 }
 .rollingstock-body-container-img {
-  padding: 0 .5rem;
-  border-left: 2px solid var(--coolgray3);
-  border-right: 2px solid var(--coolgray3);
+  padding: 0 0.5rem;
   .rollingstock-body-img {
     overflow: hidden;
     img {
       height: 2rem;
       display: inline-block;
-      padding-top: .75rem;
+      padding-top: 0.75rem;
       position: relative;
       vertical-align: baseline;
     }
   }
 }
 
-.rollingstock-body {
-  position: relative;
-  padding: 0 .5rem;
+.opened-rollingstock-body {
+  border-left: 2px solid var(--blue);
+  border-right: 2px solid var(--blue);
+}
+
+.closed-rollingstock-body {
   border-left: 2px solid var(--coolgray3);
   border-right: 2px solid var(--coolgray3);
-  font-size: .8rem;
+}
+
+.rollingstock-body {
+  position: relative;
+  padding: 0 0.5rem;
+  border-left: 2px solid var(--coolgray3);
+  border-right: 2px solid var(--coolgray3);
+  font-size: 0.8rem;
   font-weight: lighter;
   .rollingstock-detail-container-img {
     position: absolute;
@@ -247,7 +263,7 @@
     overflow: hidden;
     bottom: 2.6rem;
     left: 3.5rem;
-    opacity: .35;
+    opacity: 0.35;
     padding-top: 1rem; // Need padding...because
     padding-bottom: 1rem;
     .rollingstock-detail-img {
@@ -255,7 +271,9 @@
       align-items: baseline;
       position: relative;
       white-space: nowrap;
-      transform: scale(1.5); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+      transform: scale(
+        1.5
+      ); // Have to scale whole <img> because electric trains with pantograph have taller pictures
       transform-origin: left;
       img {
         display: inline-block;
@@ -282,13 +300,14 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        margin: 0 .25rem 2px 0;
+        margin: 0 0.25rem 2px 0;
         min-width: 1rem;
         border-bottom: 2px solid transparent;
         &.active {
           border-color: var(--coolgray9);
         }
-        .comfort-AC, .comfort-HEATING {
+        .comfort-AC,
+        .comfort-HEATING {
           display: flex;
         }
         &:hover {
@@ -303,8 +322,9 @@
         white-space: nowrap;
         cursor: pointer;
         border-bottom: 2px solid var(--coolgray3);
-        margin: 0 0 2px .5rem;
-        .comfort-AC, .comfort-HEATING {
+        margin: 0 0 2px 0.5rem;
+        .comfort-AC,
+        .comfort-HEATING {
           display: flex;
         }
         &:hover {
@@ -321,23 +341,23 @@
         display: flex;
         align-items: center;
         font-weight: bold;
-        font-size: .8rem;
+        font-size: 0.8rem;
         justify-content: space-between;
         background-color: var(--coolgray3);
         border-bottom: 2px solid var(--coolgray3);
-        padding-left: .25rem;
+        padding-left: 0.25rem;
         .curves-chart-tooltip-comfort {
           display: flex;
           align-items: center;
           border-radius: 0 4px 0 0;
           background-color: #fff;
-          padding: 0 .3rem .1rem;
+          padding: 0 0.3rem 0.1rem;
         }
       }
       .curves-chart-tooltip-body {
         display: flex;
         align-items: center;
-        padding: 0 .25rem;
+        padding: 0 0.25rem;
       }
     }
   }
@@ -349,23 +369,23 @@
   border-right: 2px solid var(--coolgray3);
   border-bottom: 2px solid var(--coolgray3);
   .rollingstock-footer-specs {
-    padding: .5rem .5rem .25rem;
+    padding: 0.5rem 0.5rem 0.25rem;
     svg {
       vertical-align: text-top;
-      font-size: .9rem;
+      font-size: 0.9rem;
       margin-right: 3px;
     }
     small {
       font-size: 80%;
     }
-    font-size: .8rem;
+    font-size: 0.8rem;
   }
   .rollingstock-footer-buttons {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     height: 2.75rem;
-    padding: 0 .5rem;
+    padding: 0 0.5rem;
     border-radius: 0 0 4px 4px;
     color: var(--light);
     background-color: var(--coolgray3);
@@ -374,7 +394,7 @@
       align-items: center;
       span {
         display: flex;
-        padding: 0 .25rem .1rem 0;
+        padding: 0 0.25rem 0.1rem 0;
       }
     }
   }
