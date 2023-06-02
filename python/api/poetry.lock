@@ -119,14 +119,14 @@ files = [
 
 [[package]]
 name = "django"
-version = "4.1.5"
+version = "4.1.9"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Django-4.1.5-py3-none-any.whl", hash = "sha256:4b214a05fe4c99476e99e2445c8b978c8369c18d4dea8e22ec412862715ad763"},
-    {file = "Django-4.1.5.tar.gz", hash = "sha256:ff56ebd7ead0fd5dbe06fe157b0024a7aaea2e0593bb3785fb594cf94dad58ef"},
+    {file = "Django-4.1.9-py3-none-any.whl", hash = "sha256:adae3a952fd86800094ae6f64aa558572e8b4ba8dfe21f0ed8175147e75a72a1"},
+    {file = "Django-4.1.9.tar.gz", hash = "sha256:e9f074a84930662104871bfcea55c3c180c50a0a47739db82435deae6cbaf032"},
 ]
 
 [package.dependencies]
@@ -1091,4 +1091,4 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "fb33156aacfd3553476f55d837c0b79dbd4aef95f8845768ce964c722fb5ec80"
+content-hash = "4a92bdfd1eb9268da46bef4e6c3d465a2ad0b49a66367722c8001570c8dcbe96"
