@@ -213,6 +213,25 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.id}/` }),
     }),
+    postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
+      query: (queryArg) => ({ url: `/pathfinding/`, method: 'POST', body: queryArg.pathQuery }),
+    }),
+    getPathfindingById: build.query<GetPathfindingByIdApiResponse, GetPathfindingByIdApiArg>({
+      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}` }),
+    }),
+    putPathfindingById: build.mutation<PutPathfindingByIdApiResponse, PutPathfindingByIdApiArg>({
+      query: (queryArg) => ({
+        url: `/pathfinding/${queryArg.id}`,
+        method: 'PUT',
+        body: queryArg.pathQuery,
+      }),
+    }),
+    deletePathfindingById: build.mutation<
+      DeletePathfindingByIdApiResponse,
+      DeletePathfindingByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}`, method: 'DELETE' }),
+    }),
     postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
       query: (queryArg) => ({
         url: `/rolling_stock/`,
@@ -764,6 +783,28 @@ export type GetLightRollingStockByIdApiResponse =
   /** status 200 The rolling stock with their simplified effort curves */ LightRollingStock;
 export type GetLightRollingStockByIdApiArg = {
   /** Rolling Stock ID */
+  id: number;
+};
+export type PostPathfindingApiResponse = /** status 201 The created Path */ Path;
+export type PostPathfindingApiArg = {
+  /** Path information */
+  pathQuery: PathQuery;
+};
+export type GetPathfindingByIdApiResponse = /** status 200 The retrieved path */ Path;
+export type GetPathfindingByIdApiArg = {
+  /** Path ID */
+  id: number;
+};
+export type PutPathfindingByIdApiResponse = /** status 200 The updated path */ Path[];
+export type PutPathfindingByIdApiArg = {
+  /** Path ID */
+  id: number;
+  /** Updated Path */
+  pathQuery: PathQuery;
+};
+export type DeletePathfindingByIdApiResponse = unknown;
+export type DeletePathfindingByIdApiArg = {
+  /** Path ID */
   id: number;
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
@@ -1391,6 +1432,53 @@ export type LightRollingStock = RollingStockBase & {
       };
     };
   };
+};
+export type GeoJsonObject = {
+  coordinates: number[][];
+  type: string;
+};
+export type GeoJsonPosition = {
+  coordinates: number[];
+  type: string;
+};
+export type PathStep = {
+  id: string;
+  name: string;
+  suggestion: boolean;
+  duration: number;
+  track: string;
+  position: number;
+  sch: GeoJsonPosition;
+  geo: GeoJsonPosition;
+};
+export type Path = {
+  id: number;
+  owner: string;
+  created: string;
+  geographic: GeoJsonObject;
+  schematic: GeoJsonObject;
+  slopes: {
+    gradient: number;
+    position: number;
+  }[];
+  curves: {
+    radius: number;
+    position: number;
+  }[];
+  steps: PathStep[];
+};
+export type PathWaypoint = {
+  track_section: string;
+  geo_coordinate?: number[];
+  offset?: number;
+};
+export type PathQuery = {
+  infra: number;
+  steps: {
+    duration: number;
+    waypoints: PathWaypoint[];
+  }[];
+  rolling_stocks: number[];
 };
 export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
 export type EffortCurve = {
