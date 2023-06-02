@@ -1,50 +1,53 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useEffect, useContext, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { getPathfindingID } from 'reducers/osrdconf/selectors';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { ApiError } from 'common/api/emptyApi';
+import { SerializedError } from '@reduxjs/toolkit';
 
 export default function ModalPathJSONDetail() {
   const dispatch = useDispatch();
   const pathfindingID = useSelector(getPathfindingID);
-  const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
-  const textareaRef = useRef(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const { closeModal } = useContext(ModalContext);
 
-  const getPathJSON = async (zoom, params) => {
-    try {
-      const pathJSON = await get(`/pathfinding/${pathfindingID}/`, { params });
-      setPathJSONDetail(pathJSON);
-    } catch (e) {
+  const {
+    data: path,
+    isError,
+    error,
+  } = osrdEditoastApi.useGetPathfindingByIdQuery(
+    { id: pathfindingID as number },
+    {
+      skip: !pathfindingID,
+    }
+  );
+
+  useEffect(() => {
+    if (isError && error) {
       dispatch(
         setFailure({
           name: t('errorMessages.unableToRetrievePath'),
-          message: `${e.message} : ${e.response && e.response.data.detail}`,
+          message: `${(error as ApiError)?.data?.message || (error as SerializedError)?.message}`,
         })
       );
     }
-  };
+  }, [isError]);
 
-  const copyToClipboard = (e) => {
-    textareaRef.current.select();
+  const copyToClipboard = () => {
+    textareaRef.current?.select();
     document.execCommand('copy');
+
     // This is just personal preference.
     // I prefer to not show the whole text area selected.
-    e.target.focus();
+    textareaRef.current?.blur();
   };
-
-  useEffect(() => {
-    if (pathfindingID) {
-      getPathJSON();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathfindingID]);
 
   return (
     <>
@@ -59,7 +62,7 @@ export default function ModalPathJSONDetail() {
           <textarea
             className="form-control stretchy"
             ref={textareaRef}
-            value={JSON.stringify(pathJSONDetail, null, 2)}
+            value={JSON.stringify(path, null, 2)}
             style={{ maxHeight: '50vh' }}
           />
         </div>
