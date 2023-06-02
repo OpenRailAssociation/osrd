@@ -1057,6 +1057,81 @@ paths:
               schema:
                 $ref: "#/components/schemas/LightRollingStock"
 
+  /pathfinding/:
+    post:
+      summary: Create a Path
+      requestBody:
+        description: Path information
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PathQuery"
+      responses:
+        201:
+          description: The created Path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Path"
+
+  /pathfinding/{id}:
+    get:
+      tags:
+        - pathfinding
+      summary: Retrieve a Path
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+          description: Path ID
+          required: true
+      responses:
+        200:
+          description: The retrieved path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Path"
+    put:
+      tags:
+        - pathfinding
+      summary: Update a path
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+          description: Path ID
+          required: true
+      requestBody:
+        description: Updated Path
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PathQuery"
+      responses:
+        200:
+          description: The updated path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Path"
+    delete:
+      tags:
+        - pathfinding
+      summary: Delete a path
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Path ID
+          required: true
+      responses:
+        204:
+          description: No content
+
   /rolling_stock/:
     post:
       tags:
@@ -1950,6 +2025,29 @@ components:
               maximum: 1
           required: [tau, soc_ref]
 
+    GeoJsonObject:
+      type: object
+      description: GeoJson format
+      properties:
+        coordinates:
+          type: array
+          items:
+            type: array
+            items: { type: number, format: float }
+        type: { type: string }
+      required: [coordinates, type]
+
+    GeoJsonPosition:
+      type: object
+      properties:
+        coordinates:
+          type: array
+          items: { type: number, format: float }
+          minItems: 2
+          maxItems: 2
+        type: { type: string }
+      required: [coordinates, type]
+
     Infra:
       properties:
         id:
@@ -2363,6 +2461,96 @@ components:
                     required: [is_electric]
               required: [default_mode, modes]
           required: [id, liveries, effort_curves]
+
+    Path:
+      properties:
+        id: { type: integer }
+        owner:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+        geographic:
+          $ref: "#/components/schemas/GeoJsonObject"
+        schematic:
+          $ref: "#/components/schemas/GeoJsonObject"
+        slopes:
+          description: Slopes on the path
+          type: array
+          items:
+            type: object
+            properties:
+              gradient: { type: number, format: float }
+              position: { type: number, format: float }
+            required: [gradient, position]
+        curves:
+          description: Curves on the path
+          type: array
+          items:
+            type: object
+            properties:
+              radius: { type: number, format: float }
+              position: { type: number, format: float }
+            required: [radius, position]
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/PathStep"
+      required: [id, owner, created, geographic, schematic, slopes, curves, steps]
+
+    PathQuery:
+      type: object
+      properties:
+        infra:
+          type: number
+        steps:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              duration: { type: number, format: float }
+              waypoints:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PathWaypoint"
+            required: [duration, waypoints]
+        rolling_stocks:
+          description: List of rolling stocks that must be able to use this path
+          type: array
+          items: { type: integer }
+      required: [infra, steps, rolling_stocks]
+
+    PathStep:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        suggestion: { type: boolean }
+        duration: { type: number, format: float }
+        track: { type: string }
+        position: { type: number, format: float }
+        sch:
+          $ref: "#/components/schemas/GeoJsonPosition"
+        geo:
+          $ref: "#/components/schemas/GeoJsonPosition"
+      required: [id, name, suggestion, duration, track, position, sch, geo]
+
+    PathWaypoint:
+      type: object
+      properties:
+        track_section:
+          description: track section ID of the waypoint
+          type: string
+        geo_coordinate:
+          type: array
+          items: { type: number, format: float }
+          minItems: 2
+          maxItems: 2
+        offset:
+          type: number
+      required: [track_section, geo_cordinate]
 
     PowerPack:
       description: energy source for a rolling stock representing a power pack (hydrogen, fuel...)

@@ -177,6 +177,7 @@ paths:
                   aspects: []
   /pathfinding/:
     post:
+      deprecated: true
       tags:
         - pathfinding
       summary: Create a Path
@@ -217,6 +218,7 @@ paths:
                   $ref: "#/components/schemas/Path"
   /pathfinding/{id}/:
     get:
+      deprecated: true
       tags:
         - pathfinding
       summary: Retrieve a Path
@@ -235,6 +237,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Path"
     put:
+      deprecated: true
       tags:
         - pathfinding
       summary: Update a path
@@ -261,6 +264,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Path"
     delete:
+      deprecated: true
       tags:
         - pathfinding
       summary: Delete a path
