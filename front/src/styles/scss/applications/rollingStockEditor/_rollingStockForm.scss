@@ -1,0 +1,107 @@
+.rollingstock-editor {
+  &-form {
+    width: 80%;
+    align-self: center;
+    &-text {
+      *td,
+      .formResistance {
+        font-size: medium;
+        font-weight: 500;
+        height: 2rem;
+        padding: 0.5rem;
+      }
+    }
+    &-container {
+      width: 60%;
+      position: fixed;
+      right: 0;
+    }
+  }
+  &-buttons {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    background-color: var(--blue);
+    color: var(--white);
+    svg {
+      margin: 0 30px;
+    }
+    &-group {
+      width: 6%;
+    }
+    &.condensed {
+      height: 100px;
+      justify-content: space-between;
+      svg {
+        justify-self: center;
+        margin: 0;
+      }
+    }
+  }
+}
+
+.rollingstock-header-form {
+  border-radius: 4px 4px 0 0;
+  background-color: var(--coolgray3);
+  padding: 0.15rem 0.5rem;
+  overflow: hidden;
+  border-top: 2px solid var(--coolgray3);
+  border-left: 2px solid var(--coolgray3);
+  border-right: 2px solid var(--coolgray3);
+  height: 3rem;
+  .rollingstock-title-form {
+    white-space: nowrap;
+    height: 3rem;
+    overflow: hidden;
+    .rollingstock-infos-form {
+      display: flex;
+      align-items: center;
+      height: 3rem;
+      justify-content: space-between;
+      .rollingstock-infos-begin-form {
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+        .rollingstock-infos-series-form {
+          font-weight: bold;
+          font-size: x-large;
+        }
+        .rollingstock-infos-unit {
+          &.UM2 {
+            color: #6e1e78;
+            font-size: medium;
+          }
+          &.UM3 {
+            color: #a1006b;
+            font-size: medium;
+          }
+          font-weight: bold;
+          margin-left: 0.5rem;
+          font-size: 0.7rem;
+        }
+        .rollingstock-infos-subseries-form {
+          margin-left: 0.5rem;
+          text-transform: uppercase;
+          font-size: 0.9rem;
+        }
+      }
+      .rollingstock-infos-middle-form {
+        white-space: normal;
+        overflow-wrap: break-word;
+        overflow: hidden;
+        max-width: 55%;
+        text-transform: uppercase;
+        color: #303383;
+        font-size: 0.8rem;
+        line-height: 0.8rem;
+      }
+      .rollingstock-infos-end-form {
+        display: flex;
+        align-items: center;
+        color: #4d4d4d;
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
