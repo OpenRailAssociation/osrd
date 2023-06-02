@@ -1,5 +1,4 @@
 import json
-import subprocess
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Optional
 
@@ -19,21 +18,9 @@ def _load_generated_infra(name: str) -> int:
     output = Path("/tmp/osrd-generated-examples")
     infra = output / f"{name}/infra.json"
     main([name], output)
-    subprocess.check_call(["docker", "cp", str(infra), "osrd-api:/infra.json"])
-    result = subprocess.check_output(
-        [
-            "docker",
-            "exec",
-            "osrd-api",
-            "python",
-            "manage.py",
-            "import_railjson",
-            name,
-            "/infra.json",
-        ],
-    )
-    id = int(result.split()[-1])
-    return id
+    with open(infra) as json_infra:
+        res = requests.post(EDITOAST_URL + f"infra/railjson?name={name}&generate_data=true", json=json.load(json_infra))
+    return res.json()["infra"]
 
 
 @pytest.fixture(scope="session")
