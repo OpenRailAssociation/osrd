@@ -66,6 +66,7 @@
   "pathfindingError": "An error occurred in pathfinding: {{errorMessage}}.",
   "pathfindingInProgress": "Pathfinding in progress...",
   "pathfindingMissingParams": "Missing parameters for pathfinding: {{missingElements}}.",
+  "pathfindingMissingParamsSimple": "Missing elements for search",
   "pathfindingNoState": "No route search.",
   "pathfindingStatus": "Pathfinding state",
   "pleaseWait": "Please wait",
