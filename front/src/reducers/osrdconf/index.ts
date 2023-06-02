@@ -67,6 +67,7 @@ export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
 export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
 export const UPDATE_POWER_RESTRICTION = 'osrdconf/UPDATE_POWER_RESTRICTION';
 export const UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY = 'osrdconf/UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY';
+export const UPDATE_MAXIMUM_RUN_TIME = 'osrdconf/UPDATE_MAXIMUM_RUN_TIME';
 
 // Reducer
 const defaultCommonConf = {
@@ -107,6 +108,7 @@ const defaultCommonConf = {
   gridMarginBefore: 0,
   gridMarginAfter: 0,
   trainScheduleIDsToModify: undefined,
+  maximumRunTime: undefined,
 };
 
 export const initialState: OsrdMultiConfState = {
@@ -310,6 +312,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY:
         draft[section].trainScheduleIDsToModify = action.trainScheduleIDsToModify;
+        break;
+      case UPDATE_MAXIMUM_RUN_TIME:
+        draft[section].maximumRunTime = action.maximumRunTime;
         break;
     }
   });
@@ -692,6 +697,14 @@ export function updateTrainScheduleIDsToModify(trainScheduleIDsToModify?: number
     dispatch({
       type: UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY,
       trainScheduleIDsToModify,
+    });
+  };
+}
+export function updateMaximumRunTime(maximumRunTime?: number) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_MAXIMUM_RUN_TIME,
+      maximumRunTime,
     });
   };
 }
