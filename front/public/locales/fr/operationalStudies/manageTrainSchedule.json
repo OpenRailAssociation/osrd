@@ -66,6 +66,7 @@
   "pathfindingError": "Erreur dans la recherche d’itinéraire : {{errorMessage}}.",
   "pathfindingInProgress": "Recherche d’itinéraire en cours...",
   "pathfindingMissingParams": "Éléments manquants pour la recherche : {{missingElements}}.",
+  "pathfindingMissingParamsSimple": "Informations manquantes pour la recherche",
   "pathfindingNoState": "Aucune recherche itinéraire.",
   "pathfindingStatus": "Statut recherche d’itinéraire",
   "pleaseWait": "Veuillez patientez",

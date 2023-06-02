@@ -16,10 +16,11 @@ import {
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
 import { store } from 'Store';
-import { Path, TrainSchedule } from 'common/api/osrdMiddlewareApi';
+import { TrainSchedule } from 'common/api/osrdMiddlewareApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { compact } from 'lodash';
+import { Path } from 'common/api/osrdEditoastApi';
 
 function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap | undefined {
   return step
