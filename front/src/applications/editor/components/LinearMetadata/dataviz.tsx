@@ -209,6 +209,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   // Computed data for the viz and the viewbox
   const [data4viz, setData4viz] = useState<Array<LinearMetadataItem & { index: number }>>([]);
   const [hoverAtx, setHoverAtx] = useState<number | null>(null);
+
   /**
    * When data change (or the field)
    * => we recompute the min/max
