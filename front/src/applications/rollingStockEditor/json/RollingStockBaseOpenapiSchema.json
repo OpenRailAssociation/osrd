@@ -1,0 +1,63 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "OSRD Editoast",
+    "description": "OSRD Edition service description",
+    "version": "0.1.0"
+  },
+  "tags": [],
+  "paths": {},
+  "components": {
+    "schemas": {
+      "RollingStockBase": {
+        "type": "object",
+        "properties": {
+          "startup_time": {
+            "type": "number",
+            "format": "float"
+          },
+          "startup_acceleration": {
+            "type": "number",
+            "format": "float"
+          },
+          "comfort_acceleration": {
+            "type": "number",
+            "format": "float"
+          },
+          "inertia_coefficient": {
+            "type": "number",
+            "format": "float"
+          },
+          "gamma_value": {
+            "type": "number",
+            "format": "float"
+          },
+          "loading_gauge": {
+            "type": "string",
+            "enum": ["G1", "G2", "GA", "GB", "GB1", "GC", "FR3.3", "FR3.3/GB/G2", "GLOTT"]
+          },
+          "rolling_resistance_A": {
+            "type": "number"
+          },
+          "rolling_resistance_B": {
+            "type": "number"
+          },
+          "rolling_resistance_C": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "startup_time",
+          "startup_acceleration",
+          "comfort_acceleration",
+          "gamma_value",
+          "inertia_coefficient",
+          "loading_gauge",
+          "rolling_resistance_A",
+          "rolling_resistance_B",
+          "rolling_resistance_C"
+        ]
+      }
+    }
+  }
+}

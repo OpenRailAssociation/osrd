@@ -1,0 +1,24 @@
+{
+  "errors": {
+    "missingInformation": "Informations manquantes",
+    "must be number": "Nombre requis",
+    "must be equal to one of the allowed values": "Valeur autorisée requise"
+  },
+  "startup_time": "Durée de démarrage (s)",
+  "startup_acceleration": "Accélération au démarrage (m/s²)",
+  "comfort_acceleration": "Accélération « confort » (m/s²)",
+  "inertia_coefficient": "Coefficient d'inertie",
+  "gamma_value": "Décélération horaire (m/s²)",
+  "loading_gauge": "Gabarit",
+  "rollingResistance": "Résistance à l’avancement",
+  "rollingResistanceFormula": "(selon la formule de Davis, R(v) = a + bv + cv²)",
+  "rolling_resistance_A": "Frottements solides (N)",
+  "rolling_resistance_B": "Frottements visqueux (N.s/m)",
+  "rolling_resistance_C": "Résistance aérodynamique (N.s²/m²)",
+  "selectRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",
+  "confirmAction": "Souhaitez-vous confirmer la modification ?",
+  "cancelAction": "Souhaitez-vous annuler la modification ?",
+  "back": "Retour",
+  "cancel": "Annuler",
+  "confirm": "Confirmer"
+}
