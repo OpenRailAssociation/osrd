@@ -16,6 +16,7 @@ export default function SelectImprovedSNCF(props) {
     withNewValueInput,
     addButtonTitle,
     bgWhite,
+    dataTestId,
   } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState();
@@ -84,7 +85,7 @@ export default function SelectImprovedSNCF(props) {
   }, [filterText, options]);
 
   return (
-    <div className={inline ? 'd-flex align-items-baseline' : ''}>
+    <div className={inline ? 'd-flex align-items-baseline' : ''} data-testid={dataTestId}>
       {title && (
         <label htmlFor="select1" className={inline ? 'pr-2' : ''}>
           {title}
@@ -190,6 +191,7 @@ SelectImprovedSNCF.propTypes = {
   withNewValueInput: PropTypes.bool,
   addButtonTitle: PropTypes.string,
   bgWhite: PropTypes.bool,
+  dataTestId: PropTypes.string,
 };
 
 SelectImprovedSNCF.defaultProps = {
@@ -201,4 +203,5 @@ SelectImprovedSNCF.defaultProps = {
   withNewValueInput: false,
   addButtonTitle: null,
   bgWhite: false,
+  dataTestId: '',
 };

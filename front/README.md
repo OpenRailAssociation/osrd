@@ -38,12 +38,19 @@ Update licenses attributions in /src/common/ReleaseInformations/json/
 Launches end to end tests.
 
 It requires:
+
 - Backend containers to be up: `docker compose build core redis api editoast postgres`
 - Running front
 - [`poetry`](https://python-poetry.org/docs/#installation) to be installed
 
-This command will execute all tests defined. The command can be changed in [`test_e2e.py`](../tests/tests/test_e2e.py) to execute only one test with or without debug mode.
-`test_e2e.py` is executing [playwright command](https://playwright.dev/docs/test-cli) in a python subprocess. Example of modification to apply to launch only `stdcm-page.spec.ts` in debug mode with chromium:
+Locally, to use the same configuration as the CI, you must change the environment variable to
+`CI=true`.
+
+This command will execute all tests defined. The command can be changed in
+[`test_e2e.py`](../tests/tests/test_e2e.py) to execute only one test with or without debug mode.
+`test_e2e.py` is executing [playwright command](https://playwright.dev/docs/test-cli) in a python
+subprocess. Example of modification to apply to launch only `stdcm-page.spec.ts` in debug mode with
+chromium:
 
 ```diff
     result = subprocess.run(
@@ -214,8 +221,8 @@ All common code (and shared components) supposed to be in `common/`.
 
 - ESLint is used as linter and prettier as formatter. Both are configured as devDependencies to
   enforce default eslint configuration eventually overidden by
-  [airbnb rules](https://airbnb.io/javascript/) translation. A few rules (see eslintrc) has
-  been disabled and will be re-enabled in the near future):
+  [airbnb rules](https://airbnb.io/javascript/) translation. A few rules (see eslintrc) has been
+  disabled and will be re-enabled in the near future):
   - 'no-named-as-default': 'off',
   - 'react/jsx-props-no-spreading': 0,
   - 'react/static-property-placement': 0,

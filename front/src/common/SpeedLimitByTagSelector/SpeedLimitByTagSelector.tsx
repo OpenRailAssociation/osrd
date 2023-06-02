@@ -32,6 +32,7 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
       },
       { skip: !infraID }
     );
+
     const dispatchUpdateSpeedLimitByTag = (newTag: string) => {
       dispatch(updateSpeedLimitByTag(newTag));
     };
@@ -98,7 +99,7 @@ export function IsolatedSpeedLimitByTagSelector({
           selectedValue={speedLimitByTag || t('noSpeedLimitByTag')}
           sm
           withSearch
-          data-testid="speed-limit-by-tag-selector"
+          dataTestId="speed-limit-by-tag-selector"
         />
       </div>
     </div>
