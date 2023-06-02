@@ -129,11 +129,13 @@ $resize-width: 3px;
               width: $resize-width;
               height: 100%;
               cursor: col-resize;
+              z-index: 2;
               background-color: #fff;
 
               &:hover,
               &.selected {
                 background-color: #000;
+                cursor: col-resize;
               }
             }
           }

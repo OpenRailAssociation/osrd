@@ -122,6 +122,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
    * => we recompute the linearmedata
    */
   useEffect(() => {
+    console.log('New fixedData', fixedData);
     closeModal();
     setData(fixedData);
     setSelected((old) => (old !== null && fixedData[old] ? old : null));
@@ -200,12 +201,13 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             }}
             onResize={(index, gap, finalized) => {
               setMode(!finalized ? 'resizing' : null);
+              console.log('on resize finalized ???', finalized);
               try {
                 const result = resizeSegment(fixedData, index, gap, 'end');
                 if (finalized) customOnChange(result.result);
                 else {
                   setData(result.result);
-
+                  console.log('data set');
                   // if index has changed, we need to impact the index modification
                   if (hovered && result.newIndexMapping[hovered.index] === null) {
                     setHovered({ ...hovered, index: fnMax([0, hovered.index - 1]) || 0 });
