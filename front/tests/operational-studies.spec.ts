@@ -1,5 +1,7 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
+import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
+import VARIABLES from './assets/operationStudies/test_variables';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   let playwrightHomePage: PlaywrightHomePage;
@@ -63,5 +65,44 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
   test('Map module is displayed', async () => {
     expect(playwrightHomePage.page.getByTestId('map')).not.toEqual(null);
+  });
+
+  test('Select rolling stock', async () => {
+    const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
+      playwrightHomePage.page
+    );
+    await playwrightRollingstockModalPage.openRollingstockModal();
+    const rollingstockModal = playwrightRollingstockModalPage.getRollingstockModal;
+    await expect(rollingstockModal).toBeVisible();
+
+    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
+      VARIABLES.numberOfRollingstock
+    );
+
+    await playwrightRollingstockModalPage.getElectricalCheckbox.click();
+    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
+      VARIABLES.numberOfRollingstockWithElectrical
+    );
+
+    await playwrightRollingstockModalPage.searchRollingstock(VARIABLES.searchRollingstock);
+    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
+      VARIABLES.numberOfRollingstockWithSearch
+    );
+
+    const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
+      VARIABLES.rollingstockTestID
+    );
+    await expect(rollingstockCard).toHaveClass(/inactive/);
+    await rollingstockCard.click();
+    await expect(rollingstockCard).not.toHaveClass(/inactive/);
+
+    await rollingstockCard.locator('button').click();
+
+    expect(
+      await playwrightRollingstockModalPage.getRollingstockMiniCardInfos().first().textContent()
+    ).toMatch(VARIABLES.rollingstockInfos);
+    expect(
+      await playwrightRollingstockModalPage.getRollingstockInfosComfort().textContent()
+    ).toMatch(/ConfortSStandard/i);
   });
 });
