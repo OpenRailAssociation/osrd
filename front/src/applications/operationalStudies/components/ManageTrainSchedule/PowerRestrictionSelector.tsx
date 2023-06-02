@@ -10,10 +10,10 @@ import {
   getPathfindingID,
 } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi, RollingStock } from 'common/api/osrdEditoastApi';
-import { osrdMiddlewareApi, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 import { setWarning } from 'reducers/main';
 import { compact, isEmpty, reduce, uniq } from 'lodash';
+import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 
 type selectorOption = { key: string | undefined; value: string | undefined };
 
@@ -28,7 +28,7 @@ export default function PowerRestrictionSelector() {
   const pathFindingID = useSelector(getPathfindingID);
   const powerRestriction = useSelector(getPowerRestriction);
 
-  const { data: pathFinding } = osrdMiddlewareApi.useGetPathfindingByIdQuery(
+  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
     { id: pathFindingID as number },
     { skip: !pathFindingID }
   );

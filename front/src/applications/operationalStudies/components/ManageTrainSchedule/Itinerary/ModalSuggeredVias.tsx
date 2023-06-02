@@ -13,7 +13,7 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Spinner } from 'common/Loader';
 import { ArrayElement } from 'utils/types';
-import { Path } from 'common/api/osrdMiddlewareApi';
+import { Path } from 'common/api/osrdEditoastApi';
 
 type Props = {
   inverseOD: () => void;

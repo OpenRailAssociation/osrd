@@ -20,7 +20,8 @@ export default function RenderItinerary(props: RenderItineraryProps) {
   const { mapTrackSources } = useSelector((state: RootState) => state.map);
   if (geojson && geojson[mapTrackSources] && origin !== undefined && destination !== undefined) {
     return (
-      <Source type="geojson" data={geojson[mapTrackSources] as GeoJSONFeature}>
+      // TODO: clarify geojson[mapTrackSources] type
+      <Source type="geojson" data={geojson[mapTrackSources] as unknown as GeoJSONFeature}>
         <OrderedLayer
           type="line"
           paint={{

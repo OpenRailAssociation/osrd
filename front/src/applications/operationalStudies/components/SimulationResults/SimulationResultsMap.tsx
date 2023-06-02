@@ -49,7 +49,6 @@ import TrainHoverPosition from 'applications/operationalStudies/components/Simul
 
 import colors from 'common/Map/Consts/colors';
 import { datetime2Isostring, datetime2sec, timeString2datetime } from 'utils/timeManipulation';
-import { get } from 'common/requests';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import {
   getDirection,
@@ -64,9 +63,8 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { MapLayerMouseEvent } from '../../../../types';
-
-const PATHFINDING_URI = '/pathfinding/';
 
 function getPosition(
   positionValues: PositionValues,
@@ -105,6 +103,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
+  const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
   const dispatch = useDispatch();
 
   const updateViewportChange = useCallback(
@@ -233,13 +232,13 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   };
 
   const getGeoJSONPath = async (pathID: number) => {
-    try {
-      const path = await get(`${PATHFINDING_URI}${pathID}/`);
+    const { data: path, isError, error } = await getPath({ id: pathID });
+    if (path && !isError) {
       const features = lineString(path.geographic.coordinates);
       setGeojsonPath(features);
       zoomToFeature(bbox(features));
-    } catch (e) {
-      console.info('ERROR', e);
+    } else if (isError) {
+      console.info('ERROR', error);
     }
   };
 

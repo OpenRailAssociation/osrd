@@ -22,5 +22,3 @@ export const initialStatus = {
   pathFindingDone: false,
   trainSchedulesDone: false,
 };
-
-export const itineraryURI = '/pathfinding/';

@@ -14,6 +14,7 @@ import {
 } from 'applications/operationalStudies/components/ImportTrainSchedule//consts';
 import { refactorUniquePaths } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
 
 /* METHOD
@@ -34,7 +35,7 @@ export default function ImportTrainScheduleModal(props) {
   const timetableID = useSelector(getTimetableID);
 
   const [postPathFindingOp] = osrdMiddlewareApi.usePostPathfindingOpMutation();
-  const [postPathFinding] = osrdMiddlewareApi.usePostPathfindingMutation();
+  const [postPathFinding] = osrdEditoastApi.usePostPathfindingMutation();
   const [postTrainSchedule] = osrdMiddlewareApi.usePostTrainScheduleStandaloneSimulationMutation();
 
   const [trainsWithPathRef, setTrainsWithPathRef] = useState([]);
