@@ -63,14 +63,14 @@ public class TrainPathBuilder {
 
             var rjsStartTrackRange = rjsTrainPath.routePath.get(0).trackSections.get(0);
             var startLocation = new TrackLocation(
-                    infra.getTrackSection(rjsStartTrackRange.trackSection),
+                    infra.getTrackSection(rjsStartTrackRange.trackSectionID),
                     rjsStartTrackRange.getBegin()
             );
 
             var rjsEndRoutePath = rjsTrainPath.routePath.get(rjsTrainPath.routePath.size() - 1);
             var rjsEndTrackRange = rjsEndRoutePath.trackSections.get(rjsEndRoutePath.trackSections.size() - 1);
             var endLocation = new TrackLocation(
-                    infra.getTrackSection(rjsEndTrackRange.trackSection),
+                    infra.getTrackSection(rjsEndTrackRange.trackSectionID),
                     rjsEndTrackRange.getEnd()
             );
 
