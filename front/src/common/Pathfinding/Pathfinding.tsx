@@ -1,10 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
-import { isEqual } from 'lodash';
+import { compact, isEqual } from 'lodash';
 import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
 
 import { getMapTrackSources } from 'reducers/map/selectors';
@@ -14,7 +13,6 @@ import { ArrayElement } from 'utils/types';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 
-import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
@@ -36,6 +34,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 
 import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
+import { Path, PathQuery, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Spinner } from '../Loader';
 
 interface PathfindingState {
@@ -187,42 +186,60 @@ export function getOpenApiSteps({
   origin?: PointOnMap;
   destination?: PointOnMap;
   vias: PointOnMap[];
-}): PathQuery {
-  return origin && destination && rollingStockID
-    ? {
-        infra: infraID,
-        steps: [
-          {
-            duration: 0,
-            waypoints: [
-              {
-                track_section: origin.id,
-                geo_coordinate: origin.coordinates,
-              },
-            ],
-          },
-          ...vias.map((via) => ({
-            duration: Math.round(via.duration || 0),
-            waypoints: [
-              {
-                track_section: via.track || via.id,
-                geo_coordinate: via.coordinates,
-              },
-            ],
-          })),
-          {
-            duration: 1,
-            waypoints: [
-              {
-                track_section: destination.id,
-                geo_coordinate: destination.coordinates,
-              },
-            ],
-          },
-        ],
-        rolling_stocks: [rollingStockID],
-      }
-    : {};
+}): PathQuery | null {
+  if (
+    origin &&
+    destination &&
+    rollingStockID &&
+    origin.id &&
+    origin.coordinates &&
+    infraID &&
+    destination.id &&
+    destination.coordinates
+  ) {
+    const intermediateSteps = compact(
+      vias.map((via) => {
+        const trackSectionId = via.track || via.id;
+        return trackSectionId && via.coordinates
+          ? {
+              duration: Math.round(via.duration || 0),
+              waypoints: [
+                {
+                  track_section: trackSectionId,
+                  geo_coordinate: via.coordinates,
+                },
+              ],
+            }
+          : null;
+      })
+    );
+    return {
+      infra: infraID,
+      steps: [
+        {
+          duration: 0,
+          waypoints: [
+            {
+              track_section: origin.id,
+              geo_coordinate: origin.coordinates,
+            },
+          ],
+        },
+        ...intermediateSteps,
+        {
+          duration: 1,
+          waypoints: [
+            {
+              track_section: destination.id,
+              geo_coordinate: destination.coordinates,
+            },
+          ],
+        },
+      ],
+      rolling_stocks: [rollingStockID],
+    };
+  }
+  return null;
 }
 
 function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
@@ -249,7 +266,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     rollingStockID,
   };
   const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
-  const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
+  const [postPathfinding] = osrdEditoastApi.usePostPathfindingMutation();
 
   const transformVias = ({ steps }: Path) => {
     if (steps && steps.length >= 2) {
@@ -266,7 +283,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     }
   };
 
-  const generatePathfindingParams = (): PathQuery => {
+  const generatePathfindingParams = (): PathQuery | null => {
     dispatch(updateItinerary(undefined));
     return getOpenApiSteps({ infraID, rollingStockID, origin, destination, vias });
   };
@@ -275,6 +292,16 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     if (!pathfindingState.running) {
       pathfindingDispatch({ type: 'PATHFINDING_STARTED' });
       const params = generatePathfindingParams();
+      if (!params) {
+        dispatch(
+          setFailure({
+            name: t('pathfinding'),
+            message: t('pathfindingMissingParamsSimple'),
+          })
+        );
+        return;
+      }
+
       const request = postPathfinding({ pathQuery: params });
       setPathfindingRequest(request);
       request

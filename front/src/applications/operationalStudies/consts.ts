@@ -1,9 +1,9 @@
 import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
-import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
+import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
-import { CatenaryRange } from 'common/api/osrdEditoastApi';
+import { CatenaryRange, Path } from 'common/api/osrdEditoastApi';
 
 export const BLOCKTYPES = [
   {

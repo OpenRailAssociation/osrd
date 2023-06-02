@@ -62,6 +62,7 @@
   "pathfindingInProgress": "Recherche d’itinéraire en cours...",
   "pathfindingMissingParams": "Éléments manquants pour la recherche : {{missingElements}}.",
   "pathfindingNoState": "Aucune recherche itinéraire.",
+  "pathfindingMissingParamsSimple": "Informations manquantes pour la recherche",
   "pathfindingStatus": "Statut recherche d’itinéraire",
   "pleaseWait": "Veuillez patientez",
   "powerRestriction": "Code de restriction de puissance",
@@ -81,7 +82,7 @@
     "pathFinding": "Itinéraire",
     "allowances": "Marges",
     "simulationSettings": "Paramètres de simulation",
-    "addingSettings": "Paramètres d'ajout" 
+    "addingSettings": "Paramètres d'ajout"
   },
   "timetable": "Grille horaire",
   "timetablechoose": "Grilles horaires",
