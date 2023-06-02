@@ -29,7 +29,7 @@ import pytest
             "reference": "15000",
             "subseries": "BB 15000",
         },
-        "_@Test Locomotives électriques courant continu7200GH": {
+        "_@Test BB 22200": {
             "type": "Locomotives électriques",
             "unit": "US",
             "detail": "BB 22200",
@@ -45,14 +45,7 @@ import pytest
 @pytest.mark.usefixtures("small_scenario", "fast_rolling_stocks")
 def test_e2e():
     result = subprocess.run(
-        [
-            "yarn",
-            "--cwd",
-            "front",
-            "playwright",
-            "test",
-            "--reporter=line",
-        ],
+        ["yarn", "--cwd", "front", "playwright", "test", "--reporter=line"],
         cwd=Path(__file__).parents[2],
         check=False,
     )

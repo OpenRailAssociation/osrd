@@ -97,12 +97,12 @@ def _create_fast_rolling_stocks(names_and_metadata: Optional[Mapping[str, Mappin
     payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
     ids = []
     if names_and_metadata is None:
-        ids.append(requests.post(f"{API_URL}/rolling_stock/", json=payload).json()["id"])
+        ids.append(requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"])
     else:
         for name, metadata in names_and_metadata.items():
             payload["name"] = name
             payload["metadata"] = metadata
-            ids.append(requests.post(f"{API_URL}/rolling_stock/", json=payload).json()["id"])
+            ids.append(requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"])
     return ids
 
 
@@ -111,14 +111,14 @@ def fast_rolling_stocks(request: Any) -> Iterable[int]:
     ids = _create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
     yield ids
     for id in ids:
-        requests.delete(f"{API_URL}rolling_stock/{id}/")
+        requests.delete(f"{EDITOAST_URL}rolling_stock/{id}/")
 
 
 @pytest.fixture
 def fast_rolling_stock() -> int:
     id = _create_fast_rolling_stocks()[0]
     yield id
-    requests.delete(f"{API_URL}rolling_stock/{id}/")
+    requests.delete(f"{EDITOAST_URL}rolling_stock/{id}/")
 
 
 @pytest.fixture
