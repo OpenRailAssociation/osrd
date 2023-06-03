@@ -1,5 +1,6 @@
 use crate::diesel::{QueryDsl, RunQueryDsl};
 use crate::error::Result;
+use crate::models::electrical_profile::ElectricalProfileSet;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::tables::osrd_infra_electricalprofileset;
 use crate::DbPool;
@@ -85,17 +86,6 @@ async fn get_level_order(
     })
     .await
     .unwrap()
-}
-
-#[derive(Debug, Default, Queryable, Insertable, Identifiable, Serialize, Deserialize)]
-#[diesel(table_name = osrd_infra_electricalprofileset)]
-pub struct ElectricalProfileSet {
-    #[diesel(deserialize_as = i64)]
-    pub id: Option<i64>,
-    #[diesel(deserialize_as = String)]
-    pub name: Option<String>,
-    #[diesel(deserialize_as = DieselJson<ElectricalProfileSetData>)]
-    pub data: Option<DieselJson<ElectricalProfileSetData>>,
 }
 
 #[derive(Debug, Default, Queryable, Identifiable, Serialize, Deserialize)]

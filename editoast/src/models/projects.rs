@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::models::{Delete, Document, Retrieve};
+use crate::models::{Delete, Document, Identifiable, Retrieve};
 use crate::tables::osrd_infra_project;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -38,24 +38,35 @@ pub struct Project {
     #[diesel(deserialize_as = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub description: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub objectives: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub funders: Option<String>,
     #[diesel(deserialize_as = i32)]
+    #[derivative(Default(value = "Some(0)"))]
     pub budget: Option<i32>,
     #[diesel(deserialize_as = Option<i64>)]
     #[diesel(column_name = "image_id")]
     pub image: Option<Option<i64>>,
     #[diesel(deserialize_as = NaiveDateTime)]
+    #[derivative(Default(value = "Some(Utc::now().naive_utc())"))]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
     #[diesel(deserialize_as = Vec<String>)]
+    #[derivative(Default(value = "Some(Vec::new())"))]
     pub tags: Option<Vec<String>>,
 }
 
+impl Identifiable for Project {
+    fn get_id(&self) -> i64 {
+        self.id.expect("Id not found")
+    }
+}
 #[derive(Debug, Clone, Serialize, QueryableByName)]
 pub struct ProjectWithStudies {
     #[serde(flatten)]
