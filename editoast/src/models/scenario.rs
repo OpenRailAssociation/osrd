@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::models::train_schedule::TrainScheduleDetails;
-use crate::models::Delete;
+use crate::models::{Delete, Identifiable};
 use crate::tables::osrd_infra_scenario;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
@@ -48,15 +48,25 @@ pub struct Scenario {
     #[diesel(deserialize_as = i64)]
     pub timetable_id: Option<i64>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub description: Option<String>,
     #[diesel(deserialize_as = NaiveDateTime)]
+    #[derivative(Default(value = "Some(Utc::now().naive_utc())"))]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
     #[diesel(deserialize_as = Vec<String>)]
+    #[derivative(Default(value = "Some(Vec::new())"))]
     pub tags: Option<Vec<String>>,
+}
+
+impl Identifiable for Scenario {
+    fn get_id(&self) -> i64 {
+        self.id.expect("Id not found")
+    }
 }
 
 #[derive(Debug, Clone, Serialize, QueryableByName)]

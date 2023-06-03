@@ -2,9 +2,15 @@ use std::collections::HashMap;
 
 use crate::tables::osrd_infra_trainschedule;
 use crate::DieselJson;
-use crate::{models::Timetable, tables::osrd_infra_simulationoutput};
+use crate::{
+    models::{Identifiable, Timetable},
+    tables::osrd_infra_simulationoutput,
+};
 use derivative::Derivative;
 
+use crate::error::Result;
+use crate::DbPool;
+use actix_web::web::{block, Data};
 use diesel::result::Error as DieselError;
 
 use diesel::prelude::*;
@@ -45,6 +51,26 @@ pub struct TrainSchedule {
     pub path_id: i64,
     pub rolling_stock_id: i64,
     pub timetable_id: i64,
+}
+
+impl TrainSchedule {
+    pub async fn get_by_rolling_stock_id(db_pool: Data<DbPool>, rs_id: i64) -> Result<Vec<Self>> {
+        block(move || {
+            use crate::tables::osrd_infra_trainschedule::dsl::*;
+            let mut conn = db_pool.get()?;
+            Ok(osrd_infra_trainschedule
+                .filter(rolling_stock_id.eq(rs_id))
+                .load(&mut conn)?)
+        })
+        .await
+        .unwrap()
+    }
+}
+
+impl Identifiable for TrainSchedule {
+    fn get_id(&self) -> i64 {
+        self.id.expect("Id not found")
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Queryable, Insertable, AsChangeset, Model)]

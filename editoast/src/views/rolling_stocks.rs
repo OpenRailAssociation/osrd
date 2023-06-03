@@ -10,8 +10,9 @@ use crate::schema::rolling_stock::{
 use crate::DbPool;
 use actix_multipart::form::text::Text;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{scope, Data, Json, Path, Query};
+use actix_web::web::{block, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
+use diesel::{sql_query, RunQueryDsl};
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
@@ -46,7 +47,11 @@ pub enum RollingStockError {
 pub fn routes() -> impl HttpServiceFactory {
     scope("/rolling_stock")
         .service((get, create, update, delete))
-        .service(scope("/{rolling_stock_id}").service((create_livery, update_locked)))
+        .service(scope("/{rolling_stock_id}").service((
+            create_livery,
+            update_locked,
+            check_rolling_stock_usage,
+        )))
 }
 
 #[get("/{rolling_stock_id}")]
@@ -215,6 +220,71 @@ struct RollingStockLiveryCreateForm {
     pub images: Vec<TempFile>,
 }
 
+#[derive(Debug, QueryableByName, Serialize, Deserialize, PartialEq)]
+pub struct TrainScheduleScenarioStudyProject {
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    pub train_schedule_id: i64,
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    pub train_name: String,
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    pub project_id: i64,
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    pub project_name: String,
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    pub study_id: i64,
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    pub study_name: String,
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    pub scenario_id: i64,
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    pub scenario_name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+struct UsageResponse {
+    usage: Vec<TrainScheduleScenarioStudyProject>,
+}
+
+#[get("/check_usage")]
+async fn check_rolling_stock_usage(
+    db_pool: Data<DbPool>,
+    rolling_stock_id: Path<i64>,
+) -> Result<Json<UsageResponse>> {
+    let rolling_stock_id = rolling_stock_id.into_inner();
+    match get_rolling_stock_usage(db_pool, rolling_stock_id).await {
+        Ok(trains) => Ok(Json(UsageResponse { usage: trains })),
+        Err(err) => Err(err),
+    }
+}
+
+async fn get_rolling_stock_usage(
+    db_pool: Data<DbPool>,
+    rolling_stock_id: i64,
+) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
+    match RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await {
+        Ok(Some(_)) => {
+            block(move || {
+                let mut conn = db_pool.get()?;
+                let trains = sql_query(format!(
+                    "SELECT t.id as train_schedule_id, t.train_name, sce.id as scenario_id, sce.name as scenario_name,
+                    stu.id as study_id, stu.name as study_name, pro.id as project_id, pro.name as project_name
+                    FROM osrd_infra_trainschedule t
+                    INNER JOIN osrd_infra_scenario sce ON t.timetable_id = sce.timetable_id
+                    INNER JOIN osrd_infra_study stu ON sce.study_id = stu.id
+                    INNER JOIN osrd_infra_project pro ON stu.project_id = pro.id
+                    WHERE t.rolling_stock_id = {rolling_stock_id};"
+                ))
+                .load(&mut conn)?;
+                Ok(trains)
+            })
+            .await
+            .unwrap()
+         }
+        Ok(None) => Err(RollingStockError::NotFound { rolling_stock_id }.into()),
+        Err(err) => Err(err),
+    }
+}
+
 #[post("/livery")]
 async fn create_livery(
     db_pool: Data<DbPool>,
@@ -359,13 +429,21 @@ async fn create_compound_image(
 
 #[cfg(test)]
 pub mod tests {
+    use std::vec;
+
     use super::RollingStockError;
-    use crate::fixtures::tests::{db_pool, fast_rolling_stock, other_rolling_stock, TestFixture};
+    use super::{
+        retrieve_existing_rolling_stock, RollingStock, TrainScheduleScenarioStudyProject,
+        UsageResponse,
+    };
+    use crate::fixtures::tests::{
+        db_pool, fast_rolling_stock, other_rolling_stock, train_schedule_with_scenario,
+        TestFixture, TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture,
+    };
     use crate::models::rolling_stock::tests::{
         get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
     };
     use crate::models::{Delete, RollingStockModel};
-    use crate::views::rolling_stocks::{retrieve_existing_rolling_stock, RollingStock};
     use crate::views::tests::create_test_service;
     use crate::{assert_editoast_error_type, assert_status_and_read};
     use actix_http::{Request, StatusCode};
@@ -623,5 +701,94 @@ pub mod tests {
 
         //Delete rolling_stock
         call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
+    }
+
+    #[rstest]
+    async fn check_usage_rolling_stock_not_found() {
+        let app = create_test_service().await;
+        let rolling_stock_id = 314159;
+        let response = call_service(
+            &app,
+            TestRequest::get()
+                .uri(format!("/rolling_stock/{}/check_usage", rolling_stock_id).as_str())
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_editoast_error_type!(response, RollingStockError::NotFound { rolling_stock_id });
+    }
+
+    #[rstest]
+    async fn check_usage_no_train_schedule_for_this_rolling_stock(
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
+        let rolling_stock = fast_rolling_stock.await;
+        let app = create_test_service().await;
+        let rolling_stock_id = rolling_stock.id();
+        let response = call_service(
+            &app,
+            TestRequest::get()
+                .uri(format!("/rolling_stock/{}/check_usage", rolling_stock_id).as_str())
+                .to_request(),
+        )
+        .await;
+        let response_body: UsageResponse = assert_status_and_read!(response, StatusCode::OK);
+        let expected_body = UsageResponse { usage: Vec::new() };
+        assert_eq!(response_body, expected_body);
+    }
+
+    /// `check_usage_one_train_schedule` checks the operation of the `/rolling_stock/{rolling_stock_id}/check_usage` endpoint.
+    /// There exist one `TrainSchedule` that uses the give `rolling_stock_id`.
+    /// The endpoint should find that `TrainSchedule` from this `rolling_stock_id`
+    /// as well the project/study/scenario where it’s defined
+    /// and should return their ids/names
+    #[rstest]
+    async fn check_usage_one_train_schedule(
+        #[future] train_schedule_with_scenario: TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture,
+    ) {
+        let app = create_test_service().await;
+        let train_schedule_with_scenario = train_schedule_with_scenario.await;
+        let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
+        let response = call_service(
+            &app,
+            TestRequest::get()
+                .uri(format!("/rolling_stock/{}/check_usage", rolling_stock_id).as_str())
+                .to_request(),
+        )
+        .await;
+
+        let response_body: UsageResponse = assert_status_and_read!(response, StatusCode::OK);
+        let expected_body = UsageResponse {
+            usage: vec![TrainScheduleScenarioStudyProject {
+                train_schedule_id: train_schedule_with_scenario.train_schedule.id(),
+                train_name: train_schedule_with_scenario
+                    .train_schedule
+                    .model
+                    .train_name
+                    .clone(),
+                scenario_id: train_schedule_with_scenario.scenario.id(),
+                scenario_name: train_schedule_with_scenario
+                    .scenario
+                    .model
+                    .name
+                    .clone()
+                    .unwrap(),
+                study_id: train_schedule_with_scenario.study.id(),
+                study_name: train_schedule_with_scenario
+                    .study
+                    .model
+                    .name
+                    .clone()
+                    .unwrap(),
+                project_id: train_schedule_with_scenario.project.id(),
+                project_name: train_schedule_with_scenario
+                    .project
+                    .model
+                    .name
+                    .clone()
+                    .unwrap(),
+            }],
+        };
+        assert_eq!(response_body, expected_body);
     }
 }

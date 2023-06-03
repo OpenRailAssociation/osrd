@@ -25,9 +25,8 @@ use crate::core::simulation::{SimulationRequest, SimulationResponse};
 use simulation_report::SimulationReport;
 use thiserror::Error;
 
+use crate::models::electrical_profile::ElectricalProfileSet;
 use futures::executor;
-
-use super::electrical_profiles::ElectricalProfileSet;
 
 mod projection;
 mod simulation_report;

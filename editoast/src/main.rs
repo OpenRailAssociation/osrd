@@ -37,6 +37,7 @@ use diesel_json::Json as DieselJson;
 use infra_cache::InfraCache;
 use log::{error, info, warn};
 use map::MapLayers;
+use models::electrical_profile::ElectricalProfileSet;
 use models::Retrieve;
 use sentry::ClientInitGuard;
 use std::env;
@@ -44,7 +45,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
-use views::electrical_profiles::ElectricalProfileSet;
 use views::infra::InfraApiError;
 use views::search::config::Config as SearchConfig;
 

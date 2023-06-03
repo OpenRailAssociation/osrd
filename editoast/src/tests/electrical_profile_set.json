@@ -1,0 +1,1045 @@
+{
+  "id": 1065409816,
+  "name": "outer space infra",
+  "data": {
+    "levels": [
+      {
+        "value": "O",
+        "power_class": "1",
+        "track_ranges": [
+          {
+            "end": 25000,
+            "begin": 0,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "2",
+        "track_ranges": [
+          {
+            "end": 8000,
+            "begin": 0,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A",
+        "power_class": "2",
+        "track_ranges": [
+          {
+            "end": 17000,
+            "begin": 8000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "2",
+        "track_ranges": [
+          {
+            "end": 25000,
+            "begin": 17000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "3",
+        "track_ranges": [
+          {
+            "end": 5000,
+            "begin": 0,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A",
+        "power_class": "3",
+        "track_ranges": [
+          {
+            "end": 10000,
+            "begin": 5000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A1",
+        "power_class": "3",
+        "track_ranges": [
+          {
+            "end": 15000,
+            "begin": 10000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A",
+        "power_class": "3",
+        "track_ranges": [
+          {
+            "end": 20000,
+            "begin": 15000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "3",
+        "track_ranges": [
+          {
+            "end": 25000,
+            "begin": 20000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 3500,
+            "begin": 0,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 7000,
+            "begin": 3500,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A1",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 10500,
+            "begin": 7000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "B",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 14000,
+            "begin": 10500,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A1",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 17500,
+            "begin": 14000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 21000,
+            "begin": 17500,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 25000,
+            "begin": 21000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 6000,
+            "begin": 3000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A1",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 9000,
+            "begin": 6000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "B",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 12000,
+            "begin": 9000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "B1",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 15000,
+            "begin": 12000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "B",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 18000,
+            "begin": 15000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A1",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 21000,
+            "begin": 18000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "A",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 24000,
+            "begin": 21000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "O",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 25000,
+            "begin": 24000,
+            "track": "TD1"
+          }
+        ]
+      },
+      {
+        "value": "25000",
+        "power_class": "1",
+        "track_ranges": [
+          {
+            "end": 6500,
+            "begin": 0,
+            "track": "TF1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TD2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE3"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TG3"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE1"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG4"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA5"
+          },
+          {
+            "end": 4000,
+            "begin": 0,
+            "track": "TG1"
+          },
+          {
+            "end": 2050,
+            "begin": 0,
+            "track": "TE2"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA3"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TB0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TA0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TG0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TG2"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TH0"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA6"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC3"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA7"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG5"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TD3"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA1"
+          },
+          {
+            "end": 5000,
+            "begin": 0,
+            "track": "TH1"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA4"
+          },
+          {
+            "end": 3,
+            "begin": 0,
+            "track": "TF0"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA2"
+          },
+          {
+            "end": 1500,
+            "begin": 0,
+            "track": "TE0"
+          }
+        ]
+      },
+      {
+        "value": "25000",
+        "power_class": "2",
+        "track_ranges": [
+          {
+            "end": 6500,
+            "begin": 0,
+            "track": "TF1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TD2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE3"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TG3"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE1"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG4"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA5"
+          },
+          {
+            "end": 4000,
+            "begin": 0,
+            "track": "TG1"
+          },
+          {
+            "end": 2050,
+            "begin": 0,
+            "track": "TE2"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA3"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TB0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TA0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TG0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TG2"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TH0"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA6"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC3"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA7"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG5"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TD3"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA1"
+          },
+          {
+            "end": 5000,
+            "begin": 0,
+            "track": "TH1"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA4"
+          },
+          {
+            "end": 3,
+            "begin": 0,
+            "track": "TF0"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA2"
+          },
+          {
+            "end": 1500,
+            "begin": 0,
+            "track": "TE0"
+          }
+        ]
+      },
+      {
+        "value": "25000",
+        "power_class": "3",
+        "track_ranges": [
+          {
+            "end": 6500,
+            "begin": 0,
+            "track": "TF1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TD2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE3"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TG3"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE1"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG4"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA5"
+          },
+          {
+            "end": 4000,
+            "begin": 0,
+            "track": "TG1"
+          },
+          {
+            "end": 2050,
+            "begin": 0,
+            "track": "TE2"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA3"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TB0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TA0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TG0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TG2"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TH0"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA6"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC3"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA7"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG5"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TD3"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA1"
+          },
+          {
+            "end": 5000,
+            "begin": 0,
+            "track": "TH1"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA4"
+          },
+          {
+            "end": 3,
+            "begin": 0,
+            "track": "TF0"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA2"
+          },
+          {
+            "end": 1500,
+            "begin": 0,
+            "track": "TE0"
+          }
+        ]
+      },
+      {
+        "value": "25000",
+        "power_class": "4",
+        "track_ranges": [
+          {
+            "end": 6500,
+            "begin": 0,
+            "track": "TF1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TD2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE3"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TG3"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE1"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG4"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA5"
+          },
+          {
+            "end": 4000,
+            "begin": 0,
+            "track": "TG1"
+          },
+          {
+            "end": 2050,
+            "begin": 0,
+            "track": "TE2"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA3"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TB0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TA0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TG0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TG2"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TH0"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA6"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC3"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA7"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG5"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TD3"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA1"
+          },
+          {
+            "end": 5000,
+            "begin": 0,
+            "track": "TH1"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA4"
+          },
+          {
+            "end": 3,
+            "begin": 0,
+            "track": "TF0"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA2"
+          },
+          {
+            "end": 1500,
+            "begin": 0,
+            "track": "TE0"
+          }
+        ]
+      },
+      {
+        "value": "25000",
+        "power_class": "5",
+        "track_ranges": [
+          {
+            "end": 6500,
+            "begin": 0,
+            "track": "TF1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TD2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE3"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TG3"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TE1"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC2"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG4"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA5"
+          },
+          {
+            "end": 4000,
+            "begin": 0,
+            "track": "TG1"
+          },
+          {
+            "end": 2050,
+            "begin": 0,
+            "track": "TE2"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA3"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TB0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TC1"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TA0"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TG0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TG2"
+          },
+          {
+            "end": 1000,
+            "begin": 0,
+            "track": "TH0"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA6"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC3"
+          },
+          {
+            "end": 10000,
+            "begin": 0,
+            "track": "TA7"
+          },
+          {
+            "end": 2000,
+            "begin": 0,
+            "track": "TG5"
+          },
+          {
+            "end": 1050,
+            "begin": 0,
+            "track": "TC0"
+          },
+          {
+            "end": 3000,
+            "begin": 0,
+            "track": "TD3"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA1"
+          },
+          {
+            "end": 5000,
+            "begin": 0,
+            "track": "TH1"
+          },
+          {
+            "end": 50,
+            "begin": 0,
+            "track": "TA4"
+          },
+          {
+            "end": 3,
+            "begin": 0,
+            "track": "TF0"
+          },
+          {
+            "end": 1950,
+            "begin": 0,
+            "track": "TA2"
+          },
+          {
+            "end": 1500,
+            "begin": 0,
+            "track": "TE0"
+          }
+        ]
+      }
+    ],
+    "level_order": {
+      "25000": [
+        "25000",
+        "22500",
+        "20000"
+      ]
+    }
+  }
+}

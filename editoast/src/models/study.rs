@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::models::Project;
-use crate::models::Update;
+use crate::models::{Identifiable, Update};
 use crate::tables::osrd_infra_study;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -45,14 +45,19 @@ pub struct Study {
     #[diesel(deserialize_as = i64)]
     pub project_id: Option<i64>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub description: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub business_code: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub service_code: Option<String>,
     #[diesel(deserialize_as = NaiveDateTime)]
+    #[derivative(Default(value = "Some(Utc::now().naive_utc())"))]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
@@ -63,13 +68,23 @@ pub struct Study {
     #[diesel(deserialize_as = Option<NaiveDate>)]
     pub actual_end_date: Option<Option<NaiveDate>>,
     #[diesel(deserialize_as = i32)]
+    #[derivative(Default(value = "Some(0)"))]
     pub budget: Option<i32>,
     #[diesel(deserialize_as = Vec<String>)]
+    #[derivative(Default(value = "Some(Vec::new())"))]
     pub tags: Option<Vec<String>>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub state: Option<String>,
     #[diesel(deserialize_as = String)]
+    #[derivative(Default(value = "Some(String::new())"))]
     pub study_type: Option<String>,
+}
+
+impl Identifiable for Study {
+    fn get_id(&self) -> i64 {
+        self.id.expect("Id not found")
+    }
 }
 
 #[derive(Debug, Clone, Serialize, QueryableByName)]
