@@ -1,6 +1,9 @@
 use crate::diesel::QueryDsl;
 use crate::error::Result;
-use crate::models::train_schedule::{TrainSchedule, TrainScheduleDetails};
+use crate::models::{
+    train_schedule::{TrainSchedule, TrainScheduleDetails},
+    Identifiable,
+};
 use crate::tables::osrd_infra_timetable;
 use crate::DbPool;
 use actix_web::web::{block, Data};
@@ -39,6 +42,12 @@ pub struct TimetableWithSchedules {
     #[serde(flatten)]
     pub timetable: Timetable,
     pub train_schedules: Vec<TrainScheduleDetails>,
+}
+
+impl Identifiable for Timetable {
+    fn get_id(&self) -> i64 {
+        self.id.unwrap()
+    }
 }
 
 impl Timetable {

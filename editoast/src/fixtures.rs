@@ -4,8 +4,9 @@ pub mod tests {
 
     use crate::client::PostgresConfig;
     use crate::models::{
-        Create, Delete, Document, Identifiable, Infra, Pathfinding, PathfindingChangeset,
-        RollingStockLiveryModel, RollingStockModel,
+        Create, Delete, Document, ElectricalProfileSet, Identifiable, Infra, Pathfinding,
+        PathfindingChangeset, Project, RollingStockLiveryModel, RollingStockModel, Scenario, Study,
+        Timetable, TrainSchedule,
     };
     use crate::schema::RailJson;
     use crate::views::infra::InfraForm;
@@ -17,6 +18,7 @@ pub mod tests {
     use postgis_diesel::types::LineString;
     use rstest::*;
 
+    #[derive(Debug)]
     pub struct TestFixture<T: Delete + Identifiable + Send> {
         pub model: T,
         pub db_pool: Data<Pool<diesel::r2d2::ConnectionManager<diesel::PgConnection>>>,
@@ -79,6 +81,170 @@ pub mod tests {
     }
 
     #[fixture]
+    pub async fn train_schedule(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] pathfinding: TestFixture<Pathfinding>,
+        #[future] timetable: TestFixture<Timetable>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+    ) -> TestFixture<TrainSchedule> {
+        let pathfinding = pathfinding.await;
+        let timetable = timetable.await;
+        let rolling_stock = fast_rolling_stock.await;
+        let train_schedule = make_train_schedule(
+            db_pool.clone(),
+            pathfinding.id(),
+            timetable.id(),
+            rolling_stock.id(),
+        )
+        .await;
+        TestFixture {
+            model: train_schedule,
+            db_pool,
+            infra: None,
+        }
+    }
+
+    async fn make_train_schedule(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        path_id: i64,
+        timetable_id: i64,
+        rolling_stock_id: i64,
+    ) -> TrainSchedule {
+        let train_schedule = TrainSchedule {
+            path_id,
+            timetable_id,
+            rolling_stock_id,
+            ..serde_json::from_str::<TrainSchedule>(include_str!("./tests/train_schedule.json"))
+                .expect("Unable to parse")
+        };
+        train_schedule.create(db_pool.clone()).await.unwrap()
+    }
+
+    #[derive(Debug)]
+    pub struct TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture {
+        pub train_schedule: TestFixture<TrainSchedule>,
+        pub project: TestFixture<Project>,
+        pub study: TestFixture<Study>,
+        pub scenario: TestFixture<Scenario>,
+        pub timetable: TestFixture<Timetable>,
+        pub infra: TestFixture<Infra>,
+        pub path: TestFixture<Pathfinding>,
+        pub rolling_stock: TestFixture<RollingStockModel>,
+    }
+
+    #[fixture]
+    pub async fn train_schedule_with_scenario(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] pathfinding: TestFixture<Pathfinding>,
+        #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+        #[future] project_study_scenario_timetable: ProjectStudyScenarioTimetableInfraFixture,
+    ) -> TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture {
+        let ProjectStudyScenarioTimetableInfraFixture {
+            project,
+            study,
+            scenario,
+            timetable,
+            infra,
+        } = project_study_scenario_timetable.await;
+
+        let pathfinding = pathfinding.await;
+        let rolling_stock = fast_rolling_stock.await;
+        let ts_model = make_train_schedule(
+            db_pool.clone(),
+            pathfinding.id(),
+            timetable.id(),
+            rolling_stock.id(),
+        )
+        .await;
+        let train_schedule = TestFixture {
+            model: ts_model,
+            db_pool,
+            infra: None,
+        };
+        TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture {
+            train_schedule,
+            project,
+            study,
+            scenario,
+            timetable,
+            infra,
+            path: pathfinding,
+            rolling_stock,
+        }
+    }
+
+    pub struct ProjectStudyScenarioTimetableInfraFixture {
+        pub project: TestFixture<Project>,
+        pub study: TestFixture<Study>,
+        pub scenario: TestFixture<Scenario>,
+        pub timetable: TestFixture<Timetable>,
+        pub infra: TestFixture<Infra>,
+    }
+
+    #[fixture]
+    pub async fn project_study_scenario_timetable(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+        #[future] empty_infra: TestFixture<Infra>,
+        #[future] timetable: TestFixture<Timetable>,
+    ) -> ProjectStudyScenarioTimetableInfraFixture {
+        let project_model = Project {
+            name: Some(String::from("project_α")),
+            ..Project::default()
+        };
+        let project = TestFixture {
+            model: project_model.create(db_pool.clone()).await.unwrap(),
+            db_pool: db_pool.clone(),
+            infra: None,
+        };
+        let study_model = Study {
+            name: Some(String::from("study_β")),
+            project_id: Some(project.id()),
+            ..Study::default()
+        };
+        let study = TestFixture {
+            model: study_model.create(db_pool.clone()).await.unwrap(),
+            db_pool: db_pool.clone(),
+            infra: None,
+        };
+        let empty_infra = empty_infra.await;
+        let timetable = timetable.await;
+        let scenario_model = Scenario {
+            name: Some(String::from("scenario_γ")),
+            infra_id: Some(empty_infra.id()),
+            timetable_id: Some(timetable.id()),
+            study_id: Some(study.id()),
+            ..Scenario::default()
+        };
+        let scenario = TestFixture {
+            model: scenario_model.create(db_pool.clone()).await.unwrap(),
+            db_pool: db_pool.clone(),
+            infra: None,
+        };
+        ProjectStudyScenarioTimetableInfraFixture {
+            project,
+            study,
+            scenario,
+            timetable,
+            infra: empty_infra,
+        }
+    }
+
+    #[fixture]
+    pub async fn timetable(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) -> TestFixture<Timetable> {
+        let timetable_model = Timetable {
+            id: None,
+            name: Some(String::from("with_electrical_profiles")),
+        };
+        TestFixture {
+            model: timetable_model.create(db_pool.clone()).await.unwrap(),
+            db_pool,
+            infra: None,
+        }
+    }
+
+    #[fixture]
     pub async fn document_example(
         db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
     ) -> TestFixture<Document> {
@@ -116,6 +282,23 @@ pub mod tests {
         };
         TestFixture {
             model: rolling_stock_livery.create(db_pool.clone()).await.unwrap(),
+            db_pool,
+            infra: None,
+        }
+    }
+
+    #[fixture]
+    pub async fn electrical_profile_set(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) -> TestFixture<ElectricalProfileSet> {
+        TestFixture {
+            model: serde_json::from_str::<ElectricalProfileSet>(include_str!(
+                "./tests/electrical_profile_set.json"
+            ))
+            .expect("Unable to parse")
+            .create(db_pool.clone())
+            .await
+            .unwrap(),
             db_pool,
             infra: None,
         }

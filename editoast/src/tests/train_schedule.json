@@ -1,0 +1,27 @@
+{
+  "id": 74,
+  "train_name": "train δ",
+  "labels": [],
+  "departure_time": 36000,
+  "initial_speed": 0,
+  "allowances": [
+    {
+      "allowance_type": "standard",
+      "distribution": "LINEAR",
+      "default_value": {
+        "value_type": "time",
+        "seconds": 200
+      },
+      "ranges": []
+    }
+  ],
+  "comfort": "STANDARD",
+  "speed_limit_tags": "Marchandise",
+  "power_restriction_ranges": null,
+  "options": {
+    "ignore_electrical_profiles": false
+  },
+  "path_id": 40,
+  "rolling_stock_id": 9,
+  "timetable_id": 19
+}

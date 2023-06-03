@@ -18,10 +18,21 @@ use serde::{Deserialize, Serialize};
 ///
 /// It differs from infra/pathfinding that performs a topological pathfinding
 /// meant to be used with the infra editor.
-#[derive(Debug, Clone, PartialEq, Serialize, Derivative, Queryable, QueryableByName, Model)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    Derivative,
+    Queryable,
+    QueryableByName,
+    Model,
+    Insertable,
+)]
 #[derivative(Default(new = "true"))]
 #[model(table = "osrd_infra_pathmodel")]
-#[model(retrieve, delete)]
+#[model(create, retrieve, delete)]
 #[diesel(table_name = osrd_infra_pathmodel)]
 pub struct Pathfinding {
     pub id: i64,
