@@ -19,12 +19,10 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.TrackNode
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.DirectionalMap
+import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.Endpoint
 import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.DistanceRangeMap
-import fr.sncf.osrd.utils.units.MutableDistanceArrayList
-import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.seconds
 
@@ -86,8 +84,9 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
                     }
                     val chunkId = builder.trackChunk(
                         rangeViewForward.geo,
-                        makeDirectionalMap { range -> DistanceRangeMap.from(range.slopes) },
-                        endOffset - startOffset
+                        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.slopes) },
+                        endOffset - startOffset,
+                        startOffset
                     )
                     chunk(chunkId)
                     chunkMap[startOffset] = chunkId
@@ -104,6 +103,13 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
             }
         }
     }
+
+    // parse operational points
+    for (track in infra.trackGraph.edges())
+        for (op in track.operationalPoints) {
+            val (chunkId, offset) = getChunkLocation(track, Distance.fromMeters(op.offset), trackChunkMap)
+            builder.operationalPoint(op.id, offset, chunkId)
+        }
 
     // parse switches
     for (switchEntry in infra.switches) {
@@ -447,4 +453,21 @@ private fun zonePathTrackSpan(
     } else {
         ZonePathTrackSpan(track, 0.meters, trackLen, direction)
     }
+}
+
+/** From a track and an offset, returns the chunk ID and the offset compared to the start of the chunk */
+fun getChunkLocation(
+    track: TrackEdge,
+    offset: Distance,
+    trackChunkMap: Map<TrackSection, Map<Distance, StaticIdx<TrackChunk>>>
+): Pair<TrackChunkId, Distance> {
+    val entries = trackChunkMap[track]!!.entries
+        .sortedBy { entry -> entry.key }
+    var i = 0
+    while (i < entries.size - 1) {
+        if (entries[i + 1].key > offset)
+            break
+        i++
+    }
+    return Pair(entries[i].value, offset - entries[i].key)
 }

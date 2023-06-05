@@ -3,6 +3,7 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.railjson.schema.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DirectionalMap
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
@@ -190,7 +191,9 @@ interface RestrictedRawInfraBuilder {
         geo: LineString,
         slopes: DirectionalMap<DistanceRangeMap<Double>>,
         length: Distance,
+        offset: Distance
     ): TrackChunkId
+    fun operationalPoint(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointId
 }
 
 interface TrackSectionBuilder {
@@ -212,7 +215,6 @@ class TrackSectionBuilderImpl(private val name: String?) : TrackSectionBuilder {
     fun build(): TrackSectionDescriptor {
         return TrackSectionDescriptor(
             name!!,
-            detectors,
             chunks
         )
     }
@@ -235,6 +237,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val physicalSignalPool = StaticPool<PhysicalSignal, PhysicalSignalDescriptor>()
     private val zonePathPool = StaticPool<ZonePath, ZonePathDescriptor>()
     private val zonePathMap = mutableMapOf<ZonePathSpec, ZonePathId>()
+    private val operationalPointPool = StaticPool<OperationalPoint, OperationalPointDescriptor>()
 
     override fun movableElement(delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId {
         val movableElementBuilder = MovableElementDescriptorBuilderImpl(delay, StaticPool(), StaticPool())
@@ -334,6 +337,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         geo: LineString,
         slopes: DirectionalMap<DistanceRangeMap<Double>>,
         length: Distance,
+        offset: Distance
     ): TrackChunkId {
         return trackChunkPool.add(TrackChunkDescriptor(
             geo,
@@ -341,8 +345,14 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             length,
             // Route IDs will be filled later on, the routes are not initialized and don't have IDs yet
             DirectionalMap(MutableStaticIdxArrayList(), MutableStaticIdxArrayList()),
-            StaticIdx(0u) // The track ID will be filled later on for the same reason as routes
+            StaticIdx(0u), // The track ID will be filled later on for the same reason as routes
+            offset,
+            MutableStaticIdxArrayList() // Same
         ))
+    }
+
+    override fun operationalPoint(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointId {
+        return operationalPointPool.add(OperationalPointDescriptor(name, chunkOffset, chunk))
     }
 
     override fun build(): RawInfra {
@@ -360,7 +370,17 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             physicalSignalPool,
             zonePathPool,
             zonePathMap,
+            operationalPointPool,
+            makeTrackIdMap()
         )
+    }
+
+    /** Create the mapping from track string to id */
+    private fun makeTrackIdMap(): Map<String, TrackSectionId> {
+        val res = HashMap<String, TrackSectionId>()
+        for (trackId in trackSectionPool)
+            res[trackSectionPool[trackId].name] = trackId
+        return res
     }
 
     /** Some objects have cross-reference (such as routes and chunks, or track sections and chunks).
@@ -384,6 +404,13 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         for (track in trackSectionPool)
             for (chunk in trackSectionPool[track].chunks)
                 trackChunkPool[chunk].track = track
+
+        // Resolve operational points
+        for (op in operationalPointPool) {
+            val chunk = trackChunkPool[operationalPointPool[op].chunk]
+            val opList = chunk.operationalPoints as MutableStaticIdxArrayList
+            opList.add(op)
+        }
     }
 }
 

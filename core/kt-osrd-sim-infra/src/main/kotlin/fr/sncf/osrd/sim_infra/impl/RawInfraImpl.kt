@@ -2,7 +2,9 @@ package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.railjson.schema.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DirectionalMap
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
@@ -21,7 +23,6 @@ class MovableElementDescriptor(
 
 class TrackSectionDescriptor(
     val name: String,
-    val detectors: StaticIdxList<Detector>,
     val chunks: StaticIdxList<TrackChunk>,
 )
 
@@ -31,7 +32,9 @@ class TrackChunkDescriptor(
     val length: Distance,
     val routes: DirectionalMap<StaticIdxCollection<Route>>,
     var track: StaticIdx<TrackSection>,
-)
+    val offset: Distance,
+    var operationalPoints: StaticIdxList<OperationalPoint>,
+) {}
 
 @JvmInline
 value class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>)
@@ -93,6 +96,12 @@ class ZonePathDescriptor(
     val chunks: DirStaticIdxList<TrackChunk>,
 ) : ZonePathSpec(entry, exit, movableElements, movableElementsConfigs)
 
+class OperationalPointDescriptor(
+    val name: String,
+    val chunkOffset: Distance,
+    val chunk: TrackChunkId,
+)
+
 
 class RawInfraImpl(
     val trackNodePool: StaticPool<TrackNode, MovableElementDescriptor>,
@@ -106,31 +115,64 @@ class RawInfraImpl(
     val logicalSignalPool: StaticPool<LogicalSignal, LogicalSignalDescriptor>,
     val physicalSignalPool: StaticPool<PhysicalSignal, PhysicalSignalDescriptor>,
     val zonePathPool: StaticPool<ZonePath, ZonePathDescriptor>,
-    val zonePathMap: Map<ZonePathSpec, ZonePathId>
+    val zonePathMap: Map<ZonePathSpec, ZonePathId>,
+    val operationalPointPool: StaticPool<OperationalPoint, OperationalPointDescriptor>,
+    val trackSectionIdMap: Map<String, TrackSectionId>,
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
     override val trackSections: StaticIdxSpace<TrackSection>
         get() = trackSectionPool.space()
 
-    override fun getTrackSectionDetectors(trackSection: TrackSectionId): StaticIdxList<Detector> {
-        return trackSectionPool[trackSection].detectors
-    }
-
     override fun getTrackSectionId(trackSection: TrackSectionId): String {
         return trackSectionPool[trackSection].name
+    }
+
+    override fun getTrackSectionFromId(id: String): TrackSectionId? {
+        return trackSectionIdMap[id]
     }
 
     override fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk> {
         return trackSectionPool[trackSection].chunks
     }
 
+    override fun getDirTrackSectionChunks(trackSection: TrackSectionId, direction: Direction):
+            DirStaticIdxList<TrackChunk> {
+        var chunks = trackSectionPool[trackSection].chunks
+        if (direction == Direction.DECREASING)
+            chunks = chunks.reversed()
+        val res = mutableDirStaticIdxArrayListOf<TrackChunk>()
+        for (chunk in chunks)
+            res.add(DirTrackChunkId(chunk, direction))
+        return res
+    }
+
     override fun getTrackChunkLength(trackChunk: TrackChunkId): Distance {
         return trackChunkPool[trackChunk].length
     }
 
+    override fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance {
+        return trackChunkPool[trackChunk].offset
+    }
+
     override fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId {
         return trackChunkPool[trackChunk].track
+    }
+
+    override fun getTrackChunkOperationalPoints(trackChunk: TrackChunkId): StaticIdxList<OperationalPoint> {
+        return trackChunkPool[trackChunk].operationalPoints
+    }
+
+    override fun getOperationalPointChunk(operationalPoint: OperationalPointId): TrackChunkId {
+        return operationalPointPool[operationalPoint].chunk
+    }
+
+    override fun getOperationalPointChunkOffset(operationalPoint: OperationalPointId): Distance {
+        return operationalPointPool[operationalPoint].chunkOffset
+    }
+
+    override fun getOperationalPointName(operationalPoint: OperationalPointId): String {
+        return operationalPointPool[operationalPoint].name
     }
 
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {
@@ -139,6 +181,17 @@ class RawInfraImpl(
 
     override fun getTrackChunkSlope(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
         return trackChunkPool[trackChunk.value].slopes.get(trackChunk.direction)
+    }
+
+    override fun getSlopesOnPath(path: Path): DistanceRangeMap<Double> {
+        return getRangeMap(this, path) { dirChunkId -> getTrackChunkSlope(dirChunkId) }
+    }
+
+    override fun getOperationalPointsOnPath(path: Path): List<IdxWithOffset<OperationalPoint>> {
+        return getElementsOnPath(this, path) { dirChunkId ->
+            getTrackChunkOperationalPoints(dirChunkId.value)
+                .map { opId -> Pair(opId, getOperationalPointChunkOffset(opId)) }
+        }
     }
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxCollection<Route> {

@@ -28,4 +28,8 @@ value class DirStaticIdx<T>(val data: UInt) : NumIdx {
 
     val opposite: DirStaticIdx<T> get() = DirStaticIdx(data xor 1u)
     override val index get() = data
+
+    override fun toString(): String {
+        return String.format("(id=%s, dir=%s)", value.index, direction)
+    }
 }

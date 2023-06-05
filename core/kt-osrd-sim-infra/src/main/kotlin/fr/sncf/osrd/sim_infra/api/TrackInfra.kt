@@ -15,16 +15,17 @@ typealias TrackChunkId = StaticIdx<TrackChunk>
 
 interface TrackInfra {
     fun getTrackSectionId(trackSection: TrackSectionId): String
-    fun getTrackSectionDetectors(trackSection: TrackSectionId): StaticIdxList<Detector>
+    fun getTrackSectionFromId(id: String): TrackSectionId?
     fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
+    fun getDirTrackSectionChunks(trackSection: TrackSectionId, direction: Direction): DirStaticIdxList<TrackChunk>
 }
 
 /** A directional detector encodes a direction over a detector */
 typealias DirDetectorId = DirStaticIdx<Detector>
-val DetectorId.increasing get() = DirDetectorId(this, Direction.INCREASING)
-val DetectorId.decreasing get() = DirDetectorId(this, Direction.DECREASING)
-
 
 /** A directional detector encodes a direction over a track chunk */
 typealias DirTrackChunkId = DirStaticIdx<TrackChunk>
 typealias OptDirTrackChunkId = OptDirStaticIdx<TrackChunk>
+
+val <T> StaticIdx<T>.increasing get() = DirStaticIdx(this, Direction.INCREASING)
+val <T> StaticIdx<T>.decreasing get() = DirStaticIdx(this, Direction.DECREASING)
