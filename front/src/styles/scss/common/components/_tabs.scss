@@ -1,7 +1,7 @@
 .tabs-container {
   &.full-width {
     width: 100%;
-    .tabs {
+    .tabs.pills {
       overflow: auto;
       justify-content: space-between;
       .tab {
@@ -51,6 +51,7 @@
         font-weight: 500;
         transition: all ease 0.3s;
         padding: 0.5rem 1rem 0.25rem;
+        border: 2px solid transparent;
         border-radius: var(--border-radius);
         background-color: var(--white);
         color: var(--primary);
@@ -61,7 +62,10 @@
           background-color: var(--primary);
           color: var(--white);
         }
-      }    
+        &.warning {
+          border-color: var(--danger);
+        }
+      }
     }
   }
 }
