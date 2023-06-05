@@ -573,3 +573,10 @@ class SpeedSectionLpvSncfExtension(BaseModel):
     announcement: List[Panel] = Field(description="Precise the value(s) of the speed")
     z: Panel = Field(description="Beginning of the lpv speedsection")
     r: List[Panel] = Field(description="End of the lpv speedsection")
+
+
+if __name__ == "__main__":
+    from json import dumps
+
+    # sort keys in order to diff correctly in the CI
+    print(dumps(RailJsonInfra.schema(), indent=4, sort_keys=True))
