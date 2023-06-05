@@ -14,6 +14,7 @@ use editoast_derive::EditoastError;
 pub use http_client::{HttpClient, HttpClientBuilder};
 use reqwest::Url;
 use serde::{de::DeserializeOwned, Serialize};
+use serde_derive::Deserialize;
 use thiserror::Error;
 
 #[derive(Debug, Clone)]
@@ -52,14 +53,8 @@ impl CoreClient {
                     request = request.json(body);
                 }
                 let response = request.send().await.map_err(Into::<CoreError>::into)?;
-                if !response.status().is_success() {
-                    return Err(CoreError::GenericCoreError {
-                        status: response.status().to_string(),
-                        url: response.url().to_string(),
-                        msg: response.text().await.map_err(Into::<CoreError>::into)?,
-                    }
-                    .into());
-                }
+                let url = response.url().to_string();
+                let status = response.status();
                 let bytes =
                     response
                         .bytes()
@@ -67,7 +62,34 @@ impl CoreClient {
                         .map_err(|err| CoreError::CannotExtractResponseBody {
                             msg: err.to_string(),
                         })?;
-                R::from_bytes(bytes.as_ref())
+                if status.is_success() {
+                    R::from_bytes(bytes.as_ref())
+                } else {
+                    // We try to deserialize the response as the standard Core error format
+                    // If that fails we try to return a generic error containing the raw error
+                    let core_error =
+                        <Json<CoreErrorPayload> as CoreResponse>::from_bytes(bytes.as_ref())
+                            .map_err(|err| {
+                                if let Ok(utf8_raw_error) =
+                                    String::from_utf8(bytes.as_ref().to_vec())
+                                {
+                                    CoreError::GenericCoreError {
+                                        status: status.as_str().to_owned(),
+                                        url: url.clone(),
+                                        raw_error: utf8_raw_error,
+                                    }
+                                    .into()
+                                } else {
+                                    err
+                                }
+                            })?;
+                    Err(CoreError::Forward {
+                        status: status.as_u16(),
+                        core_error,
+                        url,
+                    }
+                    .into())
+                }
             }
             #[cfg(test)]
             CoreClient::Mocked(client) => client
@@ -204,6 +226,16 @@ impl CoreResponse for () {
     }
 }
 
+/// The structure of a standard core error (cf. class OSRDError)
+#[derive(Debug, Serialize, Deserialize)]
+struct CoreErrorPayload {
+    #[serde(rename = "type")]
+    type_: String,
+    cause: Option<String>,
+    message: String,
+    trace: Option<serde_json::Value>,
+}
+
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "coreclient")]
@@ -214,14 +246,21 @@ enum CoreError {
     #[error("Cannot parse Core response: {msg}")]
     #[editoast_error(status = 500)]
     CoreResponseFormatError { msg: String },
+    /// A standard core error was found in the response, so it is forwarded
+    #[error("{}", core_error.message)]
+    Forward {
+        status: u16,
+        core_error: CoreErrorPayload,
+        url: String,
+    },
     /// A fallback error variant for when no meaningful error could be parsed
     /// from core's output.
-    #[error("Core returned {status} for '{url}': {msg}")]
+    #[error("Core error {status}: {raw_error}")]
     #[editoast_error(status = 400)]
     GenericCoreError {
         status: String,
         url: String,
-        msg: String,
+        raw_error: String,
     },
     #[cfg(test)]
     #[error("The mocked response had no body configured - check out StubResponseBuilder::body if this is unexpected")]
@@ -238,7 +277,7 @@ impl From<reqwest::Error> for CoreError {
                 .url()
                 .map_or("<NO URL>", |url| url.as_str())
                 .to_owned(),
-            msg: value.to_string(),
+            raw_error: value.to_string(),
         }
     }
 }
