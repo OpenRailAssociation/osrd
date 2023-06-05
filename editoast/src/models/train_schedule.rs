@@ -160,6 +160,13 @@ pub struct ZoneUpdate {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SpacingRequirement {
+    pub zone: String,
+    pub begin_time: f64,
+    pub end_time: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ResultTrain {
     pub speeds: Vec<ResultSpeed>,
     pub head_positions: Vec<ResultPosition>,
@@ -168,6 +175,7 @@ pub struct ResultTrain {
     pub mechanical_energy_consumed: f64,
     pub signal_sightings: Vec<SignalSighting>,
     pub zone_updates: Vec<ZoneUpdate>,
+    pub spacing_requirements: Vec<SpacingRequirement>,
 }
 
 #[derive(

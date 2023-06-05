@@ -621,11 +621,16 @@ components:
           minItems: 0
           items:
             $ref: "#/components/schemas/SignalSighting"
-        train_schedules:
+        zone_updates:
           type: array
           minItems: 0
           items:
             $ref: "#/components/schemas/ZoneUpdate"
+        spacing_requirements:
+          type: array
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/SpacingRequirement"
         tag:
           type: string
           example: "tag"
@@ -977,6 +982,16 @@ components:
           description: the offset of the zone on the current path
         is_entry:
           type: boolean
+    SpacingRequirement:
+      properties:
+        zone:
+          type: string
+        begin_time:
+          type: number
+          format: double
+        end_time:
+          type: number
+          format: double
     SignalSighting:
       properties:
         signal:
