@@ -13,6 +13,7 @@ import ElectricalProfiles from 'applications/operationalStudies/components/Manag
 import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import {
   getPathfindingID,
+  getRollingStockID,
   getShouldRunPathfinding,
   getTrainScheduleIDsToModify,
 } from 'reducers/osrdconf/selectors';
@@ -22,7 +23,6 @@ import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
-import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import addingSettingsPic from 'assets/pictures/components/addingSettings.svg';
 
@@ -33,6 +33,7 @@ export default function ManageTrainSchedule() {
     undefined
   );
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
@@ -56,6 +57,7 @@ export default function ManageTrainSchedule() {
         <span className="ml-2">{t('tabs.rollingStock')}</span>
       </>
     ),
+    withWarning: rollingStockID === undefined,
     label: t('tabs.rollingStock'),
     content: <RollingStockSelector />,
   };
@@ -67,6 +69,7 @@ export default function ManageTrainSchedule() {
         <span className="ml-2">{t('tabs.pathFinding')}</span>
       </>
     ),
+    withWarning: pathFindingID === undefined,
     label: t('tabs.pathFinding'),
     content: (
       <div className="row no-gutters">
@@ -103,6 +106,7 @@ export default function ManageTrainSchedule() {
     ),
   };
 
+  /* // WIP to be added in next PR
   const tabAllowances = {
     title: (
       <>
@@ -112,7 +116,7 @@ export default function ManageTrainSchedule() {
     ),
     label: t('tabs.allowances'),
     content: 'marges',
-  };
+  }; */
 
   const tabAddingSettings = {
     title: (
@@ -164,13 +168,7 @@ export default function ManageTrainSchedule() {
       <Tabs
         pills
         fullWidth
-        tabs={[
-          tabRollingStock,
-          tabPathFinding,
-          tabSimulationSettings,
-          tabAllowances,
-          tabAddingSettings,
-        ]}
+        tabs={[tabRollingStock, tabPathFinding, tabSimulationSettings, tabAddingSettings]}
       />
     </>
   );

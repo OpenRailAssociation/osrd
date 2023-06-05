@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import cx from 'classnames';
 
+type TabComponentProps = {
+  label: string;
+  content: React.ReactNode;
+};
+
 type TabProps = {
   label: string;
   title?: React.ReactNode;
+  withWarning?: boolean;
   content: React.ReactNode;
 };
 
@@ -13,7 +19,7 @@ type TabsProps = {
   fullWidth?: boolean;
 };
 
-const Tab = ({ label, content }: TabProps) => (
+const Tab = ({ label, content }: TabComponentProps) => (
   <div className="tab-pane active" aria-labelledby={label}>
     {content}
   </div>
@@ -31,7 +37,11 @@ const Tabs = ({ tabs, pills = false, fullWidth = false }: TabsProps) => {
       <div className={cx('tabs', pills && 'pills')}>
         {tabs.map((tab, index) => (
           <div
-            className={cx('tab', index === activeTabIndex && 'active')}
+            className={cx(
+              'tab',
+              index === activeTabIndex && 'active',
+              tab.withWarning && 'warning'
+            )}
             key={`tab-${tab.label}-${index}}`}
             role="button"
             tabIndex={0}
