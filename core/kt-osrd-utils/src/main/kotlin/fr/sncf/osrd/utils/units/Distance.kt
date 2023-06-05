@@ -32,6 +32,20 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     override fun compareTo(other: Distance): Int {
         return millimeters.compareTo(other.millimeters)
     }
+
+    operator fun unaryMinus(): Distance {
+        return Distance(-millimeters)
+    }
+
+    /** This is just used for clearer display in debugging windows */
+    override fun toString(): String {
+        val meters = millimeters / 1000
+        val decimal = millimeters % 1000
+        if (decimal == 0L)
+            return String.format("%sm", meters)
+        else
+            return String.format("%s.%sm", meters, decimal)
+    }
 }
 
 val Double.meters: Distance get() = Distance((this * 1000).toLong())
