@@ -62,13 +62,9 @@ fun project(
         }
     }
 
-    val zoneStates = ArrayList<ZoneStatus>(zoneCount)
-    for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
-
     // compute signal updates
     val startOffset = trainPathBlockOffset(trainPath)
     val pathSignals = pathSignals(startOffset, blockPath, blockInfra, rawInfra)
-
 
     val signalAspectChangeEvents = computeSignalAspectChangeEvents(
         blockPath, zoneMap, blockInfra, pathSignals, zoneUpdates, simulator, rawInfra, loadedSignalInfra
@@ -97,7 +93,7 @@ private fun pathSignals(
         val numExclusiveSignalInBlock =
             if (blockIdx == blockPath.size - 1) blockSignals.size else blockSignals.size - 1
         for ((signal, position) in blockSignals.zip(blockSignalPositions).take(numExclusiveSignalInBlock)) {
-            pathSignals.add(PathSignal(signal, currentOffset + position))
+            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx))
         }
         currentOffset += blockSize
     }
