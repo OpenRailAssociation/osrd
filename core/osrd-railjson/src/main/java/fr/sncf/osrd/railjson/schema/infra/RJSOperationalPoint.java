@@ -10,6 +10,11 @@ public class RJSOperationalPoint implements Identified {
     public String id;
     public List<RJSOperationalPointPart> parts;
 
+    public RJSOperationalPoint(String id, List<RJSOperationalPointPart> parts) {
+        this.id = id;
+        this.parts = parts;
+    }
+
     @Override
     public String getID() {
         return id;

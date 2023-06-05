@@ -27,6 +27,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
             package $generatedPackage
 
+            import com.google.common.base.Joiner
             import fr.sncf.osrd.fast_collections.growCapacity
             import ${type.qualifiedName}
 
@@ -132,7 +133,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 }
 
                 /** GENERATED CODE */
-                override fun set(index: Int, element: $type): $type {
+                override operator fun set(index: Int, element: $type): $type {
                     assert(index < usedElements)
                     val oldValue = buffer[index]
                     buffer[index] = element
@@ -195,6 +196,11 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     if (other !is ${simpleName}List${type.paramsStar})
                         return false
                     return this.unsafeCompareTo(other) == 0
+                }
+
+                /** GENERATED CODE */
+                override fun toString(): String {
+                    return String.format("[%s]", Joiner.on(", ").join(this))
                 }
             }
 
