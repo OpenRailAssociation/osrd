@@ -6,6 +6,10 @@ on:
     paths:
       - python/api/**
       - .github/workflows/api.yml
+  merge_group:
+    paths:
+      - python/api/**
+      - .github/workflows/api.yml
   push:
     branches:
       - dev

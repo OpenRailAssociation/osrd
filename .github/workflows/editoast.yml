@@ -6,6 +6,10 @@ on:
     paths:
       - editoast/**
       - .github/workflows/editoast.yml
+  merge_group:
+    paths:
+      - editoast/**
+      - .github/workflows/editoast.yml
   push:
     branches:
       - dev

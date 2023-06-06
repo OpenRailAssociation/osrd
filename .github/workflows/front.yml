@@ -6,6 +6,10 @@ on:
     paths:
       - front/**
       - .github/workflows/front.yml
+  merge_group:
+    paths:
+      - front/**
+      - .github/workflows/front.yml
   push:
     branches:
       - dev
