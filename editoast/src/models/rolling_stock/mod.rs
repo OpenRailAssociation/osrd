@@ -82,6 +82,10 @@ pub struct RollingStockModel {
     pub power_restrictions: Option<Option<JsonValue>>,
     #[diesel(deserialize_as = DieselJson<Vec<EnergySource>>)]
     pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
+    #[diesel(deserialize_as = Option<f64>)]
+    pub electrical_power_startup_time: Option<Option<f64>>,
+    #[diesel(deserialize_as = Option<f64>)]
+    pub raise_pantograph_time: Option<Option<f64>>,
 }
 
 impl Identifiable for RollingStockModel {
@@ -157,6 +161,10 @@ impl From<RollingStockModel> for RollingStockCommon {
             loading_gauge: rolling_stock_model.loading_gauge.unwrap(),
             power_restrictions: rolling_stock_model.power_restrictions.unwrap(),
             energy_sources: rolling_stock_model.energy_sources.unwrap().0,
+            electrical_power_startup_time: rolling_stock_model
+                .electrical_power_startup_time
+                .unwrap(),
+            raise_pantograph_time: rolling_stock_model.raise_pantograph_time.unwrap(),
         }
     }
 }

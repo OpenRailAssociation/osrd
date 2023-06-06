@@ -1,5 +1,5 @@
 {
-  "version": "3.1",
+  "version": "3.2",
   "length": 400,
   "max_speed": 10,
   "startup_time": 10,
@@ -76,5 +76,7 @@
     }
   },
   "base_power_class": "1",
-  "energy_sources": []
+  "energy_sources": [],
+  "electrical_power_startup_time": null,
+  "raise_pantograph_time": null
 }

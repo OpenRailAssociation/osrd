@@ -1951,6 +1951,16 @@ components:
           example:
             "C1US": "4"
             "C2US": "3"
+        electrical_power_startup_time:
+          type: number
+          format: float
+          description: The time the train takes before actually using electrical power (in seconds)
+          example: 5.0
+        raise_pantograph_time:
+          type: number
+          format: float
+          description: The time it takes to raise this train's pantograph in s
+          example: 15.0
         metadata:
           type: object
           example:

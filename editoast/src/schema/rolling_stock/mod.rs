@@ -27,6 +27,8 @@ pub struct RollingStockCommon {
     pub power_restrictions: Option<JsonValue>,
     #[serde(default)]
     pub energy_sources: Vec<EnergySource>,
+    pub electrical_power_startup_time: Option<f64>,
+    pub raise_pantograph_time: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]

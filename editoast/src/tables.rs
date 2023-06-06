@@ -309,6 +309,8 @@ table! {
         metadata -> Jsonb,
         power_restrictions -> Nullable<Jsonb>,
         energy_sources -> Jsonb,
+        electrical_power_startup_time -> Nullable<Double>,
+        raise_pantograph_time -> Nullable<Double>,
     }
 }
 

@@ -95,6 +95,19 @@ class RollingStock(models.Model):
         validators=[PydanticValidator(EnergySourcesList)],
         default=list,
     )
+    electrical_power_startup_time = models.FloatField(
+        help_text=_(
+            "The time the train takes before actually using electrical power (in s). "
+            + "Is null if the train is not electric."
+        ),
+        null=True,
+        default=None,
+    )
+    raise_pantograph_time = models.FloatField(
+        help_text=_("The time it takes to raise this train's pantograph in s. Is null if the train is not electric."),
+        null=True,
+        default=None,
+    )
 
     def __str__(self):
         return self.name
