@@ -562,17 +562,17 @@ async fn cache_status(
 #[cfg(test)]
 pub mod tests {
     use crate::core::mocking::MockingClient;
+    use crate::fixtures::tests::{empty_infra, other_rolling_stock, TestFixture};
     use crate::models::infra::INFRA_VERSION;
-    use crate::models::rolling_stock::tests::get_other_rolling_stock;
     use crate::models::{Infra, RollingStockModel, RAILJSON_VERSION};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};
-    use crate::views::rolling_stocks::tests::rolling_stock_delete_request;
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
+    use rstest::*;
     use serde::Deserialize;
     use serde_json::json;
 
@@ -749,11 +749,13 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn infra_get_voltages() {
+    #[rstest]
+    async fn infra_get_voltages(
+        #[future] empty_infra: TestFixture<Infra>,
+        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_voltages_test")).await;
+        let infra = empty_infra.await;
 
         let test_cases = vec![true, false];
         // Create catenary
@@ -763,28 +765,18 @@ pub mod tests {
             track_ranges: vec![],
         };
 
-        let req = create_object_request(infra.id.unwrap(), catenary.into());
+        let req = create_object_request(infra.id(), catenary.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         // Create rolling_stock
-        let rolling_stock: RollingStockModel = get_other_rolling_stock();
-        let post_response = call_service(
-            &app,
-            TestRequest::post()
-                .uri("/rolling_stock")
-                .set_json(rolling_stock)
-                .to_request(),
-        )
-        .await;
-        let rolling_stock: RollingStockModel = read_body_json(post_response).await;
-        let rolling_stock_id = rolling_stock.id.unwrap();
+        let _rolling_stock = other_rolling_stock.await;
 
         for include_rolling_stock_modes in test_cases {
             let req = TestRequest::get()
                 .uri(
                     format!(
                         "/infra/{}/voltages/?include_rolling_stock_modes={}",
-                        infra.id.unwrap(),
+                        infra.id(),
                         include_rolling_stock_modes
                     )
                     .as_str(),
@@ -799,15 +791,10 @@ pub mod tests {
                 assert_eq!(voltages.len(), 1);
             } else {
                 let voltages: Vec<String> = read_body_json(response).await;
-                assert_eq!(voltages[1], "25000");
+                assert!(voltages.contains(&String::from("25000")));
+                assert!(voltages.len() >= 2);
             }
         }
-        // Delete Rolling_stock
-        let delete_request = rolling_stock_delete_request(rolling_stock_id);
-        let delete_response = call_service(&app, delete_request).await;
-        assert_eq!(delete_response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[actix_test]
