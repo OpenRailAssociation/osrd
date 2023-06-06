@@ -3,8 +3,8 @@ use std::collections::HashSet;
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
 use crate::models::{
-    Create, Delete, Pathfinding, Retrieve, RollingStockModel, Scenario, SimulationOutputChangeset,
-    TrainScheduleChangeset, Update,
+    Create, Delete, Pathfinding, Retrieve, RollingStockModel, Scenario, SimulationOutput,
+    SimulationOutputChangeset, TrainScheduleChangeset, Update,
 };
 use crate::models::{Timetable, TrainSchedule};
 
@@ -24,6 +24,8 @@ use crate::core::simulation::{SimulationRequest, SimulationResponse};
 
 use simulation_report::SimulationReport;
 use thiserror::Error;
+
+use futures::executor;
 
 use super::electrical_profiles::ElectricalProfileSet;
 
@@ -55,6 +57,12 @@ enum TrainScheduleError {
     #[error("No train ids given")]
     #[editoast_error(status = 400)]
     NoTrainIds,
+    #[error("No train schedules given")]
+    #[editoast_error(status = 400)]
+    NoTrainSchedules,
+    #[error("Batch should have the same timetable")]
+    #[editoast_error(status = 400)]
+    BatchShouldHaveSameTimetable,
 }
 
 pub fn routes() -> impl HttpServiceFactory {
@@ -96,23 +104,77 @@ async fn delete(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<H
 async fn patch(
     db_pool: Data<DbPool>,
     train_schedules_changeset: Json<Vec<TrainScheduleChangeset>>,
+    core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
     let train_schedules_changeset = train_schedules_changeset.into_inner();
-    let mut train_schedules = Vec::<TrainSchedule>::new();
-    for changeset in train_schedules_changeset {
-        let id = changeset.id.ok_or(TrainScheduleError::NoPatchId)?;
-        let train_schedule = match changeset.update(db_pool.clone(), id).await? {
-            Some(ts) => ts,
-            None => {
-                return Err(TrainScheduleError::NotFound {
-                    train_schedule_id: id,
-                }
-                .into())
-            }
-        }
-        .into();
-        train_schedules.push(train_schedule);
+    if train_schedules_changeset.is_empty() {
+        return Err(TrainScheduleError::NoTrainSchedules.into());
     }
+    let mut conn = db_pool.get()?;
+    conn.transaction::<_, InternalError, _>(|conn| {
+        let mut train_schedules = Vec::new();
+        for changeset in train_schedules_changeset {
+            let id = changeset.id.ok_or(TrainScheduleError::NoPatchId)?;
+            let train_schedule: TrainSchedule = match changeset.update_conn(conn, id)? {
+                Some(ts) => ts,
+                None => {
+                    return Err(TrainScheduleError::NotFound {
+                        train_schedule_id: id,
+                    }
+                    .into())
+                }
+            }
+            .into();
+
+            // Delete the associated simulation output
+            {
+                use crate::tables::osrd_infra_simulationoutput::dsl::*;
+                use diesel::prelude::*;
+                match osrd_infra_simulationoutput
+                    .filter(train_schedule_id.eq(train_schedule.id.unwrap()))
+                    .get_result::<SimulationOutput>(conn)
+                {
+                    Ok(simulation_output) => {
+                        SimulationOutput::delete_conn(conn, simulation_output.id)?;
+                    }
+                    Err(diesel::result::Error::NotFound) => {}
+                    Err(err) => return Err(err.into()),
+                }
+            }
+
+            train_schedules.push(train_schedule);
+        }
+
+        // Resimulate the trains
+        let id_timetable = train_schedules[0].timetable_id;
+        if train_schedules
+            .iter()
+            .any(|ts| ts.timetable_id != id_timetable)
+        {
+            return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
+        }
+
+        let timetable = Timetable::retrieve_conn(conn, id_timetable)?.ok_or(
+            TrainScheduleError::TimetableNotFound {
+                timetable_id: id_timetable,
+            },
+        )?;
+
+        let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
+
+        let request_payload = executor::block_on(create_backend_request_payload(
+            &train_schedules,
+            &scenario,
+            db_pool.clone(),
+        ))?;
+        let response_payload = executor::block_on(request_payload.fetch(core.as_ref()))?;
+        let simulation_outputs = process_simulation_response(response_payload);
+
+        for simulation_output in simulation_outputs {
+            simulation_output.create_conn(conn)?;
+        }
+        Ok(())
+    })?;
     Ok(HttpResponse::NoContent().finish())
 }
 
@@ -241,7 +303,17 @@ async fn standalone_simulation(
 ) -> Result<Json<Vec<i64>>> {
     let train_schedules = train_schedules.into_inner();
 
+    if train_schedules.is_empty() {
+        return Err(TrainScheduleError::NoTrainSchedules.into());
+    }
+
     let id_timetable = train_schedules[0].timetable_id;
+    if train_schedules
+        .iter()
+        .any(|ts| ts.timetable_id != id_timetable)
+    {
+        return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
+    }
 
     let timetable = Timetable::retrieve(db_pool.clone(), id_timetable)
         .await?
