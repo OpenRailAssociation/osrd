@@ -11,7 +11,7 @@ import { LinearMetadataDataviz } from 'applications/editor/components/LinearMeta
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import FormBeginEndWidget from 'applications/editor/components/LinearMetadata/FormBeginEndWidget';
 import LinearMetadataTooltip from 'applications/editor/components/LinearMetadata/tooltip';
-import { TbZoomIn, TbZoomOut, TbZoomCancel, TbScissors } from 'react-icons/tb';
+import { TbZoomIn, TbZoomOut, TbZoomCancel, TbScissors, TbArrowsHorizontal } from 'react-icons/tb';
 import { MdOutlineHelpOutline } from 'react-icons/md';
 import {
   LinearMetadataItem,
@@ -33,10 +33,18 @@ import { isNil, omit, head, max as fnMax, min as fnMin } from 'lodash';
 import { IoIosCut } from 'react-icons/io';
 import { t } from 'i18next';
 import { tooltipPosition, notEmpty } from 'applications/editor/components/LinearMetadata/utils';
+import { ValueOf } from 'utils/types';
+
+export const TOOLS = Object.freeze({
+  cutTool: Symbol('cutTool'),
+  deleteTool: Symbol('eraseTool'),
+  translateTool: Symbol('translateTool'),
+});
 
 type IntervalsEditorParams = {
   cutTool?: boolean;
   deleteTool?: boolean;
+  translateTool?: boolean;
 };
 
 type IntervalsEditorMetaProps = {
@@ -69,6 +77,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   // For mouse click / doubleClick
   const [clickTimeout, setClickTimeout] = useState<number | null>(null);
   const [clickPrevent, setClickPrevent] = useState<boolean>(false);
+  const [selectedTool, setSelectedTool] = useState<ValueOf<typeof TOOLS> | null>(null);
 
   const { openModal, closeModal } = useModal();
 
@@ -148,6 +157,12 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     [onChange, valueField]
   );
 
+  const toggleSelectedTool = (tool: symbol) => {
+    console.log(tool);
+    console.log(selectedTool);
+    setSelectedTool(selectedTool === tool ? null : tool);
+  };
+
   return (
     <div className="linear-metadata">
       <div className="header">
@@ -196,9 +211,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
             onDoubleClick={(_e, _item, _index, point) => {
               if (clickTimeout) clearTimeout(clickTimeout);
               setClickPrevent(true);
-              console.log('before split, data', data, point)
               const newData = splitAt(data, point);
-              console.log('splitted, newData', newData)
               setData(newData);
               customOnChange(newData);
             }}
@@ -210,12 +223,9 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               setViewBox((vb) => transalteViewBox(data, vb, gap));
             }}
             onResize={(index, gap, finalized) => {
-              console.log('Resizeeee');
               setMode(!finalized ? 'resizing' : null);
               try {
-                console.log('Resize', index, fixedData);
                 const result = resizeSegment(fixedData, index, gap, 'end');
-                console.log('result', result);
                 if (finalized) customOnChange(result.result);
                 else {
                   setData(result.result);
@@ -234,46 +244,85 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
             }}
           />
-          <div className="btn-group-vertical zoom">
-            <button
-              title={t('common.zoom-in')}
-              type="button"
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
-            >
-              <TbZoomIn />
-            </button>
-            <button
-              title={t('common.zoom-reset')}
-              type="button"
-              disabled={viewBox === null}
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setViewBox(null)}
-            >
-              <TbZoomCancel />
-            </button>
-            <button
-              title={t('common.zoom-out')}
-              type="button"
-              disabled={viewBox === null}
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
-            >
-              <TbZoomOut />
-            </button>
-            {params?.deleteTool && (
+          <div className="btn-group-vertical">
+            <div className="zoom">
               <button
-                className="btn btn-sm btn-outline-secondary"
+                title={t('common.zoom-in')}
                 type="button"
-                title={t('common.next')}
-                disabled={selected === data.length - 1}
-                onClick={() => {
-                  console.log('click on delete');
-                }}
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
               >
-                <TbScissors />
+                <TbZoomIn />
               </button>
-            )}
+              <button
+                title={t('common.zoom-reset')}
+                type="button"
+                disabled={viewBox === null}
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setViewBox(null)}
+              >
+                <TbZoomCancel />
+              </button>
+              <button
+                title={t('common.zoom-out')}
+                type="button"
+                disabled={viewBox === null}
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
+              >
+                <TbZoomOut />
+              </button>
+            </div>
+            <div className="tools">
+              {params?.translateTool && (
+                <button
+                  className={`${
+                    selectedTool === TOOLS.deleteTool ? 'btn-selected' : 'btn'
+                  } btn-sm btn-outline-secondary`}
+                  type="button"
+                  title={t('common.next')}
+                  disabled={selected === data.length - 1}
+                  onClick={() => {
+                    console.log('click on translate');
+                    toggleSelectedTool(TOOLS.translateTool);
+                  }}
+                >
+                  <TbArrowsHorizontal />
+                </button>
+              )}
+              {params?.cutTool && (
+                <button
+                  className={`${
+                    selectedTool === TOOLS.cutTool ? 'btn-selected' : 'btn'
+                  } btn-sm btn-outline-secondary`}
+                  type="button"
+                  title={t('common.next')}
+                  disabled={selected === data.length - 1}
+                  onClick={() => {
+                    console.log('click on cut');
+                    toggleSelectedTool(TOOLS.cutTool);
+                  }}
+                >
+                  <TbScissors />
+                </button>
+              )}
+              {params?.deleteTool && (
+                <button
+                  className={`${
+                    selectedTool === TOOLS.deleteTool ? 'btn-selected' : 'btn'
+                  } btn-sm btn-outline-secondary`}
+                  type="button"
+                  title={t('common.next')}
+                  disabled={selected === data.length - 1}
+                  onClick={() => {
+                    console.log('click on delete');
+                    toggleSelectedTool(TOOLS.deleteTool);
+                  }}
+                >
+                  <BsFillTrashFill />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
