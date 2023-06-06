@@ -196,7 +196,10 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
             onDoubleClick={(_e, _item, _index, point) => {
               if (clickTimeout) clearTimeout(clickTimeout);
               setClickPrevent(true);
+              console.log('before split, data', data, point)
               const newData = splitAt(data, point);
+              console.log('splitted, newData', newData)
+              setData(newData);
               customOnChange(newData);
             }}
             onWheel={(e, _item, _index, point) => {
