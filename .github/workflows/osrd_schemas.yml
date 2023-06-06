@@ -6,6 +6,10 @@ on:
     paths:
       - python/osrd_schemas/**
       - .github/workflows/osrd_schemas.yml
+  merge_group:
+    paths:
+      - python/osrd_schemas/**
+      - .github/workflows/osrd_schemas.yml
   push:
     branches:
       - dev
