@@ -194,7 +194,6 @@ function Map() {
         }}
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
-        data-testid="map"
       >
         <VirtualLayers />
         <AttributionControl position="bottom-right" customAttribution={CUSTOM_ATTRIBUTION} />

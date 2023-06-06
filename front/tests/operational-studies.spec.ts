@@ -2,12 +2,16 @@ import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
 import VARIABLES from './assets/operationStudies/test_variables';
+import PlaywrightScenarioPage from './scenario-page-model';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   let playwrightHomePage: PlaywrightHomePage;
+  let playwrightScenarioPage: PlaywrightScenarioPage;
 
   test.beforeEach(async ({ page }) => {
     playwrightHomePage = new PlaywrightHomePage(page);
+    playwrightScenarioPage = new PlaywrightScenarioPage(page);
+
     await playwrightHomePage.goToHomePage();
 
     // Real click on project, study, scenario
@@ -17,10 +21,12 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .locator('div')
       .getByRole('button')
       .click();
+
     await playwrightHomePage.page
       .getByTestId('_@Test integration study')
       .getByRole('button')
       .click();
+
     await playwrightHomePage.page
       .getByTestId('_@Test integration scenario')
       .getByRole('button')
@@ -30,41 +36,30 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
   });
 
   test('RollingStockSelector is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('rollingstock-selector')).not.toEqual(null);
+    await expect(playwrightScenarioPage.getRollingStockSelector).toBeVisible();
   });
 
   test('SpeedLimitSelector is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('speed-limit-by-tag-selector')).not.toEqual(null);
+    await playwrightScenarioPage.openTabByText('Paramètres de simulation');
+    await expect(playwrightScenarioPage.getSpeedLimitSelector).toBeVisible();
   });
 
   test('Itinerary module and subcomponents are displayed', async () => {
+    await playwrightScenarioPage.openTabByText('Itinéraire');
     // Here is how to create a locator for a specific element
-    const itinerary = playwrightHomePage.page.getByTestId('itinerary');
-    expect(itinerary).not.toEqual(null);
+    const itinerary = playwrightScenarioPage.getItineraryModule;
+    await expect(itinerary).toBeVisible();
     // here is how get locator inside another locator
-    expect(itinerary.getByTestId('display-itinerary')).not.toEqual(null);
+    await expect(itinerary.getByTestId('display-itinerary')).toBeVisible();
     // here is how you can chain locators
-    expect(itinerary.getByTestId('display-itinerary').getByTestId('itinerary-origin')).not.toEqual(
-      null
-    );
-    expect(itinerary.getByTestId('display-itinerary').getByTestId('itinerary-vias')).not.toEqual(
-      null
-    );
-    expect(
-      itinerary.getByTestId('display-itinerary').getByTestId('itinerary-destination')
-    ).not.toEqual(null);
-  });
-
-  test('TrainLabels is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('add-train-labels')).not.toEqual(null);
-  });
-
-  test('TrainSchedules is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('add-train-schedules')).not.toEqual(null);
+    await expect(playwrightScenarioPage.getItineraryOrigin).toBeVisible();
+    await expect(playwrightScenarioPage.getItineraryVias).toBeVisible();
+    await expect(playwrightScenarioPage.getItinenaryDestination).toBeVisible();
   });
 
   test('Map module is displayed', async () => {
-    expect(playwrightHomePage.page.getByTestId('map')).not.toEqual(null);
+    await playwrightScenarioPage.openTabByText('Itinéraire');
+    await expect(playwrightScenarioPage.getMapModule).toBeVisible();
   });
 
   test('Select rolling stock', async () => {
@@ -104,5 +99,17 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     expect(
       await playwrightRollingstockModalPage.getRollingstockInfosComfort().textContent()
     ).toMatch(/ConfortSStandard/i);
+  });
+
+  test('Select composition code', async () => {
+    await playwrightScenarioPage.openTabByText('Paramètres de simulation');
+    await playwrightScenarioPage.getSpeedLimitSelector.click();
+    await playwrightScenarioPage.getSpeedLimitSelector.locator('input').fill('32');
+    await playwrightScenarioPage.getSpeedLimitSelector
+      .getByRole('button', { name: 'Voyageurs - Automoteurs - E32C' })
+      .click();
+    expect(await playwrightScenarioPage.getSpeedLimitSelector.textContent()).toMatch(
+      /Voyageurs - Automoteurs - E32C/i
+    );
   });
 });

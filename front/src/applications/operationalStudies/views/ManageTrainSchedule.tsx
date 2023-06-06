@@ -74,7 +74,10 @@ export default function ManageTrainSchedule() {
         </div>
         <div className="col-fhd-9 col-hdp-8 col-xl-7 col-lg-6">
           <div className="osrd-config-item mb-2">
-            <div className="osrd-config-item-container osrd-config-item-container-map">
+            <div
+              className="osrd-config-item-container osrd-config-item-container-map"
+              data-testid="map"
+            >
               <Map />
             </div>
           </div>

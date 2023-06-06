@@ -21,7 +21,7 @@ function Vias(props: ViasProps) {
   const { openModal } = useModal();
 
   return (
-    <>
+    <div data-testid="itinerary-vias">
       {geojson && (
         <button
           className="btn btn-link text-cyan w-100 justify-content-center btn-sm"
@@ -39,7 +39,7 @@ function Vias(props: ViasProps) {
           <small className="ml-4">{t('noPlaceChosen')}</small>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
