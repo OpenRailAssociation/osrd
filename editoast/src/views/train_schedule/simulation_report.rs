@@ -51,7 +51,8 @@ pub async fn create_simulation_report(
     db_pool: Data<DbPool>,
     core: &CoreClient,
 ) -> error::Result<SimulationReport> {
-    let simulation_output = fetch_simulation_output(&train_schedule, db_pool.clone())?;
+    let mut conn = db_pool.get()?;
+    let simulation_output = fetch_simulation_output(&train_schedule, &mut conn)?;
     let train_path = Pathfinding::retrieve(db_pool.clone(), train_schedule.path_id)
         .await?
         .expect("Train Schedule should have a path");
@@ -110,16 +111,16 @@ pub async fn create_simulation_report(
     })
 }
 
-fn fetch_simulation_output(
+pub fn fetch_simulation_output(
     train_schedule: &TrainSchedule,
-    db_pool: Data<DbPool>,
+    conn: &mut diesel::PgConnection,
 ) -> error::Result<SimulationOutput> {
     use crate::tables::osrd_infra_simulationoutput::dsl::*;
     use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
     use diesel::prelude::*;
     match osrd_infra_simulationoutput
         .filter(train_schedule_id.eq(train_schedule.id.unwrap()))
-        .get_result(&mut db_pool.get()?)
+        .get_result(conn)
     {
         Ok(scenario) => Ok(scenario),
         Err(diesel::result::Error::NotFound) => Err(UnsimulatedTrainSchedule {
