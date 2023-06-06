@@ -99,7 +99,6 @@ function Itinerary({ mustUpdate }: Props) {
       </div>
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
         <DisplayItinerary
-          data-testid="display-itinerary"
           zoomToFeaturePoint={zoomToFeaturePoint}
           viaModalContent={viaModalContent}
         />
