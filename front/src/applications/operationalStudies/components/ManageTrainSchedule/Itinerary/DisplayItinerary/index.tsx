@@ -14,14 +14,10 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
   const { zoomToFeaturePoint, viaModalContent } = props;
 
   return (
-    <>
-      <Origin data-testid="itinerary-origin" zoomToFeaturePoint={zoomToFeaturePoint} />
-      <Vias
-        data-testid="itinerary-vias"
-        zoomToFeaturePoint={zoomToFeaturePoint}
-        viaModalContent={viaModalContent}
-      />
-      <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
-    </>
+    <div data-testid="display-itinerary">
+      <Origin zoomToFeaturePoint={zoomToFeaturePoint} />
+      <Vias zoomToFeaturePoint={zoomToFeaturePoint} viaModalContent={viaModalContent} />
+      <Destination zoomToFeaturePoint={zoomToFeaturePoint} />
+    </div>
   );
 }

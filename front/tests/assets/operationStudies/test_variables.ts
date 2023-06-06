@@ -1,6 +1,6 @@
 export default {
   numberOfRollingstock: process.env.CI ? '3' : '446',
-  numberOfRollingstockWithElectrical: process.env.CI ? '3' : '262',
+  numberOfRollingstockWithElectrical: process.env.CI ? '3' : '265',
   searchRollingstock: process.env.CI ? '7200' : 'tgv',
   numberOfRollingstockWithSearch: process.env.CI ? '1' : '27',
   rollingstockTestID: process.env.CI

@@ -41,7 +41,7 @@ function Destination(props: DestinationProps) {
   const { isStdcm } = makeEnumBooleans(MODES, mode);
 
   return (
-    <div className="place">
+    <div className="place" data-testid="itinerary-destination">
       {destination !== undefined ? (
         <>
           <div className="pl-1 hover w-100 d-flex align-items-center">
