@@ -1363,6 +1363,8 @@ export type RollingStockBase = {
     [key: string]: string;
   };
   energy_sources: EnergySource[];
+  electrical_power_startup_time: number | null;
+  raise_pantograph_time: number | null;
   metadata: {
     detail: string;
     family: string;

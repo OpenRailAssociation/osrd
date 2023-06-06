@@ -2662,6 +2662,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EnergySource"
+        electrical_power_startup_time:
+          type: number
+          nullable: true
+          format: float
+          description: The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
+          example: 5.0
+        raise_pantograph_time:
+          type: number
+          nullable: true
+          format: float
+          description: The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
+          example: 15.0
         metadata:
           type: object
           properties:
@@ -2723,6 +2735,8 @@ components:
         - power_restrictions
         - metadata
         - energy_sources
+        - electrical_power_startup_time
+        - raise_pantograph_time
 
     RollingStockLivery:
       properties:

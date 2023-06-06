@@ -786,6 +786,8 @@ export type LightRollingStock = {
   power_restrictions?: {
     [key: string]: string;
   };
+  electrical_power_startup_time?: number;
+  raise_pantograph_time?: number;
   metadata?: object;
   liveries?: {
     id?: number;
