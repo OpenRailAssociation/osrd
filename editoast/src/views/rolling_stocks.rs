@@ -87,6 +87,8 @@ impl From<RollingStockForm> for RollingStockModel {
             metadata: Some(DieselJson(rolling_stock.metadata)),
             power_restrictions: Some(rolling_stock.common.power_restrictions),
             energy_sources: Some(DieselJson(rolling_stock.common.energy_sources)),
+            electrical_power_startup_time: Some(rolling_stock.common.electrical_power_startup_time),
+            raise_pantograph_time: Some(rolling_stock.common.raise_pantograph_time),
             ..Default::default()
         }
     }
@@ -115,6 +117,8 @@ impl RollingStockForm {
             metadata: Some(DieselJson(self.metadata)),
             power_restrictions: Some(self.common.power_restrictions),
             energy_sources: Some(DieselJson(self.common.energy_sources)),
+            electrical_power_startup_time: Some(self.common.electrical_power_startup_time),
+            raise_pantograph_time: Some(self.common.raise_pantograph_time),
         }
     }
 }

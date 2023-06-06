@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional, Union
+from typing import List, Literal, Mapping, Optional, Union, get_args
 
 from pydantic import (
     BaseModel,
@@ -14,7 +14,8 @@ from pydantic import (
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION = "3.1"
+RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.2"]
+RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
 
 
 class ComfortType(str, Enum):
@@ -193,7 +194,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     Thus power restrictions affect the effort curves, and change the power class of the rolling stock.
     """
 
-    version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
+    version: RAILJSON_ROLLING_STOCK_VERSION_TYPE = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
     locked: bool = Field(default=False, description="Whether the rolling stock can be edited/deleted or not")
     effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
@@ -216,6 +217,13 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     loading_gauge: LoadingGaugeType
     metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
     energy_sources: List[EnergySource] = Field(default_factory=list)
+    electrical_power_startup_time: Optional[confloat(ge=0)] = Field(
+        description="The time the train takes before actually using electrical power (in s). "
+        + "Is null if the train is not electric."
+    )
+    raise_pantograph_time: Optional[confloat(ge=0)] = Field(
+        description="The time it takes to raise this train's pantograph in s. Is null if the train is not electric."
+    )
 
 
 if __name__ == "__main__":
