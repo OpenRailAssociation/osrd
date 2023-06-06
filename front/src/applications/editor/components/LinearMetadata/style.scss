@@ -43,8 +43,10 @@ $resize-width: 3px;
       align-items: flex-start;
 
       .zoom {
+        display: flex;
+        flex-direction: column;
         z-index: 2;
-        flex-grow: 0;
+        flex-grow: 1;
         height: calc($dataviz-height + $scaling-height);
         .btn {
           background-color: #fff;
@@ -55,6 +57,35 @@ $resize-width: 3px;
           &:focus,
           &:hover {
             color: #000;
+          }
+        }
+      }
+
+      .tools {
+        .btn {
+          background-color: #fff;
+          color: #1c1c1c;
+          padding: 0 0.25em !important;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+          border-left-width: 0;
+          //&:focus,
+          &:hover {
+            background-color: #1c1c1c;
+            color: #ececec;
+          }
+        }
+        .btn-selected {
+          background-color: #1c1c1c;
+          color: #ffffff;
+          padding: 0 0.25em !important;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+          border-left-width: 0;
+          //&:focus,
+          &:hover {
+            background-color: #1c1c1c;
+            color: #ffffff;
           }
         }
       }

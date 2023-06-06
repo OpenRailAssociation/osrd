@@ -41,7 +41,7 @@ const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
   const { formContext, schema, params } = props;
   const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(formDataBase);
   const onChange = (newData: LinearMetadataItem[]) => {
-    console.log("onchange call", newData)
+    console.log('onchange call', newData);
     setMockedData(newData);
   };
   return (
@@ -64,5 +64,9 @@ const IntervalsDemonstrator = {
 export default IntervalsDemonstrator;
 
 export const Plain = {
-  args: { formContext: formContextSample, schema: schemaSample, params: { deleteTool: true } },
+  args: {
+    formContext: formContextSample,
+    schema: schemaSample,
+    params: { deleteTool: true, translateTool: true, cutTool: true },
+  },
 };
