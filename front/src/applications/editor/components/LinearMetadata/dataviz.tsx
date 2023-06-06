@@ -210,6 +210,8 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   const [data4viz, setData4viz] = useState<Array<LinearMetadataItem & { index: number }>>([]);
   const [hoverAtx, setHoverAtx] = useState<number | null>(null);
 
+  console.log("show xith data", data)
+
   /**
    * When data change (or the field)
    * => we recompute the min/max
