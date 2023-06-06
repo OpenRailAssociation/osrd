@@ -41,6 +41,7 @@ const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
   const { formContext, schema, params } = props;
   const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(formDataBase);
   const onChange = (newData: LinearMetadataItem[]) => {
+    console.log("onchange call", newData)
     setMockedData(newData);
   };
   return (
