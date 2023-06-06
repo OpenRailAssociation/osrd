@@ -6,10 +6,12 @@ on:
     paths:
       - python/osrd_schemas/**
       - .github/workflows/osrd_schemas.yml
+      - front/src/reducers/osrdconf/infra_schema.json
   merge_group:
     paths:
       - python/osrd_schemas/**
       - .github/workflows/osrd_schemas.yml
+      - front/src/reducers/osrdconf/infra_schema.json
   push:
     branches:
       - dev
@@ -49,3 +51,25 @@ jobs:
         run: |
           cd python/osrd_schemas
           poetry run isort . --check
+
+  infra_schema-sync:
+    name: Check infra_schema.json
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+          with:
+            # run the CI on the actual latest commit of the PR, not the attempted merge
+            ref: ${{ github.event.pull_request.head.sha }}
+        - name: Install poetry
+          run: pipx install poetry
+        - uses: actions/setup-python@v4
+          with:
+            python-version: "3.11"
+            cache: "poetry"
+        - name: Check infra_schema.json sync
+          run: |
+            cd python/osrd_schemas
+            poetry install --no-interaction --no-root
+            poetry run python osrd_schemas/infra.py > current_infra_schema.json
+            diff current_infra_schema.json ../../front/src/reducers/osrdconf/infra_schema.json
