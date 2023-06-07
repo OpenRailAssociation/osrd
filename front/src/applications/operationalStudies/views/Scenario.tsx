@@ -236,10 +236,11 @@ export default function Scenario() {
                     <div className="scenario-details-description">{scenario.description}</div>
                   </div>
                 )}
-                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && infra && (
                   <TimetableManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    infraState={infra.state}
                   />
                 )}
                 <Timetable

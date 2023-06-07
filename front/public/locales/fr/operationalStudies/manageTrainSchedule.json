@@ -14,6 +14,7 @@
   "destination": "Destination",
   "errorMessages": {
     "error": "Une erreur est survenue",
+    "hardErrorInfra": "L'infrastructure comporte des erreurs et ne peut être utilisée sans être corrigée au préalable.",
     "mandatoryField": "Champ obligatoire",
     "noDelta": "L'intervalle ente deux trains doit être d'au moins une minute",
     "noDeltaInput": "Doit être > 0",
@@ -28,9 +29,11 @@
     "noTrainCountInput": "Doit être > 0",
     "noTrainStep": "Le pas d'incrément du nom du train doit être supérieur à zéro",
     "noTrainStepInput": "Doit être > 0",
+    "softErrorInfra": "L'application est indisponible, une erreur serveur est survenue, veuillez réessayer ultérieurement.",
     "stdcmError": "Erreur de calcul Sillon de dernière minute",
     "The requested train couldn't reach its destination": "Le train ne peut pas atteindre sa destination",
     "trainScheduleTitle": "Une erreur est survenue",
+    "unableToLoadInfra": "Erreur de chargement, nouvelle tentative en cours ({{reloadCount}})",
     "unableToRetrievePath": "Impossible de récupérer un itinéraire",
     "unableToRetrievePathfinding": "Impossible de tracer un itinéraire",
     "unableToRetrieveRollingStock": "Récupération matériel impossible",
@@ -41,6 +44,7 @@
   "failedRequest": "La requête a échoué",
   "gare": "Gare, poste",
   "importTrainSchedule": "Importation",
+  "infraLoading": "Infra en cours de chargement...",
   "inverseOD": "Inverser origine/destination",
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
@@ -81,7 +85,7 @@
     "pathFinding": "Itinéraire",
     "allowances": "Marges",
     "simulationSettings": "Paramètres de simulation",
-    "addingSettings": "Paramètres d'ajout" 
+    "addingSettings": "Paramètres d'ajout"
   },
   "timetable": "Grille horaire",
   "timetablechoose": "Grilles horaires",

@@ -9464,23 +9464,23 @@
     ],
     "dead_sections": [
         {
-            "id": "dead_section.0",
-            "track_ranges": [
-                {
-                    "track": "TG1",
-                    "begin": 3000.0,
-                    "end": 4000.0,
-                    "direction": "START_TO_STOP"
-                },
-                {
-                    "track": "TG4",
-                    "begin": 0.0,
-                    "end": 500.0,
-                    "direction": "START_TO_STOP"
-                }
-            ],
-            "backside_pantograph_track_ranges": [],
-            "is_pantograph_drop_zone": true
+          "id": "dead_section.0",
+          "track_ranges": [
+            {
+              "track": "TG1",
+              "begin": 3000.0,
+              "end": 4000.0,
+              "direction": "START_TO_STOP"
+            },
+            {
+              "track": "TG4",
+              "begin": 0.0,
+              "end": 500.0,
+              "direction": "START_TO_STOP"
+            }
+          ],
+          "backside_pantograph_track_ranges": [],
+          "is_pantograph_drop_zone": true
         }
-    ]
+      ]
 }
