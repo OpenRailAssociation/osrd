@@ -156,6 +156,8 @@ pub struct ZoneUpdate {
     pub zone: String,
     pub time: f64,
     pub offset: f64,
+    // TODO: see https://github.com/DGEXSolutions/osrd/issues/4294
+    #[serde(rename = "isEntry")]
     pub is_entry: bool,
 }
 

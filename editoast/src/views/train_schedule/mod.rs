@@ -35,7 +35,7 @@ use self::projection::Projection;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]
-enum TrainScheduleError {
+pub enum TrainScheduleError {
     #[error("Timetable '{timetable_id}', could not be found")]
     #[editoast_error(status = 400)]
     TimetableNotFound { timetable_id: i64 },
