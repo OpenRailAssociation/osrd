@@ -7,7 +7,6 @@ import Loader from 'common/Loader';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { sortBy } from 'lodash';
 import RollingStockEditor from './RollingStockEditor';
-import 'styles/main.css';
 
 const HomeRollingStockEditor: FC = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
