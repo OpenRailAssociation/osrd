@@ -5,10 +5,6 @@ import fr.sncf.osrd.sim_infra.impl.BlockInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.blockInfraBuilder
 import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.MutableDistanceList
-import fr.sncf.osrd.utils.units.meters
-import fr.sncf.osrd.utils.units.mutableDistanceArrayListOf
 import mu.KotlinLogging
 
 
@@ -70,7 +66,7 @@ internal fun internalBuildBlocks(
             // end with a buffer stop, blocks are expected to end with the route.
             // such blocks are not valid, and can be fixed by adding a delimiter signal
             // right before the end of the route.
-            val routeEndsAtBufferStop = rawSignalingInfra.isBufferStop(routeExitDet.value)
+            val routeEndsAtBufferStop = rawSignalingInfra.isBufferStop(routeExitDet.detector)
             for (curBlock in currentBlocks) {
                 if (curBlock.zonePaths.size == 0)
                     continue
@@ -189,7 +185,7 @@ private fun getInitPartialBlocks(
     entryDet: DirDetectorId,
 ): MutableList<PartialBlock> {
     val initialBlocks = mutableListOf<PartialBlock>()
-    val isBufferStop = rawSignalingInfra.isBufferStop(entryDet.value)
+    val isBufferStop = rawSignalingInfra.isBufferStop(entryDet.detector)
     if (entrySignals == null) {
         if (!isBufferStop)
             logger.debug { "no signal at non buffer stop" }

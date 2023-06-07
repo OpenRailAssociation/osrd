@@ -2,7 +2,6 @@ package fr.sncf.osrd.infra.api;
 
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
-import org.jetbrains.annotations.NotNull;
 
 /** Encodes a direction in a one dimension space */
 public enum Direction {
@@ -39,13 +38,5 @@ public enum Direction {
         if (this == FORWARD)
             return BACKWARD;
         return FORWARD;
-    }
-
-    /** Converts a legacy Direction into the new class related to the kt infra */
-    @NotNull
-    public fr.sncf.osrd.utils.Direction toKtDirection() {
-        if (this == FORWARD)
-            return fr.sncf.osrd.utils.Direction.INCREASING;
-        return fr.sncf.osrd.utils.Direction.DECREASING;
     }
 }

@@ -14,7 +14,6 @@ import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.railjson.schema.geom.LineString;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
@@ -105,16 +104,6 @@ public class TrackRangeView {
     public RangeMap<Double, Double> getSlopes() {
         var originalSlopes = track.getEdge().getSlopes().get(track.getDirection());
         return convertMap(originalSlopes);
-    }
-
-    /** Returns the geographic data of the range */
-    public LineString getGeo() {
-        var trackLength = track.getEdge().getLength();
-        var forwardResult = track.getEdge().getGeo().slice(begin / trackLength, end / trackLength);
-        if (track.getDirection().equals(Direction.FORWARD))
-            return forwardResult;
-        else
-            return forwardResult.reverse();
     }
 
     /** Returns true if the location is included in the range */

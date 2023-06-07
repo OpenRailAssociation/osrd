@@ -11,41 +11,41 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 
 
-fun movableElementSim(infra: TrackNetworkInfra, initPolicy: MovableElementInitPolicy): MovableElementSim {
+fun movableElementSim(infra: MovableElementsInfra, initPolicy: MovableElementInitPolicy): MovableElementSim {
     return MovableElementSimImpl(infra, initPolicy)
 }
 
 internal class MovableElementSimImpl(
-    private val infra: TrackNetworkInfra,
+    private val infra: MovableElementsInfra,
     private val initPolicy: MovableElementInitPolicy,
 ) : MovableElementSim {
-    private val states: List<MutableStateFlow<TrackNodeConfigId?>> = infra.trackNodes.map {
+    private val states: List<MutableStateFlow<MovableElementConfigId?>> = infra.movableElements.map {
         MutableStateFlow(null)
     }
 
-    private val locks = infra.trackNodes.map { Mutex() }
+    private val locks = infra.movableElements.map { Mutex() }
 
-    override fun watchMovableElement(movable: TrackNodeId): StateFlow<TrackNodeConfigId?> {
+    override fun watchMovableElement(movable: MovableElementId): StateFlow<MovableElementConfigId?> {
         return states[movable.index]
     }
 
-    override suspend fun lockMovableElement(movable: TrackNodeId) {
+    override suspend fun lockMovableElement(movable: MovableElementId) {
         locks[movable.index].lock()
     }
 
-    override suspend fun move(movable: TrackNodeId, config: TrackNodeConfigId) {
+    override suspend fun move(movable: MovableElementId, config: MovableElementConfigId) {
         assert(locks[movable.index].isLocked) { "cannot move a non-locked movable element" }
         states[movable.index].update { prevConfig ->
             if (prevConfig == null) {
                 if (initPolicy == MovableElementInitPolicy.PESSIMISTIC)
-                    delay(infra.getTrackNodeDelay(movable))
+                    delay(infra.getMovableElementDelay(movable))
             } else if (prevConfig != config)
-                delay(infra.getTrackNodeDelay(movable))
+                delay(infra.getMovableElementDelay(movable))
             config
         }
     }
 
-    override suspend fun unlockMovableElement(movable: TrackNodeId) {
+    override suspend fun unlockMovableElement(movable: MovableElementId) {
         locks[movable.index].unlock()
     }
 }
