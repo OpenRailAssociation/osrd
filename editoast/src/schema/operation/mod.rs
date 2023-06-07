@@ -58,9 +58,9 @@ impl Operation {
 #[editoast_error(base_id = "operation")]
 enum OperationError {
     // To modify
-    #[error("Object '{0}', could not be found")]
+    #[error("Object '{obj_id}', could not be found in the infrastructure '{infra_id}'")]
     #[editoast_error(status = 404)]
-    ObjectNotFound(String),
+    ObjectNotFound { obj_id: String, infra_id: i64 },
     #[error("Empty string id is forbidden")]
     EmptyId,
     #[error("Update operation try to modify object id, which is forbidden")]
