@@ -17,6 +17,8 @@ tags:
     description: Map layers
   - name: electrical_profiles
     description: Electrical profiles
+  - name: train_schedule
+    description: Train Schedule
 
 paths:
   /health/:
@@ -1765,6 +1767,145 @@ paths:
                           items:
                             $ref: "#/components/schemas/TrackRange"
 
+  /train_schedule/{id}/:
+    get:
+      tags:
+        - train_schedule
+      summary: Retrieve a train schedule
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+      responses:
+        200:
+          description: The train schedule info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainSchedule"
+    delete:
+      tags:
+        - train_schedule
+      summary: Delete a train schedule and its result
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+      responses:
+        204:
+          description: No content
+    patch:
+      tags:
+        - train_schedule
+      summary: Update a train_schedule and run a simulation accordingly
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+      requestBody:
+        description: Train schedule fields
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/TrainSchedule"
+        required: true
+      responses:
+        200:
+          description: The train schedule was updated successfully
+
+  /train_schedule/{id}/result/:
+    get:
+      tags:
+        - train_schedule
+      summary: Retrieve a simulation result
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+        - in: query
+          name: path_id
+          schema:
+            type: integer
+          description: Path id used to project the train path
+          required: true
+      responses:
+        200:
+          description: The train schedule result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationReport"
+
+  /train_schedule/results/:
+    get:
+      tags:
+        - train_schedule
+      summary: Retrieve the simulation result of multiple train schedules
+      parameters:
+        - in: query
+          name: path_id
+          schema:
+            type: integer
+          description: Path id used to project the train path
+          required: true
+        - in: query
+          name: train_ids
+          schema:
+            type: string
+            pattern: ^\d+(,\d+)*$
+          description: List of train schedule ids to return the results of
+          required: true
+      responses:
+        200:
+          description: The train schedules results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SimulationReport"
+
+  /train_schedule/standalone_simulation/:
+    post:
+      tags:
+        - train_schedule
+      summary: Create a batch of train schedule and run simulations accordingly
+      requestBody:
+        description: The list of train schedules to simulate
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: "#/components/schemas/TrainSchedule"
+        required: true
+      responses:
+        201:
+          description: The ids of the train_schedules created
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 1
+                items:
+                  type: number
+                  format: integer
+
 components:
   schemas:
     Battery:
@@ -3299,3 +3440,407 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Point3D"
+
+    TrainSchedule:
+      type: object
+      properties:
+        train_name:
+          type: string
+        timetable:
+          type: integer
+        rolling_stock:
+          type: integer
+        departure_time:
+          type: number
+          format: float
+        path:
+          type: integer
+        initial_speed:
+          type: number
+          format: float
+        labels:
+          type: array
+          items:
+            type: string
+        allowances:
+          type: array
+          items:
+            $ref: "#/components/schemas/Allowance"
+        speed_limit_tags:
+          description: Train category for speed limits
+          type: string
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        options:
+          allOf:
+            - $ref: "#/components/schemas/TrainScheduleOptions"
+          nullable: true
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          nullable: true
+    TrainScheduleOptions:
+      description: Options for the standalone simulation
+      type: object
+      properties:
+        ignore_electrical_profiles:
+          type: boolean
+          nullable: true
+
+    PowerRestrictionRange:
+      description: A range along the train path where a power restriction is applied.
+      type: object
+      properties:
+        begin_position:
+          description: Offset from the start of the path, in meters.
+          type: number
+          format: float
+        end_position:
+          description: Offset from the start of the path, in meters.
+          type: number
+          format: float
+        power_restriction_code:
+          description: The power restriction code to apply.
+          type: string
+      example:
+        begin_position: 0.0
+        end_position: 1000.0
+        power_restriction_code: "C1US"
+      required: [begin_position, end_position, power_restriction_code]
+
+    Allowance:
+      oneOf:
+        - $ref: "#/components/schemas/EngineeringAllowance"
+        - $ref: "#/components/schemas/StandardAllowance"
+      discriminator:
+        propertyName: allowance_type
+
+    StandardAllowance:
+      properties:
+        allowance_type:
+          type: string
+          enum: ["standard"]
+        default_value:
+          $ref: "#/components/schemas/AllowanceValue"
+        ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/RangeAllowance"
+        distribution:
+          type: string
+          enum: ["MARECO", "LINEAR"]
+        capacity_speed_limit:
+          type: number
+          format: double
+      required:
+        [
+          allowance_type,
+          default_value,
+          ranges,
+          distribution,
+          capacity_speed_limit,
+        ]
+
+    EngineeringAllowance:
+      allOf:
+        - type: object
+          properties:
+            allowance_type:
+              type: string
+              enum: ["engineering"]
+            distribution:
+              type: string
+              enum: ["MARECO", "LINEAR"]
+            capacity_speed_limit:
+              type: number
+              format: double
+          required: [allowance_type, distribution, capacity_speed_limit]
+        - $ref: "#/components/schemas/RangeAllowance"
+
+    RangeAllowance:
+      properties:
+        begin_position:
+          type: number
+        end_position:
+          type: number
+          example: 1000.0
+        value:
+          $ref: "#/components/schemas/AllowanceValue"
+      required: [begin_position, end_position, value]
+
+    AllowanceValue:
+      oneOf:
+        - $ref: "#/components/schemas/AllowanceTimePerDistanceValue"
+        - $ref: "#/components/schemas/AllowanceTimeValue"
+        - $ref: "#/components/schemas/AllowancePercentValue"
+      discriminator:
+        propertyName: value_type
+
+    AllowanceTimePerDistanceValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time_per_distance"]
+        minutes:
+          type: number
+          example: 5.0
+          description: Minutes per 100k
+      required: [value_type, minutes]
+
+    AllowanceTimeValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time"]
+        seconds:
+          type: number
+          example: 180.0
+      required: [value_type, seconds]
+
+    AllowancePercentValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["percentage"]
+        percentage:
+          type: number
+          example: 15.0
+      required: [value_type, percentage]
+
+    SimulationReportByTrain:
+      properties:
+        speeds:
+          type: array
+          minItems: 1
+          items:
+            allOf:
+              - $ref: "#/components/schemas/SpaceTimePosition"
+              - type: object
+                properties:
+                  speed:
+                    type: number
+                    format: float
+                required: [speed]
+        head_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SpaceTimePosition"
+        tail_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SpaceTimePosition"
+        stops:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                description: Can be null if it's not an operational point
+              name:
+                type: string
+                description: Can be 'Unknown' if it's not an operational point
+              time: { type: number, format: float }
+              position: { type: number, format: float }
+              duration: { type: number, format: float }
+              line_code: { type: number }
+              track_number: { type: number }
+              line_name: { type: string }
+              track_name: { type: string }
+            required:
+              [
+                id,
+                name,
+                time,
+                position,
+                duration,
+                line_code,
+                track_number,
+                line_name,
+                track_name,
+              ]
+        route_aspects:
+          type: array
+          items:
+            type: object
+            properties:
+              signal_id:
+                type: string
+                description: id of the updated signal
+              route_id:
+                type: string
+                description: id of the affected route on the train path
+              time_start:
+                type: number
+                format: float
+                description: the aspect starts being displayed at this time
+              time_end:
+                type: number
+                format: float
+                description: the aspect stops being displayed at this time
+              position_start:
+                type: number
+                format: float
+                description: the route starts at this position on the train path
+              position_end:
+                type: number
+                format: float
+                description: the route ends at this position on the train path
+              color:
+                type: number
+                format: float
+                description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+              blinking:
+                type: boolean
+                description: true if the signal is blinking
+              aspect_label:
+                type: string
+                description: label of the new signal aspect
+            required:
+              - signal_id
+              - route_id
+              - time_start
+              - time_end
+              - position_start
+              - position_end
+              - color
+              - blinking
+              - aspect_label
+        signals:
+          type: array
+          items:
+            type: object
+            properties:
+              signal_id: { type: integer }
+              aspects:
+                type: array
+                items:
+                  type: string
+              geo_position:
+                type: array
+                items: { type: number, format: float }
+                minItems: 2
+                maxItems: 2
+              schema_position:
+                type: array
+                items: { type: number, format: float }
+                minItems: 2
+                maxItems: 2
+            required: [signal_id, aspects, geo_position, schema_position]
+        mechanical_energy_consumed:
+          type: number
+          format: float
+      required:
+        - speeds
+        - head_positions
+        - tail_positions
+        - stops
+        - route_aspects
+        - signals
+        - mechanical_energy_consumed
+
+    SpaceTimePosition:
+      type: object
+      properties:
+        time: { type: number, format: float }
+        position: { type: number, format: float }
+      required: [time, position, speed]
+
+    SimulationReport:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+        path:
+          type: integer
+          description: id of the path used for projection
+        vmax:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              speed: { type: number }
+            required: [position, speed]
+        slopes:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              gradient: { type: number }
+            required: [position, gradient]
+        curves:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              radius: { type: number }
+            required: [position, radius]
+        base:
+          $ref: "#/components/schemas/SimulationReportByTrain"
+        eco:
+          $ref: "#/components/schemas/SimulationReportByTrain"
+        speed_limit_tags:
+          type: string
+        electrification_conditions:
+          type: array
+          items:
+            description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
+            type: array
+            items:
+              type: object
+              properties:
+                start:
+                  type: number
+                  format: double
+                stop:
+                  type: number
+                  format: double
+                mode_used:
+                  type: string
+                profile_used:
+                  type: string
+                  nullable: true
+                restriction_used:
+                  type: string
+                  nullable: true
+                mode_seen:
+                  type: string
+                  nullable: true
+                profile_seen:
+                  type: string
+                  nullable: true
+                restriction_seen:
+                  type: string
+                  nullable: true
+              required: [start, stop, mode_used]
+      required:
+        - id
+        - name
+        - labels
+        - path
+        - vmax
+        - slopes
+        - curves
+        - base
+        - electrification_conditions

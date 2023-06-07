@@ -410,6 +410,53 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathId}/catenaries/` }),
     }),
+    getTrainScheduleById: build.query<GetTrainScheduleByIdApiResponse, GetTrainScheduleByIdApiArg>({
+      query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/` }),
+    }),
+    deleteTrainScheduleById: build.mutation<
+      DeleteTrainScheduleByIdApiResponse,
+      DeleteTrainScheduleByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
+    }),
+    patchTrainScheduleById: build.mutation<
+      PatchTrainScheduleByIdApiResponse,
+      PatchTrainScheduleByIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/${queryArg.id}/`,
+        method: 'PATCH',
+        body: queryArg.body,
+      }),
+    }),
+    getTrainScheduleByIdResult: build.query<
+      GetTrainScheduleByIdResultApiResponse,
+      GetTrainScheduleByIdResultApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/${queryArg.id}/result/`,
+        params: { path_id: queryArg.pathId },
+      }),
+    }),
+    getTrainScheduleResults: build.query<
+      GetTrainScheduleResultsApiResponse,
+      GetTrainScheduleResultsApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/results/`,
+        params: { path_id: queryArg.pathId, train_ids: queryArg.trainIds },
+      }),
+    }),
+    postTrainScheduleStandaloneSimulation: build.mutation<
+      PostTrainScheduleStandaloneSimulationApiResponse,
+      PostTrainScheduleStandaloneSimulationApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/standalone_simulation/`,
+        method: 'POST',
+        body: queryArg.body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -946,6 +993,46 @@ export type GetPathfindingByPathIdCatenariesApiArg = {
   /** The path's id */
   pathId: number;
 };
+export type GetTrainScheduleByIdApiResponse =
+  /** status 200 The train schedule info */ TrainSchedule;
+export type GetTrainScheduleByIdApiArg = {
+  /** Train schedule ID */
+  id: number;
+};
+export type DeleteTrainScheduleByIdApiResponse = unknown;
+export type DeleteTrainScheduleByIdApiArg = {
+  /** Train schedule ID */
+  id: number;
+};
+export type PatchTrainScheduleByIdApiResponse = unknown;
+export type PatchTrainScheduleByIdApiArg = {
+  /** Train schedule ID */
+  id: number;
+  /** Train schedule fields */
+  body: TrainSchedule[];
+};
+export type GetTrainScheduleByIdResultApiResponse =
+  /** status 200 The train schedule result */ SimulationReport;
+export type GetTrainScheduleByIdResultApiArg = {
+  /** Train schedule ID */
+  id: number;
+  /** Path id used to project the train path */
+  pathId: number;
+};
+export type GetTrainScheduleResultsApiResponse =
+  /** status 200 The train schedules results */ SimulationReport[];
+export type GetTrainScheduleResultsApiArg = {
+  /** Path id used to project the train path */
+  pathId: number;
+  /** List of train schedule ids to return the results of */
+  trainIds: string;
+};
+export type PostTrainScheduleStandaloneSimulationApiResponse =
+  /** status 201 The ids of the train_schedules created */ number[];
+export type PostTrainScheduleStandaloneSimulationApiArg = {
+  /** The list of train schedules to simulate */
+  body: TrainSchedule[];
+};
 export type SearchTrackResult = {
   infra_id: number;
   line_code: number;
@@ -1470,4 +1557,143 @@ export type CatenaryRange = {
   begin?: number;
   end?: number;
   mode?: string;
+};
+export type AllowanceTimePerDistanceValue = {
+  value_type: 'time_per_distance';
+  minutes: number;
+};
+export type AllowanceTimeValue = {
+  value_type: 'time';
+  seconds: number;
+};
+export type AllowancePercentValue = {
+  value_type: 'percentage';
+  percentage: number;
+};
+export type AllowanceValue =
+  | ({
+      value_type: 'time_per_distance';
+    } & AllowanceTimePerDistanceValue)
+  | ({
+      value_type: 'time';
+    } & AllowanceTimeValue)
+  | ({
+      value_type: 'percentage';
+    } & AllowancePercentValue);
+export type RangeAllowance = {
+  begin_position: number;
+  end_position: number;
+  value: AllowanceValue;
+};
+export type EngineeringAllowance = {
+  allowance_type: 'engineering';
+  distribution: 'MARECO' | 'LINEAR';
+  capacity_speed_limit: number;
+} & RangeAllowance;
+export type StandardAllowance = {
+  allowance_type: 'standard';
+  default_value: AllowanceValue;
+  ranges: RangeAllowance[];
+  distribution: 'MARECO' | 'LINEAR';
+  capacity_speed_limit: number;
+};
+export type Allowance =
+  | ({
+      allowance_type: 'engineering';
+    } & EngineeringAllowance)
+  | ({
+      allowance_type: 'standard';
+    } & StandardAllowance);
+export type TrainScheduleOptions = {
+  ignore_electrical_profiles?: boolean | null;
+};
+export type PowerRestrictionRange = {
+  begin_position: number;
+  end_position: number;
+  power_restriction_code: string;
+};
+export type TrainSchedule = {
+  train_name?: string;
+  timetable?: number;
+  rolling_stock?: number;
+  departure_time?: number;
+  path?: number;
+  initial_speed?: number;
+  labels?: string[];
+  allowances?: Allowance[];
+  speed_limit_tags?: string;
+  comfort?: Comfort;
+  options?: TrainScheduleOptions | null;
+  power_restriction_ranges?: PowerRestrictionRange[] | null;
+};
+export type SpaceTimePosition = {
+  time: number;
+  position: number;
+};
+export type SimulationReportByTrain = {
+  speeds: (SpaceTimePosition & {
+    speed: number;
+  })[];
+  head_positions: SpaceTimePosition[][];
+  tail_positions: SpaceTimePosition[][];
+  stops: {
+    id: number;
+    name: string;
+    time: number;
+    position: number;
+    duration: number;
+    line_code: number;
+    track_number: number;
+    line_name: string;
+    track_name: string;
+  }[];
+  route_aspects: {
+    signal_id: string;
+    route_id: string;
+    time_start: number;
+    time_end: number;
+    position_start: number;
+    position_end: number;
+    color: number;
+    blinking: boolean;
+    aspect_label: string;
+  }[];
+  signals: {
+    signal_id: number;
+    aspects: string[];
+    geo_position: number[];
+    schema_position: number[];
+  }[];
+  mechanical_energy_consumed: number;
+};
+export type SimulationReport = {
+  id: number;
+  name: string;
+  labels: string[];
+  path: number;
+  vmax: {
+    position: number;
+    speed: number;
+  }[];
+  slopes: {
+    position: number;
+    gradient: number;
+  }[];
+  curves: {
+    position: number;
+    radius: number;
+  }[];
+  base: SimulationReportByTrain;
+  eco?: SimulationReportByTrain;
+  speed_limit_tags?: string;
+  electrification_conditions: {
+    start: number;
+    stop: number;
+    mode_used: string;
+    profile_used?: string | null;
+    restriction_used?: string | null;
+    mode_seen?: string | null;
+    profile_seen?: string | null;
+    restriction_seen?: string | null;
+  }[][];
 };
