@@ -59,9 +59,7 @@ def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: in
 
     assert "small_infra" == fuzzer_output["infra_name"]
     timetable = scenario.timetable
-    path_id = _pathfinding_with_payload(
-        API_URL, fuzzer_output["path_payload"], scenario.infra, stop_after_pathfinding
-    )
+    path_id = _pathfinding_with_payload(API_URL, fuzzer_output["path_payload"], scenario.infra, stop_after_pathfinding)
     if stop_after_pathfinding:
         return
 
