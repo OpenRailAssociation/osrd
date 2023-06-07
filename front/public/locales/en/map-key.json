@@ -5,6 +5,6 @@
   "keyTitle": "Legend",
   "speedlimit": "Speed",
   "dead_sections": "Dead sections",
-  "drop_pantograph": "Drop pantograph",
-  "cut_off": "Cut off zone"
+  "drop_pantograph": "Lower panto",
+  "cut_off": "Switch-off power"
 }
