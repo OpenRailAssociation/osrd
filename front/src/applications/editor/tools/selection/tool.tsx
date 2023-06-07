@@ -21,7 +21,6 @@ import { getMixedEntities } from '../../data/api';
 import { selectInZone } from '../../../../utils/mapboxHelper';
 import TOOL_TYPES from '../toolTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
-import { TrackEditionState } from '../trackEdition/types';
 import { Tool } from '../editorContextTypes';
 
 const SelectionTool: Tool<SelectionState> = {
@@ -98,12 +97,12 @@ const SelectionTool: Tool<SelectionState> = {
                   // be careful with type here
                   toolType: TOOL_TYPES.TRACK_EDITION,
                   toolState: {
-                    initialEntity: selectedElement as TrackSectionEntity,
+                    initialTrack: selectedElement as TrackSectionEntity,
                     track: selectedElement as TrackSectionEntity,
                     editionState: {
                       type: 'movePoint',
                     },
-                  } as Partial<TrackEditionState>,
+                  },
                 });
                 break;
               case 'Signal':
@@ -274,7 +273,7 @@ const SelectionTool: Tool<SelectionState> = {
                       id: entity.properties.id as string,
                       type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
                     },
-                  ]
+                ]
                 : []
             )
           ).then((entities) => {
@@ -330,7 +329,7 @@ const SelectionTool: Tool<SelectionState> = {
                       id: entity.properties.id as string,
                       type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
                     },
-                  ]
+                ]
                 : []
             )
           ).then((entities) => {
