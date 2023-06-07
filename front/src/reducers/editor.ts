@@ -2,7 +2,6 @@ import produce from 'immer';
 import { Feature } from 'geojson';
 import { without, omit, clone } from 'lodash';
 
-import { osrdMiddlewareApi } from '../common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from '../common/api/osrdEditoastApi';
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
@@ -12,6 +11,7 @@ import {
   entityToUpdateOperation,
   entityToDeleteOperation,
 } from '../applications/editor/data/utils';
+import infra_schema from './osrdconf/infra_schema.json';
 
 //
 // Actions
@@ -63,9 +63,7 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
     if (!Object.keys(getState().editor.editorSchema).length) {
       dispatch(setLoading());
       try {
-        // get the json schema  with rtk query
-        const { data } = await dispatch(osrdMiddlewareApi.endpoints.getInfraSchema.initiate());
-        const schemaResponse = data as any;
+        const schemaResponse = infra_schema as any;
         // parse the schema
         const fieldToOmit = ['id', 'geo', 'sch'];
         const schema = Object.keys(schemaResponse.properties || {})
