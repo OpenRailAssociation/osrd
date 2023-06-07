@@ -4,7 +4,6 @@ import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.loadedSignalInfra
 import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.Distance
 import mu.KotlinLogging
 
 

@@ -20,16 +20,16 @@ class TestLocation {
         val infra = rawInfra {
             // create a test switch
             val switchA = movableElement(delay = 42L.milliseconds) {
-                config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-                config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+                config("a")
+                config("b")
             }
 
             val zoneA = zone(listOf(switchA))
 
             val detectorA = detector("A")
-            setNextZone(detectorA.increasing, zoneA)
+            setNextZone(detectorA.normal, zoneA)
             val detectorB = detector("B")
-            setNextZone(detectorB.decreasing, zoneA)
+            setNextZone(detectorB.reverse, zoneA)
         }
 
         val sim = locationSim(infra)

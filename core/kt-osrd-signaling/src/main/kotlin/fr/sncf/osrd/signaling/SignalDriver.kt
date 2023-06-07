@@ -1,9 +1,6 @@
 package fr.sncf.osrd.signaling
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.DistanceList
-import fr.sncf.osrd.utils.units.Speed
 
 
 enum class ProtectionStatus {

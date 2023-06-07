@@ -6,13 +6,12 @@ import fr.sncf.osrd.sim.interlocking.impl.LocationSimImpl
 import fr.sncf.osrd.sim.interlocking.impl.movableElementSim
 import fr.sncf.osrd.sim.interlocking.impl.reservationSim
 import fr.sncf.osrd.sim.interlocking.impl.routingSim
-import fr.sncf.osrd.sim_infra.api.TrackNodePortId
-import fr.sncf.osrd.sim_infra.api.increasing
-import fr.sncf.osrd.sim_infra.api.decreasing
+import fr.sncf.osrd.sim_infra.api.meters
+import fr.sncf.osrd.sim_infra.api.normal
+import fr.sncf.osrd.sim_infra.api.reverse
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.units.meters
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
@@ -43,8 +42,8 @@ class TestRouting {
         val builder = RawInfraBuilder()
         // region switches
         val switch = builder.movableElement(delay = 10L.milliseconds) {
-            config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
-            config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
+            config("xy")
+            config("vy")
         }
 
         // endregion
@@ -56,41 +55,41 @@ class TestRouting {
         val zoneD = builder.zone(listOf())
 
         val detectorU = builder.detector("U")
-        builder.setNextZone(detectorU.increasing, zoneA)
+        builder.setNextZone(detectorU.normal, zoneA)
         val detectorV = builder.detector("V")
-        builder.setNextZone(detectorV.increasing, zoneC)
-        builder.setNextZone(detectorV.decreasing, zoneA)
+        builder.setNextZone(detectorV.normal, zoneC)
+        builder.setNextZone(detectorV.reverse, zoneA)
         val detectorW = builder.detector("W")
-        builder.setNextZone(detectorW.increasing, zoneB)
+        builder.setNextZone(detectorW.normal, zoneB)
         val detectorX = builder.detector("X")
-        builder.setNextZone(detectorX.increasing, zoneC)
-        builder.setNextZone(detectorX.decreasing, zoneB)
+        builder.setNextZone(detectorX.normal, zoneC)
+        builder.setNextZone(detectorX.reverse, zoneB)
         val detectorY = builder.detector("Y")
-        builder.setNextZone(detectorY.increasing, zoneD)
-        builder.setNextZone(detectorY.decreasing, zoneC)
+        builder.setNextZone(detectorY.normal, zoneD)
+        builder.setNextZone(detectorY.reverse, zoneC)
         val detectorZ = builder.detector("Z")
-        builder.setNextZone(detectorZ.decreasing, zoneD)
+        builder.setNextZone(detectorZ.reverse, zoneD)
         // endregion
 
         // region routes
         // create a route from W to Z, releasing at Y and Z
         val routeWZ = builder.route("W-Z") {
-            zonePath(builder.zonePath(detectorW.increasing, detectorX.increasing, 10.meters)) // zone B
-            zonePath(builder.zonePath(detectorX.increasing, detectorY.increasing, 10.meters) {
+            zonePath(builder.zonePath(detectorW.normal, detectorX.normal, 10.meters)) // zone B
+            zonePath(builder.zonePath(detectorX.normal, detectorY.normal, 10.meters) {
                 movableElement(switch, StaticIdx(0u), 5.meters)
             }) // zone C
-            zonePath(builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)) // zone D
+            zonePath(builder.zonePath(detectorY.normal, detectorZ.normal, 10.meters)) // zone D
             // release at zone C and D
             releaseZone(1)
             releaseZone(2)
         }
 
         val routeUZ = builder.route("U-Z") {
-            zonePath(builder.zonePath(detectorU.increasing, detectorV.increasing, 10.meters)) // zone A
-            zonePath(builder.zonePath(detectorV.increasing, detectorY.increasing, 10.meters) {
+            zonePath(builder.zonePath(detectorU.normal, detectorV.normal, 10.meters)) // zone A
+            zonePath(builder.zonePath(detectorV.normal, detectorY.normal, 10.meters) {
                 movableElement(switch, StaticIdx(1u), 5.meters)
             }) // zone C
-            zonePath(builder.zonePath(detectorY.increasing, detectorZ.increasing, 10.meters)) // zone D
+            zonePath(builder.zonePath(detectorY.normal, detectorZ.normal, 10.meters)) // zone D
             // release at zone D
             releaseZone(2)
         }
