@@ -11,8 +11,8 @@
   max-width: fit-content;
 }
 
-.running-time {
-  .timer-svg {
-    color: var(--orange);
+.maximum-run-time-input {
+  .invalid-feedback {
+    font-size: 0.7rem;
   }
 }

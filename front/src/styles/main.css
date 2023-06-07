@@ -3414,10 +3414,6 @@ thead {
   margin: 0 1rem;
 }
 
-.max-run-time-error {
-  color: var(--warning);
-}
-
 .scenario-explorator-card {
   border-radius: 4px;
   background-color: var(--white);

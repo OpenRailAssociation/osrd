@@ -20,6 +20,7 @@ import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import STDCMAllowances from '../components/STDCMAllowances';
 import OSRDStdcmResults from './OSRDStdcmResults';
+import RunningTime from '../components/RunningTime';
 
 type OSRDStdcmConfigProps = {
   currentStdcmRequestStatus: string;
@@ -65,6 +66,7 @@ export default function OSRDConfig({
               <RollingStockSelector condensed />
               <SpeedLimitByTagSelector condensed />
               <Itinerary />
+              <RunningTime />
               <STDCMAllowances />
               <div className="osrd-config-stdcm-apply">
                 {/* TODO: use RTK request status */}
