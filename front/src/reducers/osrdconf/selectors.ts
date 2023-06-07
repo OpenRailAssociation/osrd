@@ -64,4 +64,4 @@ export const getStandardStdcmAllowance = (state: RootState) =>
 export const getPowerRestriction = (state: RootState) => getSection(state).powerRestriction;
 export const getTrainScheduleIDsToModify = (state: RootState) =>
   getSection(state).trainScheduleIDsToModify;
-export const getMaximumRunTime = (state: RootState) => getSection(state).maximumRunTime;
+export const getMaximumRunTime = (state: RootState) => state.osrdconf.stdcmConf.maximumRunTime;

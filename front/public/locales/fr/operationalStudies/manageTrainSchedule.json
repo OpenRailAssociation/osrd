@@ -45,6 +45,7 @@
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
   "maximumRunTime": "Temps de parcours maximum",
+  "maximumRunTimeError": "Le temps de parcours ne doit pas excéder 12h",
   "No path could be found": "Aucun itinéraire trouvé",
   "No path could be found after loading Electrification constraints": "Aucun itinéraire trouvé pour un matériel avec ce type d’électrification",
   "No path could be found after loading Gauge constraints": "Aucun itinéraire trouvé avec ce gabarit de matériel",
@@ -81,7 +82,7 @@
     "pathFinding": "Itinéraire",
     "allowances": "Marges",
     "simulationSettings": "Paramètres de simulation",
-    "addingSettings": "Paramètres d'ajout" 
+    "addingSettings": "Paramètres d'ajout"
   },
   "timetable": "Grille horaire",
   "timetablechoose": "Grilles horaires",
