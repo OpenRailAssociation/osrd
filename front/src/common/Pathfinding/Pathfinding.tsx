@@ -379,9 +379,14 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     [!rollingStockID, t('rollingstock')],
     [!maximumRunTime, t('maximumRunTime')],
   ]);
+
+  const isPathFindingActive = Object.values(pathfindingState).every(
+    (state) => state === false || state === ''
+  );
+
   return (
     <div className="pathfinding-state-main-container">
-      {Object.values(pathfindingState).every((state) => state === false || state === '') ? (
+      {isPathFindingActive ? (
         <div className="content pathfinding-none">{t('pathfindingNoState')}</div>
       ) : (
         <>
