@@ -160,10 +160,10 @@ export interface OsrdConfState {
   gridMarginBefore: number;
   gridMarginAfter: number;
   trainScheduleIDsToModify?: number[];
-  maximumRunTime?: number;
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {
+  maximumRunTime?: number;
   stdcmMode: ValueOf<typeof STDCM_MODES>;
   standardStdcmAllowance?: StandardAllowance; // We wait for auto generated types
 }
@@ -173,6 +173,8 @@ export interface OsrdMultiConfState {
   simulationConf: OsrdConfState;
   stdcmConf: OsrdStdcmConfState;
 }
+
+export const RUNTIME_CAP = 43200;
 
 // electrical profiles
 export interface ElecProfileProps {

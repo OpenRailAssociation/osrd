@@ -4,7 +4,6 @@ import { Position } from 'geojson';
 import Origin from './Origin';
 import Vias from './Vias';
 import Destination from './Destination';
-import RunningTime from './RunningTime';
 
 interface DisplayItineraryProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -23,7 +22,6 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
         viaModalContent={viaModalContent}
       />
       <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
-      <RunningTime />
     </>
   );
 }

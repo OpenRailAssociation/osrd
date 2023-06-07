@@ -108,7 +108,6 @@ const defaultCommonConf = {
   gridMarginBefore: 0,
   gridMarginAfter: 0,
   trainScheduleIDsToModify: undefined,
-  maximumRunTime: undefined,
 };
 
 export const initialState: OsrdMultiConfState = {
@@ -117,6 +116,7 @@ export const initialState: OsrdMultiConfState = {
     ...defaultCommonConf,
   },
   stdcmConf: {
+    maximumRunTime: 43200,
     stdcmMode: DEFAULT_STDCM_MODE,
     standardStdcmAllowance: undefined,
     ...defaultCommonConf,
@@ -314,7 +314,7 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         draft[section].trainScheduleIDsToModify = action.trainScheduleIDsToModify;
         break;
       case UPDATE_MAXIMUM_RUN_TIME:
-        draft[section].maximumRunTime = action.maximumRunTime;
+        draft.stdcmConf.maximumRunTime = action.maximumRunTime;
         break;
     }
   });
