@@ -26,7 +26,11 @@ impl DeleteOperation {
         .execute(conn)
         {
             Ok(1) => Ok(()),
-            Ok(_) => Err(OperationError::ObjectNotFound(self.obj_id.clone()).into()),
+            Ok(_) => Err(OperationError::ObjectNotFound {
+                obj_id: self.obj_id.clone(),
+                infra_id,
+            }
+            .into()),
             Err(err) => Err(err.into()),
         }
     }
