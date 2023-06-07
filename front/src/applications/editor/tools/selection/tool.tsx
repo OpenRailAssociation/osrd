@@ -273,7 +273,7 @@ const SelectionTool: Tool<SelectionState> = {
                       id: entity.properties.id as string,
                       type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
                     },
-                ]
+                  ]
                 : []
             )
           ).then((entities) => {
@@ -329,7 +329,7 @@ const SelectionTool: Tool<SelectionState> = {
                       id: entity.properties.id as string,
                       type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
                     },
-                ]
+                  ]
                 : []
             )
           ).then((entities) => {

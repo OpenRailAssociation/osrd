@@ -1,6 +1,7 @@
 use crate::error::Result;
 use crate::schema::operation::RailjsonObject;
 use crate::schema::{OSRDIdentified, ObjectType};
+use diesel::result::Error as DieselError;
 use diesel::sql_types::{BigInt, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
@@ -21,13 +22,24 @@ impl UpdateOperation {
     pub fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<RailjsonObject> {
         // Load object
 
-        let mut obj: DataObject = sql_query(format!(
+        let mut obj: DataObject = match sql_query(format!(
             "SELECT data FROM {} WHERE infra_id = $1 AND obj_id = $2",
             self.obj_type.get_table()
         ))
         .bind::<BigInt, _>(infra_id)
         .bind::<Text, _>(&self.obj_id)
-        .get_result(conn)?;
+        .get_result(conn)
+        {
+            Ok(obj) => obj,
+            Err(DieselError::NotFound) => {
+                return Err(OperationError::ObjectNotFound {
+                    obj_id: self.obj_id.clone(),
+                    infra_id,
+                }
+                .into())
+            }
+            Err(err) => return Err(err.into()),
+        };
 
         // Apply and check patch
         let railjson_obj = obj.patch_and_check(self)?;
@@ -43,7 +55,11 @@ impl UpdateOperation {
         .execute(conn)
         {
             Ok(1) => Ok(railjson_obj),
-            Ok(_) => Err(OperationError::ObjectNotFound(self.obj_id.clone()).into()),
+            Ok(_) => Err(OperationError::ObjectNotFound {
+                obj_id: self.obj_id.clone(),
+                infra_id,
+            }
+            .into()),
             Err(err) => Err(err.into()),
         }
     }
@@ -90,7 +106,6 @@ mod tests {
     use crate::schema::operation::OperationError;
     use crate::schema::{OSRDIdentified, ObjectType};
     use actix_web::test as actix_test;
-    use actix_web::ResponseError;
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
     use diesel::RunQueryDsl;
@@ -157,8 +172,8 @@ mod tests {
 
             assert!(res.is_err());
             assert_eq!(
-                res.unwrap_err().status_code(),
-                OperationError::ModifyId.get_status()
+                res.unwrap_err().get_type(),
+                OperationError::ModifyId.get_type()
             );
         })
         .await;
@@ -249,5 +264,34 @@ mod tests {
 
             assert_eq!(updated_speed.val, 80.0);
         }).await;
+    }
+
+    #[actix_test]
+    async fn wrong_id_update_track() {
+        test_infra_transaction(|conn, infra| {
+            let update_track = UpdateOperation {
+                obj_id: "non_existent_id".to_string(),
+                obj_type: ObjectType::TrackSection,
+                railjson_patch: from_str(
+                    r#"[
+                    { "op": "replace", "path": "/length", "value": 80.0 }
+                  ]"#,
+                )
+                .unwrap(),
+            };
+
+            let res = update_track.apply(infra.id.unwrap(), conn);
+
+            assert!(res.is_err());
+            assert_eq!(
+                res.unwrap_err().get_type(),
+                OperationError::ObjectNotFound {
+                    obj_id: "non_existent_id".to_string(),
+                    infra_id: infra.id.unwrap()
+                }
+                .get_type()
+            );
+        })
+        .await;
     }
 }
