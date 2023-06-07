@@ -29,9 +29,7 @@ import addingSettingsPic from 'assets/pictures/components/addingSettings.svg';
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
   const shouldRunPathfinding = useSelector(getShouldRunPathfinding);
-  const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState<boolean | undefined>(
-    undefined
-  );
+  const [mustUpdatePathfinding, setMustUpdatePathfinding] = useState<boolean>(false);
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
@@ -74,7 +72,7 @@ export default function ManageTrainSchedule() {
     content: (
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
-          {mustUpdatePathfinding !== undefined && <Itinerary mustUpdate={mustUpdatePathfinding} />}
+          <Itinerary mustUpdate={mustUpdatePathfinding} />
         </div>
         <div className="col-xl-6">
           <div className="osrd-config-item mb-2">
