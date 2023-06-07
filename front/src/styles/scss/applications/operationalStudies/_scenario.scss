@@ -115,11 +115,18 @@
         img {
           height: 1rem;
         }
-        .scenario-details-infra-loading-state {
+        .infra-loading-state {
           font-size: 0.9rem;
           display: flex;
           align-items: center;
           margin-right: 0.5rem;
+
+          &.cached {
+            color: var(--green);
+          }
+          &.loading {
+            color: var(--orange);
+          }
 
           .infra-loader:first-child {
             animation: dot-flashing 0.5s infinite linear alternate;
@@ -149,12 +156,6 @@
             margin-left: 0.5rem;
             margin-top: 0.1rem;
           }
-        }
-        .cached {
-          color: var(--green);
-        }
-        .loading {
-          color: var(--orange);
         }
       }
       .scenario-details-infra-error {
@@ -474,7 +475,7 @@
             width: 15%;
             text-align: right;
             font-size: 0.8rem;
-            .start-time{
+            .start-time {
               font-weight: 600;
               font-size: 0.9rem;
             }

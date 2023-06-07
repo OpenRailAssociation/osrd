@@ -585,4 +585,11 @@ def get_infra_name(base_url: str, infra_id: int):
 
 if __name__ == "__main__":
     new_scenario = create_scenario(URL, INFRA_ID)
-    run(URL, EDITOAST_URL, new_scenario, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
+    run(
+        URL,
+        EDITOAST_URL,
+        new_scenario,
+        10000,
+        Path(__file__).parent / "errors",
+        infra_name=get_infra_name(URL, INFRA_ID),
+    )

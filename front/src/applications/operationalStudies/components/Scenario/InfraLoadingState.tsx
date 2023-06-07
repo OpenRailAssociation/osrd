@@ -24,7 +24,7 @@ export default function InfraLoadingState({ infra }: Props) {
   return (
     <div
       className={cx(
-        'scenario-details-infra-loading-state',
+        'infra-loading-state',
         infra.state && infra.state === 'CACHED' ? 'cached' : 'loading'
       )}
       title={infra.state}
