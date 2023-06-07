@@ -18,6 +18,7 @@ use diesel::Connection;
 use editoast_derive::EditoastError;
 
 use itertools::izip;
+use serde_derive::Deserialize;
 
 use crate::core::simulation::{SimulationRequest, SimulationResponse};
 
@@ -45,24 +46,15 @@ enum TrainScheduleError {
     #[error("Path '{path_id}', could not be found")]
     #[editoast_error(status = 400)]
     PathNotFound { path_id: i64 },
-    #[error("No path given")]
-    #[editoast_error(status = 400)]
-    NoPath,
     #[error("Train Schedule must have an id for PATCH")]
     #[editoast_error(status = 400)]
     NoPatchId,
     #[error("Train Schedule '{train_schedule_id}' is not simulated")]
     #[editoast_error(status = 500)]
     UnsimulatedTrainSchedule { train_schedule_id: i64 },
-    #[error("Duplicate Schedule id")]
-    #[editoast_error(status = 400)]
-    DuplicateTrainIds,
     #[error("No train ids given")]
     #[editoast_error(status = 400)]
     NoTrainIds,
-    #[error("Invalid Train Schedule id '{train_schedule_id}'")]
-    #[editoast_error(status = 400)]
-    InvalidScheduleId { train_schedule_id: String },
 }
 
 pub fn routes() -> impl HttpServiceFactory {
@@ -99,7 +91,7 @@ async fn delete(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<H
     Ok(HttpResponse::NoContent().finish())
 }
 
-/// Patch a timestable
+/// Patch a timetable
 #[patch("")]
 async fn patch(
     db_pool: Data<DbPool>,
@@ -124,11 +116,16 @@ async fn patch(
     Ok(HttpResponse::NoContent().finish())
 }
 
+#[derive(Deserialize)]
+struct GetResultQuery {
+    path_id: i64,
+}
+
 #[get("/{id}/result")]
 async fn get_result(
     db_pool: Data<DbPool>,
     id: Path<i64>,
-    path: Option<Path<i64>>,
+    query: Query<GetResultQuery>,
     core: Data<CoreClient>,
 ) -> Result<Json<SimulationReport>> {
     let train_schedule_id = id.into_inner();
@@ -137,9 +134,7 @@ async fn get_result(
         None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
     };
 
-    let projection_path_id = path
-        .map(|path_id| path_id.into_inner())
-        .ok_or(TrainScheduleError::NoPath)?;
+    let projection_path_id = query.into_inner().path_id;
 
     let projection_path = match Pathfinding::retrieve(db_pool.clone(), projection_path_id).await? {
         Some(path) => path,
@@ -179,41 +174,33 @@ async fn get_result(
     Ok(Json(res))
 }
 
+#[derive(Deserialize)]
+struct GetResultsQuery {
+    path_id: Option<i64>,
+    timetable_id: i64,
+}
+
 #[get("/results")]
 async fn get_results(
     db_pool: Data<DbPool>,
-    train_ids: Option<Query<String>>,
-    path_id: Option<Query<i64>>,
+    query: Query<GetResultsQuery>,
     core: Data<CoreClient>,
 ) -> Result<Json<Vec<SimulationReport>>> {
-    let train_ids = train_ids.ok_or(TrainScheduleError::NoTrainIds)?;
-    let train_ids = train_ids
-        .split(',')
-        .map(|id| {
-            id.parse::<i64>()
-                .map_err(|_| TrainScheduleError::InvalidScheduleId {
-                    train_schedule_id: id.to_owned(),
-                })
-        })
-        .collect::<std::result::Result<Vec<i64>, _>>()?;
+    let query = query.into_inner();
 
-    let train_ids_set: HashSet<i64> = train_ids.iter().cloned().collect();
-    if train_ids_set.len() != train_ids.len() {
-        return Err(TrainScheduleError::DuplicateTrainIds.into());
+    let timetable = Timetable::retrieve(db_pool.clone(), query.timetable_id)
+        .await?
+        .ok_or(TrainScheduleError::TimetableNotFound {
+            timetable_id: query.timetable_id,
+        })?;
+    let schedules = timetable.get_train_schedules(db_pool.clone()).await?;
+
+    if schedules.is_empty() {
+        return Err(TrainScheduleError::NoTrainIds.into());
     }
 
-    let mut schedules = Vec::new();
-    for id in train_ids {
-        let schedule = TrainSchedule::retrieve(db_pool.clone(), id).await?.ok_or(
-            TrainScheduleError::NotFound {
-                train_schedule_id: id,
-            },
-        )?;
-        schedules.push(schedule);
-    }
-
-    let path_id = match path_id {
-        Some(path_id) => path_id.into_inner(),
+    let path_id = match query.path_id {
+        Some(path_id) => path_id,
         None => schedules[0].path_id,
     };
 
@@ -224,14 +211,6 @@ async fn get_results(
     let projection_path_payload = (*projection_path.payload).clone();
 
     let projection = Projection::new(&projection_path_payload);
-
-    let id_timetable = schedules[0].timetable_id;
-
-    let timetable = Timetable::retrieve(db_pool.clone(), id_timetable)
-        .await?
-        .ok_or(TrainScheduleError::TimetableNotFound {
-            timetable_id: id_timetable,
-        })?;
 
     let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
 
