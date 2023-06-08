@@ -41,6 +41,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .reject("service", "yard")
         .reject("service", "siding")
         .reject("service", "spur")
+        .reject("gauge", "600")
         .read(osm_pbf_in.to_str().unwrap())?;
     info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
