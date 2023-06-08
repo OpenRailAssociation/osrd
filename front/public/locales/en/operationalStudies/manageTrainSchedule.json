@@ -84,7 +84,7 @@
   "trainScheduleDelta": "Gap",
   "trainScheduleDepartureTime": "Departure time",
   "trainScheduleInitialSpeed": "Initial velocity",
-  "trainScheduleName": "Name",
+  "trainScheduleName": "Number, name",
   "trainScheduleStep": "Increment step",
   "trainUpdated": "Updated train",
   "updateTrainSchedule": "Edit train",
