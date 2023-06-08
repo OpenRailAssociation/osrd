@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TrainSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainSettings';
-import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
 import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
 import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitByTagSelector';
@@ -24,7 +23,6 @@ import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
-import addingSettingsPic from 'assets/pictures/components/addingSettings.svg';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
@@ -116,17 +114,6 @@ export default function ManageTrainSchedule() {
     content: 'marges',
   }; */
 
-  const tabAddingSettings = {
-    title: (
-      <>
-        <img src={addingSettingsPic} alt="adding settings" height={24} />
-        <span className="ml-2">{t('tabs.addingSettings')}</span>
-      </>
-    ),
-    label: t('tabs.addingSettings'),
-    content: !trainScheduleIDsToModify && <TrainAddingSettings />,
-  };
-
   useEffect(() => {
     if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
       getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
@@ -163,11 +150,7 @@ export default function ManageTrainSchedule() {
         <TrainSettings />
       </div>
 
-      <Tabs
-        pills
-        fullWidth
-        tabs={[tabRollingStock, tabPathFinding, tabSimulationSettings, tabAddingSettings]}
-      />
+      <Tabs pills fullWidth tabs={[tabRollingStock, tabPathFinding, tabSimulationSettings]} />
     </>
   );
 }
