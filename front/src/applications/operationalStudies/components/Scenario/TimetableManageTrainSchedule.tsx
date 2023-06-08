@@ -6,6 +6,7 @@ import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { useDispatch, useSelector } from 'react-redux';
 import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
+import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
 import { Infra } from 'common/api/osrdEditoastApi';
 import submitConfAddTrainSchedules from '../ManageTrainSchedule/helpers/submitConfAddTrainSchedules';
 import submitConfUpdateTrainSchedules from '../ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
@@ -56,24 +57,28 @@ export default function TimetableManageTrainSchedule({
             </button>
           )}
 
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add &&
-          (isWorking ? (
-            <button className="btn btn-primary disabled" type="button">
-              <DotsLoader />
-            </button>
-          ) : (
-            <button
-              className="btn btn-primary"
-              type="button"
-              disabled={infraState !== 'CACHED'}
-              onClick={() => submitConfAddTrainSchedules(dispatch, t, setIsWorking)}
-            >
-              <span className="mr-2">
-                <FaPlus />
-              </span>
-              {t('addTrainSchedule')}
-            </button>
-          ))}
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
+          <>
+            {isWorking ? (
+              <button className="btn btn-primary disabled mb-2" type="button">
+                <DotsLoader />
+              </button>
+            ) : (
+              <button
+                className="btn btn-primary mb-2"
+                type="button"
+                disabled={infraState !== 'CACHED'}
+                onClick={() => submitConfAddTrainSchedules(dispatch, t, setIsWorking)}
+              >
+                <span className="mr-2">
+                  <FaPlus />
+                </span>
+                {t('addTrainSchedule')}
+              </button>
+            )}
+            <TrainAddingSettings />
+          </>
+        )}
       </div>
       <div
         className="scenario-timetable-managetrainschedule-body"
