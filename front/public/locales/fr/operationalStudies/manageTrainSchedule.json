@@ -94,7 +94,7 @@
   "trainScheduleDelta": "Intervalle",
   "trainScheduleDepartureTime": "Heure de départ",
   "trainScheduleInitialSpeed": "Vitesse initiale",
-  "trainScheduleName": "Nom",
+  "trainScheduleName": "Numéro, nom",
   "trainScheduleStep": "Pas d'incrément",
   "trainUpdated": "Train modifié",
   "updateTrainSchedule": "Modifier le train",
