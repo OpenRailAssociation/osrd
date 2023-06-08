@@ -22,7 +22,7 @@
     "anyAllowanceModified": "Margin changed",
     "anyAllowanceModificationError": "Error when updating margin"
   },
-  "specificValuesOnIntervals" : "Specific values for intervals",
+  "specificValuesOnIntervals": "Specific values for intervals",
   "allowanceGlobalType": {
     "standard": "Standard",
     "engineering": "Construction"
@@ -39,10 +39,9 @@
     "percentage": "Percentage",
     "time_per_distance": "Time/Distance"
   },
-  "standardAllowance": "Regularity margin",
-  "gridMarginBefore": "Grid margin before",
-  "gridMarginAfter": "Grid margin after",
+  "standardAllowance": "Recovery margin",
+  "gridMarginBeforeAfter": "TImetable margin",
   "op": "op",
   "to": "to",
-  "trainSchedules": "Margin type"
+  "trainSchedules": "Working type"
 }
