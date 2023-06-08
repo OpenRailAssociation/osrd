@@ -6,7 +6,6 @@ import { sortBy } from 'lodash';
 import logo from 'assets/pictures/home/rollingstockeditor.svg';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import RollingStockEditor from './views/RollingStockEditor';
-import 'styles/main.css';
 
 const HomeRollingStockEditor: FC = () => {
   const { t } = useTranslation(['home/home', 'referenceMap']);
