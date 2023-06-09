@@ -113,7 +113,7 @@ def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> Trai
     """west_to_south_east_path screenshot in `tests/README.md`"""
     requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     response = requests.post(
-        f"{API_URL}pathfinding/",
+        f"{EDITOAST_URL}pathfinding/",
         json={
             "infra": small_infra.id,
             "steps": [
