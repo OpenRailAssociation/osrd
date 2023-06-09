@@ -160,7 +160,7 @@ export default function Scenario() {
         <div className="scenario">
           {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
           <div className="row">
-            <div className={collapsedTimetable ? 'd-none' : 'col-lg-4'}>
+            <div className={collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}>
               <div className="scenario-sidemenu">
                 {scenario && (
                   <div className="scenario-details">
@@ -250,7 +250,7 @@ export default function Scenario() {
                 />
               </div>
             </div>
-            <div className={collapsedTimetable ? 'col-lg-12' : 'col-lg-8'}>
+            <div className={collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'}>
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
