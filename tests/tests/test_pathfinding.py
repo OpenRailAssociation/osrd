@@ -1,4 +1,5 @@
 from itertools import chain
+from typing import Any, Iterable
 
 import pytest
 
@@ -130,16 +131,32 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
 )
 
 
+def assert_line_strings_are_equals(geometry, expected_geometry):
+    assert geometry["type"] == expected_geometry["type"]
+    assert list(chain.from_iterable(geometry["coordinates"])) == pytest.approx(
+        list(chain.from_iterable(expected_geometry["coordinates"]))
+    )
+
+
+def assert_points_are_equals(geometry, expected_geometry):
+    assert geometry["type"] == expected_geometry["type"]
+    assert geometry["coordinates"] == pytest.approx(expected_geometry["coordinates"])
+
+
+def assert_steps_are_equals(steps: Iterable[Any], expected_steps: Iterable[Any]):
+    assert len(steps) == len(expected_steps)
+
+    for i in range(len(steps)):
+        assert_points_are_equals(steps[i].pop("sch"), expected_steps[i].pop("sch"))
+        assert_points_are_equals(steps[i].pop("geo"), expected_steps[i].pop("geo"))
+        assert steps[i] == expected_steps[i]
+
+
 def test_west_to_south_east_path(west_to_south_east_path: Path):
     assert west_to_south_east_path.owner == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.owner
     assert west_to_south_east_path.slopes == pytest.approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.slopes)
     assert west_to_south_east_path.curves == pytest.approx(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.curves)
-    assert west_to_south_east_path.steps == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.steps
-    assert west_to_south_east_path.geographic["type"] == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.geographic["type"]
-    assert list(chain.from_iterable(west_to_south_east_path.geographic["coordinates"])) == pytest.approx(
-        list(chain.from_iterable(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.geographic["coordinates"]))
-    )
-    assert west_to_south_east_path.schematic["type"] == _EXPECTED_WEST_TO_SOUTH_EAST_PATH.schematic["type"]
-    assert list(chain.from_iterable(west_to_south_east_path.schematic["coordinates"])) == pytest.approx(
-        list(chain.from_iterable(_EXPECTED_WEST_TO_SOUTH_EAST_PATH.schematic["coordinates"]))
-    )
+    assert_steps_are_equals(west_to_south_east_path.steps, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.steps)
+
+    assert_line_strings_are_equals(west_to_south_east_path.geographic, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.geographic)
+    assert_line_strings_are_equals(west_to_south_east_path.schematic, _EXPECTED_WEST_TO_SOUTH_EAST_PATH.schematic)
