@@ -1,0 +1,24 @@
+{
+  "errors": {
+    "missingInformation": "Missing information",
+    "must be number": "Number is required",
+    "must be equal to one of the allowed values": "Authorised value required"
+  },
+  "startup_time": "Releasing time (s)",
+  "startup_acceleration": "Starting acceleration (m/s²)",
+  "comfort_acceleration": "Acceleration for comfort (m/s²)",
+  "inertia_coefficient": "Factor of inertia",
+  "gamma_value": "Timetable deceleration (m/s²)",
+  "loading_gauge": "Gauge",
+  "rollingResistance": "Resistance to movement",
+  "rollingResistanceFormula": "(according to Davis's formule, R(v) = a + bv + cv²)",
+  "rolling_resistance_A": "Solid friction (N)",
+  "rolling_resistance_B": "Viscous friction (N.s/m)",
+  "rolling_resistance_C": "Aerodynamic friction (N.s²/m²)",
+  "selectRollingStock": "Select a rolling stock to display informations",
+  "confirmAction": "Would you like to confirm the change?",
+  "cancelAction": "Would you like to cancel the modification?",
+  "back": "Back",
+  "cancel": "Cancel",
+  "confirm": "Confirm"
+}
