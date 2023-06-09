@@ -69,10 +69,10 @@ export default function ManageTrainSchedule() {
     label: t('tabs.pathFinding'),
     content: (
       <div className="row no-gutters">
-        <div className="col-xl-6 pr-xl-2">
+        <div className="col-fhd-3 col-hdp-4 col-xl-5 col-lg-6 pr-md-2">
           <Itinerary mustUpdate={mustUpdatePathfinding} />
         </div>
-        <div className="col-xl-6">
+        <div className="col-fhd-9 col-hdp-8 col-xl-7 col-lg-6">
           <div className="osrd-config-item mb-2">
             <div className="osrd-config-item-container osrd-config-item-container-map">
               <Map />
