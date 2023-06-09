@@ -91,8 +91,10 @@
     },
     "layers": {
       "buffer_stops": "Buffer stops",
+      "catenaries": "Catenaries",
       "detectors": "Detectors",
       "errors": "Errors",
+      "lpv-lpv_panels": "Permanent speed limits",
       "routes": "Routes",
       "signals": "Signals",
       "switches": "Switches",
@@ -126,6 +128,7 @@
     },
     "obj-types": {
       "BufferStop": "Buffer stop",
+      "Catenary": "Electrification",
       "Detector": "Detector",
       "Route": "Route",
       "Signal": "Signal",
@@ -142,6 +145,19 @@
           "reset-entity": "Reset data"
         },
         "label": "Buffer stop tool"
+      },
+      "catenary-edition": {
+        "actions": {
+          "new-catenary": "Create a new catenary",
+          "reset-catenary": "Cancel the current modifications"
+        },
+        "add-new-catenary": "Add new catenary",
+        "catenaries": "Electrification",
+        "catenary-default": "Default catenary",
+        "label": "Catenary tool",
+        "save-existing-catenary": "Save modifications",
+        "save-new-catenary": "Save the new catenary",
+        "voltage": "{{voltage}}V"
       },
       "detector-edition": {
         "actions": {
@@ -238,11 +254,11 @@
         },
         "item": "Item",
         "label": "Selection tool",
-        "linked-to-line_one": "linked to the line",
-        "linked-to-line_other": "linked to lines",
-        "linked-to-n-lines_zero": "linked to zero line",
-        "linked-to-n-lines_one": "linked to one line",
-        "linked-to-n-lines_other": "linked to {{count}} lines",
+        "linked-to-line_one": "linked to the track section",
+        "linked-to-line_other": "linked to track sections",
+        "linked-to-n-lines_zero": "related with no TS",
+        "linked-to-n-lines_one": "related with one TS",
+        "linked-to-n-lines_other": "related to {{count}} TS",
         "no-selection": "No item selected",
         "of-type": "of type",
         "selection": "{{count}} item selected",
@@ -291,13 +307,16 @@
           "move-point": "Click a point once to start moving it.",
           "move-point-end": "Click to confirm the move of the point."
         },
-        "label": "Track tool",
-        "default-speed-sections-error": "An exception occured when loading speed limits related to this section.",
-        "no-linked-speed-section": "No speed limit entered",
+        "attached-catenaries": "Catenaries",
         "attached-speed-sections": "Speed limits",
+        "default-catenaries-error": "An error occurred when loading the {{type}} linked to this line segment.",
+        "default-speed-sections-error": "An exception occured when loading speed limits related to this section.",
+        "label": "Track tool",
+        "no-linked-catenary": "No electrification data available",
+        "no-linked-speed-section": "No speed limit entered",
         "only-show-n": "Only show the first {{count}} results",
-        "show-more-speed-sections_one": "Show one more result",
-        "show-more-speed-sections_other": "Show {{count}} more results"
+        "show-more-ranges_one": "Show one more result",
+        "show-more-ranges_other": "Show {{count}} more results"
       },
       "speed-edition": {
         "actions": {
@@ -308,15 +327,11 @@
         "add-panel": "Add a panel from {{panelType}} type",
         "add-track-range": "Click to link to:",
         "additional-speed-limit": "Additional speed limits",
-        "edit-track-range-end": "Edit arrival point",
-        "edit-track-range-start": "Edit departure point",
         "hovered-panel": "Panel {{panelType}}",
-        "label": "\"Speed limits\" tool",
-        "linked-track-sections": "Linked track sections",
+        "label": "Speed section tool",
         "main-speed-limit": "Default speed limit",
         "move-range-extremity": "Click to move the end:",
         "new-tag": "Composition code",
-        "only-show-n": "Only show the first {{count}} track sections",
         "panel-angle-geo": "Angle Geo",
         "panel-angle-sch": "Angle Sch",
         "panel-category": "Panel(s) {{panelType}}",
@@ -331,10 +346,16 @@
         "remove-track-range": "Click to detatch from:",
         "save-existing-speed-section": "Save modifications",
         "save-new-speed-section": "Save the new speed limit",
-        "show-more-ranges_one": "See an additional track section",
-        "show-more-ranges_other": "See {{count}} additional track sections",
         "speed-limits": "Speed limits",
         "toggle-lpv": "Permanent speed limit"
+      },
+      "range-edition": {
+        "edit-track-range-start": "Edit departure point",
+        "edit-track-range-end": "Edit arrival point",
+        "linked-track-sections": "Associated track sections",
+        "only-show-n": "Only show the first {{count}} track sections",
+        "show-more-ranges_one": "See an additional track section",
+        "show-more-ranges_other": "See {{count}} additional track sections"
       }
     }
   }
