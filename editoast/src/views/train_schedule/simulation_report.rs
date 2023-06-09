@@ -24,7 +24,7 @@ pub struct SimulationReport {
     base: ReportTrain,
     eco: Option<ReportTrain>,
     speed_limit_tags: Option<String>,
-    modes_and_profiles: JsonValue,
+    electrification_conditions: JsonValue,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -107,7 +107,7 @@ pub async fn create_simulation_report(
         base,
         eco,
         speed_limit_tags: train_schedule.speed_limit_tags,
-        modes_and_profiles: simulation_output.modes_and_profiles,
+        electrification_conditions: simulation_output.electrification_conditions,
     })
 }
 

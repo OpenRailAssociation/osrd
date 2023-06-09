@@ -398,18 +398,18 @@ fn process_simulation_response(
     response_payload: SimulationResponse,
 ) -> Vec<SimulationOutputChangeset> {
     let mut simulation_outputs = Vec::new();
-    for (base_simulation, eco_simulation, speed_limits, modes_and_profiles) in izip!(
+    for (base_simulation, eco_simulation, speed_limits, electrification_conditions) in izip!(
         response_payload.base_simulations,
         response_payload.eco_simulations,
         response_payload.speed_limits,
-        response_payload.modes_and_profiles
+        response_payload.electrification_conditions
     ) {
         let simulation_output = SimulationOutputChangeset {
             id: None,
             mrsp: Some(speed_limits),
             base_simulation: Some(DieselJson(base_simulation)),
             eco_simulation: Some(Some(DieselJson(eco_simulation))),
-            modes_and_profiles: Some(modes_and_profiles),
+            electrification_conditions: Some(electrification_conditions),
             train_schedule_id: None, // To be filled once the train schedule is inserted
         };
         simulation_outputs.push(simulation_output);
