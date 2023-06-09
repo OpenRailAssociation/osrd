@@ -5,7 +5,6 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { Dispatch } from 'redux';
 import { noop } from 'lodash';
 import { RxLapTimer } from 'react-icons/rx';
-import 'styles/main.css';
 import { useTranslation } from 'react-i18next';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import { RUNTIME_CAP } from 'applications/operationalStudies/consts';
