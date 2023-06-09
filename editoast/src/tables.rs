@@ -386,7 +386,7 @@ diesel::table! {
         mrsp -> Jsonb,
         base_simulation -> Jsonb,
         eco_simulation -> Nullable<Jsonb>,
-        modes_and_profiles -> Jsonb,
+        electrification_conditions -> Jsonb,
         train_schedule_id -> Nullable<BigInt>,
     }
 }

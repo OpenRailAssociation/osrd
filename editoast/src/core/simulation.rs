@@ -48,7 +48,7 @@ pub struct SimulationResponse {
     pub eco_simulations: Vec<ResultTrain>,
     pub speed_limits: Vec<JsonValue>,
     pub warnings: Vec<String>, // TODO
-    pub modes_and_profiles: Vec<JsonValue>,
+    pub electrification_conditions: Vec<JsonValue>,
 }
 
 #[derive(Debug, Serialize)]
