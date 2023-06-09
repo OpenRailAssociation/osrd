@@ -10,7 +10,8 @@
     "errorNoFrom": "You must fill in an origin.",
     "errorNoTo": "You must fill in a destination.",
     "errorSameFromTo": "Origin and destination must be different",
-    "unableToRetrievePathfinding": "Impossible to create a path"
+    "unableToRetrievePathfinding": "Impossible to create a path",
+    "unableToRetrieveTrainSchedule": "Impossible to compute running time"
   },
   "from": "Origin",
   "generatePaths": "Generate paths",
@@ -26,7 +27,6 @@
     "calculatingTrainSchedule": "Calculating train schedules...",
     "calculatingTrainScheduleComplete": "Calculating train schedules is over",
     "calculatingTrainScheduleCompleteAll": "All train schedules have been calculated.",
-    "calculatingTrainScheduleError": "Calculating train schedules has failed",
     "complete": "locate",
     "missingInfra": "You must fill in an infrastructure",
     "missingRollingStock": "You must choose a default rolling stock",
