@@ -873,6 +873,7 @@ export type GetTimetableByIdApiArg = {
 export type GetTimetableByIdConflictsApiResponse =
   /** status 200 The timetable conflicts content */ {
     train_ids: number[];
+    train_names: string[];
     start_time: string;
     end_time: string;
     conflict_type: string;

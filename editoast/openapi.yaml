@@ -1406,13 +1406,17 @@ paths:
                       type: array
                       items:
                         type: number
+                    train_names:
+                      type: array
+                      items:
+                        type: string
                     start_time:
                       type: string
                     end_time:
                       type: string
                     conflict_type:
-                      type: string     
-                  required: [train_ids, start_time, end_time, conflict_type]            
+                      type: string
+                  required: [train_ids, train_names, start_time, end_time, conflict_type]
 
   /projects/{project_id}/studies/:
     post:
