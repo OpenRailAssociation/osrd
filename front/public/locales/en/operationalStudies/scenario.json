@@ -6,9 +6,9 @@
     "hardErrorInfra": "The infrastructure contains errors and cannot be used without first being corrected.",
     "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
     "unableToCreateScenarioMessage": "Unable to create a scenario",
-    "unableToLoadInfra": "Loading error, new attempt in progress ({{reloadCount}})",
-    "unableToUpdateScenarioMessage": "Unable to update the scenario",
-    "unableToDeleteScenarioMessage": "Unable to delete the scenario"
+    "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",
+    "unableToUpdateScenarioMessage": "Unable to update a scenario",
+    "unableToDeleteScenarioMessage": "Unable to delete a scenario"
   },
   "filterPlaceholder": "Filter, tags",
   "infraLoadingState": "{{step}}/8",
@@ -44,5 +44,9 @@
   },
   "trainCount_one": "1 train",
   "trainCount_other": "{{ count }} trains",
-  "trainCount_zero": "No train"
+  "trainCount_zero": "No train",
+  "conflictsCount_one": "1 conflict",
+  "conflictsCount_other": "{{count}} conflicts",
+  "conflictsCount_zero": "No conflict",
+  "Spacing": "Spacing conflict"
 }
