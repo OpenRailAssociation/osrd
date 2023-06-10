@@ -110,6 +110,8 @@ public class UndirectedInfraBuilder {
 
     private void loadDeadSections(List<RJSDeadSection> deadSections,
                                   HashMap<String, TrackSectionImpl> trackSectionsByID) {
+        if (deadSections == null)
+            return;
         for (var deadSection : deadSections) {
             for (var trackRange : deadSection.trackRanges) {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
