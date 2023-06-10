@@ -72,6 +72,8 @@ public class ResultTrain {
             this.zone = zone;
             this.beginTime = beginTime;
             this.endTime = endTime;
+            assert !Double.isNaN(beginTime);
+            assert !Double.isNaN(endTime);
         }
     }
 
