@@ -163,6 +163,45 @@ export function resizeSegment<T>(
 }
 
 /**
+ * Merge a segment with one of its sibling, define by the policy.
+ * NOTE: Property of selected item will override the sibling one.
+
+ * @param linearMetadata The linear metadata we work on
+ * @param index The element that will be merged
+ * @returns A new linear metadata with one segment merged
+ * @throws An error when the index or the sibling element is outside
+ */
+export function mergeIn<T>(
+  linearMetadata: Array<LinearMetadataItem<T>>,
+  index: number,
+  policy: 'left' | 'right'
+): Array<LinearMetadataItem<T>> {
+  if (!(index >= 0 && index < linearMetadata.length)) throw new Error('Bad merge index');
+  if (policy === 'left' && index === 0)
+    throw new Error('Target segment is outside the linear metadata');
+  if (policy === 'right' && index === linearMetadata.length - 1)
+    throw new Error('Target segment is outside the linear metadata');
+
+  if (policy === 'left') {
+    const left = linearMetadata[index - 1];
+    const element = linearMetadata[index];
+    return [
+      ...linearMetadata.slice(0, index - 1),
+      { ...element, begin: left.begin },
+      ...linearMetadata.slice(index + 1),
+    ];
+  }
+
+  const right = linearMetadata[index + 1];
+  const element = linearMetadata[index];
+  return [
+    ...linearMetadata.slice(0, index),
+    { ...element, end: right.end },
+    ...linearMetadata.slice(index + 2),
+  ];
+}
+
+/**
  * Fix a linear metadata
  * - if empty it generate one
  * - if there is a gap at begin/end or inside, it is created
@@ -187,8 +226,20 @@ export function fixLinearMetadataItems<T>(
     ];
   }
 
+  function haveAdditionalKeys(item: LinearMetadataItem, itemToCompare: LinearMetadataItem) {
+    const keys = Object.keys(item);
+    const keysToCompare = Object.keys(itemToCompare);
+    return (
+      keys.some((key) => key !== 'begin' && key !== 'end') ||
+      keysToCompare.some((key) => key !== 'begin' && key !== 'end')
+    );
+  }
+
+  // merge empty adjacent items
+  let fixedLinearMetadata: Array<LinearMetadataItem<T>> = sortBy(value, ['begin']);
+
   // Order the array and fix it by filling gaps if there are some
-  let fixedLinearMetadata = sortBy(value, ['begin']).flatMap((item, index, array) => {
+  fixedLinearMetadata = fixedLinearMetadata.flatMap((item, index, array) => {
     const result: Array<LinearMetadataItem<T>> = [];
 
     // we remove the item if it begins after the end of the line
@@ -243,6 +294,23 @@ export function fixLinearMetadataItems<T>(
     return result;
   });
 
+  let noEmptyAdjacentItems = false;
+  while (!noEmptyAdjacentItems) {
+    noEmptyAdjacentItems = true;
+    for (let i = 0; i < fixedLinearMetadata.length; i++) {
+      if (i >= 1) {
+        const item = fixedLinearMetadata[i];
+        const prev = fixedLinearMetadata[i - 1];
+        if (item.begin === prev.end && !haveAdditionalKeys(item, prev)) {
+
+          fixedLinearMetadata = mergeIn(fixedLinearMetadata, i, 'left');
+          noEmptyAdjacentItems = false
+          break;
+        }
+      }
+    }
+  }
+
   // if the fixed lm is bigger than the lineLeight (the opposite is not possible, we already fix gaps)
   const tail = last(fixedLinearMetadata);
   if (tail && tail.end > lineLength) {
@@ -261,6 +329,29 @@ export function fixLinearMetadataItems<T>(
   }
 
   return fixedLinearMetadata;
+}
+
+/**
+ * Remove item at specified index
+ *
+ * @param linearMetadata The linear metadata we work on, already sorted
+ * @param itemChangeIndex The index in the linearMetadata of the changed element
+ * @param lineLength The full length of the linearmetadata (should be computed from the LineString or given by the user)
+ * @returns An object composed of the new linearMetadata and its new position without the removed element
+ */
+export function removeSegment<T>(
+  linearMetadata: Array<LinearMetadataItem<T>>,
+  itemChangeIndex: number,
+  lineLength: number
+): Array<LinearMetadataItem<T>> {
+  // apply the modification on the segment
+  let result = cloneDeep(linearMetadata);
+  // 1 - splice
+  result.splice(itemChangeIndex, 1);
+  // 2 - fix
+  result = fixLinearMetadataItems(result, lineLength);
+  // 3 return
+  return result;
 }
 
 /**
@@ -371,42 +462,31 @@ export function splitAt<T>(
 }
 
 /**
- * Merge a segment with one of its sibling, define by the policy.
- * NOTE: Property of selected item will override the sibling one.
-
+ * Create a new segment
+ *
  * @param linearMetadata The linear metadata we work on
- * @param index The element that will be merged
- * @returns A new linear metadata with one segment merged
- * @throws An error when the index or the sibling element is outside
+ * @param distanceFrom The distance where the new segment will start from
+ * @param distanceTo  The distance where the new segment will end to
+ * @param lineLength  The full length of the linearmetadata (should be computed from the LineString or given by the user)
+ * @param opts what is the valueFiled (nae of the value, and the default value - strongly recommended)
+ * @returns An object composed of the new linearMetadata and its new position without the removed element
  */
-export function mergeIn<T>(
+export function createSegmentAt<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
-  index: number,
-  policy: 'left' | 'right'
+  distanceFrom: number,
+  distanceTo: number,
+  lineLength: number,
+  opts?: { fieldName: string; defaultValue: unknown }
 ): Array<LinearMetadataItem<T>> {
-  if (!(index >= 0 && index < linearMetadata.length)) throw new Error('Bad merge index');
-  if (policy === 'left' && index === 0)
-    throw new Error('Target segment is outside the linear metadata');
-  if (policy === 'right' && index === linearMetadata.length - 1)
-    throw new Error('Target segment is outside the linear metadata');
-
-  if (policy === 'left') {
-    const left = linearMetadata[index - 1];
-    const element = linearMetadata[index];
-    return [
-      ...linearMetadata.slice(0, index - 1),
-      { ...element, begin: left.begin },
-      ...linearMetadata.slice(index + 1),
-    ];
-  }
-
-  const right = linearMetadata[index + 1];
-  const element = linearMetadata[index];
-  return [
-    ...linearMetadata.slice(0, index),
-    { ...element, end: right.end },
-    ...linearMetadata.slice(index + 2),
-  ];
+  // apply the modification on the segment
+  let result = cloneDeep(linearMetadata);
+  result.push({
+    ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+    begin: distanceFrom,
+    end: distanceTo,
+  } as LinearMetadataItem<T>);
+  result = fixLinearMetadataItems(result, lineLength);
+  return result;
 }
 
 /**
