@@ -38,7 +38,7 @@ const schemaSample: JSONSchema7 = {
 };
 
 const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
-  const { formContext, schema, params } = props;
+  const { formContext, schema, params, valueField } = props;
   const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(formDataBase);
   const onChange = (newData: LinearMetadataItem[]) => {
     console.log('onchange call', newData);
@@ -51,7 +51,9 @@ const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
       schema={schema}
       formData={mockedData}
       params={params}
+      valueField={valueField}
       onChange={onChange}
+      defaultValue={0}
     />
   );
 };
@@ -67,6 +69,7 @@ export const Plain = {
   args: {
     formContext: formContextSample,
     schema: schemaSample,
+    valueField: 'gradient',
     params: { deleteTool: true, translateTool: true, cutTool: true },
   },
 };
