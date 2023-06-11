@@ -21,6 +21,7 @@ import {
   getLineStringDistance,
   getZoomedViewBox,
   mergeIn,
+  removeSegment,
   resizeSegment,
   splitAt,
   transalteViewBox,
@@ -37,7 +38,7 @@ import { ValueOf } from 'utils/types';
 
 export const TOOLS = Object.freeze({
   cutTool: Symbol('cutTool'),
-  deleteTool: Symbol('eraseTool'),
+  deleteTool: Symbol('deleteTool'),
   translateTool: Symbol('translateTool'),
 });
 
@@ -50,6 +51,9 @@ type IntervalsEditorParams = {
 type IntervalsEditorMetaProps = {
   text?: string;
   params?: IntervalsEditorParams;
+  valueField: string;
+  defaultValue?: number;
+  unit?: string;
 };
 
 type IntervalsEditorProps = IntervalsEditorMetaProps & FieldProps;
@@ -59,7 +63,8 @@ type IntervalsEditorProps = IntervalsEditorMetaProps & FieldProps;
  * version 0.1
  */
 export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
-  const { text, name, formContext, formData, schema, onChange, registry, params } = props;
+  const { text, name, formContext, formData, schema, onChange, registry, params, valueField } =
+    props;
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
@@ -148,8 +153,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   }, [jsonSchema]);
 */
 
-  const valueField = 'gradient';
-
   const customOnChange = useCallback(
     (newData: Array<LinearMetadataItem>) => {
       onChange(newData.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
@@ -158,8 +161,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   );
 
   const toggleSelectedTool = (tool: symbol) => {
-    console.log(tool);
-    console.log(selectedTool);
     setSelectedTool(selectedTool === tool ? null : tool);
   };
 
@@ -195,7 +196,8 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                 setHovered((old) => (old ? { ...old, point } : null));
               }
             }}
-            onClick={(_e, _item, index) => {
+            onClick={(_e, _item, index, point) => {
+              console.log('SelectedTool', selectedTool);
               if (mode === null) {
                 const timer = window.setTimeout(() => {
                   if (!clickPrevent) {
@@ -206,6 +208,20 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   setClickPrevent(false);
                 }, 150) as number;
                 setClickTimeout(timer);
+              }
+              if (selectedTool === TOOLS.cutTool) {
+                if (clickTimeout) clearTimeout(clickTimeout);
+                setClickPrevent(true);
+                const newData = splitAt(data, point);
+                setData(newData);
+                customOnChange(newData);
+              }
+              if (selectedTool === TOOLS.deleteTool) {
+                const newData = removeSegment(data, index, distance);
+                setSelected(null);
+                setClickPrevent(false);
+                setData(newData);
+                customOnChange(newData);
               }
             }}
             onDoubleClick={(_e, _item, _index, point) => {
@@ -220,6 +236,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
             }}
             onDragX={(gap, finalize) => {
               setMode(!finalize ? 'dragging' : null);
+
               setViewBox((vb) => transalteViewBox(data, vb, gap));
             }}
             onResize={(index, gap, finalized) => {
@@ -277,7 +294,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               {params?.translateTool && (
                 <button
                   className={`${
-                    selectedTool === TOOLS.deleteTool ? 'btn-selected' : 'btn'
+                    selectedTool === TOOLS.translateTool ? 'btn-selected' : 'btn'
                   } btn-sm btn-outline-secondary`}
                   type="button"
                   title={t('common.next')}
