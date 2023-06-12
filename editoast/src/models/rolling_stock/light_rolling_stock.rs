@@ -94,6 +94,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
             id: rolling_stock_model.id,
             name: rolling_stock_model.name,
             version: rolling_stock_model.version,
+            locked: rolling_stock_model.locked,
             effort_curves: rolling_stock_model.effort_curves,
             base_power_class: rolling_stock_model.base_power_class,
             length: rolling_stock_model.length,

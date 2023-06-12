@@ -57,12 +57,12 @@ class PlaywrightRollingstockModalPage {
     return this.getRollingstockModal.getByTestId(rollingstockTestID);
   }
 
-  getRollingstockMiniCardInfos() {
-    return this.getRollingstockMiniCard.locator('.rollingstock-infos');
+  getRollingStockMiniCardInfo() {
+    return this.getRollingstockMiniCard.locator('.rollingstock-info');
   }
 
-  getRollingstockInfosComfort() {
-    return this.getRollingstockMiniCard.locator('.rollingstock-infos-comfort');
+  getRollingStockInfoComfort() {
+    return this.getRollingstockMiniCard.locator('.rollingstock-info-comfort');
   }
 }
 

@@ -44,11 +44,11 @@
 
 .osrd-config-item-container {
   .rollingstock-minicard {
-    .rollingstock-infos {
+    .rollingstock-info {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      .rollingstock-infos-begin {
+      .rollingstock-info-begin {
         display: flex;
         align-items: center;
         flex-grow: 1;
@@ -57,11 +57,11 @@
         padding: 0.25rem 0.5rem;
         position: relative;
         min-height: 1.5rem;
-        .rollingstock-infos-series {
+        .rollingstock-info-series {
           position: relative;
           font-weight: bold;
         }
-        .rollingstock-infos-unit {
+        .rollingstock-info-unit {
           position: relative;
           &.UM2 {
             color: #6e1e78;
@@ -73,7 +73,7 @@
           margin-left: 0.25rem;
           font-size: 0.7rem;
         }
-        .rollingstock-infos-subseries {
+        .rollingstock-info-subseries {
           position: relative;
           margin-left: 0.25rem;
           text-transform: uppercase;
@@ -103,7 +103,7 @@
       justify-content: space-between;
       margin-top: 0.5rem;
       gap: 0.5rem;
-      .rollingstock-infos-comfort {
+      .rollingstock-info-comfort {
         display: flex;
         align-items: center;
         background-color: var(--coolgray1);
@@ -116,7 +116,7 @@
       .comfort-HEATING {
         display: flex;
       }
-      .rollingstock-infos-end {
+      .rollingstock-info-end {
         display: flex;
         align-items: center;
         height: 1.5rem;
@@ -176,20 +176,20 @@
     white-space: nowrap;
     height: 1.5rem;
     overflow: hidden;
-    .rollingstock-infos {
+    .rollingstock-info {
       display: flex;
       align-items: center;
       height: 1.5rem;
       justify-content: space-between;
-      .rollingstock-infos-begin {
+      .rollingstock-info-begin {
         height: 1.5rem;
         display: flex;
         align-items: center;
-        .rollingstock-infos-series {
+        .rollingstock-info-series {
           height: 1.5rem;
           font-weight: bold;
         }
-        .rollingstock-infos-unit {
+        .rollingstock-info-unit {
           &.UM2 {
             color: #6e1e78;
           }
@@ -200,13 +200,13 @@
           margin-left: 0.25rem;
           font-size: 0.7rem;
         }
-        .rollingstock-infos-subseries {
+        .rollingstock-info-subseries {
           margin-left: 0.25rem;
           text-transform: uppercase;
           font-size: 0.7rem;
         }
       }
-      .rollingstock-infos-middle {
+      .rollingstock-info-middle {
         white-space: normal;
         overflow-wrap: break-word;
         overflow: hidden;
@@ -216,7 +216,7 @@
         font-size: 0.6rem;
         line-height: 0.6rem;
       }
-      .rollingstock-infos-end {
+      .rollingstock-info-end {
         display: flex;
         align-items: center;
         color: #4d4d4d;

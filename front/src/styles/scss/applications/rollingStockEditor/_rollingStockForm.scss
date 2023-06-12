@@ -53,21 +53,21 @@
     white-space: nowrap;
     height: 3rem;
     overflow: hidden;
-    .rollingstock-infos-form {
+    .rollingstock-info-form {
       display: flex;
       align-items: center;
       height: 3rem;
       justify-content: space-between;
-      .rollingstock-infos-begin-form {
+      .rollingstock-info-begin-form {
         height: 3rem;
         display: flex;
         align-items: center;
         font-size: 1rem;
-        .rollingstock-infos-series-form {
+        .rollingstock-info-series-form {
           font-weight: bold;
           font-size: x-large;
         }
-        .rollingstock-infos-unit {
+        .rollingstock-info-unit {
           &.UM2 {
             color: #6e1e78;
             font-size: medium;
@@ -80,13 +80,13 @@
           margin-left: 0.5rem;
           font-size: 0.7rem;
         }
-        .rollingstock-infos-subseries-form {
+        .rollingstock-info-subseries-form {
           margin-left: 0.5rem;
           text-transform: uppercase;
           font-size: 0.9rem;
         }
       }
-      .rollingstock-infos-middle-form {
+      .rollingstock-info-middle-form {
         white-space: normal;
         overflow-wrap: break-word;
         overflow: hidden;
@@ -96,7 +96,7 @@
         font-size: 0.8rem;
         line-height: 0.8rem;
       }
-      .rollingstock-infos-end-form {
+      .rollingstock-info-end-form {
         display: flex;
         align-items: center;
         color: #4d4d4d;

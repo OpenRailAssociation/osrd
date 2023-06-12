@@ -413,7 +413,6 @@ pub mod tests {
         let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
         let rolling_stock_id = response_body.id;
         rolling_stock.id = Some(response_body.id);
-        println!("{:?}", rolling_stock);
         let expected_body = RollingStock::from(rolling_stock.clone());
         assert_eq!(response_body, expected_body);
 

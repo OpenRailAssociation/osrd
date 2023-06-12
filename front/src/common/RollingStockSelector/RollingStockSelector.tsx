@@ -3,7 +3,7 @@ import RollingStockModal from 'common/RollingStockSelector/RollingStockModal';
 import icon from 'assets/pictures/components/train.svg';
 import {
   comfort2pictogram,
-  RollingStockInfos,
+  RollingStockInfo,
 } from 'common/RollingStockSelector/RollingStockHelpers';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { RollingStock } from 'common/api/osrdEditoastApi';
@@ -46,8 +46,8 @@ const RollingStockSelector = ({
           <div className="rollingstock-minicard">
             {condensed ? (
               <div className="d-flex align-items-center font-weight-bold">
-                <RollingStockInfos
-                  data={rollingStockSelected}
+                <RollingStockInfo
+                  rollingStock={rollingStockSelected}
                   showMiddle={false}
                   showSeries={false}
                 />
@@ -58,18 +58,22 @@ const RollingStockSelector = ({
               </div>
             ) : (
               <>
-                <RollingStockInfos data={rollingStockSelected} showMiddle={false} showEnd={false} />
+                <RollingStockInfo
+                  rollingStock={rollingStockSelected}
+                  showMiddle={false}
+                  showEnd={false}
+                />
                 <div className="rollingstock-container-img">
                   <div className="rollingstock-img">{image}</div>
                 </div>
                 <div className="rollingstock-minicard-end">
-                  <span className="rollingstock-infos-comfort text-uppercase small">
+                  <span className="rollingstock-info-comfort text-uppercase small">
                     <span className="text-uppercase font-weight-bold">{comfort}</span>
                     <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
                     {comfortType}
                   </span>
-                  <RollingStockInfos
-                    data={rollingStockSelected}
+                  <RollingStockInfo
+                    rollingStock={rollingStockSelected}
                     showMiddle={false}
                     showSeries={false}
                   />

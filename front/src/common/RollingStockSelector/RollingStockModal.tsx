@@ -179,7 +179,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
       filteredRollingStockList.length > 0 ? (
         filteredRollingStockList.map((item) => (
           <RollingStockCard
-            data={item}
+            rollingStock={item}
             key={item.id}
             noCardSelected={openRollingStockCardId === undefined}
             isOpen={item.id === openRollingStockCardId}
