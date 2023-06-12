@@ -27,5 +27,5 @@ interface PathProperties {
     // fun getGeoOnPath(path: Path): LineString
     // fun getLoadingGauge(path: Path): DistanceRangeMap<Map<LoadingGaugeConstraint>>
     // fun getOperationalPointsOnPath(path: Path): List<LocatedIdx<OperationalPoint>>
-    // fun getCatenaryOnPath(path: Path): List<DistanceRangeMap<String>>
+    // fun getCatenaryOnPath(path: Path): DistanceRangeMap<List<String>>
 }
