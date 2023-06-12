@@ -4,9 +4,10 @@ import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
-import { isEmpty, sortBy } from 'lodash';
+import { isEmpty } from 'lodash';
 
-import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
 import { RootState } from 'reducers';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
@@ -96,17 +97,14 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
     import('./RollingStockDarkMode.scss');
   }
 
-  const { rollingStocks, isSuccess, isError, error } = osrdEditoastApi.useGetLightRollingStockQuery(
-    {
-      pageSize: 1000,
-    },
-    {
-      selectFromResult: (response) => ({
-        ...response,
-        rollingStocks: sortBy(response.data?.results, ['metadata.reference', 'name']) || [],
-      }),
-    }
-  );
+  const {
+    data: { results: rollingStocks } = { results: [] },
+    isSuccess,
+    isError,
+    error,
+  } = enhancedEditoastApi.useGetLightRollingStockQuery({
+    pageSize: 1000,
+  });
   const [filteredRollingStockList, setFilteredRollingStockList] = useState<LightRollingStock[]>(
     () => filterRollingStocks(rollingStocks, filters)
   );
