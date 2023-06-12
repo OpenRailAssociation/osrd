@@ -25,20 +25,18 @@ impl Node {
     }
 }
 
-// An edge connects two nodes
-// This connection can be between two tracks (switch and section link)
-// Or along a track (detector and buffer stops)
+/// An edge connects two nodes
+/// This connection can be between two tracks (switch and section link)
+/// Or traversing a whole track
+/// Or along a track (detector and buffer stops)
 #[derive(Clone, Debug)]
 enum EdgeType {
     Switch { id: Identifier, port: Identifier },
     SectionLink,
     Track,
-}
-
-impl EdgeType {
-    fn is_switch(&self) -> bool {
-        matches!(self, Self::Switch { .. })
-    }
+    Buffer(Direction),
+    ToDetector,
+    FromDetector(Direction),
 }
 
 /// In order to find routes, we build a graph to ease the search of successors of a Node
@@ -98,8 +96,8 @@ impl Graph {
             let u = Node::from_track_endpoint(track, Endpoint::Begin);
             let d = Node::Detector(detector.id.clone());
             let v = Node::from_track_endpoint(track, Endpoint::End);
-            self.add_directed_edge(u, d.clone(), EdgeType::Track);
-            self.add_directed_edge(d.clone(), v, EdgeType::Track);
+            self.add_directed_edge(u, d.clone(), EdgeType::ToDetector);
+            self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StartToStop));
         }
 
         for (track, detectors) in &bwd_detectors {
@@ -113,27 +111,30 @@ impl Graph {
             let u = Node::from_track_endpoint(track, Endpoint::End);
             let d = Node::Detector(detector.id.clone());
             let v = Node::from_track_endpoint(track, Endpoint::Begin);
-            self.add_directed_edge(u, d.clone(), EdgeType::Track);
-            self.add_directed_edge(d.clone(), v, EdgeType::Track);
+            self.add_directed_edge(u, d.clone(), EdgeType::ToDetector);
+            self.add_directed_edge(d.clone(), v, EdgeType::FromDetector(Direction::StopToStart));
         }
 
         for buffer in &railjson.buffer_stops {
             let b = Node::BufferStop(buffer.id.clone());
             if buffer.position < 0.1 {
                 let u = Node::from_track_endpoint(&buffer.track, Endpoint::Begin);
-                self.add_symmetrical_edge(b, u, EdgeType::Track);
+                self.add_symmetrical_edge(b, u, EdgeType::Buffer);
             } else {
                 let u = Node::from_track_endpoint(&buffer.track, Endpoint::End);
-                self.add_symmetrical_edge(b, u, EdgeType::Track);
+                self.add_symmetrical_edge(b, u, EdgeType::Buffer);
             }
         }
 
         for track in &railjson.track_sections {
-            // We only consider tracks that have no detector on them as we split them
-            if !fwd_detectors.contains_key(&track.id) && !bwd_detectors.contains_key(&track.id) {
-                let u = Node::from_track_endpoint(&track.id, Endpoint::Begin);
-                let v = Node::from_track_endpoint(&track.id, Endpoint::End);
-                self.add_symmetrical_edge(u, v, EdgeType::Track);
+            // We only consider tracks that have no detector for the given direction on them as we split them
+            let u = Node::from_track_endpoint(&track.id, Endpoint::Begin);
+            let v = Node::from_track_endpoint(&track.id, Endpoint::End);
+            if !fwd_detectors.contains_key(&track.id) {
+                self.add_directed_edge(u.clone(), v.clone(), EdgeType::Track);
+            }
+            if !bwd_detectors.contains_key(&track.id) {
+                self.add_directed_edge(v.clone(), u.clone(), EdgeType::Track);
             }
         }
     }
@@ -234,13 +235,29 @@ impl Graph {
             .edges
             .get(&(current.clone(), succ.clone()))
             .expect("Edge does not exist");
-        let previous_switch = pred
+        let previous_edge = parent
             .get(current)
-            .and_then(|&p| self.edges.get(&(p.clone(), current.clone())))
-            .map_or(false, |e| e.is_switch());
-        !pred.contains_key(&succ) // Don’t explore nodes that have already been visited
+            .and_then(|&p| self.edges.get(&(p.clone(), current.clone())));
+
+        let switch_u_turn = matches!(edge, EdgeType::Switch { .. })
+            && matches!(previous_edge, Some(EdgeType::Switch { .. }));
+
+        // Don’t make a U-turn on a detector
+        // -o---d>--o- The detector is only in one direction
+        //   \__<__/   There is a bypass in the opposite direction
+        // We don’t want to reach the detector through the bypass
+        let detector_u_turn = (matches!(edge, EdgeType::Track | EdgeType::ToDetector)
+            && matches!(previous_edge, Some(EdgeType::FromDetector(_))))
+            || (matches!(edge, EdgeType::ToDetector)
+                && matches!(
+                    previous_edge,
+                    Some(EdgeType::Track | EdgeType::FromDetector(_))
+                ));
+
+        !parent.contains_key(&succ) // Don’t explore nodes that have already been visited
             && succ != start // Don’t pass again through the start
-            && !(edge.is_switch() && previous_switch) // Don’t make a U-turn on a switch
+            && !switch_u_turn
+            && !detector_u_turn
     }
 
     // Once we found a route, we must build by scanning the predecessors
@@ -392,7 +409,7 @@ mod tests {
     }
 
     #[test]
-    /* ----o---d---
+    /* ----o---d>---
             \------
         The test case has one switch and one detector
     */
@@ -401,8 +418,7 @@ mod tests {
             crate::converters::osm_to_railjson::parse_osm("src/tests/routes.osm.pbf".into())
                 .unwrap();
         let routes = super::routes(&railjson);
-
-        assert_eq!(6, routes.len());
+        assert_eq!(5, routes.len());
         let routes_with_switches_count = routes
             .iter()
             .filter(|r| r.switches_directions.len() == 1)
