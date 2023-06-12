@@ -119,10 +119,10 @@ impl Graph {
             let b = Node::BufferStop(buffer.id.clone());
             if buffer.position < 0.1 {
                 let u = Node::from_track_endpoint(&buffer.track, Endpoint::Begin);
-                self.add_symetrical_edge(b, u, EdgeType::Track);
+                self.add_symmetrical_edge(b, u, EdgeType::Buffer(Direction::StartToStop));
             } else {
                 let u = Node::from_track_endpoint(&buffer.track, Endpoint::End);
-                self.add_symetrical_edge(b, u, EdgeType::Track);
+                self.add_symmetrical_edge(b, u, EdgeType::Buffer(Direction::StopToStart));
             }
         }
 
