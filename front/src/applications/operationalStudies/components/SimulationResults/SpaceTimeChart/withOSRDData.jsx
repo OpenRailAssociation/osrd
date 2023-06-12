@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { compose } from 'redux';
+import PropTypes from 'prop-types';
 
 import {
   updateMustRedraw,
@@ -48,6 +49,10 @@ const withForcedEcoAllowanceSettings = (Component) =>
             ecoBlocks: false,
           };
     });
+
+    WrapperComponent.propTypes = {
+      simulation: PropTypes.object.isRequired,
+    };
 
     // Render the original component passing all props and forcedEcoAllowancesSettings as props to it
     return <Component {...props} allowancesSettings={forcedEcoAllowancesSettings} />;
