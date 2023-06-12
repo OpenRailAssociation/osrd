@@ -17,6 +17,7 @@ type TabsProps = {
   tabs: TabProps[];
   pills?: boolean;
   fullWidth?: boolean;
+  fullHeight?: boolean;
 };
 
 const Tab = ({ label, content }: TabComponentProps) => (
@@ -25,7 +26,7 @@ const Tab = ({ label, content }: TabComponentProps) => (
   </div>
 );
 
-const Tabs = ({ tabs, pills = false, fullWidth = false }: TabsProps) => {
+const Tabs = ({ tabs, pills = false, fullWidth = false, fullHeight = false }: TabsProps) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const handleTabClick = (index: number) => {
@@ -33,7 +34,7 @@ const Tabs = ({ tabs, pills = false, fullWidth = false }: TabsProps) => {
   };
 
   return (
-    <div className={cx('tabs-container', fullWidth && 'full-width')}>
+    <div className={cx('tabs-container', fullWidth && 'full-width', fullHeight && 'full-height')}>
       <div className={cx('tabs', pills && 'pills')}>
         {tabs.map((tab, index) => (
           <div
