@@ -44,7 +44,7 @@ export type InputSNCFProps = {
   onClear?: () => void;
   // Options for the append icon
   appendOptions?: {
-    iconName: string;
+    label: string | React.ReactElement;
     onClick: () => void;
     name: string;
   };
@@ -104,7 +104,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
             className={`${formSize} btn btn-primary btn-only-icon active`}
             onClick={appendOptions.onClick}
           >
-            <i className={appendOptions.iconName} aria-hidden="true" />
+            {appendOptions.label}
             <span className="sr-only">{appendOptions.name}</span>
           </button>
         </div>
@@ -135,6 +135,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
   // Renders a basic input field without any underlying list
   renderBasicInput = () => {
     const {
+      appendOptions,
       isInvalid,
       errorMsg,
       focus,
@@ -187,7 +188,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
             {label}
           </label>
         )}
-        <>
+        <div className={appendOptions ? 'input-group' : ''}>
           <div className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : ''}`}>
             <input
               type={type}
@@ -211,7 +212,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
           </div>
           {this.renderAppendButton(sm)}
           {invalidMsg}
-        </>
+        </div>
       </>
     );
 
