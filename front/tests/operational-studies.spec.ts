@@ -94,10 +94,10 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await rollingstockCard.locator('button').click();
 
     expect(
-      await playwrightRollingstockModalPage.getRollingstockMiniCardInfos().first().textContent()
-    ).toMatch(VARIABLES.rollingstockInfos);
+      await playwrightRollingstockModalPage.getRollingStockMiniCardInfo().first().textContent()
+    ).toMatch(VARIABLES.rollingStockInfo);
     expect(
-      await playwrightRollingstockModalPage.getRollingstockInfosComfort().textContent()
+      await playwrightRollingstockModalPage.getRollingStockInfoComfort().textContent()
     ).toMatch(/ConfortSStandard/i);
   });
 

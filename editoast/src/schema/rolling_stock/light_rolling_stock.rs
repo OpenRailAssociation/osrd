@@ -1,4 +1,4 @@
-use diesel::sql_types::{Array, BigInt, Double, Jsonb, Nullable, Text};
+use diesel::sql_types::{Array, BigInt, Bool, Double, Jsonb, Nullable, Text};
 use diesel_json::Json as DieselJson;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -16,6 +16,8 @@ pub struct LightRollingStock {
     pub name: String,
     #[diesel(sql_type = Text)]
     pub version: String,
+    #[diesel(sql_type = Bool)]
+    pub locked: bool,
     #[diesel(sql_type = Jsonb)]
     pub effort_curves: DieselJson<LightEffortCurves>,
     #[diesel(sql_type = Text)]

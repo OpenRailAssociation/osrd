@@ -114,14 +114,11 @@ const RollingStockEditorSelect = ({
 };
 
 type RollingStockParametersProps = {
-  rollingStockData?: LightRollingStock;
+  rollingStock?: LightRollingStock;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const RollingStockEditorForm = ({
-  rollingStockData,
-  setIsEditing,
-}: RollingStockParametersProps) => {
+const RollingStockEditorForm = ({ rollingStock, setIsEditing }: RollingStockParametersProps) => {
   const { t } = useTranslation('rollingStockEditor');
   const { openModal } = useModal();
   const jsonSchema = openapiSchemaToJsonSchema(RollingStockBaseOpenapiSchema);
@@ -139,15 +136,15 @@ const RollingStockEditorForm = ({
   } = useForm<RollingStockParametersValues>({
     resolver: resolver as Resolver<RollingStockParametersValues, unknown>,
     defaultValues: {
-      startup_time: rollingStockData?.startup_time || 0,
-      startup_acceleration: rollingStockData?.startup_acceleration || 0,
-      comfort_acceleration: rollingStockData?.comfort_acceleration || 0,
-      gamma_value: rollingStockData?.gamma.value || 0,
-      inertia_coefficient: rollingStockData?.inertia_coefficient || 0,
-      loading_gauge: (rollingStockData?.loading_gauge as string) || '...',
-      rolling_resistance_A: rollingStockData?.rolling_resistance.A || 0,
-      rolling_resistance_B: rollingStockData?.rolling_resistance.B || 0,
-      rolling_resistance_C: rollingStockData?.rolling_resistance.C || 0,
+      startup_time: rollingStock?.startup_time || 0,
+      startup_acceleration: rollingStock?.startup_acceleration || 0,
+      comfort_acceleration: rollingStock?.comfort_acceleration || 0,
+      gamma_value: rollingStock?.gamma.value || 0,
+      inertia_coefficient: rollingStock?.inertia_coefficient || 0,
+      loading_gauge: (rollingStock?.loading_gauge as string) || '...',
+      rolling_resistance_A: rollingStock?.rolling_resistance.A || 0,
+      rolling_resistance_B: rollingStock?.rolling_resistance.B || 0,
+      rolling_resistance_C: rollingStock?.rolling_resistance.C || 0,
     },
   } as UseFormProps<RollingStockParametersValues>);
 
