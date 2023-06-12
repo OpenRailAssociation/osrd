@@ -135,7 +135,7 @@ describe('reducer', () => {
       mustBeLaunched: false,
     });
   });
-  describe('origin/destination/rolling stock changed', () => {
+  describe('origin/destination/rolling stock/infra changed', () => {
     test('origin missing', () => {
       const state = initialState;
       const action = {
@@ -253,6 +253,26 @@ describe('reducer', () => {
         running: true,
         done: false,
         mustBeLaunched: false,
+      });
+    });
+    test('infra has changed, previously in error', () => {
+      const state = {
+        ...initialState,
+        error: 'error',
+      };
+      const action = {
+        type: 'INFRA_CHANGED',
+        params: {
+          origin: { id: '1234' },
+          destination: { id: '5678' },
+          rollingStockID: 123,
+        },
+      };
+      expect(reducer(state, action)).toEqual({
+        ...initialState,
+        error: '',
+        mustBeLaunched: true,
+        missingParam: false,
       });
     });
   });

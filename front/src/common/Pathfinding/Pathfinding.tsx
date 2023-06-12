@@ -138,6 +138,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
       }
       return {
         ...state,
+        error: '',
         mustBeLaunched: true,
         missingParam: false,
       };
