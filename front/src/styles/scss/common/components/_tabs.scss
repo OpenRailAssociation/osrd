@@ -1,4 +1,7 @@
+
 .tabs-container {
+  display: flex;
+  flex-direction: column;
   &.full-width {
     width: 100%;
     .tabs.pills {
@@ -6,6 +9,15 @@
       justify-content: space-between;
       .tab {
         flex-grow: 1;
+      }
+    }
+  }
+  &.full-height {
+    height: 100%;
+    .tab-content {
+      height: 100%;
+      .tab-pane {
+        height: 100%;
       }
     }
   }
@@ -67,5 +79,11 @@
         }
       }
     }
+  }
+  .tab-content > .tab-pane {
+    display: none;
+  }  
+  .tab-content > .active {
+    display: block;
   }
 }
