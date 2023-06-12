@@ -7,9 +7,8 @@ use std::collections::HashMap;
 
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct RollingStock {
-    pub id: i64,
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct RollingStockCommon {
     pub name: String,
     pub version: String,
     pub effort_curves: EffortCurves,
@@ -25,8 +24,18 @@ pub struct RollingStock {
     pub mass: f64,
     pub rolling_resistance: RollingResistance,
     pub loading_gauge: String,
-    pub metadata: RollingStockMetadata,
     pub power_restrictions: Option<JsonValue>,
+    #[serde(default)]
+    pub energy_sources: Vec<EnergySource>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct RollingStock {
+    pub id: i64,
+    #[serde(flatten)]
+    pub common: RollingStockCommon,
+    pub locked: bool,
+    pub metadata: RollingStockMetadata,
 }
 
 #[derive(Debug, Serialize)]
@@ -36,7 +45,7 @@ pub struct RollingStockWithLiveries {
     pub liveries: Vec<RollingStockLiveryMetadata>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Gamma {
     #[serde(rename = "type")]
@@ -44,7 +53,7 @@ pub struct Gamma {
     value: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 #[allow(non_snake_case)]
 pub struct RollingResistance {
@@ -55,7 +64,7 @@ pub struct RollingResistance {
     C: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RollingStockMetadata {
     detail: String,
@@ -72,7 +81,7 @@ pub struct RollingStockMetadata {
 
 // Effort curves schema
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum RollingStockComfortType {
     Standard,
@@ -80,7 +89,7 @@ pub enum RollingStockComfortType {
     Heating,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurveConditions {
     comfort: Option<RollingStockComfortType>,
@@ -88,14 +97,14 @@ pub struct EffortCurveConditions {
     power_restriction_code: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ConditionalEffortCurve {
     cond: EffortCurveConditions,
     curve: EffortCurve,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurve {
     speeds: Vec<f64>,
@@ -129,7 +138,7 @@ impl<'de> Deserialize<'de> for EffortCurve {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct ModeEffortCurves {
     curves: Vec<ConditionalEffortCurve>,
@@ -137,11 +146,59 @@ pub struct ModeEffortCurves {
     is_electric: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct EffortCurves {
     modes: HashMap<String, ModeEffortCurves>,
     default_mode: String,
+}
+
+// Energy sources schema
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RefillLaw {
+    tau: f64,
+    soc_ref: f64,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EnergyStorage {
+    capacity: f64,
+    soc: f64,
+    soc_min: f64,
+    soc_max: f64,
+    refill_law: Option<RefillLaw>,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpeedDependantPower {
+    speeds: Vec<f64>,
+    powers: Vec<f64>,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(tag = "energy_source_type", deny_unknown_fields)]
+pub enum EnergySource {
+    Catenary {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        efficiency: f64,
+    },
+    PowerPack {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        energy_storage: EnergyStorage,
+        efficiency: f64,
+    },
+    Battery {
+        max_input_power: SpeedDependantPower,
+        max_output_power: SpeedDependantPower,
+        energy_storage: EnergyStorage,
+        efficiency: f64,
+    },
 }
 
 #[cfg(test)]

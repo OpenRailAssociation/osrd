@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
-import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
+import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import PropTypes from 'prop-types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import MemoStationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';

@@ -1,4 +1,5 @@
 pub mod buffer_stops;
+pub mod catenaries;
 pub mod detectors;
 pub mod operational_points;
 pub mod routes;
@@ -146,6 +147,8 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
     match obj_type {
         ObjectType::TrackSection => include_str!("sql/track_sections_insert_errors.sql"),
         ObjectType::Signal => include_str!("sql/signals_insert_errors.sql"),
+        // TODO: update dead_sections_insert_errors.sql when layers are set up
+        ObjectType::DeadSection => include_str!("sql/dead_sections_insert_errors.sql"),
         ObjectType::SpeedSection => include_str!("sql/speed_sections_insert_errors.sql"),
         ObjectType::Detector => include_str!("sql/detectors_insert_errors.sql"),
         ObjectType::TrackSectionLink => include_str!("sql/track_section_links_insert_errors.sql"),
@@ -154,7 +157,7 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
         ObjectType::BufferStop => include_str!("sql/buffer_stops_insert_errors.sql"),
         ObjectType::Route => include_str!("sql/routes_insert_errors.sql"),
         ObjectType::OperationalPoint => include_str!("sql/operational_points_insert_errors.sql"),
-        ObjectType::Catenary => todo!(),
+        ObjectType::Catenary => include_str!("sql/catenaries_insert_errors.sql"),
     }
 }
 
@@ -265,6 +268,15 @@ impl GeneratedData for ErrorLayer {
             &switches::OBJECT_GENERATORS,
             &[],
         ));
+        infra_errors.extend(generate_errors(
+            ObjectType::Catenary,
+            infra_cache,
+            &graph,
+            &catenaries::OBJECT_GENERATORS,
+            &catenaries::GLOBAL_GENERATORS,
+        ));
+
+        // TODO: generer les erreurs pour les deadSections
 
         // Insert errors in DB
         insert_errors(conn, infra_id, infra_errors)?;
@@ -286,7 +298,7 @@ impl GeneratedData for ErrorLayer {
 #[cfg(test)]
 mod test {
     use super::{
-        buffer_stops, detectors, generate_errors, operational_points, routes, signals,
+        buffer_stops, catenaries, detectors, generate_errors, operational_points, routes, signals,
         speed_sections, switch_types, switches, track_section_links, track_sections, Graph,
     };
 
@@ -379,6 +391,14 @@ mod test {
             &graph,
             &switches::OBJECT_GENERATORS,
             &[],
+        )
+        .is_empty());
+        assert!(generate_errors(
+            ObjectType::Catenary,
+            &small_infra_cache,
+            &graph,
+            &catenaries::OBJECT_GENERATORS,
+            &catenaries::GLOBAL_GENERATORS,
         )
         .is_empty());
     }

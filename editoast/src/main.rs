@@ -22,7 +22,7 @@ use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
-use actix_web::web::{block, Data, JsonConfig};
+use actix_web::web::{block, Data, JsonConfig, PayloadConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
@@ -35,6 +35,7 @@ use diesel::r2d2::{self, ConnectionManager, Pool};
 use diesel::{Connection, PgConnection};
 use diesel_json::Json as DieselJson;
 use infra_cache::InfraCache;
+use log::{error, info, warn};
 use map::MapLayers;
 use models::Retrieve;
 use sentry::ClientInitGuard;
@@ -51,10 +52,13 @@ type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 #[actix_web::main]
 async fn main() {
+    // Set the default log level to 'info'
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
     match run().await {
         Ok(_) => (),
         Err(e) => {
-            eprintln!("{e}");
+            error!("{e}");
             exit(2);
         }
     }
@@ -91,11 +95,11 @@ fn init_sentry(args: &RunserverArgs) -> Option<ClientInitGuard> {
             },
         ))),
         (None, Some(_)) => {
-            println!("SENTRY_DSN must be set to send events to Sentry.");
+            warn!("SENTRY_DSN must be set to send events to Sentry.");
             None
         }
         (Some(_), None) => {
-            println!("SENTRY_ENV must be set to send events to Sentry.");
+            warn!("SENTRY_ENV must be set to send events to Sentry.");
             None
         }
         _ => None,
@@ -108,7 +112,7 @@ async fn runserver(
     pg_config: PostgresConfig,
     redis_config: RedisConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    println!("Building server...");
+    info!("Building server...");
     // Config databases
     let manager = ConnectionManager::<PgConnection>::new(pg_config.url());
     let pool = Pool::builder()
@@ -119,11 +123,11 @@ async fn runserver(
 
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
-        .limit(250 * 1024 * 1024) // 250MB
+        .limit(250 * 1024 * 1024) // 250MiB
         .error_handler(|err, _| InternalError::from(err).into());
 
-    // Set the default log level to 'info'
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    // Custom Bytes and String extractor configuration
+    let payload_config = PayloadConfig::new(64 * 1024 * 1024); // 64MiB
 
     // Setup shared states
     let infra_caches = Data::new(CHashMap::<i64, InfraCache>::default());
@@ -154,6 +158,7 @@ async fn runserver(
             .wrap(NormalizePath::trim())
             .wrap(Logger::default())
             .app_data(json_cfg.clone())
+            .app_data(payload_config.clone())
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(redis.clone()))
             .app_data(infra_caches.clone())
@@ -165,7 +170,7 @@ async fn runserver(
     });
 
     // Run server
-    println!("Running server...");
+    info!("Running server...");
     server
         .bind((args.address.clone(), args.port))?
         .run()
@@ -223,7 +228,7 @@ async fn generate(
 
     // Refresh each infras
     for infra in infras {
-        println!(
+        info!(
             "🍞 Infra {}[{}] is generating:",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
@@ -232,13 +237,13 @@ async fn generate(
         if infra.refresh(&mut conn, args.force, &infra_cache)? {
             build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap())
                 .await;
-            println!(
+            info!(
                 "✅ Infra {}[{}] generated!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
             );
         } else {
-            println!(
+            info!(
                 "✅ Infra {}[{}] already generated!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
@@ -275,7 +280,7 @@ async fn import_railjson(
             }
         };
 
-        println!(
+        info!(
             "✅ Infra {}[{}] saved!",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
@@ -284,7 +289,7 @@ async fn import_railjson(
         if args.generate {
             let infra_cache = InfraCache::load(&mut conn, &infra)?;
             infra.refresh(&mut conn, true, &infra_cache)?;
-            println!(
+            info!(
                 "✅ Infra {}[{}] generated data refreshed!",
                 infra.name.unwrap().bold(),
                 infra.id.unwrap()
@@ -314,7 +319,7 @@ async fn add_electrical_profile_set(
 
     let created_ep_set = ep_set.create(pool).await.unwrap();
     let ep_set_id = created_ep_set.id.unwrap();
-    println!("✅ Electrical profile set {ep_set_id} created");
+    info!("✅ Electrical profile set {ep_set_id} created");
     Ok(())
 }
 
@@ -356,14 +361,14 @@ async fn clear(
     };
 
     for infra in infras {
-        println!(
+        info!(
             "🍞 Infra {}[{}] is clearing:",
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
         );
         build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap()).await;
         infra.clear(&mut conn)?;
-        println!(
+        info!(
             "✅ Infra {}[{}] cleared!",
             infra.name.unwrap().bold(),
             infra.id.unwrap()

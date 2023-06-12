@@ -1,13 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
+import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
+import VARIABLES from './assets/operationStudies/test_variables';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
-  // Declare the necessary variable for the test
   let playwrightHomePage: PlaywrightHomePage;
 
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-
+  test.beforeEach(async ({ page }) => {
     playwrightHomePage = new PlaywrightHomePage(page);
     await playwrightHomePage.goToHomePage();
 
@@ -27,7 +26,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .getByRole('button')
       .click();
 
-    await page.getByTestId('scenarios-add-train-schedule-button').click();
+    await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
   });
 
   test('RollingStockSelector is displayed', async () => {
@@ -37,6 +36,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
   test('SpeedLimitSelector is displayed', async () => {
     expect(playwrightHomePage.page.getByTestId('speed-limit-by-tag-selector')).not.toEqual(null);
   });
+
   test('Itinerary module and subcomponents are displayed', async () => {
     // Here is how to create a locator for a specific element
     const itinerary = playwrightHomePage.page.getByTestId('itinerary');
@@ -65,5 +65,44 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
   test('Map module is displayed', async () => {
     expect(playwrightHomePage.page.getByTestId('map')).not.toEqual(null);
+  });
+
+  test('Select rolling stock', async () => {
+    const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
+      playwrightHomePage.page
+    );
+    await playwrightRollingstockModalPage.openRollingstockModal();
+    const rollingstockModal = playwrightRollingstockModalPage.getRollingstockModal;
+    await expect(rollingstockModal).toBeVisible();
+
+    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
+      VARIABLES.numberOfRollingstock
+    );
+
+    await playwrightRollingstockModalPage.getElectricalCheckbox.click();
+    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
+      VARIABLES.numberOfRollingstockWithElectrical
+    );
+
+    await playwrightRollingstockModalPage.searchRollingstock(VARIABLES.searchRollingstock);
+    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
+      VARIABLES.numberOfRollingstockWithSearch
+    );
+
+    const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
+      VARIABLES.rollingstockTestID
+    );
+    await expect(rollingstockCard).toHaveClass(/inactive/);
+    await rollingstockCard.click();
+    await expect(rollingstockCard).not.toHaveClass(/inactive/);
+
+    await rollingstockCard.locator('button').click();
+
+    expect(
+      await playwrightRollingstockModalPage.getRollingstockMiniCardInfos().first().textContent()
+    ).toMatch(VARIABLES.rollingstockInfos);
+    expect(
+      await playwrightRollingstockModalPage.getRollingstockInfosComfort().textContent()
+    ).toMatch(/ConfortSStandard/i);
   });
 });

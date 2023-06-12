@@ -36,9 +36,7 @@ public class InfraLoadEndpoint implements Take {
             // load infra
             infraManager.load(request.infra, request.expectedVersion, recorder);
 
-            return new RsWithStatus(new RsWithType(
-                    new RsWithBody("Infra loaded"),
-                    "text/html"), 200);
+            return new RsWithStatus(204);
         } catch (Throwable ex) {
             // TODO: include warnings in the response
             return ExceptionHandler.handle(ex);

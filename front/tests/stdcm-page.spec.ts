@@ -8,10 +8,7 @@ test.describe('STDCM page', () => {
   let playwrightHomePage: PlaywrightHomePage;
   let playwrightSTDCMPage: PlaywrightSTDCMPage;
 
-  // This function will run before all the tests in this suite
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-
+  test('should be correctly displays the rolling stock list and select one', async ({ page }) => {
     // Create an instance of the PlaywrightHomePage class
     playwrightHomePage = new PlaywrightHomePage(page);
 
@@ -31,17 +28,13 @@ test.describe('STDCM page', () => {
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration study');
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration scenario');
-  });
 
-  test('should be correctly displays the rolling stock list and select one', async () => {
     const rollingStockTranslation =
       playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
     const rollingStockTranslationRegEx = new RegExp(rollingStockTranslation as string);
     // Check that the three tests rolling stocks are present
     playwrightSTDCMPage.getRollingstockByTestId(`rollingstock-_@Test Locomotives électriques`);
-    playwrightSTDCMPage.getRollingstockByTestId(
-      `rollingstock-_@Test Locomotives électriques courant continu7200GH`
-    );
+    playwrightSTDCMPage.getRollingstockByTestId(`rollingstock-_@Test BB 22200`);
     const rollingstockItem = playwrightSTDCMPage.getRollingstockByTestId(
       `rollingstock-_@Test BB 7200GVLOCOMOTIVES`
     );
@@ -67,13 +60,13 @@ test.describe('STDCM page', () => {
       'BB 15000BB15000 USLOCOMOTIVES / Locomotives électriques / Locomotives électriques monophasé_@Test Locomotives électriques'
     );
     expect(infoCardText).toContain(
-      'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courant_@Test Locomotives électriques courant continu7200GH'
+      'BB 22200V160LOCOMOTIVES / Locomotives électriques / Locomotives électriques bi courant_@Test BB 22200'
     );
 
     const footerCardText = await playwrightSTDCMPage.getRollingStockListItem
       .locator('.rollingstock-footer')
       .allTextContents();
-    expect(footerCardText).toContain('400m900t288km/h');
+    expect(footerCardText).toContain('25000V400m900t288km/h');
 
     // Check if rollingstock detail is close
     await expect(rollingstockItem).toHaveClass(/inactive/);

@@ -14,8 +14,7 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.2.0"
-
+RAILJSON_INFRA_VERSION = "3.3.1"
 
 # Traits
 # Used as an input model in the definition of the following classes.
@@ -433,6 +432,27 @@ class Panel(TrackLocationTrait):
     value: Optional[NonBlankStr] = Field(description="If the panel is an announcement, precise the value(s)")
 
 
+class DeadSection(BaseObjectTrait):
+    """
+    Dead zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.
+    Instead, trains have to rely on inertia to cross such sections.
+
+    If the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,
+    and will start raising pantographs again once the train has entirely left the section.
+
+    If a train has a pantograph which is not located at its head (we talk of push-pull trains) and moving in reverse
+    mode, it will have to wait a special "REV" panel (for reversible) to start pulling power from catenaries again.
+    """
+
+    track_ranges: List[DirectionalTrackRange] = Field(
+        description="List of locations where the train cannot pull power from catenaries"
+    )
+    backside_pantograph_track_ranges: List[DirectionalTrackRange] = Field(
+        description="List of locations where the push-pull train moving in reverse cannot pull power from catenaries"
+    )
+    is_pantograph_drop_zone: bool = Field(description="precise if the deadSection is a pantograph drop zone or not")
+
+
 class RailJsonInfra(BaseModel):
     """This class is used to build an infra."""
 
@@ -452,6 +472,7 @@ class RailJsonInfra(BaseModel):
     signals: List[Signal] = Field(description="Signals of the infra")
     buffer_stops: List[BufferStop] = Field(description="Buffer stops of the infra")
     detectors: List[Detector] = Field(description="Detectors of the infra")
+    dead_sections: List[DeadSection] = Field(description="Dead sections of the infra")
 
 
 for t in BaseObjectTrait.__subclasses__():
@@ -533,8 +554,6 @@ class SwitchSncfExtension(BaseModel):
 
 @register_extension(object=Signal, name="sncf")
 class SignalSncfExtension(BaseModel):
-    angle_geo: float = Field(0, description="Geographic angle in degrees")
-    angle_sch: float = Field(0, description="Schematic angle in degrees")
     aspects: List[str]
     comment: str
     default_aspect: str = Field(description="Aspect displayed when no train is around")
@@ -554,3 +573,10 @@ class SpeedSectionLpvSncfExtension(BaseModel):
     announcement: List[Panel] = Field(description="Precise the value(s) of the speed")
     z: Panel = Field(description="Beginning of the lpv speedsection")
     r: List[Panel] = Field(description="End of the lpv speedsection")
+
+
+if __name__ == "__main__":
+    from json import dumps
+
+    # sort keys in order to diff correctly in the CI
+    print(dumps(RailJsonInfra.schema(), indent=4, sort_keys=True))

@@ -46,6 +46,7 @@ import {
   getLPVPanelsMastLayerProps,
 } from './extensions/SNCF/SNCF_LPV_PANELS';
 import { LayerContext } from './types';
+import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
@@ -166,6 +167,20 @@ function getBufferStopsLayers(context: LayerContext, prefix: string): AnyLayer[]
     },
   ];
 }
+
+function getCatenariesLayers(context: LayerContext, prefix: string): AnyLayer[] {
+  return [
+    {
+      ...getCatenariesProps(context),
+      id: `${prefix}geo/catenaries-main`,
+    },
+    {
+      ...getCatenariesTextParams(context),
+      id: `${prefix}geo/catenaries-names`,
+    },
+  ];
+}
+
 function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     {
@@ -288,6 +303,7 @@ const SOURCES_DEFINITION: {
   { entityType: 'speed_sections', getLayers: getSpeedSectionLayers },
   { entityType: 'lpv', getLayers: getLPVLayers },
   { entityType: 'lpv_panels', getLayers: getLPVPanelsLayers },
+  { entityType: 'catenaries', getLayers: getCatenariesLayers },
   { entityType: 'errors', getLayers: getErrorsLayers },
 ];
 

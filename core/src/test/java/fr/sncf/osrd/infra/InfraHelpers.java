@@ -184,9 +184,6 @@ public class InfraHelpers {
     public static RJSInfra makeSingleTrackRJSInfra() {
         return new RJSInfra(
                 List.of(new RJSTrackSection("track", 100)),
-                new ArrayList<>(),
-                new ArrayList<>(),
-                new ArrayList<>(),
                 List.of(
                         new RJSRoute(
                                 "route_forward",
@@ -213,7 +210,6 @@ public class InfraHelpers {
                                 new RJSWaypointRef<>("bs_end", RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
                         )
                 ),
-                new ArrayList<>(),
                 List.of(
                         new RJSSignal("track", 30, "signal", EdgeDirection.START_TO_STOP, 400, "d1")
                 ),
@@ -224,9 +220,7 @@ public class InfraHelpers {
                 List.of(
                         new RJSTrainDetector("d1", 50, "track"),
                         new RJSTrainDetector("d2", 75, "track")
-                ),
-                new ArrayList<>(),
-                new ArrayList<>()
+                )
         );
     }
 
@@ -241,9 +235,9 @@ public class InfraHelpers {
         setPrivateField(track, "speedSections", speedSections);
     }
 
-    /** Sets the gradients on the track, bypassing visibility */
-    public static void setGradient(TrackSection track, EnumMap<Direction, RangeMap<Double, Double>> gradients) {
-        setPrivateField(track, "gradients", gradients);
+    /** Sets the slopes on the track, bypassing visibility */
+    public static void setSlopes(TrackSection track, EnumMap<Direction, RangeMap<Double, Double>> slopes) {
+        setPrivateField(track, "slopes", slopes);
     }
 
     /** Sets a field on the track, bypassing visibility */

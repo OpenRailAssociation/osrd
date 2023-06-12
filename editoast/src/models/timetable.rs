@@ -1,6 +1,6 @@
 use crate::diesel::QueryDsl;
 use crate::error::Result;
-use crate::models::train_schedule::TrainScheduleDetails;
+use crate::models::train_schedule::{TrainSchedule, TrainScheduleDetails};
 use crate::tables::osrd_infra_timetable;
 use crate::DbPool;
 use actix_web::web::{block, Data};
@@ -42,7 +42,7 @@ pub struct TimetableWithSchedules {
 }
 
 impl Timetable {
-    /// Retrieves timetable with a specific id and its associated train schedules
+    /// Retrieves timetable with a specific id and its associated train schedules details
     pub async fn with_train_schedules(
         self,
         db_pool: Data<DbPool>,
@@ -59,6 +59,20 @@ impl Timetable {
                 timetable: self,
                 train_schedules,
             })
+        })
+        .await
+        .unwrap()
+    }
+
+    /// Retrieves the associated train schedules
+    pub async fn get_train_schedules(&self, db_pool: Data<DbPool>) -> Result<Vec<TrainSchedule>> {
+        use crate::tables::osrd_infra_trainschedule::dsl;
+        let timetable_id = self.id.unwrap();
+        block::<_, Result<_>>(move || {
+            let mut conn = db_pool.get()?;
+            Ok(dsl::osrd_infra_trainschedule
+                .filter(dsl::timetable_id.eq(timetable_id))
+                .load(&mut conn)?)
         })
         .await
         .unwrap()

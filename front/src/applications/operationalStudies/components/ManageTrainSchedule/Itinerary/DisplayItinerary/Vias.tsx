@@ -7,7 +7,6 @@ import DisplayVias from 'applications/operationalStudies/components/ManageTrainS
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getGeojson, getVias } from 'reducers/osrdconf/selectors';
 import { FaPlus } from 'react-icons/fa';
-import cx from 'classnames';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
@@ -23,17 +22,16 @@ function Vias(props: ViasProps) {
 
   return (
     <>
-      <button
-        className={cx(
-          'btn btn-link text-cyan w-100 justify-content-center btn-sm',
-          !geojson && 'disabled'
-        )}
-        type="button"
-        onClick={() => openModal(viaModalContent)}
-      >
-        <span className="mr-2">{t('addVias')}</span>
-        <FaPlus />
-      </button>
+      {geojson && (
+        <button
+          className="btn btn-link text-cyan w-100 justify-content-center btn-sm"
+          type="button"
+          onClick={() => openModal(viaModalContent)}
+        >
+          <span className="mr-2">{t('addVias')}</span>
+          <FaPlus />
+        </button>
+      )}
       <div className="mb-2">
         {vias && vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />

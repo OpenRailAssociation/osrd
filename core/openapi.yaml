@@ -52,17 +52,13 @@ paths:
       requestBody:
         description: Infrastructure id and its expected version
         content:
-          schema:
-            $ref: "#/components/schemas/InfraLoadRequest"
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InfraLoadRequest"
         required: true
       responses:
-        200:
-          description: Infra Loaded
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Infra is loaded
+        204:
+          description: No content
         400:
           description: The request body is invalid
   /pathfinding/routes:
@@ -273,16 +269,16 @@ paths:
         400:
           description: The request body is invalid
 components:
-  InfraLoadRequest:
-    required:
-      - infra
-      - expected_version
-    properties:
-      infra:
-        type: string
-      expected_version:
-        type: string
   schemas:
+    InfraLoadRequest:
+      required:
+        - infra
+        - expected_version
+      properties:
+        infra:
+          type: string
+        expected_version:
+          type: string
     Waypoint:
       required:
         - track_section
@@ -455,14 +451,11 @@ components:
       required:
         - id
         - rolling_stock
-        - departure_time
-        - initial_head_location
         - initial_speed
-        - final_head_location
+        - allowances
         - stops
-        - routes
-        - train_transition_delay
         - tag
+        - comfort
       properties:
         id:
           type: string
@@ -470,17 +463,14 @@ components:
         rolling_stock:
           type: string
           example: "RollingStockID"
-        departure_time:
-          type: number
-          format: double
-          minimum: 0
-        initial_head_location:
-          $ref: "#/components/schemas/TrackLocation"
         initial_speed:
+          description: Speed in m/s
           type: number
           format: double
-        final_head_location:
-          $ref: "#/components/schemas/TrackLocation"
+        allowances:
+          type: array
+          items:
+            $ref: "#/components/schemas/Allowance"
         stops:
           type: array
           items:
@@ -494,13 +484,47 @@ components:
               duration:
                 type: number
                 format: double
-        routes:
-          $ref: "#/components/schemas/Routes"
-        train_transition_delay:
+        tag:
+          type: string
+          example: "V200"
+          description: "The category this train belongs to. Used when applying speed limits by category."
+        comfort:
+          type: string
+          enum:
+            - STANDARD
+            - AC
+            - HEATING
+        power_restriction_ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          default: []
+        options:
+          type: object
+          nullable: true
+          properties:
+            ignore_electrical_profiles:
+              type: boolean
+              default: false
+    PowerRestrictionRange:
+      description: A range along the train path where a power restriction is applied.
+      type: object
+      properties:
+        begin_position:
+          description: Offset from the start of the path, in meters.
           type: number
-          format: double
-          minimum: 0
-          example: 600
+          format: float
+        end_position:
+          description: Offset from the start of the path, in meters.
+          type: number
+          format: float
+        power_restriction_code:
+          description: The power restriction code to apply.
+          type: string
+      example:
+        begin_position: 0.0
+        end_position: 1000.0
+        power_restriction_code: "C1US"
     Routes:
       properties:
         entry_point:
@@ -597,11 +621,16 @@ components:
           minItems: 0
           items:
             $ref: "#/components/schemas/SignalSighting"
-        train_schedules:
+        zone_updates:
           type: array
           minItems: 0
           items:
             $ref: "#/components/schemas/ZoneUpdate"
+        spacing_requirements:
+          type: array
+          minItems: 0
+          items:
+            $ref: "#/components/schemas/SpacingRequirement"
         tag:
           type: string
           example: "tag"
@@ -845,7 +874,67 @@ components:
             end:
               type: number
               format: double
-              description: end offset of the track range
+              description: end offset of the track range    
+    Allowance:
+      oneOf:
+        - $ref: "#/components/schemas/StandardAllowance"
+        - $ref: "#/components/schemas/EngineeringAllowance"
+      discriminator:
+        propertyName: allowance_type              
+        mapping:
+          standard: "#/components/schemas/StandardAllowance"
+          engineering: "#/components/schemas/EngineeringAllowance"
+    BaseAllowance:
+      properties:
+        value_type:
+          type: string
+        distribution:
+          type: string
+          enum: ["MARECO", "LINEAR"]
+        capacity_speed_limit:
+          type: number
+          format: double
+          default: -1
+    StandardAllowance:
+      description: An allowance which will affect the whole path. It represents the additional time given to a train to fulfill its schedule. Only one can be applied by TrainSchedule.
+      allOf:
+        - $ref: "#/components/schemas/BaseAllowance"
+        - type: object
+          properties:
+            ranges:
+              description: A list of ranges where different values are applied. Ranges cannot overlap.
+              type: array
+              items:
+                type: object
+                properties:
+                  begin_position:
+                    type: number
+                    format: double
+                    description: begin offset on the path
+                  end_position:
+                    type: number
+                    format: double
+                    description: end offset on the path
+                  value: 
+                    $ref: "#/components/schemas/AllowanceValue"
+            value: 
+              $ref: "#/components/schemas/AllowanceValue"
+    EngineeringAllowance:
+      description: An allowance which represents portions of the path where the train has to slow down in order to avoid conflicts. Several can be applied by TrainSchedule, and they can overlap other allowances.
+      allOf:
+        - $ref: "#/components/schemas/BaseAllowance"
+        - type: object
+          properties:
+            begin_position:
+              type: number
+              format: double
+              description: begin offset on the path
+            end_position:
+              type: number
+              format: double
+              description: end offset on the path
+            value: 
+              $ref: "#/components/schemas/AllowanceValue"
     AllowanceValue:
       oneOf:
         - $ref: "#/components/schemas/TimePerDistanceAllowanceValue"
@@ -893,6 +982,16 @@ components:
           description: the offset of the zone on the current path
         is_entry:
           type: boolean
+    SpacingRequirement:
+      properties:
+        zone:
+          type: string
+        begin_time:
+          type: number
+          format: double
+        end_time:
+          type: number
+          format: double
     SignalSighting:
       properties:
         signal:

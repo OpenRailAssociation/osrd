@@ -1,5 +1,6 @@
 mod buffer_stop;
 mod catenary;
+mod dead_section;
 mod detector;
 pub mod electrical_profiles;
 mod errors;
@@ -19,6 +20,7 @@ mod track_section_link;
 pub mod utils;
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
+pub use dead_section::DeadSection;
 use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
 use enum_map::Enum;
@@ -28,7 +30,7 @@ pub use operational_point::{OperationalPoint, OperationalPointCache, Operational
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
 use serde::{Deserialize, Serialize};
-pub use signal::{Signal, SignalCache};
+pub use signal::{LogicalSignal, Signal, SignalCache, SignalExtensions, SignalSncfExtension};
 pub use speed_section::SpeedSection;
 use strum_macros::Display;
 use strum_macros::EnumIter;
@@ -73,6 +75,7 @@ pub enum ObjectType {
     Signal,
     SpeedSection,
     Detector,
+    DeadSection,
     TrackSectionLink,
     Switch,
     SwitchType,
@@ -87,6 +90,7 @@ impl ObjectType {
         match *self {
             ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
             ObjectType::Signal => "osrd_infra_signalmodel",
+            ObjectType::DeadSection => "osrd_infra_deadsectionmodel",
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
             ObjectType::Detector => "osrd_infra_detectormodel",
             ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",
@@ -223,6 +227,22 @@ impl DirectionalTrackRange {
         match self.direction {
             Direction::StartToStop => self.begin,
             Direction::StopToStart => self.end,
+        }
+    }
+
+    pub fn get_begin(&self) -> f64 {
+        if self.direction == Direction::StartToStop {
+            self.begin
+        } else {
+            self.end
+        }
+    }
+
+    pub fn get_end(&self) -> f64 {
+        if self.direction == Direction::StartToStop {
+            self.end
+        } else {
+            self.begin
         }
     }
 }

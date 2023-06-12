@@ -9,12 +9,12 @@ public class RJSApplicableDirectionsTrackRange extends RJSTrackRange {
 
     /** Constructor */
     public RJSApplicableDirectionsTrackRange(
-            String track,
+            String trackSectionID,
             ApplicableDirection applicableDirections,
             double begin,
             double end
     ) {
-        super(track, begin, end);
+        super(trackSectionID, begin, end);
         this.applicableDirections = applicableDirections;
     }
 }

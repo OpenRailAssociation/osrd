@@ -103,6 +103,11 @@ class OverlappingTrackLinks(InfraWarningTrait):
     reference: ObjectReference
 
 
+class OverlappingCatenaries(InfraWarningTrait):
+    error_type: Literal["overlapping_catenaries"] = Field(default="overlapping_catenaries")
+    reference: ObjectReference
+
+
 InfraError = Annotated[
     Union[
         DuplicatedGroup,
@@ -116,6 +121,7 @@ InfraError = Annotated[
         ObjectOutOfPath,
         OddBufferStopLocation,
         OutOfRange,
+        OverlappingCatenaries,
         OverlappingSpeedSections,
         OverlappingSwitches,
         OverlappingTrackLinks,

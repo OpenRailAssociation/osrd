@@ -39,7 +39,7 @@ export function refactorUniquePaths(
       pointsList[step.uic] = {
         longitude: step.longitude,
         latitude: step.latitude,
-        name: step.gare,
+        name: step.name,
       };
     });
   });

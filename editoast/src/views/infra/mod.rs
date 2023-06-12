@@ -7,23 +7,30 @@ mod pathfinding;
 mod railjson;
 mod routes;
 
+use std::collections::HashMap;
 use std::pin::Pin;
 
 use self::edition::edit;
 use super::params::List;
+use crate::core::infra_loading::InfraLoadRequest;
+use crate::core::infra_state::{InfraStateRequest, InfraStateResponse};
+use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::map::{self, MapLayers};
-use crate::models::{Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update};
+use crate::models::infra::INFRA_VERSION;
+use crate::models::{
+    Create, Delete, Infra, List as ModelList, NoParams, Retrieve, Update, RAILJSON_VERSION,
+};
 use crate::schema::{ObjectType, SwitchType};
 use crate::views::pagination::{PaginatedResponse, PaginationQueryParam};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, scope, Data, Json, Path, Query};
-use actix_web::{delete, get, post, put, HttpResponse, Responder};
+use actix_web::{delete, get, post, put, Either, HttpResponse, Responder};
 use chashmap::CHashMap;
 use chrono::Utc;
-use diesel::sql_types::{BigInt, Double, Text};
+use diesel::sql_types::{BigInt, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use editoast_derive::EditoastError;
 use futures::future::join_all;
@@ -39,11 +46,12 @@ use uuid::Uuid;
 /// Return `/infra` routes
 pub fn routes() -> impl HttpServiceFactory {
     scope("/infra")
-        .service((list, create, refresh, railjson::routes()))
+        .service((list, create, refresh, cache_status, railjson::routes()))
         .service(
             scope("/{infra}")
                 .service((
                     get,
+                    load,
                     delete,
                     clone,
                     edit,
@@ -86,6 +94,10 @@ impl From<InfraForm> for Infra {
             name: Some(infra.name),
             owner: Some(Uuid::nil()),
             created: Some(Utc::now().naive_utc()),
+            railjson_version: Some(RAILJSON_VERSION.into()),
+            version: Some(INFRA_VERSION.into()),
+            generated_version: Some(Some(INFRA_VERSION.into())),
+            locked: Some(false),
             ..Default::default()
         }
     }
@@ -99,8 +111,8 @@ struct SpeedLimitTags {
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 struct Voltage {
-    #[diesel(sql_type = Double)]
-    voltage: f64,
+    #[diesel(sql_type = Text)]
+    voltage: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -172,23 +184,78 @@ async fn refresh(
 #[get("")]
 async fn list(
     db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
     pagination_params: Query<PaginationQueryParam>,
-) -> Result<Json<PaginatedResponse<Infra>>> {
+) -> Result<Json<PaginatedResponse<InfraWithState>>> {
     let page = pagination_params.page;
     let per_page = pagination_params.page_size.unwrap_or(25).max(10);
-    let infras = Infra::list(db_pool, page, per_page, NoParams).await?;
-    Ok(Json(infras))
+    let infras = Infra::list(db_pool.clone(), page, per_page, NoParams).await?;
+    let infra_state = call_core_infra_state(None, db_pool, core).await?;
+    let infras_with_state: Vec<InfraWithState> = infras
+        .results
+        .into_iter()
+        .map(|infra| {
+            let infra_id = infra.id.unwrap();
+            let state = infra_state
+                .get(&infra_id.to_string())
+                .unwrap_or(&InfraStateResponse::default())
+                .status;
+            InfraWithState { infra, state }
+        })
+        .collect();
+    let infras_with_state = PaginatedResponse::<InfraWithState> {
+        count: infras.count,
+        previous: infras.previous,
+        next: infras.next,
+        results: infras_with_state,
+    };
+
+    Ok(Json(infras_with_state))
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Default, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum InfraState {
+    #[default]
+    NotLoaded,
+    Initializing,
+    Downloading,
+    ParsingJson,
+    ParsingInfra,
+    AdaptingKotlin,
+    LoadingSignals,
+    BuildingBlocks,
+    Cached,
+    TransientError,
+    Error,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct InfraWithState {
+    #[serde(flatten)]
+    pub infra: Infra,
+    pub state: InfraState,
 }
 
 /// Return a specific infra
 #[get("")]
-async fn get(db_pool: Data<DbPool>, infra: Path<i64>) -> Result<Json<Infra>> {
+async fn get(
+    db_pool: Data<DbPool>,
+    infra: Path<i64>,
+    core: Data<CoreClient>,
+) -> Result<Json<InfraWithState>> {
     let infra_id = infra.into_inner();
 
-    match Infra::retrieve(db_pool.clone(), infra_id).await? {
-        Some(infra) => Ok(Json(infra)),
-        None => Err(InfraApiError::NotFound { infra_id }.into()),
-    }
+    let infra = match Infra::retrieve(db_pool.clone(), infra_id).await? {
+        Some(infra) => infra,
+        None => return Err(InfraApiError::NotFound { infra_id }.into()),
+    };
+    let infra_state = call_core_infra_state(Some(infra_id), db_pool, core).await?;
+    let state = infra_state
+        .get(&infra_id.to_string())
+        .unwrap_or(&InfraStateResponse::default())
+        .status;
+    Ok(Json(InfraWithState { infra, state }))
 }
 
 /// Create an infra
@@ -227,8 +294,9 @@ async fn clone(
         });
         futures.push(Box::pin(model));
 
-        if object != ObjectType::SwitchType && object != ObjectType::Route {
-            let layer_table = object.get_geometry_layer_table().unwrap().to_string();
+        let layer_table = object.get_geometry_layer_table();
+        if layer_table.is_some() {
+            let layer_table = layer_table.unwrap().to_string();
             let db_pool_ref = db_pool.clone();
             let layer = block::<_, Result<_>>(move || {
                 let mut conn = db_pool_ref.get()?;
@@ -267,7 +335,6 @@ async fn delete(
 #[derive(Serialize, Deserialize)]
 struct InfraPatchForm {
     pub name: Option<String>,
-    pub generated_version: Option<Option<String>>,
 }
 
 impl InfraPatchForm {
@@ -275,7 +342,6 @@ impl InfraPatchForm {
         Infra {
             id: Some(infra_id),
             name: self.name,
-            generated_version: self.generated_version,
             ..Default::default()
         }
     }
@@ -350,21 +416,30 @@ async fn get_speed_limit_tags(
     ))
 }
 
-/// Returns the set of voltages for a given infra
+#[derive(Debug, Clone, Deserialize)]
+struct GetVoltagesQueryParams {
+    #[serde(default)]
+    include_rolling_stock_modes: bool,
+}
+
+/// Returns the set of voltages for a given infra and/or rolling_stocks modes.
+/// If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
 #[get("/voltages")]
-async fn get_voltages(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<Json<Vec<f64>>> {
+async fn get_voltages(
+    infra: Path<i64>,
+    param: Query<GetVoltagesQueryParams>,
+    db_pool: Data<DbPool>,
+) -> Result<Json<Vec<String>>> {
     let infra = infra.into_inner();
+    let include_rolling_stock_modes = param.into_inner().include_rolling_stock_modes;
     let voltages: Vec<Voltage> = block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
-        match sql_query(
-            "SELECT DISTINCT ((data->'voltage')->>0)::float AS voltage
-                FROM osrd_infra_catenarymodel
-                WHERE infra_id = $1
-                ORDER BY voltage",
-        )
-        .bind::<BigInt, _>(infra)
-        .load(&mut conn)
-        {
+        let query = if !include_rolling_stock_modes {
+            include_str!("sql/get_voltages_without_rolling_stocks_modes.sql")
+        } else {
+            include_str!("sql/get_voltages_with_rolling_stocks_modes.sql")
+        };
+        match sql_query(query).bind::<BigInt, _>(infra).load(&mut conn) {
             Ok(voltages) => Ok(voltages),
             Err(err) => Err(err.into()),
         }
@@ -384,7 +459,7 @@ async fn lock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse> {
             Ok(infra) => infra,
             Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
         };
-        infra.locked = true;
+        infra.locked = Some(true);
         infra.update_conn(&mut conn, infra_id)?;
         Ok(())
     })
@@ -403,7 +478,7 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
             Ok(infra) => infra,
             Err(_) => return Err(InfraApiError::NotFound { infra_id }.into()),
         };
-        infra.locked = false;
+        infra.locked = Some(false);
         infra.update_conn(&mut conn, infra_id)?;
         Ok(())
     })
@@ -412,16 +487,92 @@ async fn unlock(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<HttpResponse>
     Ok(HttpResponse::NoContent().finish())
 }
 
+#[derive(Debug, Default, Deserialize)]
+pub struct LoadPayload {
+    infra: i64,
+}
+
+#[derive(Debug, Default, Deserialize)]
+
+pub struct StatePayload {
+    infra: Option<i64>,
+}
+
+/// Builds a Core infra load request, runs it
+async fn call_core_infra_load(
+    payload: Json<LoadPayload>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<()> {
+    let payload = payload.into_inner();
+    let infra_id = payload.infra;
+    let infra = Infra::retrieve(db_pool.clone(), infra_id)
+        .await?
+        .ok_or(InfraApiError::NotFound { infra_id })?;
+    let infra_request = InfraLoadRequest {
+        infra: infra.id.unwrap(),
+        expected_version: infra.version.unwrap(),
+    };
+    infra_request.fetch(core.as_ref()).await?;
+    Ok(())
+}
+
+#[post("/load")]
+async fn load(
+    infra: Path<i64>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<HttpResponse> {
+    let infra = infra.into_inner();
+    let payload = Json(LoadPayload { infra });
+    call_core_infra_load(payload, db_pool, core).await?;
+    Ok(HttpResponse::NoContent().finish())
+}
+
+/// Builds a Core cache_status request, runs it
+async fn call_core_infra_state(
+    infra_id: Option<i64>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<HashMap<String, InfraStateResponse>> {
+    if let Some(infra_id) = infra_id {
+        Infra::retrieve(db_pool.clone(), infra_id)
+            .await?
+            .ok_or(InfraApiError::NotFound { infra_id })?;
+    };
+    let infra_request = InfraStateRequest { infra: infra_id };
+    let response = infra_request.fetch(core.as_ref()).await?;
+    Ok(response)
+}
+
+#[get("/cache_status")]
+async fn cache_status(
+    payload: Either<Json<StatePayload>, ()>,
+    db_pool: Data<DbPool>,
+    core: Data<CoreClient>,
+) -> Result<Json<HashMap<String, InfraStateResponse>>> {
+    let payload = match payload {
+        Either::Left(state) => state.into_inner(),
+        Either::Right(_) => Default::default(),
+    };
+    let infra_id = payload.infra;
+    Ok(Json(call_core_infra_state(infra_id, db_pool, core).await?))
+}
+
 #[cfg(test)]
 pub mod tests {
-    use crate::models::Infra;
+    use crate::core::mocking::MockingClient;
+    use crate::fixtures::tests::{empty_infra, other_rolling_stock, TestFixture};
+    use crate::models::infra::INFRA_VERSION;
+    use crate::models::{Infra, RollingStockModel, RAILJSON_VERSION};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::{Catenary, SpeedSection, SwitchType};
-    use crate::views::tests::create_test_service;
+    use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
+    use rstest::*;
     use serde::Deserialize;
     use serde_json::json;
 
@@ -465,19 +616,29 @@ pub mod tests {
 
     #[actix_test]
     async fn infra_list() {
-        let app = create_test_service().await;
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
         let req = TestRequest::get().uri("/infra/").to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
     #[actix_test]
-    async fn infra_create_delete() {
+    async fn default_infra_create_delete() {
         let app = create_test_service().await;
         let response = call_service(&app, create_infra_request("create_infra_test")).await;
         assert_eq!(response.status(), StatusCode::CREATED);
         let infra: Infra = read_body_json(response).await;
         assert_eq!(infra.name.unwrap(), "create_infra_test");
+        assert_eq!(infra.railjson_version.unwrap(), RAILJSON_VERSION);
+        assert_eq!(infra.version.unwrap(), INFRA_VERSION);
+        assert_eq!(infra.generated_version.unwrap().unwrap(), INFRA_VERSION);
+        assert!(!infra.locked.unwrap());
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -485,7 +646,13 @@ pub mod tests {
 
     #[actix_test]
     async fn infra_get() {
-        let app = create_test_service().await;
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
         let infra: Infra =
             call_and_read_body_json(&app, create_infra_request("get_infra_test")).await;
 
@@ -513,6 +680,8 @@ pub mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+        let infra: Infra = read_body_json(response).await;
+        assert_eq!(infra.name.unwrap(), "rename_test");
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
@@ -580,28 +749,52 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn infra_get_voltages() {
+    #[rstest]
+    async fn infra_get_voltages(
+        #[future] empty_infra: TestFixture<Infra>,
+        #[future] other_rolling_stock: TestFixture<RollingStockModel>,
+    ) {
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_voltages_test")).await;
+        let infra = empty_infra.await;
 
+        let test_cases = vec![true, false];
+        // Create catenary
         let catenary = Catenary {
             id: "test".into(),
             voltage: "0".into(),
             track_ranges: vec![],
         };
-        let req = create_object_request(infra.id.unwrap(), catenary.into());
+
+        let req = create_object_request(infra.id(), catenary.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
-        let req = TestRequest::get()
-            .uri(format!("/infra/{}/voltages/", infra.id.unwrap()).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
+        // Create rolling_stock
+        let _rolling_stock = other_rolling_stock.await;
 
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        for include_rolling_stock_modes in test_cases {
+            let req = TestRequest::get()
+                .uri(
+                    format!(
+                        "/infra/{}/voltages/?include_rolling_stock_modes={}",
+                        infra.id(),
+                        include_rolling_stock_modes
+                    )
+                    .as_str(),
+                )
+                .to_request();
+            let response = call_service(&app, req).await;
+            assert_eq!(response.status(), StatusCode::OK);
+
+            if !include_rolling_stock_modes {
+                let voltages: Vec<String> = read_body_json(response).await;
+                assert_eq!(voltages[0], "0");
+                assert_eq!(voltages.len(), 1);
+            } else {
+                let voltages: Vec<String> = read_body_json(response).await;
+                assert!(voltages.contains(&String::from("25000")));
+                assert!(voltages.len() >= 2);
+            }
+        }
     }
 
     #[actix_test]
@@ -630,9 +823,15 @@ pub mod tests {
 
     #[actix_test]
     async fn infra_lock() {
-        let app = create_test_service().await;
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
         let infra: Infra = call_and_read_body_json(&app, create_infra_request("lock_test")).await;
-        assert!(!infra.locked);
+        assert!(!infra.locked.unwrap());
 
         // Lock infra
         let req = TestRequest::post()
@@ -646,7 +845,7 @@ pub mod tests {
             .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
-        assert!(infra.locked);
+        assert!(infra.locked.unwrap());
 
         // Unlock infra
         let req = TestRequest::post()
@@ -660,9 +859,81 @@ pub mod tests {
             .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
-        assert!(!infra.locked);
+        assert!(!infra.locked.unwrap());
 
         let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn infra_load_core() {
+        let app = create_test_service().await;
+        let infra: Infra = call_and_read_body_json(&app, create_infra_request("lock_test")).await;
+        let mut core = MockingClient::new();
+        core.stub("/infra_load")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::NO_CONTENT)
+            .body("")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let req = TestRequest::post()
+            .uri(format!("/infra/{}/load", infra.id.unwrap()).as_str())
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[actix_test]
+    async fn infra_get_state_no_result() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_state_test")).await;
+
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body("{}")
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let payload = json!({"infra": infra.id.unwrap()});
+        let req = TestRequest::get()
+            .uri("/infra/cache_status")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[actix_test]
+    async fn infra_get_state_with_result() {
+        let app = create_test_service().await;
+        let infra: Infra =
+            call_and_read_body_json(&app, create_infra_request("get_state_test")).await;
+        let infra_id = infra.id.unwrap();
+        let mut core = MockingClient::new();
+        core.stub("/cache_status")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .body(format!(
+                "{{
+                \"{infra_id}\": {{
+        \"last_status\": \"BUILDING_BLOCKS\",
+        \"status\": \"CACHED\"
+        }}
+        }}"
+            ))
+            .finish();
+        let app = create_test_service_with_core_client(core).await;
+        let payload = json!({ "infra": infra_id });
+        let req = TestRequest::get()
+            .uri("/infra/cache_status")
+            .set_json(payload)
+            .to_request();
+        let response = call_service(&app, req).await;
+        assert_eq!(response.status(), StatusCode::OK);
     }
 }

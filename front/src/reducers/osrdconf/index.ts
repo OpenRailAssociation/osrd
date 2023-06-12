@@ -6,16 +6,19 @@ import {
   MODES,
   DEFAULT_MODE,
   DEFAULT_STDCM_MODE,
+  STDCM_MODES,
   OsrdConfState,
   OsrdMultiConfState,
   OsrdStdcmConfState,
   PointOnMap,
 } from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
+import { ValueOf } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-import { osrdEditoastApi } from '../../common/api/osrdEditoastApi';
-import { ThunkAction } from '../../types';
+import { CatenaryRange, osrdEditoastApi } from '../../common/api/osrdEditoastApi';
+import { SwitchType, ThunkAction } from '../../types';
+
 /* eslint-disable default-case */
 
 // Action Types
@@ -33,6 +36,7 @@ export const UPDATE_SCENARIO_ID = 'osrdconf/UPDATE_SCENARIO_ID';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
+export const UPDATE_PATH_WITH_CATENARIES = 'osrdconf/UPDATE_PATH_WITH_CATENARIES';
 export const UPDATE_SHOULD_RUN_PATHFINDING = 'osrdconf/UPDATE_SHOULD_RUN_PATHFINDING';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
@@ -56,7 +60,6 @@ export const DELETE_ITINERARY = 'osrdconfDELETE_ITINERARY';
 export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
 export const UPDATE_DESTINATION_TIME = 'osrdconf/UPDATE_UPDATE_DESTINATION_TIME';
 export const UPDATE_DESTINATION_DATE = 'osrdconf/UPDATE_UPDATE_DESTINATION_DATE';
-export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
 export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
@@ -64,6 +67,7 @@ export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
 export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
 export const UPDATE_POWER_RESTRICTION = 'osrdconf/UPDATE_POWER_RESTRICTION';
 export const UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY = 'osrdconf/UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY';
+export const UPDATE_MAXIMUM_RUN_TIME = 'osrdconf/UPDATE_MAXIMUM_RUN_TIME';
 
 // Reducer
 const defaultCommonConf = {
@@ -112,6 +116,7 @@ export const initialState: OsrdMultiConfState = {
     ...defaultCommonConf,
   },
   stdcmConf: {
+    maximumRunTime: 43200,
     stdcmMode: DEFAULT_STDCM_MODE,
     standardStdcmAllowance: undefined,
     ...defaultCommonConf,
@@ -176,6 +181,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
       case UPDATE_PATHFINDING_ID:
         draft[section].pathfindingID = action.pathfindingID;
         break;
+      case UPDATE_PATH_WITH_CATENARIES:
+        draft[section].pathWithCatenaries = action.pathWithCatenaries;
+        break;
       case UPDATE_SHOULD_RUN_PATHFINDING:
         draft[section].shouldRunPathfinding = action.shouldRunPathfinding;
         break;
@@ -202,16 +210,17 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_ORIGIN_TIME: {
         const newOriginTimeSeconds = time2sec(action.originTime);
-        if (draft[section].originLinkedBounds) {
+        const { originLinkedBounds, originTime, originUpperBoundTime } = draft[section];
+        if (originLinkedBounds) {
           const difference =
-            draft[section].originTime && draft[section].originUpperBoundTime
-              ? time2sec(draft[section].originUpperBoundTime) - time2sec(draft[section].originTime)
+            originTime && originUpperBoundTime
+              ? time2sec(originUpperBoundTime) - time2sec(originTime)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft[section].originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
         }
         if (
           draft[section].originUpperBoundTime &&
-          time2sec(action.originTime) > time2sec(draft[section].originUpperBoundTime)
+          time2sec(action.originTime) > time2sec(draft[section].originUpperBoundTime as string)
         ) {
           draft[section].originTime = draft[section].originUpperBoundTime;
         } else {
@@ -224,13 +233,14 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         if (draft[section].originLinkedBounds) {
           const difference =
             draft[section].originTime && draft[section].originUpperBoundTime
-              ? time2sec(draft[section].originUpperBoundTime) - time2sec(draft[section].originTime)
+              ? time2sec(draft[section].originUpperBoundTime as string) -
+                time2sec(draft[section].originTime as string)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft[section].originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
         }
         if (
           draft[section].originTime &&
-          time2sec(action.originUpperBoundTime) < time2sec(draft[section].originTime)
+          time2sec(action.originUpperBoundTime) < time2sec(draft[section].originTime as string)
         ) {
           draft[section].originUpperBoundTime = draft[section].originTime;
         } else {
@@ -282,9 +292,6 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
       case UPDATE_DESTINATION_TIME:
         draft[section].destinationTime = action.destinationTime;
         break;
-      case UPDATE_TRAINCOMPO:
-        draft[section].trainCompo = action.trainCompo;
-        break;
       case UPDATE_ITINERARY:
         draft[section].geojson = action.geojson;
         break;
@@ -305,6 +312,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY:
         draft[section].trainScheduleIDsToModify = action.trainScheduleIDsToModify;
+        break;
+      case UPDATE_MAXIMUM_RUN_TIME:
+        draft.stdcmConf.maximumRunTime = action.maximumRunTime;
         break;
     }
   });
@@ -356,7 +366,7 @@ export function updateMode(mode: string) {
     });
   };
 }
-export function updateStdcmMode(stdcmMode: any) {
+export function updateStdcmMode(stdcmMode: ValueOf<typeof STDCM_MODES>) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_STDCM_MODE,
@@ -372,7 +382,7 @@ export function updateLabels(labels?: string[]) {
     });
   };
 }
-export function updateSwitchTypes(switchTypes: any) {
+export function updateSwitchTypes(switchTypes: SwitchType[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SWITCH_TYPES,
@@ -415,15 +425,15 @@ export function updateInfraID(infraID: number | undefined): ThunkAction<ActionUp
       type: UPDATE_INFRA_ID,
       infraID,
     });
-    dispatch(updateSwitchTypes({}));
+    dispatch(updateSwitchTypes([]));
 
     if (infraID) {
       try {
         // get switch types  with rtk query
-        const { data: newSwitchTypes } = await dispatch(
+        const { data: newSwitchTypes = [] } = await dispatch(
           osrdEditoastApi.endpoints.getInfraByIdSwitchTypes.initiate({ id: infraID })
         );
-        dispatch(updateSwitchTypes(newSwitchTypes));
+        dispatch(updateSwitchTypes(newSwitchTypes as SwitchType[]));
       } catch (e) {
         /* empty */
       }
@@ -435,6 +445,14 @@ export function updatePathfindingID(pathfindingID?: number) {
     dispatch({
       type: UPDATE_PATHFINDING_ID,
       pathfindingID,
+    });
+  };
+}
+export function updatePathWithCatenaries(pathWithCatenaries?: CatenaryRange[]) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_PATH_WITH_CATENARIES,
+      pathWithCatenaries,
     });
   };
 }
@@ -535,7 +553,7 @@ export function updateOriginUpperBoundDate(originUpperBoundDate: string) {
   };
 }
 
-export function replaceVias(vias: any) {
+export function replaceVias(vias: PointOnMap[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: REPLACE_VIAS,
@@ -543,7 +561,7 @@ export function replaceVias(vias: any) {
     });
   };
 }
-export function updateVias(vias: any) {
+export function updateVias(vias: PointOnMap) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_VIAS,
@@ -551,7 +569,7 @@ export function updateVias(vias: any) {
     });
   };
 }
-export function permuteVias(vias: any, from: any, to: any) {
+export function permuteVias(vias: PointOnMap[], from: number, to: number) {
   const newVias = Array.from(vias); // Copy of vias to permit modification
   const item = newVias.slice(from, from + 1); // Get item to permute
   newVias.splice(from, 1); // Remove it from array
@@ -564,7 +582,7 @@ export function permuteVias(vias: any, from: any, to: any) {
     });
   };
 }
-export function updateSuggeredVias(suggeredVias: any) {
+export function updateSuggeredVias(suggeredVias: PointOnMap[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SUGGERED_VIAS,
@@ -611,14 +629,6 @@ export function updateDestinationDate(destinationDate: string) {
     dispatch({
       type: UPDATE_DESTINATION_DATE,
       destinationDate,
-    });
-  };
-}
-export function updateTrainCompo(trainCompo: any) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_TRAINCOMPO,
-      trainCompo,
     });
   };
 }
@@ -687,6 +697,14 @@ export function updateTrainScheduleIDsToModify(trainScheduleIDsToModify?: number
     dispatch({
       type: UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY,
       trainScheduleIDsToModify,
+    });
+  };
+}
+export function updateMaximumRunTime(maximumRunTime?: number) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_MAXIMUM_RUN_TIME,
+      maximumRunTime,
     });
   };
 }

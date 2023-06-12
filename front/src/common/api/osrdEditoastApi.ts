@@ -47,6 +47,9 @@ const injectedRtkApi = api.injectEndpoints({
     putInfraById: build.mutation<PutInfraByIdApiResponse, PutInfraByIdApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/`, method: 'PUT', body: queryArg.body }),
     }),
+    postInfraByIdLoad: build.mutation<PostInfraByIdLoadApiResponse, PostInfraByIdLoadApiArg>({
+      query: (queryArg) => ({ url: `/infra/${queryArg.id}/load/`, method: 'POST' }),
+    }),
     getInfraByIdRailjson: build.query<GetInfraByIdRailjsonApiResponse, GetInfraByIdRailjsonApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/railjson/` }),
     }),
@@ -102,7 +105,10 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/speed_limit_tags/` }),
     }),
     getInfraByIdVoltages: build.query<GetInfraByIdVoltagesApiResponse, GetInfraByIdVoltagesApiArg>({
-      query: (queryArg) => ({ url: `/infra/${queryArg.id}/voltages/` }),
+      query: (queryArg) => ({
+        url: `/infra/${queryArg.id}/voltages/`,
+        params: { include_rolling_stock_modes: queryArg.includeRollingStockModes },
+      }),
     }),
     getInfraByIdAttachedAndTrackId: build.query<
       GetInfraByIdAttachedAndTrackIdApiResponse,
@@ -212,6 +218,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/rolling_stock/`,
         method: 'POST',
         body: queryArg.rollingStockUpsertPayload,
+        params: { locked: queryArg.locked },
       }),
     }),
     getRollingStockById: build.query<GetRollingStockByIdApiResponse, GetRollingStockByIdApiArg>({
@@ -232,6 +239,16 @@ const injectedRtkApi = api.injectEndpoints({
       DeleteRollingStockByIdApiArg
     >({
       query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/`, method: 'DELETE' }),
+    }),
+    patchRollingStockByIdLocked: build.mutation<
+      PatchRollingStockByIdLockedApiResponse,
+      PatchRollingStockByIdLockedApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/rolling_stock/${queryArg.id}/locked/`,
+        method: 'PATCH',
+        body: queryArg.body,
+      }),
     }),
     postRollingStockByIdLivery: build.mutation<
       PostRollingStockByIdLiveryApiResponse,
@@ -287,6 +304,12 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
       query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
+    }),
+    getTimetableByIdConflicts: build.query<
+      GetTimetableByIdConflictsApiResponse,
+      GetTimetableByIdConflictsApiArg
+    >({
+      query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts/` }),
     }),
     postProjectsByProjectIdStudies: build.mutation<
       PostProjectsByProjectIdStudiesApiResponse,
@@ -393,6 +416,53 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: (queryArg) => ({ url: `/pathfinding/${queryArg.pathId}/catenaries/` }),
     }),
+    getTrainScheduleById: build.query<GetTrainScheduleByIdApiResponse, GetTrainScheduleByIdApiArg>({
+      query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/` }),
+    }),
+    deleteTrainScheduleById: build.mutation<
+      DeleteTrainScheduleByIdApiResponse,
+      DeleteTrainScheduleByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/train_schedule/${queryArg.id}/`, method: 'DELETE' }),
+    }),
+    patchTrainScheduleById: build.mutation<
+      PatchTrainScheduleByIdApiResponse,
+      PatchTrainScheduleByIdApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/${queryArg.id}/`,
+        method: 'PATCH',
+        body: queryArg.body,
+      }),
+    }),
+    getTrainScheduleByIdResult: build.query<
+      GetTrainScheduleByIdResultApiResponse,
+      GetTrainScheduleByIdResultApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/${queryArg.id}/result/`,
+        params: { path_id: queryArg.pathId },
+      }),
+    }),
+    getTrainScheduleResults: build.query<
+      GetTrainScheduleResultsApiResponse,
+      GetTrainScheduleResultsApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/results/`,
+        params: { path_id: queryArg.pathId, train_ids: queryArg.trainIds },
+      }),
+    }),
+    postTrainScheduleStandaloneSimulation: build.mutation<
+      PostTrainScheduleStandaloneSimulationApiResponse,
+      PostTrainScheduleStandaloneSimulationApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/train_schedule/standalone_simulation/`,
+        method: 'POST',
+        body: queryArg.body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -478,6 +548,11 @@ export type PutInfraByIdApiArg = {
     name?: string;
   };
 };
+export type PostInfraByIdLoadApiResponse = unknown;
+export type PostInfraByIdLoadApiArg = {
+  /** infra id */
+  id: number;
+};
 export type GetInfraByIdRailjsonApiResponse =
   /** status 200 The infra in railjson format */ RailjsonFile;
 export type GetInfraByIdRailjsonApiArg = {
@@ -550,10 +625,12 @@ export type GetInfraByIdSpeedLimitTagsApiArg = {
   /** Infra id */
   id: number;
 };
-export type GetInfraByIdVoltagesApiResponse = /** status 200 Voltages list */ number[];
+export type GetInfraByIdVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraByIdVoltagesApiArg = {
   /** Infra ID */
   id: number;
+  /** include rolling stocks modes or not */
+  includeRollingStockModes?: boolean;
 };
 export type GetInfraByIdAttachedAndTrackIdApiResponse =
   /** status 200 All objects attached to the given track (arranged by types) */ {
@@ -634,8 +711,8 @@ export type PostInfraByIdCloneApiArg = {
 };
 export type GetElectricalProfileSetApiResponse =
   /** status 200 The list of ids and names of electrical profile sets available */ {
-    id?: number;
-    name?: string;
+    id: number;
+    name: string;
   }[];
 export type GetElectricalProfileSetApiArg = void;
 export type PostElectricalProfileSetApiResponse =
@@ -691,6 +768,8 @@ export type GetLightRollingStockByIdApiArg = {
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
+  /** whether or not the rolling_stock can be edited/deleted. */
+  locked?: boolean;
   rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
 export type GetRollingStockByIdApiResponse =
@@ -710,6 +789,15 @@ export type DeleteRollingStockByIdApiResponse = unknown;
 export type DeleteRollingStockByIdApiArg = {
   /** rolling_stock id */
   id: number;
+};
+export type PatchRollingStockByIdLockedApiResponse = unknown;
+export type PatchRollingStockByIdLockedApiArg = {
+  /** Rolling_stock id */
+  id: number;
+  /** New locked value */
+  body: {
+    locked?: boolean;
+  };
 };
 export type PostRollingStockByIdLiveryApiResponse =
   /** status 200 The rolling stock livery */ RollingStockLivery;
@@ -779,6 +867,18 @@ export type GetTimetableByIdApiResponse = /** status 200 The timetable content *
   }[];
 };
 export type GetTimetableByIdApiArg = {
+  /** Timetable ID */
+  id: number;
+};
+export type GetTimetableByIdConflictsApiResponse =
+  /** status 200 The timetable conflicts content */ {
+    train_ids: number[];
+    train_names: string[];
+    start_time: string;
+    end_time: string;
+    conflict_type: string;
+  }[];
+export type GetTimetableByIdConflictsApiArg = {
   /** Timetable ID */
   id: number;
 };
@@ -911,6 +1011,46 @@ export type GetPathfindingByPathIdCatenariesApiArg = {
   /** The path's id */
   pathId: number;
 };
+export type GetTrainScheduleByIdApiResponse =
+  /** status 200 The train schedule info */ TrainSchedule;
+export type GetTrainScheduleByIdApiArg = {
+  /** Train schedule ID */
+  id: number;
+};
+export type DeleteTrainScheduleByIdApiResponse = unknown;
+export type DeleteTrainScheduleByIdApiArg = {
+  /** Train schedule ID */
+  id: number;
+};
+export type PatchTrainScheduleByIdApiResponse = unknown;
+export type PatchTrainScheduleByIdApiArg = {
+  /** Train schedule ID */
+  id: number;
+  /** Train schedule fields */
+  body: TrainSchedule[];
+};
+export type GetTrainScheduleByIdResultApiResponse =
+  /** status 200 The train schedule result */ SimulationReport;
+export type GetTrainScheduleByIdResultApiArg = {
+  /** Train schedule ID */
+  id: number;
+  /** Path id used to project the train path */
+  pathId: number;
+};
+export type GetTrainScheduleResultsApiResponse =
+  /** status 200 The train schedules results */ SimulationReport[];
+export type GetTrainScheduleResultsApiArg = {
+  /** Path id used to project the train path */
+  pathId: number;
+  /** List of train schedule ids to return the results of */
+  trainIds: string;
+};
+export type PostTrainScheduleStandaloneSimulationApiResponse =
+  /** status 201 The ids of the train_schedules created */ number[];
+export type PostTrainScheduleStandaloneSimulationApiArg = {
+  /** The list of train schedules to simulate */
+  body: TrainSchedule[];
+};
 export type SearchTrackResult = {
   infra_id: number;
   line_code: number;
@@ -991,10 +1131,23 @@ export type Infra = {
   id: number;
   name: string;
   version: string;
+  railjson_version: string;
   generated_version: string | null;
   created: string;
   modified: string;
   locked: boolean;
+  state:
+    | 'NOT_LOADED'
+    | 'INITIALIZING'
+    | 'DOWNLOADING'
+    | 'PARSING_JSON'
+    | 'PARSING_INFRA'
+    | 'ADAPTING_KOTLIN'
+    | 'LOADING_SIGNALS'
+    | 'BUILDING_BLOCKS'
+    | 'CACHED'
+    | 'TRANSIENT_ERROR'
+    | 'ERROR';
 };
 export type ObjectType =
   | 'TrackSection'
@@ -1088,6 +1241,7 @@ export type InfraErrorType =
   | 'overlapping_speed_sections'
   | 'overlapping_switches'
   | 'overlapping_track_links'
+  | 'overlapping_catenaries'
   | 'unknown_port_name'
   | 'unused_port';
 export type InfraError = {
@@ -1137,22 +1291,54 @@ export type ElectricalProfile = {
   power_class?: string;
   track_ranges?: TrackRange[];
 };
-export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
-export type EffortCurve = {
-  speeds?: number[];
-  max_efforts?: number[];
+export type SpeedDependantPower = {
+  speeds: number[];
+  powers: number[];
 };
-export type ConditionalEffortCurve = {
-  cond?: {
-    comfort?: Comfort | null;
-    electrical_profile_level?: string | null;
-    power_restriction_code?: string | null;
+export type Catenary = {
+  energy_source_type: 'Catenary';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  efficiency: number;
+};
+export type EnergyStorage = {
+  capacity: number;
+  soc: number;
+  soc_min: number;
+  soc_max: number;
+  refill_law: {
+    tau: number;
+    soc_ref: number;
   } | null;
-  curve?: EffortCurve;
 };
-export type RollingStockUpsertPayload = {
+export type PowerPack = {
+  energy_source_type: 'PowerPack';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage;
+  efficiency: number;
+};
+export type Battery = {
+  energy_source_type: 'Battery';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage;
+  efficiency: number;
+};
+export type EnergySource =
+  | ({
+      energy_source_type: 'Catenary';
+    } & Catenary)
+  | ({
+      energy_source_type: 'PowerPack';
+    } & PowerPack)
+  | ({
+      energy_source_type: 'Battery';
+    } & Battery);
+export type RollingStockBase = {
   version: string;
   name: string;
+  locked?: boolean;
   length: number;
   max_speed: number;
   startup_time: number;
@@ -1172,20 +1358,11 @@ export type RollingStockUpsertPayload = {
     type: 'davis';
   };
   loading_gauge: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  effort_curves: {
-    default_mode: string;
-    modes: {
-      [key: string]: {
-        curves: ConditionalEffortCurve[];
-        default_curve: EffortCurve;
-        is_electric: boolean;
-      };
-    };
-  };
   base_power_class: string;
   power_restrictions: {
     [key: string]: string;
   };
+  energy_sources: EnergySource[];
   metadata: {
     detail: string;
     family: string;
@@ -1203,11 +1380,9 @@ export type RollingStockLivery = {
   name: string;
   compound_image_id: number | null;
 };
-export type RollingStock = RollingStockUpsertPayload & {
+export type LightRollingStock = RollingStockBase & {
   id: number;
   liveries: RollingStockLivery[];
-};
-export type LightRollingStock = RollingStock & {
   effort_curves: {
     default_mode: string;
     modes: {
@@ -1216,6 +1391,35 @@ export type LightRollingStock = RollingStock & {
       };
     };
   };
+};
+export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
+export type EffortCurve = {
+  speeds?: number[];
+  max_efforts?: number[];
+};
+export type ConditionalEffortCurve = {
+  cond?: {
+    comfort?: Comfort | null;
+    electrical_profile_level?: string | null;
+    power_restriction_code?: string | null;
+  } | null;
+  curve?: EffortCurve;
+};
+export type RollingStockUpsertPayload = RollingStockBase & {
+  effort_curves: {
+    default_mode: string;
+    modes: {
+      [key: string]: {
+        curves: ConditionalEffortCurve[];
+        default_curve: EffortCurve;
+        is_electric: boolean;
+      };
+    };
+  };
+};
+export type RollingStock = RollingStockUpsertPayload & {
+  id: number;
+  liveries: RollingStockLivery[];
 };
 export type ProjectResult = {
   id?: number;
@@ -1371,4 +1575,143 @@ export type CatenaryRange = {
   begin?: number;
   end?: number;
   mode?: string;
+};
+export type AllowanceTimePerDistanceValue = {
+  value_type: 'time_per_distance';
+  minutes: number;
+};
+export type AllowanceTimeValue = {
+  value_type: 'time';
+  seconds: number;
+};
+export type AllowancePercentValue = {
+  value_type: 'percentage';
+  percentage: number;
+};
+export type AllowanceValue =
+  | ({
+      value_type: 'time_per_distance';
+    } & AllowanceTimePerDistanceValue)
+  | ({
+      value_type: 'time';
+    } & AllowanceTimeValue)
+  | ({
+      value_type: 'percentage';
+    } & AllowancePercentValue);
+export type RangeAllowance = {
+  begin_position: number;
+  end_position: number;
+  value: AllowanceValue;
+};
+export type EngineeringAllowance = {
+  allowance_type: 'engineering';
+  distribution: 'MARECO' | 'LINEAR';
+  capacity_speed_limit: number;
+} & RangeAllowance;
+export type StandardAllowance = {
+  allowance_type: 'standard';
+  default_value: AllowanceValue;
+  ranges: RangeAllowance[];
+  distribution: 'MARECO' | 'LINEAR';
+  capacity_speed_limit: number;
+};
+export type Allowance =
+  | ({
+      allowance_type: 'engineering';
+    } & EngineeringAllowance)
+  | ({
+      allowance_type: 'standard';
+    } & StandardAllowance);
+export type TrainScheduleOptions = {
+  ignore_electrical_profiles?: boolean | null;
+};
+export type PowerRestrictionRange = {
+  begin_position: number;
+  end_position: number;
+  power_restriction_code: string;
+};
+export type TrainSchedule = {
+  train_name?: string;
+  timetable?: number;
+  rolling_stock?: number;
+  departure_time?: number;
+  path?: number;
+  initial_speed?: number;
+  labels?: string[];
+  allowances?: Allowance[];
+  speed_limit_tags?: string;
+  comfort?: Comfort;
+  options?: TrainScheduleOptions | null;
+  power_restriction_ranges?: PowerRestrictionRange[] | null;
+};
+export type SpaceTimePosition = {
+  time: number;
+  position: number;
+};
+export type SimulationReportByTrain = {
+  speeds: (SpaceTimePosition & {
+    speed: number;
+  })[];
+  head_positions: SpaceTimePosition[][];
+  tail_positions: SpaceTimePosition[][];
+  stops: {
+    id: number;
+    name: string;
+    time: number;
+    position: number;
+    duration: number;
+    line_code: number;
+    track_number: number;
+    line_name: string;
+    track_name: string;
+  }[];
+  route_aspects: {
+    signal_id: string;
+    route_id: string;
+    time_start: number;
+    time_end: number;
+    position_start: number;
+    position_end: number;
+    color: number;
+    blinking: boolean;
+    aspect_label: string;
+  }[];
+  signals: {
+    signal_id: number;
+    aspects: string[];
+    geo_position: number[];
+    schema_position: number[];
+  }[];
+  mechanical_energy_consumed: number;
+};
+export type SimulationReport = {
+  id: number;
+  name: string;
+  labels: string[];
+  path: number;
+  vmax: {
+    position: number;
+    speed: number;
+  }[];
+  slopes: {
+    position: number;
+    gradient: number;
+  }[];
+  curves: {
+    position: number;
+    radius: number;
+  }[];
+  base: SimulationReportByTrain;
+  eco?: SimulationReportByTrain;
+  speed_limit_tags?: string;
+  electrification_conditions: {
+    start: number;
+    stop: number;
+    mode_used: string;
+    profile_used?: string | null;
+    restriction_used?: string | null;
+    mode_seen?: string | null;
+    profile_seen?: string | null;
+    restriction_seen?: string | null;
+  }[][];
 };

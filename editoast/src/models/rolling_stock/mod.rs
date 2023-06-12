@@ -10,8 +10,8 @@ use crate::error::Result;
 use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetadata;
 use crate::models::{Identifiable, Update};
 use crate::schema::rolling_stock::{
-    EffortCurves, Gamma, RollingResistance, RollingStock, RollingStockMetadata,
-    RollingStockWithLiveries,
+    EffortCurves, EnergySource, Gamma, RollingResistance, RollingStock, RollingStockCommon,
+    RollingStockMetadata, RollingStockWithLiveries,
 };
 use crate::tables::osrd_infra_rollingstock;
 use crate::views::rolling_stocks::RollingStockError;
@@ -27,6 +27,7 @@ use serde_json::Value as JsonValue;
 
 #[derive(
     AsChangeset,
+    Clone,
     Debug,
     Derivative,
     Deserialize,
@@ -47,6 +48,8 @@ pub struct RollingStockModel {
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
     pub version: Option<String>,
+    #[diesel(deserialize_as = bool)]
+    pub locked: Option<bool>,
     #[diesel(deserialize_as = DieselJson<EffortCurves>)]
     pub effort_curves: Option<DieselJson<EffortCurves>>,
     #[diesel(deserialize_as = String)]
@@ -77,6 +80,8 @@ pub struct RollingStockModel {
     pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = Option<JsonValue>)]
     pub power_restrictions: Option<Option<JsonValue>>,
+    #[diesel(deserialize_as = DieselJson<Vec<EnergySource>>)]
+    pub energy_sources: Option<DieselJson<Vec<EnergySource>>>,
 }
 
 impl Identifiable for RollingStockModel {
@@ -132,10 +137,9 @@ impl Update for RollingStockModel {
     }
 }
 
-impl From<RollingStockModel> for RollingStock {
+impl From<RollingStockModel> for RollingStockCommon {
     fn from(rolling_stock_model: RollingStockModel) -> Self {
-        RollingStock {
-            id: rolling_stock_model.id.unwrap(),
+        RollingStockCommon {
             name: rolling_stock_model.name.unwrap(),
             version: rolling_stock_model.version.unwrap(),
             effort_curves: rolling_stock_model.effort_curves.unwrap().0,
@@ -151,8 +155,20 @@ impl From<RollingStockModel> for RollingStock {
             mass: rolling_stock_model.mass.unwrap(),
             rolling_resistance: rolling_stock_model.rolling_resistance.unwrap().0,
             loading_gauge: rolling_stock_model.loading_gauge.unwrap(),
-            metadata: rolling_stock_model.metadata.unwrap().0,
             power_restrictions: rolling_stock_model.power_restrictions.unwrap(),
+            energy_sources: rolling_stock_model.energy_sources.unwrap().0,
+        }
+    }
+}
+
+impl From<RollingStockModel> for RollingStock {
+    fn from(rolling_stock_model: RollingStockModel) -> Self {
+        let rolling_stock_common: RollingStockCommon = rolling_stock_model.clone().into();
+        RollingStock {
+            id: rolling_stock_model.id.unwrap(),
+            common: rolling_stock_common,
+            locked: rolling_stock_model.locked.unwrap(),
+            metadata: rolling_stock_model.metadata.unwrap().0,
         }
     }
 }
@@ -171,13 +187,15 @@ pub mod tests {
     use diesel::r2d2::{ConnectionManager, Pool};
 
     pub fn get_fast_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!("../../tests/example_rolling_stock.json"))
+        serde_json::from_str(include_str!("../../tests/example_rolling_stock_1.json"))
             .expect("Unable to parse")
     }
 
     pub fn get_other_rolling_stock() -> RollingStockModel {
-        serde_json::from_str(include_str!("../../tests/example_rolling_stock_2.json"))
-            .expect("Unable to parse")
+        serde_json::from_str(include_str!(
+            "../../tests/example_rolling_stock_2_energy_sources.json"
+        ))
+        .expect("Unable to parse")
     }
 
     pub fn get_invalid_effort_curves() -> &'static str {

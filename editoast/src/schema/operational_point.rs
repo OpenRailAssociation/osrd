@@ -52,8 +52,8 @@ pub struct OperationalPointSncfExtension {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointIdentifierExtension {
-    name: NonBlankString,
-    uic: i64,
+    pub name: NonBlankString,
+    pub uic: i64,
 }
 
 impl OSRDTyped for OperationalPoint {

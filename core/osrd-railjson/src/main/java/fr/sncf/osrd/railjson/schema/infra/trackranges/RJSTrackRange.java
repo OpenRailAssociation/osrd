@@ -1,10 +1,13 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
-public class RJSTrackRange extends RJSRange {
-    public String track;
+import com.squareup.moshi.Json;
 
-    public RJSTrackRange(String track, double begin, double end) {
+public class RJSTrackRange extends RJSRange {
+    @Json(name = "track")
+    public String trackSectionID;
+
+    public RJSTrackRange(String trackSectionID, double begin, double end) {
         super(begin, end);
-        this.track = track;
+        this.trackSectionID = trackSectionID;
     }
 }

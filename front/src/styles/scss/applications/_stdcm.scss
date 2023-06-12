@@ -10,3 +10,13 @@
 .stdcm-error {
   color: var(--danger);
 }
+
+.stdcm-allowance-icon {
+  max-width: fit-content;
+}
+
+.maximum-run-time-input {
+  .invalid-feedback {
+    font-size: 0.7rem;
+  }
+}

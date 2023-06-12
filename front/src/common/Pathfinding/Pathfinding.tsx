@@ -14,6 +14,7 @@ import { ArrayElement } from 'utils/types';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { PointOnMap } from 'applications/operationalStudies/consts';
@@ -35,6 +36,8 @@ import {
 } from 'reducers/osrdconf/selectors';
 
 import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
+import infraLogo from 'assets/pictures/components/tracks.svg';
+import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { Spinner } from '../Loader';
 
 interface PathfindingState {
@@ -120,7 +123,8 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
       };
     }
     case 'PATHFINDING_PARAM_CHANGED':
-    case 'VIAS_CHANGED': {
+    case 'VIAS_CHANGED':
+    case 'INFRA_CHANGED': {
       if (!action.params || state.running) {
         return state;
       }
@@ -247,7 +251,81 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     rollingStockID,
   };
   const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
+  const [isInfraLoaded, setIsInfraLoaded] = useState(false);
+  const [reloadCount, setReloadCount] = useState(1);
+  const [isInfraError, setIsInfraError] = useState(false);
   const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
+  const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
+    { id: infraID as number },
+    {
+      refetchOnMountOrArgChange: true,
+      pollingInterval: !isInfraLoaded ? 1000 : undefined,
+    }
+  );
+  const [reloadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
+
+  useEffect(() => {
+    if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
+      setTimeout(() => {
+        reloadInfra({ id: infraID as number }).unwrap();
+        setReloadCount((count) => count + 1);
+      }, 1000);
+    }
+  }, [infra, reloadCount]);
+
+  useEffect(() => {
+    if (infra) {
+      switch (infra.state) {
+        case 'NOT_LOADED': {
+          reloadInfra({ id: infraID as number }).unwrap();
+          setIsInfraLoaded(false);
+          break;
+        }
+        case 'ERROR':
+        case 'TRANSIENT_ERROR': {
+          setIsInfraLoaded(true);
+          break;
+        }
+        case 'CACHED': {
+          setIsInfraLoaded(true);
+          pathfindingDispatch({
+            type: 'INFRA_CHANGED',
+            params: {
+              vias,
+              origin,
+              destination,
+              rollingStockID,
+            },
+          });
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  }, [infra]);
+
+  const displayInfraSoftError = () => (
+    <div className="content pathfinding-error my-2">
+      <span className="lead">
+        <BiXCircle />
+      </span>
+      {reloadCount <= 5 ? (
+        <span className="flex-grow-1">{t('errorMessages.unableToLoadInfra', { reloadCount })}</span>
+      ) : (
+        <span className="flex-grow-1">{t('errorMessages.softErrorInfra')}</span>
+      )}
+    </div>
+  );
+
+  const displayInfraHardError = () => (
+    <div className="content pathfinding-error my-2">
+      <span className="lead">
+        <BiXCircle />
+      </span>
+      <span className="flex-grow-1">{t('errorMessages.hardErrorInfra')}</span>
+    </div>
+  );
 
   const transformVias = ({ steps }: Path) => {
     if (steps && steps.length >= 2) {
@@ -295,6 +373,9 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
             pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: 'failedRequest' });
           } else if (e?.data?.message) {
             pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
+            if (e.data.message === 'Infra not loaded' || e.data.message === 'Invalid version') {
+              setIsInfraError(true);
+            }
           }
           dispatch(updatePathfindingID(undefined));
         });
@@ -322,10 +403,17 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
   }, [mustUpdate, vias]);
 
   useEffect(() => {
-    if (pathfindingState.mustBeLaunched) {
+    if (isInfraError) {
+      reloadInfra({ id: infraID as number }).unwrap();
+      setIsInfraLoaded(false);
+    }
+  }, [isInfraError]);
+
+  useEffect(() => {
+    if (infra && infra.state === 'CACHED' && pathfindingState.mustBeLaunched) {
       startPathFinding();
     }
-  }, [pathfindingState.mustBeLaunched]);
+  }, [pathfindingState.mustBeLaunched, infra]);
 
   useEffect(() => {
     if (mustUpdate) {
@@ -376,30 +464,66 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
     [!destination, t('destination')],
     [!rollingStockID, t('rollingstock')],
   ]);
+
+  const isPathFindingActive = Object.values(pathfindingState).every(
+    (state) => state === false || state === ''
+  );
+
   return (
-    <div className="pathfinding-main-container">
-      {pathfindingState.done && !pathfindingState.error && (
-        <div className="pathfinding-done">
-          <div className="title">
-            <BiCheckCircle />
-            {t('pathfindingDone')}
-          </div>
-          {pathDetailsToggleButton}
+    <div className="pathfinding-state-main-container">
+      {infra && infra.state !== 'CACHED' && (
+        <div className="content infra-loading">
+          <img src={infraLogo} alt="Infra logo" className="mr-2" />
+          <div>{t('infraLoading')}</div>
+          <InfraLoadingState infra={infra} />
         </div>
       )}
-      {pathfindingState.error && (
-        <div className="pathfinding-error">
-          <BiXCircle />
-          {t('pathfindingError', { errorMessage: t(pathfindingState.error) })}
+
+      {infra &&
+        (infra.state === 'TRANSIENT_ERROR'
+          ? displayInfraSoftError()
+          : infra.state === 'ERROR' && displayInfraHardError())}
+
+      {isPathFindingActive ? (
+        <div className={`content pathfinding-none ${infra && infra.state !== 'CACHED' && 'mt-2'}`}>
+          {t('pathfindingNoState')}
         </div>
+      ) : (
+        <>
+          {pathfindingState.done && !pathfindingState.error && (
+            <div className="content pathfinding-done">
+              <span className="lead">
+                <BiCheckCircle />
+              </span>
+              <span className="flex-grow-1">{t('pathfindingDone')}</span>
+              {pathDetailsToggleButton}
+            </div>
+          )}
+          {pathfindingState.error && (
+            <div
+              className={`content pathfinding-error ${infra && infra.state !== 'CACHED' && 'mt-2'}`}
+            >
+              <span className="lead">
+                <BiXCircle />
+              </span>
+              <span className="flex-grow-1">
+                {t('pathfindingError', { errorMessage: t(pathfindingState.error) })}
+              </span>
+            </div>
+          )}
+          {pathfindingState.missingParam && (
+            <div className="content missing-params">
+              <span className="lead">
+                <BiErrorCircle />
+              </span>
+              <span className="flex-grow-1">
+                {t('pathfindingMissingParams', { missingElements })}
+              </span>
+            </div>
+          )}
+          {pathfindingState.running && loaderPathfindingInProgress}
+        </>
       )}
-      {pathfindingState.missingParam && (
-        <div className="missing-params">
-          <BiErrorCircle />
-          {t('pathfindingMissingParams', { missingElements })}
-        </div>
-      )}
-      {pathfindingState.running && loaderPathfindingInProgress}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf'
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import {
+  getInfraID,
   getProjectID,
   getScenarioID,
   getStudyID,
@@ -28,6 +29,8 @@ import getTimetable from '../components/Scenario/getTimetable';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
+import InfraLoadingState from '../components/Scenario/InfraLoadingState';
+import { Conflict } from '../components/Scenario/ConflictsList';
 
 export default function Scenario() {
   const dispatch = useDispatch();
@@ -38,6 +41,17 @@ export default function Scenario() {
   );
   const [trainsWithDetails, setTrainsWithDetails] = useState(false);
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
+  const [isInfraLoaded, setIsInfraLoaded] = useState(false);
+  const [reloadCount, setReloadCount] = useState(1);
+
+  const { openModal } = useModal();
+  const navigate = useNavigate();
+  const projectId = useSelector(getProjectID);
+  const studyId = useSelector(getStudyID);
+  const scenarioId = useSelector(getScenarioID);
+  const timetableId = useSelector(getTimetableID);
+  const infraId = useSelector(getInfraID);
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
 
   const [getProject, { data: project }] =
     osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
@@ -47,13 +61,41 @@ export default function Scenario() {
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useLazyQuery(
       {}
     );
+  const [getTimetableConflicts] = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useLazyQuery(
+    {}
+  );
 
-  const { openModal } = useModal();
-  const navigate = useNavigate();
-  const projectId = useSelector(getProjectID);
-  const studyId = useSelector(getStudyID);
-  const scenarioId = useSelector(getScenarioID);
-  const timetableId = useSelector(getTimetableID);
+  const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
+    { id: infraId as number },
+    {
+      refetchOnMountOrArgChange: true,
+      pollingInterval: !isInfraLoaded ? 1000 : undefined,
+    }
+  );
+  const [reloadInfra] = osrdEditoastApi.usePostInfraByIdLoadMutation();
+
+  useEffect(() => {
+    if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
+      setTimeout(() => {
+        reloadInfra({ id: infraId as number }).unwrap();
+        setReloadCount((count) => count + 1);
+      }, 1000);
+    }
+  }, [infra, reloadCount]);
+
+  useEffect(() => {
+    if (infra && infra.state === 'NOT_LOADED') {
+      reloadInfra({ id: infraId as number }).unwrap();
+      setIsInfraLoaded(false);
+    }
+
+    if (
+      infra &&
+      (infra.state === 'CACHED' || infra.state === 'ERROR' || infra.state === 'TRANSIENT_ERROR')
+    ) {
+      setIsInfraLoaded(true);
+    }
+  }, [infra]);
 
   const getScenarioTimetable = async (withNotification = false) => {
     if (projectId && studyId && scenarioId) {
@@ -63,9 +105,17 @@ export default function Scenario() {
           dispatch(updateTimetableID(result.timetable_id));
           dispatch(updateInfraID(result.infra_id));
 
-          const preferedTimetableId = result.timetable_id || timetableId;
+          const preferredTimetableId = result.timetable_id || timetableId;
 
-          getTimetable(preferedTimetableId);
+          getTimetable(preferredTimetableId);
+
+          if (preferredTimetableId) {
+            getTimetableConflicts({ id: preferredTimetableId })
+              .unwrap()
+              .then((data) => {
+                setConflicts(data as Conflict[]);
+              });
+          }
           if (withNotification) {
             dispatch(
               setSuccess({
@@ -151,6 +201,7 @@ export default function Scenario() {
                       <div className="col-md-6">
                         <div className="scenario-details-infra-name">
                           <img src={infraLogo} alt="Infra logo" className="mr-2" />
+                          {infra && <InfraLoadingState infra={infra} />}
                           {scenario.infra_name}
                           <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
                         </div>
@@ -166,18 +217,36 @@ export default function Scenario() {
                         </div>
                       </div>
                     </div>
+                    {infra &&
+                      infra.state === 'TRANSIENT_ERROR' &&
+                      (reloadCount <= 5 ? (
+                        <div className="scenario-details-infra-error mt-1">
+                          {t('errorMessages.unableToLoadInfra', { reloadCount })}
+                        </div>
+                      ) : (
+                        <div className="scenario-details-infra-error mt-1">
+                          {t('errorMessages.softErrorInfra')}
+                        </div>
+                      ))}
+                    {infra && infra.state === 'ERROR' && (
+                      <div className="scenario-details-infra-error mt-1">
+                        {t('errorMessages.hardErrorInfra')}
+                      </div>
+                    )}
                     <div className="scenario-details-description">{scenario.description}</div>
                   </div>
                 )}
-                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && infra && (
                   <TimetableManageTrainSchedule
                     displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    infraState={infra.state}
                   />
                 )}
                 <Timetable
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   trainsWithDetails={trainsWithDetails}
+                  conflicts={conflicts}
                 />
               </div>
             </div>
@@ -185,9 +254,7 @@ export default function Scenario() {
               {(displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add ||
                 displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit) && (
                 <div className="scenario-managetrainschedule">
-                  <ManageTrainSchedule
-                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  />
+                  <ManageTrainSchedule />
                 </div>
               )}
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (

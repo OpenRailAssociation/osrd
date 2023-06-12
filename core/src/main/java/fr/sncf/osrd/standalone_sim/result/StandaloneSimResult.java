@@ -24,4 +24,16 @@ public class StandaloneSimResult {
     public List<Warning> warnings = new ArrayList<>();
     @Json(name = "electrification_conditions")
     public List<List<ElectrificationConditionsRange>> electrificationConditions = new ArrayList<>();
+
+    /** Update all trainResults with the given departure times */
+    public void addDepartureTimes(List<Double> departureTimes) {
+        var simLists = new ArrayList<>(List.of(baseSimulations, ecoSimulations));
+        for (var simList : simLists) {
+            for (var i = 0; i < departureTimes.size(); i++) {
+                var trainResult = simList.get(i);
+                if (trainResult != null)
+                    simList.set(i, trainResult.withDepartureTime(departureTimes.get(i)));
+            }
+        }
+    }
 }

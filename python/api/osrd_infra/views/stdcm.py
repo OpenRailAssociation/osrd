@@ -72,7 +72,7 @@ def make_stdcm_core_payload(request):
 
     optional_forwarded_parameters = [
         "maximum_departure_delay",
-        "maximum_relative_run_time",
+        "maximum_run_time",
         "speed_limit_tags",
         "margin_before",
         "margin_after",

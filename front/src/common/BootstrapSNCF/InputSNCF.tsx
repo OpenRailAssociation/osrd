@@ -57,6 +57,7 @@ export type InputSNCFProps = {
   selectAllOnFocus?: boolean;
   step?: number;
   isFlex?: boolean;
+  condensed?: boolean;
 };
 
 class InputSNCF extends React.Component<InputSNCFProps> {
@@ -88,6 +89,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     selectAllOnFocus: false,
     step: 1,
     isFlex: false,
+    condensed: false,
   };
 
   // Appends a icon button right next to the input field
@@ -144,6 +146,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
       unit,
       sm,
       isFlex,
+      condensed,
       readonly,
       whiteBG,
       clearButton,
@@ -163,6 +166,8 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     const backgroundColor = whiteBG ? 'bg-white' : '';
     const clearOption = clearButton ? 'clear-option' : '';
     const flex = isFlex ? 'd-flex align-items-center' : '';
+    const condensedIcon = condensed ? 'condensed-icon' : '';
+    const condensedInput = condensed ? 'px-2' : '';
 
     // Test and adapt display if entry is invalid
     let invalidClass = '';
@@ -187,7 +192,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
             <input
               type={type}
               onChange={onChange}
-              className={`form-control ${backgroundColor} ${formSize} ${readOnlyFlag} ${clearOption}`}
+              className={`form-control ${backgroundColor} ${formSize} ${readOnlyFlag} ${clearOption} ${condensedInput}`}
               id={id}
               name={name}
               value={value}
@@ -201,7 +206,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
               list={list}
             />
             <span className="form-control-state" />
-            {unit && <span className="form-control-icon small">{unit}</span>}
+            {unit && <span className={`form-control-icon small ${condensedIcon}`}>{unit}</span>}
             {this.renderClearButton()}
           </div>
           {this.renderAppendButton(sm)}

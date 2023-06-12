@@ -514,11 +514,11 @@ files = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 category = "main"
 optional = false
-python-versions = ">=3.9,<3.11"
+python-versions = ">=3.9,<3.12"
 files = []
 develop = false
 
@@ -1091,4 +1091,4 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "7c9044ed5b5fe14cd60b83e016bddc931f6cea358c4e91f5591f42c19065ef37"
+content-hash = "fb33156aacfd3553476f55d837c0b79dbd4aef95f8845768ce964c722fb5ec80"

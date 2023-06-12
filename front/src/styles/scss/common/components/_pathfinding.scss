@@ -17,16 +17,6 @@
       border: none;
       background-color: transparent;
     }
-    &:not(.via):last-child::after {
-      position: absolute;
-      margin-bottom: -2rem;
-      z-index: 0;
-      display: block;
-      width: 1rem;
-      height: 2.5rem;
-      content: '';
-      background-color: var(--white);
-    }
 
     &.via {
       display: flex;
@@ -94,41 +84,92 @@
   }
 }
 
-.pathfinding-main-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 1rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--coolgray1);
-
-  .pathfinding-subsection {
+.pathfinding-state-main-container {
+  .content {
     display: flex;
-    flex-direction: row;
     align-items: center;
-  }
+    gap: 1rem;
+    justify-content: center;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background-color: var(--white);
+    border-radius: 4px;
+    border: 2px solid var(--white);
+    color: var(--white);
+    img {
+      height: 1rem;
+    }
+    .lead {
+      line-height: 1rem;
+    }
 
-  .pathfinding-done {
-    @extend .pathfinding-subsection;
-    
-    .title {
+    &.pathfinding-none {
+      color: var(--coolgray9);
+    }
+
+    &.pathfinding-done {
       color: var(--success);
     }
 
-    .details {
-      margin-left: 0.25rem;
-      font-weight: 400;
+    &.pathfinding-error {
+      background-color: var(--danger);
+      border-color: var(--danger);
     }
-  }
 
-  .pathfinding-error {
-    @extend .pathfinding-subsection;
-    color: var(--danger);
-  }
+    &.missing-params {
+      background-color: var(--warning);
+      border-color: var(--warning);
+      color: var(--secondary);
+    }
 
-  .missing-params {
-    @extend .pathfinding-subsection;
-    color: var(--warning);
+    &.infra-loading {
+      color: var(--orange);
+      border-color: #e2ae92;
+    }
+
+    .infra-loading-state {
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      margin-right: 0.5rem;
+
+      &.cached {
+        color: var(--green);
+      }
+      &.loading {
+        color: var(--orange);
+      }
+
+      .infra-loader:first-child {
+        animation: dot-flashing 0.5s infinite linear alternate;
+        animation-delay: 0s;
+      }
+      .infra-loader:nth-child(2) {
+        animation: dot-flashing 0.5s infinite linear alternate;
+        animation-delay: 0.25s;
+      }
+      .infra-loader:nth-child(3) {
+        animation: dot-flashing 0.5s infinite linear alternate;
+        animation-delay: 0.5s;
+      }
+
+      @keyframes dot-flashing {
+        0% {
+          color: var(--orange);
+        }
+        50%,
+        100% {
+          color: #f8e3d8;
+        }
+      }
+
+      .steps {
+        font-weight: 500;
+        margin-left: 0.5rem;
+        margin-top: 0.1rem;
+      }
+    }
   }
 
   .pathfinding-in-progress {
@@ -162,7 +203,7 @@
         flex-direction: row;
         align-items: center;
         justify-content: center;
-  
+
         .pathfinding-in-progress-title {
           margin: 0 1rem;
         }

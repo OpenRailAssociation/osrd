@@ -3,7 +3,7 @@ use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetada
 use crate::schema::rolling_stock::light_rolling_stock::{
     LightEffortCurves, LightRollingStock, LightRollingStockWithLiveries,
 };
-use crate::schema::rolling_stock::{Gamma, RollingResistance, RollingStockMetadata};
+use crate::schema::rolling_stock::{EnergySource, Gamma, RollingResistance, RollingStockMetadata};
 use crate::tables::osrd_infra_rollingstock;
 use crate::views::pagination::{Paginate, PaginatedResponse};
 use crate::DbPool;
@@ -26,6 +26,7 @@ pub struct LightRollingStockModel {
     pub id: i64,
     name: String,
     version: String,
+    locked: bool,
     effort_curves: DieselJson<LightEffortCurves>,
     base_power_class: String,
     length: f64,
@@ -41,6 +42,7 @@ pub struct LightRollingStockModel {
     loading_gauge: String,
     metadata: DieselJson<RollingStockMetadata>,
     power_restrictions: Option<JsonValue>,
+    energy_sources: DieselJson<Vec<EnergySource>>,
 }
 
 impl LightRollingStockModel {
@@ -107,6 +109,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
             loading_gauge: rolling_stock_model.loading_gauge,
             metadata: rolling_stock_model.metadata,
             power_restrictions: rolling_stock_model.power_restrictions,
+            energy_sources: rolling_stock_model.energy_sources,
         }
     }
 }

@@ -1,5 +1,5 @@
 {
-    "version": "3.2.0",
+    "version": "3.3.1",
     "operational_points": [
         {
             "id": "South_West_station",
@@ -5385,8 +5385,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5420,8 +5418,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5455,8 +5451,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5490,8 +5484,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5525,8 +5517,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5560,8 +5550,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5595,8 +5583,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5630,8 +5616,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5665,8 +5649,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5700,8 +5682,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5735,8 +5715,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5770,8 +5748,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5805,8 +5781,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5840,8 +5814,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5875,8 +5847,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5910,8 +5880,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5945,8 +5913,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -5980,8 +5946,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6015,8 +5979,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6050,8 +6012,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6085,8 +6045,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6120,8 +6078,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6155,8 +6111,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6190,8 +6144,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6225,8 +6177,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6260,8 +6210,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6295,8 +6243,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6330,8 +6276,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6365,8 +6309,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6400,8 +6342,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6435,8 +6375,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6470,8 +6408,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6505,8 +6441,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6540,8 +6474,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6575,8 +6507,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6610,8 +6540,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6645,8 +6573,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6680,8 +6606,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6715,8 +6639,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6750,8 +6672,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6785,8 +6705,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6820,8 +6738,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6855,8 +6771,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6890,8 +6804,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6925,8 +6837,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6960,8 +6870,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -6995,8 +6903,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7030,8 +6936,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7065,8 +6969,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7100,8 +7002,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7135,8 +7035,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7170,8 +7068,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7205,8 +7101,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7240,8 +7134,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7275,8 +7167,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7310,8 +7200,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7345,8 +7233,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7380,8 +7266,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7415,8 +7299,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7450,8 +7332,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7485,8 +7365,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7520,8 +7398,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7555,8 +7431,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7590,8 +7464,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7625,8 +7497,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7660,8 +7530,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7695,8 +7563,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7730,8 +7596,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7765,8 +7629,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7800,8 +7662,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7835,8 +7695,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7870,8 +7728,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7905,8 +7761,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7940,8 +7794,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -7975,8 +7827,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8010,8 +7860,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8045,8 +7893,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8080,8 +7926,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8115,8 +7959,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8150,8 +7992,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8185,8 +8025,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8220,8 +8058,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8255,8 +8091,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8290,8 +8124,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8325,8 +8157,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8360,8 +8190,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8395,8 +8223,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8430,8 +8256,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8465,8 +8289,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8500,8 +8322,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8535,8 +8355,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8570,8 +8388,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8605,8 +8421,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8640,8 +8454,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8675,8 +8487,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8710,8 +8520,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8745,8 +8553,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8780,8 +8586,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8815,8 +8619,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8850,8 +8652,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8885,8 +8685,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8920,8 +8718,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8955,8 +8751,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -8990,8 +8784,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -9025,8 +8817,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": 90.0,
-                    "angle_sch": 90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -9060,8 +8850,6 @@
             ],
             "extensions": {
                 "sncf": {
-                    "angle_geo": -90.0,
-                    "angle_sch": -90.0,
                     "aspects": [],
                     "comment": "",
                     "default_aspect": "",
@@ -9673,5 +9461,26 @@
             "id": "DH1_2",
             "applicable_directions": "BOTH"
         }
-    ]
+    ],
+    "dead_sections": [
+        {
+          "id": "dead_section.0",
+          "track_ranges": [
+            {
+              "track": "TG1",
+              "begin": 3000.0,
+              "end": 4000.0,
+              "direction": "START_TO_STOP"
+            },
+            {
+              "track": "TG4",
+              "begin": 0.0,
+              "end": 500.0,
+              "direction": "START_TO_STOP"
+            }
+          ],
+          "backside_pantograph_track_ranges": [],
+          "is_pantograph_drop_zone": true
+        }
+      ]
 }

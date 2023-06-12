@@ -41,7 +41,11 @@ export default function Home() {
               <Card img={editorImg} title={t('editor')} link="/editor" />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-              <Card img={rollingStockEditorImg} title={t('rollingStockEditor')} link="/rolling-stock-editor" />
+              <Card
+                img={rollingStockEditorImg}
+                title={t('rollingStockEditor')}
+                link="/rolling-stock-editor"
+              />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" />

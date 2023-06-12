@@ -25,13 +25,13 @@ layers:
       geo:
         on_field: geographic
         cache_duration: 3600
-        data_expr: signal.data
+        data_expr: signal.data || jsonb_build_object('angle', layer.angle_geo)
         joins:
           - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
-        data_expr: signal.data
+        data_expr: signal.data || jsonb_build_object('angle', layer.angle_sch)
         joins:
           - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
 
@@ -191,6 +191,40 @@ layers:
         on_field: schematic
         cache_duration: 3600
         data_expr: layer.data
+  
+  dead_sections:
+    table_name: osrd_infra_deadsectionlayer
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: dead_section.data
+        joins:
+          - inner join osrd_infra_deadsectionmodel dead_section on dead_section.obj_id = layer.obj_id and dead_section.infra_id = layer.infra_id
+      sch:
+        on_field: schematic
+        cache_duration: 3600
+        data_expr: dead_section.data
+        joins:
+          - inner join osrd_infra_deadsectionmodel dead_section on dead_section.obj_id = layer.obj_id and dead_section.infra_id = layer.infra_id
+  
+  backside_pantograph_dead_sections:
+    table_name: osrd_infra_backwardpantographdeadsectionlayer
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        cache_duration: 3600
+        data_expr: dead_section.data
+        joins:
+          - inner join osrd_infra_deadsectionmodel dead_section on dead_section.obj_id = layer.obj_id and dead_section.infra_id = layer.infra_id
+      sch:
+        on_field: schematic
+        cache_duration: 3600
+        data_expr: dead_section.data
+        joins:
+          - inner join osrd_infra_deadsectionmodel dead_section on dead_section.obj_id = layer.obj_id and dead_section.infra_id = layer.infra_id
 
   errors:
     table_name: osrd_infra_errorlayer

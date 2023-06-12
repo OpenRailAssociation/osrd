@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import heapq
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import List, Optional
 
 from osrd_schemas import infra
 
@@ -10,9 +9,6 @@ from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint
 from railjson_generator.schema.infra.track_section import TrackSection
 from railjson_generator.schema.infra.waypoint import BufferStop
-
-if TYPE_CHECKING:
-    from railjson_generator.simulation_builder import RouteNode
 
 
 @dataclass
@@ -162,44 +158,3 @@ def explore_paths(origin):
             )
 
     return [build_path(path) for path in paths]
-
-
-@dataclass(order=True)
-class RoutePathfindingStep:
-    route_node: RouteNode = field(compare=False)
-    previous: Optional[RoutePathfindingStep] = field(default=None, compare=False)
-    offset: float = field(default=0, compare=False)
-    cost: float = field(default=0)
-
-
-def build_route_path(step: RoutePathfindingStep) -> List[RouteNode]:
-    result = []
-    while step:
-        result.append(step.route_node)
-        step = step.previous
-    return list(reversed(result))
-
-
-def find_route_path(
-    origins: List[RoutePathfindingStep],
-    goals: Set[RouteNode],
-) -> List[RouteNode]:
-    heapq.heapify(origins)
-    queue = origins
-    visited: Set[RouteNode] = set()
-    while queue:
-        candidate: RoutePathfindingStep = heapq.heappop(queue)
-        visited.add(candidate.route_node)
-
-        if candidate.route_node in goals:
-            return build_route_path(candidate)
-
-        for neighbor in candidate.route_node.neighbors:
-            if neighbor in visited:
-                continue
-            added_cost = candidate.route_node.length() - candidate.offset
-            heapq.heappush(
-                queue,
-                RoutePathfindingStep(neighbor, candidate, cost=candidate.cost + added_cost),
-            )
-    return []

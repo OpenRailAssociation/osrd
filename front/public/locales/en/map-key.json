@@ -3,5 +3,8 @@
   "directCurrent": "DC",
   "catenaries": "Electrification",
   "keyTitle": "Legend",
-  "speedlimit": "Speed"
+  "speedlimit": "Speed",
+  "dead_sections": "Dead sections",
+  "drop_pantograph": "Lower panto",
+  "cut_off": "Switch-off power"
 }

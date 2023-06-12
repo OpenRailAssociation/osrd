@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
+import cx from 'classnames';
+
+type TabComponentProps = {
+  label: string;
+  content: React.ReactNode;
+};
 
 type TabProps = {
   label: string;
+  title?: React.ReactNode;
+  withWarning?: boolean;
   content: React.ReactNode;
 };
 
 type TabsProps = {
   tabs: TabProps[];
+  pills?: boolean;
+  fullWidth?: boolean;
 };
 
-const Tab = ({ label, content }: TabProps) => (
+const Tab = ({ label, content }: TabComponentProps) => (
   <div className="tab-pane active" aria-labelledby={label}>
     {content}
   </div>
 );
 
-const Tabs = ({ tabs }: TabsProps) => {
+const Tabs = ({ tabs, pills = false, fullWidth = false }: TabsProps) => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const handleTabClick = (index: number) => {
@@ -23,16 +33,21 @@ const Tabs = ({ tabs }: TabsProps) => {
   };
 
   return (
-    <div className="tabs">
-      <div className="d-flex mt-2 mb-3">
+    <div className={cx('tabs-container', fullWidth && 'full-width')}>
+      <div className={cx('tabs', pills && 'pills')}>
         {tabs.map((tab, index) => (
-          // eslint-disable-next-line jsx-a11y/no-static-element-interactions
           <div
-            className={`tab pb-3 mr-4 ${index === activeTabIndex ? 'active' : ''}`}
+            className={cx(
+              'tab',
+              index === activeTabIndex && 'active',
+              tab.withWarning && 'warning'
+            )}
             key={`tab-${tab.label}-${index}}`}
+            role="button"
+            tabIndex={0}
             onClick={() => handleTabClick(index)}
           >
-            {tab.label}
+            {tab.title || tab.label}
           </div>
         ))}
       </div>

@@ -5,10 +5,18 @@ import pytest
 import requests
 
 from .scenario import Scenario
-from .services import API_URL
+from .services import API_URL, EDITOAST_URL
 
 REGRESSION_TESTS_DATA_FOLDER = Path(__file__).parent / "regression_tests_data"
 REGRESSION_TESTS_JSON_FILES = [json_file.name for json_file in REGRESSION_TESTS_DATA_FOLDER.resolve().glob("*.json")]
+
+
+def _load_infra(editoast_url, infra_id):
+    r = requests.post(editoast_url + f"infra/{infra_id}/load")
+    if r.status_code // 100 != 2:
+        if r.status_code // 100 == 4:
+            return None
+        raise RuntimeError(f"Infra load {r.status_code}: {r.content}")
 
 
 def _pathfinding_with_payload(base_url, payload, infra_id, accept_400):
@@ -40,6 +48,7 @@ def _stdcm_with_payload(base_url: str, payload):
 
 def _reproduce_test(path_to_json: Path, scenario: Scenario, rolling_stock_id: int):
     fuzzer_output = json.loads(path_to_json.read_bytes())
+    _load_infra(EDITOAST_URL, scenario.infra)
 
     if fuzzer_output["error_type"] == "STDCM":
         _stdcm_with_payload(API_URL, fuzzer_output["stdcm_payload"])

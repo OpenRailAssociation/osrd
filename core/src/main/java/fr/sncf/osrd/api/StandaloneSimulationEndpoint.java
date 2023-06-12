@@ -4,11 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.DriverBehaviour;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
-import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -21,8 +17,6 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -31,9 +25,6 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 
@@ -70,41 +61,22 @@ public class StandaloneSimulationEndpoint implements Take {
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
+            // TODO : change with get infra when the front is ready
             var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
 
             // load electrical profile set
             var electricalProfileMap = electricalProfileSetManager.getProfileMap(request.electricalProfileSet);
 
             // Parse rolling stocks
-            var rollingStocks = new HashMap<String, RollingStock>();
-            for (var rjsRollingStock : request.rollingStocks) {
-                rollingStocks.put(rjsRollingStock.getID(), RJSRollingStockParser.parse(rjsRollingStock));
-            }
+            var rollingStocks = RJSRollingStockParser.parseCollection(request.rollingStocks);
 
-            // Parse trainPath
-            var trainPath = TrainPathBuilder.from(infra.java(), request.trainsPath);
-            var envelopePath = EnvelopeTrainPath.from(trainPath);
-
-            if (electricalProfileMap.isPresent()) {
-                envelopePath.setElectricalProfiles(
-                        electricalProfileMap.get().getProfilesOnPath(trainPath));
-            }
-
-            // Parse train schedules
-            var trainSchedules = new ArrayList<StandaloneTrainSchedule>();
-            for (var rjsTrainSchedule : request.trainSchedules)
-                trainSchedules.add(RJSStandaloneTrainScheduleParser.parse(
-                        infra.java(), rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
-
-            // Compute envelopes and extract metadata
-            DriverBehaviour driverBehaviour = new DriverBehaviour();
-            var result = StandaloneSim.run(
+            var result = StandaloneSim.runFromRJS(
                     infra,
-                    trainPath,
-                    envelopePath,
-                    trainSchedules,
-                    request.timeStep,
-                    driverBehaviour
+                    electricalProfileMap,
+                    request.trainsPath,
+                    rollingStocks,
+                    request.trainSchedules,
+                    request.timeStep
             );
             result.warnings = recorder.warnings;
 

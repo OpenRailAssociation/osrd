@@ -1,9 +1,8 @@
 package fr.sncf.osrd.sim_infra.api
 
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.units.*
+
 import java.util.Comparator
 import java.util.PriorityQueue
 

@@ -93,6 +93,22 @@ table! {
     }
 }
 
+table! {
+    osrd_infra_deadsectionlayer {
+        id -> BigInt,
+        obj_id -> Text,
+        infra_id -> BigInt,
+    }
+}
+
+table! {
+    osrd_infra_backwardpantographdeadsectionlayer {
+        id -> BigInt,
+        obj_id -> Text,
+        infra_id -> BigInt,
+    }
+}
+
 // Models
 
 table! {
@@ -195,6 +211,15 @@ table! {
 }
 
 table! {
+    osrd_infra_deadsectionmodel(id) {
+        id -> BigInt,
+        obj_id -> Text,
+        data -> Jsonb,
+        infra_id -> BigInt,
+    }
+}
+
+table! {
     osrd_infra_electricalprofileset(id) {
         id -> BigInt,
         name -> Text,
@@ -267,6 +292,7 @@ table! {
         id -> BigInt,
         name -> Text,
         version -> Text,
+        locked -> Bool,
         effort_curves -> Jsonb,
         base_power_class -> Text,
         length -> Double,
@@ -282,6 +308,7 @@ table! {
         loading_gauge -> Text,
         metadata -> Jsonb,
         power_restrictions -> Nullable<Jsonb>,
+        energy_sources -> Jsonb,
     }
 }
 
@@ -350,3 +377,18 @@ table! {
 }
 
 joinable!(osrd_infra_trainschedule -> osrd_infra_pathmodel (path_id));
+
+diesel::table! {
+    use diesel::sql_types::*;
+
+    osrd_infra_simulationoutput (id) {
+        id -> BigInt,
+        mrsp -> Jsonb,
+        base_simulation -> Jsonb,
+        eco_simulation -> Nullable<Jsonb>,
+        electrification_conditions -> Jsonb,
+        train_schedule_id -> Nullable<BigInt>,
+    }
+}
+
+joinable!(  osrd_infra_simulationoutput -> osrd_infra_trainschedule (train_schedule_id));

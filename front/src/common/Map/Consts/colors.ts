@@ -77,6 +77,11 @@ const colors: Record<string, Theme> = {
       color850V: '#86cf00',
       color800V: '#86cf00',
       color750V: '#86cf00',
+      colorOther: '#000000',
+    },
+    dead_sections: {
+      drop_pantograph: "#ff0000",
+      cut_off: "#000000"
     },
     radio: {
       text: '#5596c8',
@@ -221,6 +226,11 @@ const colors: Record<string, Theme> = {
       color850V: '#86cf00',
       color800V: '#86cf00',
       color750V: '#86cf00',
+      colorOther: '#FFFFFF',
+    },
+    dead_sections: {
+      drop_pantograph: "#ff0000",
+      cut_off: "#000000"
     },
     radio: {
       text: '#5596c8',
@@ -357,6 +367,11 @@ const colors: Record<string, Theme> = {
       color850V: bpLight,
       color800V: bpLight,
       color750V: bpLight,
+      colorOther: bpLight,
+    },
+    dead_sections: {
+      drop_pantograph: "#ff0000",
+      cut_off: "#000000"
     },
     radio: {
       text: bpMedium,

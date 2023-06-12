@@ -15,6 +15,7 @@ from railjson_generator import (
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.track_section import TrackSection
+from railjson_generator.schema.simulation.stop import Stop
 
 OUTPUT_DIR = get_output_dir()
 
@@ -569,16 +570,16 @@ south_east.add_part(th1, 4400)
 # ================================
 #  Speed sections
 # ================================
-speed_0 = builder.add_speed_section(300 / 3.6)
+speed_0 = builder.add_speed_section(300 / 3.6, speed_limit_by_tag={"Divers - Haut le pied": 250 / 3.6})
 for track_section in builder.infra.track_sections:
     speed_0.add_track_range(track_section, 0, track_section.length, ApplicableDirection.BOTH)
 
 
-speed_1 = builder.add_speed_section(142 / 3.6)
+speed_1 = builder.add_speed_section(142 / 3.6, speed_limit_by_tag={"Voyageurs - Automoteurs - E32C": 100 / 3.6})
 speed_1.add_track_range(th0, 500, 1000, ApplicableDirection.BOTH)
 speed_1.add_track_range(th1, 0, 4000, ApplicableDirection.BOTH)
 
-speed_2 = builder.add_speed_section(112 / 3.6)
+speed_2 = builder.add_speed_section(112 / 3.6, speed_limit_by_tag={"Marchandise - MA100": 80 / 3.6})
 speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 
 # ================================
@@ -587,6 +588,15 @@ speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 electrified_tracks_25000 = set(builder.infra.track_sections) - {td1, ta0}
 builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks_25000))
 builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", {ta0}))
+
+# ================================
+#  Dead sections
+# ================================
+drop_pantograph_section = builder.add_dead_section(is_pantograph_drop_zone=True)
+drop_pantograph_section.add_track_range(tg1, 3000, tg1.length, Direction.START_TO_STOP)
+drop_pantograph_section.add_track_range(tg4, 0, 500, Direction.START_TO_STOP)
+
+
 # ================================
 # Produce the railjson
 # ================================
@@ -602,27 +612,29 @@ infra.save(OUTPUT_DIR / "infra.json")
 # Produce the simulation file
 # ================================
 
-builder = SimulationBuilder(infra)
+builder = SimulationBuilder()
+stop_locations = [Location(ta1, 500), Location(tc0, 500), Location(te1, 500), Location(tf1, 4300)]
 train_0 = builder.add_train_schedule(
-    Location(ta1, 500),
-    Location(tc0, 500),
-    Location(te1, 500),
-    Location(tf1, 4300),
+    *stop_locations,
     label="train.0",
+    departure_time=10 * 3600,
+    stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
+
+stop_locations = [Location(ta2, 500), Location(tc2, 500), Location(td1, 14000), Location(tg5, 1500)]
 train_1 = builder.add_train_schedule(
-    Location(ta2, 500),
-    Location(tc2, 500),
-    Location(td1, 14000),
-    Location(tg5, 1500),
+    *stop_locations,
     label="train.1",
+    departure_time=10 * 3600 + 20 * 60,
+    stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
+
+stop_locations = [Location(ta0, 500), Location(tc1, 500), Location(td0, 14000), Location(th1, 1500)]
 train_2 = builder.add_train_schedule(
-    Location(ta0, 500),
-    Location(tc1, 500),
-    Location(td0, 14000),
-    Location(th1, 4400),
+    *stop_locations,
     label="train.2",
+    departure_time=10 * 3600 + 40 * 60,
+    stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
 
 # Add train succession tables

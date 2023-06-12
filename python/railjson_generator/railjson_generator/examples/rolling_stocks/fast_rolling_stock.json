@@ -1886,9 +1886,21 @@
       }
     }
   },
-  "base_power_class": 1,
+  "base_power_class": "1",
+  "metadata": {
+    "detail": "",
+    "number": "1",
+    "reference": "",
+    "family": "",
+    "type": "",
+    "grouping": "",
+    "series": "",
+    "subseries": "",
+    "unit": ""
+  },
   "power_restrictions": {
     "C1": 3,
     "C2": 1
-  }
+  },
+  "energy_sources": []
 }

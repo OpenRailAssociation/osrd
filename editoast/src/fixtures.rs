@@ -50,7 +50,7 @@ pub mod tests {
     ) -> TestFixture<RollingStockModel> {
         TestFixture {
             model: serde_json::from_str::<RollingStockModel>(include_str!(
-                "./tests/example_rolling_stock.json"
+                "./tests/example_rolling_stock_1.json"
             ))
             .expect("Unable to parse")
             .create(db_pool.clone())
@@ -67,7 +67,7 @@ pub mod tests {
     ) -> TestFixture<RollingStockModel> {
         TestFixture {
             model: serde_json::from_str::<RollingStockModel>(include_str!(
-                "./tests/example_rolling_stock_2.json"
+                "./tests/example_rolling_stock_2_energy_sources.json"
             ))
             .expect("Unable to parse")
             .create(db_pool.clone())
@@ -178,7 +178,10 @@ pub mod tests {
         let pf_cs = PathfindingChangeset {
             infra_id: small_infra.id,
             payload: Some(
-                serde_json::from_str(include_str!("tests/pathfinding_payload.json")).unwrap(),
+                serde_json::from_str(include_str!(
+                    "tests/small_infra/pathfinding_fixture_payload.json"
+                ))
+                .unwrap(),
             ),
             slopes: Some(diesel_json::Json(vec![])),
             curves: Some(diesel_json::Json(vec![])),

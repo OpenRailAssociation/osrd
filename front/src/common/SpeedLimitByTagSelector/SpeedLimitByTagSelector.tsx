@@ -1,4 +1,4 @@
-import React, { ComponentType, useState, useEffect } from 'react';
+import React, { ComponentType, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateSpeedLimitByTag } from 'reducers/osrdconf';
@@ -7,7 +7,7 @@ import icon from 'assets/pictures/components/speedometer.svg';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
 import { Dispatch } from 'redux';
-import { noop } from 'lodash';
+import { isEmpty, noop } from 'lodash';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import './SpeedLimitByTagSelector.scss';
@@ -16,7 +16,7 @@ type SpeedLimitByTagSelectorProps = {
   t?: (key: string) => string;
   condensed?: boolean;
   speedLimitByTag?: string;
-  speedLimitsByTagsFromApi?: string[];
+  speedLimitsByTags?: string[];
   dispatchUpdateSpeedLimitByTag?: (tag: string) => Dispatch | void;
 };
 
@@ -26,12 +26,13 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
     const dispatch = useDispatch();
     const infraID = useSelector(getInfraID);
     const speedLimitByTag = useSelector(getSpeedLimitByTag);
-    const { data, error } = osrdEditoastApi.useGetInfraByIdSpeedLimitTagsQuery(
-      {
-        id: infraID as number,
-      },
-      { skip: !infraID }
-    );
+    const { data: speedLimitsByTags = [], error } =
+      osrdEditoastApi.useGetInfraByIdSpeedLimitTagsQuery(
+        {
+          id: infraID as number,
+        },
+        { skip: !infraID }
+      );
     const dispatchUpdateSpeedLimitByTag = (newTag: string) => {
       dispatch(updateSpeedLimitByTag(newTag));
     };
@@ -54,8 +55,7 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
       <Component
         {...(hocProps as T)}
         t={t}
-        dispatch={dispatch}
-        speedLimitsByTagsFromApi={data}
+        speedLimitsByTags={speedLimitsByTags}
         speedLimitByTag={speedLimitByTag}
         dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
       />
@@ -66,18 +66,19 @@ function withOSRDInfraData<T>(Component: ComponentType<T>) {
 export function IsolatedSpeedLimitByTagSelector({
   speedLimitByTag,
   condensed = false,
-  speedLimitsByTagsFromApi = [],
+  speedLimitsByTags = [],
   dispatchUpdateSpeedLimitByTag = noop,
   t = (key) => key,
 }: SpeedLimitByTagSelectorProps) {
-  const [speedLimitsTags, setSpeedLimitByTags] = useState<string[]>(speedLimitsByTagsFromApi);
+  const speedLimitsTagsList = useMemo(
+    () =>
+      !isEmpty(speedLimitsByTags)
+        ? [t('noSpeedLimitByTag'), ...Object.values(speedLimitsByTags)]
+        : [],
+    [speedLimitsByTags]
+  );
 
-  useEffect(() => {
-    // Update the document title using the browser API
-    setSpeedLimitByTags(speedLimitsByTagsFromApi);
-  }, [speedLimitsByTagsFromApi]);
-
-  return speedLimitsTags.length > 0 ? (
+  return speedLimitsTagsList.length > 0 ? (
     <div className="osrd-config-item mb-2">
       <div
         className={`osrd-config-item-container ${
@@ -87,9 +88,9 @@ export function IsolatedSpeedLimitByTagSelector({
         <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
         <span className="text-muted">{t('speedLimitByTag')}</span>
         <SelectImprovedSNCF
-          options={speedLimitsTags}
+          options={speedLimitsTagsList}
           onChange={(e) => dispatchUpdateSpeedLimitByTag(e)}
-          selectedValue={speedLimitByTag}
+          selectedValue={speedLimitByTag || t('noSpeedLimitByTag')}
           sm
           withSearch
           data-testid="speed-limit-by-tag-selector"

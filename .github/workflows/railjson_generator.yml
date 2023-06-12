@@ -6,6 +6,10 @@ on:
     paths:
       - python/railjson_generator/**
       - .github/workflows/railjson_generator.yml
+  merge_group:
+    paths:
+      - python/railjson_generator/**
+      - .github/workflows/railjson_generator.yml
   push:
     branches:
       - dev

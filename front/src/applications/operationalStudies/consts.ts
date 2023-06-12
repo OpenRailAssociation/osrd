@@ -3,6 +3,7 @@ import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import { Path, PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
+import { CatenaryRange } from 'common/api/osrdEditoastApi';
 
 export const BLOCKTYPES = [
   {
@@ -98,6 +99,11 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
   noresults: 'NORESULTS',
 });
 
+export interface StandardAllowance {
+  type: string;
+  value: number;
+}
+
 export interface PointOnMap {
   id?: string;
   name?: string;
@@ -129,6 +135,7 @@ export interface OsrdConfState {
   infraID?: number;
   switchTypes?: SwitchType[];
   pathfindingID?: number;
+  pathWithCatenaries?: CatenaryRange[];
   shouldRunPathfinding: boolean;
   timetableID?: number;
   rollingStockID?: number;
@@ -156,8 +163,9 @@ export interface OsrdConfState {
 }
 
 export interface OsrdStdcmConfState extends OsrdConfState {
+  maximumRunTime?: number;
   stdcmMode: ValueOf<typeof STDCM_MODES>;
-  standardStdcmAllowance: any; // We wait for auto generated types
+  standardStdcmAllowance?: StandardAllowance; // We wait for auto generated types
 }
 
 export interface OsrdMultiConfState {
@@ -165,6 +173,8 @@ export interface OsrdMultiConfState {
   simulationConf: OsrdConfState;
   stdcmConf: OsrdStdcmConfState;
 }
+
+export const RUNTIME_CAP = 43200;
 
 // electrical profiles
 export interface ElecProfileProps {

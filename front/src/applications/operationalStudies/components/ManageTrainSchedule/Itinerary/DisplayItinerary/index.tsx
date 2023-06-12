@@ -1,20 +1,17 @@
 import React from 'react';
 import { Position } from 'geojson';
 
-import Pathfinding from 'common/Pathfinding';
 import Origin from './Origin';
 import Vias from './Vias';
 import Destination from './Destination';
 
 interface DisplayItineraryProps {
-  mustUpdate?: boolean;
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
-  zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
   viaModalContent: JSX.Element;
 }
 
 export default function DisplayItinerary(props: DisplayItineraryProps) {
-  const { mustUpdate, zoomToFeaturePoint, zoomToFeature, viaModalContent } = props;
+  const { zoomToFeaturePoint, viaModalContent } = props;
 
   return (
     <>
@@ -25,8 +22,6 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
         viaModalContent={viaModalContent}
       />
       <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
-
-      <Pathfinding mustUpdate={mustUpdate} zoomToFeature={zoomToFeature} />
     </>
   );
 }

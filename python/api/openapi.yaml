@@ -121,6 +121,7 @@ paths:
                 signals: []
                 buffer_stops: []
                 speed_sections: []
+                dead_sections: []
                 catenaries: []
                 detectors: []
         required: true
@@ -1575,12 +1576,12 @@ components:
           type: number
           format: double
           description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
-        maximum_relative_run_time:
+        maximum_run_time:
           type: number
           format: double
           description: |
-            How much longer the total run time can be compared to the shortest path on an empty timetable.
-            Defaults to 2 if unspecified, meaning that the result can't take more than twice the minimum time.
+            Specifies how long the total run time can be in seconds.
+            Defaults to 43200s if unspecified, meaning that the result can't exceed 12h.
         speed_limit_tags:
           type: string
           description: Train category for speed limits
@@ -1683,6 +1684,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/LightRollingStock"
         - type: object
+          required: [effort_curves, energy_sources]
           properties:
             effort_curves:
               type: object
@@ -1702,6 +1704,119 @@ components:
                         $ref: "#/components/schemas/EffortCurve"
                       is_electric:
                         type: boolean
+            energy_sources:
+              type: array
+              items:
+                $ref: "#/components/schemas/EnergySource"
+    EnergySource:
+      oneOf:
+        - $ref: '#/components/schemas/Catenary'
+        - $ref: '#/components/schemas/PowerPack'
+        - $ref: '#/components/schemas/Battery'
+      discriminator:
+        propertyName: energy_source_type
+    Catenary:
+      type: object
+      required: [energy_source_type, max_input_power, max_output_power, efficiency]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Catenary"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+    PowerPack:
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["PowerPack"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+    Battery:
+      type: object
+      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Battery"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+    EnergyStorage:
+      type: object
+      required: [capacity, soc, soc_min, soc_max, refill_law]
+      properties:
+        capacity:
+          type: number
+          format: float
+        soc:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_min:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_max:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        refill_law:
+          type: object
+          nullable: true
+          properties:
+            tau:
+              type: number
+              format: float
+              minimum: 0
+            soc_ref:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+          required: [tau, soc_ref]
+    SpeedDependantPower:
+      type: object
+      required: [speeds, powers]
+      properties:
+        speeds:
+          type: array
+          items:
+            type: number
+            format: float
+        powers:
+          type: array
+          items:
+            type: number
+            format: float
     ConditionalEffortCurve:
       type: object
       properties:
@@ -1987,7 +2102,7 @@ components:
         capacity_speed_limit:
           type: number
           format: double
-      required: 
+      required:
         - "allowance_type"
     EngineeringAllowance:
       allOf:
@@ -2002,7 +2117,7 @@ components:
             capacity_speed_limit:
               type: number
               format: double
-          required: 
+          required:
             - "allowance_type"
         - $ref: "#/components/schemas/RangeAllowance"
     RangeAllowance:

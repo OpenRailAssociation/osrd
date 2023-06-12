@@ -1,12 +1,9 @@
 import json
-from collections import defaultdict
-from typing import Mapping
 
 import requests
 from django.conf import settings
 from django.contrib.gis.geos import LineString, Point
-from intervaltree import IntervalTree
-from osrd_schemas.infra import Direction, TrackSection
+from osrd_schemas.infra import Direction
 from osrd_schemas.path import PathPayload
 from rest_framework import mixins
 from rest_framework.decorators import action
@@ -160,59 +157,12 @@ def parse_waypoint(waypoint, track_map):
     ]
 
 
-def add_chart_point(result, position, value, field_name):
-    point = {"position": position, field_name: value}
-    if len(result) < 2 or result[-2][field_name] != result[-1][field_name] or result[-1][field_name] != value:
-        result.append(point)
-    else:
-        result[-1] = point
-
-
-def create_chart(path_steps, track_to_tree, field_name, direction_sensitive=False):
-    result = []
-    offset = 0
-    for route in path_steps:
-        for track_range in route.track_sections:
-            tree = track_to_tree[track_range.track]
-            if track_range.direction == Direction.START_TO_STOP:
-                for interval in sorted(tree.overlap(track_range.begin, track_range.end)):
-                    add_chart_point(result, offset, interval.data, field_name)
-                    offset += abs(max(track_range.begin, interval.begin) - min(track_range.end, interval.end))
-                    add_chart_point(result, offset, interval.data, field_name)
-            else:
-                for interval in reversed(sorted(tree.overlap(track_range.begin, track_range.end))):
-                    value = -interval.data if direction_sensitive else interval.data
-                    add_chart_point(result, offset, value, field_name)
-                    offset += abs(max(track_range.begin, interval.begin) - min(track_range.end, interval.end))
-                    add_chart_point(result, offset, value, field_name)
-    return result
-
-
-def compute_slopes(payload: PathPayload, track_map: Mapping[str, TrackSection]):
-    trees = defaultdict(IntervalTree)
-    for track_id, track in track_map.items():
-        trees[track_id].addi(0, track["length"], 0)
-        for slope_section in track["slopes"]:
-            assert slope_section["begin"] < slope_section["end"]
-            trees[track_id].chop(slope_section["begin"], slope_section["end"])
-            trees[track_id].addi(slope_section["begin"], slope_section["end"], slope_section["gradient"])
-    return create_chart(payload.route_paths, trees, "gradient", direction_sensitive=True)
-
-
-def compute_curves(payload: PathPayload, track_map: Mapping[str, TrackSection]):
-    trees = defaultdict(IntervalTree)
-    for track_id, track in track_map.items():
-        trees[track_id].addi(0, track["length"], 0)
-        for curve_section in track["curves"]:
-            assert curve_section["begin"] < curve_section["end"]
-            trees[track_id].chop(curve_section["begin"], curve_section["end"])
-            trees[track_id].addi(curve_section["begin"], curve_section["end"], curve_section["radius"])
-    return create_chart(payload.route_paths, trees, "radius", direction_sensitive=True)
-
-
 def postprocess_path(path, payload, infra, owner, step_durations):
     path.geographic = json.dumps(payload.pop("geographic"))
     path.schematic = json.dumps(payload.pop("schematic"))
+
+    path.curves = payload.pop("curves")
+    path.slopes = payload.pop("slopes")
 
     # Post treatment
     track_map = fetch_track_sections_from_payload(infra, payload)
@@ -221,8 +171,6 @@ def postprocess_path(path, payload, infra, owner, step_durations):
     path.owner = owner
     path.infra = infra
     path.payload = payload.dict()
-    path.curves = compute_curves(payload, track_map)
-    path.slopes = compute_slopes(payload, track_map)
 
     path.save()
 

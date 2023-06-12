@@ -1,5 +1,16 @@
 {
+    "curves": [
+        {
+            "position": 0.0,
+            "radius": 0.0
+        },
+        {
+            "position": 46776.18633140542,
+            "radius": 0.0
+        }
+    ],
     "geographic": {
+        "type": "LineString",
         "coordinates": [
             [
                 -0.38951413259778866,
@@ -65,8 +76,7 @@
                 -0.09378430969788595,
                 49.484
             ]
-        ],
-        "type": "LineString"
+        ]
     },
     "path_waypoints": [
         {
@@ -335,6 +345,7 @@
         }
     ],
     "schematic": {
+        "type": "LineString",
         "coordinates": [
             [
                 -0.38951413259778866,
@@ -400,8 +411,145 @@
                 -0.09378430969788595,
                 49.484
             ]
-        ],
-        "type": "LineString"
+        ]
     },
+    "slopes": [
+        {
+            "gradient": 0.0,
+            "position": 0.0
+        },
+        {
+            "gradient": 0.0,
+            "position": 6230.910020506941
+        },
+        {
+            "gradient": -3.0,
+            "position": 6230.910020506941
+        },
+        {
+            "gradient": -3.0,
+            "position": 6530.910020506941
+        },
+        {
+            "gradient": -6.0,
+            "position": 6530.910020506941
+        },
+        {
+            "gradient": -6.0,
+            "position": 6930.910020506941
+        },
+        {
+            "gradient": -3.0,
+            "position": 6930.910020506941
+        },
+        {
+            "gradient": -3.0,
+            "position": 7230.910020506941
+        },
+        {
+            "gradient": 0.0,
+            "position": 7230.910020506941
+        },
+        {
+            "gradient": 0.0,
+            "position": 9230.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 9230.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 9530.91002050694
+        },
+        {
+            "gradient": 6.0,
+            "position": 9530.91002050694
+        },
+        {
+            "gradient": 6.0,
+            "position": 9930.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 9930.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 10230.91002050694
+        },
+        {
+            "gradient": 0.0,
+            "position": 10230.91002050694
+        },
+        {
+            "gradient": 0.0,
+            "position": 19230.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 19230.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 20230.91002050694
+        },
+        {
+            "gradient": 6.0,
+            "position": 20230.91002050694
+        },
+        {
+            "gradient": 6.0,
+            "position": 21230.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 21230.91002050694
+        },
+        {
+            "gradient": 3.0,
+            "position": 22230.91002050694
+        },
+        {
+            "gradient": 0.0,
+            "position": 22230.91002050694
+        },
+        {
+            "gradient": 0.0,
+            "position": 27230.91002050694
+        },
+        {
+            "gradient": -3.0,
+            "position": 27230.91002050694
+        },
+        {
+            "gradient": -3.0,
+            "position": 28230.91002050694
+        },
+        {
+            "gradient": -6.0,
+            "position": 28230.91002050694
+        },
+        {
+            "gradient": -6.0,
+            "position": 29230.91002050694
+        },
+        {
+            "gradient": -3.0,
+            "position": 29230.91002050694
+        },
+        {
+            "gradient": -3.0,
+            "position": 30230.91002050694
+        },
+        {
+            "gradient": 0.0,
+            "position": 30230.91002050694
+        },
+        {
+            "gradient": 0.0,
+            "position": 46776.18633140542
+        }
+    ],
     "warnings": []
 }

@@ -1,9 +1,9 @@
 package fr.sncf.osrd.api.pathfinding;
 
-import fr.sncf.osrd.api.pathfinding.response.DirTrackRange;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +13,7 @@ public class GeomUtils {
         var geoList = new ArrayList<LineString>();
         var schList = new ArrayList<LineString>();
 
-        DirTrackRange previousTrack = null;
+        RJSDirectionalTrackRange previousTrack = null;
         double previousBegin = 0;
         double previousEnd = 0;
 
@@ -30,9 +30,9 @@ public class GeomUtils {
                     continue;
                 }
 
-                if (previousTrack.trackSection.compareTo(trackSection.trackSection) != 0) {
+                if (previousTrack.trackSectionID.compareTo(trackSection.trackSectionID) != 0) {
                     if (Double.compare(previousBegin, previousEnd) != 0) {
-                        var track = infra.getTrackSection(previousTrack.trackSection);
+                        var track = infra.getTrackSection(previousTrack.trackSectionID);
                         sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
                         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
                     }
@@ -44,7 +44,7 @@ public class GeomUtils {
         }
 
         assert previousTrack != null;
-        var track = infra.getTrackSection(previousTrack.trackSection);
+        var track = infra.getTrackSection(previousTrack.trackSectionID);
         sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
 

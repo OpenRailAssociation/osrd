@@ -12,15 +12,16 @@ import { RollingStockInfos } from './RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
 function RollingStockCard(props) {
+  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected, isOnEditMode } =
+    props;
   const [tractionModes, setTractionModes] = useState({
     electric: false,
     thermal: false,
     voltages: [],
   });
   const [curvesComfortList, setCurvesComfortList] = useState();
-  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected } = props;
-  const ref2scrollWhenOpened = useRef();
 
+  const ref2scrollWhenOpened = useRef();
   function displayCardDetail() {
     if (!isOpen) {
       setOpenedRollingStockCardId(data.id);
@@ -62,7 +63,7 @@ function RollingStockCard(props) {
         onClick={() => (isOpen ? setOpenedRollingStockCardId(undefined) : {})}
         role="button"
         tabIndex={0}
-        ref={isOpen ? ref2scrollWhenOpened : undefined}
+        ref={isOpen && !isOnEditMode ? ref2scrollWhenOpened : undefined}
       >
         <div className="rollingstock-title">
           <RollingStockInfos data={data} />
@@ -72,7 +73,7 @@ function RollingStockCard(props) {
           </div>
         </div>
       </div>
-      {isOpen ? (
+      {isOpen && !isOnEditMode ? (
         <RollingStockCardDetail
           id={data.id}
           curvesComfortList={curvesComfortList}
@@ -80,7 +81,11 @@ function RollingStockCard(props) {
         />
       ) : (
         <LazyLoadComponent>
-          <div className="rollingstock-body-container-img">
+          <div
+            className={`rollingstock-body-container-img ${
+              isOpen ? 'opened-rollingstock-body' : 'closed-rollingstock-body'
+            }`}
+          >
             <div className="rollingstock-body-img">
               <RollingStock2Img rollingStock={data} />
             </div>
@@ -133,7 +138,7 @@ function RollingStockCard(props) {
             </div>
           </div>
         </div>
-        {isOpen && curvesComfortList ? (
+        {isOpen && curvesComfortList && !isOnEditMode ? (
           <RollingStockCardButtons
             id={data.id}
             curvesComfortList={curvesComfortList}
@@ -147,6 +152,7 @@ function RollingStockCard(props) {
 
 RollingStockCard.defaultProps = {
   ref2scroll: undefined,
+  isOnEditMode: false,
 };
 
 RollingStockCard.propTypes = {
@@ -155,6 +161,7 @@ RollingStockCard.propTypes = {
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
   ref2scroll: PropTypes.object,
   noCardSelected: PropTypes.bool.isRequired,
+  isOnEditMode: PropTypes.bool,
 };
 
 const MemoizedRollingStockCard = React.memo(RollingStockCard);

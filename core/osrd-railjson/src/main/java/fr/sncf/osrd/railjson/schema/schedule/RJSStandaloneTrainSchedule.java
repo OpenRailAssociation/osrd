@@ -3,7 +3,6 @@ package fr.sncf.osrd.railjson.schema.schedule;
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
-import java.util.Collection;
 
 
 public class RJSStandaloneTrainSchedule implements Identified {
@@ -17,6 +16,10 @@ public class RJSStandaloneTrainSchedule implements Identified {
     /** The speed the train starts the journey with */
     @Json(name = "initial_speed")
     public double initialSpeed;
+
+    /** The time at which the train should start, in seconds. Ignored in the endpoint, used in cli */
+    @Json(name = "departure_time")
+    public double departureTime;
 
     /** A list of allowances, which are applied (stacked) in order. */
     public RJSAllowance[] allowances;

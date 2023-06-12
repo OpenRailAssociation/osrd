@@ -68,7 +68,7 @@ public class PathfindingRoutesEndpoint implements Take {
             var reqWaypoints = request.waypoints;
 
             // load infra
-            var infra = infraManager.load(request.infra, request.expectedVersion, recorder).java();
+            var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder).java();
 
             // load rolling stocks
             var rollingStocks = List.<RollingStock>of();
@@ -206,7 +206,7 @@ public class PathfindingRoutesEndpoint implements Take {
         // Checks that at least one waypoint of each step is on the path
         var tracksOnPath = res.routePaths.stream()
                 .flatMap(route -> route.trackSections.stream())
-                .map(track -> track.trackSection)
+                .map(track -> track.trackSectionID)
                 .collect(Collectors.toSet());
         for (var step : reqWaypoints) {
             assert Arrays.stream(step)

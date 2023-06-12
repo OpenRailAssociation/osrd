@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 public class StandaloneSignalingSimulationTests {
-
     @Test
     public void simpleTinyInfraSignalUpdates() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");

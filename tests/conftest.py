@@ -1,5 +1,4 @@
 import json
-import subprocess
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping, Optional
 
@@ -19,21 +18,9 @@ def _load_generated_infra(name: str) -> int:
     output = Path("/tmp/osrd-generated-examples")
     infra = output / f"{name}/infra.json"
     main([name], output)
-    subprocess.check_call(["docker", "cp", str(infra), "osrd-api:/infra.json"])
-    result = subprocess.check_output(
-        [
-            "docker",
-            "exec",
-            "osrd-api",
-            "python",
-            "manage.py",
-            "import_railjson",
-            name,
-            "/infra.json",
-        ],
-    )
-    id = int(result.split()[-1])
-    return id
+    with open(infra) as json_infra:
+        res = requests.post(EDITOAST_URL + f"infra/railjson?name={name}&generate_data=true", json=json.load(json_infra))
+    return res.json()["infra"]
 
 
 @pytest.fixture(scope="session")
@@ -97,12 +84,12 @@ def _create_fast_rolling_stocks(names_and_metadata: Optional[Mapping[str, Mappin
     payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
     ids = []
     if names_and_metadata is None:
-        ids.append(requests.post(f"{API_URL}/rolling_stock/", json=payload).json()["id"])
+        ids.append(requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"])
     else:
         for name, metadata in names_and_metadata.items():
             payload["name"] = name
             payload["metadata"] = metadata
-            ids.append(requests.post(f"{API_URL}/rolling_stock/", json=payload).json()["id"])
+            ids.append(requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"])
     return ids
 
 
@@ -111,19 +98,20 @@ def fast_rolling_stocks(request: Any) -> Iterable[int]:
     ids = _create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
     yield ids
     for id in ids:
-        requests.delete(f"{API_URL}rolling_stock/{id}/")
+        requests.delete(f"{EDITOAST_URL}rolling_stock/{id}/")
 
 
 @pytest.fixture
 def fast_rolling_stock() -> int:
     id = _create_fast_rolling_stocks()[0]
     yield id
-    requests.delete(f"{API_URL}rolling_stock/{id}/")
+    requests.delete(f"{EDITOAST_URL}rolling_stock/{id}/")
 
 
 @pytest.fixture
 def west_to_south_east_path(small_infra: Infra, fast_rolling_stock: int) -> TrainPath:
     """west_to_south_east_path screenshot in `tests/README.md`"""
+    requests.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     response = requests.post(
         f"{API_URL}pathfinding/",
         json={

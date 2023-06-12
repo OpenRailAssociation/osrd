@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
-from railjson_generator import InfraBuilder, Location, SimulationBuilder
+from railjson_generator import InfraBuilder, Location, SimulationBuilder, get_output_dir
 from railjson_generator.schema.infra.direction import Direction
 
-CURRENT_DIR = Path(__file__).parent
+OUTPUT_DIR = get_output_dir()
 
 # GENERATE INFRA
 builder = InfraBuilder()
@@ -60,10 +60,10 @@ my_op.add_part(tracks[1], 500)
 infra = builder.build()
 
 # Save railjson
-infra.save(CURRENT_DIR / Path("infra.json"))
+infra.save(OUTPUT_DIR / Path("infra.json"))
 
 # GENERATE SIMULATION
-builder = SimulationBuilder(infra)
+builder = SimulationBuilder()
 
 first_train = builder.add_train_schedule(
     Location(tracks[0], 200), Location(tracks[5], 900), label="First", departure_time=10
@@ -86,4 +86,4 @@ for switch in infra.switches:
 sim = builder.build()
 
 # Save railjson
-sim.save(CURRENT_DIR / Path("simulation.json"))
+sim.save(OUTPUT_DIR / Path("simulation.json"))

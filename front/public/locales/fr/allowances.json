@@ -22,7 +22,7 @@
     "anyAllowanceModified": "Marge modifiée",
     "anyAllowanceModificationError": "Erreur à la modification de marge"
   },
-  "specificValuesOnIntervals" : "Valeurs spécifiques sur intervalles",
+  "specificValuesOnIntervals": "Valeurs spécifiques sur intervalles",
   "allowanceGlobalType": {
     "standard": "Standard",
     "engineering": "Construction"
@@ -40,8 +40,7 @@
     "time_per_distance": "Temps/Distance"
   },
   "standardAllowance": "Marge de régularité",
-  "gridMarginBefore": "Marge grille avant",
-  "gridMarginAfter": "Marge grille après",
+  "gridMarginBeforeAfter": "Marge grille avant/après",
   "op": "pr",
   "to": "à",
   "trainSchedules": "Type de marche"

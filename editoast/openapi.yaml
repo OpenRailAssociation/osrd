@@ -17,6 +17,8 @@ tags:
     description: Map layers
   - name: electrical_profiles
     description: Electrical profiles
+  - name: train_schedule
+    description: Train Schedule
 
 paths:
   /health/:
@@ -295,6 +297,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/Infra"
 
+  /infra/{id}/load/:
+    post:
+      tags:
+        - infra
+      summary: Load an infra if not loaded
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      responses:
+        200:
+          description: No content
+
   /infra/{id}/railjson/:
     get:
       tags:
@@ -572,6 +590,12 @@ paths:
             type: integer
           description: Infra ID
           required: true
+        - in: query
+          name: include_rolling_stock_modes
+          schema:
+            type: boolean
+          description: include rolling stocks modes or not
+          required: false
       responses:
         200:
           description: Voltages list
@@ -580,9 +604,8 @@ paths:
               schema:
                 type: array
                 items:
-                  type: number
-                  format: float
-                example: [750.0, 1500.0, 2500.50]
+                  type: string
+                example: ["750", "1500", "2500.5"]
 
   /infra/{id}/attached/{track_id}/:
     get:
@@ -854,6 +877,9 @@ paths:
                 type: array
                 items:
                   type: object
+                  required:
+                    - id
+                    - name
                   properties:
                     id:
                       type: integer
@@ -1038,6 +1064,13 @@ paths:
       tags:
         - rolling_stock
       summary: Create a rolling stock
+      parameters:
+        - in: query
+          name: locked
+          description: whether or not the rolling_stock can be edited/deleted.
+          schema:
+            default: false
+            type: boolean
       requestBody:
         content:
           application/json:
@@ -1107,6 +1140,34 @@ paths:
       responses:
         204:
           description: No content
+
+  /rolling_stock/{id}/locked/:
+    patch:
+      tags:
+        - rolling_stock
+      summary: Update rolling_stock locked field
+      parameters:
+        - in: path
+          name: id
+          description: Rolling_stock id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: New locked value
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locked:
+                  type: boolean
+      responses:
+        204:
+          description: No content
+        404:
+          description: Not found
 
   /rolling_stock/{id}/livery/:
     post:
@@ -1318,6 +1379,44 @@ paths:
                           type: number
                         train_path:
                           type: number
+
+  /timetable/{id}/conflicts/:
+    get:
+      tags:
+        - timetable
+      summary: Retrieve all conflicts for a specific timetable
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Timetable ID
+          required: true
+      responses:
+        200:
+          description: The timetable conflicts content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    train_ids:
+                      type: array
+                      items:
+                        type: number
+                    train_names:
+                      type: array
+                      items:
+                        type: string
+                    start_time:
+                      type: string
+                    end_time:
+                      type: string
+                    conflict_type:
+                      type: string
+                  required: [train_ids, train_names, start_time, end_time, conflict_type]
 
   /projects/{project_id}/studies/:
     post:
@@ -1706,8 +1805,174 @@ paths:
                           items:
                             $ref: "#/components/schemas/TrackRange"
 
+  /train_schedule/{id}/:
+    get:
+      tags:
+        - train_schedule
+      summary: Retrieve a train schedule
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+      responses:
+        200:
+          description: The train schedule info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainSchedule"
+    delete:
+      tags:
+        - train_schedule
+      summary: Delete a train schedule and its result
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+      responses:
+        204:
+          description: No content
+    patch:
+      tags:
+        - train_schedule
+      summary: Update a train_schedule and run a simulation accordingly
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+      requestBody:
+        description: Train schedule fields
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/TrainSchedule"
+        required: true
+      responses:
+        200:
+          description: The train schedule was updated successfully
+
+  /train_schedule/{id}/result/:
+    get:
+      tags:
+        - train_schedule
+      summary: Retrieve a simulation result
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Train schedule ID
+          required: true
+        - in: query
+          name: path_id
+          schema:
+            type: integer
+          description: Path id used to project the train path
+          required: true
+      responses:
+        200:
+          description: The train schedule result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationReport"
+
+  /train_schedule/results/:
+    get:
+      tags:
+        - train_schedule
+      summary: Retrieve the simulation result of multiple train schedules
+      parameters:
+        - in: query
+          name: path_id
+          schema:
+            type: integer
+          description: Path id used to project the train path
+          required: true
+        - in: query
+          name: train_ids
+          schema:
+            type: string
+            pattern: ^\d+(,\d+)*$
+          description: List of train schedule ids to return the results of
+          required: true
+      responses:
+        200:
+          description: The train schedules results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SimulationReport"
+
+  /train_schedule/standalone_simulation/:
+    post:
+      tags:
+        - train_schedule
+      summary: Create a batch of train schedule and run simulations accordingly
+      requestBody:
+        description: The list of train schedules to simulate
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: "#/components/schemas/TrainSchedule"
+        required: true
+      responses:
+        201:
+          description: The ids of the train_schedules created
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 1
+                items:
+                  type: number
+                  format: integer
+
 components:
   schemas:
+    Battery:
+      description: energy source for a rolling stock representing a battery
+      type: object
+      required:
+        [
+          energy_source_type,
+          max_input_power,
+          max_output_power,
+          energy_storage,
+          efficiency,
+        ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Battery"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
     BoundingBox:
       description: A bounding box
       type: array
@@ -1719,6 +1984,25 @@ components:
         maxItems: 2
         items:
           type: integer
+
+    Catenary:
+      description: energy source for a rolling stock representing a catenary
+      type: object
+      required:
+        [energy_source_type, max_input_power, max_output_power, efficiency]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["Catenary"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
 
     Comfort:
       description: Train comfort that will be used for the simulation
@@ -1763,6 +2047,54 @@ components:
             type: number
             format: float
 
+    EnergySource:
+      description: enery source of a rolling stock
+      oneOf:
+        - $ref: "#/components/schemas/Catenary"
+        - $ref: "#/components/schemas/PowerPack"
+        - $ref: "#/components/schemas/Battery"
+      discriminator:
+        propertyName: energy_source_type
+
+    EnergyStorage:
+      description: energy storage of an energy source (of a rolling stock, can be a electrical battery or a hydrogen/fuel powerPack)
+      type: object
+      required: [capacity, soc, soc_min, soc_max, refill_law]
+      properties:
+        capacity:
+          type: number
+          format: float
+        soc:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_min:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        soc_max:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        refill_law:
+          description: physical law defining how the storage can be refilled
+          nullable: true
+          type: object
+          properties:
+            tau:
+              type: number
+              format: float
+              minimum: 0
+            soc_ref:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+          required: [tau, soc_ref]
+
     Infra:
       properties:
         id:
@@ -1772,6 +2104,9 @@ components:
         version:
           type: string
           example: "1"
+        railjson_version:
+          type: string
+          example: "3.3.1"
         generated_version:
           type: string
           nullable: true
@@ -1784,8 +2119,32 @@ components:
           format: date
         locked:
           type: boolean
+        state:
+          type: string
+          enum:
+            - NOT_LOADED
+            - INITIALIZING
+            - DOWNLOADING
+            - PARSING_JSON
+            - PARSING_INFRA
+            - ADAPTING_KOTLIN
+            - LOADING_SIGNALS
+            - BUILDING_BLOCKS
+            - CACHED
+            - TRANSIENT_ERROR
+            - ERROR
       required:
-        [id, name, version, generated_version, created, modified, locked]
+        [
+          id,
+          name,
+          version,
+          railjson_version,
+          generated_version,
+          created,
+          modified,
+          locked,
+          state,
+        ]
 
     Zone:
       type: object
@@ -2028,6 +2387,7 @@ components:
         - overlapping_speed_sections
         - overlapping_switches
         - overlapping_track_links
+        - overlapping_catenaries
         - unknown_port_name
         - unused_port
 
@@ -2124,9 +2484,15 @@ components:
 
     LightRollingStock:
       allOf:
-        - $ref: "#/components/schemas/RollingStock"
+        - $ref: "#/components/schemas/RollingStockBase"
         - type: object
           properties:
+            id:
+              type: number
+            liveries:
+              type: array
+              items:
+                $ref: "#/components/schemas/RollingStockLivery"
             effort_curves:
               type: object
               properties:
@@ -2141,7 +2507,34 @@ components:
                         type: boolean
                     required: [is_electric]
               required: [default_mode, modes]
-          required: [effort_curves]
+          required: [id, liveries, effort_curves]
+
+    PowerPack:
+      description: energy source for a rolling stock representing a power pack (hydrogen, fuel...)
+      type: object
+      required:
+        [
+          energy_source_type,
+          max_input_power,
+          max_output_power,
+          energy_storage,
+          efficiency,
+        ]
+      properties:
+        energy_source_type:
+          type: string
+          enum: ["PowerPack"]
+        max_input_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        max_output_power:
+          $ref: "#/components/schemas/SpeedDependantPower"
+        energy_storage:
+          $ref: "#/components/schemas/EnergyStorage"
+        efficiency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
 
     RollingStock:
       allOf:
@@ -2157,12 +2550,43 @@ components:
           required: [id, liveries]
 
     RollingStockUpsertPayload:
+      allOf:
+        - $ref: "#/components/schemas/RollingStockBase"
+        - type: object
+          properties:
+            effort_curves:
+              type: object
+              properties:
+                default_mode:
+                  type: string
+                modes:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      curves:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ConditionalEffortCurve"
+                      default_curve:
+                        $ref: "#/components/schemas/EffortCurve"
+                      is_electric:
+                        type: boolean
+                    required: [curves, default_curve, is_electric]
+              required: [default_mode, modes]
+          required: [effort_curves]
+
+    RollingStockBase:
       properties:
         version:
           type: string
           example: "3.0"
         name:
           type: string
+        locked:
+          type: boolean
+          default: false
+          description: Whether the rolling stock can be edited/deleted or not.
         length:
           type: number
           format: float
@@ -2223,26 +2647,6 @@ components:
             - "FR3.3"
             - "FR3.3/GB/G2"
             - "GLOTT"
-        effort_curves:
-          type: object
-          properties:
-            default_mode:
-              type: string
-            modes:
-              type: object
-              additionalProperties:
-                type: object
-                properties:
-                  curves:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/ConditionalEffortCurve"
-                  default_curve:
-                    $ref: "#/components/schemas/EffortCurve"
-                  is_electric:
-                    type: boolean
-                required: [curves, default_curve, is_electric]
-          required: [default_mode, modes]
         base_power_class:
           type: string
           example: "5"
@@ -2254,6 +2658,10 @@ components:
           example:
             "C1US": "4"
             "C2US": "3"
+        energy_sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnergySource"
         metadata:
           type: object
           properties:
@@ -2311,10 +2719,10 @@ components:
         - mass
         - rolling_resistance
         - loading_gauge
-        - effort_curves
         - base_power_class
         - power_restrictions
         - metadata
+        - energy_sources
 
     RollingStockLivery:
       properties:
@@ -2323,8 +2731,8 @@ components:
         name:
           type: string
         compound_image_id:
-                    type: number
-                    nullable: true
+          type: number
+          nullable: true
       required: [id, name, compound_image_id]
 
     RouteTrackRangesComputed:
@@ -2364,6 +2772,22 @@ components:
           type: string
           enum:
             - CantComputePath
+
+    SpeedDependantPower:
+      description: power-speed curve (in an energy source)
+      type: object
+      required: [speeds, powers]
+      properties:
+        speeds:
+          type: array
+          items:
+            type: number
+            format: float
+        powers:
+          type: array
+          items:
+            type: number
+            format: float
 
     ElectricalProfile:
       type: object
@@ -3054,3 +3478,407 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Point3D"
+
+    TrainSchedule:
+      type: object
+      properties:
+        train_name:
+          type: string
+        timetable:
+          type: integer
+        rolling_stock:
+          type: integer
+        departure_time:
+          type: number
+          format: float
+        path:
+          type: integer
+        initial_speed:
+          type: number
+          format: float
+        labels:
+          type: array
+          items:
+            type: string
+        allowances:
+          type: array
+          items:
+            $ref: "#/components/schemas/Allowance"
+        speed_limit_tags:
+          description: Train category for speed limits
+          type: string
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        options:
+          allOf:
+            - $ref: "#/components/schemas/TrainScheduleOptions"
+          nullable: true
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          nullable: true
+    TrainScheduleOptions:
+      description: Options for the standalone simulation
+      type: object
+      properties:
+        ignore_electrical_profiles:
+          type: boolean
+          nullable: true
+
+    PowerRestrictionRange:
+      description: A range along the train path where a power restriction is applied.
+      type: object
+      properties:
+        begin_position:
+          description: Offset from the start of the path, in meters.
+          type: number
+          format: float
+        end_position:
+          description: Offset from the start of the path, in meters.
+          type: number
+          format: float
+        power_restriction_code:
+          description: The power restriction code to apply.
+          type: string
+      example:
+        begin_position: 0.0
+        end_position: 1000.0
+        power_restriction_code: "C1US"
+      required: [begin_position, end_position, power_restriction_code]
+
+    Allowance:
+      oneOf:
+        - $ref: "#/components/schemas/EngineeringAllowance"
+        - $ref: "#/components/schemas/StandardAllowance"
+      discriminator:
+        propertyName: allowance_type
+
+    StandardAllowance:
+      properties:
+        allowance_type:
+          type: string
+          enum: ["standard"]
+        default_value:
+          $ref: "#/components/schemas/AllowanceValue"
+        ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/RangeAllowance"
+        distribution:
+          type: string
+          enum: ["MARECO", "LINEAR"]
+        capacity_speed_limit:
+          type: number
+          format: double
+      required:
+        [
+          allowance_type,
+          default_value,
+          ranges,
+          distribution,
+          capacity_speed_limit,
+        ]
+
+    EngineeringAllowance:
+      allOf:
+        - type: object
+          properties:
+            allowance_type:
+              type: string
+              enum: ["engineering"]
+            distribution:
+              type: string
+              enum: ["MARECO", "LINEAR"]
+            capacity_speed_limit:
+              type: number
+              format: double
+          required: [allowance_type, distribution, capacity_speed_limit]
+        - $ref: "#/components/schemas/RangeAllowance"
+
+    RangeAllowance:
+      properties:
+        begin_position:
+          type: number
+        end_position:
+          type: number
+          example: 1000.0
+        value:
+          $ref: "#/components/schemas/AllowanceValue"
+      required: [begin_position, end_position, value]
+
+    AllowanceValue:
+      oneOf:
+        - $ref: "#/components/schemas/AllowanceTimePerDistanceValue"
+        - $ref: "#/components/schemas/AllowanceTimeValue"
+        - $ref: "#/components/schemas/AllowancePercentValue"
+      discriminator:
+        propertyName: value_type
+
+    AllowanceTimePerDistanceValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time_per_distance"]
+        minutes:
+          type: number
+          example: 5.0
+          description: Minutes per 100k
+      required: [value_type, minutes]
+
+    AllowanceTimeValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time"]
+        seconds:
+          type: number
+          example: 180.0
+      required: [value_type, seconds]
+
+    AllowancePercentValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["percentage"]
+        percentage:
+          type: number
+          example: 15.0
+      required: [value_type, percentage]
+
+    SimulationReportByTrain:
+      properties:
+        speeds:
+          type: array
+          minItems: 1
+          items:
+            allOf:
+              - $ref: "#/components/schemas/SpaceTimePosition"
+              - type: object
+                properties:
+                  speed:
+                    type: number
+                    format: float
+                required: [speed]
+        head_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SpaceTimePosition"
+        tail_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              $ref: "#/components/schemas/SpaceTimePosition"
+        stops:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                description: Can be null if it's not an operational point
+              name:
+                type: string
+                description: Can be 'Unknown' if it's not an operational point
+              time: { type: number, format: float }
+              position: { type: number, format: float }
+              duration: { type: number, format: float }
+              line_code: { type: number }
+              track_number: { type: number }
+              line_name: { type: string }
+              track_name: { type: string }
+            required:
+              [
+                id,
+                name,
+                time,
+                position,
+                duration,
+                line_code,
+                track_number,
+                line_name,
+                track_name,
+              ]
+        route_aspects:
+          type: array
+          items:
+            type: object
+            properties:
+              signal_id:
+                type: string
+                description: id of the updated signal
+              route_id:
+                type: string
+                description: id of the affected route on the train path
+              time_start:
+                type: number
+                format: float
+                description: the aspect starts being displayed at this time
+              time_end:
+                type: number
+                format: float
+                description: the aspect stops being displayed at this time
+              position_start:
+                type: number
+                format: float
+                description: the route starts at this position on the train path
+              position_end:
+                type: number
+                format: float
+                description: the route ends at this position on the train path
+              color:
+                type: number
+                format: float
+                description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+              blinking:
+                type: boolean
+                description: true if the signal is blinking
+              aspect_label:
+                type: string
+                description: label of the new signal aspect
+            required:
+              - signal_id
+              - route_id
+              - time_start
+              - time_end
+              - position_start
+              - position_end
+              - color
+              - blinking
+              - aspect_label
+        signals:
+          type: array
+          items:
+            type: object
+            properties:
+              signal_id: { type: integer }
+              aspects:
+                type: array
+                items:
+                  type: string
+              geo_position:
+                type: array
+                items: { type: number, format: float }
+                minItems: 2
+                maxItems: 2
+              schema_position:
+                type: array
+                items: { type: number, format: float }
+                minItems: 2
+                maxItems: 2
+            required: [signal_id, aspects, geo_position, schema_position]
+        mechanical_energy_consumed:
+          type: number
+          format: float
+      required:
+        - speeds
+        - head_positions
+        - tail_positions
+        - stops
+        - route_aspects
+        - signals
+        - mechanical_energy_consumed
+
+    SpaceTimePosition:
+      type: object
+      properties:
+        time: { type: number, format: float }
+        position: { type: number, format: float }
+      required: [time, position, speed]
+
+    SimulationReport:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+        path:
+          type: integer
+          description: id of the path used for projection
+        vmax:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              speed: { type: number }
+            required: [position, speed]
+        slopes:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              gradient: { type: number }
+            required: [position, gradient]
+        curves:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              radius: { type: number }
+            required: [position, radius]
+        base:
+          $ref: "#/components/schemas/SimulationReportByTrain"
+        eco:
+          $ref: "#/components/schemas/SimulationReportByTrain"
+        speed_limit_tags:
+          type: string
+        electrification_conditions:
+          type: array
+          items:
+            description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
+            type: array
+            items:
+              type: object
+              properties:
+                start:
+                  type: number
+                  format: double
+                stop:
+                  type: number
+                  format: double
+                mode_used:
+                  type: string
+                profile_used:
+                  type: string
+                  nullable: true
+                restriction_used:
+                  type: string
+                  nullable: true
+                mode_seen:
+                  type: string
+                  nullable: true
+                profile_seen:
+                  type: string
+                  nullable: true
+                restriction_seen:
+                  type: string
+                  nullable: true
+              required: [start, stop, mode_used]
+      required:
+        - id
+        - name
+        - labels
+        - path
+        - vmax
+        - slopes
+        - curves
+        - base
+        - electrification_conditions

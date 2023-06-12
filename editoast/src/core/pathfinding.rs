@@ -2,10 +2,11 @@ use derivative::Derivative;
 use geos::geojson::{Geometry, Value::LineString};
 use serde::{Deserialize, Serialize};
 
-use crate::views::rolling_stocks::RollingStockForm;
+use crate::models::{CurveGraph, SlopeGraph};
+use crate::schema::rolling_stock::RollingStock;
 use crate::{models::RoutePath, schema::Direction};
 
-use super::AsCoreRequest;
+use super::{AsCoreRequest, Json};
 
 pub type PathfindingWaypoints = Vec<Vec<Waypoint>>;
 
@@ -15,7 +16,7 @@ pub struct PathfindingRequest {
     infra: i64,
     expected_version: String,
     waypoints: PathfindingWaypoints,
-    rolling_stocks: Vec<RollingStockForm>,
+    rolling_stocks: Vec<RollingStock>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -35,6 +36,8 @@ pub struct PathfindingResponse {
     pub schematic: Geometry,
     pub route_paths: Vec<RoutePath>,
     pub path_waypoints: Vec<PathWaypoint>,
+    pub slopes: SlopeGraph,
+    pub curves: CurveGraph,
     pub warnings: Vec<Warning>,
 }
 
@@ -52,7 +55,7 @@ pub struct Warning {
     message: String,
 }
 
-impl AsCoreRequest<PathfindingResponse> for PathfindingRequest {
+impl AsCoreRequest<Json<PathfindingResponse>> for PathfindingRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/pathfinding/routes";
 }
@@ -89,7 +92,7 @@ impl PathfindingRequest {
         self
     }
 
-    pub fn with_rolling_stocks(&mut self, rolling_stocks: &mut Vec<RollingStockForm>) -> &mut Self {
+    pub fn with_rolling_stocks(&mut self, rolling_stocks: &mut Vec<RollingStock>) -> &mut Self {
         self.rolling_stocks.append(rolling_stocks);
         self
     }

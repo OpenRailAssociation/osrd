@@ -10,7 +10,6 @@ import along from '@turf/along';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import { CgLoadbar } from 'react-icons/cg';
 import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
@@ -49,7 +48,7 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TrainHoverPosition from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/TrainHoverPosition';
 
 import colors from 'common/Map/Consts/colors';
-import { datetime2sec } from 'utils/timeManipulation';
+import { datetime2Isostring, datetime2sec, timeString2datetime } from 'utils/timeManipulation';
 import { get } from 'common/requests';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import {
@@ -85,6 +84,14 @@ interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
 
+type InterpoledTrain = {
+  name: string;
+  id: number;
+  head_positions?: PositionSpeedTime;
+  tail_positions?: PositionSpeedTime;
+  speeds?: PositionSpeedTime;
+};
+
 const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM } = useSelector(
@@ -114,10 +121,18 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const getRegimeKey = (trainId: number) =>
     allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
 
-  const createOtherPoints = () => {
-    const actualTime = datetime2sec(timePosition);
+  const createOtherPoints = (): InterpoledTrain[] => {
+    const timePositionDate = timeString2datetime(timePosition);
+    let actualTime = 0;
+    if (timePositionDate instanceof Date) {
+      actualTime = datetime2sec(timePositionDate);
+    } else {
+      console.warn('Try to create Other Train Point from unspecified current time Position');
+      return [];
+    }
+
     // First find trains where actual time from position is between start & stop
-    const concernedTrains: any[] = [];
+    const concernedTrains: InterpoledTrain[] = [];
     simulation.trains.forEach((train, idx: number) => {
       const key = getRegimeKey(train.id);
       if (train[key].head_positions[0]) {
@@ -176,12 +191,12 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       // Found trains including timePosition, and organize them with geojson collection of points
       setOtherTrainsHoverPosition(
         createOtherPoints().map((train) => {
-          const headDistanceAlong = train.head_positions.position / 1000;
-          const tailDistanceAlong = train.tail_positions.position / 1000;
+          const headDistanceAlong = (train.head_positions?.position ?? 0) / 1000;
+          const tailDistanceAlong = (train.tail_positions?.position ?? 0) / 1000;
           const headPosition = along(line, headDistanceAlong, {
             units: 'kilometers',
           });
-          const tailPosition = train.tail_position
+          const tailPosition = train.tail_positions
             ? along(line, tailDistanceAlong, { units: 'kilometers' })
             : headPosition;
           const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
@@ -264,7 +279,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         ['position', 'speed'] as const,
         positionLocal
       );
-      dispatch(updateTimePositionValues(timePositionLocal));
+      if (timePositionLocal instanceof Date) {
+        dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal)));
+      } else {
+        throw new Error('Map onFeatureHover, try to update TimePositionValue with incorrect imput');
+      }
     }
     if (e?.features?.[0] && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);

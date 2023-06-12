@@ -805,8 +805,52 @@ export type ConditionalEffortCurve = {
   } | null;
   curve?: EffortCurve;
 };
+export type SpeedDependantPower = {
+  speeds: number[];
+  powers: number[];
+};
+export type Catenary = {
+  energy_source_type: 'Catenary';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  efficiency: number;
+};
+export type EnergyStorage = {
+  capacity: number;
+  soc: number;
+  soc_min: number;
+  soc_max: number;
+  refill_law: {
+    tau: number;
+    soc_ref: number;
+  } | null;
+};
+export type PowerPack = {
+  energy_source_type: 'PowerPack';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage;
+  efficiency: number;
+};
+export type Battery = {
+  energy_source_type: 'Battery';
+  max_input_power: SpeedDependantPower;
+  max_output_power: SpeedDependantPower;
+  energy_storage: EnergyStorage;
+  efficiency: number;
+};
+export type EnergySource =
+  | ({
+      energy_source_type: 'Catenary';
+    } & Catenary)
+  | ({
+      energy_source_type: 'PowerPack';
+    } & PowerPack)
+  | ({
+      energy_source_type: 'Battery';
+    } & Battery);
 export type RollingStock = LightRollingStock & {
-  effort_curves?: {
+  effort_curves: {
     default_mode?: string;
     modes?: {
       [key: string]: {
@@ -816,6 +860,7 @@ export type RollingStock = LightRollingStock & {
       };
     };
   };
+  energy_sources: EnergySource[];
 };
 export type AllowanceTimePerDistanceValue = {
   value_type?: 'time_per_distance';
@@ -993,7 +1038,7 @@ export type StdcmRequest = {
     waypoints?: Waypoint;
   }[];
   maximum_departure_delay?: number;
-  maximum_relative_run_time?: number;
+  maximum_run_time?: number;
   speed_limit_tags?: string;
   margin_before?: number;
   margin_after?: number;

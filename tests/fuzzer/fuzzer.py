@@ -13,6 +13,7 @@ from requests import Response, Timeout
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 15
 INFRA_ID = 1
+EDITOAST_URL = "http://127.0.0.1:8090/"
 
 
 """
@@ -204,7 +205,7 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
         "timetable": scenario.timetable,
         "start_time": random.randint(0, 3600 * 24),
         "maximum_departure_delay": random.randint(0, 3600 * 4),
-        "maximum_relative_run_time": random.random() * 4,
+        "maximum_run_time": random.randint(3600 * 5, 3600 * 10),
         "margin_before": random.randint(0, 600),
         "margin_after": random.randint(0, 600),
         "steps": [convert_stop(stop) for stop in path],
@@ -217,6 +218,7 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
 
 def run(
     base_url: str,
+    editoast_url: str,
     scenario: Scenario,
     n_test: int = 1000,
     log_folder: Path = None,
@@ -233,6 +235,7 @@ def run(
     :param seed: first seed, incremented by 1 for each individual test
     """
     infra_graph = make_graph(base_url, scenario.infra)
+    requests.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
     for i in range(n_test):
         seed += 1
         print("seed:", seed)
@@ -582,4 +585,11 @@ def get_infra_name(base_url: str, infra_id: int):
 
 if __name__ == "__main__":
     new_scenario = create_scenario(URL, INFRA_ID)
-    run(URL, new_scenario, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))
+    run(
+        URL,
+        EDITOAST_URL,
+        new_scenario,
+        10000,
+        Path(__file__).parent / "errors",
+        infra_name=get_infra_name(URL, INFRA_ID),
+    )

@@ -8,12 +8,18 @@ import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
 import fr.sncf.osrd.infra_state.api.TrainPath
+import fr.sncf.osrd.signaling.SignalingSimulator
+import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.*
+import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.*
+import kotlin.collections.*
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.meters
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -98,13 +104,99 @@ fun run(
     val mechanicalEnergyConsumed =
         EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock)
 
+    val spacingRequirements = spacingRequirements(
+        simulator,
+        blockPath,
+        loadedSignalInfra,
+        blockInfra,
+        envelopeWithStops,
+        rawInfra,
+        pathSignals,
+        zoneOccupationChangeEvents
+    )
+
     return ResultTrain(
-        speeds, headPositions, stops, routeOccupancies, mechanicalEnergyConsumed, signalSightings, zoneUpdates
+        speeds,
+        headPositions,
+        stops,
+        routeOccupancies,
+        mechanicalEnergyConsumed,
+        signalSightings,
+        zoneUpdates,
+        spacingRequirements,
     )
 }
 
+private fun spacingRequirements(
+    simulator: SignalingSimulator,
+    blockPath: StaticIdxList<Block>,
+    loadedSignalInfra: LoadedSignalInfra,
+    blockInfra: BlockInfra,
+    envelope: EnvelopeTimeInterpolate,
+    rawInfra: SimInfraAdapter,
+    pathSignals: List<PathSignal>,
+    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>
+): List<SpacingRequirement> {
+    val res = mutableListOf<SpacingRequirement>()
+    val zoneReleases = zoneOccupationChangeEvents.groupBy { it.zone }.mapValues { (_, events) ->
+        assert(events.size <= 2);
+        val exit = events.last()
+        if (exit.isEntry)
+            envelope.totalTime;
+        else
+            exit.time / 1000.0;
+    }
+    val zoneMap = arrayListOf<ZoneId>()
+    var zoneCount = 0
+    for (block in blockPath) {
+        for (zonePath in blockInfra.getBlockPath(block)) {
+            val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
+            zoneMap.add(zone)
+            zoneCount++
+        }
+    }
+
+    for (pathSignal in pathSignals) {
+        val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
+        val sightOffset = max(0.0, (pathSignal.offset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
+        val sightTime = envelope.interpolateTotalTime(sightOffset)
+
+        val signalZoneOffset =
+            blockPath.take(pathSignal.blockIndexInPath + 1).sumOf { blockInfra.getBlockPath(it).size }
+
+        val zoneStates = ArrayList<ZoneStatus>(zoneCount)
+        for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
+
+        var lastConstrainingZone: Int? = null
+        for (i in signalZoneOffset until zoneCount) {
+            zoneStates[i] = ZoneStatus.OCCUPIED
+            val simulatedSignalStates = simulator.evaluate(
+                rawInfra, loadedSignalInfra, blockInfra,
+                blockPath, 0, blockPath.size,
+                zoneStates, ZoneStatus.CLEAR
+            )
+            zoneStates[i] = ZoneStatus.CLEAR
+            val signalState = simulatedSignalStates[pathSignal.signal]!!
+            if (signalState.getEnum("aspect") != "VL") { // FIXME: Have a better way to check if the signal is constraining
+                lastConstrainingZone = i;
+            } else
+                break;
+        }
+        if (lastConstrainingZone == null)
+            continue;
+
+        val zone = zoneMap[lastConstrainingZone]
+        val zoneName = rawInfra.getZoneName(zone)
+        val releaseTime = zoneReleases[zone]?: envelope.totalTime;
+        res.add(SpacingRequirement(zoneName, sightTime, releaseTime))
+    }
+    return res
+}
+
 private fun routeOccupancies(
-    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>, rawInfra: SimInfraAdapter, envelope: EnvelopeTimeInterpolate
+    zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>,
+    rawInfra: SimInfraAdapter,
+    envelope: EnvelopeTimeInterpolate
 ): Map<String, ResultOccupancyTiming> {
     val routeOccupancies = mutableMapOf<String, ResultOccupancyTiming>()
     val zoneOccupationChangeEventsByRoute = mutableMapOf<String, MutableList<ZoneOccupationChangeEvent>>()
@@ -188,7 +280,7 @@ private fun zoneOccupationChangeEvents(
     return zoneOccupationChangeEvents
 }
 
-data class PathSignal(val signal: LogicalSignalId, val offset: Distance)
+data class PathSignal(val signal: LogicalSignalId, val offset: Distance, val blockIndexInPath: Int)
 
 // This doesn't generate path signals outside the envelope
 // The reason being that even if a train see a red signal, it won't
@@ -210,7 +302,7 @@ private fun pathSignals(
         for ((signal, position) in blockSignals.zip(blockSignalPositions).take(numExclusiveSignalInBlock)) {
             val signalOffset = currentOffset + position
             if (0.meters < signalOffset && signalOffset < envelope.endPos.meters)
-                pathSignals.add(PathSignal(signal, signalOffset))
+                pathSignals.add(PathSignal(signal, signalOffset, blockIdx))
         }
 
         for (zonePath in blockInfra.getBlockPath(block)) {

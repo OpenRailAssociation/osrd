@@ -17,6 +17,8 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import org.junit.jupiter.api.Test;
 import java.util.EnumMap;
@@ -29,8 +31,8 @@ public class TrainPathTests {
         var rjsInfra = makeSingleTrackRJSInfra();
         var infra = infraFromRJS(rjsInfra);
         var rjsPath = new RJSTrainPath(List.of(
-                new RJSTrainPath.RJSRoutePath("route_forward", List.of(
-                        new RJSTrainPath.RJSDirectionalTrackRange("track", 20, 80, EdgeDirection.START_TO_STOP)
+                new RJSRoutePath("route_forward", List.of(
+                        new RJSDirectionalTrackRange("track", 20, 80, EdgeDirection.START_TO_STOP)
                 ), "BAL3")
         ));
         var path = TrainPathBuilder.from(infra, rjsPath);
@@ -152,17 +154,17 @@ public class TrainPathTests {
 
     @Test
     public void envelopeTrainPathTests() {
-        var gradients = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
+        var slopes = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
         var map = TreeRangeMap.<Double, Double>create();
         map.put(Range.closed(0., 100.), 0.);
         map.put(Range.closed(0., 30.), 30.);
         map.put(Range.closed(60., 80.), -10.);
         for (var dir : Direction.values())
-            gradients.put(dir, map);
+            slopes.put(dir, map);
         var rjsInfra = makeSingleTrackRJSInfra();
         var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
-        setGradient(track, gradients);
+        setSlopes(track, slopes);
         var path = TrainPathBuilder.from(
                 List.of(getSignalingRoute(infra, "route_forward")),
                 new TrackLocation(track, 10),

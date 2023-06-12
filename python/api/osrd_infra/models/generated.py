@@ -30,6 +30,8 @@ class TrackSectionLayer(models.Model):
 class SignalLayer(models.Model):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
+    angle_geo = models.FloatField()
+    angle_sch = models.FloatField()
     geographic = models.PointField(srid=settings.MAPBOX_SRID)
     schematic = models.PointField(srid=settings.MAPBOX_SRID)
 
@@ -112,6 +114,28 @@ class CatenaryLayer(models.Model):
 
     class Meta:
         verbose_name_plural = "generated catenary layer"
+        unique_together = (("infra", "obj_id"),)
+
+
+class DeadSectionLayer(models.Model):
+    infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    geographic = models.MultiLineStringField(srid=settings.MAPBOX_SRID)
+    schematic = models.MultiLineStringField(srid=settings.MAPBOX_SRID)
+
+    class Meta:
+        verbose_name_plural = "generated dead section layer"
+        unique_together = (("infra", "obj_id"),)
+
+
+class BacksidePantographDeadSectionLayer(models.Model):
+    infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    geographic = models.MultiLineStringField(srid=settings.MAPBOX_SRID)
+    schematic = models.MultiLineStringField(srid=settings.MAPBOX_SRID)
+
+    class Meta:
+        verbose_name_plural = "generated back side pantograph dead section layer"
         unique_together = (("infra", "obj_id"),)
 
 

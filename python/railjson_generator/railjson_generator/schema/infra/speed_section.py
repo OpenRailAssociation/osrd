@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Mapping
 
 from osrd_schemas import infra
 
@@ -17,6 +17,7 @@ def _speed_section_id():
 @dataclass
 class SpeedSection:
     speed_limit: float
+    speed_limit_by_tag: Mapping[str, float] = field(default_factory=dict)
     track_ranges: List[ApplicableDirectionsTrackRange] = field(default_factory=list)
     label: str = field(default_factory=_speed_section_id)
 
@@ -36,6 +37,6 @@ class SpeedSection:
         return infra.SpeedSection(
             id=self.label,
             speed_limit=self.speed_limit,
-            speed_limit_by_tag={},
+            speed_limit_by_tag=self.speed_limit_by_tag,
             track_ranges=[track.to_rjs() for track in self.track_ranges],
         )

@@ -9,6 +9,7 @@ from osrd_schemas.infra import LoadingGaugeType
 from osrd_schemas.rolling_stock import (
     RAILJSON_ROLLING_STOCK_VERSION,
     EffortCurves,
+    EnergySourcesList,
     Gamma,
     PowerRestrictions,
     RollingResistance,
@@ -25,6 +26,10 @@ class RollingStock(models.Model):
         max_length=255,
         unique=True,
         help_text=_("A unique identifier for this rolling stock"),
+    )
+    locked = models.BooleanField(
+        default=False,
+        help_text=_("Whether the rolling stock can be edited/deleted or not."),
     )
     effort_curves = models.JSONField(
         help_text=_("A group of curves mapping speed (in m/s) to maximum traction (in newtons)"),
@@ -84,6 +89,11 @@ class RollingStock(models.Model):
             series, subseries, unit"
         ),
         default=dict,
+    )
+    energy_sources = models.JSONField(
+        help_text=_("A list of energy sources (e.g. catenaries, batteries, power packs)"),
+        validators=[PydanticValidator(EnergySourcesList)],
+        default=list,
     )
 
     def __str__(self):

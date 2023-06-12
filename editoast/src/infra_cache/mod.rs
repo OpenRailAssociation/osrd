@@ -510,6 +510,9 @@ impl InfraCache {
             }
             RailjsonObject::Signal { railjson } => self.add::<SignalCache>(railjson.clone().into()),
             RailjsonObject::SpeedSection { railjson } => self.add(railjson.clone()),
+            RailjsonObject::DeadSection { railjson: _ } => {
+                // TODO
+            }
             RailjsonObject::TrackSectionLink { railjson } => {
                 self.add::<TrackSectionLink>(railjson.clone())
             }
@@ -552,7 +555,7 @@ pub mod tests {
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
-    use crate::schema::utils::Identifier;
+    use crate::schema::utils::{Identifier, NonBlankString};
     use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction, Endpoint,
         OSRDIdentified, OperationalPoint, OperationalPointPart, Route, SpeedSection, Switch,
@@ -809,6 +812,23 @@ pub mod tests {
             speed_limit_by_tag: HashMap::default(),
             track_ranges,
             ..Default::default()
+        }
+    }
+
+    pub fn create_catenary_cache<T: AsRef<str>>(id: T, range_list: Vec<(T, f64, f64)>) -> Catenary {
+        let mut track_ranges = vec![];
+        for (obj_id, begin, end) in range_list {
+            track_ranges.push(ApplicableDirectionsTrackRange {
+                track: obj_id.as_ref().into(),
+                begin,
+                end,
+                applicable_directions: ApplicableDirections::Both,
+            });
+        }
+        Catenary {
+            id: id.as_ref().into(),
+            voltage: NonBlankString("1500".to_string()),
+            track_ranges,
         }
     }
 

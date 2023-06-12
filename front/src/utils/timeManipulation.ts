@@ -1,9 +1,14 @@
 import * as d3 from 'd3';
 import { TimeString } from 'common/types';
 
-export function datetime2string(ts: string | number | Date) {
+export function datetime2string(ts: string | number | Date): TimeString {
   const datetime = new Date(ts);
   return datetime.toLocaleString();
+}
+
+export function datetime2Isostring(ts: string | number | Date): TimeString {
+  const datetime = new Date(ts);
+  return datetime.toISOString();
 }
 
 export function datetime2time(datetime: Date) {
@@ -13,6 +18,10 @@ export function datetime2time(datetime: Date) {
 
 export function time2datetime(time: TimeString) {
   return d3.timeParse('%H:%M:%S')(time);
+}
+
+export function timeString2datetime(time: TimeString) {
+  return d3.timeParse('%Y-%m-%dT%H:%M:%S')(time);
 }
 
 export function sec2time(sec: number) {
@@ -30,7 +39,7 @@ export function time2sec(time: TimeString) {
   return Number(timeArray[0]) * 3600 + Number(timeArray[1]) * 60 + seconds;
 }
 
-export function datetime2sec(time: Date) {
+export function datetime2sec(time: Date): number {
   return time2sec(datetime2time(time));
 }
 
