@@ -60,7 +60,7 @@ export class PlaywrightSTDCMPage {
     this.getRollingStockSearchFilter = page.locator('.rollingstock-search-filters');
     this.getRollingStockSearchList = page.locator('.rollingstock-search-list');
     this.getRollingStockListItem = page.locator('.rollingstock-container');
-    this.getRollingstockSpanNames = this.getRollingStockListItem.locator('.rollingstock-infos-end');
+    this.getRollingstockSpanNames = this.getRollingStockListItem.locator('.rollingstock-info-end');
     this.rollingstockTranslation = rollingstockTranslation;
   }
 

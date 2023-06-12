@@ -5,18 +5,18 @@ import { ImFire } from 'react-icons/im';
 
 export function checkUnit({ unit, detail, form }) {
   if (unit && unit !== 'US') {
-    return <span className={`rollingstock-infos-unit${form ? '-form' : ''} ${unit}`}>{unit}</span>;
+    return <span className={`rollingstock-info-unit${form ? '-form' : ''} ${unit}`}>{unit}</span>;
   }
   if (detail?.search(/UM3/i) !== -1) {
     return (
-      <span className={`rollingstock-infos-unit${form ? '-form' : ''} UM3${form ? '-form' : ''}`}>
+      <span className={`rollingstock-info-unit${form ? '-form' : ''} UM3${form ? '-form' : ''}`}>
         UM3
       </span>
     );
   }
   if (detail?.search(/UM|MUX/i) !== -1) {
     return (
-      <span className={`rollingstock-infos-unit${form ? '-form' : ''} UM2${form ? '-form' : ''}`}>
+      <span className={`rollingstock-info-unit${form ? '-form' : ''} UM2${form ? '-form' : ''}`}>
         UM2
       </span>
     );
@@ -25,17 +25,17 @@ export function checkUnit({ unit, detail, form }) {
 }
 
 // TODO: refactor the form props here and in _rollingStockForm.scss
-export function RollingStockInfos({ form, data, showSeries, showMiddle, showEnd }) {
-  const { metadata } = data;
+export function RollingStockInfo({ form, rollingStock, showSeries, showMiddle, showEnd }) {
+  const { metadata } = rollingStock;
   return (
-    <div className={`rollingstock-infos${form}`}>
+    <div className={`rollingstock-info${form}`}>
       {showSeries ? (
-        <span className={`rollingstock-infos-begin${form}`}>
-          <span className={`rollingstock-infos-series${form}`}>
+        <span className={`rollingstock-info-begin${form}`}>
+          <span className={`rollingstock-info-series${form}`}>
             {metadata.series ? metadata.series : metadata?.reference}
           </span>
           {checkUnit(metadata, form)}
-          <span className={`rollingstock-infos-subseries${form}`}>
+          <span className={`rollingstock-info-subseries${form}`}>
             {metadata.series && metadata.series !== metadata.subseries
               ? metadata?.subseries
               : metadata?.detail}
@@ -43,11 +43,11 @@ export function RollingStockInfos({ form, data, showSeries, showMiddle, showEnd 
         </span>
       ) : null}
       {showMiddle && metadata.series ? (
-        <span className={`rollingstock-infos-middle${form}`}>
+        <span className={`rollingstock-info-middle${form}`}>
           {`${metadata?.family} / ${metadata?.type} / ${metadata?.grouping}`}
         </span>
       ) : null}
-      {showEnd ? <span className={`rollingstock-infos-end${form}`}>{data.name}</span> : null}
+      {showEnd ? <span className={`rollingstock-info-end${form}`}>{rollingStock.name}</span> : null}
     </div>
   );
 }
@@ -73,16 +73,16 @@ export function comfort2pictogram(comfort) {
   }
 }
 
-RollingStockInfos.defaultProps = {
+RollingStockInfo.defaultProps = {
   form: '',
   showSeries: true,
   showMiddle: true,
   showEnd: true,
 };
 
-RollingStockInfos.propTypes = {
+RollingStockInfo.propTypes = {
   form: PropTypes.string,
-  data: PropTypes.object.isRequired,
+  rollingStock: PropTypes.object.isRequired,
   showSeries: PropTypes.bool,
   showMiddle: PropTypes.bool,
   showEnd: PropTypes.bool,

@@ -27,8 +27,8 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
     <div className="d-flex pt-5 mt-5">
       <div className="d-flex ml-4 flex-column" style={{ width: '37%' }}>
         {rollingStocks.length > 0 ? (
-          rollingStocks.map((data) => (
-            <div className="d-flex rollingstock-editor-list" key={data.id}>
+          rollingStocks.map((rollingStock) => (
+            <div className="d-flex rollingstock-editor-list" key={rollingStock.id}>
               <div
                 role="button"
                 tabIndex={0}
@@ -38,17 +38,21 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
               >
                 <RollingStockCard
                   isOnEditMode
-                  data={data}
-                  key={data.id}
+                  rollingStock={rollingStock}
+                  key={rollingStock.id}
                   noCardSelected={openedRollingStockCardId === undefined}
-                  isOpen={data.id === openedRollingStockCardId}
+                  isOpen={rollingStock.id === openedRollingStockCardId}
                   setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-                  ref2scroll={rollingStockID === data.id ? ref2scroll : undefined}
+                  ref2scroll={rollingStockID === rollingStock.id ? ref2scroll : undefined}
                 />
               </div>
-              {data.id === openedRollingStockCardId && (
+              {rollingStock.id === openedRollingStockCardId && (
                 <div className="align-self-start">
-                  <RollingStockEditorButtons isCondensed setIsEditing={setIsEditing} />
+                  <RollingStockEditorButtons
+                    isCondensed
+                    setIsEditing={setIsEditing}
+                    isRollingStockLocked={rollingStock.locked ?? false}
+                  />
                 </div>
               )}
             </div>
@@ -61,7 +65,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
         {selectedRollingStock ? (
           <RollingStockEditorCard
             isEditing={isEditing}
-            data={selectedRollingStock}
+            rollingStock={selectedRollingStock}
             setIsEditing={setIsEditing}
           />
         ) : (

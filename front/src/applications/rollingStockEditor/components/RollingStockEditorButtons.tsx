@@ -4,30 +4,41 @@ import { FaPencilAlt } from 'react-icons/fa';
 
 type RollingStockEditorButtonsProps = {
   setIsEditing: (isEditing: boolean) => void;
+  isRollingStockLocked: boolean;
   isCondensed: boolean;
 };
 
-function RollingStockEditorButtons({ setIsEditing, isCondensed }: RollingStockEditorButtonsProps) {
+function RollingStockEditorButtons({
+  setIsEditing,
+  isRollingStockLocked,
+  isCondensed,
+}: RollingStockEditorButtonsProps) {
   return (
     <div
       className={`rollingstock-editor-buttons ${
         isCondensed ? 'condensed flex-column align-items-center rounded-right' : ''
       } d-flex p-1`}
     >
-      <div
-        role="button"
+      <button
+        type="button"
+        className="btn btn-primary px-1 py-0"
         tabIndex={0}
-        className="btn-primary rounded px-2 py-1"
+        disabled={isRollingStockLocked}
         onClick={() => setIsEditing(true)}
       >
         <FaPencilAlt />
-      </div>
-      <div role="button" tabIndex={0} className="btn-primary rounded px-2 py-1">
+      </button>
+      <button type="button" className="btn btn-primary px-1 py-0" tabIndex={0}>
         <BiDuplicate />
-      </div>
-      <div role="button" tabIndex={0} className="btn-primary rounded px-2 py-1">
+      </button>
+      <button
+        type="button"
+        className="btn btn-primary px-1 py-0"
+        tabIndex={0}
+        disabled={isRollingStockLocked}
+      >
         <BiTrash />
-      </div>
+      </button>
     </div>
   );
 }

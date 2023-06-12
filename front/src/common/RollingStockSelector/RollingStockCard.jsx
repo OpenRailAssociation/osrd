@@ -8,12 +8,18 @@ import { AiOutlineColumnWidth } from 'react-icons/ai';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import RollingStockCardDetail from './RollingStockCardDetail';
 import RollingStock2Img from './RollingStock2Img';
-import { RollingStockInfos } from './RollingStockHelpers';
+import { RollingStockInfo } from './RollingStockHelpers';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
 function RollingStockCard(props) {
-  const { data, ref2scroll, setOpenedRollingStockCardId, isOpen, noCardSelected, isOnEditMode } =
-    props;
+  const {
+    rollingStock,
+    ref2scroll,
+    setOpenedRollingStockCardId,
+    isOpen,
+    noCardSelected,
+    isOnEditMode,
+  } = props;
   const [tractionModes, setTractionModes] = useState({
     electric: false,
     thermal: false,
@@ -24,17 +30,17 @@ function RollingStockCard(props) {
   const ref2scrollWhenOpened = useRef();
   function displayCardDetail() {
     if (!isOpen) {
-      setOpenedRollingStockCardId(data.id);
+      setOpenedRollingStockCardId(rollingStock.id);
       setTimeout(() => ref2scrollWhenOpened.current?.scrollIntoView({ behavior: 'smooth' }), 500);
     }
   }
 
   useEffect(() => {
-    if (typeof data.effort_curves.modes === 'object') {
+    if (typeof rollingStock.effort_curves.modes === 'object') {
       const localVoltages = {};
       const localModes = {};
-      Object.keys(data.effort_curves.modes).forEach((modeName) => {
-        if (data.effort_curves.modes[modeName].is_electric) {
+      Object.keys(rollingStock.effort_curves.modes).forEach((modeName) => {
+        if (rollingStock.effort_curves.modes[modeName].is_electric) {
           localModes.electric = true;
           localVoltages[modeName] = true;
         } else {
@@ -56,7 +62,7 @@ function RollingStockCard(props) {
       onClick={displayCardDetail}
       tabIndex={0}
       ref={ref2scroll}
-      data-testid={`rollingstock-${data.name}`}
+      data-testid={`rollingstock-${rollingStock.name}`}
     >
       <div
         className="rollingstock-header"
@@ -66,16 +72,16 @@ function RollingStockCard(props) {
         ref={isOpen && !isOnEditMode ? ref2scrollWhenOpened : undefined}
       >
         <div className="rollingstock-title">
-          <RollingStockInfos data={data} />
+          <RollingStockInfo rollingStock={rollingStock} />
           <div className="sr-only">
             <small className="text-primary mr-1">ID</small>
-            <span className="font-weight-lighter small">{data.id}</span>
+            <span className="font-weight-lighter small">{rollingStock.id}</span>
           </div>
         </div>
       </div>
       {isOpen && !isOnEditMode ? (
         <RollingStockCardDetail
-          id={data.id}
+          id={rollingStock.id}
           curvesComfortList={curvesComfortList}
           setCurvesComfortList={setCurvesComfortList}
         />
@@ -87,7 +93,7 @@ function RollingStockCard(props) {
             }`}
           >
             <div className="rollingstock-body-img">
-              <RollingStock2Img rollingStock={data} />
+              <RollingStock2Img rollingStock={rollingStock} />
             </div>
           </div>
         </LazyLoadComponent>
@@ -109,7 +115,7 @@ function RollingStockCard(props) {
                     </span>
                     <small>
                       {tractionModes.voltages.map((voltage) => (
-                        <span className="mr-1" key={`${voltage}${data.id}`}>
+                        <span className="mr-1" key={`${voltage}${rollingStock.id}`}>
                           {voltage}V
                         </span>
                       ))}
@@ -121,26 +127,26 @@ function RollingStockCard(props) {
             <div className="col-2">
               <div className="rollingstock-size text-nowrap">
                 <AiOutlineColumnWidth />
-                {data.length}m
+                {rollingStock.length}m
               </div>
             </div>
             <div className="col-2">
               <div className="rollingstock-weight text-nowrap">
                 <FaWeightHanging />
-                {Math.round(data.mass / 1000)}t
+                {Math.round(rollingStock.mass / 1000)}t
               </div>
             </div>
             <div className="col-3">
               <div className="rollingstock-speed text-nowrap">
                 <IoIosSpeedometer />
-                {Math.round(data.max_speed * 3.6)}km/h
+                {Math.round(rollingStock.max_speed * 3.6)}km/h
               </div>
             </div>
           </div>
         </div>
         {isOpen && curvesComfortList && !isOnEditMode ? (
           <RollingStockCardButtons
-            id={data.id}
+            id={rollingStock.id}
             curvesComfortList={curvesComfortList}
             setOpenedRollingStockCardId={setOpenedRollingStockCardId}
           />
@@ -156,7 +162,7 @@ RollingStockCard.defaultProps = {
 };
 
 RollingStockCard.propTypes = {
-  data: PropTypes.object.isRequired,
+  rollingStock: PropTypes.object.isRequired,
   isOpen: PropTypes.bool.isRequired,
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
   ref2scroll: PropTypes.object,

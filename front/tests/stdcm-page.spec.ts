@@ -51,7 +51,7 @@ test.describe('STDCM page', () => {
     await playwrightSTDCMPage.page.waitForSelector('.rollingstock-container');
 
     const infoCardText = await playwrightSTDCMPage.getRollingStockListItem
-      .locator('.rollingstock-infos')
+      .locator('.rollingstock-info')
       .allTextContents();
     expect(infoCardText).toContain(
       'BB 7200GVLOCOMOTIVES / Locomotives électriques / Locomotives électriques courant continu_@Test BB 7200GVLOCOMOTIVES'

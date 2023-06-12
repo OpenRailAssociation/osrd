@@ -6,5 +6,5 @@ export default {
   rollingstockTestID: process.env.CI
     ? 'rollingstock-_@Test BB 7200GVLOCOMOTIVES'
     : 'rollingstock-1TGV2N2',
-  rollingstockInfos: process.env.CI ? /BB 7200GV/ : /TGV2N2US/,
+  rollingStockInfo: process.env.CI ? /BB 7200GV/ : /TGV2N2US/,
 };
