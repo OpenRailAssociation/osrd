@@ -200,6 +200,25 @@ $resize-width: 3px;
                 border-right: 1px solid;
               }
             }
+
+            &.xAxis {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              width: 100%;
+              height: 40px;
+              background-color: #f0f0f0;
+              padding: 10px;
+              border-top: 1px solid #000;
+              span {
+                position: relative;
+                top: 0;
+                width: 1px;
+                height: 10px;
+                background-color: #000;
+                text-align: center;
+              }
+            } 
           }
           &.scale-y {
             flex-direction: column-reverse;

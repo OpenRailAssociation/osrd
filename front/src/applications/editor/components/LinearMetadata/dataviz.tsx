@@ -75,6 +75,11 @@ const Scale: React.FC<{
       >
         {shortNumber(sup)}
       </span>
+      <div className="xAxis">
+        {[...Array(10)].map((_, i) => (
+          <span key={i}>{i + 1}</span>
+        ))}
+      </div>
     </div>
   );
 };
