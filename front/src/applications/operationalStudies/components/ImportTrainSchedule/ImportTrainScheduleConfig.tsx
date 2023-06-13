@@ -11,6 +11,7 @@ import { formatIsoDate } from 'utils/date';
 import UploadFileModal from 'applications/customget/components/uploadFileModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { TrainSchedule, TrainScheduleImportConfig } from 'applications/operationalStudies/types';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 interface ImportTrainScheduleConfigProps {
   setConfig: (config: TrainScheduleImportConfig) => void;
@@ -68,6 +69,26 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
     }
   }
 
+  function importTrackSections(uic: string) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        object: 'operationalpoint',
+        query: ['and', ['=', ['uic'], Number(uic)], ['=', ['infra_id'], 15]],
+        dry: false,
+      }),
+    };
+    let result;
+    // TODO: use RTK for query
+    fetch('http://localhost:8090/search', requestOptions)
+      .then((response) => response.json())
+      .then((response) => {
+        result = response[0].track_sections;
+      });
+    return result;
+  }
+
   const importFile = async (file: File) => {
     closeModal();
     if (file) {
@@ -82,6 +103,9 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
           const duration = Math.round(
             (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
           );
+
+          console.log(importTrackSections(step.uic));
+
           return {
             ...step,
             duration,
