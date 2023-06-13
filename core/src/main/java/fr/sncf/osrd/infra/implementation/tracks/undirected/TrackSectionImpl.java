@@ -7,6 +7,7 @@ import com.google.common.collect.*;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.railjson.schema.geom.LineString;
+import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
 import java.util.HashMap;

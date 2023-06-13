@@ -1,5 +1,6 @@
 package fr.sncf.osrd.sim_infra.impl
 
+import fr.sncf.osrd.railjson.schema.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -25,6 +26,65 @@ data class PathImpl(
         }
     }
 
+    override fun getGradients(): DistanceRangeMap<Double> {
+        return getRangeMap { dirChunkId -> infra.getTrackChunkGradient(dirChunkId) }
+    }
+
+    override fun getCurves(): DistanceRangeMap<Double> {
+        return getRangeMap { dirChunkId -> infra.getTrackChunkCurve(dirChunkId) }
+    }
+
+    override fun getGeo(): LineString {
+        return projectLineString { chunkId -> infra.getTrackChunkGeom(chunkId) }
+    }
+
+    override fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint> {
+        return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkLoadingGaugeConstraints(chunkId) }
+    }
+
+    override fun getCatenary(): DistanceRangeMap<String> {
+        return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkCatenaryVoltage(chunkId) }
+    }
+
+    private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {
+        fun getDirData(dirChunkId: DirTrackChunkId): LineString {
+            val data = getData(dirChunkId.value)
+            if (dirChunkId.direction == Direction.INCREASING)
+                return data
+            else
+                return data.reverse()!!
+        }
+
+        fun sliceChunkData(
+            dirChunkId: DirTrackChunkId,
+            beginChunkOffset: Distance?,
+            endChunkOffset: Distance?
+        ): LineString {
+            val chunkLength = infra.getTrackChunkLength(dirChunkId.value).meters
+            val beginSliceOffset = beginChunkOffset?.meters ?: 0.0
+            val endSliceOffset = endChunkOffset?.meters ?: chunkLength
+            return getDirData(dirChunkId).slice(
+                beginSliceOffset / chunkLength,
+                endSliceOffset / chunkLength
+            )
+        }
+
+        if (chunks.size == 0)
+            return LineString.make(doubleArrayOf(), doubleArrayOf())
+        if (chunks.size == 1)
+            return sliceChunkData(chunks.first(), beginOffset, endOffset)
+
+        val lineStrings = arrayListOf<LineString>()
+        lineStrings.add(sliceChunkData(chunks.first(), beginOffset, null))
+        var totalChunkDistance = infra.getTrackChunkLength(chunks.first().value)
+        for (i in 1 until chunks.size - 1) {
+            lineStrings.add(getDirData(chunks[i]))
+            totalChunkDistance += infra.getTrackChunkLength(chunks[i].value)
+        }
+        lineStrings.add(sliceChunkData(chunks.last(), null, endOffset - totalChunkDistance))
+        return LineString.concatenate(lineStrings)
+    }
+
     /** Use the given function to get the range data from a chunk, and concatenates all the values on the path */
     private fun <T>getRangeMap(
         getData: (dirChunkId: DirTrackChunkId) -> DistanceRangeMap<T>
@@ -39,6 +99,27 @@ data class PathImpl(
         mergedMap.truncate(beginOffset, endOffset)
         mergedMap.shiftPositions(-beginOffset)
         return mergedMap
+    }
+
+    /** Use the given function to get the range data from a chunk, and concatenates all the values on the path.
+     * This version is for undirected data, such as voltage or loading gauge constraints */
+    private fun <T>getRangeMapFromUndirected(
+        getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>
+    ): DistanceRangeMap<T> {
+        fun projectDirection(dirChunk: DirTrackChunkId): DistanceRangeMap<T> {
+            val data = getData(dirChunk.value)
+            if (dirChunk.direction == Direction.INCREASING)
+                return data
+            val chunkLength = infra.getTrackChunkLength(dirChunk.value)
+            val res = distanceRangeMapOf<T>()
+            for (entry in data) {
+                assert(0.meters <= entry.lower && entry.lower <= chunkLength)
+                assert(0.meters <= entry.upper && entry.upper <= chunkLength)
+                res.put(chunkLength - entry.upper, chunkLength - entry.lower, entry.value)
+            }
+            return res
+        }
+        return getRangeMap { dirChunkId -> projectDirection(dirChunkId) }
     }
 
     /** Use the given function to get punctual data from a chunk, and concatenates all the values on the path */

@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
+import kotlin.math.min
 
 data class DistanceRangeMapImpl<T>(
     private val bounds: MutableDistanceArrayList,
@@ -64,6 +65,15 @@ data class DistanceRangeMapImpl<T>(
             bounds[i] = bounds[i] + offset
     }
 
+    override fun get(offset: Distance): T? {
+        // TODO: use a binary search
+        for (entry in this.reversed()) {
+            if (entry.lower <= offset && offset <= entry.upper)
+                return entry.value
+        }
+        return null
+    }
+
     /** Merges adjacent values, removes 0-length ranges */
     private fun mergeAdjacent() {
         fun remove(i: Int) {
@@ -90,28 +100,54 @@ data class DistanceRangeMapImpl<T>(
             bounds.remove(0)
     }
 
+    /** Put a new bound and a matching value at the given offset,
+     * before the existing transition at that index if there is one */
+    private fun putTransitionBefore(offset: Distance, newValue: T?) {
+        var i = 0
+        while (i < bounds.size && bounds[i] < offset)
+            i++
+        bounds.insert(i, offset)
+        values.add(min(i, values.size), newValue)
+    }
+
+    /** Put a new bound and a matching value at the given offset,
+     * after the existing transition at that index if there is one */
+    private fun putTransitionAfter(offset: Distance, newValue: T?) {
+        var i = 0
+        while (i < bounds.size && bounds[i] <= offset)
+            i++
+        bounds.insert(i, offset)
+        values.add(min(i, values.size), newValue)
+    }
+
     /** Sets the value between the lower and upper distances.
      * This private method can put null values, used to delete ranges */
     private fun putOptional(lower: Distance, upper: Distance, value: T?) {
-        var startIndex = 0
-        while (startIndex < bounds.size && bounds[startIndex] <= lower)
-            startIndex++
-        bounds.insert(startIndex, lower)
-
-        // Add a new entry with the previous value, to "split" the current range
-        if (startIndex > 0 && startIndex <= values.size)
-            values.add(startIndex, values[startIndex - 1])
-        else if (startIndex > values.size) {
-            // The ranges don't overlap: we add a null value
-            values.add(startIndex - 1, null)
+        if (bounds.size == 0) {
+            bounds.add(lower)
+            bounds.add(upper)
+            values.add(value)
+        } else {
+            val previousNextValue = get(upper)
+            if (upperBound() <= lower) {
+                putTransitionBefore(lower, null)
+                putTransitionBefore(upper, value)
+            } else if (lowerBound() >= upper) {
+                putTransitionBefore(lower, value)
+                putTransitionBefore(upper, null)
+            } else {
+                putTransitionAfter(lower, value)
+                putTransitionBefore(upper, previousNextValue)
+            }
+            var i = 0
+            while (i < bounds.size) {
+                if (lower < bounds[i] && bounds[i] < upper) {
+                    bounds.remove(i)
+                    values.removeAt(i)
+                } else
+                    i++
+            }
         }
-        values.add(startIndex, value)
-        val endIndex = startIndex + 1
-        while (endIndex < bounds.size && bounds[endIndex] < upper) {
-            bounds.remove(endIndex)
-            values.removeAt(endIndex)
-        }
-        bounds.insert(endIndex, upper)
         mergeAdjacent()
         validate()
     }

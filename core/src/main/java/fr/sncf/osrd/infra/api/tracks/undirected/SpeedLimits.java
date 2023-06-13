@@ -3,13 +3,14 @@ package fr.sncf.osrd.infra.api.tracks.undirected;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import java.util.Collection;
-import java.util.Set;
+import fr.sncf.osrd.sim_infra.impl.SpeedSection;
+import fr.sncf.osrd.utils.units.Speed;
+import java.util.HashMap;
 
 public class SpeedLimits {
 
-    private final double defaultSpeedLimit;
-    private final ImmutableMap<String, Double> speedLimitByTag;
+    public final double defaultSpeedLimit;
+    public final ImmutableMap<String, Double> speedLimitByTag;
 
     /** Constructor */
     public SpeedLimits(double defaultSpeedLimit, ImmutableMap<String, Double> speedLimitByTag) {

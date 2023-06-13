@@ -18,9 +18,9 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.TrackNode
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
-import fr.sncf.osrd.utils.DirectionalMap
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
-import fr.sncf.osrd.utils.Endpoint
+import fr.sncf.osrd.sim_infra.impl.SpeedSection
+import fr.sncf.osrd.sim_infra.impl.TrackSectionBuilder
+import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration.Companion.ZERO
@@ -72,33 +72,14 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
             var lastOffset = 0.meters
             trackSectionMap[track] = builder.trackSection(track.id) {
                 val chunkMap = mutableMapOf<Distance, TrackChunkId>()
-                fun makeChunk(startOffset: Distance, endOffset: Distance) {
-                    if (startOffset == endOffset)
-                        return
-                    val rangeViewForward = TrackRangeView(startOffset.meters, endOffset.meters,
-                        DiTrackEdgeImpl(track, Direction.FORWARD))
-                    val rangeViewBackward = TrackRangeView(startOffset.meters, endOffset.meters,
-                        DiTrackEdgeImpl(track, Direction.BACKWARD))
-                    fun <T>makeDirectionalMap(f: (range: TrackRangeView) -> T) : DirectionalMap<T>{
-                        return DirectionalMap(f.invoke(rangeViewForward), f.invoke(rangeViewBackward))
-                    }
-                    val chunkId = builder.trackChunk(
-                        rangeViewForward.geo,
-                        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.slopes) },
-                        endOffset - startOffset,
-                        startOffset
-                    )
-                    chunk(chunkId)
-                    chunkMap[startOffset] = chunkId
-                }
                 for (d in track.detectors) {
                     val detectorId = builder.detector(d.id)
                     detectorMap[d] = detectorId
                     val endOffset = Distance.fromMeters(d.offset)
-                    makeChunk(lastOffset, endOffset)
+                    makeChunk(builder, track, lastOffset, endOffset, this@trackSection, chunkMap)
                     lastOffset = endOffset
                 }
-                makeChunk(lastOffset, trackLength)
+                makeChunk(builder, track, lastOffset, trackLength, this@trackSection, chunkMap)
                 trackChunkMap[track] = chunkMap
             }
         }
@@ -276,6 +257,54 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     // assert(route.length.meters == routeLength)
 
     return SimInfraAdapter(builder.build(), zoneMap, detectorMap, trackNodeMap, trackNodeGroupsMap, routeMap, signalMap, rjsSignalMap)
+}
+
+private fun makeChunk(
+    builder: RawInfraBuilder,
+    track: TrackSection,
+    startOffset: Distance,
+    endOffset: Distance,
+    trackSectionBuilder: TrackSectionBuilder,
+    chunkMap: MutableMap<Distance, TrackChunkId>
+) {
+    if (startOffset == endOffset)
+        return
+    val rangeViewForward = TrackRangeView(startOffset.meters, endOffset.meters,
+        DiTrackEdgeImpl(track, Direction.FORWARD))
+    val rangeViewBackward = TrackRangeView(startOffset.meters, endOffset.meters,
+        DiTrackEdgeImpl(track, Direction.BACKWARD))
+    fun <T>makeDirectionalMap(f: (range: TrackRangeView) -> T) : DirectionalMap<T>{
+        return DirectionalMap(f.invoke(rangeViewForward), f.invoke(rangeViewBackward))
+    }
+    fun makeSpeedSections(range: TrackRangeView): DistanceRangeMap<SpeedSection> {
+        val res = distanceRangeMapOf<SpeedSection>()
+        for (entry in range.speedSections.asMapOfRanges()) {
+            val legacySpeedLimit = entry.value
+            val map = legacySpeedLimit.speedLimitByTag
+                .mapValues { mapEntry -> Speed.fromMetersPerSeconds(mapEntry.value!!) }
+            res.put(
+                Distance.fromMeters(entry.key.lowerEndpoint()),
+                Distance.fromMeters(entry.key.upperEndpoint()),
+                SpeedSection(Speed.fromMetersPerSeconds(legacySpeedLimit.defaultSpeedLimit), map)
+            )
+        }
+        return res
+    }
+
+    val chunkId = builder.trackChunk(
+        rangeViewForward.geo,
+        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.slopes) },
+        endOffset - startOffset,
+        startOffset,
+        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.curves) },
+        makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.gradients) },
+        DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes),
+        DistanceRangeMapImpl.from(rangeViewForward.catenaryVoltages),
+        makeDirectionalMap { range -> DistanceRangeSetImpl.from(range.deadSections) },
+        makeDirectionalMap { range -> makeSpeedSections(range) },
+    )
+    trackSectionBuilder.chunk(chunkId)
+    chunkMap[startOffset] = chunkId
 }
 
 private fun buildZonePath(

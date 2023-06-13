@@ -8,5 +8,10 @@ import java.util.Collection;
 public class RJSCatenary {
     public String voltage;
     @Json(name = "track_ranges")
-    public Collection<RJSApplicableDirectionsTrackRange> trackRanges;
+    public Collection<RJSApplicableDirectionsTrackRange> trackRanges; // the direction is ignored, deprecated
+
+    public RJSCatenary(String voltage, Collection<RJSApplicableDirectionsTrackRange> trackRanges) {
+        this.voltage = voltage;
+        this.trackRanges = trackRanges;
+    }
 }
