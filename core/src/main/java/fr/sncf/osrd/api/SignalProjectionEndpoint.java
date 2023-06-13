@@ -53,9 +53,8 @@ public class SignalProjectionEndpoint implements Take {
             if (request == null)
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
-            // load infra
-            // TODO : change with get infra when the front is ready
-            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            // get infra
+            var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
 
             // Parse trainPath
             var trainPath = TrainPathBuilder.from(infra.java(), request.trainPath);
