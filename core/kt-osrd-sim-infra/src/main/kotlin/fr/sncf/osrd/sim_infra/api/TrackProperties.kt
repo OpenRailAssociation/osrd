@@ -7,9 +7,12 @@ import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 
 
-/** A track chunk are internal subdivisions of track sections. These subdivisions are separated by detectors. */
-sealed interface OperationalPoint
-typealias OperationalPointId = StaticIdx<OperationalPoint>
+/** An operational point is a special location (such as a station).
+ * It has an ID and a set of locations (parts).
+ * In the current internal infra representation, we only consider the operational point parts.
+ * There's no entity grouping the parts together because there's no use for it yet, it can be added later on. */
+sealed interface OperationalPointPart
+typealias OperationalPointPartId = StaticIdx<OperationalPointPart>
 
 interface TrackProperties : PathProperties {
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
@@ -18,10 +21,10 @@ interface TrackProperties : PathProperties {
     fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId
 
     // Operational points
-    fun getTrackChunkOperationalPoints(trackChunk: TrackChunkId): StaticIdxList<OperationalPoint>
-    fun getOperationalPointChunk(operationalPoint: OperationalPointId): TrackChunkId
-    fun getOperationalPointChunkOffset(operationalPoint: OperationalPointId): Distance
-    fun getOperationalPointName(operationalPoint: OperationalPointId): String
+    fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>
+    fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId
+    fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Distance
+    fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String
 
     // non-overlapping attributes:
     fun getTrackChunkSlope(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>

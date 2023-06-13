@@ -193,7 +193,7 @@ interface RestrictedRawInfraBuilder {
         length: Distance,
         offset: Distance
     ): TrackChunkId
-    fun operationalPoint(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointId
+    fun operationalPointPart(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointPartId
 }
 
 interface TrackSectionBuilder {
@@ -237,7 +237,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val physicalSignalPool = StaticPool<PhysicalSignal, PhysicalSignalDescriptor>()
     private val zonePathPool = StaticPool<ZonePath, ZonePathDescriptor>()
     private val zonePathMap = mutableMapOf<ZonePathSpec, ZonePathId>()
-    private val operationalPointPool = StaticPool<OperationalPoint, OperationalPointDescriptor>()
+    private val operationalPointPartPool = StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
 
     override fun movableElement(delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId {
         val movableElementBuilder = MovableElementDescriptorBuilderImpl(delay, StaticPool(), StaticPool())
@@ -351,8 +351,8 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         ))
     }
 
-    override fun operationalPoint(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointId {
-        return operationalPointPool.add(OperationalPointDescriptor(name, chunkOffset, chunk))
+    override fun operationalPointPart(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointPartId {
+        return operationalPointPartPool.add(OperationalPointPartDescriptor(name, chunkOffset, chunk))
     }
 
     override fun build(): RawInfra {
@@ -370,7 +370,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             physicalSignalPool,
             zonePathPool,
             zonePathMap,
-            operationalPointPool,
+            operationalPointPartPool,
             makeTrackIdMap()
         )
     }
@@ -406,9 +406,9 @@ class RawInfraBuilderImpl : RawInfraBuilder {
                 trackChunkPool[chunk].track = track
 
         // Resolve operational points
-        for (op in operationalPointPool) {
-            val chunk = trackChunkPool[operationalPointPool[op].chunk]
-            val opList = chunk.operationalPoints as MutableStaticIdxArrayList
+        for (op in operationalPointPartPool) {
+            val chunk = trackChunkPool[operationalPointPartPool[op].chunk]
+            val opList = chunk.operationalPointParts as MutableStaticIdxArrayList
             opList.add(op)
         }
     }
