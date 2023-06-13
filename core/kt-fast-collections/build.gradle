@@ -22,7 +22,6 @@ dependencies {
     implementation libs.kotlin.stdlib
     api libs.kotlinx.coroutines.core
     testImplementation libs.kotlin.test
-    implementation libs.guava
 }
 
 // to get KSP generated-stuff to be recognised
