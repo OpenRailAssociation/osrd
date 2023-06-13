@@ -183,17 +183,6 @@ class RawInfraImpl(
         return trackChunkPool[trackChunk.value].slopes.get(trackChunk.direction)
     }
 
-    override fun getSlopesOnPath(path: Path): DistanceRangeMap<Double> {
-        return getRangeMap(this, path) { dirChunkId -> getTrackChunkSlope(dirChunkId) }
-    }
-
-    override fun getOperationalPointPartsOnPath(path: Path): List<IdxWithOffset<OperationalPointPart>> {
-        return getElementsOnPath(this, path) { dirChunkId ->
-            getTrackChunkOperationalPointParts(dirChunkId.value)
-                .map { opId -> Pair(opId, getOperationalPointPartChunkOffset(opId)) }
-        }
-    }
-
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxCollection<Route> {
         return trackChunkPool[trackChunk.value].routes.get(trackChunk.direction)
     }

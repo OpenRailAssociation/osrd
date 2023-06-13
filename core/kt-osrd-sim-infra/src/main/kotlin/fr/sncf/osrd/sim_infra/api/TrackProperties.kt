@@ -14,7 +14,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 sealed interface OperationalPointPart
 typealias OperationalPointPartId = StaticIdx<OperationalPointPart>
 
-interface TrackProperties : PathProperties {
+interface TrackProperties {
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
     fun getTrackChunkLength(trackChunk: TrackChunkId): Distance
     fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance
