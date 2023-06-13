@@ -79,6 +79,17 @@ class TestDistanceRangeMap {
     }
 
     @Test
+    fun testAddingFromEnd() {
+        val rangeMap = distanceRangeMapOf<Int>()
+        rangeMap.put(Distance(100), Distance(200), 1)
+        rangeMap.put(Distance(0), Distance(100), 2)
+        assertEquals(listOf(
+            DistanceRangeMap.RangeMapEntry(Distance(0), Distance(100), 2),
+            DistanceRangeMap.RangeMapEntry(Distance(100), Distance(200), 1),
+        ), rangeMap.asList())
+    }
+
+    @Test
     fun testMergeRanges() {
         val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 42)

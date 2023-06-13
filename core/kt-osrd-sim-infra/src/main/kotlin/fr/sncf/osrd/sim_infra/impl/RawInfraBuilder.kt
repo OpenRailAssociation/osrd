@@ -4,6 +4,7 @@ import fr.sncf.osrd.railjson.schema.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
@@ -191,7 +192,13 @@ interface RestrictedRawInfraBuilder {
         geo: LineString,
         slopes: DirectionalMap<DistanceRangeMap<Double>>,
         length: Distance,
-        offset: Distance
+        offset: Distance,
+        curves: DirectionalMap<DistanceRangeMap<Double>>,
+        gradients: DirectionalMap<DistanceRangeMap<Double>>,
+        loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
+        catenaryVoltage: DistanceRangeMap<String>,
+        deadSections: DirectionalMap<DistanceRangeSet>,
+        speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId
     fun operationalPointPart(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointPartId
 }
@@ -337,17 +344,29 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         geo: LineString,
         slopes: DirectionalMap<DistanceRangeMap<Double>>,
         length: Distance,
-        offset: Distance
+        offset: Distance,
+        curves: DirectionalMap<DistanceRangeMap<Double>>,
+        gradients: DirectionalMap<DistanceRangeMap<Double>>,
+        loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
+        catenaryVoltage: DistanceRangeMap<String>,
+        deadSections: DirectionalMap<DistanceRangeSet>,
+        speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId {
         return trackChunkPool.add(TrackChunkDescriptor(
             geo,
             slopes,
+            curves,
+            gradients,
             length,
             // Route IDs will be filled later on, the routes are not initialized and don't have IDs yet
             DirectionalMap(MutableStaticIdxArrayList(), MutableStaticIdxArrayList()),
             StaticIdx(0u), // The track ID will be filled later on for the same reason as routes
             offset,
-            MutableStaticIdxArrayList() // Same
+            MutableStaticIdxArrayList(), // Same
+            loadingGaugeConstraints,
+            catenaryVoltage,
+            deadSections,
+            speedSections
         ))
     }
 
