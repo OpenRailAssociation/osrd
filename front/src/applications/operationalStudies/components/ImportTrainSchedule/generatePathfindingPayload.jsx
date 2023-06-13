@@ -1,46 +1,103 @@
+import { compact, isEmpty } from 'lodash';
 import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
+import { isFirstOrLastElement } from 'utils/array';
 
-function formatSteps(pointsDictionnary, trainFromPathRef, autoComplete) {
-  if (autoComplete) {
-    return trainFromPathRef.steps.map((step, idx) => ({
-      duration: idx === 0 || idx === trainFromPathRef.steps.length - 1 ? 0 : step.duration,
-      op_trigram: step.trigram,
-    }));
-  }
-  return trainFromPathRef.steps.map((step, idx) => ({
-    duration: idx === 0 || idx === trainFromPathRef.steps.length - 1 ? 0 : step.duration,
-    waypoints: [
-      {
-        track_section: pointsDictionnary[step.uic].trackSectionId,
-        geo_coordinate: [Number(step.longitude), Number(step.latitude)],
-      },
-    ],
-  }));
-}
-
-export default function generatePathfindingPayload(
-  infraID,
-  rollingStockID,
+const getTrainAndRollingStockFromPath = (
+  path,
   trainsWithPathRef,
-  pathsDictionnary,
-  pointsDictionnary,
+  rollingStocks,
+  defaultRollingStockId
+) => {
+  const trainFromPathRef = trainsWithPathRef.find(
+    (train) => train.trainNumber === path.trainNumber
+  );
+
+  const rollingStock = rollingStocks.find(
+    (rollingstock) => rollingstock.name === rollingstockOpenData2OSRD[trainFromPathRef.rollingStock]
+  );
+
+  return {
+    train: trainFromPathRef,
+    rollingStockId: rollingStock ? rollingStock.id : defaultRollingStockId,
+  };
+};
+
+/**
+ * Create Pathfinding payload with custom points.
+ * Transform the steps into waypoints using the custom points. If a step has no custom point, then it is ignored.
+ */
+const generateWaypointFromCustomPoints = (step, customPoints) => {
+  const { trackSectionId } = customPoints[step.uic];
+  const longitude = Number(step.longitude);
+  const latitude = Number(step.latitude);
+  if (!trackSectionId || !longitude || !latitude) {
+    return [];
+  }
+  return [
+    {
+      track_section: trackSectionId,
+      geo_coordinate: [longitude, latitude],
+    },
+  ];
+};
+
+/**
+ * Create Autocomplete Pathfinding payload from path.
+ * Transform the steps into waypoints from the first trackSection of each step. If a step has no trackSection, then it is ignored.
+ */
+const generateAutocompleteWaypoints = (step) => {
+  if (isEmpty(step.tracks)) {
+    return [];
+  }
+  return step.tracks.map((trackPosition) => ({
+    track_section: trackPosition.track,
+    offset: trackPosition.position,
+  }));
+};
+
+const generatePathfindingPayload = (
+  trainsWithPathRef,
   rollingStockDB,
-  autoComplete
-) {
-  const pathsToGenerate = {};
-  pathsDictionnary.forEach((pathRef) => {
-    const trainFromPathRef = trainsWithPathRef.find(
-      (train) => train.trainNumber === pathRef.trainNumber
-    );
-    const rollingStockFound = rollingStockDB.find(
-      (rollingstock) =>
-        rollingstock.name === rollingstockOpenData2OSRD[trainFromPathRef.rollingStock]
-    );
-    pathsToGenerate[pathRef.trainNumber] = {
-      infra: infraID,
-      rolling_stocks: [rollingStockFound ? rollingStockFound.id : rollingStockID],
-      steps: formatSteps(pointsDictionnary, trainFromPathRef, autoComplete),
-    };
-  });
-  return pathsToGenerate;
-}
+  path,
+  defaultRollingStockId,
+  infraId,
+  autocomplete = true,
+  pointsDictionnary = {}
+) => {
+  const { train, rollingStockId } = getTrainAndRollingStockFromPath(
+    path,
+    trainsWithPathRef,
+    rollingStockDB,
+    defaultRollingStockId
+  );
+
+  const invalidSteps = [];
+  const steps = compact(
+    train.steps.map((step) => {
+      const waypoints = autocomplete
+        ? generateAutocompleteWaypoints(step)
+        : generateWaypointFromCustomPoints(step, pointsDictionnary);
+      if (isEmpty(waypoints)) {
+        invalidSteps.push(step);
+        return null;
+      }
+      const isFirstOrLastStep = isFirstOrLastElement(train.steps, step);
+      return {
+        duration: isFirstOrLastStep ? 0 : step.duration,
+        waypoints,
+      };
+    })
+  );
+  if (invalidSteps.length > 0) {
+    console.warn(`${invalidSteps.length} invalid steps for train number ${train.trainNumber}`);
+  }
+
+  const payload = {
+    infra: infraId,
+    rolling_stocks: [rollingStockId],
+    steps,
+  };
+  return { payload, rollingStockId };
+};
+
+export default generatePathfindingPayload;

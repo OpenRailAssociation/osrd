@@ -46,6 +46,12 @@ paths:
   /search/:
     post:
       summary: Generic search endpoint
+      parameters:
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+          description: number of results
       requestBody:
         description: Search query
         required: true
@@ -2556,6 +2562,7 @@ components:
           format: float
           description: The offset on the track section
           example: 42.
+      required: [track, offset]
 
     Direction:
       type: string
@@ -3101,22 +3108,14 @@ components:
           type: string
         ch:
           type: string
-        track_sections:
-          type: array
-          items:
-            type: object
-            required:
-              - track
-              - position
-            properties:
-              track:
-                type: string
-              position:
-                type: integer
         geographic:
           $ref: "#/components/schemas/MultiPoint"
         schematic:
           $ref: "#/components/schemas/MultiPoint"
+        track_sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackLocation"
 
     SearchTrackResult:
       required:

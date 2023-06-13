@@ -1,25 +1,45 @@
+import { isEmpty } from 'lodash';
 import React, { useState, useContext } from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
-import PropTypes from 'prop-types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import MemoStationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
-import { useDispatch } from 'react-redux';
 import StationCard from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
 import UploadFileModal from 'applications/customget/components/uploadFileModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import { TrainSchedule, TrainScheduleImportConfig } from 'applications/operationalStudies/types';
+import {
+  ImportedTrainSchedule,
+  Step,
+  TrainSchedule,
+  TrainScheduleImportConfig,
+} from 'applications/operationalStudies/types';
+import {
+  SearchOperationalPointResult,
+  PostSearchApiArg,
+  osrdEditoastApi,
+  TrackLocation,
+} from 'common/api/osrdEditoastApi';
+import { getGraouTrainSchedules } from 'common/api/graouApi';
 
 interface ImportTrainScheduleConfigProps {
-  setConfig: (config: TrainScheduleImportConfig) => void;
+  infraId: number;
   setTrainsList: (trainsList: TrainSchedule[]) => void;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
-export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConfigProps) {
-  const { setConfig, setTrainsList } = props;
+type SearchConstraintType = (string | number | string[])[];
+
+export default function ImportTrainScheduleConfig({
+  setTrainsList,
+  infraId,
+  setIsLoading,
+}: ImportTrainScheduleConfigProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
+  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [from, setFrom] = useState();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState();
@@ -30,25 +50,134 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
   const dispatch = useDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
 
+  async function importTrackSections(opIds: number[]): Promise<Record<number, TrackLocation[]>> {
+    const uniqueOpIds = Array.from(new Set(opIds));
+    const constraint = uniqueOpIds.reduce((res, uic) => [...res, ['=', ['uic'], Number(uic)]], [
+      'or',
+    ] as (string | SearchConstraintType)[]);
+    const payload: PostSearchApiArg = {
+      body: {
+        object: 'operationalpoint',
+        query: ['and', constraint, ['=', ['infra_id'], infraId]],
+      },
+      pageSize: 1000,
+    };
+    const operationalPoints = (await postSearch(
+      payload
+    ).unwrap()) as SearchOperationalPointResult[];
+
+    return operationalPoints.reduce(
+      (res, operationalPoint) =>
+        operationalPoint.uic
+          ? {
+              ...res,
+              [operationalPoint.uic]: operationalPoint.track_sections,
+            }
+          : res,
+      {}
+    );
+  }
+
+  function validateImportedTrainSchedules(
+    importedTrainSchedules: Record<string, unknown>[]
+  ): ImportedTrainSchedule[] | null {
+    const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
+      if (
+        ['trainNumber', 'rollingStock', 'departureTime', 'arrivalTime', 'departure', 'steps'].some(
+          (key) => !(key in trainSchedule)
+        ) ||
+        !Array.isArray(trainSchedule.steps)
+      ) {
+        return true;
+      }
+      const hasInvalidteps = trainSchedule.steps.some((step) =>
+        [
+          'arrivalTime',
+          'departureTime',
+          'uic',
+          'yard',
+          'name',
+          'trigram',
+          'latitude',
+          'longitude',
+        ].some((key) => !(key in step))
+      );
+      return hasInvalidteps;
+    });
+    if (isInvalidTrainSchedules) {
+      dispatch(
+        setFailure({
+          name: t('errorMessages.error'),
+          message: 'Impossible de convertir les données en TrainSchedule',
+        })
+      );
+      console.error(
+        'Invalid data format: can not convert response into TrainSchedules. Expected format : { trainNumber: string; rollingStock: string; departureTime: string; arrivalTime: string; departure: string; steps: ({uic: number; yard: string; name: string; trigram: string; latitude: number; longitude: number; arrivalTime: string; departureTime: string; })[]; transilienName?: string; }'
+      );
+      return null;
+    }
+    return importedTrainSchedules as ImportedTrainSchedule[];
+  }
+
+  async function updateTrainSchedules(importedTrainSchedules: ImportedTrainSchedule[]) {
+    const opIds = importedTrainSchedules.flatMap((trainSchedule) =>
+      trainSchedule.steps.map((step) => step.uic)
+    );
+    const trackSectionsByOp = await importTrackSections(opIds);
+
+    // For each train schedule, we add the duration and tracks of each step
+    const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
+      const stepsWithDuration = trainSchedule.steps.map((step) => {
+        // calcul duration in seconds between step arrival and departure
+        // in case of arrival and departure are the same, we set duration to 0
+        // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
+        const duration = Math.round(
+          (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
+        );
+        return {
+          ...step,
+          duration,
+          tracks: trackSectionsByOp[Number(step.uic)] || [],
+        } as Step;
+      });
+      return {
+        ...trainSchedule,
+        steps: stepsWithDuration,
+      } as TrainSchedule;
+    });
+
+    setTrainsList(trainsSchedules);
+  }
+
+  async function getTrainsFromOpenData(config: TrainScheduleImportConfig) {
+    setTrainsList([]);
+    setIsLoading(true);
+
+    const result = await getGraouTrainSchedules(config);
+    const importedTrainSchedules = validateImportedTrainSchedules(result);
+    if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
+      await updateTrainSchedules(importedTrainSchedules);
+    }
+
+    setIsLoading(false);
+  }
+
   function defineConfig() {
     let error = false;
     if (!from) {
       dispatch(
         setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoFrom') })
       );
-      error = true;
     }
     if (!to) {
       dispatch(
         setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoTo') })
       );
-      error = true;
     }
     if (!date) {
       dispatch(
         setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoDate') })
       );
-      error = true;
     }
     if (JSON.stringify(from) === JSON.stringify(to)) {
       dispatch(
@@ -57,43 +186,26 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
       error = true;
     }
 
-    if (!error) {
-      setConfig({
+    if (from && to && date && !error) {
+      getTrainsFromOpenData({
         from,
         to,
         date,
         startTime,
         endTime,
-      });
+      } as TrainScheduleImportConfig);
     }
   }
 
   const importFile = async (file: File) => {
     closeModal();
-    if (file) {
-      const text = await file.text();
-      const trainsSchedulesTemp: TrainSchedule[] = JSON.parse(text);
-      // For each train schedule, we add the duration of each step
-      const trainsSchedules = trainsSchedulesTemp.map((trainSchedule) => {
-        const stepsWithDuration = trainSchedule.steps.map((step) => {
-          // calcul duration in seconds between step arrival and departure
-          // in case of arrival and departure are the same, we set duration to 0
-          // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
-          const duration = Math.round(
-            (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
-          );
-          return {
-            ...step,
-            duration,
-          };
-        });
-        return {
-          ...trainSchedule,
-          steps: stepsWithDuration,
-        };
-      });
+    setTrainsList([]);
 
-      setTrainsList(trainsSchedules);
+    const text = await file.text();
+    const importedTrainSchedules = validateImportedTrainSchedules(JSON.parse(text));
+
+    if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
+      await updateTrainSchedules(importedTrainSchedules);
     }
   };
 
@@ -223,8 +335,3 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
     </>
   );
 }
-
-ImportTrainScheduleConfig.propTypes = {
-  setConfig: PropTypes.func.isRequired,
-  setTrainsList: PropTypes.func.isRequired,
-};

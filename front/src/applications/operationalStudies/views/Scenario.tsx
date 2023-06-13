@@ -122,7 +122,7 @@ export default function Scenario() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return scenario ? (
+  return scenario && infraId ? (
     <>
       <NavBarSNCF
         appName={
@@ -238,7 +238,7 @@ export default function Scenario() {
               )}
               {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.import && (
                 <div className="scenario-managetrainschedule">
-                  <ImportTrainSchedule />
+                  <ImportTrainSchedule infraId={infraId} />
                 </div>
               )}
               <div className="scenario-results">
