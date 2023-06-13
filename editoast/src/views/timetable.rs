@@ -132,37 +132,26 @@ async fn get_conflicts(
             a.begin
                 .partial_cmp(&b.begin)
                 .expect("Requirements should not contain NaN")
-        }); // FIXME: assert this in core
-        let mut current_conflict = vec![];
-        let mut current_req_end_time = requirements[0].end;
+        });
+
         for (last_requirement, requirement) in requirements.iter().tuple_windows() {
-            if requirement.begin < current_req_end_time {
-                if current_conflict.is_empty() {
-                    current_conflict.push(last_requirement.clone());
-                }
-                current_conflict.push(requirement.clone());
-            } else if !current_conflict.is_empty() {
-                conflicts.push(std::mem::take(&mut current_conflict));
+            if requirement.begin < last_requirement.end {
+                conflicts.push((last_requirement.clone(), requirement.clone()));
             }
-
-            current_req_end_time = requirement.end;
-        }
-
-        if !current_conflict.is_empty() {
-            conflicts.push(std::mem::take(&mut current_conflict));
         }
     }
 
     let conflicts = conflicts
         .into_iter()
         .map(|conflict| {
-            let start_time = conflict[0].begin.round() as u64; // FIXME: those aren't actually the conflict times
-            let end_time = conflict.last().unwrap().end.round() as u64;
+            let start_time = conflict.1.begin.round() as u64;
+            let end_time = conflict.0.end.round() as u64;
 
-            let (train_ids, train_names) = conflict
-                .into_iter()
-                .map(|req| (req.train_id, req.train_name.to_owned()))
-                .unzip();
+            let train_ids = vec![conflict.0.train_id, conflict.1.train_id];
+            let train_names = vec![
+                conflict.0.train_name.to_owned(),
+                conflict.1.train_name.to_owned(),
+            ];
 
             Conflict {
                 train_ids,
