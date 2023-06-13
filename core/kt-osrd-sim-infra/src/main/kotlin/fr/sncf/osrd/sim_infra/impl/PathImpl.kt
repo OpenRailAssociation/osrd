@@ -3,7 +3,6 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.units.Distance
@@ -22,7 +21,7 @@ data class PathImpl(
     override fun getOperationalPointParts(): List<IdxWithOffset<OperationalPointPart>> {
         return getElementsOnPath { dirChunkId ->
             infra.getTrackChunkOperationalPointParts(dirChunkId.value)
-                .map { opId -> WithOffset(opId, infra.getOperationalPointPartChunkOffset(opId)) }
+                .map { opId -> IdxWithOffset(opId, infra.getOperationalPointPartChunkOffset(opId)) }
         }
     }
 
@@ -44,14 +43,14 @@ data class PathImpl(
 
     /** Use the given function to get punctual data from a chunk, and concatenates all the values on the path */
     private fun <T>getElementsOnPath(
-        getData: (chunk: DirTrackChunkId) -> Iterable<WithOffset<T>>
-    ): List<WithOffset<T>> {
-        val res = ArrayList<WithOffset<T>>()
+        getData: (chunk: DirTrackChunkId) -> Iterable<IdxWithOffset<T>>
+    ): List<IdxWithOffset<T>> {
+        val res = ArrayList<IdxWithOffset<T>>()
         var chunkOffset = 0.meters
         for (chunk in chunks) {
             for ((element, offset) in getData.invoke(chunk)) {
                 val projectedOffset = projectPosition(chunk, offset)
-                res.add(WithOffset(element, chunkOffset + projectedOffset))
+                res.add(IdxWithOffset(element, chunkOffset + projectedOffset))
             }
             chunkOffset += infra.getTrackChunkLength(chunk.value)
         }
@@ -70,11 +69,11 @@ data class PathImpl(
     }
 
     /** Keeps only the elements that are not outside the path, and shift the offsets to start at 0 */
-    private fun <T>filterAndShiftElementsOnPath(res: List<WithOffset<T>>): List<WithOffset<T>> {
+    private fun <T>filterAndShiftElementsOnPath(res: List<IdxWithOffset<T>>): List<IdxWithOffset<T>> {
         return res
             .filter { element -> element.offset >= beginOffset }
             .filter { element -> element.offset <= endOffset }
-            .map { element -> WithOffset(element.value, element.offset - beginOffset) }
+            .map { element -> IdxWithOffset(element.value, element.offset - beginOffset) }
     }
 
     /** Merge all the given range maps, offsetting them by the given distances. The list sizes must match. */
