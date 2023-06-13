@@ -108,7 +108,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
     for (track in infra.trackGraph.edges())
         for (op in track.operationalPoints) {
             val (chunkId, offset) = getChunkLocation(track, Distance.fromMeters(op.offset), trackChunkMap)
-            builder.operationalPoint(op.id, offset, chunkId)
+            builder.operationalPointPart(op.id, offset, chunkId)
         }
 
     // parse switches
