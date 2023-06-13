@@ -189,8 +189,8 @@ class RawInfraAdapterTest {
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
         val infra = adaptRawInfra(oldInfra)
         val path = pathFromTracks(infra, listOf("TA0", "TA1"), Direction.INCREASING, 500.meters, 3_500.meters)
-        val opIdsWithOffset = infra.getOperationalPointsOnPath(path)
-            .map { op -> WithOffset(infra.getOperationalPointName(op.value), op.offset) }
+        val opIdsWithOffset = infra.getOperationalPointPartsOnPath(path)
+            .map { op -> WithOffset(infra.getOperationalPointPartName(op.value), op.offset) }
         assertEquals(listOf(
             WithOffset("point1", 500.meters),
             WithOffset("point1", 1_000.meters),
@@ -198,8 +198,8 @@ class RawInfraAdapterTest {
         ), opIdsWithOffset)
 
         val pathBackward = pathFromTracks(infra, listOf("TA1", "TA0"), Direction.DECREASING, 0.meters, 2_950.meters)
-        val opIdsWithOffsetBackward = infra.getOperationalPointsOnPath(pathBackward)
-            .map { op -> WithOffset(infra.getOperationalPointName(op.value), op.offset) }
+        val opIdsWithOffsetBackward = infra.getOperationalPointPartsOnPath(pathBackward)
+            .map { op -> WithOffset(infra.getOperationalPointPartName(op.value), op.offset) }
         assertEquals(listOf(
             WithOffset("point2", 0.meters),
             WithOffset("point2", 1_950.meters),
