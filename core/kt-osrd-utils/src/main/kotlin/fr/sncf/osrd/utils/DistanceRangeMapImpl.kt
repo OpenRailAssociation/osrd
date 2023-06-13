@@ -123,7 +123,7 @@ data class DistanceRangeMapImpl<T>(
 
     companion object {
         fun <T>from(map: RangeMap<Double, T>): DistanceRangeMap<T> {
-            val res = DistanceRangeMapImpl<T>()
+            val res = distanceRangeMapOf<T>()
             for (entry in map.asMapOfRanges())
                 res.put(
                     Distance.fromMeters(entry.key.lowerEndpoint()),
