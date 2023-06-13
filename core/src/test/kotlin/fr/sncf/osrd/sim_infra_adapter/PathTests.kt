@@ -85,23 +85,23 @@ class PathTests {
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
         val infra = adaptRawInfra(oldInfra)
         val path = pathFromTracks(infra, listOf("TA0", "TA1"), Direction.INCREASING, 500.meters, 3_500.meters)
-        val opIdsWithOffset = path.getOperationalPointParts()
-            .map { op -> WithOffset(infra.getOperationalPointPartName(op.value), op.offset) }
+        val opIdsIdxWithOffset = path.getOperationalPointParts()
+            .map { op -> Pair(infra.getOperationalPointPartName(op.value), op.offset) }
         assertEquals(listOf(
-            WithOffset("point1", 500.meters),
-            WithOffset("point1", 1_000.meters),
-            WithOffset("point2", 1_500.meters),
-        ), opIdsWithOffset)
+            Pair("point1", 500.meters),
+            Pair("point1", 1_000.meters),
+            Pair("point2", 1_500.meters),
+        ), opIdsIdxWithOffset)
 
         val pathBackward = pathFromTracks(infra, listOf("TA1", "TA0"), Direction.DECREASING, 0.meters, 2_950.meters)
-        val opIdsWithOffsetBackward = pathBackward.getOperationalPointParts()
-            .map { op -> WithOffset(infra.getOperationalPointPartName(op.value), op.offset) }
+        val opIdsIdxWithOffsetBackward = pathBackward.getOperationalPointParts()
+            .map { op -> Pair(infra.getOperationalPointPartName(op.value), op.offset) }
         assertEquals(listOf(
-            WithOffset("point2", 0.meters),
-            WithOffset("point2", 1_950.meters),
-            WithOffset("point1", 2_450.meters),
-            WithOffset("point1", 2_950.meters),
-        ), opIdsWithOffsetBackward)
+            Pair("point2", 0.meters),
+            Pair("point2", 1_950.meters),
+            Pair("point1", 2_450.meters),
+            Pair("point1", 2_950.meters),
+        ), opIdsIdxWithOffsetBackward)
     }
 
     /** Build a path from track ids */
