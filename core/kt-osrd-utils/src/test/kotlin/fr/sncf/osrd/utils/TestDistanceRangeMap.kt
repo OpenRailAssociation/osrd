@@ -1,20 +1,19 @@
 package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.meters
 import org.junit.Test
 import kotlin.test.assertEquals
 
 class TestDistanceRangeMap {
     @Test
     fun testEmpty() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         assertEquals(emptyList(), rangeMap.asList())
     }
 
     @Test
     fun testSingleEntry() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(100), Distance(1000), 42)
         assertEquals(listOf(
             DistanceRangeMap.RangeMapEntry(
@@ -24,14 +23,14 @@ class TestDistanceRangeMap {
 
     @Test
     fun testEmptyEntry() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(100), Distance(100), 42)
         assertEquals(emptyList(), rangeMap.asList())
     }
 
     @Test
     fun testOverlappingRanges() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(100), Distance(200), 42)
         rangeMap.put(Distance(150), Distance(300), 43)
         assertEquals(listOf(
@@ -42,7 +41,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testNonOverlappingRanges() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(100), Distance(200), 42)
         rangeMap.put(Distance(300), Distance(400), 43)
         assertEquals(listOf(
@@ -53,7 +52,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testSplitRange() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(100), Distance(200), 42)
         rangeMap.put(Distance(120), Distance(130), 43)
         assertEquals(listOf(
@@ -65,7 +64,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testOverwritingSeveralRanges() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 1)
         rangeMap.put(Distance(100), Distance(200), 2)
         rangeMap.put(Distance(200), Distance(300), 3)
@@ -81,7 +80,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testMergeRanges() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 42)
         rangeMap.put(Distance(100), Distance(200), 2)
         rangeMap.put(Distance(200), Distance(300), 3)
@@ -95,7 +94,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testTruncate() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 41)
         rangeMap.put(Distance(200), Distance(300), 42)
         rangeMap.truncate(Distance(250), Distance(260))
@@ -106,7 +105,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testTruncateAll() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 41)
         rangeMap.put(Distance(200), Distance(300), 42)
         rangeMap.truncate(Distance(0), Distance(0))
@@ -115,7 +114,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testTruncateToEmptyRange() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 41)
         rangeMap.put(Distance(200), Distance(300), 42)
         rangeMap.truncate(Distance(150), Distance(160))
@@ -124,7 +123,7 @@ class TestDistanceRangeMap {
 
     @Test
     fun testShift() {
-        val rangeMap = DistanceRangeMapImpl<Int>()
+        val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 41)
         rangeMap.put(Distance(200), Distance(300), 42)
         rangeMap.shiftPositions(Distance(-100))

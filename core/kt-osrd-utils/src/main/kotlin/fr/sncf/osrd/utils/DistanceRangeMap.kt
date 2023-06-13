@@ -29,3 +29,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Shifts the positions by adding the given value */
     fun shiftPositions(offset: Distance)
 }
+
+fun <T> distanceRangeMapOf(): DistanceRangeMap<T> {
+    return DistanceRangeMapImpl()
+}
