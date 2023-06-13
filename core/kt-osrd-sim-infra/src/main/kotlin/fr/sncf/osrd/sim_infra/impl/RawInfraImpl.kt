@@ -2,9 +2,7 @@ package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.railjson.schema.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.DirectionalMap
-import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
@@ -29,12 +27,18 @@ class TrackSectionDescriptor(
 class TrackChunkDescriptor(
     val geo: LineString,
     val slopes: DirectionalMap<DistanceRangeMap<Double>>,
+    val curves: DirectionalMap<DistanceRangeMap<Double>>,
+    val gradients: DirectionalMap<DistanceRangeMap<Double>>,
     val length: Distance,
     val routes: DirectionalMap<StaticIdxCollection<Route>>,
     var track: StaticIdx<TrackSection>,
     val offset: Distance,
     var operationalPointParts: StaticIdxList<OperationalPointPart>,
-) {}
+    val loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
+    val catenaryVoltage: DistanceRangeMap<String>,
+    val deadSections: DirectionalMap<DistanceRangeSet>,
+    val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
+)
 
 @JvmInline
 value class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>)
@@ -100,6 +104,11 @@ class OperationalPointPartDescriptor(
     val name: String,
     val chunkOffset: Distance,
     val chunk: TrackChunkId,
+)
+
+class SpeedSection(
+    val default: Speed,
+    val speedByTrainTag: Map<String, Speed>,
 )
 
 
@@ -170,6 +179,36 @@ class RawInfraImpl(
 
     override fun getTrackChunkSlope(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
         return trackChunkPool[trackChunk.value].slopes.get(trackChunk.direction)
+    }
+
+    override fun getTrackChunkCurve(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
+        return trackChunkPool[trackChunk.value].curves.get(trackChunk.direction)
+    }
+
+    override fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double> {
+        return trackChunkPool[trackChunk.value].gradients.get(trackChunk.direction)
+    }
+
+    override fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint> {
+        return trackChunkPool[trackChunk].loadingGaugeConstraints
+    }
+
+    override fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String> {
+        return trackChunkPool[trackChunk].catenaryVoltage
+    }
+
+    override fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeSet {
+        return trackChunkPool[trackChunk.value].deadSections.get(trackChunk.direction)
+    }
+
+    override fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed> {
+        val res = distanceRangeMapOf<Speed>()
+        for (entry in trackChunkPool[trackChunk.value].speedSections.get(trackChunk.direction)) {
+            val speedSection = entry.value
+            val allowedSpeed = speedSection.speedByTrainTag.getOrDefault(trainTag, speedSection.default)
+            res.put(entry.lower, entry.upper, allowedSpeed)
+        }
+        return res
     }
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxCollection<Route> {

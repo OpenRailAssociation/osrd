@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.implementation.tracks.undirected;
 
 import com.google.common.collect.ImmutableSet;
-import fr.sncf.osrd.infra.api.tracks.undirected.LoadingGaugeConstraint;
+import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 
 public class LoadingGaugeConstraintImpl implements LoadingGaugeConstraint {

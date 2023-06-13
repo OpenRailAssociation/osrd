@@ -3,8 +3,10 @@ package fr.sncf.osrd.sim_infra.api
 import fr.sncf.osrd.railjson.schema.geom.LineString
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.units.Speed
 
 
 /** An operational point is a special location (such as a station).
@@ -15,22 +17,25 @@ sealed interface OperationalPointPart
 typealias OperationalPointPartId = StaticIdx<OperationalPointPart>
 
 interface TrackProperties {
-    fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
+
+    // Chunk attributes
     fun getTrackChunkLength(trackChunk: TrackChunkId): Distance
     fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance
     fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId
+
+    // Linear track attributes
+    fun getTrackChunkSlope(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
+    fun getTrackChunkCurve(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
+    fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
+    fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint>
+    fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
+    fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeSet
+    fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
+    fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 
     // Operational points
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>
     fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId
     fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Distance
     fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String
-
-    // non-overlapping attributes:
-    fun getTrackChunkSlope(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
-    // TODO: voltages
-    // TODO: loading gauge
-
-    // overlapping attributes:
-    // TODO: speed sections
 }
