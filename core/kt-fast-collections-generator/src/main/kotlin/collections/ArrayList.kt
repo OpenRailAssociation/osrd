@@ -27,7 +27,6 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
             package $generatedPackage
 
-            import com.google.common.base.Joiner
             import fr.sncf.osrd.fast_collections.growCapacity
             import ${type.qualifiedName}
 
@@ -200,7 +199,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
                 /** GENERATED CODE */
                 override fun toString(): String {
-                    return String.format("[%s]", Joiner.on(", ").join(this))
+                    return joinToString(prefix = "[", separator = ", ", postfix = "]")
                 }
             }
 
