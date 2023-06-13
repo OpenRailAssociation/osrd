@@ -22,6 +22,7 @@
   "inputPlaceholder": "Name, trigram",
   "launchImport": "Start import",
   "noResults": "No results",
+  "or": "or",
   "startTime": "START",
   "status": {
     "calculatingTrainSchedule": "Calculating train schedules...",
@@ -33,6 +34,7 @@
     "missingTimetable": "You must choose a timetable",
     "noImportationPossible": "Import is currently not available:",
     "pathComplete": "Pathfinding complete",
+    "pathsFailed": "All the pathfindings have failed",
     "ready": "Ready.",
     "searchingPath": "Search for a path",
     "uicComplete": "All locations have been completed."

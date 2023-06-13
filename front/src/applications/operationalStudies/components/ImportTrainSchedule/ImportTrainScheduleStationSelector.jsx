@@ -1,13 +1,14 @@
-import React, { useEffect, useState, memo } from 'react';
-import PropTypes from 'prop-types';
 import { get } from 'axios';
+import React, { useEffect, useState, memo } from 'react';
+import { useTranslation } from 'react-i18next';
+import nextId from 'react-id-generator';
+import PropTypes from 'prop-types';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
-import { useTranslation } from 'react-i18next';
 import Loader from 'common/Loader';
-import nextId from 'react-id-generator';
 import StationCard from 'common/StationCard';
-import { GRAOU_URL } from './consts';
+import { GRAOU_URL } from 'common/api/graouApi';
 
 function ImportTrainScheduleStationSelector(props) {
   const { id, onSelect, term, setTerm } = props;
