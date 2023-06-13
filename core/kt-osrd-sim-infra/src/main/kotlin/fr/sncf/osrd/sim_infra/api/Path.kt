@@ -6,11 +6,10 @@ import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.DistanceRangeMap
 
-data class WithOffset<T>(
-    val value: T,
+data class IdxWithOffset<T>(
+    val value: StaticIdx<T>,
     val offset: Distance,
 )
-typealias IdxWithOffset<T> = WithOffset<StaticIdx<T>>
 
 interface Path {
     fun getSlopes(): DistanceRangeMap<Double>
