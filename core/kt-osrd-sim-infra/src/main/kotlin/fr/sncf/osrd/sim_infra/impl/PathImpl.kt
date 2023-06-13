@@ -4,6 +4,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
@@ -21,7 +22,7 @@ data class PathImpl(
     override fun getOperationalPointParts(): List<IdxWithOffset<OperationalPointPart>> {
         return getElementsOnPath { dirChunkId ->
             infra.getTrackChunkOperationalPointParts(dirChunkId.value)
-                .map { opId -> Pair(opId, infra.getOperationalPointPartChunkOffset(opId)) }
+                .map { opId -> WithOffset(opId, infra.getOperationalPointPartChunkOffset(opId)) }
         }
     }
 
@@ -43,7 +44,7 @@ data class PathImpl(
 
     /** Use the given function to get punctual data from a chunk, and concatenates all the values on the path */
     private fun <T>getElementsOnPath(
-        getData: (chunk: DirTrackChunkId) -> Iterable<Pair<T, Distance>>
+        getData: (chunk: DirTrackChunkId) -> Iterable<WithOffset<T>>
     ): List<WithOffset<T>> {
         val res = ArrayList<WithOffset<T>>()
         var chunkOffset = 0.meters
@@ -79,7 +80,7 @@ data class PathImpl(
     /** Merge all the given range maps, offsetting them by the given distances. The list sizes must match. */
     private fun <T>mergeMaps(maps: List<DistanceRangeMap<T>>, distances: List<Distance>): DistanceRangeMap<T> {
         assert(maps.size == distances.size)
-        val res = DistanceRangeMapImpl<T>()
+        val res = distanceRangeMapOf<T>()
         var previousDistance = 0.meters
         for ((map, distance) in maps zip distances) {
             for (entry in map) {
