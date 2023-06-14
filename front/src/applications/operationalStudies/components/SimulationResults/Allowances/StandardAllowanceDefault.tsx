@@ -4,7 +4,7 @@ import { FaTrash } from 'react-icons/fa';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -104,13 +104,20 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
   );
 
   const handleType = useCallback(
-    (newTypeValue: { type: string | undefined; value: string }) => {
-      const processedType = {
-        type: newTypeValue.type,
-        value: newTypeValue.value === '' ? '' : parseInt(newTypeValue.value, 10),
-      };
-      setValue(processedType as SetStateAction<{ type: keyof typeof TYPES_UNITS; value: number }>);
-      debouncedChangeType(processedType);
+    (newTypeValue: InputGroupSNCFValue) => {
+      if (newTypeValue.type !== undefined) {
+        const processedType = {
+          type: newTypeValue.type,
+          value:
+            newTypeValue.value === '' || newTypeValue.value === undefined
+              ? ''
+              : +newTypeValue.value,
+        };
+        setValue(
+          processedType as SetStateAction<{ type: keyof typeof TYPES_UNITS; value: number }>
+        );
+        debouncedChangeType(processedType);
+      }
     },
     [debouncedChangeType]
   );

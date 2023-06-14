@@ -3,14 +3,9 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 
-import {
-  Allowance,
-  AllowanceValue,
-  RangeAllowance,
-  EngineeringAllowance,
-} from 'common/api/osrdMiddlewareApi';
+import { Allowance, RangeAllowance, EngineeringAllowance } from 'common/api/osrdMiddlewareApi';
 
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import OPModal from 'applications/operationalStudies/components/SimulationResults/Allowances/OPModal';
@@ -126,14 +121,17 @@ function EmptyLine<T extends RangeAllowance>(props: EmptyLineProps<T>) {
     });
   }, [defaultDistributionId]);
 
-  const handleType = (type: { type: AllowanceValue['value_type']; value: string }) => {
-    setValues({
-      ...values,
-      value: {
-        value_type: type.type,
-        [TYPES_UNITS[type.type]]: type.value === '' ? '' : parseInt(type.value, 10),
-      },
-    });
+  const handleType = (type: InputGroupSNCFValue) => {
+    if (type.type !== undefined) {
+      setValues({
+        ...values,
+        value: {
+          value_type: type.type,
+          [TYPES_UNITS[type.type as keyof typeof TYPES_UNITS]]:
+            type.value === '' || type.value === undefined ? '' : +type.value,
+        },
+      });
+    }
   };
 
   return (
