@@ -39,7 +39,7 @@ class Projection:
                 res.append(r)
                 continue
             assert res[-1].direction == r.direction
-            assert res[-1].begin == r.end or res[-1].end == r.begin
+            assert abs(res[-1].begin - r.end) * 1000 < 1 or abs(res[-1].end - r.begin) * 1000 < 1
             res[-1] = DirectionalTrackRange(
                 track=r.track,
                 direction=r.direction,
