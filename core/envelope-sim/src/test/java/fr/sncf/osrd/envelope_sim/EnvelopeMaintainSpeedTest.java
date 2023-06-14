@@ -1,10 +1,10 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder.buildNonElectrified;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.common.collect.ImmutableRangeMap;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -17,11 +17,11 @@ public class EnvelopeMaintainSpeedTest {
     @Test
     public void suddenSlope() {
         var stops = new double[] { };
-        var path = new EnvelopeSimPath(
+        var path = buildNonElectrified(
                 10000,
                 new double[] { 0, 5000, 6000, 7000, 8000, 8500, 9000, 10000 },
-                new double[] { 0, 40, -40, 0, 50, -50, 0 },
-                ImmutableRangeMap.of());
+                new double[] { 0, 40, -40, 0, 50, -50, 0 }
+        );
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var context = new EnvelopeSimContext(testRollingStock, path, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);

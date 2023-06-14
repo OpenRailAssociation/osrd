@@ -4,9 +4,10 @@ import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A mapping from track sections to electrical profile values
@@ -37,14 +38,14 @@ public class ElectricalProfileMapping {
     /**
      * Returns the electrical profile values encountered along the train path, for each power class given.
      */
-    public HashMap<String, RangeMap<Double, String>> getProfilesOnPath(TrainPath trainPath) {
+    public HashMap<String, RangeMap<Double, String>> getProfilesOnPath(List<TrackRangeView> trackSectionPath) {
         var res = new HashMap<String, RangeMap<Double, String>>();
         for (var entry : mapping.entrySet()) {
             var powerClass = entry.getKey();
             var byTrackMapping = entry.getValue();
             var rangeMap = new ImmutableRangeMap.Builder<Double, String>();
             double offset = 0;
-            for (var trackRange : TrainPath.removeLocation(trainPath.trackRangePath())) {
+            for (var trackRange : trackSectionPath) {
                 var trackID = trackRange.track.getEdge().getID();
                 if (byTrackMapping.containsKey(trackID)) {
                     var pathRangeMapping = trackRange.convertMap(byTrackMapping.get(trackID));

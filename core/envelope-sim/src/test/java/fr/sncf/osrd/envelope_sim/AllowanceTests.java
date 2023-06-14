@@ -1,15 +1,20 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope.EnvelopeShape.CONSTANT;
+import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
+import static fr.sncf.osrd.envelope.EnvelopeShape.INCREASING;
+import static fr.sncf.osrd.envelope.EnvelopeShape.check;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder.buildNonElectrified;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeComplexMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeBuilder.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.TIME_STEP;
 import static fr.sncf.osrd.envelope_sim.SimpleContextBuilder.makeSimpleContext;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.carrotsearch.hppc.DoubleArrayList;
-import com.google.common.collect.ImmutableRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
@@ -111,12 +116,7 @@ public class AllowanceTests {
     @Test
     public void complexTestBinarySearchContinuity() {
         var length = 50_000;
-        var trainPath = new EnvelopeSimPath(
-                length,
-                new double[]{0, 800, 35_000, length},
-                new double[]{0, 50, -10},
-                ImmutableRangeMap.of()
-        );
+        var trainPath = buildNonElectrified(length, new double[]{0, 800, 35_000, length}, new double[]{0, 50, -10});
         var testContext = new EnvelopeSimContext(SimpleRollingStock.STANDARD_TRAIN, trainPath,
                 2., SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] {};
@@ -494,7 +494,7 @@ public class AllowanceTests {
 
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
         var length = 100_000;
-        var testPath = new EnvelopeSimPath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
+        var testPath = buildNonElectrified(length, gradePositions, gradeValues);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] { 50_000, testContext.path.getLength() };
@@ -532,8 +532,7 @@ public class AllowanceTests {
         gradePositions.add(length);
 
         var testRollingStock = SimpleRollingStock.STANDARD_TRAIN;
-        var testPath = new EnvelopeSimPath(
-                length, gradePositions.toArray(), gradeValues.toArray(), ImmutableRangeMap.of());
+        var testPath = buildNonElectrified(length, gradePositions.toArray(), gradeValues.toArray());
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[]{ 50_000, length };
@@ -638,7 +637,7 @@ public class AllowanceTests {
         var length = 15000;
         var gradePositions = new double[] { 0, 7000, 8100, length };
         var gradeValues = new double[] { 0, 40, 0 };
-        var testPath = new EnvelopeSimPath(length, gradePositions, gradeValues, ImmutableRangeMap.of());
+        var testPath = buildNonElectrified(length, gradePositions, gradeValues);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP,
                 SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP);
         var stops = new double[] { length };

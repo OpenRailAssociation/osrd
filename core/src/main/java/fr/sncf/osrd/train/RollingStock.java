@@ -1,13 +1,12 @@
 package fr.sncf.osrd.train;
 
-import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ElectrificationConditions;
-
 import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.envelope_sim.electrification.Electrification;
+import fr.sncf.osrd.envelope_sim.electrification.Electrified;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.Map;
 import java.util.Set;
@@ -160,17 +159,20 @@ public class RollingStock implements PhysicsRollingStock {
         }
     }
 
+    public record InfraConditions(String mode, String electricalProfile, String powerRestriction) {
+    }
+
     public enum Comfort {
         STANDARD,
         HEATING,
         AC,
     }
 
-    protected record CurveAndCondition(TractiveEffortPoint[] curve, ElectrificationConditions elecCond) {
+    protected record CurveAndCondition(TractiveEffortPoint[] curve, InfraConditions cond) {
     }
 
     public record CurvesAndConditions(RangeMap<Double, TractiveEffortPoint[]> curves,
-                                      RangeMap<Double, ElectrificationConditions> conditions) {
+                                      RangeMap<Double, InfraConditions> conditions) {
     }
 
     /**
@@ -183,46 +185,42 @@ public class RollingStock implements PhysicsRollingStock {
     /**
      * Returns the tractive effort curve that matches best, along with the catenary conditions that matched
      */
-    protected CurveAndCondition findTractiveEffortCurve(Comfort comfort, ElectrificationConditions elecCond) {
-        // Get mode effort curves
-        var usedMode = elecCond.mode();
-        if (usedMode == null || !modes.containsKey(usedMode)) {
-            usedMode = defaultMode;
-        }
-        var mode = modes.get(usedMode);
+    protected CurveAndCondition findTractiveEffortCurve(Comfort comfort, Electrification electrification) {
+        var usedMode = defaultMode;
+        var chosenCond = new EffortCurveConditions(comfort, null, null);
 
+        if (electrification instanceof Electrified e) {
+            usedMode = modes.containsKey(e.mode) ? e.mode : defaultMode;
+            chosenCond = new EffortCurveConditions(comfort, e.profile, e.powerRestriction);
+        }
+
+        var mode = modes.get(usedMode);
         // Get first matching curve
-        var chosenCond = new EffortCurveConditions(comfort, elecCond.profile(), elecCond.powerRestriction());
         for (var condCurve : mode.curves) {
             if (condCurve.cond.match(chosenCond)) {
                 return new CurveAndCondition(condCurve.curve,
-                        new ElectrificationConditions(usedMode, condCurve.cond.electricalProfile,
+                        new InfraConditions(usedMode, condCurve.cond.electricalProfile,
                                 condCurve.cond.powerRestriction));
             }
         }
-        return new CurveAndCondition(mode.defaultCurve, new ElectrificationConditions(usedMode, null, null));
+        return new CurveAndCondition(mode.defaultCurve, new InfraConditions(usedMode, null, null));
     }
 
     /**
      * Returns the tractive effort curves corresponding to the electrical conditions map
      *
-     * @param elecCondMap       The map of electrification conditions to use
-     * @param comfort           The comfort level to get the curves for
+     * @param electrificationMap The map of electrification conditions to use
+     * @param comfort            The comfort level to get the curves for
      */
-    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, ElectrificationConditions> elecCondMap,
-                                                       Comfort comfort, double pathLength) {
-        TreeRangeMap<Double, ElectrificationConditions> conditionsUsed = TreeRangeMap.create();
+    public CurvesAndConditions mapTractiveEffortCurves(RangeMap<Double, Electrification> electrificationMap,
+                                                       Comfort comfort) {
+        TreeRangeMap<Double, InfraConditions> conditionsUsed = TreeRangeMap.create();
         TreeRangeMap<Double, TractiveEffortPoint[]> res = TreeRangeMap.create();
 
-        var defaultCondition = new ElectrificationConditions(defaultMode, null, null);
-        var defaultCurve = findTractiveEffortCurve(comfort, defaultCondition);
-        res.put(Range.all(), defaultCurve.curve);
-        conditionsUsed.put(Range.closed(0., pathLength), defaultCurve.elecCond);
-
-        for (var elecCondEntry : elecCondMap.asMapOfRanges().entrySet()) {
+        for (var elecCondEntry : electrificationMap.asMapOfRanges().entrySet()) {
             var curveAndCond = findTractiveEffortCurve(comfort, elecCondEntry.getValue());
             res.put(elecCondEntry.getKey(), curveAndCond.curve);
-            conditionsUsed.put(elecCondEntry.getKey(), curveAndCond.elecCond);
+            conditionsUsed.put(elecCondEntry.getKey(), curveAndCond.cond);
         }
         return new CurvesAndConditions(ImmutableRangeMap.copyOf(res), ImmutableRangeMap.copyOf(conditionsUsed));
     }
