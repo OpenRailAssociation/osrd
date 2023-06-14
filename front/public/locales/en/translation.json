@@ -203,7 +203,7 @@
           "STOP_TO_START": "Inverse direction"
         },
         "edit-route": "Edit an existing route",
-        "end": "End",
+        "end": "Arrival",
         "endpoint": "Endpoint:",
         "from": "from",
         "geometry-error": "An exception occured during calculation of this route",
@@ -226,7 +226,7 @@
         "save-route": "Save modifications",
         "save-route-success": "The route was successfully saved.",
         "search-routes": "Search for compatible routes",
-        "start": "Start",
+        "start": "Departure",
         "start_direction": "Start direction:",
         "swap-endpoints": "Swap endpoints",
         "to": "to",
