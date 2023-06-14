@@ -1,5 +1,4 @@
 import { baseEditoastApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -141,7 +140,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg.number },
+        params: { number: queryArg['number'] },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -217,11 +216,11 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/pathfinding/`, method: 'POST', body: queryArg.pathQuery }),
     }),
     getPathfindingById: build.query<GetPathfindingByIdApiResponse, GetPathfindingByIdApiArg>({
-      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}` }),
+      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/` }),
     }),
     putPathfindingById: build.mutation<PutPathfindingByIdApiResponse, PutPathfindingByIdApiArg>({
       query: (queryArg) => ({
-        url: `/pathfinding/${queryArg.id}`,
+        url: `/pathfinding/${queryArg.id}/`,
         method: 'PUT',
         body: queryArg.pathQuery,
       }),
@@ -230,7 +229,7 @@ const injectedRtkApi = api.injectEndpoints({
       DeletePathfindingByIdApiResponse,
       DeletePathfindingByIdApiArg
     >({
-      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}`, method: 'DELETE' }),
+      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/`, method: 'DELETE' }),
     }),
     postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
       query: (queryArg) => ({
@@ -1678,13 +1677,13 @@ export type AllowancePercentValue = {
 };
 export type AllowanceValue =
   | ({
-      value_type: 'time_per_distance';
+      value_type: 'AllowanceTimePerDistanceValue';
     } & AllowanceTimePerDistanceValue)
   | ({
-      value_type: 'time';
+      value_type: 'AllowanceTimeValue';
     } & AllowanceTimeValue)
   | ({
-      value_type: 'percentage';
+      value_type: 'AllowancePercentValue';
     } & AllowancePercentValue);
 export type RangeAllowance = {
   begin_position: number;
@@ -1705,10 +1704,10 @@ export type StandardAllowance = {
 };
 export type Allowance =
   | ({
-      allowance_type: 'engineering';
+      allowance_type: 'EngineeringAllowance';
     } & EngineeringAllowance)
   | ({
-      allowance_type: 'standard';
+      allowance_type: 'StandardAllowance';
     } & StandardAllowance);
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;
