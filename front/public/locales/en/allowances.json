@@ -9,7 +9,7 @@
     "eco": "Margin \"ECO\" calculation error"
   },
   "from": "From",
-  "begin_position": "Start",
+  "begin_position": "Started",
   "marecoWholePath": "Theoretical running profile to save energy (full path)",
   "sandardAllowancesWholePath": "Recovery margin",
   "engineeringAllowances": "Time allowance",
