@@ -54,7 +54,10 @@ impl Projection {
                 continue;
             }
             assert_eq!(res.last().unwrap().direction, r.direction);
-            assert!(res.last().unwrap().begin == r.end || res.last().unwrap().end == r.begin);
+            assert!(
+                (res.last().unwrap().begin - r.end).abs() * 1000.0 < 1.0
+                    || (res.last().unwrap().end - r.begin).abs() * 1000.0 < 1.0
+            );
             res.last_mut().unwrap().begin = res.last().unwrap().begin.min(r.begin);
             res.last_mut().unwrap().end = res.last().unwrap().end.max(r.end);
         }
