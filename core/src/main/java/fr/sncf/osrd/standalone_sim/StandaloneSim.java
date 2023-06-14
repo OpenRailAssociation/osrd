@@ -3,8 +3,8 @@ package fr.sncf.osrd.standalone_sim;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
@@ -18,8 +18,8 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.ElectrificationConditionsRange;
+import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.RollingStock;
@@ -57,15 +57,15 @@ public class StandaloneSim {
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base
-                var elecCondMap = envelopeSimPath.getElecCondMap(rollingStock.basePowerClass,
+                var electrificationMap = envelopeSimPath.getElectrificationMap(rollingStock.basePowerClass,
                         trainSchedule.powerRestrictionMap, rollingStock.powerRestrictions,
                         trainSchedule.options.ignoreElectricalProfiles);
-                var curvesAndConditions = rollingStock.mapTractiveEffortCurves(elecCondMap,
-                        trainSchedule.comfort, envelopeSimPath.getLength());
+                var curvesAndConditions =
+                        rollingStock.mapTractiveEffortCurves(electrificationMap, trainSchedule.comfort);
                 var context = new EnvelopeSimContext(rollingStock, envelopeSimPath, timeStep,
                         curvesAndConditions.curves());
                 cacheModeAndProfiles.put(trainSchedule, ElectrificationConditionsRange.from(
-                        curvesAndConditions.conditions(), elecCondMap));
+                        curvesAndConditions.conditions(), electrificationMap));
                 var envelope = computeMaxEffortEnvelope(context, mrsp, trainSchedule);
                 var simResultTrain = ScheduleMetadataExtractor.run(
                         envelope,
@@ -106,12 +106,7 @@ public class StandaloneSim {
     ) {
         // Parse trainPath
         var trainPath = TrainPathBuilder.from(infra.java(), rjsTrainPath);
-        var envelopePath = EnvelopeTrainPath.from(trainPath);
-
-        if (electricalProfileMap != null) {
-            envelopePath.setElectricalProfiles(
-                    electricalProfileMap.getProfilesOnPath(trainPath));
-        }
+        var envelopePath = EnvelopeTrainPath.from(trainPath, electricalProfileMap);
 
         // Parse train schedules
         var trainSchedules = new ArrayList<StandaloneTrainSchedule>();

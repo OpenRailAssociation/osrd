@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ElectrificationConditions;
+import static fr.sncf.osrd.train.RollingStock.InfraConditions;
 
 import com.google.common.collect.*;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
@@ -45,9 +45,9 @@ public class TestRollingStock {
             RangeMap<Double, String> powerRestrictionMap) {
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
-        var elecCondMap = path.getElecCondMap(rollingStock.basePowerClass, powerRestrictionMap,
+        var elecCondMap = path.getElectrificationMap(rollingStock.basePowerClass, powerRestrictionMap,
                 rollingStock.powerRestrictions);
-        var tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort, path.getLength());
+        var tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort);
         testRangeCoverage(tractiveEffortCurveMap.conditions(), path.getLength());
         testRangeCoverage(tractiveEffortCurveMap.curves(), path.getLength());
         var nCurves = tractiveEffortCurveMap.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges()
@@ -71,9 +71,9 @@ public class TestRollingStock {
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
         var comfort = RollingStock.Comfort.STANDARD;
-        var elecCondMap = path.getElecCondMap(rollingStock.basePowerClass, powerRestrictionMap,
+        var elecCondMap = path.getElectrificationMap(rollingStock.basePowerClass, powerRestrictionMap,
                 rollingStock.powerRestrictions);
-        var res = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort, path.getLength());
+        var res = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort);
 
         testRangeCoverage(res.curves(), path.getLength());
         assertEquals(14, res.curves().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().size(),
@@ -85,21 +85,21 @@ public class TestRollingStock {
                         .map(Range::lowerEndpoint).toArray());
 
         // Check that the conditions are correct
-        assertArrayEquals(new ElectrificationConditions[] {
-                new ElectrificationConditions("thermal", null, null), // 0
-                new ElectrificationConditions("1500", null, null),    // 1
-                new ElectrificationConditions("1500", null, null),    // 5 "Restrict1" invalid for 1500
-                new ElectrificationConditions("thermal", null, null), // 8
-                new ElectrificationConditions("25000", null, "Restrict2"),  // 8.1
-                new ElectrificationConditions("25000", "25000", "Restrict2"), // 10
-                new ElectrificationConditions("25000", "25000", null), // 11
-                new ElectrificationConditions("25000", "22500", null), // 12
-                new ElectrificationConditions("25000", "20000", null), // 14
-                new ElectrificationConditions("25000", "22500", "Restrict1"), // 15
-                new ElectrificationConditions("25000", "25000", "Restrict1"), // 17
-                new ElectrificationConditions("25000", "25000", null), // 18 "UnknownRestrict" invalid for 25000
-                new ElectrificationConditions("thermal", null, null), // 20 No mode given
-                new ElectrificationConditions("thermal", null, null)  // 30 Invalid mode
+        assertArrayEquals(new InfraConditions[] {
+                new InfraConditions("thermal", null, null), // 0
+                new InfraConditions("1500", null, null),    // 1
+                new InfraConditions("1500", null, null),    // 5 "Restrict1" invalid for 1500
+                new InfraConditions("thermal", null, null), // 8
+                new InfraConditions("25000", null, "Restrict2"),  // 8.1
+                new InfraConditions("25000", "25000", "Restrict2"), // 10
+                new InfraConditions("25000", "25000", null), // 11
+                new InfraConditions("25000", "22500", null), // 12
+                new InfraConditions("25000", "20000", null), // 14
+                new InfraConditions("25000", "22500", "Restrict1"), // 15
+                new InfraConditions("25000", "25000", "Restrict1"), // 17
+                new InfraConditions("25000", "25000", null), // 18 "UnknownRestrict" invalid for 25000
+                new InfraConditions("thermal", null, null), // 20 No mode given
+                new InfraConditions("thermal", null, null)  // 30 Invalid mode
         },
                 res.conditions().subRangeMap(Range.closed(0., path.getLength())).asMapOfRanges().values().stream()
                     .toArray());

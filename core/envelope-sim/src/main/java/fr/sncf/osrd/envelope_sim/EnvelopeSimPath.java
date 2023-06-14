@@ -1,12 +1,13 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.envelope_utils.RangeMapUtils.fullyCovers;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope_sim.electrification.Electrification;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,29 +29,31 @@ public class EnvelopeSimPath implements PhysicsPath {
     private final double[] gradeCumSum;
 
     /**
-     * A range map of modeAndProfiles containing only the catenary electrification modes
+     * A mapping describing electrification on this path (without electrical profiles nor restrictions)
      */
-    private final ImmutableRangeMap<Double, ElectrificationConditions> catenaryModeMap;
+    private final ImmutableRangeMap<Double, Electrification> defaultElectrificationMap;
 
     /**
-     * Mapping from rolling stock power class to electrical profiles and catenary modes on this path
+     * Mapping from rolling stock power class to mapping describing electrification on this path (without restrictions)
      */
-    private HashMap<String, RangeMap<Double, ElectrificationConditions>> modeAndProfileMapsByPowerClass = null;
+    private final HashMap<String, ImmutableRangeMap<Double, Electrification>> electrificationMapByPowerClass;
 
     /**
      * Creates a new envelope path, which can be used to perform envelope simulations.
      *
-     * @param length          the length of the path
-     * @param gradePositions  the points at which the grade (slope) changes
-     * @param gradeValues     the values between consecutive pairs of grade positions
-     * @param catenaryModeMap range map of catenary modes
+     * @param length                         the length of the path
+     * @param gradePositions                 the points at which the grade (slope) changes
+     * @param gradeValues                    the values between consecutive pairs of grade positions
+     * @param defaultElectrificationMap      mapping from distance to electrification conditions
+     * @param electrificationMapByPowerClass mapping from rolling stock power class to mapping from distance to
+     *                                       electrification conditions
      */
-    @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     public EnvelopeSimPath(
             double length,
             double[] gradePositions,
             double[] gradeValues,
-            RangeMap<Double, String> catenaryModeMap
+            ImmutableRangeMap<Double, Electrification> defaultElectrificationMap,
+            HashMap<String, ImmutableRangeMap<Double, Electrification>> electrificationMapByPowerClass
     ) {
         assert gradePositions.length == gradeValues.length + 1;
         assert gradePositions[0] == 0.0;
@@ -61,17 +64,12 @@ public class EnvelopeSimPath implements PhysicsPath {
         this.gradeValues = gradeValues;
         this.length = length;
         this.gradeCumSum = initCumSum(gradePositions, gradeValues);
-        this.catenaryModeMap = initCatenaryModes(mergeRanges(catenaryModeMap));
-    }
-
-    private ImmutableRangeMap<Double, ElectrificationConditions> initCatenaryModes(
-            RangeMap<Double, String> catenaryModes) {
-
-        var builder = ImmutableRangeMap.<Double, ElectrificationConditions>builder();
-        for (var modeEntry : catenaryModes.asMapOfRanges().entrySet()) {
-            builder.put(modeEntry.getKey(), new ElectrificationConditions(modeEntry.getValue(), null, null));
-        }
-        return builder.build();
+        assert fullyCovers(defaultElectrificationMap, length) : "default electrification map does not cover path";
+        this.defaultElectrificationMap = defaultElectrificationMap;
+        for (var entry : electrificationMapByPowerClass.entrySet())
+            assert fullyCovers(entry.getValue(), length) :
+                    "electrification map for power class " + entry.getKey() + " does not cover path";
+        this.electrificationMapByPowerClass = electrificationMapByPowerClass;
     }
 
     private double[] initCumSum(double[] gradePositions, double[] gradeValues) {
@@ -115,53 +113,31 @@ public class EnvelopeSimPath implements PhysicsPath {
         return (getCumGrade(end) - getCumGrade(begin)) / (end - begin);
     }
 
-    /**
-     * Add electrical profile data to the path
-     */
-    public void setElectricalProfiles(Map<String, RangeMap<Double, String>> electricalProfilesByPowerClass) {
-        modeAndProfileMapsByPowerClass = new HashMap<>();
-
-        for (var powerClassEntry : electricalProfilesByPowerClass.entrySet()) {
-            var profileMap = mergeRanges(powerClassEntry.getValue());
-            TreeRangeMap<Double, ElectrificationConditions> profilesAndModes = TreeRangeMap.create();
-            profilesAndModes.putAll(catenaryModeMap);
-
-            for (var profileEntry : profileMap.asMapOfRanges().entrySet()) {
-                for (var entry : catenaryModeMap.subRangeMap(profileEntry.getKey()).asMapOfRanges().entrySet()) {
-                    var mode = entry.getValue().mode();
-                    var profileLevel = profileEntry.getValue();
-                    profilesAndModes.put(entry.getKey(), new ElectrificationConditions(mode, profileLevel, null));
-                }
-            }
-            modeAndProfileMapsByPowerClass.put(powerClassEntry.getKey(), ImmutableRangeMap.copyOf(profilesAndModes));
-        }
-    }
-
-    private RangeMap<Double, ElectrificationConditions> getModeAndProfileMap(String powerClass, Range<Double> range,
-                                                                             boolean ignoreElectricalProfiles) {
-        if (modeAndProfileMapsByPowerClass == null || ignoreElectricalProfiles)
-            return catenaryModeMap.subRangeMap(range);
-        return modeAndProfileMapsByPowerClass.getOrDefault(powerClass, catenaryModeMap).subRangeMap(range);
+    private RangeMap<Double, Electrification> getModeAndProfileMap(String powerClass, Range<Double> range,
+                                                                   boolean ignoreElectricalProfiles) {
+        if (ignoreElectricalProfiles)
+            powerClass = null;
+        return electrificationMapByPowerClass.getOrDefault(powerClass, defaultElectrificationMap).subRangeMap(range);
     }
 
     /**
-     * Get the catenary related data for a given power class and power restriction map.
+     * Get the electrification related data for a given power class and power restriction map.
      */
-    public ImmutableRangeMap<Double, ElectrificationConditions> getElecCondMap(
+    public ImmutableRangeMap<Double, Electrification> getElectrificationMap(
             String basePowerClass, RangeMap<Double, String> powerRestrictionMap,
             Map<String, String> powerRestrictionToPowerClass, boolean ignoreElectricalProfiles) {
-        TreeRangeMap<Double, ElectrificationConditions> res = TreeRangeMap.create();
+
+        TreeRangeMap<Double, Electrification> res = TreeRangeMap.create();
         res.putAll(getModeAndProfileMap(basePowerClass, Range.closed(0.0, length), ignoreElectricalProfiles));
 
         if (powerRestrictionMap != null) {
             for (var entry : powerRestrictionMap.asMapOfRanges().entrySet()) {
-                var powerClass = powerRestrictionToPowerClass.getOrDefault(entry.getValue(), basePowerClass);
+                var restriction = entry.getValue();
+                var powerClass = powerRestrictionToPowerClass.getOrDefault(restriction, basePowerClass);
                 var modeAndProfileMap = getModeAndProfileMap(powerClass, entry.getKey(), ignoreElectricalProfiles);
                 for (var modeAndProfileEntry : modeAndProfileMap.asMapOfRanges().entrySet()) {
-                    var mode = modeAndProfileEntry.getValue().mode();
-                    var profile = modeAndProfileEntry.getValue().profile();
-                    res.putCoalescing(modeAndProfileEntry.getKey(),
-                            new ElectrificationConditions(mode, profile, entry.getValue()));
+                    var electrification = modeAndProfileEntry.getValue();
+                    res.putCoalescing(modeAndProfileEntry.getKey(), electrification.withPowerRestriction(restriction));
                 }
             }
         }
@@ -169,49 +145,13 @@ public class EnvelopeSimPath implements PhysicsPath {
     }
 
     /**
-     * Get the catenary related data for a given power class and power restriction map.
+     * Get the electrification related data for a given power class and power restriction map.
      */
-    public ImmutableRangeMap<Double, ElectrificationConditions> getElecCondMap(
+    public ImmutableRangeMap<Double, Electrification> getElectrificationMap(
             String basePowerClass,
             RangeMap<Double, String> powerRestrictionMap,
             Map<String, String> powerRestrictionToPowerClass
     ) {
-        return getElecCondMap(basePowerClass, powerRestrictionMap, powerRestrictionToPowerClass, false);
-    }
-
-    /**
-     * Returns a range map where the adjacent ranges of same values have been merged
-     */
-    static <T> RangeMap<Double, T> mergeRanges(RangeMap<Double, T> map) {
-        TreeRangeMap<Double, T> result = TreeRangeMap.create();
-        var entryIterator = map.asMapOfRanges().entrySet().iterator();
-        if (!entryIterator.hasNext())
-            return result;
-        var currentEntry = entryIterator.next();
-        var currentRange = currentEntry.getKey();
-        var currentValue = currentEntry.getValue();
-        while (entryIterator.hasNext()) {
-            var nextEntry = entryIterator.next();
-            var nextRange = nextEntry.getKey();
-            var nextValue = nextEntry.getValue();
-            if (currentValue.equals(nextValue) && currentRange.isConnected(nextRange)) {
-                currentRange = Range.closedOpen(currentRange.lowerEndpoint(), nextRange.upperEndpoint());
-            } else {
-                result.put(currentRange, currentValue);
-                currentRange = nextRange;
-                currentValue = nextValue;
-            }
-        }
-        result.put(currentRange, currentValue);
-        return result;
-    }
-
-    /**
-     * Electrification conditions at a point in the path:
-     * - tractive mode the train should use (can be "thermal" when no electrification)
-     * - electrical profile value (can be null)
-     * - power restriction code (can be null)
-     */
-    public record ElectrificationConditions(String mode, String profile, String powerRestriction) {
+        return getElectrificationMap(basePowerClass, powerRestrictionMap, powerRestrictionToPowerClass, false);
     }
 }

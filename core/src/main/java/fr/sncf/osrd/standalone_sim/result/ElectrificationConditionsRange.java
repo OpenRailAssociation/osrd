@@ -1,11 +1,13 @@
 package fr.sncf.osrd.standalone_sim.result;
 
-import static fr.sncf.osrd.envelope_sim.EnvelopeSimPath.ElectrificationConditions;
-
 import com.google.common.collect.RangeMap;
 import com.squareup.moshi.Json;
+import fr.sncf.osrd.envelope_sim.electrification.Electrification;
+import fr.sncf.osrd.envelope_sim.electrification.Electrified;
+import fr.sncf.osrd.train.RollingStock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** A range on the train's path with the electrification conditions given by the infrastructure
  * and the conditions actually used by the train.
@@ -16,7 +18,7 @@ import java.util.List;
  * and switches to "thermal" mode. Then used_mode = "thermal" and seen_mode = "25000". */
 public class ElectrificationConditionsRange {
     public final double start;
-    public final double stop;
+    public double stop;
     @Json(name = "used_mode")
     public final String usedMode;
     @Json(name = "used_profile")
@@ -33,40 +35,58 @@ public class ElectrificationConditionsRange {
     /**
      * ElectrificationConditionsRange constructor
      */
-    public ElectrificationConditionsRange(double start, double stop, ElectrificationConditions usedCond,
-                                          ElectrificationConditions seenCond) {
+    public ElectrificationConditionsRange(double start, double stop, RollingStock.InfraConditions usedCond,
+                                          Electrification seenCond) {
         this.start = start;
         this.stop = stop;
         this.usedMode = usedCond.mode();
-        this.usedProfile = usedCond.profile();
+        this.usedProfile = usedCond.electricalProfile();
         this.usedRestriction = usedCond.powerRestriction();
-        if (seenCond != null) {
-            if (this.usedMode == null || !this.usedMode.equals(seenCond.mode()))
-                this.seenMode = seenCond.mode();
-            if (this.usedProfile == null || !this.usedProfile.equals(seenCond.profile()))
-                this.seenProfile = seenCond.profile();
-            if (this.usedRestriction == null || !this.usedRestriction.equals(seenCond.powerRestriction()))
-                this.seenRestriction = seenCond.powerRestriction();
+
+        if (seenCond instanceof Electrified e) {
+            if (this.usedMode == null || !this.usedMode.equals(e.mode))
+                this.seenMode = e.mode;
+            if (this.usedProfile == null || !this.usedProfile.equals(e.profile))
+                this.seenProfile = e.profile;
+            if (this.usedRestriction == null || !this.usedRestriction.equals(e.powerRestriction))
+                this.seenRestriction = e.powerRestriction;
         }
     }
 
     /**
-     * Builds a list of ElectrificationConditionsRanges from two range maps
+     * Returns true if the two ranges share the same values
+     */
+    public boolean sharesValueWith(ElectrificationConditionsRange other) {
+        return Objects.equals(this.usedMode, other.usedMode)
+                && Objects.equals(this.usedProfile, other.usedProfile)
+                && Objects.equals(this.usedRestriction, other.usedRestriction)
+                && Objects.equals(this.seenMode, other.seenMode)
+                && Objects.equals(this.seenProfile, other.seenProfile)
+                && Objects.equals(this.seenRestriction, other.seenRestriction);
+    }
+
+    /**
+     * Builds a list of ElectrificationConditionsRanges from two range maps while ensuring
+     * to return the smallest number of ranges
      */
     public static List<ElectrificationConditionsRange> from(
-            RangeMap<Double, ElectrificationConditions> elecCondsUsed,
-            RangeMap<Double, ElectrificationConditions> elecCondsSeen) {
+            RangeMap<Double, RollingStock.InfraConditions> condsUsed,
+            RangeMap<Double, Electrification> condsSeen) {
         var res = new ArrayList<ElectrificationConditionsRange>();
-        var elecCondsSeenMap = elecCondsSeen.asMapOfRanges();
-        for (var entry : elecCondsUsed.asMapOfRanges().entrySet()) {
+        var elecCondsSeenMap = condsSeen.asMapOfRanges();
+        for (var entry : condsUsed.asMapOfRanges().entrySet()) {
             var range = entry.getKey();
             if (!range.hasLowerBound() || !range.hasUpperBound() || range.upperEndpoint().equals(range.lowerEndpoint()))
                 continue;
-            assert elecCondsSeenMap.containsKey(range) || elecCondsSeen.subRangeMap(range).asMapOfRanges().isEmpty();
+            assert elecCondsSeenMap.containsKey(range) || condsSeen.subRangeMap(range).asMapOfRanges().isEmpty();
             var usedCond = entry.getValue();
             var seenCond = elecCondsSeenMap.get(range);
-            res.add(new ElectrificationConditionsRange(range.lowerEndpoint(), range.upperEndpoint(), usedCond,
-                    seenCond));
+            var newRange = new ElectrificationConditionsRange(range.lowerEndpoint(), range.upperEndpoint(), usedCond,
+                    seenCond);
+            if (res.isEmpty() || !res.get(res.size() - 1).sharesValueWith(newRange))
+                res.add(newRange);
+            else
+                res.get(res.size() - 1).stop = newRange.stop;
         }
         return res;
     }

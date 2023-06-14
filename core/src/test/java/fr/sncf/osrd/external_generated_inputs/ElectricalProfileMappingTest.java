@@ -11,6 +11,7 @@ import static fr.sncf.osrd.Helpers.*;
 import static fr.sncf.osrd.api.StandaloneSimulationTest.smallInfraTrainPath;
 
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
@@ -64,7 +65,7 @@ public class ElectricalProfileMappingTest {
                 "BAL3")));
         var path = TrainPathBuilder.from(infra, rjsPath);
 
-        var profiles = profileMap.getProfilesOnPath(path);
+        var profiles = profileMap.getProfilesOnPath(TrainPath.removeLocation(path.trackRangePath()));
         assertEquals(profiles.keySet(), new HashSet<>(singletonList("1")));
         var profileRangeMap = profiles.get("1");
         assertEquals("22500", profileRangeMap.get(0.));
@@ -89,7 +90,7 @@ public class ElectricalProfileMappingTest {
         var rjsPath = smallInfraTrainPath();
         var path = TrainPathBuilder.from(infra, rjsPath);
 
-        var profiles = profileMap.getProfilesOnPath(path);
+        var profiles = profileMap.getProfilesOnPath(TrainPath.removeLocation(path.trackRangePath()));
         assertEquals(profiles.keySet(), new HashSet<>(asList("1", "2", "3", "4", "5")));
 
         var expectedResults = new ArrayList<HashSet<String>>();
