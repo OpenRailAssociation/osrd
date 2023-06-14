@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::error::Result;
-use crate::models::{Retrieve, SimulationOutput, Timetable, TimetableWithSchedules};
+use crate::models::{Retrieve, SimulationOutput, Timetable, TimetableWithSchedules, TrainSchedule};
 use crate::views::train_schedule::TrainScheduleError;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -63,37 +63,41 @@ async fn get_conflicts(
 ) -> Result<Json<Vec<Conflict>>> {
     let timetable_id = timetable_id.into_inner();
 
-    // Return the timetable
-    let timetable = match Timetable::retrieve(db_pool.clone(), timetable_id).await? {
-        Some(timetable) => timetable,
-        None => return Err(TimetableError::NotFound { timetable_id }.into()),
-    };
-    let timetable_with_schedules = timetable.with_train_schedules(db_pool.clone()).await?;
+    let db_pool2 = db_pool.clone();
+    let (schedules, simulations): (Vec<TrainSchedule>, Vec<SimulationOutput>) =
+        block::<_, Result<_>>(move || {
+            let mut conn = db_pool2.get()?;
+            use crate::tables::osrd_infra_trainschedule;
+            use diesel::prelude::*;
 
-    let mut simulation_outputs = vec![];
-    for train_schedule in timetable_with_schedules.train_schedules.iter() {
-        let db_pool2 = db_pool.clone();
-        let train_schedule_id = train_schedule.id;
-        simulation_outputs.push(
-            block::<_, Result<_>>(move || {
-                use crate::tables::osrd_infra_simulationoutput::dsl;
-                use diesel::prelude::*;
-                let mut conn = db_pool2.get()?;
-                let mut sim_outputs: Vec<SimulationOutput> = dsl::osrd_infra_simulationoutput
-                    .filter(dsl::train_schedule_id.eq(train_schedule_id))
-                    .load(&mut conn)?;
-                if sim_outputs.is_empty() {
-                    return Err(
-                        TrainScheduleError::UnsimulatedTrainSchedule { train_schedule_id }.into(),
-                    );
-                }
-                assert!(sim_outputs.len() == 1);
-                Ok(sim_outputs.remove(0))
-            })
-            .await
-            .unwrap()?, // FIXME: maybe this should be converted to an editoast error?
-        );
-    }
+            let train_schedules = osrd_infra_trainschedule::table
+                .filter(osrd_infra_trainschedule::timetable_id.eq(timetable_id))
+                .load::<TrainSchedule>(&mut conn)?;
+
+            let simulation_outputs = SimulationOutput::belonging_to(&train_schedules)
+                .load::<SimulationOutput>(&mut conn)?;
+
+            simulation_outputs
+                .grouped_by(&train_schedules)
+                .into_iter()
+                .zip(train_schedules)
+                .map(|(mut sim_output, train_schedule)| {
+                    if sim_output.is_empty() {
+                        return Err(TrainScheduleError::UnsimulatedTrainSchedule {
+                            train_schedule_id: train_schedule
+                                .id
+                                .expect("TrainSchedule should have an id"),
+                        }
+                        .into());
+                    }
+                    assert!(sim_output.len() == 1);
+                    Ok((train_schedule, sim_output.remove(0)))
+                })
+                .collect::<Result<Vec<(TrainSchedule, SimulationOutput)>>>()
+                .map(|v| v.into_iter().unzip())
+        })
+        .await
+        .unwrap()?; // FIXME: maybe this should be converted to an editoast error?
 
     #[derive(Debug, Clone)]
     struct TrainRequirement<'a> {
@@ -104,20 +108,19 @@ async fn get_conflicts(
     }
     let mut zone_requirements: HashMap<String, Vec<TrainRequirement>> = HashMap::new();
 
-    for (i, simulation_output) in simulation_outputs.into_iter().enumerate() {
-        let result_train = simulation_output
+    for (train_schedule, simulation) in schedules.iter().zip(simulations) {
+        let result_train = simulation
             .eco_simulation
-            .unwrap_or(simulation_output.base_simulation);
+            .unwrap_or(simulation.base_simulation);
         for requirement in result_train.0.spacing_requirements {
-            let ts = &timetable_with_schedules.train_schedules[i];
             zone_requirements
                 .entry(requirement.zone)
                 .or_insert(vec![])
                 .push(TrainRequirement {
-                    train_id: ts.id,
-                    train_name: &ts.train_name,
-                    begin: requirement.begin_time + ts.departure_time,
-                    end: requirement.end_time + ts.departure_time,
+                    train_id: train_schedule.id.expect("TrainSchedule should have an id"),
+                    train_name: &train_schedule.train_name,
+                    begin: requirement.begin_time + train_schedule.departure_time,
+                    end: requirement.end_time + train_schedule.departure_time,
                 })
         }
     }
