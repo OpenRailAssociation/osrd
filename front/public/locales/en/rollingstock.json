@@ -41,7 +41,7 @@
   "rollingResistanceA": "Solid friction",
   "rollingResistanceB": "Viscous friction",
   "rollingResistanceC": "Aerodynamic resistance",
-  "rollingResistanceFormula": "(along Davis's formule, R(v) = a + bv + cv²)",
+  "rollingResistanceFormula": "(according to Davis's formule, R(v) = a + bv + cv²)",
   "rollingstockChoice": "Choose a rollingstock",
   "selectRollingStock": "Select",
   "size": "Length",
