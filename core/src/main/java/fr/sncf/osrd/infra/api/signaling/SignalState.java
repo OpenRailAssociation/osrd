@@ -9,7 +9,7 @@ public interface SignalState {
 
     /** Returns the string representing the signal aspect.
      *
-     * @see <a href="https://github.com/DGEXSolutions/osrd/blob/dev/front/src/common/Map/Consts/SignalsNames.ts">
+     * @see <a href="https://github.com/osrd-project/osrd/blob/dev/front/src/common/Map/Consts/SignalsNames.ts">
      *     signal names
      *     </a>
      */
