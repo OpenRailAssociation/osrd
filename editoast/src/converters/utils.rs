@@ -241,7 +241,11 @@ fn main_signal(node: &osmpbfreader::OsmObj) -> bool {
         || node.tags().contains_key("railway:signal:combined")
 }
 
-pub fn signals(osm_pbf_in: std::path::PathBuf, edges: &Vec<Edge>) -> Vec<Signal> {
+pub fn signals(
+    osm_pbf_in: std::path::PathBuf,
+    edges: &Vec<Edge>,
+    adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies>,
+) -> Vec<Signal> {
     let mut nodes_edges = HashMap::<NodeId, Vec<&Edge>>::new();
     for edge in edges {
         for node in &edge.nodes {
@@ -258,6 +262,7 @@ pub fn signals(osm_pbf_in: std::path::PathBuf, edges: &Vec<Edge>) -> Vec<Signal>
             osmpbfreader::OsmObj::Node(node) => Some(node),
             _ => None,
         })
+        .filter(|node| adjacencies.get(&node.id).map_or(0, |adj| adj.edges.len()) != 1) // Ignore all the nodes that are at the end of a track, as it will be buffer stops
         .flat_map(|node| {
             if let Some(current_edges) = nodes_edges.get(&node.id) {
                 if current_edges.is_empty() {
