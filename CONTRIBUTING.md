@@ -2,25 +2,25 @@
 
 All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
 
-Check out our community's [Code of Conduct](https://github.com/DGEXSolutions/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on [libera chat](https://web.libera.chat/#osrd) if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting. If you are not sure about what to do have a look at currently open [good first issues](https://github.com/DGEXSolutions/osrd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+Check out our community's [Code of Conduct](https://github.com/osrd-project/osrd/blob/dev/CODE_OF_CONDUCT.md) and feel free to say hi on [libera chat](https://web.libera.chat/#osrd) if you'd like. It's a nice place to chat about OSRD development, ask questions, and get to know the other contributors and users in a less formal setting. If you are not sure about what to do have a look at currently open [good first issues](https://github.com/osrd-project/osrd/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 ## Getting oriented
 
 The OSRD project has 2 primary repos:
 
-1. [`osrd`](https://github.com/DGEXSolutions/osrd): This is where the simulator is developed.
-2. [`osrd-website`](https://github.com/DGEXSolutions/osrd-website): Where the [`official website`](https://osrd.fr), blog, documentation, ... are hosted.
+1. [`osrd`](https://github.com/osrd-project/osrd): This is where the simulator is developed.
+2. [`osrd-website`](https://github.com/osrd-project/osrd-website): Where the [`official website`](https://osrd.fr), blog, documentation, ... are hosted.
 
 The `osrd` repo itself contains many smaller packages.
 
 Some packages of interest (more details in packages' `README.md`):
 
-- [`core`](https://github.com/DGEXSolutions/osrd/tree/dev/core): The core engine of the simulation where physics, pathfinding and conflict detection are computed.
-- [`editoast`](https://github.com/DGEXSolutions/osrd/tree/dev/editoast): Service to retrieve data from the databases and make data available through http endpoints.
+- [`core`](https://github.com/osrd-project/osrd/tree/dev/core): The core engine of the simulation where physics, pathfinding and conflict detection are computed.
+- [`editoast`](https://github.com/osrd-project/osrd/tree/dev/editoast): Service to retrieve data from the databases and make data available through http endpoints.
   It is also the place where edition of the infrastructure is computed.
-- [`front`](https://github.com/DGEXSolutions/osrd/tree/dev/front): GUI of OSRD.
-- [`tests`](https://github.com/DGEXSolutions/osrd/tree/dev/tests): Package to run integration tests on services.
-- [`python/osrd_schemas`](https://github.com/DGEXSolutions/osrd/tree/dev/python/osrd_schemas): Definition of the railjson format.
+- [`front`](https://github.com/osrd-project/osrd/tree/dev/front): GUI of OSRD.
+- [`tests`](https://github.com/osrd-project/osrd/tree/dev/tests): Package to run integration tests on services.
+- [`python/osrd_schemas`](https://github.com/osrd-project/osrd/tree/dev/python/osrd_schemas): Definition of the railjson format.
 
 ## What we are trying to build
 
@@ -42,7 +42,7 @@ OSRD also currently has the following "development process" goals:
 - **Civil discourse**: We need to collectively discuss ideas and the best ideas should win.
   But conversations need to remain respectful at all times.
   Remember that we're all in this together.
-  Always follow our [Code of Conduct](https://github.com/DGEXSolutions/osrd/blob/dev/CODE_OF_CONDUCT.md).
+  Always follow our [Code of Conduct](https://github.com/osrd-project/osrd/blob/dev/CODE_OF_CONDUCT.md).
 - **Test what you need to**: Write useful tests.
   Don't write tests that aren't useful.
   We generally aren't strict about unit testing every line of code.
