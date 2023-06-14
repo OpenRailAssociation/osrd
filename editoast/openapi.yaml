@@ -1076,7 +1076,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Path"
 
-  /pathfinding/{id}:
+  /pathfinding/{id}/:
     get:
       tags:
         - pathfinding
