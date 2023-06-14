@@ -47,7 +47,13 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .filter(|e| e.properties.train == osm4routing::TrainAccessibility::Allowed)
         .filter(|e| e.source != e.target);
 
-    let signals = signals(osm_pbf_in, &edges);
+    let mut adjacencies = HashMap::<osm4routing::NodeId, NodeAdjacencies>::new();
+    for edge in rail_edges.clone() {
+        adjacencies.entry(edge.source).or_default().edges.push(edge);
+        adjacencies.entry(edge.target).or_default().edges.push(edge);
+    }
+
+    let signals = signals(osm_pbf_in, &edges, &adjacencies);
     let mut railjson = RailJson {
         switch_types: default_switch_types(),
         detectors: signals.iter().map(detector).collect(),
@@ -56,7 +62,6 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
     };
 
     railjson.track_sections = rail_edges
-        .clone()
         .map(|e| {
             let geo = geos::geojson::Geometry::new(geos::geojson::Value::LineString(
                 e.geometry.iter().map(|c| vec![c.lon, c.lat]).collect(),
@@ -72,12 +77,6 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
             }
         })
         .collect();
-
-    let mut adjacencies = HashMap::<osm4routing::NodeId, NodeAdjacencies>::new();
-    for edge in rail_edges {
-        adjacencies.entry(edge.source).or_default().edges.push(edge);
-        adjacencies.entry(edge.target).or_default().edges.push(edge);
-    }
 
     for (node, mut adj) in adjacencies {
         for e1 in &adj.edges {
@@ -208,5 +207,12 @@ mod tests {
             railjson.signals[0].linked_detector,
             Some(railjson.detectors[0].id.to_string())
         )
+    }
+
+    #[test]
+    fn ignore_signals_at_end_of_line() {
+        let railjson = parse_osm("src/tests/signal_at_end_of_line.osm.pbf".into()).unwrap();
+        assert!(railjson.signals.is_empty());
+        assert_eq!(2, railjson.buffer_stops.len());
     }
 }
