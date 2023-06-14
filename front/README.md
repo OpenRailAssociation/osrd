@@ -1,6 +1,6 @@
 # OSRD's Front
 
-[![Front](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml)
+[![Front](https://github.com/osrd-project/osrd/actions/workflows/front.yml/badge.svg)](https://github.com/osrd-project/osrd/actions/workflows/front.yml)
 
 ## How to launch project for developpement purpose ?
 

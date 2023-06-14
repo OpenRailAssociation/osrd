@@ -1,6 +1,6 @@
 # OSRD's API
 
-[![API](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml)
+[![API](https://github.com/osrd-project/osrd/actions/workflows/api.yml/badge.svg)](https://github.com/osrd-project/osrd/actions/workflows/api.yml)
 
 This service handle OSRD models and schema using [Django](https://www.djangoproject.com/).
 Multiple extension are used such as:

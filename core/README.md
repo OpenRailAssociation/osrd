@@ -1,7 +1,7 @@
 # OSRD's Simulation backend
 
-[![Core](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml)
-[![Codecov](https://codecov.io/gh/DGEXSolutions/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO&flag=core)](https://codecov.io/gh/DGEXSolutions/osrd)
+[![Core](https://github.com/osrd-project/osrd/actions/workflows/core.yml/badge.svg)](https://github.com/osrd-project/osrd/actions/workflows/core.yml)
+[![Codecov](https://codecov.io/gh/osrd-project/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO&flag=core)](https://codecov.io/gh/osrd-project/osrd)
 
 ## Design Goals
 
