@@ -1,6 +1,6 @@
 {
   "allowances": "Margins",
-  "departureTime": "Start",
+  "departureTime": "Departure",
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Train schedule impossible"
   },
@@ -32,7 +32,7 @@
     "1500": "1500V",
     "15000": "15000V 16/2/3",
     "3000": "3000V",
-    "thermal": "Thermal",
+    "thermal": "Combustion engine",
     "used": "used",
     "unused": "unused",
     "incompatible": "incompatible",
