@@ -2,22 +2,22 @@
 /.github                                                 @flomonster @multun
 
 # --- FRONT ---
-/front                                                   @DGEXSolutions/front-maintainers
+/front                                                   @osrd-project/front-maintainers
 /front/src/common/api/osrdEditoastApi.ts
 /front/src/common/api/osrdMiddlewareApi.ts
 
 # --- EDITOAST ---
-/editoast                                                @DGEXSolutions/editoast-maintainers
+/editoast                                                @osrd-project/editoast-maintainers
 /editoast/openapi.yaml
-/chartos                                                 @DGEXSolutions/editoast-maintainers
-/python                                                  @DGEXSolutions/editoast-maintainers
+/chartos                                                 @osrd-project/editoast-maintainers
+/python                                                  @osrd-project/editoast-maintainers
 
 # --- INTEGRATION TESTS  ---
 /tests                                                   @eckter
 
 # --- CORE ---
-/core                                                    @DGEXSolutions/core-maintainers
+/core                                                    @osrd-project/core-maintainers
 
 # --- CORE PHYSICS ---
-*Physics*.java                                           @DGEXSolutions/physics
-*Integration*.java                                       @DGEXSolutions/physics
+*Physics*.java                                           @osrd-project/physics
+*Integration*.java                                       @osrd-project/physics
