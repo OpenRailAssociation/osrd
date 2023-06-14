@@ -298,7 +298,7 @@ public class AllowanceRangesTests {
         applyAllowanceIgnoringUserError(allowance, maxEffortEnvelope, testContext);
     }
 
-    /** Regression test: reproduces <a href="https://github.com/DGEXSolutions/osrd/issues/3199">this bug</a>.
+    /** Regression test: reproduces <a href="https://github.com/osrd-project/osrd/issues/3199">this bug</a>.
      * This is an extreme corner case.
      * The last section computed is the section between the stop at 300m and the transition at 301.
      * Because it's after a stop, the speed is very low.
