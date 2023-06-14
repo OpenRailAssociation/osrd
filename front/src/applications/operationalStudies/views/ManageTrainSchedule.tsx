@@ -9,6 +9,7 @@ import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitBy
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
 import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
+import Allowances from 'applications/operationalStudies/components/ManageTrainSchedule/Allowances/Allowances';
 import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import {
   getPathfindingID,
@@ -22,6 +23,7 @@ import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
+import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 
 export default function ManageTrainSchedule() {
@@ -105,7 +107,6 @@ export default function ManageTrainSchedule() {
     ),
   };
 
-  /* // WIP to be added in next PR
   const tabAllowances = {
     title: (
       <>
@@ -114,8 +115,8 @@ export default function ManageTrainSchedule() {
       </>
     ),
     label: t('tabs.allowances'),
-    content: 'marges',
-  }; */
+    content: <Allowances />,
+  };
 
   useEffect(() => {
     if (trainScheduleIDsToModify && trainScheduleIDsToModify.length > 0)
@@ -153,7 +154,12 @@ export default function ManageTrainSchedule() {
         <TrainSettings />
       </div>
 
-      <Tabs pills fullWidth tabs={[tabRollingStock, tabPathFinding, tabSimulationSettings]} />
+      <Tabs
+        pills
+        fullWidth
+        fullHeight
+        tabs={[tabRollingStock, tabPathFinding, tabAllowances, tabSimulationSettings]}
+      />
     </>
   );
 }

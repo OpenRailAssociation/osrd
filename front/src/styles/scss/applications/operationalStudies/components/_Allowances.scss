@@ -1,0 +1,64 @@
+.operational-studies-allowances {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  position: relative;
+  height: 100%;
+  .allowances-container {
+    flex-grow: 1;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+  }
+  .allowances-engineering-add-line {
+    display: flex;
+    gap: 0.5rem;
+    label {
+      margin-bottom: 0 !important;
+    }
+    button.btn-success {
+      margin-top: 1.4rem;
+      height: 2rem;
+    }
+    .allowances-range-length-label {
+      display: flex;
+      align-items: center;
+      height: 1.4rem;
+    }
+    .allowances-range-length {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--border-radius);
+      padding: 0 0.5rem;
+      background-color: var(--coolgray1);
+      font-weight: 500;
+      font-size: 0.9rem;
+      height: 2rem;
+    }
+    // smaller unit icon for input fields
+    input.form-control.form-control-sm {
+      padding-right: 1.5rem;
+    }
+    .form-control-container.has-right-icon .form-control-icon {
+      width: 1.5rem;
+      padding: 0;
+    }
+    // Same height for all inputs
+    .input-group-sm .form-control-container, .input-group-sm button {
+      height: 2rem;
+    }
+  }
+  .missing-pathfinding {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: var(--coolgray7);
+    font-size: 2rem;
+    text-align: center;
+  }
+}
