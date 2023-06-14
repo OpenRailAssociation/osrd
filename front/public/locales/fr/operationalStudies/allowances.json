@@ -1,0 +1,14 @@
+{
+  "addLine": {
+    "distribution": "Distribution",
+    "from": "Depuis",
+    "length": "Longueur",
+    "to": "Jusqu'à",
+    "value": "Valeur"
+  },
+  "distribution": {
+    "linear": "Linéaire",
+    "mareco": "Mareco"
+  },
+  "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges"
+}

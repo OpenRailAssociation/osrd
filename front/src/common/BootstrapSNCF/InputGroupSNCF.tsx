@@ -85,7 +85,7 @@ export default function InputGroupSNCF({
           <div className="btn-group dropdown">
             <button
               type="button"
-              className={`btn btn-secondary dropdown-toggle ${condensed ? 'p-1' : ''}`}
+              className={`btn btn-secondary dropdown-toggle ${condensed ? 'pr-1 pl-2' : ''}`}
               onClick={() => setIsDropdownShown(!isDropdownShown)}
               aria-haspopup="true"
               aria-expanded="false"
