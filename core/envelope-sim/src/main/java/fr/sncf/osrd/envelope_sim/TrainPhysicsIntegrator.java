@@ -74,7 +74,7 @@ public final class TrainPhysicsIntegrator {
     private IntegrationStep step(double timeStep, double position, double speed) {
         double tractionForce = 0;
         double brakingForce = 0;
-        var tractiveEffortCurve = tractiveEffortCurveMap.get(position);
+        var tractiveEffortCurve = tractiveEffortCurveMap.get(Math.min(Math.max(0, position), path.getLength()));
         assert tractiveEffortCurve != null;
         double maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
         double rollingResistance = rollingStock.getRollingResistance(speed);
