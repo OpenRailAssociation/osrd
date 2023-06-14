@@ -217,11 +217,11 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/pathfinding/`, method: 'POST', body: queryArg.pathQuery }),
     }),
     getPathfindingById: build.query<GetPathfindingByIdApiResponse, GetPathfindingByIdApiArg>({
-      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}` }),
+      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/` }),
     }),
     putPathfindingById: build.mutation<PutPathfindingByIdApiResponse, PutPathfindingByIdApiArg>({
       query: (queryArg) => ({
-        url: `/pathfinding/${queryArg.id}`,
+        url: `/pathfinding/${queryArg.id}/`,
         method: 'PUT',
         body: queryArg.pathQuery,
       }),
@@ -230,7 +230,7 @@ const injectedRtkApi = api.injectEndpoints({
       DeletePathfindingByIdApiResponse,
       DeletePathfindingByIdApiArg
     >({
-      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}`, method: 'DELETE' }),
+      query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/`, method: 'DELETE' }),
     }),
     postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
       query: (queryArg) => ({
