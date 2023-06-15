@@ -66,7 +66,7 @@ pub enum TrainScheduleError {
 }
 
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/train_schedule/{id}/").service((
+    web::scope("/train_schedule/{id}").service((
         get,
         patch,
         standalone_simulation,
