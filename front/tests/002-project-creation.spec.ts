@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { PlaywrightHomePage } from './home-page-model';
+import { PlaywrightHomePage } from './pages/home-page-model';
 import project from './assets/operationStudies/project.json';
 import { ProjectPage } from './pages/project-page-model';
 import PlaywrightCommonPage from './pages/common-page-model';

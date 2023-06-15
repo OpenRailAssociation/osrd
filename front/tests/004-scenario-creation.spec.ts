@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { PlaywrightHomePage } from './home-page-model';
+import { PlaywrightHomePage } from './pages/home-page-model';
 import project from './assets/operationStudies/project.json';
 import study from './assets/operationStudies/study.json';
 import scenario from './assets/operationStudies/scenario.json';

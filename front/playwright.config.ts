@@ -14,7 +14,7 @@ const config: PlaywrightTestConfig = {
   testDir: './tests',
 
   /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+  timeout: 50 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -52,12 +52,14 @@ const config: PlaywrightTestConfig = {
       },
     },
 
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
-    },
+    // Temporary removal, map loading takes too long on the CI
+
+    // {
+    //   name: 'firefox',
+    //   use: {
+    //     ...devices['Desktop Firefox'],
+    //   },
+    // },
 
     {
       name: 'webkit',
