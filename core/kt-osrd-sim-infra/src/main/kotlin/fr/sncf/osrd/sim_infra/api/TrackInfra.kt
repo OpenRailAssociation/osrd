@@ -15,7 +15,7 @@ typealias TrackChunkId = StaticIdx<TrackChunk>
 
 interface TrackInfra {
     fun getTrackSectionId(trackSection: TrackSectionId): String
-    fun getTrackSectionFromId(id: String): TrackSectionId?
+    fun getTrackSectionFromName(name: String): TrackSectionId?
     fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
     fun getDirTrackSectionChunks(trackSection: TrackSectionId, direction: Direction): DirStaticIdxList<TrackChunk>
 }
