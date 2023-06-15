@@ -44,40 +44,29 @@ const Scale: React.FC<{
   className?: string;
   begin: number;
   end: number;
+  steps: number;
   min?: number;
   max?: number;
-}> = ({ className, begin, end, min, max }) => {
+}> = ({ className, begin, end, min, max, steps }) => {
   const [inf, setInf] = useState<number>(0);
   const [sup, setSup] = useState<number>(0);
+  const [inc, setInc] = useState<number>(0);
 
   useEffect(() => {
     setInf(roundNumber(begin, true));
     setSup(roundNumber(end, false));
-  }, [begin, end]);
+    setInc(roundNumber((end - begin) / steps / 2, true));
+  }, [begin, end, steps]);
 
   return (
     <div className={`scale ${className}`}>
-      <span
-        className={cx(
-          min !== undefined && min === begin && 'font-weight-bold',
-          min === undefined && 'font-weight-bold'
-        )}
-        title={`${inf}`}
-      >
-        {shortNumber(inf)}
-      </span>
-      <span
-        className={cx(
-          max !== undefined && max === end && 'font-weight-bold',
-          max === undefined && 'font-weight-bold'
-        )}
-        title={`${sup}`}
-      >
-        {shortNumber(sup)}
-      </span>
-      <div className="xAxis">
-        {[...Array(10)].map((_, i) => (
-          <span key={i}>{i + 1}</span>
+      <div className="axis-values">
+        {[...Array(steps)].map((_, i) => (
+          <div key={i}>
+            {i === 0 && <span className="bottom-axis-value">{shortNumber(inf)}</span>}
+            <span>{shortNumber(((sup - inf) / steps) * i + inc + inf)}</span>
+            {i === steps - 1 && <span className="top-axis-value">{shortNumber(sup)}</span>}
+          </div>
         ))}
       </div>
     </div>
@@ -352,7 +341,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <div className="axis-zero" style={computeStyleForDataValue(0, min, max)} />
         )}
         {/* Display the Y axis if there is one */}
-        {field && min !== max && <Scale className="scale-y" begin={min} end={max} />}
+        {field && min !== max && <Scale className="scale-y" steps={4} begin={min} end={max} />}
 
         {hoverAtx && !draginStartAt && (
           <div
@@ -446,10 +435,12 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
                 <div
                   className="value"
                   style={computeStyleForDataValue(data[segment.index][field], min, max)}
-                />
+                >
+                  <span>{data[segment.index][field]}</span>
+                </div>
               )}
             {!field && !isNilObject(data[segment.index], ['begin', 'end', 'index']) && (
-              <div className="value" style={{ height: '100%' }} />
+              <span className="value" style={{ height: '100%' }} />
             )}
 
             {/* Create a div for the resize */}
@@ -480,6 +471,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         className="scale-x"
         begin={head(data4viz)?.begin || 0}
         end={last(data4viz)?.end || 0}
+        steps={10}
         min={head(data)?.begin || 0}
         max={last(data)?.end || 0}
       />
