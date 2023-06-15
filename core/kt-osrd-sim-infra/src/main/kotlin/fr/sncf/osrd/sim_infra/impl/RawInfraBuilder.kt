@@ -371,12 +371,12 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             zonePathPool,
             zonePathMap,
             operationalPointPartPool,
-            makeTrackIdMap()
+            makeTrackNameMap()
         )
     }
 
-    /** Create the mapping from track string to id */
-    private fun makeTrackIdMap(): Map<String, TrackSectionId> {
+    /** Create the mapping from track name to id */
+    private fun makeTrackNameMap(): Map<String, TrackSectionId> {
         val res = HashMap<String, TrackSectionId>()
         for (trackId in trackSectionPool)
             res[trackSectionPool[trackId].name] = trackId

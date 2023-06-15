@@ -117,7 +117,7 @@ class RawInfraImpl(
     val zonePathPool: StaticPool<ZonePath, ZonePathDescriptor>,
     val zonePathMap: Map<ZonePathSpec, ZonePathId>,
     val operationalPointPartPool: StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
-    val trackSectionIdMap: Map<String, TrackSectionId>,
+    val trackSectionNameMap: Map<String, TrackSectionId>,
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
@@ -128,8 +128,8 @@ class RawInfraImpl(
         return trackSectionPool[trackSection].name
     }
 
-    override fun getTrackSectionFromId(id: String): TrackSectionId? {
-        return trackSectionIdMap[id]
+    override fun getTrackSectionFromName(name: String): TrackSectionId? {
+        return trackSectionNameMap[name]
     }
 
     override fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk> {
