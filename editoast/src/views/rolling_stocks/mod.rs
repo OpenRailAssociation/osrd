@@ -12,7 +12,11 @@ use actix_multipart::form::text::Text;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
-use diesel::{sql_query, RunQueryDsl};
+use diesel::{
+    sql_query,
+    sql_types::{BigInt, Text as SqlText},
+    RunQueryDsl,
+};
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
 use image::io::Reader as ImageReader;
@@ -42,6 +46,12 @@ pub enum RollingStockError {
     #[error("RollingStock '{rolling_stock_id}' is locked")]
     #[editoast_error(status = 400)]
     RollingStockIsLocked { rolling_stock_id: i64 },
+    #[error("RollingStock '{rolling_stock_id}' is used")]
+    #[editoast_error(status = 400)]
+    RollingStockIsUsed {
+        rolling_stock_id: i64,
+        usage: Vec<TrainScheduleScenarioStudyProject>,
+    },
 }
 
 pub fn routes() -> impl HttpServiceFactory {
@@ -176,10 +186,18 @@ async fn delete(db_pool: Data<DbPool>, path: Path<i64>) -> Result<HttpResponse> 
     assert_rolling_stock_unlocked(
         retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
     )?;
-    if !RollingStockModel::delete(db_pool, rolling_stock_id).await? {
-        return Err(RollingStockError::NotFound { rolling_stock_id }.into());
+    let trains = get_rolling_stock_usage(db_pool.clone(), rolling_stock_id).await?;
+    if trains.is_empty() {
+        return match RollingStockModel::delete(db_pool.clone(), rolling_stock_id).await {
+            Ok(_) => Ok(HttpResponse::NoContent().finish()),
+            Err(err) => Err(err),
+        };
     }
-    Ok(HttpResponse::NoContent().finish())
+    Err(RollingStockError::RollingStockIsUsed {
+        rolling_stock_id,
+        usage: trains,
+    }
+    .into())
 }
 
 #[derive(Debug, Deserialize)]
@@ -222,21 +240,21 @@ struct RollingStockLiveryCreateForm {
 
 #[derive(Debug, QueryableByName, Serialize, Deserialize, PartialEq)]
 pub struct TrainScheduleScenarioStudyProject {
-    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    #[diesel(sql_type = BigInt)]
     pub train_schedule_id: i64,
-    #[diesel(sql_type = diesel::sql_types::Text)]
+    #[diesel(sql_type = SqlText)]
     pub train_name: String,
-    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    #[diesel(sql_type = BigInt)]
     pub project_id: i64,
-    #[diesel(sql_type = diesel::sql_types::Text)]
+    #[diesel(sql_type = SqlText)]
     pub project_name: String,
-    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    #[diesel(sql_type = BigInt)]
     pub study_id: i64,
-    #[diesel(sql_type = diesel::sql_types::Text)]
+    #[diesel(sql_type = SqlText)]
     pub study_name: String,
-    #[diesel(sql_type = diesel::sql_types::BigInt)]
+    #[diesel(sql_type = BigInt)]
     pub scenario_id: i64,
-    #[diesel(sql_type = diesel::sql_types::Text)]
+    #[diesel(sql_type = SqlText)]
     pub scenario_name: String,
 }
 
@@ -251,10 +269,9 @@ async fn check_rolling_stock_usage(
     rolling_stock_id: Path<i64>,
 ) -> Result<Json<UsageResponse>> {
     let rolling_stock_id = rolling_stock_id.into_inner();
-    match get_rolling_stock_usage(db_pool, rolling_stock_id).await {
-        Ok(trains) => Ok(Json(UsageResponse { usage: trains })),
-        Err(err) => Err(err),
-    }
+    get_rolling_stock_usage(db_pool, rolling_stock_id)
+        .await
+        .map(|trains| Json(UsageResponse { usage: trains }))
 }
 
 async fn get_rolling_stock_usage(
@@ -262,24 +279,15 @@ async fn get_rolling_stock_usage(
     rolling_stock_id: i64,
 ) -> Result<Vec<TrainScheduleScenarioStudyProject>> {
     match RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id).await {
-        Ok(Some(_)) => {
-            block(move || {
-                let mut conn = db_pool.get()?;
-                let trains = sql_query(format!(
-                    "SELECT t.id as train_schedule_id, t.train_name, sce.id as scenario_id, sce.name as scenario_name,
-                    stu.id as study_id, stu.name as study_name, pro.id as project_id, pro.name as project_name
-                    FROM osrd_infra_trainschedule t
-                    INNER JOIN osrd_infra_scenario sce ON t.timetable_id = sce.timetable_id
-                    INNER JOIN osrd_infra_study stu ON sce.study_id = stu.id
-                    INNER JOIN osrd_infra_project pro ON stu.project_id = pro.id
-                    WHERE t.rolling_stock_id = {rolling_stock_id};"
-                ))
+        Ok(Some(_)) => block(move || {
+            let mut conn = db_pool.get()?;
+            let trains = sql_query(include_str!("sql/get_train_schedules_with_scenario.sql"))
+                .bind::<BigInt, _>(rolling_stock_id)
                 .load(&mut conn)?;
-                Ok(trains)
-            })
-            .await
-            .unwrap()
-         }
+            Ok(trains)
+        })
+        .await
+        .unwrap(),
         Ok(None) => Err(RollingStockError::NotFound { rolling_stock_id }.into()),
         Err(err) => Err(err),
     }
@@ -438,7 +446,7 @@ pub mod tests {
     };
     use crate::fixtures::tests::{
         db_pool, fast_rolling_stock, other_rolling_stock, train_schedule_with_scenario,
-        TestFixture, TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture,
+        TestFixture, TrainScheduleFixtureSet,
     };
     use crate::models::rolling_stock::tests::{
         get_fast_rolling_stock, get_invalid_effort_curves, get_other_rolling_stock,
@@ -737,14 +745,12 @@ pub mod tests {
         assert_eq!(response_body, expected_body);
     }
 
-    /// `check_usage_one_train_schedule` checks the operation of the `/rolling_stock/{rolling_stock_id}/check_usage` endpoint.
-    /// There exist one `TrainSchedule` that uses the give `rolling_stock_id`.
-    /// The endpoint should find that `TrainSchedule` from this `rolling_stock_id`
-    /// as well the project/study/scenario where it’s defined
-    /// and should return their ids/names
+    /// Tests`/rolling_stock/{rolling_stock_id}/check_usage` endpoint.
+    /// Initial conditions: one `TrainSchedule` using the given `rolling_stock_id`.
+    /// It should return the `TrainSchedule`, `project`/`study`/`scenario` ids/names
     #[rstest]
     async fn check_usage_one_train_schedule(
-        #[future] train_schedule_with_scenario: TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture,
+        #[future] train_schedule_with_scenario: TrainScheduleFixtureSet,
     ) {
         let app = create_test_service().await;
         let train_schedule_with_scenario = train_schedule_with_scenario.await;
@@ -790,5 +796,54 @@ pub mod tests {
             }],
         };
         assert_eq!(response_body, expected_body);
+    }
+
+    #[rstest]
+    async fn delete_used_rolling_stock_should_fail(
+        #[future] train_schedule_with_scenario: TrainScheduleFixtureSet,
+    ) {
+        let app = create_test_service().await;
+        let train_schedule_with_scenario = train_schedule_with_scenario.await;
+        let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
+        let response = call_service(&app, rolling_stock_delete_request(rolling_stock_id)).await;
+
+        let expected_usage = vec![TrainScheduleScenarioStudyProject {
+            train_schedule_id: train_schedule_with_scenario.train_schedule.id(),
+            train_name: train_schedule_with_scenario
+                .train_schedule
+                .model
+                .train_name
+                .clone(),
+            scenario_id: train_schedule_with_scenario.scenario.id(),
+            scenario_name: train_schedule_with_scenario
+                .scenario
+                .model
+                .name
+                .clone()
+                .unwrap(),
+            study_id: train_schedule_with_scenario.study.id(),
+            study_name: train_schedule_with_scenario
+                .study
+                .model
+                .name
+                .clone()
+                .unwrap(),
+            project_id: train_schedule_with_scenario.project.id(),
+            project_name: train_schedule_with_scenario
+                .project
+                .model
+                .name
+                .clone()
+                .unwrap(),
+        }];
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        assert_editoast_error_type!(
+            response,
+            RollingStockError::RollingStockIsUsed {
+                rolling_stock_id,
+                usage: expected_usage
+            }
+        )
     }
 }

@@ -12,6 +12,7 @@ pub mod tests {
     use crate::views::infra::InfraForm;
 
     use actix_web::web::Data;
+    use chrono::Utc;
     use diesel::r2d2::{ConnectionManager, Pool};
     use diesel::PgConnection;
     use futures::executor;
@@ -121,7 +122,7 @@ pub mod tests {
     }
 
     #[derive(Debug)]
-    pub struct TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture {
+    pub struct TrainScheduleFixtureSet {
         pub train_schedule: TestFixture<TrainSchedule>,
         pub project: TestFixture<Project>,
         pub study: TestFixture<Study>,
@@ -137,9 +138,9 @@ pub mod tests {
         db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
         #[future] pathfinding: TestFixture<Pathfinding>,
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
-        #[future] project_study_scenario_timetable: ProjectStudyScenarioTimetableInfraFixture,
-    ) -> TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture {
-        let ProjectStudyScenarioTimetableInfraFixture {
+        #[future] project_study_scenario_timetable: ProjectStudyScenarioFixtureSet,
+    ) -> TrainScheduleFixtureSet {
+        let ProjectStudyScenarioFixtureSet {
             project,
             study,
             scenario,
@@ -161,7 +162,7 @@ pub mod tests {
             db_pool,
             infra: None,
         };
-        TrainScheduleProjectStudyScenarioTimetableInfraPathRollingStockFixture {
+        TrainScheduleFixtureSet {
             train_schedule,
             project,
             study,
@@ -173,7 +174,7 @@ pub mod tests {
         }
     }
 
-    pub struct ProjectStudyScenarioTimetableInfraFixture {
+    pub struct ProjectStudyScenarioFixtureSet {
         pub project: TestFixture<Project>,
         pub study: TestFixture<Study>,
         pub scenario: TestFixture<Scenario>,
@@ -186,9 +187,10 @@ pub mod tests {
         db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
         #[future] empty_infra: TestFixture<Infra>,
         #[future] timetable: TestFixture<Timetable>,
-    ) -> ProjectStudyScenarioTimetableInfraFixture {
+    ) -> ProjectStudyScenarioFixtureSet {
         let project_model = Project {
             name: Some(String::from("project_α")),
+            creation_date: Some(Utc::now().naive_utc()),
             ..Project::default()
         };
         let project = TestFixture {
@@ -199,6 +201,7 @@ pub mod tests {
         let study_model = Study {
             name: Some(String::from("study_β")),
             project_id: Some(project.id()),
+            creation_date: Some(Utc::now().naive_utc()),
             ..Study::default()
         };
         let study = TestFixture {
@@ -213,6 +216,7 @@ pub mod tests {
             infra_id: Some(empty_infra.id()),
             timetable_id: Some(timetable.id()),
             study_id: Some(study.id()),
+            creation_date: Some(Utc::now().naive_utc()),
             ..Scenario::default()
         };
         let scenario = TestFixture {
@@ -220,7 +224,7 @@ pub mod tests {
             db_pool: db_pool.clone(),
             infra: None,
         };
-        ProjectStudyScenarioTimetableInfraFixture {
+        ProjectStudyScenarioFixtureSet {
             project,
             study,
             scenario,

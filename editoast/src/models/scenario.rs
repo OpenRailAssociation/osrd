@@ -54,7 +54,6 @@ pub struct Scenario {
     #[derivative(Default(value = "Some(String::new())"))]
     pub description: Option<String>,
     #[diesel(deserialize_as = NaiveDateTime)]
-    #[derivative(Default(value = "Some(Utc::now().naive_utc())"))]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
@@ -65,7 +64,7 @@ pub struct Scenario {
 
 impl Identifiable for Scenario {
     fn get_id(&self) -> i64 {
-        self.id.expect("Id not found")
+        self.id.expect("Scenario id not found")
     }
 }
 

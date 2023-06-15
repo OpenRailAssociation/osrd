@@ -32,7 +32,7 @@ use serde::{Deserialize, Serialize};
 )]
 #[derivative(Default(new = "true"))]
 #[model(table = "osrd_infra_pathmodel")]
-#[model(create, retrieve, delete)]
+#[model(retrieve, delete)]
 #[diesel(table_name = osrd_infra_pathmodel)]
 pub struct Pathfinding {
     pub id: i64,
