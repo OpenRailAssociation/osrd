@@ -28,3 +28,9 @@ export function language2flag(lng: string) {
       return lng;
   }
 }
+
+export function snakeToCamel(str: string) {
+  return str.replace(/[^a-zA-Z0-9]+(.)/g, (_, chr: string) => chr.toUpperCase());
+}
+
+export const emptyStringRegex = /^\s+$/;

@@ -1,3 +1,5 @@
+import { ConditionalEffortCurve, EffortCurve } from 'common/api/osrdEditoastApi';
+
 export type RollingStockParametersValues = {
   [key: number | string]: {
     name: string;
@@ -26,7 +28,13 @@ export type RollingStockParametersValues = {
     electrical_power_startup_time: number;
     raise_pantograph_time: number;
     default_mode: string;
-    is_electric: boolean;
+    modes: {
+      [key: string]: {
+        curves: ConditionalEffortCurve[];
+        default_curve: EffortCurve;
+        is_electric: boolean;
+      };
+    };
   };
 };
 

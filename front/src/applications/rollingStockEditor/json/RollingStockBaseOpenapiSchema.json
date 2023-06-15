@@ -67,15 +67,18 @@
           },
           "comfort_acceleration": {
             "type": "number",
-            "format": "float"
+            "format": "float",
+            "minimum": 0.01
           },
           "inertia_coefficient": {
             "type": "number",
-            "format": "float"
+            "format": "float",
+            "minimum": 0.01
           },
           "gamma_value": {
             "type": "number",
-            "format": "float"
+            "format": "float",
+            "minimum": 0.01
           },
           "loading_gauge": {
             "type": "string",
