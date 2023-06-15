@@ -7,33 +7,35 @@ import RollingStockEditorForm from './RollingStockEditorForm';
 type RollingStockEditorCardProps = {
   isEditing: boolean;
   setIsEditing: Dispatch<SetStateAction<boolean>>;
-  rollingStock: LightRollingStock;
+  data: LightRollingStock;
 };
 
 export default function RollingStockEditorCard({
   isEditing,
   setIsEditing,
-  rollingStock,
+  data,
 }: RollingStockEditorCardProps) {
   const [curvesComfortList, setCurvesComfortList] = useState<string[]>([]);
 
   return (
-    <div className="rollingstock-editor-form w-100 pr-4">
-      <div className="rollingstock-header-form" style={{ height: '3rem' }}>
-        <div className="rollingstock-title-form">
-          <RollingStockInfo form="-form" rollingStock={rollingStock} />
-        </div>
-      </div>
+    <div className="rollingstock-editor-form w-100">
       {isEditing ? (
-        <RollingStockEditorForm rollingStock={rollingStock} setIsEditing={setIsEditing} />
+        <RollingStockEditorForm rollingStockData={data} setIsEditing={setIsEditing} />
       ) : (
-        <RollingStockCardDetail
-          id={rollingStock.id}
-          hideCurves
-          form="rollingstock-editor-form-text"
-          curvesComfortList={curvesComfortList}
-          setCurvesComfortList={setCurvesComfortList}
-        />
+        <>
+          <div className="rollingstock-header">
+            <div className="rollingstock-title">
+              <RollingStockInfo rollingStock={data} />
+            </div>
+          </div>
+          <RollingStockCardDetail
+            id={data.id}
+            hideCurves
+            form="rollingstock-editor-form-text"
+            curvesComfortList={curvesComfortList}
+            setCurvesComfortList={setCurvesComfortList}
+          />
+        </>
       )}
     </div>
   );

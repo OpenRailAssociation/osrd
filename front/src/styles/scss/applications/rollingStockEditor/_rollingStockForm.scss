@@ -1,20 +1,70 @@
 .rollingstock-editor {
+  max-height: 80vh;
+  overflow-y: scroll;
   &-form {
-    width: 80%;
+    > .rollingstock-header {
+      @media screen and (min-width: 1024px) {
+        height: 3rem;
+        .rollingstock-title {
+          height: 3rem;
+          .rollingstock-info {
+            height: 3rem;
+            .rollingstock-info-begin {
+              height: 3rem;
+              .rollingstock-info-series {
+                height: 2.3rem;
+                font-weight: bold;
+                font-size: 1.5rem;
+              }
+              .rollingstock-info-unit {
+                margin-left: 0.5rem;
+                &.UM2,
+                &.UM3 {
+                  font-size: large;
+                }
+              }
+              .rollingstock-info-subseries {
+                font-size: 1rem;
+                margin-left: 0.5rem;
+              }
+            }
+            .rollingstock-info-middle {
+              font-size: 1rem;
+              line-height: 1rem;
+            }
+            .rollingstock-info-end {
+              font-size: 1.2rem;
+            }
+          }
+        }
+      }
+    }
+    width: 100%;
     align-self: center;
     &-text {
       *td,
       .formResistance {
-        font-size: medium;
-        font-weight: 500;
-        height: 2rem;
-        padding: 0.5rem;
+        @media screen and (min-width: 1024px) {
+          font-size: medium;
+          font-weight: 500;
+          height: 2rem;
+          padding: 0.5rem;
+        }
       }
     }
     &-container {
-      width: 60%;
-      position: fixed;
-      right: 0;
+      overflow-y: auto;
+      width: 100%;
+      @media screen and (min-width: 767px) {
+        padding-right: 1.5rem;
+        width: 50%;
+        position: fixed;
+        right: 0;
+        top: 100px;
+      }
+      @media screen and (min-width: 1024px) {
+        width: 60%;
+      }
     }
   }
   &-buttons {
@@ -38,70 +88,37 @@
       }
     }
   }
-}
+  &-left-container {
+    width: 94%;
+    padding-right: 1.5rem;
+    @media screen and (min-width: 767px) {
+      width: 45%;
+    }
+    @media screen and (min-width: 1024px) {
+      width: 37%;
+    }
+  }
+  &-unselected {
+    margin: 0 auto;
+    display: none;
+    @media screen and (min-width: 767px) {
+      display: block;
+    }
+  }
+  &-input {
+    @media screen and (min-width: 1024px) {
+      flex-direction: row-reverse;
 
-.rollingstock-header-form {
-  border-radius: 4px 4px 0 0;
-  background-color: var(--coolgray3);
-  padding: 0.15rem 0.5rem;
-  overflow: hidden;
-  border-top: 2px solid var(--coolgray3);
-  border-left: 2px solid var(--coolgray3);
-  border-right: 2px solid var(--coolgray3);
-  height: 3rem;
-  .rollingstock-title-form {
-    white-space: nowrap;
-    height: 3rem;
-    overflow: hidden;
-    .rollingstock-info-form {
-      display: flex;
-      align-items: center;
-      height: 3rem;
-      justify-content: space-between;
-      .rollingstock-info-begin-form {
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        font-size: 1rem;
-        .rollingstock-info-series-form {
-          font-weight: bold;
-          font-size: x-large;
-        }
-        .rollingstock-info-unit {
-          &.UM2 {
-            color: #6e1e78;
-            font-size: medium;
-          }
-          &.UM3 {
-            color: #a1006b;
-            font-size: medium;
-          }
-          font-weight: bold;
-          margin-left: 0.5rem;
-          font-size: 0.7rem;
-        }
-        .rollingstock-info-subseries-form {
-          margin-left: 0.5rem;
-          text-transform: uppercase;
-          font-size: 0.9rem;
-        }
+      &-label {
+        margin-right: 0.5rem;
       }
-      .rollingstock-info-middle-form {
-        white-space: normal;
-        overflow-wrap: break-word;
-        overflow: hidden;
-        max-width: 55%;
-        text-transform: uppercase;
-        color: #303383;
-        font-size: 0.8rem;
-        line-height: 0.8rem;
-      }
-      .rollingstock-info-end-form {
-        display: flex;
-        align-items: center;
-        color: #4d4d4d;
-        font-size: 1.2rem;
+      .right-side {
+        margin-left: auto;
       }
     }
   }
+}
+
+.defaultImageRSEditor {
+  min-height: 38px;
 }

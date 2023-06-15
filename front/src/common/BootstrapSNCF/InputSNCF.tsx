@@ -1,26 +1,5 @@
 import React, { InputHTMLAttributes, ReactNode } from 'react';
 
-/**
- * The InputSNCF component can be used for basic inputs as well as for advanced search inputs
- *
- * @component
- * @example
- * const id = 'custom-id'
- * const type = 'text'
- * const onChange = (e) => console.log(e.target.value)
- * const value = 'Some input'
- * const readonly = false
- * return (
- *  <InputSNCF
- *    id={id}
- *    type={type}
- *    onChange={onChange}
- *    value={value}
- *    readonly={readonly}
- *  />
- * )
- */
-
 export type InputSNCFProps = {
   id: string;
   type: string;
@@ -60,48 +39,65 @@ export type InputSNCFProps = {
   condensed?: boolean;
 };
 
-class InputSNCF extends React.Component<InputSNCFProps> {
-  static defaultProps = {
-    // Basic input props
-    label: undefined,
-    placeholder: undefined,
-    onChange: undefined,
-    value: undefined,
-    readonly: false,
-    inputProps: {},
-    list: undefined,
-    // Error handling
-    isInvalid: false,
-    errorMsg: undefined,
-    // Clear button
-    clearButton: false,
-    onClear: undefined,
-    // Options for the appened icon
-    appendOptions: undefined,
-    // Styling props
-    unit: undefined,
-    min: undefined,
-    max: undefined,
-    sm: false,
-    whiteBG: false,
-    noMargin: false,
-    focus: false,
-    selectAllOnFocus: false,
-    step: 1,
-    isFlex: false,
-    condensed: false,
-  };
+const InputSNCF = ({
+  // Basic input props
+  id,
+  type,
+  name = undefined,
+  label = undefined,
+  placeholder = undefined,
+  onChange = undefined,
+  value = undefined,
+  readonly = false,
+  inputProps = {},
+  list = undefined,
+  // Error handling
+  isInvalid = false,
+  errorMsg = undefined,
+  // Clear button
+  clearButton = false,
+  onClear = undefined,
+  // Options for the appened icon
+  appendOptions = undefined,
+  // Styling props
+  unit = undefined,
+  min = undefined,
+  max = undefined,
+  sm = false,
+  whiteBG = false,
+  noMargin = false,
+  focus = false,
+  selectAllOnFocus = false,
+  step = 1,
+  isFlex = false,
+  condensed = false,
+}: InputSNCFProps): JSX.Element => {
+  // Build custom classes
+  const formSize = sm ? 'form-control-sm' : '';
+  const readOnlyFlag = readonly ? 'readonly' : '';
+  const backgroundColor = whiteBG ? 'bg-white' : '';
+  const clearOption = clearButton ? 'clear-option' : '';
+  const flex = isFlex ? 'd-flex align-items-center' : '';
+  const condensedIcon = condensed ? 'condensed-icon' : '';
+  const condensedInput = condensed ? 'px-2' : '';
+
+  // Test and adapt display if entry is invalid
+  let invalidClass = '';
+  let invalidMsg: JSX.Element | null = null;
+  if (isInvalid) {
+    invalidClass = 'is-invalid';
+    invalidMsg = <div className="invalid-feedback">{errorMsg}</div>;
+  }
 
   // Appends a icon button right next to the input field
-  renderAppendButton = (sm = false) => {
-    const { appendOptions } = this.props;
-    const formSize = sm ? 'btn-sm' : '';
+  const appendButton = (small: boolean) => {
+    const newFormSize = small ? 'btn-sm' : '';
     if (appendOptions) {
       return (
         <div className="input-group-append input-group-last">
           <button
             type="button"
-            className={`${formSize} btn btn-primary btn-only-icon active`}
+            className={`${newFormSize} btn btn-primary btn-only-icon active`}
             onClick={appendOptions.onClick}
           >
             {appendOptions.label}
@@ -110,14 +106,11 @@ class InputSNCF extends React.Component<InputSNCFProps> {
         </div>
       );
     }
-
     return null;
   };
 
   // Displays a button at the end of the input field to clear the input
-  renderClearButton = () => {
-    const { value, clearButton, onClear } = this.props;
-
+  const addClearButton = () => {
     const displayClearButton = clearButton && value;
 
     // Returns null if the clear button is not used
@@ -133,51 +126,7 @@ class InputSNCF extends React.Component<InputSNCFProps> {
   };
 
   // Renders a basic input field without any underlying list
-  renderBasicInput = () => {
-    const {
-      appendOptions,
-      isInvalid,
-      errorMsg,
-      focus,
-      label,
-      id,
-      name,
-      type,
-      onChange,
-      unit,
-      sm,
-      isFlex,
-      condensed,
-      readonly,
-      whiteBG,
-      clearButton,
-      value,
-      placeholder,
-      inputProps,
-      min,
-      max,
-      selectAllOnFocus,
-      step,
-      list,
-    } = this.props;
-
-    // Build custom classes
-    const formSize = sm ? 'form-control-sm' : '';
-    const readOnlyFlag = readonly ? 'readonly' : '';
-    const backgroundColor = whiteBG ? 'bg-white' : '';
-    const clearOption = clearButton ? 'clear-option' : '';
-    const flex = isFlex ? 'd-flex align-items-center' : '';
-    const condensedIcon = condensed ? 'condensed-icon' : '';
-    const condensedInput = condensed ? 'px-2' : '';
-
-    // Test and adapt display if entry is invalid
-    let invalidClass = '';
-    let invalidMsg = null;
-    if (isInvalid) {
-      invalidClass = 'is-invalid';
-      invalidMsg = <div className="invalid-feedback">{errorMsg}</div>;
-    }
-
+  const basicInput = () => {
     const inputComponent = (
       <>
         {label && (
@@ -208,9 +157,9 @@ class InputSNCF extends React.Component<InputSNCFProps> {
             />
             <span className="form-control-state" />
             {unit && <span className={`form-control-icon small ${condensedIcon}`}>{unit}</span>}
-            {this.renderClearButton()}
+            {addClearButton()}
           </div>
-          {this.renderAppendButton(sm)}
+          {sm && appendButton(sm)}
           {invalidMsg}
         </div>
       </>
@@ -219,18 +168,10 @@ class InputSNCF extends React.Component<InputSNCFProps> {
     return flex ? <div className={flex}>{inputComponent}</div> : inputComponent;
   };
 
-  render() {
-    const { noMargin } = this.props;
+  // Build conditional classes
+  const containerMargin = noMargin ? '' : 'mb-4';
 
-    // Build conditional classes
-    const containerMargin = noMargin ? '' : 'mb-4';
-
-    return containerMargin ? (
-      <div className={containerMargin}>{this.renderBasicInput()}</div>
-    ) : (
-      this.renderBasicInput()
-    );
-  }
-}
+  return containerMargin ? <div className={containerMargin}>{basicInput()}</div> : basicInput();
+};
 
 export default InputSNCF;
