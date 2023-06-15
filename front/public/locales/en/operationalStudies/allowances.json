@@ -1,0 +1,14 @@
+{
+  "addLine": {
+    "beginPosition": "From",
+    "distribution": "Distribution",
+    "endPosition": "To",
+    "length": "Length",
+    "value": "Value"
+  },
+  "distribution": {
+    "linear": "Linear",
+    "mareco": "Mareco"
+  },
+  "missingPathFinding": "Please define a path before specifying margins"
+}
