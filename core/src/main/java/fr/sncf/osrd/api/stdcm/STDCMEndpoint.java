@@ -192,7 +192,8 @@ public class STDCMEndpoint implements Take {
             List<TrainStop> trainStops
     ) {
         trainStops.add(new TrainStop(endPos, 0.1));
-        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort, null, null);
+        return new StandaloneTrainSchedule(rollingStock, 0., new ArrayList<>(), trainStops,
+                List.of(), null, comfort, null, null);
     }
 }
 

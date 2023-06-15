@@ -21,6 +21,10 @@ public class RJSStandaloneTrainSchedule implements Identified {
     @Json(name = "departure_time")
     public double departureTime;
 
+    /** A list of scheduled points */
+    @Json(name = "scheduled_points")
+    public RJSSchedulePoint[] scheduledPoints;
+
     /** A list of allowances, which are applied (stacked) in order. */
     public RJSAllowance[] allowances;
 

@@ -150,7 +150,7 @@ public class ScheduleMetadataExtractorTests {
             TrainPath path, RollingStock testRollingStock, Envelope envelope
     ) {
         var schedule = new StandaloneTrainSchedule(
-                testRollingStock, 0, List.of(), List.of(),
+                testRollingStock, 0, new ArrayList<>(), List.of(), List.of(),
                 "test", RollingStock.Comfort.STANDARD, null, null
         );
         ScheduleMetadataExtractor.run(envelope, path, schedule, fullInfra);
