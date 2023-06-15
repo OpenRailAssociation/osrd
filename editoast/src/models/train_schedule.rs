@@ -41,6 +41,7 @@ pub struct TrainSchedule {
     pub departure_time: f64,
     pub initial_speed: f64,
     pub allowances: DieselJson<Vec<Allowance>>,
+    pub scheduled_points: DieselJson<Vec<ScheduledPoint>>,
     pub comfort: String,
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
@@ -74,6 +75,8 @@ pub struct TrainScheduleChangeset {
     pub initial_speed: Option<f64>,
     #[diesel(deserialize_as = DieselJson<Vec<Allowance>>)]
     pub allowances: Option<DieselJson<Vec<Allowance>>>,
+    #[diesel(deserialize_as = DieselJson<Vec<ScheduledPoint>>)]
+    pub scheduled_points: Option<DieselJson<Vec<ScheduledPoint>>>,
     #[diesel(deserialize_as = String)]
     pub comfort: Option<String>,
     #[diesel(deserialize_as = Option<String>)]
@@ -99,6 +102,9 @@ impl From<TrainScheduleChangeset> for TrainSchedule {
             departure_time: changeset.departure_time.expect("invalid changeset result"),
             initial_speed: changeset.initial_speed.expect("invalid changeset result"),
             allowances: changeset.allowances.expect("invalid changeset result"),
+            scheduled_points: changeset
+                .scheduled_points
+                .expect("invalid changeset result"),
             comfort: changeset.comfort.expect("invalid changeset result"),
             speed_limit_tags: changeset
                 .speed_limit_tags
@@ -277,10 +283,14 @@ pub struct StandardAllowance {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "allowance_type")]
+#[serde(tag = "allowance_type", rename_all = "lowercase")]
 pub enum Allowance {
-    #[serde(rename = "engineering")]
     Engineering(EngineeringAllowance),
-    #[serde(rename = "standard")]
     Standard(StandardAllowance),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ScheduledPoint {
+    position: f64,
+    time: f64,
 }
