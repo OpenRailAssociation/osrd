@@ -16,6 +16,7 @@
   "rolling_resistance_B": "Viscous friction (N.s/m)",
   "rolling_resistance_C": "Aerodynamic friction (N.s²/m²)",
   "selectRollingStock": "Select a rolling stock to display informations",
+  "addNewRollingStock": "Add a new rolling stock",
   "confirmAction": "Would you like to confirm the change?",
   "cancelAction": "Would you like to cancel the modification?",
   "back": "Back",
