@@ -136,17 +136,6 @@ class RawInfraImpl(
         return trackSectionPool[trackSection].chunks
     }
 
-    override fun getDirTrackSectionChunks(trackSection: TrackSectionId, direction: Direction):
-            DirStaticIdxList<TrackChunk> {
-        var chunks = trackSectionPool[trackSection].chunks
-        if (direction == Direction.DECREASING)
-            chunks = chunks.reversed()
-        val res = mutableDirStaticIdxArrayListOf<TrackChunk>()
-        for (chunk in chunks)
-            res.add(DirTrackChunkId(chunk, direction))
-        return res
-    }
-
     override fun getTrackChunkLength(trackChunk: TrackChunkId): Distance {
         return trackChunkPool[trackChunk].length
     }
