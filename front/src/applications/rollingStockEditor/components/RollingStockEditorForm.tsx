@@ -16,6 +16,7 @@ import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import RollingStockBaseOpenapiSchema from '../json/RollingStockBaseOpenapiSchema.json';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
+import RollingStockEditorFormMetadata from './RollingStockEditorFormMetadata';
 
 type RollingStockParametersValues = {
   [key: number | string]: {
@@ -44,7 +45,7 @@ const sideValue = {
   right: false,
 };
 
-const RollingStockEditorInput = ({
+export const RollingStockEditorInput = ({
   label,
   position,
   error,
@@ -79,7 +80,7 @@ const RollingStockEditorInput = ({
   );
 };
 
-const RollingStockEditorSelect = ({
+export const RollingStockEditorSelect = ({
   label,
   position,
   options,
@@ -102,7 +103,6 @@ const RollingStockEditorSelect = ({
         {t(label)}
       </label>
       <select id={label} className="form-control-sm col-4" {...register(label)}>
-        <option>...</option>
         {options?.map((option: string) => (
           <option key={option} value={option}>
             {option}
@@ -116,11 +116,15 @@ const RollingStockEditorSelect = ({
 type RollingStockParametersProps = {
   rollingStockData?: LightRollingStock;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsAdding?: React.Dispatch<React.SetStateAction<boolean>>;
+  isAdding?: boolean;
 };
 
 const RollingStockEditorForm = ({
   rollingStockData,
   setIsEditing,
+  setIsAdding,
+  isAdding,
 }: RollingStockParametersProps) => {
   const { t } = useTranslation('rollingStockEditor');
   const { openModal } = useModal();
@@ -144,7 +148,7 @@ const RollingStockEditorForm = ({
       comfort_acceleration: rollingStockData?.comfort_acceleration || 0,
       gamma_value: rollingStockData?.gamma.value || 0,
       inertia_coefficient: rollingStockData?.inertia_coefficient || 0,
-      loading_gauge: (rollingStockData?.loading_gauge as string) || '...',
+      loading_gauge: (rollingStockData?.loading_gauge as string) || 'G1',
       rolling_resistance_A: rollingStockData?.rolling_resistance.A || 0,
       rolling_resistance_B: rollingStockData?.rolling_resistance.B || 0,
       rolling_resistance_C: rollingStockData?.rolling_resistance.C || 0,
@@ -205,6 +209,7 @@ const RollingStockEditorForm = ({
   return (
     <form className="d-flex flex-column form-control bg-white" onSubmit={handleSubmit(submit)}>
       <div className="d-flex justify-content-center">
+        <RollingStockEditorFormMetadata setIsAdding={setIsAdding} isAdding={isAdding} />
         <div className="col-6 mr-4">{parameterForm(sideValue.left, register)}</div>
         <div className="col-6">
           <div className="d-flex flex-column mb-2">

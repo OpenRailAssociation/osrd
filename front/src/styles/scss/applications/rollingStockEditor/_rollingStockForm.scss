@@ -38,6 +38,13 @@
       }
     }
   }
+
+  &-left-container {
+    width: 37%;
+    &-content {
+      width: 92%;
+    }
+  }
 }
 
 .rollingstock-header-form {

@@ -19,7 +19,7 @@ export default function RollingStockEditorCard({
 
   return (
     <div className="rollingstock-editor-form w-100 pr-4">
-      <div className="rollingstock-header-form" style={{ height: '3rem' }}>
+      <div className="rollingstock-header-form">
         <div className="rollingstock-title-form">
           <RollingStockInfos form="-form" data={data} />
         </div>

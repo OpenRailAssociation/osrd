@@ -1,0 +1,57 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "OSRD Editoast",
+    "description": "OSRD Edition service description",
+    "version": "0.1.0"
+  },
+  "tags": [],
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Metadata": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
+          "grouping": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "series": {
+            "type": "string"
+          },
+          "subseries": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail",
+          "family",
+          "grouping",
+          "number",
+          "reference",
+          "series",
+          "subseries",
+          "type",
+          "unit"
+        ]
+      }
+    }
+  }
+}

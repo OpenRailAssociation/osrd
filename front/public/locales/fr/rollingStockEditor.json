@@ -16,6 +16,7 @@
   "rolling_resistance_B": "Frottements visqueux (N.s/m)",
   "rolling_resistance_C": "Résistance aérodynamique (N.s²/m²)",
   "selectRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",
+  "addNewRollingStock": "Ajouter un nouveau matériel roulant",
   "confirmAction": "Souhaitez-vous confirmer la modification ?",
   "cancelAction": "Souhaitez-vous annuler la modification ?",
   "back": "Retour",

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import RollingStockEditorButtons from '../components/RollingStockEditorButtons';
 import RollingStockEditorCard from '../components/RollingStockEditorCard';
+import RollingStockEditorForm from '../components/RollingStockEditorForm';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStock[];
@@ -18,6 +19,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
   const rollingStockID = useSelector(getRollingStockID);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
@@ -25,16 +27,27 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   return (
     <div className="d-flex pt-5 mt-5">
-      <div className="d-flex ml-4 flex-column" style={{ width: '37%' }}>
+      <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
+        <div className="d-flex justify-content-center rollingstock-editor-left-container-content">
+          <button
+            type="button"
+            className="btn btn-primary w-75 mb-4"
+            onClick={() => {
+              setIsEditing(true);
+              setOpenedRollingStockCardId(0);
+            }}
+          >
+            {t('addNewRollingStock')}
+          </button>
+        </div>
         {rollingStocks.length > 0 ? (
           rollingStocks.map((data) => (
             <div className="d-flex rollingstock-editor-list" key={data.id}>
               <div
                 role="button"
-                tabIndex={0}
-                className="align-self-start rollingstock-elements"
+                tabIndex={-1}
+                className="align-self-start rollingstock-elements rollingstock-editor-left-container-content"
                 onClick={() => setIsEditing(false)}
-                style={{ width: '92%' }}
               >
                 <RollingStockCard
                   isOnEditMode
@@ -58,12 +71,21 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
         )}
       </div>
       <div className="d-flex flex-column pl-0 rollingstock-editor-form-container">
-        {selectedRollingStock ? (
-          <RollingStockEditorCard
-            isEditing={isEditing}
-            data={selectedRollingStock}
-            setIsEditing={setIsEditing}
-          />
+        {selectedRollingStock || isEditing ? (
+          (selectedRollingStock && (
+            <RollingStockEditorCard
+              isEditing={isEditing}
+              data={selectedRollingStock}
+              setIsEditing={setIsEditing}
+            />
+          )) ||
+          (isEditing && (
+            <RollingStockEditorForm
+              setIsEditing={setIsEditing}
+              setIsAdding={setIsAdding}
+              isAdding={isAdding}
+            />
+          ))
         ) : (
           <p className="align-self-center">{t('selectRollingStock')}</p>
         )}
