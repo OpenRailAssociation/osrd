@@ -35,6 +35,9 @@ import { IoIosCut } from 'react-icons/io';
 import { t } from 'i18next';
 import { tooltipPosition, notEmpty } from 'applications/editor/components/LinearMetadata/utils';
 import { ValueOf } from 'utils/types';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import { useTranslation } from 'react-i18next';
 
 export const TOOLS = Object.freeze({
   cutTool: Symbol('cutTool'),
@@ -53,7 +56,8 @@ type IntervalsEditorMetaProps = {
   params?: IntervalsEditorParams;
   valueField: string;
   defaultValue?: number;
-  unit?: string;
+  units?: string[];
+  defaultUnit?: string;
 };
 
 type IntervalsEditorProps = IntervalsEditorMetaProps & FieldProps;
@@ -83,6 +87,8 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   const [clickTimeout, setClickTimeout] = useState<number | null>(null);
   const [clickPrevent, setClickPrevent] = useState<boolean>(false);
   const [selectedTool, setSelectedTool] = useState<ValueOf<typeof TOOLS> | null>(null);
+
+  const { t } = useTranslation();
 
   const { openModal, closeModal } = useModal();
 
@@ -197,7 +203,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
             }}
             onClick={(_e, _item, index, point) => {
-              console.log('SelectedTool', selectedTool);
               if (mode === null) {
                 const timer = window.setTimeout(() => {
                   if (!clickPrevent) {
@@ -350,6 +355,41 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               item={data[hovered.index]}
               point={!mode ? hovered.point : undefined}
               schema={jsonSchemaItems as JSONSchema7}
+            />
+          </div>
+        )}
+
+        {/* Flex dedicated edition */}
+
+        {selected && (
+          <div className="flexValuesEdition">
+            <InputSNCF
+              type="text"
+              id="trainlist-name"
+              label={t('begin')}
+              //onChange={(e) => handleChange(e.target.value)}
+              value={data[selected].begin}
+              noMargin
+              sm
+            />
+            <InputSNCF
+              type="text"
+              id="trainlist-name"
+              label={t('begin')}
+              //onChange={(e) => handleChange(e.target.value)}
+              value={data[selected][valueField] as number}
+              noMargin
+              sm
+            />
+
+            <InputSNCF
+              type="text"
+              id="trainlist-name"
+              label={t('end')}
+              //onChange={(e) => handleChange(e.target.value)}
+              value={data[selected].end}
+              noMargin
+              sm
             />
           </div>
         )}
