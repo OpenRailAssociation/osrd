@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
+import cx from 'classnames';
 
 type Option = {
   id: string;
@@ -57,10 +58,10 @@ export default function InputGroupSNCF({
   }, [type, options]);
 
   const inputField = (
-    <div className={`form-control-container ${selected.unit ? 'has-right-icon' : ''}`}>
+    <div className={cx('form-control-container', selected.unit && 'has-right-icon')}>
       <input
         type="text"
-        className={`form-control ${condensed ? 'px-2' : ''}`}
+        className={cx('form-control', condensed && 'px-2')}
         title={placeholder}
         placeholder={placeholder}
         onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
@@ -68,7 +69,7 @@ export default function InputGroupSNCF({
       />
       <span className="form-control-state" />
       {selected.unit && (
-        <span className={`form-control-icon small ${condensed ? 'condensed-icon' : ''}`}>
+        <span className={cx('form-control-icon small', condensed && 'condensed-icon')}>
           {selected.unit}
         </span>
       )}
@@ -78,29 +79,33 @@ export default function InputGroupSNCF({
   return (
     <>
       {label && <label htmlFor={id}>{label}</label>}
-      <div className={`input-group ${sm && 'input-group-sm'}`}>
+      <div className={cx('input-group', sm && 'input-group-sm')}>
         {orientation === 'right' && inputField}
         <div className={`input-group-${orientation === 'left' ? 'prepend' : 'append'}`}>
           {' '}
           <div className="btn-group dropdown">
             <button
               type="button"
-              className={`btn btn-secondary dropdown-toggle ${condensed ? 'pr-1 pl-2' : ''}`}
+              className={cx('btn btn-secondary dropdown-toggle', condensed && 'pr-2 pl-2')}
               onClick={() => setIsDropdownShown(!isDropdownShown)}
               aria-haspopup="true"
               aria-expanded="false"
               aria-controls={id}
             >
-              <span>{selected.label}</span>
+              <span className={cx(condensed && 'small')}>{selected.label}</span>
               <i
-                className={isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down'}
+                className={cx(
+                  isDropdownShown ? 'icons-arrow-up' : 'icons-arrow-down',
+                  condensed && ' ml-2'
+                )}
                 aria-hidden="true"
               />
             </button>
             <div
-              className={`dropdown-menu dropdown-menu-right osrd-dropdown-sncf ${
-                isDropdownShown ? 'show' : null
-              }`}
+              className={cx(
+                'dropdown-menu dropdown-menu-right osrd-dropdown-sncf',
+                isDropdownShown && 'show'
+              )}
               id={id}
               // eslint-disable-next-line react/no-unknown-property
               x-placement="bottom-end"
