@@ -68,6 +68,7 @@ export default function Scenario() {
   const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
     { id: infraId as number },
     {
+      skip: !infraId,
       refetchOnMountOrArgChange: true,
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
