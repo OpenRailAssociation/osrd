@@ -42,3 +42,12 @@ impl Identifiable for ElectricalProfileSet {
         self.id.unwrap()
     }
 }
+
+#[derive(Debug, Default, Queryable, Identifiable, Serialize, Deserialize)]
+#[diesel(table_name = osrd_infra_electricalprofileset)]
+pub struct LightElectricalProfileSet {
+    #[diesel(deserialize_as = i64)]
+    pub id: Option<i64>,
+    #[diesel(deserialize_as = String)]
+    pub name: Option<String>,
+}

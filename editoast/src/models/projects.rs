@@ -53,7 +53,6 @@ pub struct Project {
     #[diesel(column_name = "image_id")]
     pub image: Option<Option<i64>>,
     #[diesel(deserialize_as = NaiveDateTime)]
-    #[derivative(Default(value = "Some(Utc::now().naive_utc())"))]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
@@ -64,7 +63,7 @@ pub struct Project {
 
 impl Identifiable for Project {
     fn get_id(&self) -> i64 {
-        self.id.expect("Id not found")
+        self.id.expect("Project id not found")
     }
 }
 #[derive(Debug, Clone, Serialize, QueryableByName)]
