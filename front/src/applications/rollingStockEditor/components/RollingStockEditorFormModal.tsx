@@ -1,15 +1,22 @@
 import React from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
+import { FieldValues } from 'react-hook-form';
 
 type RollingStockEditorFormModalProps = {
-  setIsEditing: (isEditing: boolean) => void;
+  setIsEditing?: (isEditing: boolean) => void;
+  setIsAdding?: (isAdding: boolean) => void;
+  data?: FieldValues;
+  request?: (data: FieldValues) => void;
   mainText: string;
   buttonText: string;
 };
 
 const RollingStockEditorFormModal = ({
   setIsEditing,
+  setIsAdding,
+  data,
+  request,
   mainText,
   buttonText,
 }: RollingStockEditorFormModalProps) => {
@@ -27,7 +34,9 @@ const RollingStockEditorFormModal = ({
           type="button"
           className="btn btn-sm btn-primary ml-3"
           onClick={() => {
-            setIsEditing(false);
+            if (setIsEditing) setIsEditing(false);
+            if (setIsAdding) setIsAdding(false);
+            if (request) request(data as FieldValues);
             closeModal();
           }}
         >

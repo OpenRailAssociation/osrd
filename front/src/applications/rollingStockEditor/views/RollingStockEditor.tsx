@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { LightRollingStock } from 'common/api/osrdEditoastApi';
 import RollingStockEditorButtons from '../components/RollingStockEditorButtons';
 import RollingStockEditorCard from '../components/RollingStockEditorCard';
+import RollingStockEditorForm from '../components/RollingStockEditorForm';
 
 type RollingStockEditorProps = {
   rollingStocks: LightRollingStock[];
@@ -18,6 +19,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
   const rollingStockID = useSelector(getRollingStockID);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
@@ -25,34 +27,79 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   return (
     <div className="d-flex pt-5 mt-5">
-      <div className="d-flex ml-4 flex-column" style={{ width: '37%' }}>
+      <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
+        <div className="d-flex justify-content-center w-100">
+          <button
+            type="button"
+            className="btn btn-primary mb-4"
+            onClick={() => {
+              setIsAdding(true);
+              setIsEditing(true);
+              setOpenedRollingStockCardId(0);
+            }}
+          >
+            {t('addNewRollingStock')}
+          </button>
+        </div>
+        {isAdding && (
+          <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
+            <RollingStockEditorForm
+              isAdding={isAdding}
+              setIsEditing={setIsEditing}
+              setIsAdding={setIsAdding}
+            />
+          </div>
+        )}
         {rollingStocks.length > 0 ? (
-          rollingStocks.map((rollingStock) => (
-            <div className="d-flex rollingstock-editor-list" key={rollingStock.id}>
-              <div
-                role="button"
-                tabIndex={0}
-                className="align-self-start rollingstock-elements"
-                onClick={() => setIsEditing(false)}
-                style={{ width: '92%' }}
-              >
-                <RollingStockCard
-                  isOnEditMode
-                  rollingStock={rollingStock}
-                  key={rollingStock.id}
-                  noCardSelected={openedRollingStockCardId === undefined}
-                  isOpen={rollingStock.id === openedRollingStockCardId}
-                  setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-                  ref2scroll={rollingStockID === rollingStock.id ? ref2scroll : undefined}
-                />
-              </div>
-              {rollingStock.id === openedRollingStockCardId && (
-                <div className="align-self-start">
-                  <RollingStockEditorButtons
-                    isCondensed
-                    setIsEditing={setIsEditing}
-                    isRollingStockLocked={rollingStock.locked ?? false}
+          rollingStocks.map((data) => (
+            <div className="rollingstock-editor-list" key={data.id}>
+              <div className="d-flex">
+                <div
+                  role="button"
+                  tabIndex={-1}
+                  className="d-flex align-self-start rollingstock-elements w-100"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setIsAdding(false);
+                  }}
+                >
+                  <RollingStockCard
+                    isOnEditMode
+                    rollingStock={data}
+                    noCardSelected={openedRollingStockCardId === undefined}
+                    isOpen={data.id === openedRollingStockCardId}
+                    setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+                    ref2scroll={rollingStockID === data.id ? ref2scroll : undefined}
                   />
+                </div>
+                {data.id === openedRollingStockCardId && (
+                  <div className="align-self-start">
+                    <RollingStockEditorButtons
+                      isCondensed
+                      rollingStock={data}
+                      setIsEditing={setIsEditing}
+                      isRollingStockLocked={data.locked as boolean}
+                    />
+                  </div>
+                )}
+              </div>
+              {openedRollingStockCardId === data.id && (
+                <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
+                  {(selectedRollingStock || isEditing) &&
+                    ((selectedRollingStock && !isEditing && (
+                      <RollingStockEditorCard
+                        isEditing={isEditing}
+                        data={selectedRollingStock}
+                        setIsEditing={setIsEditing}
+                      />
+                    )) ||
+                      (isEditing && (
+                        <RollingStockEditorForm
+                          rollingStockData={selectedRollingStock}
+                          setIsEditing={setIsEditing}
+                          setIsAdding={setIsAdding}
+                        />
+                      )))}
                 </div>
               )}
             </div>
@@ -61,17 +108,9 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
           <Loader msg={t('rollingstock:waitingLoader')} />
         )}
       </div>
-      <div className="d-flex flex-column pl-0 rollingstock-editor-form-container">
-        {selectedRollingStock ? (
-          <RollingStockEditorCard
-            isEditing={isEditing}
-            rollingStock={selectedRollingStock}
-            setIsEditing={setIsEditing}
-          />
-        ) : (
-          <p className="align-self-center">{t('selectRollingStock')}</p>
-        )}
-      </div>
+      {!selectedRollingStock && (
+        <p className="rollingstock-editor-unselected px-5">{t('selectRollingStock')}</p>
+      )}
     </div>
   );
 }

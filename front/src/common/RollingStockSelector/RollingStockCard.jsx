@@ -146,6 +146,7 @@ function RollingStockCard(props) {
         </div>
         {isOpen && curvesComfortList && !isOnEditMode ? (
           <RollingStockCardButtons
+            isOnEditMode
             id={rollingStock.id}
             curvesComfortList={curvesComfortList}
             setOpenedRollingStockCardId={setOpenedRollingStockCardId}
