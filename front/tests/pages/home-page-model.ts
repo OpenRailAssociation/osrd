@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { expect, Locator, Page } from '@playwright/test';
-import home from '../public/locales/fr/home/home.json';
+import home from '../../public/locales/fr/home/home.json';
 
 export class PlaywrightHomePage {
   // The current page object
@@ -67,12 +67,13 @@ export class PlaywrightHomePage {
 
   // Assert that the expected links are displayed on the page
   async getDisplayLinks() {
-    expect(this.getLinks).toContainText([
+    expect(this.getLinks).toHaveText([
       this.getTranslations('operationalStudies'),
       this.getTranslations('map'),
       this.getTranslations('editor'),
       this.getTranslations('rollingStockEditor'),
       this.getTranslations('stdcm'),
+      this.getTranslations('customget'),
     ]);
   }
 

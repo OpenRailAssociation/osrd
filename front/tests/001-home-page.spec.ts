@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { PlaywrightHomePage } from './home-page-model';
+import { PlaywrightHomePage } from './pages/home-page-model';
 
 // Describe the test suite for the home page of OSDR
 test.describe('Home page OSRD', () => {

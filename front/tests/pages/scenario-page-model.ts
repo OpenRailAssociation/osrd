@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 
 class PlaywrightScenarioPage {
   readonly getRollingStockSelector: Locator;
@@ -37,6 +37,10 @@ class PlaywrightScenarioPage {
 
   readonly getScenarioInfraName: Locator;
 
+  readonly getResultPathfindingDistance: Locator;
+
+  readonly getInfraLoadState: Locator;
+
   constructor(readonly page: Page) {
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
@@ -62,6 +66,8 @@ class PlaywrightScenarioPage {
     this.getScenarioName = page.locator('.scenario-details-name .scenario-name');
     this.getScenarioDesciption = page.locator('.scenario-details-description');
     this.getScenarioInfraName = page.locator('.scenario-infra-name');
+    this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
+    this.getInfraLoadState = page.locator('.infra-loading-state');
   }
 
   async openTabByText(text: string) {
@@ -95,6 +101,15 @@ class PlaywrightScenarioPage {
   async setSenarioElectricProfileByName(electricProfileName: string) {
     await this.getScenarioElectricProfileSelect.click();
     await this.page.locator('[id="-selecttoggle"]').getByText(electricProfileName).click();
+  }
+
+  async checkPathfindingDistance(distance: string | RegExp) {
+    await expect(this.getResultPathfindingDistance).toHaveText(distance);
+  }
+
+  async checkInfraLoaded() {
+    await this.page.waitForSelector('.cached');
+    await expect(this.getInfraLoadState).toHaveClass(/cached/);
   }
 }
 
