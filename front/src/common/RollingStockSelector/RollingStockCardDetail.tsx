@@ -15,6 +15,18 @@ type RollingStockCardDetailProps = {
   setCurvesComfortList: (curvesComfortList: string[]) => void;
 };
 
+export const listCurvesComfort = (curvesData: RollingStock['effort_curves']) => {
+  const comfortList = ['STANDARD'];
+  Object.keys(curvesData.modes).forEach((mode) => {
+    curvesData.modes[mode].curves.forEach((curve) => {
+      if (curve.cond?.comfort) {
+        if (!comfortList.includes(curve.cond.comfort)) comfortList.push(curve.cond.comfort);
+      }
+    });
+  });
+  return comfortList;
+};
+
 export default function RollingStockCardDetail({
   id,
   hideCurves,
@@ -24,52 +36,6 @@ export default function RollingStockCardDetail({
 }: RollingStockCardDetailProps) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['rollingstock']);
-
-  const mode2name = (mode: string) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
-
-  const listCurvesComfort = (curvesData: RollingStock['effort_curves']) => {
-    const comfortList = ['STANDARD'];
-    Object.keys(curvesData.modes).forEach((mode) => {
-      curvesData.modes[mode].curves.forEach((curve) => {
-        if (curve.cond?.comfort) {
-          if (!comfortList.includes(curve.cond.comfort)) comfortList.push(curve.cond.comfort);
-        }
-      });
-    });
-    return comfortList;
-  };
-
-  const transformCurves = (rollingStockCurves: RollingStock['effort_curves']['modes']) => {
-    const transformedCurves: {
-      [index: string]: {
-        mode: string;
-        comfort: string;
-        speeds?: number[] | undefined;
-        max_efforts?: number[] | undefined;
-      };
-    } = {};
-    Object.keys(rollingStockCurves).forEach((mode) => {
-      // Standard curves (required)
-      const name = mode2name(mode);
-      transformedCurves[`${name} STANDARD`] = {
-        ...rollingStockCurves[mode].default_curve,
-        mode: name,
-        comfort: 'STANDARD',
-      };
-      // AC & HEATING curves (optional)
-      rollingStockCurves[mode].curves.forEach((curve) => {
-        if (curve.cond?.comfort) {
-          const optionalCurveName = `${name} ${curve.cond.comfort}`;
-          transformedCurves[optionalCurveName] = {
-            ...curve.curve,
-            mode: name,
-            comfort: curve.cond.comfort as string,
-          };
-        }
-      });
-    });
-    return transformedCurves;
-  };
 
   // we only fetch the whole rollingStock here, when we open the card and display its details
   const { data: rollingStock, error } = osrdEditoastApi.useGetRollingStockByIdQuery(
@@ -95,7 +61,7 @@ export default function RollingStockCardDetail({
   }, [error]);
 
   return rollingStock && curvesComfortList ? (
-    <div className={`rollingstock-body ${form ? 'px-4' : ''}`}>
+    <div className={`${form ? 'px-4' : 'rollingstock-body'}`}>
       <div className={`row pt-2  ${form}`}>
         <div className="col-sm-6">
           <table className="rollingstock-details-table">
@@ -122,11 +88,11 @@ export default function RollingStockCardDetail({
                 </td>
               </tr>
               <tr>
-                <td className="text-primary">{t('intertiaCoefficient')}</td>
+                <td className="text-primary">{t('inertiaCoefficient')}</td>
                 <td>{rollingStock.inertia_coefficient}</td>
               </tr>
               <tr>
-                <td className="text-primary">{t('timetableGamma')}</td>
+                <td className="text-primary">{t('gammaValue')}</td>
                 <td>
                   {rollingStock.gamma.value * -1}
                   <span className="small ml-1 text-muted">m/s²</span>
@@ -204,7 +170,7 @@ export default function RollingStockCardDetail({
                       ? (rollingStock.rolling_resistance.C * 10000) / 10000
                       : 0
                   )}
-                  <span className="small ml-1 text-muted">N/(m/s²)</span>
+                  <span className="small ml-1 text-muted">N/(m/s)²</span>
                 </td>
                 <td className="text-primary">{t('rollingResistanceC')}</td>
               </tr>
@@ -215,7 +181,7 @@ export default function RollingStockCardDetail({
       {!hideCurves && (
         <>
           <RollingStockCurves
-            data={transformCurves(rollingStock.effort_curves.modes)}
+            data={rollingStock.effort_curves.modes}
             curvesComfortList={curvesComfortList}
           />
           <div className="rollingstock-detail-container-img">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BiDuplicate, BiTrash } from 'react-icons/bi';
 import { FaPencilAlt } from 'react-icons/fa';
-import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setSuccess, setFailure } from 'reducers/main';
@@ -9,8 +9,9 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
 
 type RollingStockEditorButtonsProps = {
-  rollingStock: LightRollingStock;
+  rollingStock: RollingStock;
   setIsEditing: (isEditing: boolean) => void;
+  setOpenedRollingStockCardId: React.Dispatch<React.SetStateAction<number | undefined>>;
   isRollingStockLocked: boolean;
   isCondensed: boolean;
 };
@@ -18,15 +19,18 @@ type RollingStockEditorButtonsProps = {
 function RollingStockEditorButtons({
   rollingStock,
   setIsEditing,
+  setOpenedRollingStockCardId,
   isRollingStockLocked,
   isCondensed,
 }: RollingStockEditorButtonsProps) {
   const dispatch = useDispatch();
-  const { t } = useTranslation('rollingStockEditor');
+  const { t } = useTranslation(['rollingstock', 'translation']);
   const { openModal } = useModal();
   const [deleteRollingStockById] = osrdEditoastApi.useDeleteRollingStockByIdMutation();
+  const [postRollingstock] = osrdEditoastApi.usePostRollingStockMutation();
 
   const deleteRollingStock = () => {
+    setOpenedRollingStockCardId(undefined);
     if (!rollingStock.locked)
       deleteRollingStockById({ id: rollingStock.id })
         .unwrap()
@@ -38,7 +42,15 @@ function RollingStockEditorButtons({
             })
           );
         })
-        .catch(() => {
+        .catch((error) => {
+          if (error.status === 409) {
+            openModal(
+              <RollingStockEditorFormModal
+                mainText={t('messages.rollingStockNotDeleted')}
+                errorObject={error.data.context.usage}
+              />
+            );
+          }
           dispatch(
             setFailure({
               name: t('messages.failure'),
@@ -48,12 +60,49 @@ function RollingStockEditorButtons({
         });
   };
 
+  const duplicateRollingStock = () => {
+    const duplicatedRollingstock = { ...rollingStock, name: `${rollingStock.name} - ${t('copy')}` };
+    postRollingstock({
+      locked: false,
+      rollingStockUpsertPayload: duplicatedRollingstock,
+    })
+      .unwrap()
+      .then((res) => {
+        setOpenedRollingStockCardId(res.id);
+        setIsEditing(true);
+        dispatch(
+          setSuccess({
+            title: t('messages.success'),
+            text: t('messages.rollingStockAdded'),
+          })
+        );
+      })
+      .catch(() => {
+        dispatch(
+          setFailure({
+            name: t('messages.failure'),
+            message: t('messages.rollingStockDuplicateName'),
+          })
+        );
+      });
+  };
+
   const confirmDelete = () => {
     openModal(
       <RollingStockEditorFormModal
         request={deleteRollingStock}
         mainText={t('confirmAction')}
-        buttonText={t('confirm')}
+        buttonText={t('translation:common.confirm')}
+      />
+    );
+  };
+
+  const confirmDuplicate = () => {
+    openModal(
+      <RollingStockEditorFormModal
+        request={duplicateRollingStock}
+        mainText={t('confirmAction')}
+        buttonText={t('translation:common.confirm')}
       />
     );
   };
@@ -73,7 +122,12 @@ function RollingStockEditorButtons({
       >
         <FaPencilAlt />
       </button>
-      <button type="button" className="btn btn-primary px-1 py-0" tabIndex={0}>
+      <button
+        type="button"
+        className="btn btn-primary px-1 py-0"
+        tabIndex={0}
+        onClick={() => confirmDuplicate()}
+      >
         <BiDuplicate />
       </button>
       <button
