@@ -1,9 +1,9 @@
 {
   "addLine": {
+    "beginPosition": "Depuis",
     "distribution": "Distribution",
-    "from": "Depuis",
+    "endPosition": "Jusqu'à",
     "length": "Longueur",
-    "to": "Jusqu'à",
     "value": "Valeur"
   },
   "distribution": {

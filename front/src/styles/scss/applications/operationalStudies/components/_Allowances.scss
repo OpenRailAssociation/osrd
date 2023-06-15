@@ -1,53 +1,118 @@
 .operational-studies-allowances {
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
   gap: 0.5rem;
   position: relative;
   height: 100%;
   .allowances-container {
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
     background-color: var(--white);
     border-radius: var(--border-radius);
     padding: 0.5rem;
-  }
-  .allowances-engineering-add-line {
-    display: flex;
-    gap: 0.5rem;
-    label {
-      margin-bottom: 0 !important;
-    }
-    button.btn-success {
-      margin-top: 1.4rem;
-      height: 2rem;
-    }
-    .allowances-range-length-label {
+    .allowances-add-line {
       display: flex;
-      align-items: center;
-      height: 1.4rem;
+      flex-direction: column;
+      gap: 0.25rem;
+      label {
+        margin-bottom: 0 !important;
+      }
+      button.btn-success {
+        height: 2rem;
+      }
+      .allowances-range-length-label {
+        display: flex;
+        align-items: center;
+        height: 1.4rem;
+      }
+      .allowances-range-length {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--border-radius);
+        padding: 0 0.5rem;
+        background-color: var(--coolgray1);
+        font-weight: 500;
+        font-size: 0.9rem;
+        height: 2rem;
+      }
+      // smaller unit icon for input fields
+      input.form-control.form-control-sm {
+        padding-right: 1.5rem;
+      }
+      .form-control-container.has-right-icon .form-control-icon {
+        width: 1.5rem;
+        padding: 0;
+      }
+      // Same height for all inputs
+      .input-group-sm .form-control-container, .input-group-sm button {
+        height: 2rem;
+      }
+      .first-line, .second-line {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      .allowances-value {
+        flex-grow: 1;
+      }
     }
-    .allowances-range-length {
+    .allowances-list {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--border-radius);
-      padding: 0 0.5rem;
-      background-color: var(--coolgray1);
-      font-weight: 500;
-      font-size: 0.9rem;
-      height: 2rem;
-    }
-    // smaller unit icon for input fields
-    input.form-control.form-control-sm {
-      padding-right: 1.5rem;
-    }
-    .form-control-container.has-right-icon .form-control-icon {
-      width: 1.5rem;
-      padding: 0;
-    }
-    // Same height for all inputs
-    .input-group-sm .form-control-container, .input-group-sm button {
-      height: 2rem;
+      flex-direction: column;
+      gap: 0.25rem;
+      overflow: auto;
+      .allowance {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        background-color: var(--coolgray1);
+        border-radius: var(--border-radius);
+        padding: 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        height: 1.5rem;
+        transition: 0.2s;
+        cursor: pointer;
+        &:hover {
+          background-color: var(--coolgray3);
+        }
+        .positions {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.8rem;
+          .begin, .end {
+            text-align: right;
+            width: 4rem;
+          }
+          .end {
+            text-align: left;
+          }
+          .separator {
+            text-align: center;
+            width: 1.5rem;
+            flex-grow: 1;
+          }
+        }
+        .length {
+          text-align: right;
+          width: 5rem;
+          font-size: 0.7rem;
+          color: var(--coolgray9);
+        }
+        .distribution {
+          text-align: center;
+          width: 5rem;
+          text-transform: uppercase;
+          font-weight: bold;
+          color: var(--secondary);
+        }
+        .value {
+        }
+      }
     }
   }
   .missing-pathfinding {
