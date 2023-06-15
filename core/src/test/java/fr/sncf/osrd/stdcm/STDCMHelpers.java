@@ -43,6 +43,7 @@ public class STDCMHelpers {
                 List.of(new StandaloneTrainSchedule(
                         REALISTIC_FAST_TRAIN,
                         0,
+                        new ArrayList<>(),
                         List.of(new TrainStop(trainPath.length(), 1)),
                         List.of(),
                         null,

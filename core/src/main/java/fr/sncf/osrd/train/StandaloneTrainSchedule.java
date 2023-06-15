@@ -5,6 +5,7 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.ImmutableRangeMap;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,6 +16,8 @@ public class StandaloneTrainSchedule {
     public final double initialSpeed;
 
     public final List<TrainStop> stops;
+
+    public final ArrayList<ScheduledPoint> scheduledPoints;
 
     public final List<? extends Allowance> allowances;
 
@@ -30,6 +33,7 @@ public class StandaloneTrainSchedule {
     public StandaloneTrainSchedule(
             RollingStock rollingStock,
             double initialSpeed,
+            ArrayList<ScheduledPoint> scheduledPoints,
             List<TrainStop> stops,
             List<? extends Allowance> allowances,
             String tag,
@@ -39,6 +43,7 @@ public class StandaloneTrainSchedule {
     ) {
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
+        this.scheduledPoints = scheduledPoints;
         this.stops = stops;
         this.allowances = allowances;
         this.tag = tag;

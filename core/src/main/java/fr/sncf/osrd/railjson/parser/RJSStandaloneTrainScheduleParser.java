@@ -18,6 +18,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
+import fr.sncf.osrd.train.ScheduledPoint;
 import fr.sncf.osrd.train.TrainScheduleOptions;
 import java.util.*;
 import java.util.function.Function;
@@ -57,9 +58,22 @@ public class RJSStandaloneTrainScheduleParser {
                 allowances.add(parseAllowance(envelopeSimPath, rjsAllowance));
             }
 
+        // parse timed waypoints
+        var scheduledPoints = new ArrayList<ScheduledPoint>();
+        if (rjsTrainSchedule.scheduledPoints != null) {
+            for (var rjsSchedulePoints : rjsTrainSchedule.scheduledPoints) {
+                if (rjsSchedulePoints.position < 0)
+                    scheduledPoints.add(new ScheduledPoint(trainPath.length(), rjsSchedulePoints.time));
+                else if (rjsSchedulePoints.position > trainPath.length())
+                    throw new InvalidSchedule("invalid scheduled point: position greater that path length");
+                else
+                    scheduledPoints.add(new ScheduledPoint(rjsSchedulePoints.position, rjsSchedulePoints.time));
+            }
+        }
+
         var tag = rjsTrainSchedule.tag;
         var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
-        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tag, comfort,
+        return new StandaloneTrainSchedule(rollingStock, initialSpeed, scheduledPoints, stops, allowances, tag, comfort,
                 powerRestrictionMap, options);
     }
 
