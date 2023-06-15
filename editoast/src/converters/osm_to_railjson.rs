@@ -23,6 +23,7 @@ pub fn osm_to_railjson(
 pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send + Sync>> {
     let (nodes, edges) = osm4routing::Reader::new()
         .reject("building", "*")
+        .reject("area", "yes")
         .reject("railway", "Rangierbezirk")
         .reject("railway", "station_area")
         .reject("railway", "workshop")
@@ -38,10 +39,16 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .reject("railway", "tram")
         .reject("railway", "subway")
         .reject("railway", "miniature")
+        .reject("railway", "light_rail")
+        .reject("railway", "narrow_gauge")
         .reject("service", "yard")
         .reject("service", "siding")
         .reject("service", "spur")
+        .reject("railway", "loading_ramp")
         .reject("gauge", "600")
+        .reject("railway", "Wendeanlage")
+        .reject("roller_coaster", "*")
+        .reject("construction", "*")
         .read(osm_pbf_in.to_str().unwrap())?;
     info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
