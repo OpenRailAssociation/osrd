@@ -351,6 +351,18 @@ pub fn detector(signal: &Signal) -> Detector {
     }
 }
 
+pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
+    BufferStop {
+        id: format!("buffer-{}-{count}", node.0).into(),
+        track: edge.id.clone().into(),
+        position: if &edge.source == node {
+            0.
+        } else {
+            edge.length()
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use osm4routing::Coord;

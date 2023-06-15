@@ -104,15 +104,18 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         let branches_count = adj.branches.len();
         match (edges_count, branches_count) {
             (0, _) => error!("node {id} without edge"),
-            (1, 0) => railjson.buffer_stops.push(BufferStop {
-                id: format!("buffer-{id}").into(),
-                track: adj.edges[0].id.clone().into(),
-                position: if adj.edges[0].source == node {
-                    0.
-                } else {
-                    adj.edges[0].length()
-                },
-            }),
+            (1, 0) => railjson
+                .buffer_stops
+                .push(edge_to_buffer(&node, adj.edges[0], 0)),
+            (2, 0) => {
+                // This can happens when data is trucated (e.g. cropped to a region, or the output track is a service track)
+                railjson
+                    .buffer_stops
+                    .push(edge_to_buffer(&node, adj.edges[0], 0));
+                railjson
+                    .buffer_stops
+                    .push(edge_to_buffer(&node, adj.edges[1], 1));
+            }
             (2, 1) => railjson.track_section_links.push(TrackSectionLink {
                 id: node.0.to_string().into(),
                 src: adj.branches[0].0.clone(),
