@@ -1,8 +1,7 @@
 use crate::diesel::{QueryDsl, RunQueryDsl};
 use crate::error::Result;
-use crate::models::electrical_profile::ElectricalProfileSet;
+use crate::models::electrical_profile::{ElectricalProfileSet, LightElectricalProfileSet};
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
-use crate::tables::osrd_infra_electricalprofileset;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, block, Data, Json, Path, Query};
@@ -11,7 +10,7 @@ use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 use diesel_json::Json as DieselJson;
 use editoast_derive::EditoastError;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::collections::HashMap;
 use thiserror::Error;
 
@@ -86,15 +85,6 @@ async fn get_level_order(
     })
     .await
     .unwrap()
-}
-
-#[derive(Debug, Default, Queryable, Identifiable, Serialize, Deserialize)]
-#[diesel(table_name = osrd_infra_electricalprofileset)]
-struct LightElectricalProfileSet {
-    #[diesel(deserialize_as = i64)]
-    pub id: Option<i64>,
-    #[diesel(deserialize_as = String)]
-    pub name: Option<String>,
 }
 
 impl ElectricalProfileSet {

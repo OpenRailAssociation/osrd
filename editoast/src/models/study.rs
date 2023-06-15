@@ -57,7 +57,6 @@ pub struct Study {
     #[derivative(Default(value = "Some(String::new())"))]
     pub service_code: Option<String>,
     #[diesel(deserialize_as = NaiveDateTime)]
-    #[derivative(Default(value = "Some(Utc::now().naive_utc())"))]
     pub creation_date: Option<NaiveDateTime>,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub last_modification: NaiveDateTime,
@@ -83,7 +82,7 @@ pub struct Study {
 
 impl Identifiable for Study {
     fn get_id(&self) -> i64 {
-        self.id.expect("Id not found")
+        self.id.expect("Study id not found")
     }
 }
 
