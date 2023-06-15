@@ -111,7 +111,7 @@ class PathTests {
         val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
         trackIds
             .map { id ->  infra.getTrackSectionFromName(id)!! }
-            .flatMap { track -> infra.getDirTrackSectionChunks(track, dir) }
+            .flatMap { track -> infra.getTrackSectionChunks(track).dirIter(dir) }
             .forEach { dirChunk -> chunkList.add(dirChunk) }
         return pathOf(infra, chunkList, start, end)
     }
