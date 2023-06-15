@@ -496,6 +496,7 @@
     width: 100%;
     padding-left: 0.5rem;
     animation: fadein 1s;
+    overflow: auto;
     .invalid-feedback {
       font-size: 0.7rem;
     }
