@@ -1728,6 +1728,10 @@ export type TrainSchedule = {
   path?: number;
   initial_speed?: number;
   labels?: string[];
+  scheduled_points?: {
+    position: number;
+    time: number;
+  }[];
   allowances?: Allowance[];
   speed_limit_tags?: string;
   comfort?: Comfort;

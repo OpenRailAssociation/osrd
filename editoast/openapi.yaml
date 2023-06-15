@@ -1491,7 +1491,14 @@ paths:
                       type: string
                     conflict_type:
                       type: string
-                  required: [train_ids, train_names, start_time, end_time, conflict_type]
+                  required:
+                    [
+                      train_ids,
+                      train_names,
+                      start_time,
+                      end_time,
+                      conflict_type,
+                    ]
 
   /projects/{project_id}/studies/:
     post:
@@ -2642,7 +2649,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PathStep"
-      required: [id, owner, created, geographic, schematic, slopes, curves, steps]
+      required:
+        [id, owner, created, geographic, schematic, slopes, curves, steps]
 
     PathQuery:
       type: object
@@ -3702,6 +3710,20 @@ components:
           type: array
           items:
             type: string
+        scheduled_points:
+          type: array
+          items:
+            type: object
+            required: [position, time]
+            properties:
+              position:
+                type: number
+                format: float
+                description: Position in meters from the start of the path at which the train must be.
+              time:
+                type: number
+                format: float
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
         allowances:
           type: array
           items:

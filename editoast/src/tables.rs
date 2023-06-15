@@ -347,6 +347,7 @@ table! {
         departure_time -> Double,
         initial_speed -> Double,
         allowances -> Jsonb,
+        scheduled_points -> Jsonb,
         comfort -> Text,
         speed_limit_tags -> Nullable<Text>,
         power_restriction_ranges -> Nullable<Jsonb>,
