@@ -17,7 +17,6 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
-import './RollingStock.scss';
 
 interface Filters {
   text: string;

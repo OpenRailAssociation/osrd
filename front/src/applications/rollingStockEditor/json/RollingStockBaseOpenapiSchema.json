@@ -12,6 +12,51 @@
       "RollingStockBase": {
         "type": "object",
         "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
+          "grouping": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "series": {
+            "type": "string"
+          },
+          "subseries": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "length": {
+            "type": "number",
+            "format": "float"
+          },
+          "mass": {
+            "type": "number",
+            "format": "float"
+          },
+          "max_speed": {
+            "type": "number",
+            "format": "float"
+          },
           "startup_time": {
             "type": "number",
             "format": "float"
@@ -37,16 +82,38 @@
             "enum": ["G1", "G2", "GA", "GB", "GB1", "GC", "FR3.3", "FR3.3/GB/G2", "GLOTT"]
           },
           "rolling_resistance_A": {
-            "type": "number"
+            "type": "number",
+            "format": "float"
           },
           "rolling_resistance_B": {
-            "type": "number"
+            "type": "number",
+            "format": "float"
           },
           "rolling_resistance_C": {
-            "type": "number"
+            "type": "number",
+            "format": "float"
+          },
+          "electrical_power_startup_time": {
+            "type": "number",
+            "format": "float"
+          },
+          "raise_pantograph_time": {
+            "type": "number",
+            "format": "float"
           }
         },
         "required": [
+          "name",
+          "version",
+          "detail",
+          "family",
+          "grouping",
+          "number",
+          "reference",
+          "series",
+          "subseries",
+          "type",
+          "unit",
           "startup_time",
           "startup_acceleration",
           "comfort_acceleration",
