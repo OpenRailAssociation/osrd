@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
+import PlaywrightMap from './map-model';
 import VARIABLES from './assets/operationStudies/test_variables';
 import PlaywrightScenarioPage from './scenario-page-model';
 
@@ -111,5 +112,30 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     expect(await playwrightScenarioPage.getSpeedLimitSelector.textContent()).toMatch(
       /Voyageurs - Automoteurs - E32C/i
     );
+  });
+
+  test.only('Click on map', async () => {
+    const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
+    await playwrightScenarioPage.openTabByText('Itinéraire');
+
+    // Search and select origin
+    await playwrightMap.openMapSearch();
+    await playwrightMap.searchStation('south west');
+    await playwrightHomePage.page.getByRole('button', { name: /South_West_station/ }).click();
+    await playwrightMap.closeMapSearch();
+    await playwrightMap.clickOnMap({ x: 200, y: 170 });
+    await playwrightMap.clickOnOrigin();
+
+    // Search and select destination
+    await playwrightMap.openMapSearch();
+    await playwrightMap.searchStation('nor');
+    await playwrightHomePage.page
+      .getByRole('button', { name: /North_East_station/ })
+      .first()
+      .click();
+    await playwrightMap.closeMapSearch();
+    await playwrightMap.clickOnMap({ x: 200, y: 170 });
+    await playwrightMap.clickOnDestination();
+    await playwrightScenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
   });
 });

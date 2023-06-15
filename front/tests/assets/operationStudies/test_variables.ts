@@ -6,5 +6,6 @@ export default {
   rollingstockTestID: process.env.CI
     ? 'rollingstock-_@Test BB 7200GVLOCOMOTIVES'
     : 'rollingstock-1TGV2N2',
-  rollingStockInfo: process.env.CI ? /BB 7200GV/ : /TGV2N2US/,
+  rollingstockInfos: process.env.CI ? /BB 7200GV/ : /TGV2N2US/,
+  pathfindingDistance: process.env.CI ? '22 km' : '22 km',
 };

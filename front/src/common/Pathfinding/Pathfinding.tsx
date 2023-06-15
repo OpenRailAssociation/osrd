@@ -460,6 +460,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
       type="button"
       onClick={() => openModal(<ModalPathJSONDetail />, 'lg')}
       className="btn btn-link details"
+      data-testid="result-pathfinding-distance"
     >
       {formatKmValue(lengthFromLineCoordinates(geojson?.geographic?.coordinates))}
     </button>
