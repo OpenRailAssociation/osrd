@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
-import blueTrain from 'assets/defaultRSImages/blue_train.png';
+import blueTrain from 'assets/pictures/blue_train.svg';
 
 const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStock }> = ({
   rollingStock,

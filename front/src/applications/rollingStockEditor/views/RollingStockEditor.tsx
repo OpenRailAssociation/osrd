@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import SearchRollingStock from 'common/RollingStockSelector/SearchRollingStock';
 import { isEmpty } from 'lodash';
 import RollingStockEditorButtons from '../components/RollingStockEditorButtons';
@@ -17,7 +17,7 @@ type RollingStockEditorProps = {
 };
 
 export default function RollingStockEditor({ rollingStocks }: RollingStockEditorProps) {
-  const { t } = useTranslation('rollingStockEditor');
+  const { t } = useTranslation('rollingstock');
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
   const rollingStockID = useSelector(getRollingStockID);
   const [filteredRollingStockList, setFilteredRollingStockList] =
@@ -29,7 +29,14 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
-  const selectedRollingStock = rollingStocks.find((rs) => rs.id === openedRollingStockCardId);
+  const { data: selectedRollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
+    {
+      id: openedRollingStockCardId as number,
+    },
+    {
+      skip: !openedRollingStockCardId,
+    }
+  );
 
   const listOfRollingStocks = (
     <div className="rollingstock-editor-list pr-1">
@@ -55,13 +62,14 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
                   ref2scroll={rollingStockID === data.id ? ref2scroll : undefined}
                 />
               </div>
-              {data.id === openedRollingStockCardId && (
+              {data.id === openedRollingStockCardId && selectedRollingStock && (
                 <div className="align-self-start">
                   <RollingStockEditorButtons
+                    setOpenedRollingStockCardId={setOpenedRollingStockCardId}
                     isCondensed
-                    rollingStock={data}
+                    rollingStock={selectedRollingStock}
                     setIsEditing={setIsEditing}
-                    isRollingStockLocked={data.locked as boolean}
+                    isRollingStockLocked={selectedRollingStock.locked as boolean}
                   />
                 </div>
               )}
@@ -72,15 +80,14 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
                   ((selectedRollingStock && !isEditing && (
                     <RollingStockEditorCard
                       isEditing={isEditing}
-                      data={selectedRollingStock}
+                      rollingStock={selectedRollingStock}
                       setIsEditing={setIsEditing}
                     />
                   )) ||
                     (isEditing && (
                       <RollingStockEditorForm
                         rollingStockData={selectedRollingStock}
-                        setIsEditing={setIsEditing}
-                        setIsAdding={setIsAdding}
+                        setAddOrEditState={setIsEditing}
                       />
                     )))}
               </div>
@@ -109,13 +116,17 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
             className="btn btn-primary mb-4"
             onClick={() => {
               setIsAdding(true);
-              setIsEditing(true);
-              setOpenedRollingStockCardId(0);
+              setOpenedRollingStockCardId(undefined);
             }}
           >
             {t('addNewRollingStock')}
           </button>
         </div>
+        {isAdding && (
+          <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
+            <RollingStockEditorForm isAdding={isAdding} setAddOrEditState={setIsAdding} />
+          </div>
+        )}
         <SearchRollingStock
           rollingStocks={rollingStocks}
           rollingStockID={openedRollingStockCardId}
@@ -125,18 +136,9 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
           setIsLoading={setIsLoading}
         />
         {displayList()}
-        {isAdding && (
-          <div className="d-flex flex-column pl-0 rollingstock-editor-form-container mb-3">
-            <RollingStockEditorForm
-              isAdding={isAdding}
-              setIsEditing={setIsEditing}
-              setIsAdding={setIsAdding}
-            />
-          </div>
-        )}
       </div>
-      {!selectedRollingStock && (
-        <p className="rollingstock-editor-unselected px-5">{t('selectRollingStock')}</p>
+      {!openedRollingStockCardId && !isAdding && (
+        <p className="rollingstock-editor-unselected pt-1 px-5">{t('chooseRollingStock')}</p>
       )}
     </div>
   );

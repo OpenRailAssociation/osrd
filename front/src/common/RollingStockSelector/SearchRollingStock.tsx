@@ -139,7 +139,7 @@ const SearchRollingStock = ({
           sm
         />
       </div>
-      <div className="col-md-5 ml-2 mb-3 d-flex align-items-center">
+      <div className="col-md-5 ml-2 mb-3 d-flex align-items-center flex-wrap">
         <div className="mr-4">
           <CheckboxRadioSNCF
             onChange={toggleFilter}

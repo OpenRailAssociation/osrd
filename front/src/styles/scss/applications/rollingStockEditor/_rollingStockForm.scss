@@ -1,14 +1,20 @@
 .rollingstock-editor {
-  padding-top: 15%;
+  padding-top: 9%;
   @media screen and (min-width: 1024px) {
-    max-height: 100vh;
     padding-top: 100px;
   }
   &-list {
     height: 100%;
     overflow-y: scroll;
   }
+  &-list {
+    .rollingstock-body-container-img {
+      min-height: 2.4rem;
+    }
+  }
   &-form {
+    overflow-y: scroll;
+    max-height: 80vh;
     > .rollingstock-header {
       @media screen and (min-width: 1024px) {
         height: 3rem;
@@ -46,16 +52,30 @@
         }
       }
     }
+    .rollingstock-body {
+      height: 18rem;
+    }
+    .form-control {
+      height: auto;
+      .rs-form-buttons {
+        margin-top: 1rem;
+      }
+    }
+
     width: 100%;
     align-self: center;
-    &-text {
-      *td,
-      .formResistance {
-        @media screen and (min-width: 1024px) {
-          font-size: medium;
-          font-weight: 500;
-          height: 2rem;
-          padding: 0.5rem;
+    overflow: auto;
+
+    @media screen and (min-width: 767px) {
+      &-text {
+        *td,
+        .formResistance {
+          @media screen and (min-width: 1024px) {
+            font-size: medium;
+            font-weight: 500;
+            height: 2rem;
+            padding: 0.5rem;
+          }
         }
       }
     }
@@ -73,6 +93,10 @@
         width: 60%;
       }
     }
+  }
+  &borders {
+    border: 0.2rem solid #d7d7d7;
+    border-radius: 0.5rem;
   }
   &-buttons {
     display: flex;
@@ -123,9 +147,91 @@
         margin-left: auto;
       }
     }
+    &-content {
+      width: 94%;
+    }
+  }
+
+  &-unselected {
+    margin: 0 auto;
+    display: none;
+    @media screen and (min-width: 767px) {
+      display: block;
+    }
+  }
+
+  &-input {
+    span {
+      white-space: normal !important;
+      text-align: end;
+      line-height: 1rem;
+    }
+    @media screen and (min-width: 1024px) {
+      flex-direction: row-reverse;
+      &-label {
+        margin-right: 0.5rem;
+      }
+      .right-side {
+        margin-left: auto;
+      }
+    }
+  }
+
+  @media screen and (min-width: 1024px) {
+    .loading-gauge-label {
+      margin: 0.5rem;
+    }
   }
 }
 
-.defaultImageRSEditor {
-  min-height: 38px;
+.defaultImageRSEditor img {
+  max-height: 2rem;
+}
+
+.rollingstock-editor-spreadsheet {
+  width: 40%;
+  height: 19.3rem;
+  overflow: auto;
+  tr:not(:first-child) .Spreadsheet__header,
+  tr:first-child .Spreadsheet__header:first-child {
+    width: 2rem;
+    border: solid 1px var(--coolgray3);
+  }
+  tr:not(:first-child) .Spreadsheet__header {
+    background-color: var(--white);
+  }
+  tr:first-child .Spreadsheet__header {
+    color: var(--blue);
+    white-space: normal !important;
+  }
+}
+
+.rollingstock-editor-curves {
+  background-color: var(--white);
+  .rollingstock-body {
+    width: 60%;
+    border: none;
+    height: 20rem;
+    .curves-container {
+      div:nth-child(2) {
+        height: 100%;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1040px) {
+  .rollingstock-editor-curves {
+    flex-direction: column-reverse;
+    .rollingstock-body {
+      margin-bottom: 1rem;
+      width: 100%;
+    }
+  }
+
+  .rollingstock-editor-spreadsheet {
+    padding-right: 1rem;
+    height: 100%;
+    width: 100%;
+  }
 }
