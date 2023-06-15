@@ -3,6 +3,7 @@ from osrd_schemas.rolling_stock import ComfortType
 from osrd_schemas.train_schedule import (
     Allowances,
     PowerRestrictionRanges,
+    ScheduledPoints,
     TrainScheduleLabels,
     TrainScheduleOptions,
 )
@@ -24,6 +25,7 @@ class TrainSchedule(models.Model):
     path = models.ForeignKey(PathModel, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
     allowances = models.JSONField(default=list, validators=[PydanticValidator(Allowances)])
+    scheduled_points = models.JSONField(default=list, validators=[PydanticValidator(ScheduledPoints)])
     comfort = models.CharField(
         max_length=8, choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD
     )

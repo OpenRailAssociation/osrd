@@ -41,6 +41,7 @@ def create_backend_request_payload(train_schedules: Iterator[TrainSchedule]):
                 "rolling_stock": schedule.rolling_stock.name,
                 "initial_speed": schedule.initial_speed,
                 "allowances": schedule.allowances,
+                "scheduled_points": schedule.scheduled_points,
                 "tag": schedule.speed_limit_tags,
                 "power_restriction_ranges": schedule.power_restriction_ranges,
                 "comfort": schedule.comfort,

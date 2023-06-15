@@ -133,6 +133,24 @@ class Allowances(BaseModel):
     __root__: List[Allowance] = Field(description="List of all well-defined allowances of the path")
 
 
+# Scheduled points
+
+
+class ScheduledPoint(BaseModel):
+    """A schedule point is a point on the path where the train must be at a given time."""
+
+    position: float = Field(description="Position on a path. If negative then represents the end of the path.")
+    time: float = Field(
+        description="Time in seconds (elapsed since the train's departure) at which the train must be.", ge=0
+    )
+
+
+class ScheduledPoints(BaseModel):
+    """A list of schedule point"""
+
+    __root__: List[ScheduledPoint] = Field(description="List of schedule point")
+
+
 # Power restrictions
 """Power restrictions are used to limit the power consumption of trains on some parts of the infrastructure.
 Infrastructure managers use them to prevent power grid overloads.
