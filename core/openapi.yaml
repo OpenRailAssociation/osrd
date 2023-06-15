@@ -471,6 +471,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Allowance"
+        scheduled_points:
+          type: array
+          items:
+            type: object
+            required:
+              - position
+              - time
+            properties:
+              position:
+                type: number
+                format: double
+                description: Position in meters from the start of the path at which the train must be.
+              time:
+                type: number
+                format: double
+                description: Time in seconds (elapsed since the train's departure) at which the train must be.
         stops:
           type: array
           items:
@@ -874,13 +890,13 @@ components:
             end:
               type: number
               format: double
-              description: end offset of the track range    
+              description: end offset of the track range
     Allowance:
       oneOf:
         - $ref: "#/components/schemas/StandardAllowance"
         - $ref: "#/components/schemas/EngineeringAllowance"
       discriminator:
-        propertyName: allowance_type              
+        propertyName: allowance_type
         mapping:
           standard: "#/components/schemas/StandardAllowance"
           engineering: "#/components/schemas/EngineeringAllowance"
@@ -915,9 +931,9 @@ components:
                     type: number
                     format: double
                     description: end offset on the path
-                  value: 
+                  value:
                     $ref: "#/components/schemas/AllowanceValue"
-            value: 
+            value:
               $ref: "#/components/schemas/AllowanceValue"
     EngineeringAllowance:
       description: An allowance which represents portions of the path where the train has to slow down in order to avoid conflicts. Several can be applied by TrainSchedule, and they can overlap other allowances.
@@ -933,7 +949,7 @@ components:
               type: number
               format: double
               description: end offset on the path
-            value: 
+            value:
               $ref: "#/components/schemas/AllowanceValue"
     AllowanceValue:
       oneOf:
