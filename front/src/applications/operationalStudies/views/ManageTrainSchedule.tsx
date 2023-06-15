@@ -150,7 +150,7 @@ export default function ManageTrainSchedule() {
 
   return (
     <>
-      <div className="osrd-config-item-container mb-4">
+      <div className="osrd-config-item-container mb-3">
         <TrainSettings />
       </div>
 

@@ -1,14 +1,23 @@
 {
   "addLine": {
+    "beginPosition": "Depuis",
     "distribution": "Distribution",
-    "from": "Depuis",
+    "endPosition": "Jusqu'à",
     "length": "Longueur",
-    "to": "Jusqu'à",
     "value": "Valeur"
   },
+  "allowancesCount_one": "1 intervalle défini",
+  "allowancesCount_other": "{{ count }} intervalles définis",
+  "allowancesCount_zero": "Aucun intervalle défini",
   "distribution": {
     "linear": "Linéaire",
-    "mareco": "Mareco"
+    "LINEAR": "Linéaire",
+    "mareco": "Mareco",
+    "MARECO": "Mareco"
   },
-  "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges"
+  "engineeringAllowances": "Marges de construction",
+  "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges",
+  "standardAllowance": "Marge de régularité",
+  "standardAllowanceByIntervals": "Par intervalles",
+  "standardAllowanceWholePath": "Ensemble du parcours"
 }
