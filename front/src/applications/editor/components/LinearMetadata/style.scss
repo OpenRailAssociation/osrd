@@ -154,6 +154,17 @@ $resize-width: 3px;
               width: calc(100% - $resize-width);
               flex-grow: 1;
               background-color: $color;
+              text-align: center;
+              white-space: nowrap;
+              overflow-x:hidden;
+              span {
+                //display: inline-block;
+                font-size: 0.6em;
+                min-width: 4.8em;
+                color:#fff;
+
+              }
+
             }
 
             div.resize {
@@ -182,55 +193,106 @@ $resize-width: 3px;
         .scale {
           display: flex;
           justify-content: space-between;
-          span {
-            padding: 2px;
-            font-size: 0.6em;
-            line-height: 0.7em;
-            overflow: hidden;
-            align-self: end;
+          div {
+            span{
+              font-size: 0.6em;
+              overflow: hidden;
+              align-self: end;
+            }
           }
 
           &.scale-x {
             border-top: $scaling-height solid;
-            span {
-              &:not(:last-child) {
-                border-left: 1px solid;
-              }
-              &:last-child {
-                border-right: 1px solid;
-              }
-            }
 
-            &.xAxis {
+            .axis-values {
               display: flex;
               justify-content: space-between;
               align-items: center;
               width: 100%;
-              height: 40px;
-              background-color: #f0f0f0;
-              padding: 10px;
-              border-top: 1px solid #000;
-              span {
+              div {
                 position: relative;
                 top: 0;
-                width: 1px;
-                height: 10px;
-                background-color: #000;
+                width: 100%;
                 text-align: center;
+
+                span.bottom-axis-value {
+                  position: absolute;
+                  font-weight: bold;
+                  top: .7em;
+                  left:0%;
+                  transform: translateX(-45%);
+                  width:100%;
+                }
+
+                span.top-axis-value {
+                  position: absolute;
+                  font-weight: bold;
+                  top: .7em;
+                  right:0%;
+                  transform: translateX(45%);
+                  width:100%;
+                }
+
+                &:before{
+                  content: "";
+                  position: absolute;
+                  top: -.2em;
+                  width: 1px;
+                  left: 50%; /* Center the tick horizontally */
+                  transform: translateX(-50%); /* Adjust for exact centering */
+                  height: 0.4em;
+                  background-color: black;
+                }
               }
-            } 
+            }
+
           }
           &.scale-y {
             flex-direction: column-reverse;
             margin-left: -$scaling-y-width;
             width: $scaling-y-width;
-            span {
-              text-align: right;
-              &:not(:last-child) {
-                border-bottom: 1px solid;
-              }
-              &:last-child {
-                border-top: 1px solid;
+            .axis-values {
+              display: flex;
+              flex-direction: column-reverse;
+              justify-content: space-between;
+              align-items: center;
+              width: 100%;
+              height: 100%;
+              div {
+                position: relative;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                text-align: center;
+
+                span.bottom-axis-value {
+                  position: absolute;
+                  font-weight: bold;
+                  right: 50%;
+                  bottom:-0.8em;
+                  transform: translateX(50%);
+                }
+
+                span.top-axis-value {
+                  position: absolute;
+                  font-weight: bold;
+                  right: 50%;
+                  top:-0.8em;
+                  transform: translateX(50%);
+                }
+
+                &:before{
+                  content: "";
+                  position: absolute;
+                  right: 0em;
+                  width: 0.3em;
+                  top: 50%; /* Center the tick horizontally */
+                  transform: translateY(-50%); /* Adjust for exact centering */
+                  height: 0.01em;
+                  background-color: black;
+                }
+
+
               }
             }
           }
