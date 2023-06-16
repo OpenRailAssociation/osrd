@@ -69,7 +69,7 @@ pub fn routes() -> impl HttpServiceFactory {
 }
 
 /// Return a specific timetable with its associated schedules
-#[get("")]
+#[get("{id}")]
 async fn get(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<Json<TrainSchedule>> {
     let train_schedule_id = train_schedule_id.into_inner();
 
@@ -390,18 +390,26 @@ fn process_simulation_response(
     response_payload: SimulationResponse,
 ) -> Vec<SimulationOutputChangeset> {
     let mut simulation_outputs = Vec::new();
-    for (base_simulation, eco_simulation, speed_limits, electrification_conditions) in izip!(
+    for (
+        base_simulation,
+        eco_simulation,
+        speed_limits,
+        electrification_ranges,
+        power_restriction_ranges,
+    ) in izip!(
         response_payload.base_simulations,
         response_payload.eco_simulations,
         response_payload.speed_limits,
-        response_payload.electrification_conditions
+        response_payload.electrification_ranges,
+        response_payload.power_restriction_ranges
     ) {
         let simulation_output = SimulationOutputChangeset {
             id: None,
             mrsp: Some(speed_limits),
             base_simulation: Some(DieselJson(base_simulation)),
             eco_simulation: Some(Some(DieselJson(eco_simulation))),
-            electrification_conditions: Some(electrification_conditions),
+            electrification_ranges: Some(electrification_ranges),
+            power_restriction_ranges: Some(power_restriction_ranges),
             train_schedule_id: None, // To be filled once the train schedule is inserted
         };
         simulation_outputs.push(simulation_output);

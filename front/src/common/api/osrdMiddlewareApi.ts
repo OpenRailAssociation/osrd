@@ -994,39 +994,60 @@ export type TrainScheduleResultData = {
   }[];
   mechanical_energy_consumed?: number;
 };
+export type Electrified = {
+  mode: string;
+  mode_handled: boolean;
+  profile?: string | null;
+  profile_handled: boolean;
+};
+export type Neutral = {
+  is_lower_pantograph: boolean;
+};
+export type NonElectrified = object;
+export type ElectrificationRange = {
+  start: number;
+  stop: number;
+  electrification?:
+    | ({
+        object_type: 'Electrified';
+      } & Electrified)
+    | ({
+        object_type: 'Neutral';
+      } & Neutral)
+    | ({
+        object_type: 'NonElectrified';
+      } & NonElectrified);
+};
 export type TrainScheduleResult = {
-  id?: number;
-  name?: string;
-  labels?: string[];
-  path?: number;
-  vmax?: {
+  id: number;
+  name: string;
+  labels: string[];
+  path: number;
+  vmax: {
     position?: number;
     speed?: number;
   }[];
-  slopes?: {
+  slopes: {
     position?: number;
     gradient?: number;
   }[];
-  curves?: {
+  curves: {
     position?: number;
     radius?: number;
   }[];
-  base?: TrainScheduleResultData;
+  base: TrainScheduleResultData;
   eco?:
     | TrainScheduleResultData
     | {
         error?: string;
       };
-  electrification_conditions?: {
-    start?: number;
-    stop?: number;
-    mode_used?: string;
-    profile_used?: string | null;
-    restriction_used?: string | null;
-    mode_seen?: string | null;
-    profile_seen?: string | null;
-    restriction_seen?: string | null;
-  }[][];
+  electrification_ranges: ElectrificationRange[];
+  power_restriction_ranges: {
+    start: number;
+    stop: number;
+    code: string;
+    handled: boolean;
+  }[];
 };
 export type StdcmRequest = {
   infra?: number;
