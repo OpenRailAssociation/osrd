@@ -77,6 +77,20 @@ public class RJSStandaloneTrainSchedule implements Identified {
         this(id, rollingStock, initialSpeed, allowances, stops, tag, RJSComfortType.STANDARD, null, null);
     }
 
+    public RJSStandaloneTrainSchedule(
+            String id,
+            String rollingStock,
+            double initialSpeed,
+            RJSSchedulePoint[] scheduledPoints,
+            RJSTrainStop[] stops
+    ) {
+        this.id = id;
+        this.rollingStock = rollingStock;
+        this.initialSpeed = initialSpeed;
+        this.scheduledPoints = scheduledPoints;
+        this.stops = stops;
+    }
+
     @Override
     public String getID() {
         return id;

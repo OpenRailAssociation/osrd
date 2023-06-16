@@ -290,6 +290,48 @@ public class StandaloneSimulationTest extends ApiTest {
     }
 
     @Test
+    public void withScheduledPoints() throws Exception {
+        // load the example infrastructure and build a test path
+        final var rjsTrainPath = tinyInfraTrainPath();
+
+        // build the simulation request
+        var stops = new RJSTrainStop[]{
+                new RJSTrainStop(2000., 100),
+                RJSTrainStop.lastStop(0.1)
+        };
+        var scheduledPoints = new RJSSchedulePoint[] {
+            new RJSSchedulePoint(8000., 520.),
+            new RJSSchedulePoint(-1., 800.)
+        };
+        var trains = new ArrayList<RJSStandaloneTrainSchedule>();
+        trains.add(new RJSStandaloneTrainSchedule("control_train", "fast_rolling_stock",
+                0, null, stops, null));
+        trains.add(new RJSStandaloneTrainSchedule("tested_train", "fast_rolling_stock",
+                0, scheduledPoints, stops));
+
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                "1",
+                2,
+                getExampleRollingStocks(),
+                trains,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+
+        var controlTrain = simResult.baseSimulations.get(0);
+        assertNull(simResult.ecoSimulations.get(0));
+        var controlTime =
+                controlTrain.headPositions.get(controlTrain.headPositions.size() - 1).time;
+        var testedTrain = simResult.ecoSimulations.get(1);
+        var testedTime = testedTrain.headPositions.get(testedTrain.headPositions.size() - 1).time;
+        assertTrue(testedTime > controlTime);
+        assertEquals(800., testedTime, 1.0);
+    }
+
+    @Test
     public void engineeringAllowance() throws Exception {
         // load the example infrastructure and build a test path
         final var rjsTrainPath = tinyInfraTrainPath();
