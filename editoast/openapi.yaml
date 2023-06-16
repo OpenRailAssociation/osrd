@@ -1449,25 +1449,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: number
-                  name:
-                    type: string
-                  train_schedules:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        train_name:
-                          type: string
-                        departure_time:
-                          type: number
-                        train_path:
-                          type: number
+                $ref: "#/components/schemas/TimetableWithSchedulesDetails"
 
   /timetable/{id}/conflicts/:
     get:
@@ -3733,6 +3715,77 @@ components:
           items:
             $ref: "#/components/schemas/PowerRestrictionRange"
           nullable: true
+    TimetableWithSchedulesDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        train_schedule_summaries:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrainScheduleSummary"
+      required:
+        - id
+        - name
+        - detailed_train_schedules
+    TrainScheduleSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        train_name:
+          type: string
+        timetable_id:
+          type: integer
+        rolling_stock_id:
+          type: integer
+        departure_time:
+          type: number
+          format: float
+        path_id:
+          type: integer
+        initial_speed:
+          type: number
+          format: float
+        labels:
+          type: array
+          items:
+            type: string
+        allowances:
+          type: array
+          items:
+            $ref: "#/components/schemas/Allowance"
+        speed_limit_tags:
+          description: Train category for speed limits
+          type: string
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        options:
+          allOf:
+            - $ref: "#/components/schemas/TrainScheduleOptions"
+          nullable: true
+        power_restriction_ranges:
+          description: A list of ranges along the train path where power restrictions apply.
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRange"
+          nullable: true
+        arrival_time:
+          type: number
+        mechanical_energy_consumed:
+          type: object
+          properties:
+            base:
+              type: number
+            eco:
+              type: number
+        stops_count:
+          type: integer
+        path_length:
+          type: integer
+
     TrainScheduleOptions:
       description: Options for the standalone simulation
       type: object
@@ -3777,7 +3830,7 @@ components:
       required:
         - rolling_stock_id
         - usage
-    
+
     PowerRestrictionRange:
       description: A range along the train path where a power restriction is applied.
       type: object
