@@ -45,8 +45,5 @@
   "studiesCount_one": "1 étude",
   "studiesCount_other": "{{count}} études",
   "studiesCount_zero": "Aucune étude",
-  "scenariosCount_zero": "Aucun scénario",
-  "scenariosCount_one": "1 scénario",
-  "scenariosCount_other": "{{count}} scénarios",
   "totalBudget": "Budget total"
 }
