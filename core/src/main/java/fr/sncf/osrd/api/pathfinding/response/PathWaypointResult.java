@@ -31,7 +31,7 @@ public class PathWaypointResult {
     /**
      * Constructor
      */
-    private PathWaypointResult(
+    public PathWaypointResult(
             PathWaypointLocation location,
             double pathOffset,
             boolean suggestion,

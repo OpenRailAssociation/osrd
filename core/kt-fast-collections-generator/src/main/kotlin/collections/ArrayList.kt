@@ -31,6 +31,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
             import ${type.qualifiedName}
 
             /** GENERATED CODE */
+            @Suppress("INAPPLICABLE_JVM_NAME")
             class Mutable${simpleName}ArrayList${paramsDecl} private constructor(
                 private var usedElements: Int,
                 private var buffer: ${bufferType},
@@ -80,6 +81,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 }
 
                 /** GENERATED CODE */
+                @JvmName("add")
                 override fun add(element: $type): Boolean {
                     ensureBufferSpace(1)
                     buffer[usedElements++] = element

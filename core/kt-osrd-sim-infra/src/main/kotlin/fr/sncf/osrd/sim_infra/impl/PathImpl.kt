@@ -8,11 +8,14 @@ import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
+import java.lang.RuntimeException
 
 data class PathImpl(
     val infra: TrackProperties,
     val chunks: DirStaticIdxList<TrackChunk>,
+    @get:JvmName("getBeginOffset")
     val beginOffset: Distance,
+    @get:JvmName("getEndOffset")
     val endOffset: Distance,
 ) : Path {
     override fun getSlopes(): DistanceRangeMap<Double> {
@@ -44,6 +47,25 @@ data class PathImpl(
 
     override fun getCatenary(): DistanceRangeMap<String> {
         return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkCatenaryVoltage(chunkId) }
+    }
+
+    override fun getLength(): Distance {
+        return endOffset - beginOffset
+    }
+
+    override fun getTrackLocationAtOffset(pathOffset: Distance): TrackLocation {
+        val offset = pathOffset + beginOffset
+        var lengthPrevChunks = 0.meters
+        for (chunk in chunks) {
+            val chunkLength = infra.getTrackChunkLength(chunk.value)
+            if (lengthPrevChunks + chunkLength > offset) {
+                val trackId = infra.getTrackFromChunk(chunk.value)
+                val startChunkOffset = infra.getTrackChunkOffset(chunk.value)
+                return TrackLocation(trackId, offset - lengthPrevChunks + startChunkOffset)
+            }
+            lengthPrevChunks += chunkLength
+        }
+        throw RuntimeException("The given path offset is larger than the path length")
     }
 
     private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {

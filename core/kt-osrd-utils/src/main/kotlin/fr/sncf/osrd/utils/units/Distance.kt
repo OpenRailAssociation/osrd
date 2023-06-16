@@ -26,7 +26,12 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     companion object {
         @JvmStatic
         val ZERO = Distance(millimeters = 0L)
+        @JvmStatic
+        @JvmName("fromMeters")
         fun fromMeters(meters: Double) = Distance(millimeters = (meters * 1_000.0).toLong())
+        @JvmStatic
+        @JvmName("toMeters")
+        fun toMeters(distance: Distance) = distance.meters
     }
 
     override fun compareTo(other: Distance): Int {

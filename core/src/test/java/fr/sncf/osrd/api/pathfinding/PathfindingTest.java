@@ -470,7 +470,7 @@ public class PathfindingTest extends ApiTest {
                     loc.offset() / 2,
                     loc.offset() + (loc.edge().getInfraRoute().getLength() - loc.offset()) / 2
             );
-            var waypoints = PathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()), 0.);
+            var waypoints = LegacyPathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()), 0.);
             var userDefinedWaypoints = waypoints.stream()
                     .filter(wp -> !wp.suggestion)
                     .toList();

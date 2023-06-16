@@ -32,6 +32,7 @@ fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
 }
 
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface ReservationInfra : LocationInfra {
     val zonePaths: StaticIdxSpace<ZonePath>
     fun findZonePath(entry: DirDetectorId, exit: DirDetectorId,
@@ -39,6 +40,7 @@ interface ReservationInfra : LocationInfra {
                      trackNodeConfigs: StaticIdxList<TrackNodeConfig>): ZonePathId?
     fun getZonePathEntry(zonePath: ZonePathId): DirDetectorId
     fun getZonePathExit(zonePath: ZonePathId): DirDetectorId
+    @JvmName("getZonePathLength")
     fun getZonePathLength(zonePath: ZonePathId): Distance
     /** The movable elements in the order encountered when traversing the zone from entry to exit */
     fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode>
@@ -47,6 +49,7 @@ interface ReservationInfra : LocationInfra {
     /** The distances from the beginning of the zone path to its switches, in encounter order */
     fun getZonePathMovableElementsDistances(zonePath: ZonePathId): DistanceList
     /** Returns the list of track chunks on the zone path */
+    @JvmName("getZonePathChunks")
     fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>
 }
 
@@ -60,15 +63,21 @@ sealed interface Route
 typealias RouteId = StaticIdx<Route>
 
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface RoutingInfra : ReservationInfra {
+    @get:JvmName("getRoutes")
     val routes: StaticIdxSpace<Route>
+    @JvmName("getRoutePath")
     fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
+    @JvmName("getRouteName")
     fun getRouteName(route: RouteId): String?
 
     /** Returns a list of indices of zones in the train path at which the reservations shall be released. */
     fun getRouteReleaseZones(route: RouteId): IntArray
+    @JvmName("getChunksOnRoute")
     fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
-    fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxCollection<Route>
+    @JvmName("getRoutesOnTrackChunk")
+    fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route>
 }
 
 fun ReservationInfra.findZonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePathId? {

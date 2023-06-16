@@ -75,7 +75,7 @@ public class PathfindingRoutesEndpoint implements Take {
 
             var path = runPathfinding(infra, reqWaypoints, rollingStocks);
 
-            var res = PathfindingResultConverter.convert(path, infra, recorder);
+            var res = LegacyPathfindingResultConverter.convert(path, infra, recorder);
 
             validate(infra, res, reqWaypoints);
 
