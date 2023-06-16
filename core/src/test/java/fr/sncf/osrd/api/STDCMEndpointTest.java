@@ -45,7 +45,7 @@ public class STDCMEndpointTest extends ApiTest {
         ));
 
         var result = readBodyResponse(
-                new STDCMEndpoint(infraHandlerMock).act(
+                new STDCMEndpoint(infraManager).act(
                         new RqFake("POST", "/stdcm", requestBody))
         );
         var response = STDCMResponse.adapter.fromJson(result);

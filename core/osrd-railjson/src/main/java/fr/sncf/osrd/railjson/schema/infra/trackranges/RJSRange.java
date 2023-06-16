@@ -1,9 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
-import java.util.Comparator;
-import java.util.List;
+import java.util.Objects;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRange {
@@ -14,5 +12,17 @@ public class RJSRange {
     public RJSRange(double begin, double end) {
         this.begin = begin;
         this.end = end;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RJSRange rjsRange)) return false;
+        return Double.compare(rjsRange.begin, begin) == 0 && Double.compare(rjsRange.end, end) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(begin, end);
     }
 }

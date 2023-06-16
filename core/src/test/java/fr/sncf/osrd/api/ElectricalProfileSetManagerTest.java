@@ -15,7 +15,8 @@ import java.nio.file.StandardCopyOption;
 public class ElectricalProfileSetManagerTest extends ApiTest {
     @Test
     public void testGetProfileMap() {
-        var profileMap = electricalProfileSetManagerMock.getProfileMap("small_infra/external_generated_inputs.json");
+        var profileMap =
+                electricalProfileSetManager.getProfileMap("small_infra/external_generated_inputs.json");
 
         assert profileMap != null;
         verifyProfileMap(profileMap);
@@ -24,14 +25,14 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
     @Test
     public void testSoftError() {
         var error = assertThrows(OSRDError.class,
-                () -> electricalProfileSetManagerMock.getProfileMap("small_infra/invalid.json"));
+                () -> electricalProfileSetManager.getProfileMap("small_infra/invalid.json"));
         assert error.osrdErrorType == ErrorType.EPSetSoftLoadingError;
     }
 
     @Test
     public void testHardError() {
         var error = assertThrows(OSRDError.class,
-                () -> electricalProfileSetManagerMock.getProfileMap("small_infra/infra.json"));
+                () -> electricalProfileSetManager.getProfileMap("small_infra/infra.json"));
         assert error.osrdErrorType == ErrorType.EPSetHardLoadingError;
     }
 
@@ -41,13 +42,13 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
         var newPath = path.resolveSibling("external_generated_inputs.json.tmp");
         var testID = "small_infra/external_generated_inputs.json.tmp";
 
-        var error = assertThrows(OSRDError.class, () -> electricalProfileSetManagerMock.getProfileMap(testID));
+        var error = assertThrows(OSRDError.class, () -> electricalProfileSetManager.getProfileMap(testID));
         assert error.osrdErrorType == ErrorType.EPSetSoftLoadingError;
-        assert electricalProfileSetManagerMock.cache.get(testID).status
+        assert electricalProfileSetManager.cache.get(testID).status
                 == ElectricalProfileSetManager.CacheStatus.TRANSIENT_ERROR;
 
         Files.copy(path, newPath, StandardCopyOption.REPLACE_EXISTING).toFile().deleteOnExit();
-        var profileMap = electricalProfileSetManagerMock.getProfileMap(testID);
+        var profileMap = electricalProfileSetManager.getProfileMap(testID);
         assert profileMap != null;
     }
 }

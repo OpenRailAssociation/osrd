@@ -18,7 +18,7 @@ public class InfraLoadingTest extends ApiTest {
         var request = isRequestNull ? null
                 : new InfraLoadEndpoint.InfraLoadRequest("tiny_infra/infra.json", "1");
         var requestBody = InfraLoadEndpoint.adapterRequest.toJson(request);
-        var list = readHeadResponse(new InfraLoadEndpoint(infraHandlerMock)
+        var list = readHeadResponse(new InfraLoadEndpoint(infraManager)
                 .act(new RqFake("POST", "/infra_load", requestBody))
         );
         assertTrue(list.get(0).contains(expectedStatusCode));

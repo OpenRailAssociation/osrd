@@ -1,31 +1,38 @@
 package fr.sncf.osrd.api.pathfinding;
 
+import static fr.sncf.osrd.Helpers.fullInfraFromRJS;
 import static fr.sncf.osrd.Helpers.getResourcePath;
-import static fr.sncf.osrd.Helpers.infraFromRJS;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
+import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
+import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
 import static fr.sncf.osrd.utils.takes.TakesUtils.readBodyResponse;
 import static fr.sncf.osrd.utils.takes.TakesUtils.readHeadResponse;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import com.google.common.collect.Range;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.ApiTest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult;
+import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult;
 import fr.sncf.osrd.cli.StandaloneSimulationCommand;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
-import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
+import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
@@ -34,14 +41,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.takes.Response;
 import org.takes.rq.RqFake;
 import java.io.IOException;
-import java.util.*;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
 public class PathfindingTest extends ApiTest {
+
+    private static final String SIGNALING_TYPE = "BAL3";
+
     private static PathfindingWaypoint[] makeBidirectionalEndPoint(PathfindingWaypoint point) {
         var waypointInverted = new PathfindingWaypoint(
                 point.trackSection,
@@ -70,16 +88,8 @@ public class PathfindingTest extends ApiTest {
 
     @Test
     public void simpleRoutes() throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "ne.micro.foo_b",
-                50,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "ne.micro.bar_a",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
+        var waypointStart = new PathfindingWaypoint("ne.micro.foo_b", 50, START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("ne.micro.bar_a", 100, START_TO_STOP);
         var waypointsStart = makeBidirectionalEndPoint(waypointStart);
         var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
         var waypoints = new PathfindingWaypoint[2][];
@@ -89,48 +99,41 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
         var response = PathfindingResult.adapterResult.fromJson(result);
+
         assert response != null;
-
-        assertEquals(2, response.routePaths.size());
-        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route);
-        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route);
-
-        assertEquals(10250.0, response.length, 0.001);
-
-        assertEquals(3, response.pathWaypoints.size());
-        assertNull(response.pathWaypoints.get(0).id);
-        assertFalse(response.pathWaypoints.get(0).suggestion);
-        assertEquals(0.0, response.pathWaypoints.get(0).pathOffset, 0.001);
-        assertEquals("op.station_foo", response.pathWaypoints.get(1).id);
-        assertEquals(50.0, response.pathWaypoints.get(1).pathOffset, 0.001);
-        assertTrue(response.pathWaypoints.get(1).suggestion);
-        assertEquals("op.station_bar", response.pathWaypoints.get(2).id);
-        assertEquals(10250.0, response.pathWaypoints.get(2).pathOffset, 0.001);
-        assertFalse(response.pathWaypoints.get(2).suggestion);
+        assertThat(response.length).isEqualTo(10250.);
+        var expectedRoutePaths = List.of(
+                new RJSRoutePath("rt.buffer_stop_b->tde.foo_b-switch_foo",
+                        List.of(new RJSDirectionalTrackRange("ne.micro.foo_b", 50, 175, START_TO_STOP)),
+                        SIGNALING_TYPE),
+                new RJSRoutePath("rt.tde.foo_b-switch_foo->buffer_stop_c",
+                        List.of(new RJSDirectionalTrackRange("ne.micro.foo_b", 175, 200, START_TO_STOP),
+                                new RJSDirectionalTrackRange("ne.micro.foo_to_bar", 0, 10000, START_TO_STOP),
+                                new RJSDirectionalTrackRange("ne.micro.bar_a", 0, 100, START_TO_STOP)),
+                        SIGNALING_TYPE)
+        );
+        assertThat(response.routePaths).isEqualTo(expectedRoutePaths);
+        var expectedPathWaypoints = List.of(
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.foo_b", 50.0),
+                        0.0, false, null),
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.foo_b", 100.0),
+                        50.0, true, "op.station_foo"),
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 100.0),
+                        10250.0, false, "op.station_bar")
+        );
+        assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints);
     }
 
     @Test
     public void testMiddleStop() throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "ne.micro.foo_b",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointMid = new PathfindingWaypoint(
-                "ne.micro.foo_to_bar",
-                5000,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "ne.micro.bar_a",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
+        var waypointStart = new PathfindingWaypoint("ne.micro.foo_b", 100, START_TO_STOP);
+        var waypointMid = new PathfindingWaypoint("ne.micro.foo_to_bar", 5000, START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("ne.micro.bar_a", 100, START_TO_STOP);
         var waypoints = new PathfindingWaypoint[3][];
         waypoints[0] = makeBidirectionalEndPoint(waypointStart);
         waypoints[1] = makeBidirectionalEndPoint(waypointMid);
@@ -138,86 +141,88 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingRequest.adapter.toJson(
                 new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
 
-        var result = readBodyResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
+        var result = readBodyResponse(new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody)));
 
         var response = PathfindingResult.adapterResult.fromJson(result);
-        assert response != null;
 
-        assertEquals(2, response.routePaths.size());
-        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route);
-        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route);
+        assert response != null;
+        assertThat(response.length).isEqualTo(10200.);
+        var expectedRoutePaths = List.of(
+                new RJSRoutePath("rt.buffer_stop_b->tde.foo_b-switch_foo",
+                        List.of(new RJSDirectionalTrackRange("ne.micro.foo_b", 100, 175, START_TO_STOP)),
+                        SIGNALING_TYPE),
+                new RJSRoutePath("rt.tde.foo_b-switch_foo->buffer_stop_c",
+                        List.of(new RJSDirectionalTrackRange("ne.micro.foo_b", 175, 200, START_TO_STOP),
+                                new RJSDirectionalTrackRange("ne.micro.foo_to_bar", 0, 10000, START_TO_STOP),
+                                new RJSDirectionalTrackRange("ne.micro.bar_a", 0, 100, START_TO_STOP)),
+                        SIGNALING_TYPE)
+        );
+        assertThat(response.routePaths).isEqualTo(expectedRoutePaths);
+        var expectedPathWaypoints = List.of(
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.foo_b", 100.0),
+                        0.0, false, "op.station_foo"),
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.foo_to_bar", 5000.0),
+                        5100.0, false, null),
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 100.0),
+                        10200, false, "op.station_bar")
+        );
+        assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints);
     }
 
     @Test
     @DisplayName("If no path exists, throws a generic error message")
     public void noPathTest() throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "ne.micro.foo_b",
-                12,
-                EdgeDirection.STOP_TO_START
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "ne.micro.foo_b",
-                13,
-                EdgeDirection.STOP_TO_START
-        );
+        var waypointStart = new PathfindingWaypoint("ne.micro.foo_b", 12, STOP_TO_START);
+        var waypointEnd = new PathfindingWaypoint("ne.micro.foo_b", 13, STOP_TO_START);
         var waypoints = new PathfindingWaypoint[2][1];
         waypoints[0][0] = waypointStart;
         waypoints[1][0] = waypointEnd;
         var requestBody = PathfindingRequest.adapter.toJson(
                 new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
 
-        var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
+        var res = readHeadResponse(new PathfindingBlocksEndpoint(infraManager).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
-        assertTrue(res.get(0).contains("400"));
+        assertThat(res.get(0)).contains("400");
 
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
-
-        var exception = assertThrows(
-                OSRDError.class,
-                () -> PathfindingRoutesEndpoint.runPathfinding(
-                        infra,
-                        waypoints,
-                        List.of(TestTrains.REALISTIC_FAST_TRAIN)
-                )
-        );
-        assertEquals(exception.osrdErrorType, ErrorType.PathfindingGenericError);
+        var infra = Helpers.getTinyInfra();
+        assertThatThrownBy(() -> PathfindingBlocksEndpoint.runPathfinding(infra, waypoints, List.of()))
+                .isExactlyInstanceOf(OSRDError.class)
+                .satisfies(exception -> {
+                    assertThat(((OSRDError) exception).osrdErrorType).isEqualTo(ErrorType.PathfindingGenericError);
+                    assertThat(((OSRDError) exception).context).isEqualTo(new HashMap<>());
+                });
     }
 
     @Test
     public void missingTrackTest() throws IOException {
-        var waypoint = new PathfindingWaypoint(
-                "this_track_does_not_exist",
-                0,
-                EdgeDirection.STOP_TO_START
-        );
+        var waypoint = new PathfindingWaypoint("this_track_does_not_exist", 0, STOP_TO_START);
         var waypoints = new PathfindingWaypoint[2][1];
         waypoints[0][0] = waypoint;
         waypoints[1][0] = waypoint;
 
         var requestBody = PathfindingRequest.adapter.toJson(
                 new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
-        var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
-                new RqFake("POST", "/pathfinding/routes", requestBody)
-        ));
+        Response response = new PathfindingBlocksEndpoint(infraManager).act(
+                new RqFake("POST", "/pathfinding/routes", requestBody));
+        var res = readHeadResponse(response);
+        assertThat(res.get(0)).contains("400");
 
-        assertTrue(res.get(0).contains("400"));
+        var infra = Helpers.getTinyInfra();
+        assertThatThrownBy(() -> PathfindingBlocksEndpoint.runPathfinding(infra, waypoints, List.of()))
+                .isExactlyInstanceOf(OSRDError.class)
+                .satisfies(exception -> {
+                    assertThat(((OSRDError) exception).osrdErrorType).isEqualTo(ErrorType.UnknownTrackSection);
+                    assertThat(((OSRDError) exception).context)
+                            .isEqualTo(Map.of("track_section_id", "this_track_does_not_exist"));
+                });
     }
 
     @Test
     public void incompatibleLoadingGaugeTest() throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "ne.micro.foo_b",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "ne.micro.bar_a",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
+        var waypointStart = new PathfindingWaypoint("ne.micro.foo_b", 100, START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("ne.micro.bar_a", 100, START_TO_STOP);
         var waypoints = new PathfindingWaypoint[2][1];
         waypoints[0][0] = waypointStart;
         waypoints[1][0] = waypointEnd;
@@ -227,129 +232,109 @@ public class PathfindingTest extends ApiTest {
                 track.loadingGaugeLimits = List.of(
                         new RJSLoadingGaugeLimit(1000, 2000, RJSLoadingGaugeType.G1)
                 );
-        var wr = new DiagnosticRecorderImpl(true);
-        var infra = SignalingInfraBuilder.fromRJSInfra(
-                rjsInfra,
-                Set.of(new BAL3(wr)),
-                wr
-        );
+        var infra = fullInfraFromRJS(rjsInfra);
+
         // Check that we can go through the infra with a small train
-        assertNotNull(
-                PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN))
-        );
+        assertThat(PathfindingBlocksEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN)))
+                .isNotNull();
 
         // Check that we can't go through the infra with a large train
-        var exception = assertThrows(
-                OSRDError.class,
-                () -> PathfindingRoutesEndpoint.runPathfinding(
-                        infra,
-                        waypoints,
-                        List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)
-                )
-        );
-
-        assertEquals(exception.osrdErrorType, ErrorType.PathfindingGaugeError);
+        assertThatThrownBy(() -> PathfindingBlocksEndpoint.runPathfinding(
+                infra,
+                waypoints,
+                List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)
+        ))
+                .isExactlyInstanceOf(OSRDError.class)
+                .satisfies(exception -> {
+                    assertThat(((OSRDError) exception).osrdErrorType).isEqualTo(ErrorType.PathfindingGaugeError);
+                    assertThat(((OSRDError) exception).context).isEqualTo(Map.of());
+                });
 
         // Check that we can go until right before the blocked section with a large train
-        waypoints[1][0] = new PathfindingWaypoint(
-                "ne.micro.foo_to_bar",
-                999,
-                EdgeDirection.START_TO_STOP
-        );
-        assertNotNull(
-                PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE))
-        );
+        waypoints[1][0] = new PathfindingWaypoint("ne.micro.foo_to_bar", 999, START_TO_STOP);
+        assertThat(PathfindingBlocksEndpoint.runPathfinding(infra, waypoints,
+                List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)))
+                .isNotNull();
     }
 
     @Test
-    public void incompatibleCatenariesTest() throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "TA1",
-                1550,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "TH0",
-                103,
-                EdgeDirection.START_TO_STOP
-        );
+    public void differentPathsDueToElectrificationConstraints() throws Exception {
+        var waypointStart = new PathfindingWaypoint("TA1", 1550, START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("TH0", 103, START_TO_STOP);
         var waypoints = new PathfindingWaypoint[2][1];
         waypoints[0][0] = waypointStart;
         waypoints[1][0] = waypointEnd;
-        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
 
         // Run a pathfinding with a non-electric train
-        var normalPath = PathfindingRoutesEndpoint.runPathfinding(
+        var infra = Helpers.fullInfraFromRJS(rjsInfra);
+        var normalPath = PathfindingBlocksEndpoint.runPathfinding(
                 infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN)
         );
 
-        // Put catenary everywhere
-        assert TestTrains.FAST_ELECTRIC_TRAIN.getModeNames().contains("25000");
-        for (var track : infra.getTrackGraph().edges()) {
-            if (track instanceof TrackSection)
-                track.getVoltages().put(
-                        Range.closed(0., track.getLength()),
-                        "25000"
-                );
-        }
-
-        // Removes catenary in the middle of the path
-        var middleRoute = normalPath.ranges().get(normalPath.ranges().size() / 2);
-        var trackRanges = middleRoute.edge().getInfraRoute().getTrackRanges();
-        var trackSections = trackRanges.stream()
-                .map((edge) -> edge.track.getEdge())
-                .filter((edge) -> edge instanceof TrackSection)
-                .toList();
-        var middleTrack = trackSections.get(trackSections.size() / 2);
-        middleTrack.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
+        // Replace with custom catenaries
+        // Set voltage to 25000 everywhere except for trackSectionToBlock
+        var trackSectionToBlock = normalPath.ranges().stream()
+                .map(Pathfinding.EdgeRange::edge)
+                .flatMap(block -> toIntList(infra.blockInfra().getTrackChunksFromBlock(block)).stream()
+                        .map(dirChunk -> infra.rawInfra().getTrackSectionName(
+                                infra.rawInfra().getTrackFromChunk(toValue(dirChunk)))))
+                .filter(trackName -> trackName.startsWith("TD"))
+                .findFirst().get();
+        var voltageTrackRanges = rjsInfra.trackSections.stream()
+                .filter(rjsTrackSection -> !Objects.equals(rjsTrackSection.id, trackSectionToBlock))
+                .map(rjsTrackSection -> new RJSApplicableDirectionsTrackRange(rjsTrackSection.id,
+                        ApplicableDirection.BOTH, 0, rjsTrackSection.length))
+                .collect(Collectors.toList());
+        var voltageCatenary = new RJSCatenary("25000", voltageTrackRanges);
+        var noVoltageCatenary = new RJSCatenary("",
+                List.of(new RJSApplicableDirectionsTrackRange(trackSectionToBlock, ApplicableDirection.BOTH, 0,
+                        rjsInfra.trackSections.stream()
+                                .filter(rjsTrackSection -> Objects.equals(rjsTrackSection.id, trackSectionToBlock))
+                                .findFirst().get().length)));
+        rjsInfra.catenaries = new ArrayList<>(List.of(voltageCatenary, noVoltageCatenary));
+        var infraWithNonElectrifiedTrack = Helpers.fullInfraFromRJS(rjsInfra);
 
         // Run another pathfinding with an electric train
-        var electricPath = PathfindingRoutesEndpoint.runPathfinding(
-                infra,
+        var electricPath = PathfindingBlocksEndpoint.runPathfinding(
+                infraWithNonElectrifiedTrack,
                 waypoints,
                 List.of(TestTrains.FAST_ELECTRIC_TRAIN)
         );
-        assertNotNull(normalPath);
-        assertNotNull(electricPath);
 
-        // We check that the path is different, we need to avoid the non-electrified track
-        var normalRoutes = normalPath.ranges().stream()
-                .map(range -> range.edge().getInfraRoute().getID())
-                .toList();
-        var electrifiedRoutes = electricPath.ranges().stream()
-                .map(range -> range.edge().getInfraRoute().getID())
-                .toList();
-        assertNotEquals(normalRoutes, electrifiedRoutes);
+        // Check that the paths are different, we need to avoid the non-electrified track
+        assertThat(normalPath).isNotNull();
+        assertThat(electricPath).isNotNull();
+        assertThat(normalPath).usingRecursiveComparison().isNotEqualTo(electricPath);
+    }
 
-        // Remove all electrification
-        for (var track : infra.getTrackGraph().edges()) {
-            if (track instanceof TrackSection)
-                track.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
-        }
+    @Test
+    public void noElectrificationThrowsForElectricTrain() throws IOException, URISyntaxException {
+        var waypointStart = new PathfindingWaypoint("TA1", 1550, START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("TH0", 103, START_TO_STOP);
+        var waypoints = new PathfindingWaypoint[2][1];
+        waypoints[0][0] = waypointStart;
+        waypoints[1][0] = waypointEnd;
+        var rjsInfra = Helpers.getExampleInfra("small_infra/infra.json");
+        rjsInfra.catenaries = new ArrayList<>();
 
-        var exception = assertThrows(
-                OSRDError.class,
-                () -> PathfindingRoutesEndpoint.runPathfinding(
-                        infra,
-                        waypoints,
-                        List.of(TestTrains.FAST_ELECTRIC_TRAIN)
-                )
-        );
-        assertEquals(exception.osrdErrorType, ErrorType.PathfindingElectrificationError);
+        assertThatThrownBy(() -> PathfindingBlocksEndpoint.runPathfinding(
+                Helpers.fullInfraFromRJS(rjsInfra),
+                waypoints,
+                List.of(TestTrains.FAST_ELECTRIC_TRAIN)
+        ))
+                .isExactlyInstanceOf(OSRDError.class)
+                .satisfies(exception -> {
+                    assertThat(((OSRDError) exception).osrdErrorType)
+                            .isEqualTo(ErrorType.PathfindingElectrificationError);
+                    assertThat(((OSRDError) exception).context).isEqualTo(Map.of());
+                });
     }
 
     @Test
     public void simpleRoutesInverted() throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "ne.micro.bar_a",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "ne.micro.foo_b",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
+        var waypointStart = new PathfindingWaypoint("ne.micro.bar_a", 100, START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("ne.micro.foo_b", 100, START_TO_STOP);
         var waypointsStart = makeBidirectionalEndPoint(waypointStart);
         var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
         var waypoints = new PathfindingWaypoint[2][];
@@ -359,30 +344,44 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRequest(waypoints, "tiny_infra/infra.json", null, null));
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
         var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
+        var expectedRoutePaths = List.of(
+                new RJSRoutePath("rt.buffer_stop_c->tde.track-bar",
+                        List.of(new RJSDirectionalTrackRange("ne.micro.bar_a", 25, 100, STOP_TO_START)),
+                        SIGNALING_TYPE),
+                new RJSRoutePath("rt.tde.track-bar->tde.switch_foo-track",
+                        List.of(new RJSDirectionalTrackRange("ne.micro.bar_a", 0.0, 25.0, STOP_TO_START),
+                                new RJSDirectionalTrackRange("ne.micro.foo_to_bar", 25.0, 10000, STOP_TO_START)),
+                        SIGNALING_TYPE),
+                new RJSRoutePath("rt.tde.switch_foo-track->buffer_stop_b",
+                        List.of(new RJSDirectionalTrackRange("ne.micro.foo_to_bar", 0.0, 25.0, STOP_TO_START),
+                                new RJSDirectionalTrackRange("ne.micro.foo_b", 100.0, 200, STOP_TO_START)),
+                        SIGNALING_TYPE)
+        );
+        assertThat(response.routePaths).isEqualTo(expectedRoutePaths);
+        var expectedPathWaypoints = List.of(
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 125.0),
+                        0.0, false, "op.station_bar"),
+                new PathWaypointResult(new PathWaypointResult.PathWaypointLocation("ne.micro.foo_b", 75.0),
+                        10200.0, false, "op.station_foo")
+        );
+        assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints);
         expectWaypointInPathResult(response, waypointStart);
         expectWaypointInPathResult(response, waypointEnd);
     }
 
     /** Tests that we find a route path between two points on the same edge */
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    public void simpleRoutesSameEdge(boolean inverted) throws Exception {
-        var waypointStart = new PathfindingWaypoint(
-                "ne.micro.bar_a",
-                100,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "ne.micro.bar_a",
-                110,
-                EdgeDirection.START_TO_STOP
-        );
+    @MethodSource("simpleRoutesSameEdgeArgs")
+    public void simpleRoutesSameEdge(boolean inverted, List<RJSRoutePath> expectedRoutePaths,
+                                     List<PathWaypointResult> expectedPathWaypoints) throws Exception {
+        var waypointStart = new PathfindingWaypoint("ne.micro.bar_a", 100, START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("ne.micro.bar_a", 110, START_TO_STOP);
         if (inverted) {
             var tmp = waypointEnd;
             waypointEnd = waypointStart;
@@ -397,14 +396,55 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRequest(waypoints, "tiny_infra/infra.json", null, null));
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
         var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
+        assertThat(response.routePaths).isEqualTo(expectedRoutePaths);
+        assertThat(response.pathWaypoints).isEqualTo(expectedPathWaypoints);
         expectWaypointInPathResult(response, waypointStart);
         expectWaypointInPathResult(response, waypointEnd);
+    }
+
+    static Stream<Arguments> simpleRoutesSameEdgeArgs() {
+        return Stream.of(
+                Arguments.of(
+                        true,
+                        List.of(new RJSRoutePath("rt.buffer_stop_c->tde.track-bar",
+                                List.of(new RJSDirectionalTrackRange("ne.micro.bar_a", 100, 110, STOP_TO_START)),
+                                SIGNALING_TYPE)),
+                        List.of(
+                                new PathWaypointResult(
+                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 115.0),
+                                        0.0, false, null),
+                                new PathWaypointResult(
+                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 125.0),
+                                        10.0, false, "op.station_bar")
+                        )
+                ),
+                Arguments.of(
+                        false,
+                        List.of(new RJSRoutePath("rt.tde.foo_a-switch_foo->buffer_stop_c",
+                                List.of(new RJSDirectionalTrackRange("ne.micro.bar_a", 100, 110, START_TO_STOP)),
+                                SIGNALING_TYPE)),
+                        List.of(
+                                new PathWaypointResult(
+                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 100.0),
+                                        0.0, false, "op.station_bar"),
+                                new PathWaypointResult(
+                                        new PathWaypointResult.PathWaypointLocation("ne.micro.bar_a", 110.0),
+                                        10.0, false, null)
+                        )
+                )
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInfraParameters")
+    public void tinyInfraTest(String path, boolean inverted) throws Exception {
+        runTestOnExampleInfra(path, inverted);
     }
 
     /** Runs a pathfinding on a given infra. Looks into the simulation file to find a possible path */
@@ -417,19 +457,13 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingRequest.adapter.toJson(req);
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
         var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
         assertTrue(response.pathWaypoints.size() >= 2);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideInfraParameters")
-    public void tinyInfraTest(String path, boolean inverted) throws Exception {
-        runTestOnExampleInfra(path, inverted);
     }
 
     static Stream<Arguments> provideInfraParameters() {
@@ -465,63 +499,10 @@ public class PathfindingTest extends ApiTest {
         return new PathfindingRequest(waypoints, infraPath, null, null);
     }
 
-    /** Checks that the waypoints match when converting back and forth into a route offset */
-    private static void testMatchingRouteOffsets(SignalingInfra infra, PathfindingWaypoint waypoint) {
-        var routeLocations = PathfindingRoutesEndpoint.findRoutes(infra, waypoint);
-        for (var loc : routeLocations) {
-            var routeRange = new Pathfinding.EdgeRange<>(
-                    loc.edge(),
-                    loc.offset() / 2,
-                    loc.offset() + (loc.edge().getInfraRoute().getLength() - loc.offset()) / 2
-            );
-            var waypoints = PathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()), 0.);
-            var userDefinedWaypoints = waypoints.stream()
-                    .filter(wp -> !wp.suggestion)
-                    .toList();
-            assertEquals(1, userDefinedWaypoints.size());
-            var waypointOff = waypoint.offset;
-            var waypointTrack = waypoint.trackSection;
-            if (waypointOff <= 0 || waypointOff >= infra.getTrackSection(waypointTrack).getLength()) {
-                // Waypoints placed on track transitions can be on either side
-                continue;
-            }
-            assertEquals(waypointTrack, userDefinedWaypoints.get(0).location.trackSection);
-            assertEquals(waypointOff, userDefinedWaypoints.get(0).location.offset, POSITION_EPSILON);
-        }
-    }
-
-    /** Checks that the waypoints match when converting back and forth into a route offset */
-    private static void testAllMatchingRouteOffsets(String infraPath, boolean inverted) throws Exception {
-        var req = requestFromExampleInfra(
-                infraPath + "/infra.json",
-                infraPath + "/simulation.json",
-                inverted
-        );
-        var rjsInfra = Helpers.getExampleInfra(infraPath + "/infra.json");
-        var infra = infraFromRJS(rjsInfra);
-        for (var waypointList : req.waypoints)
-            for (var waypoint : waypointList)
-                testMatchingRouteOffsets(infra, waypoint);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideInfraParameters")
-    public void testMachingRouteOffsets(String path, boolean inverted) throws Exception {
-        testAllMatchingRouteOffsets(path, inverted);
-    }
-
     @Test
     public void testCurveGraph() throws IOException {
-        var waypointStart = new PathfindingWaypoint(
-                "TF1",
-                0,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "TF1",
-                6500,
-                EdgeDirection.START_TO_STOP
-        );
+        var waypointStart = new PathfindingWaypoint("TF1", 0, EdgeDirection.START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("TF1", 6500, EdgeDirection.START_TO_STOP);
         var waypointsStart = makeBidirectionalEndPoint(waypointStart);
         var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
         var waypoints = new PathfindingWaypoint[2][];
@@ -531,7 +512,7 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
         var response = PathfindingResult.adapterResult.fromJson(result);
@@ -551,16 +532,8 @@ public class PathfindingTest extends ApiTest {
 
     @Test
     public void testCurveGraphStopToStart() throws IOException {
-        var waypointStart = new PathfindingWaypoint(
-                "TF1",
-                6500,
-                EdgeDirection.STOP_TO_START
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "TF1",
-                0,
-                EdgeDirection.STOP_TO_START
-        );
+        var waypointStart = new PathfindingWaypoint("TF1", 6500, EdgeDirection.STOP_TO_START);
+        var waypointEnd = new PathfindingWaypoint("TF1", 0, EdgeDirection.STOP_TO_START);
         var waypointsStart = makeBidirectionalEndPoint(waypointStart);
         var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
         var waypoints = new PathfindingWaypoint[2][];
@@ -570,7 +543,7 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
         var response = PathfindingResult.adapterResult.fromJson(result);
@@ -590,16 +563,8 @@ public class PathfindingTest extends ApiTest {
 
     @Test
     public void testSlopeGraph() throws IOException {
-        var waypointStart = new PathfindingWaypoint(
-                "TD0",
-                0,
-                EdgeDirection.START_TO_STOP
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "TD0",
-                25000,
-                EdgeDirection.START_TO_STOP
-        );
+        var waypointStart = new PathfindingWaypoint("TD0", 0, EdgeDirection.START_TO_STOP);
+        var waypointEnd = new PathfindingWaypoint("TD0", 25000, EdgeDirection.START_TO_STOP);
         var waypointsStart = makeBidirectionalEndPoint(waypointStart);
         var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
         var waypoints = new PathfindingWaypoint[2][];
@@ -609,7 +574,7 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
         var response = PathfindingResult.adapterResult.fromJson(result);
@@ -641,16 +606,8 @@ public class PathfindingTest extends ApiTest {
 
     @Test
     public void testSlopeGraphStopToStart() throws IOException {
-        var waypointStart = new PathfindingWaypoint(
-                "TD0",
-                25000,
-                EdgeDirection.STOP_TO_START
-        );
-        var waypointEnd = new PathfindingWaypoint(
-                "TD0",
-                0,
-                EdgeDirection.STOP_TO_START
-        );
+        var waypointStart = new PathfindingWaypoint("TD0", 25000, EdgeDirection.STOP_TO_START);
+        var waypointEnd = new PathfindingWaypoint("TD0", 0, EdgeDirection.STOP_TO_START);
         var waypointsStart = makeBidirectionalEndPoint(waypointStart);
         var waypointsEnd = makeBidirectionalEndPoint(waypointEnd);
         var waypoints = new PathfindingWaypoint[2][];
@@ -660,7 +617,7 @@ public class PathfindingTest extends ApiTest {
                 new PathfindingRequest(waypoints, "small_infra/infra.json", "1", null));
 
         var result = readBodyResponse(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new PathfindingBlocksEndpoint(infraManager).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
         var response = PathfindingResult.adapterResult.fromJson(result);

@@ -17,7 +17,8 @@ value class DirStaticIdx<T>(val data: UInt) : NumIdx {
         (detector.index shl 1) or when (direction) {
             Direction.INCREASING -> 0u
             Direction.DECREASING -> 1u
-        })
+        }
+    )
 
     val value: StaticIdx<T> get() = StaticIdx(data shr 1)
     val direction: Direction
@@ -32,4 +33,14 @@ value class DirStaticIdx<T>(val data: UInt) : NumIdx {
     override fun toString(): String {
         return String.format("(id=%s, dir=%s)", value.index, direction)
     }
+}
+
+@JvmName("toDirection")
+fun <T> toDirection(dirStaticIdx: DirStaticIdx<T>): Direction {
+    return dirStaticIdx.direction
+}
+
+@JvmName("toValue")
+fun <T> toValue(dirStaticIdx: DirStaticIdx<T>): StaticIdx<T> {
+    return dirStaticIdx.value
 }

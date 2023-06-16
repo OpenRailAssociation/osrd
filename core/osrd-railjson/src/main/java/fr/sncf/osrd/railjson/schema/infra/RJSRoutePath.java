@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class RJSRoutePath {
     public final String route;
@@ -24,5 +25,19 @@ public class RJSRoutePath {
         this.route = route;
         this.trackSections = new ArrayList<>();
         this.signalingType = signalingType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RJSRoutePath that)) return false;
+        return Objects.equals(route, that.route)
+                && Objects.equals(trackSections, that.trackSections)
+                && Objects.equals(signalingType, that.signalingType);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(route, trackSections, signalingType);
     }
 }

@@ -1,7 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
-import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import java.util.Objects;
 
 public class RJSDirectionalTrackRange extends RJSTrackRange {
     public final EdgeDirection direction;
@@ -42,5 +42,18 @@ public class RJSDirectionalTrackRange extends RJSTrackRange {
         if (direction == EdgeDirection.START_TO_STOP)
             return end;
         return begin;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RJSDirectionalTrackRange that)) return false;
+        if (!super.equals(o)) return false;
+        return direction == that.direction;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), direction);
     }
 }
