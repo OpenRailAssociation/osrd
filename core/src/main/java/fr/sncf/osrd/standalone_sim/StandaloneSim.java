@@ -6,6 +6,9 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -23,10 +26,14 @@ import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.train.ScheduledPoint;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
+import fr.sncf.osrd.train.TrainStop;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 public class StandaloneSim {
     /**
@@ -75,9 +82,11 @@ public class StandaloneSim {
                 );
                 cacheMaxEffort.put(trainSchedule, simResultTrain);
 
-                // Eco
-                if (!trainSchedule.allowances.isEmpty()) {
+                // Eco: Integrate allowances and scheduled points
+                if (!trainSchedule.allowances.isEmpty() || !trainSchedule.scheduledPoints.isEmpty()) {
                     var ecoEnvelope = applyAllowances(context, envelope, trainSchedule.allowances);
+                    ecoEnvelope = applyScheduledPoints(
+                            context, ecoEnvelope, trainSchedule.stops, trainSchedule.scheduledPoints);
                     var simEcoResultTrain = ScheduleMetadataExtractor.run(
                             ecoEnvelope,
                             trainPath,
@@ -155,5 +164,52 @@ public class StandaloneSim {
             }
         }
         return result;
+    }
+
+    /**  Generate a mareco Allowance given a list of scheduled points.
+     *   Return an empty value:
+     *   - if no scheduled point is given
+     *   - if we cannot respect any scheduled points. */
+    public static Optional<MarecoAllowance> generateAllowanceFromScheduledPoints(
+            EnvelopeStopWrapper maxEffortEnvelope,
+            ArrayList<ScheduledPoint> scheduledPoints
+    ) {
+        scheduledPoints.sort(Comparator.comparingDouble(sp -> sp.position));
+        var ranges = new ArrayList<AllowanceRange>();
+        double rangeBeginPos = 0.;
+        double lostTime = 0.;
+        for (var schedulePoint : scheduledPoints) {
+            var rangeEndPos = schedulePoint.position;
+            double excessTime = schedulePoint.time - maxEffortEnvelope.interpolateTotalTime(rangeEndPos) - lostTime;
+            if (excessTime < 0) {
+                // TODO: Raise a warning
+                continue;
+            }
+            ranges.add(new AllowanceRange(rangeBeginPos, rangeEndPos, new AllowanceValue.FixedTime(excessTime)));
+            rangeBeginPos = rangeEndPos;
+            lostTime += excessTime;
+        }
+
+        // If no ranges
+        if (ranges.isEmpty())
+            return Optional.empty();
+
+        // Set minimum capacity limit
+        double capacityLimit = 1.0;
+        return Optional.of(new MarecoAllowance(0., rangeBeginPos, capacityLimit, ranges));
+    }
+
+    /**  Apply a list of scheduled points */
+    public static Envelope applyScheduledPoints(
+            EnvelopeSimContext context,
+            Envelope maxEffortEnvelope,
+            List<TrainStop> stops,
+            ArrayList<ScheduledPoint> scheduledPoints
+    ) {
+        var envelopeStopWrapper = new EnvelopeStopWrapper(maxEffortEnvelope, stops);
+        var allowance = generateAllowanceFromScheduledPoints(envelopeStopWrapper, scheduledPoints);
+        if (allowance.isEmpty())
+            return maxEffortEnvelope;
+        return applyAllowances(context, maxEffortEnvelope, List.of(allowance.get()));
     }
 }
