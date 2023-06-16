@@ -1449,7 +1449,41 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TimetableWithSchedulesDetails"
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+                  train_schedules_with_details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        train_name:
+                          type: string
+                        departure_time:
+                          type: number
+                        train_path:
+                          type: number
+                        arrival_time:
+                          type: number
+                        mechanical_energy_consumed:
+                          type: number
+                        stops:
+                          type: integer
+                      required:
+                        [
+                          id,
+                          train_name,
+                          departure_time,
+                          train_path,
+                          arrival_time,
+                          mechanical_energy_consumed,
+                          stops,
+                        ]
 
   /timetable/{id}/conflicts/:
     get:
