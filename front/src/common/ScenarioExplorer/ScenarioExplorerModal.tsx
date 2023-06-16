@@ -65,11 +65,9 @@ export default function ScenarioExplorerModal({
         .then(({ results }) => setStudiesList(results))
         .catch((error) => console.error(error));
     }
-  }, [projectID]);
-
-  useEffect(() => {
+    setStudyID(undefined);
     setScenariosList(undefined);
-  }, [studiesList]);
+  }, [projectID]);
 
   useEffect(() => {
     if (projectID && studyID && !isProjectsError) {
