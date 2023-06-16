@@ -25,7 +25,9 @@ typealias SigStateSchema = SigSchema<SignalStateMarker>
 
 
 /** The signaling system manager is a repository for drivers and signaling systems */
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface InfraSigSystemManager {
+    @get:JvmName("getSignalingSystems")
     val signalingSystems: StaticIdxSpace<SignalingSystem>
     fun findSignalingSystem(sigSystem: String): SignalingSystemId
     fun getStateSchema(sigSystem: SignalingSystemId): SigStateSchema
@@ -52,8 +54,11 @@ interface LoadedSignalInfra {
     fun isBlockDelimiter(signal: LogicalSignalId): Boolean
 }
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface BlockInfra {
+    @get:JvmName("getBlocks")
     val blocks: StaticIdxSpace<Block>
+    @JvmName("getBlockPath")
     fun getBlockPath(block: BlockId): StaticIdxList<ZonePath>
     fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal>
     fun blockStartAtBufferStop(block: BlockId): Boolean
@@ -107,7 +112,7 @@ fun filterBlocks(
     return res
 }
 
-
+@JvmName("findRouteBlocks")
 fun findRouteBlocks(
     signalingInfra: RawSignalingInfra,
     blockInfra: BlockInfra,

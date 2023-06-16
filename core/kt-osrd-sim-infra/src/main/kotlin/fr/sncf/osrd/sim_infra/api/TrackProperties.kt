@@ -17,11 +17,15 @@ import fr.sncf.osrd.utils.units.Speed
 sealed interface OperationalPointPart
 typealias OperationalPointPartId = StaticIdx<OperationalPointPart>
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface TrackProperties {
 
     // Chunk attributes
+    @JvmName("getTrackChunkLength")
     fun getTrackChunkLength(trackChunk: TrackChunkId): Distance
+    @JvmName("getTrackChunkOffset")
     fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance
+    @JvmName("getTrackFromChunk")
     fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId
 
     // Linear track attributes
@@ -38,5 +42,6 @@ interface TrackProperties {
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>
     fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId
     fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Distance
+    @JvmName("getOperationalPointPartName")
     fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String
 }

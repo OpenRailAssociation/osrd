@@ -30,7 +30,7 @@ class TrackChunkDescriptor(
     val curves: DirectionalMap<DistanceRangeMap<Double>>,
     val gradients: DirectionalMap<DistanceRangeMap<Double>>,
     val length: Distance,
-    val routes: DirectionalMap<StaticIdxCollection<Route>>,
+    val routes: DirectionalMap<StaticIdxList<Route>>,
     var track: StaticIdx<TrackSection>,
     val offset: Distance,
     var operationalPointParts: StaticIdxList<OperationalPointPart>,
@@ -137,7 +137,7 @@ class RawInfraImpl(
     override val trackSections: StaticIdxSpace<TrackSection>
         get() = trackSectionPool.space()
 
-    override fun getTrackSectionId(trackSection: TrackSectionId): String {
+    override fun getTrackSectionName(trackSection: TrackSectionId): String {
         return trackSectionPool[trackSection].name
     }
 
@@ -215,7 +215,7 @@ class RawInfraImpl(
         return res
     }
 
-    override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxCollection<Route> {
+    override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {
         return trackChunkPool[trackChunk.value].routes.get(trackChunk.direction)
     }
 

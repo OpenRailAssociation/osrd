@@ -10,10 +10,20 @@ import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.meters
 
 data class IdxWithOffset<T>(
+    @get:JvmName("getValue")
     val value: StaticIdx<T>,
+    @get:JvmName("getOffset")
     val offset: Distance,
 )
 
+data class TrackLocation(
+    @get:JvmName("getTrackId")
+    val trackId: TrackSectionId,
+    @get:JvmName("getOffset")
+    val offset: Distance
+)
+
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface Path {
     fun getSlopes(): DistanceRangeMap<Double>
     fun getOperationalPointParts(): List<IdxWithOffset<OperationalPointPart>>
@@ -22,9 +32,15 @@ interface Path {
     fun getGeo(): LineString
     fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint>
     fun getCatenary(): DistanceRangeMap<String>
+    @JvmName("getLength")
+    fun getLength(): Distance
+
+    @JvmName("getTrackLocationAtOffset")
+    fun getTrackLocationAtOffset(pathOffset: Distance): TrackLocation
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
+@JvmName("buildPathFrom")
 fun buildPathFrom(
     infra: TrackProperties,
     chunks: DirStaticIdxList<TrackChunk>,

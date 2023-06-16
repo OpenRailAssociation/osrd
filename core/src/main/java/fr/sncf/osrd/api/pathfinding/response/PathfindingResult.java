@@ -17,9 +17,9 @@ public class PathfindingResult {
             .adapter(PathfindingResult.class)
             .failOnUnknown();
     @Json(name = "route_paths")
-    public final List<RJSRoutePath> routePaths = new ArrayList<>();
+    public List<RJSRoutePath> routePaths = new ArrayList<>();
     @Json(name = "path_waypoints")
-    public final List<PathWaypointResult> pathWaypoints = new ArrayList<>();
+    public List<PathWaypointResult> pathWaypoints = new ArrayList<>();
 
     public final double length;
 

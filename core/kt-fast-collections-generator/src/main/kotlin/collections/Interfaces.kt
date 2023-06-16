@@ -27,13 +27,16 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
             }
 
             /** GENERATED CODE */
+            @Suppress("INAPPLICABLE_JVM_NAME")
             interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse} {
+                @JvmName("get")
                 operator fun get(index: Int): $type
                 fun clone(): Mutable${simpleName}List${paramsUse}
                 fun reversed() : Mutable${simpleName}ArrayList${paramsUse}
             }
 
             /** GENERATED CODE */
+            @Suppress("INAPPLICABLE_JVM_NAME")
             interface Mutable${simpleName}List${paramsDecl} : ${simpleName}List${paramsUse} {
                 fun ensureCapacity(expectedElements: Int)
                 fun add(element: ${type}): Boolean
@@ -41,6 +44,7 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
                 fun add(elemA: ${type}, elemB: ${type}, elemC: ${type})
                 fun addAll(elements: Collection<${type}>): Boolean
                 fun addAll(iterable: Iterable<${type}>): Boolean
+                @JvmName("insert")
                 fun insert(index: Int, elem: ${type})
                 fun set(index: Int, element: ${type}): $type
                 fun remove(index: Int): $type
