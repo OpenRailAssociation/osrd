@@ -37,7 +37,7 @@ pub struct TrainSchedule {
     pub labels: JsonValue,
     pub departure_time: f64,
     pub initial_speed: f64,
-    pub allowances: DieselJson<Allowance>,
+    pub allowances: DieselJson<Vec<Allowance>>,
     pub comfort: String,
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
@@ -63,8 +63,8 @@ pub struct TrainScheduleChangeset {
     pub departure_time: Option<f64>,
     #[diesel(deserialize_as = f64)]
     pub initial_speed: Option<f64>,
-    #[diesel(deserialize_as = DieselJson<Allowance>)]
-    pub allowances: Option<DieselJson<Allowance>>,
+    #[diesel(deserialize_as = DieselJson<Vec<Allowance>>)]
+    pub allowances: Option<DieselJson<Vec<Allowance>>>,
     #[diesel(deserialize_as = String)]
     pub comfort: Option<String>,
     #[diesel(deserialize_as = Option<String>)]
@@ -156,6 +156,8 @@ pub struct ZoneUpdate {
     pub zone: String,
     pub time: f64,
     pub offset: f64,
+    // TODO: see https://github.com/DGEXSolutions/osrd/issues/4294
+    #[serde(rename = "isEntry")]
     pub is_entry: bool,
 }
 
