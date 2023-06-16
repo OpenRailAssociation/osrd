@@ -28,6 +28,8 @@ import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
+import ChartManager from 'common/charts/ChartManager';
+import LinearChart from 'common/charts/components/LinearChart/Linearchart';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -202,6 +204,16 @@ export default function SimulationResults({
           )}
         </div>
       </div>
+
+      {/* TRAIN : PATH INFORMATION */}
+
+      {simulation.trains[selectedTrain] && (
+        <div className="osrd-simulation-container mb-2">
+          <ChartManager selectedTrain={simulation.trains[selectedTrain]}>
+            <LinearChart />
+          </ChartManager>
+        </div>
+      )}
 
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
       {simulation.trains[selectedTrain] && (
