@@ -1463,38 +1463,78 @@ components:
             - type: object
               properties:
                 error: { type: string }
-        electrification_conditions:
+        electrification_ranges:
+          description: A list of ranges which should be contiguous and which describe the electrificationUsage on the path and if it is handled by the train
           type: array
           items:
-            description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
-            type: array
-            items:
-              type: object
-              properties:
-                start:
-                  type: number
-                  format: double
-                stop:
-                  type: number
-                  format: double
-                mode_used:
-                  type: string
-                profile_used:
-                  type: string
-                  nullable: true
-                restriction_used:
-                  type: string
-                  nullable: true
-                mode_seen:
-                  type: string
-                  nullable: true
-                profile_seen:
-                  type: string
-                  nullable: true
-                restriction_seen:
-                  type: string
-                  nullable: true
-
+            $ref: "#/components/schemas/ElectrificationRange"
+          minItems: 1
+        power_restriction_ranges:
+          description: The list of ranges where power restrictions are applied
+          type: array
+          items:
+            properties:
+              start:
+                type: number
+                format: double
+              stop:
+                type: number
+                format: double
+              code:
+                type: string
+              handled:
+                type: boolean
+            required: [start, stop, code, handled]
+      required:
+        - id
+        - name
+        - labels
+        - path
+        - vmax
+        - slopes
+        - curves
+        - base
+        - electrification_ranges
+        - power_restriction_ranges
+    ElectrificationRange:
+      properties:
+        start:
+          type: number
+          format: double
+        stop:
+          type: number
+          format: double
+        electrification:
+          oneOf:
+            - $ref: "#/components/schemas/Electrified"
+            - $ref: "#/components/schemas/Neutral"
+            - $ref: "#/components/schemas/NonElectrified"
+          discriminator:
+            propertyName: object_type
+      required: [start, stop, is_electrified, electrificationUsage]
+    Electrified:
+      description: This part of the path is electrified
+      properties:
+        mode:
+          type: string
+        mode_handled:
+          type: boolean
+        profile:
+          type: string
+          nullable: true
+        profile_handled:
+          type: boolean
+      required: [mode, mode_handled, profile_handled]
+    Neutral:
+      description: This part of the path is neutral, it might be electrified, in any case the train is not allowed to use electrical current
+      properties:
+        is_lower_pantograph:
+          description: The train has to lower its pantograph on top of not using electrical current
+          type: boolean
+      required: [is_lower_pantograph]
+    NonElectrified:
+      description: This part of the path is not electrified
+      type: object
     PathQuery:
       properties:
         infra:
@@ -1714,14 +1754,15 @@ components:
                 $ref: "#/components/schemas/EnergySource"
     EnergySource:
       oneOf:
-        - $ref: '#/components/schemas/Catenary'
-        - $ref: '#/components/schemas/PowerPack'
-        - $ref: '#/components/schemas/Battery'
+        - $ref: "#/components/schemas/Catenary"
+        - $ref: "#/components/schemas/PowerPack"
+        - $ref: "#/components/schemas/Battery"
       discriminator:
         propertyName: energy_source_type
     Catenary:
       type: object
-      required: [energy_source_type, max_input_power, max_output_power, efficiency]
+      required:
+        [energy_source_type, max_input_power, max_output_power, efficiency]
       properties:
         energy_source_type:
           type: string
@@ -1737,7 +1778,14 @@ components:
           maximum: 1
     PowerPack:
       type: object
-      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      required:
+        [
+          energy_source_type,
+          max_input_power,
+          max_output_power,
+          energy_storage,
+          efficiency,
+        ]
       properties:
         energy_source_type:
           type: string
@@ -1755,7 +1803,14 @@ components:
           maximum: 1
     Battery:
       type: object
-      required: [ energy_source_type, max_input_power, max_output_power, energy_storage, efficiency ]
+      required:
+        [
+          energy_source_type,
+          max_input_power,
+          max_output_power,
+          energy_storage,
+          efficiency,
+        ]
       properties:
         energy_source_type:
           type: string

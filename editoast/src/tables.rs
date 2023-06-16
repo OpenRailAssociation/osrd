@@ -382,15 +382,14 @@ table! {
 
 joinable!(osrd_infra_trainschedule -> osrd_infra_pathmodel (path_id));
 
-diesel::table! {
-    use diesel::sql_types::*;
-
+table! {
     osrd_infra_simulationoutput (id) {
         id -> BigInt,
         mrsp -> Jsonb,
         base_simulation -> Jsonb,
         eco_simulation -> Nullable<Jsonb>,
-        electrification_conditions -> Jsonb,
+        electrification_ranges -> Jsonb,
+        power_restriction_ranges -> Jsonb,
         train_schedule_id -> Nullable<BigInt>,
     }
 }

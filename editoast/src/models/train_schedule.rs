@@ -242,7 +242,8 @@ pub struct SimulationOutput {
     pub mrsp: JsonValue,
     pub base_simulation: DieselJson<ResultTrain>,
     pub eco_simulation: Option<DieselJson<ResultTrain>>,
-    pub electrification_conditions: JsonValue,
+    pub electrification_ranges: JsonValue,
+    pub power_restriction_ranges: JsonValue,
     pub train_schedule_id: Option<i64>,
 }
 
@@ -261,7 +262,9 @@ pub struct SimulationOutputChangeset {
     #[diesel(deserialize_as = Option<DieselJson<ResultTrain>>)]
     pub eco_simulation: Option<Option<DieselJson<ResultTrain>>>,
     #[diesel(deserialize_as = JsonValue)]
-    pub electrification_conditions: Option<JsonValue>,
+    pub electrification_ranges: Option<JsonValue>,
+    #[diesel(deserialize_as = JsonValue)]
+    pub power_restriction_ranges: Option<JsonValue>,
     #[diesel(deserialize_as = Option<i64>)]
     pub train_schedule_id: Option<Option<i64>>,
 }
