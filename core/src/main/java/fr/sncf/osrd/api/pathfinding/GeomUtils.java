@@ -54,7 +54,7 @@ public class GeomUtils {
         res.schematic = toRJSLineString(concatenate(schList));
     }
 
-    private static RJSLineString toRJSLineString(LineString lineString) {
+    static RJSLineString toRJSLineString(LineString lineString) {
         var coordinates = new ArrayList<List<Double>>();
         for (var p : lineString.getPoints())
             coordinates.add(List.of(p.x(), p.y()));

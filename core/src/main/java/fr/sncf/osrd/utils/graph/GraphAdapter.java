@@ -1,24 +1,35 @@
 package fr.sncf.osrd.utils.graph;
 
-import com.google.common.graph.ImmutableNetwork;
+import fr.sncf.osrd.sim_infra.api.BlockInfra;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.utils.KtToJavaConverter;
 import java.util.Collection;
 
-/** Implements our custom Graph interface using an ImmutableNetwork */
-public class GraphAdapter<NodeT, EdgeT> implements Graph<NodeT, EdgeT> {
+/**
+ * Implements the Graph interface for the Block infra
+ * where node = detector and edge = block
+ */
+public class GraphAdapter implements Graph<Integer, Integer> {
 
-    private final ImmutableNetwork<NodeT, EdgeT> g;
+    private final BlockInfra blockInfra;
+    private final RawSignalingInfra rawSignalingInfra;
 
-    public GraphAdapter(ImmutableNetwork<NodeT, EdgeT> g) {
-        this.g = g;
+    public GraphAdapter(BlockInfra blockInfra, RawSignalingInfra rawSignalingInfra) {
+        this.blockInfra = blockInfra;
+        this.rawSignalingInfra = rawSignalingInfra;
     }
 
     @Override
-    public NodeT getEdgeEnd(EdgeT edge) {
-        return g.incidentNodes(edge).nodeV();
+    public Integer getEdgeEnd(Integer blockId) {
+        var blockPath = blockInfra.getBlockPath(blockId);
+        var lastZonePath = blockPath.get(blockPath.getSize() - 1);
+        return rawSignalingInfra.getZonePathExit(lastZonePath);
     }
 
+    /** Returns all the edges (blocks) that start at the given node (detector) */
     @Override
-    public Collection<EdgeT> getAdjacentEdges(NodeT node) {
-        return g.outEdges(node);
+    public Collection<Integer> getAdjacentEdges(Integer detectorId) {
+        var neighborBlocks = blockInfra.getBlocksAtDetector(detectorId);
+        return KtToJavaConverter.toIntList(neighborBlocks);
     }
 }

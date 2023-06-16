@@ -30,6 +30,7 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
             import ${type.qualifiedName}
 
             /** GENERATED CODE */
+            @Suppress("INAPPLICABLE_JVM_NAME")
             class Mutable${simpleName}ArraySet${paramsDecl} private constructor(
                 private var usedElements: Int,
                 private var buffer: ${bufferType},
@@ -55,7 +56,7 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
                     }
                 }
 
-                private val capacity: Int = buffer.size
+                private val capacity: Int get() = buffer.size
 
                 private fun ensureBufferSpace(expectedAdditions: Int) {
                     val requiredCapacity = usedElements + expectedAdditions
@@ -172,6 +173,7 @@ private fun CollectionItemType.generateArraySortedSet(context: GeneratorContext,
                     return true
                 }
 
+                @JvmName("getAtIndex")
                 override fun getAtIndex(index: Int): $type {
                     assert(index < usedElements)
                     return buffer[index]

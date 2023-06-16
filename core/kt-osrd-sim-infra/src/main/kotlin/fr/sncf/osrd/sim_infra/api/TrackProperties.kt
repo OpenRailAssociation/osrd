@@ -4,7 +4,6 @@ import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Speed
@@ -17,11 +16,15 @@ import fr.sncf.osrd.utils.units.Speed
 sealed interface OperationalPointPart
 typealias OperationalPointPartId = StaticIdx<OperationalPointPart>
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 interface TrackProperties {
 
     // Chunk attributes
+    @JvmName("getTrackChunkLength")
     fun getTrackChunkLength(trackChunk: TrackChunkId): Distance
+    @JvmName("getTrackChunkOffset")
     fun getTrackChunkOffset(trackChunk: TrackChunkId): Distance
+    @JvmName("getTrackFromChunk")
     fun getTrackFromChunk(trackChunk: TrackChunkId): TrackSectionId
 
     // Linear track attributes
@@ -30,13 +33,16 @@ interface TrackProperties {
     fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
     fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint>
     fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
+    @JvmName("getTrackChunkNeutralSections")
     fun getTrackChunkNeutralSections(trackChunk: DirTrackChunkId): DistanceRangeMap<NeutralSection>
     fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
+    @JvmName("getTrackChunkGeom")
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 
     // Operational points
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>
     fun getOperationalPointPartChunk(operationalPoint: OperationalPointPartId): TrackChunkId
     fun getOperationalPointPartChunkOffset(operationalPoint: OperationalPointPartId): Distance
+    @JvmName("getOperationalPointPartName")
     fun getOperationalPointPartName(operationalPoint: OperationalPointPartId): String
 }

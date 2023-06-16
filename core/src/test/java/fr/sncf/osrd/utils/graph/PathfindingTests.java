@@ -46,7 +46,7 @@ public class PathfindingTests {
         }
 
         public Graph<Node, Edge> build() {
-            return new GraphAdapter<>(builder.build());
+            return new LegacyGraphAdapter<>(builder.build());
         }
 
         public Pathfinding.EdgeLocation<Edge> getEdgeLocation(String id, double offset) {

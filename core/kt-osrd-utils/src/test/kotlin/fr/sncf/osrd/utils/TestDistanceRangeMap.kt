@@ -133,6 +133,13 @@ class TestDistanceRangeMap {
     }
 
     @Test
+    fun testTruncateEmptyRange() {
+        val rangeMap = distanceRangeMapOf<Int>()
+        rangeMap.truncate(Distance(150), Distance(160))
+        assertEquals(rangeMap, rangeMap)
+    }
+
+    @Test
     fun testShift() {
         val rangeMap = distanceRangeMapOf<Int>()
         rangeMap.put(Distance(0), Distance(100), 41)

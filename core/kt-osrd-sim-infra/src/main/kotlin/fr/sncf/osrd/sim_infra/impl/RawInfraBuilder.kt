@@ -1,10 +1,10 @@
 package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DirectionalMap
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
@@ -236,7 +236,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val trackNodePool = StaticPool<TrackNode, TrackNodeDescriptor>()
     private val trackSectionPool = StaticPool<TrackSection, TrackSectionDescriptor>()
     private val trackChunkPool = StaticPool<TrackChunk, TrackChunkDescriptor>()
-    private val nextNode = IdxMap<DirTrackSectionId, TrackNodeId>()
+    private val nodeAtEndpoint = IdxMap<EndpointTrackSectionId, TrackNodeId>()
     private val zonePool = StaticPool<Zone, ZoneDescriptor>()
     private val detectorPool = StaticPool<Detector, String?>()
     private val nextZones = IdxMap<DirDetectorId, ZoneId>()
@@ -381,7 +381,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             trackNodePool,
             trackSectionPool,
             trackChunkPool,
-            nextNode,
+            nodeAtEndpoint,
             zonePool,
             detectorPool,
             nextZones,
@@ -391,7 +391,8 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             zonePathPool,
             zonePathMap,
             operationalPointPartPool,
-            makeTrackNameMap()
+            makeTrackNameMap(),
+            makeRouteNameMap(),
         )
     }
 
@@ -400,6 +401,19 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         val res = HashMap<String, TrackSectionId>()
         for (trackId in trackSectionPool)
             res[trackSectionPool[trackId].name] = trackId
+        return res
+    }
+
+    /** Create the mapping from route name to id */
+    private fun makeRouteNameMap(): Map<String, RouteId> {
+        val res = HashMap<String, RouteId>()
+        for (routeId in routePool) {
+            val routeName = routePool[routeId].name
+            if (res[routePool[routeId].name!!] != null)
+                throw OSRDError.newDuplicateRouteError(routeName)
+            else if (routeName != null)
+                res[routePool[routeId].name!!] = routeId
+        }
         return res
     }
 
@@ -430,6 +444,15 @@ class RawInfraBuilderImpl : RawInfraBuilder {
             val chunk = trackChunkPool[operationalPointPartPool[op].chunk]
             val opList = chunk.operationalPointParts as MutableStaticIdxArrayList
             opList.add(op)
+        }
+
+        // Build a map from track section endpoint to track node
+        for (trackNode in trackNodePool) {
+            val nodeDescriptor = trackNodePool[trackNode]
+            for (port in nodeDescriptor.ports) {
+                val connectedEndpoint = nodeDescriptor.ports[port]
+                nodeAtEndpoint.getOrPut(connectedEndpoint) { trackNode }
+            }
         }
     }
 }

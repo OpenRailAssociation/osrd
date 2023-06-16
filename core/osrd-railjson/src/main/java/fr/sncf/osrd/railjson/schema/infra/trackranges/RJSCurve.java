@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
+import java.util.Objects;
+
 public class RJSCurve extends RJSRange {
 
     // Radius (m).
@@ -21,5 +23,18 @@ public class RJSCurve extends RJSRange {
             this.end = tmp;
             this.radius *= -1.;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RJSCurve that)) return false;
+        if (!super.equals(o)) return false;
+        return Objects.equals(radius, that.radius);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), radius);
     }
 }

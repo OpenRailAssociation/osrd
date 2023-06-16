@@ -1,6 +1,8 @@
 package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
@@ -31,7 +33,7 @@ class TrackChunkDescriptor(
     val curves: DirectionalMap<DistanceRangeMap<Double>>,
     val gradients: DirectionalMap<DistanceRangeMap<Double>>,
     val length: Distance,
-    val routes: DirectionalMap<StaticIdxCollection<Route>>,
+    val routes: DirectionalMap<StaticIdxList<Route>>,
     var track: StaticIdx<TrackSection>,
     val offset: Distance,
     var operationalPointParts: StaticIdxList<OperationalPointPart>,
@@ -121,7 +123,7 @@ class RawInfraImpl(
     val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
     val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
     val trackChunkPool: StaticPool<TrackChunk, TrackChunkDescriptor>,
-    val nextNode: IdxMap<DirTrackSectionId, TrackNodeId>,
+    val nodeAtEndpoint: IdxMap<EndpointTrackSectionId, TrackNodeId>,
     val zonePool: StaticPool<Zone, ZoneDescriptor>,
     val detectorPool: StaticPool<Detector, String?>,
     val nextZones: IdxMap<DirDetectorId, ZoneId>,
@@ -132,13 +134,14 @@ class RawInfraImpl(
     val zonePathMap: Map<ZonePathSpec, ZonePathId>,
     val operationalPointPartPool: StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
     val trackSectionNameMap: Map<String, TrackSectionId>,
+    val routeNameMap: Map<String, RouteId>,
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
     override val trackSections: StaticIdxSpace<TrackSection>
         get() = trackSectionPool.space()
 
-    override fun getTrackSectionId(trackSection: TrackSectionId): String {
+    override fun getTrackSectionName(trackSection: TrackSectionId): String {
         return trackSectionPool[trackSection].name
     }
 
@@ -148,6 +151,14 @@ class RawInfraImpl(
 
     override fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk> {
         return trackSectionPool[trackSection].chunks
+    }
+
+    override fun getTrackSectionLength(trackSection: TrackSectionId): Distance {
+        var length = Distance(0)
+        for (trackChunk in getTrackSectionChunks(trackSection)) {
+            length += getTrackChunkLength(trackChunk)
+        }
+        return length
     }
 
     override fun getTrackChunkLength(trackChunk: TrackChunkId): Distance {
@@ -216,7 +227,7 @@ class RawInfraImpl(
         return res
     }
 
-    override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxCollection<Route> {
+    override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {
         return trackChunkPool[trackChunk.value].routes.get(trackChunk.direction)
     }
 
@@ -304,14 +315,11 @@ class RawInfraImpl(
         return detectorPool[det]
     }
 
-    override fun getNextTrackSection(
-        current: DirTrackSectionId,
-        config: TrackNodeConfigId
-    ): OptDirTrackSectionId {
-        val currentPort = getNextTrackNodePort(current)
+    override fun getNextTrackSection(currentTrack: DirTrackSectionId, config: TrackNodeConfigId): OptDirTrackSectionId {
+        val currentPort = getNextTrackNodePort(currentTrack)
         if (currentPort.isNone)
             return OptDirTrackSectionId()
-        val optTrackNode = getNextTrackNode(current)
+        val optTrackNode = getNextTrackNode(currentTrack)
         assert(!optTrackNode.isNone)
         val trackNode = optTrackNode.asIndex()
         val nextPort = getTrackNodeExitPort(trackNode, config, currentPort.asIndex())
@@ -324,7 +332,7 @@ class RawInfraImpl(
     }
 
     override fun getNextTrackNode(trackSection: DirTrackSectionId): OptStaticIdx<TrackNode> {
-        val res = nextNode[trackSection] ?: return OptStaticIdx()
+        val res = nodeAtEndpoint[trackSection.toEndpoint] ?: return OptStaticIdx()
         return OptStaticIdx(res.index)
     }
 
@@ -332,8 +340,8 @@ class RawInfraImpl(
         val node = getNextTrackNode(trackSection)
         if (node.isNone)
             return OptStaticIdx()
-        val trackEndpoint = EndpointTrackSectionId(trackSection.value, trackSection.direction.toEndpoint)
         val nodeDescriptor = trackNodePool[node.asIndex()]
+        val trackEndpoint = trackSection.toEndpoint
         for (i in 0u until nodeDescriptor.ports.size) {
             val id = StaticIdx<TrackNodePort>(i)
             if (nodeDescriptor.ports[id] == trackEndpoint)
@@ -342,7 +350,7 @@ class RawInfraImpl(
         return OptStaticIdx()
     }
 
-    override fun getPortTrackSection(trackNode: TrackNodeId, port: TrackNodePortId): EndpointTrackSectionId {
+    override fun getPortConnection(trackNode: TrackNodeId, port: TrackNodePortId): EndpointTrackSectionId {
         return trackNodePool[trackNode].ports[port]
     }
 
@@ -449,6 +457,10 @@ class RawInfraImpl(
 
     override fun getRouteName(route: RouteId): String? {
         return routeDescriptors[route].name
+    }
+
+    override fun getRouteFromName(name: String): RouteId {
+        return routeNameMap[name] ?: throw OSRDError(ErrorType.UnknownRoute)
     }
 
     override fun getRouteReleaseZones(route: RouteId): IntArray {
