@@ -4187,38 +4187,18 @@ components:
           $ref: "#/components/schemas/SimulationReportByTrain"
         speed_limit_tags:
           type: string
-        electrification_conditions:
+        electrification_ranges:
+          description: A list of ranges which should be contiguous and which describe the electrification on the path and if it is handled by the train
           type: array
           items:
-            description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
-            type: array
-            items:
-              type: object
-              properties:
-                start:
-                  type: number
-                  format: double
-                stop:
-                  type: number
-                  format: double
-                mode_used:
-                  type: string
-                profile_used:
-                  type: string
-                  nullable: true
-                restriction_used:
-                  type: string
-                  nullable: true
-                mode_seen:
-                  type: string
-                  nullable: true
-                profile_seen:
-                  type: string
-                  nullable: true
-                restriction_seen:
-                  type: string
-                  nullable: true
-              required: [start, stop, mode_used]
+            $ref: "#/components/schemas/ElectrificationRange"
+          minItems: 1
+        power_restriction_ranges:
+          description: The list of ranges where power restrictions are applied
+          type: array
+          items:
+            $ref: "#/components/schemas/PowerRestrictionRangeItem"
+
       required:
         - id
         - name
@@ -4228,4 +4208,66 @@ components:
         - slopes
         - curves
         - base
-        - electrification_conditions
+        - electrification_ranges
+        - power_restriction_ranges
+
+    PowerRestrictionRangeItem:
+      properties:
+        start:
+          type: number
+          format: double
+        stop:
+          type: number
+          format: double
+        code:
+          type: string
+        handled:
+          type: boolean
+      required: [start, stop, code, handled]
+
+    ElectrificationRange:
+      properties:
+        start:
+          type: number
+          format: double
+        stop:
+          type: number
+          format: double
+        electrification:
+          oneOf:
+            - $ref: "#/components/schemas/Electrified"
+            - $ref: "#/components/schemas/Neutral"
+            - $ref: "#/components/schemas/NonElectrified"
+          discriminator:
+            propertyName: object_type
+      required: [start, stop, is_electrified, electrificationUsage]
+
+    Electrified:
+      properties:
+        mode:
+          type: string
+        mode_handled:
+          type: boolean
+        object_type:
+          type: string
+          enum: ['Electrified']
+        profile:
+          type: string
+          nullable: true
+        profile_handled:
+          type: boolean
+      required: [mode, mode_handled, object_type,  profile_handled]
+    Neutral:
+      properties:
+        is_lower_pantograph:
+          type: boolean
+        object_type:
+          type: string
+          enum: ['Neutral']
+      required: [is_lower_pantograph, object_type]
+    NonElectrified:
+      properties:
+        object_type:
+          type: string
+          enum: ['NonElectrified']
+      required: [object_type]

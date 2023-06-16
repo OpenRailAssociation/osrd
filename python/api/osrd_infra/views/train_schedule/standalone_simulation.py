@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List
 
 from rest_framework.exceptions import APIException
 
@@ -91,7 +91,8 @@ def _create_and_fill_simulation_output(
     eco_simulation: Any,
     stops_updates: List[Any],
     mrsp: Any,
-    electrification_conditions: Optional[Any],
+    electrification_ranges: Any,
+    power_restriction_ranges: Any,
 ) -> SimulationOutput:
     _update_simulation_stops(base_simulation["stops"], stops_updates)
 
@@ -99,7 +100,8 @@ def _create_and_fill_simulation_output(
         train_schedule=train_schedule,
         base_simulation=base_simulation,
         mrsp=mrsp,
-        electrification_conditions=electrification_conditions or [],
+        electrification_ranges=electrification_ranges,
+        power_restriction_ranges=power_restriction_ranges,
     )
 
     # Skip if no eco simulation is available
@@ -118,13 +120,16 @@ def process_simulation_response(
     """
     This function process the payload returned by the backend and fill schedules
     """
+    n_trains = len(train_schedules)
     base_simulations = response_payload["base_simulations"]
-    assert len(train_schedules) == len(base_simulations)
+    assert len(base_simulations) == n_trains
     speed_limits = response_payload["speed_limits"]
-    assert len(train_schedules) == len(speed_limits)
+    assert len(speed_limits) == n_trains
     eco_simulations = response_payload["eco_simulations"]
-    electrification_conditions = response_payload["electrification_conditions"]
-    assert len(electrification_conditions) == 0 or len(train_schedules) == len(electrification_conditions)
+    electrification_ranges = response_payload["electrification_ranges"]
+    assert len(electrification_ranges) in (0, n_trains)
+    power_restriction_ranges = response_payload["power_restriction_ranges"]
+    assert len(power_restriction_ranges) in (0, n_trains)
 
     stops = train_schedules[0].path.payload["path_waypoints"]
     track_stops_id = [stop["location"]["track_section"] for stop in stops]
@@ -153,7 +158,8 @@ def process_simulation_response(
             eco_simulations[i],
             stops_additional_information,
             speed_limits[i],
-            electrification_conditions[i] if len(electrification_conditions) > 0 else None,
+            electrification_ranges[i] if electrification_ranges else None,
+            power_restriction_ranges[i] if power_restriction_ranges else None,
         )
         for i, train_schedule in enumerate(train_schedules)
     ]
