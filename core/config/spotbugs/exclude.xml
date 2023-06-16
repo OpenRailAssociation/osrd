@@ -5,4 +5,9 @@
   <Match>
     <Source name="~.*\.kt"/>
   </Match>
+  <Match>
+    <!-- Reason: Many test classes initialize fields in @Before methods. -->
+    <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    <Source name="~.*Test\.java"/>
+  </Match>
 </FindBugsFilter>

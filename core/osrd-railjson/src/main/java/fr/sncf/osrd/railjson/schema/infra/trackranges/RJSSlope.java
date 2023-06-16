@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
+import java.util.Objects;
+
 public class RJSSlope extends RJSRange {
     // Gradient (m)
     public double gradient;
@@ -20,5 +22,18 @@ public class RJSSlope extends RJSRange {
             this.end = tmp;
             this.gradient *= -1.;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RJSSlope that)) return false;
+        if (!super.equals(o)) return false;
+        return Objects.equals(gradient, that.gradient);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), gradient);
     }
 }

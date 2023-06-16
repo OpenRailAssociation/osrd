@@ -22,7 +22,7 @@ public class InfraCacheStatusTest extends ApiTest {
         var requestBody = InfraCacheStatusEndpoint.adapterRequest.toJson(request);
 
         // process it
-        var rawResponse = readBodyResponse(new InfraCacheStatusEndpoint(infraHandlerMock)
+        var rawResponse = readBodyResponse(new InfraCacheStatusEndpoint(infraManager)
                         .act(new RqFake("POST", "/cache_status", requestBody))
                 );
 
@@ -38,7 +38,7 @@ public class InfraCacheStatusTest extends ApiTest {
         var query = new InfraCacheStatusEndpoint.InfraCacheRequest(
                 "tiny_infra/infra.json"
         );
-        infraHandlerMock.load("tiny_infra/infra.json",
+        infraManager.load("tiny_infra/infra.json",
                 "1", recorder);
         var res = runInfraCacheStatus(query);
         var response = res.get("tiny_infra/infra.json");

@@ -1,28 +1,22 @@
 package fr.sncf.osrd.api.stdcm;
 
 import fr.sncf.osrd.api.ExceptionHandler;
-import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.InfraManager;
-import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
+import fr.sncf.osrd.api.pathfinding.LegacyPathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.stdcm.STDCMStep;
 import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
-import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
@@ -30,8 +24,6 @@ import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
-import fr.sncf.osrd.utils.graph.GraphAdapter;
-import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.Pathfinding.EdgeLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +133,7 @@ public class STDCMEndpoint implements Take {
                     fullInfra
             ));
             simResult.ecoSimulations.add(null);
-            var pathfindingRes = PathfindingResultConverter.convert(res.routes(), infra, recorder);
+            var pathfindingRes = LegacyPathfindingResultConverter.convert(res.routes(), infra, recorder);
             var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {

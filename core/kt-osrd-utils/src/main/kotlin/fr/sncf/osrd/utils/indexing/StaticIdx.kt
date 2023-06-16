@@ -64,7 +64,7 @@ value class OptDirStaticIdx<T>(private val data: UInt) {
     constructor(value: StaticIdx<T>, dir: Direction) : this(DirStaticIdx(value, dir).data)
     val isNone: Boolean get () = data == UInt.MAX_VALUE
 
-    private fun asIndex(): DirStaticIdx<T> {
+    fun asIndex(): DirStaticIdx<T> {
         assert(!isNone)
         return DirStaticIdx(data)
     }

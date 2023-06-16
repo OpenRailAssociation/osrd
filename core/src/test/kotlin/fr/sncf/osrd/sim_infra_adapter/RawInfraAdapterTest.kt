@@ -47,7 +47,7 @@ class RawInfraAdapterTest {
                 val trackRangeView = trackRangeViews[0]
                 assertEquals(
                     trackRangeView.track.edge.id,
-                    infra.getTrackSectionId(infra.getTrackFromChunk(chunk.value))
+                    infra.getTrackSectionName(infra.getTrackFromChunk(chunk.value))
                 )
                 assertEquals(trackRangeView.length, infra.getTrackChunkLength(chunk.value).meters, epsilon)
                 assertEquals(trackRangeView.track.direction.toKtDirection(), chunk.direction)

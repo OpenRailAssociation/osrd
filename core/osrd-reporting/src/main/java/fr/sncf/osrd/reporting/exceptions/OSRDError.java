@@ -447,6 +447,17 @@ public final class OSRDError extends RuntimeException {
     }
 
     /**
+     * Creates an OSRDError in case two routes have the same name.
+     * @param route route name.
+     * @return corresponding OSRDError.
+     */
+    public static OSRDError newDuplicateRouteError(String route) {
+        var error = new OSRDError(ErrorType.DuplicateRoute);
+        error.context.put("route", route);
+        return error;
+    }
+
+    /**
      * Returns the error message.
      *
      * @return the error message

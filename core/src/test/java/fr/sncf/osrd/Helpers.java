@@ -1,6 +1,8 @@
 package fr.sncf.osrd;
 
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
+import static fr.sncf.osrd.sim_infra.utils.BlockRecoveryKt.recoverBlocks;
+import static fr.sncf.osrd.sim_infra.utils.BlockRecoveryKt.toList;
 
 import com.squareup.moshi.JsonAdapter;
 import fr.sncf.osrd.api.FullInfra;
@@ -12,6 +14,11 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
+import fr.sncf.osrd.sim_infra.api.Route;
+import fr.sncf.osrd.sim_infra.api.SignalingSystem;
+import fr.sncf.osrd.sim_infra.utils.BlockPathElement;
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList;
+import fr.sncf.osrd.utils.indexing.StaticIdxList;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +27,10 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 
 public class Helpers {
@@ -87,5 +97,48 @@ public class Helpers {
         var diagnosticRecorder = new DiagnosticRecorderImpl(true);
         var signalingSimulator = makeSignalingSimulator();
         return FullInfra.fromRJSInfra(rjs, diagnosticRecorder, signalingSimulator);
+    }
+
+    /** Loads small infra as a RawSignalingInfra */
+    public static FullInfra getSmallInfra() {
+        try {
+            return Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** Loads tiny infra as a FullInfra */
+    public static FullInfra getTinyInfra() {
+        try {
+            return Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** returns the blocks on the given routes */
+    public static List<Integer> getBlocksOnRoutes(FullInfra infra, List<String> names) {
+        var res = new ArrayList<Integer>();
+        var routes = new MutableStaticIdxArrayList<Route>();
+        for (var name: names)
+            routes.add(infra.rawInfra().getRouteFromName(name));
+        var candidates = recoverBlocks(
+                infra.rawInfra(),
+                infra.blockInfra(),
+                routes,
+                getSignalingSystems(infra)
+        );
+        for (var candidate : candidates)
+            res.addAll(toList(candidate).stream().map(BlockPathElement::getBlock).toList());
+        return res;
+    }
+
+    /** Returns the idx list of signaling systems */
+    private static StaticIdxList<SignalingSystem> getSignalingSystems(FullInfra infra) {
+        var res = new MutableStaticIdxArrayList<SignalingSystem>();
+        for (int i = 0; i < infra.signalingSimulator().getSigModuleManager().getSignalingSystems(); i++)
+            res.add(i);
+        return res;
     }
 }
