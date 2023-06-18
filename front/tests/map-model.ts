@@ -37,8 +37,8 @@ class PlaywrightMap {
     await this.getSearchedStation.fill(station);
   }
 
-  async clickOnMap({ x, y }: { x: number; y: number }) {
-    await this.getMap.click({ position: { x, y } });
+  async clickOnMap(position: { x: number; y: number }) {
+    await this.getMap.click({ position });
   }
 
   async clickOnOrigin() {
