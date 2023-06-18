@@ -63,7 +63,8 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await expect(playwrightScenarioPage.getMapModule).toBeVisible();
   });
 
-  test('Select rolling stock', async () => {
+  test('Testing pathfinding with rollingstock an composition code', async () => {
+    // ***************** Test Rolling Stock *****************
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
       playwrightHomePage.page
     );
@@ -100,9 +101,8 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     expect(
       await playwrightRollingstockModalPage.getRollingStockInfoComfort().textContent()
     ).toMatch(/ConfortSStandard/i);
-  });
 
-  test('Select composition code', async () => {
+    // ***************** Test Composition Code *****************
     await playwrightScenarioPage.openTabByText('Paramètres de simulation');
     await playwrightScenarioPage.getSpeedLimitSelector.click();
     await playwrightScenarioPage.getSpeedLimitSelector.locator('input').fill('32');
@@ -112,29 +112,31 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     expect(await playwrightScenarioPage.getSpeedLimitSelector.textContent()).toMatch(
       /Voyageurs - Automoteurs - E32C/i
     );
-  });
 
-  test.only('Click on map', async () => {
+    // ***************** Test choice Origin/Destination *****************
     const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
     await playwrightScenarioPage.openTabByText('Itinéraire');
 
     // Search and select origin
     await playwrightMap.openMapSearch();
-    await playwrightMap.searchStation('south west');
-    await playwrightHomePage.page.getByRole('button', { name: /South_West_station/ }).click();
+    await playwrightMap.searchStation(VARIABLES.originSearch);
+    await playwrightHomePage.page.getByRole('button', { name: VARIABLES.originSearchItem }).click();
     await playwrightMap.closeMapSearch();
-    await playwrightMap.clickOnMap({ x: 200, y: 170 });
+    expect(await playwrightMap.page.locator('.map-search-marker-title').textContent()).toMatch(
+      VARIABLES.originSearchItem
+    );
+    await playwrightMap.clickOnMap(VARIABLES.originPositionClick);
     await playwrightMap.clickOnOrigin();
 
     // Search and select destination
     await playwrightMap.openMapSearch();
-    await playwrightMap.searchStation('nor');
+    await playwrightMap.searchStation(VARIABLES.destinationSearch);
     await playwrightHomePage.page
-      .getByRole('button', { name: /North_East_station/ })
+      .getByRole('button', { name: VARIABLES.destinationSearchItem })
       .first()
       .click();
     await playwrightMap.closeMapSearch();
-    await playwrightMap.clickOnMap({ x: 200, y: 170 });
+    await playwrightMap.clickOnMap(VARIABLES.destinationPositionClick);
     await playwrightMap.clickOnDestination();
     await playwrightScenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
   });
