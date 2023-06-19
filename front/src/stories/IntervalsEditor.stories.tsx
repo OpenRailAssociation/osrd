@@ -42,7 +42,6 @@ const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
   const { formContext, schema, params, valueField } = props;
   const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(formDataBase);
   const onChange = (newData: LinearMetadataItem[]) => {
-    console.log('onchange call', newData);
     setMockedData(newData);
   };
   return (
@@ -71,7 +70,7 @@ export const Plain = {
     formContext: formContextSample,
     schema: schemaSample,
     valueField: 'gradient',
-    params: { deleteTool: true, translateTool: true, cutTool: true },
+    params: { deleteTool: true, translateTool: false, cutTool: true, addTool: true },
     units: ['s', 'm'],
     name: 'linearMetaData',
   },
