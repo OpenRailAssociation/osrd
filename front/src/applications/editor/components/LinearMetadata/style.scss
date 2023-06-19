@@ -33,6 +33,24 @@ $resize-width: 3px;
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
+    .zoom-horizontal {
+      display: flex;
+      flex-direction: row;
+      z-index: 2;
+      flex-grow: 1;
+      //height: calc($dataviz-height + $scaling-height);
+      .btn {
+        background-color: #fff;
+        padding: 0 0.25em !important;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-left-width: 0;
+        &:focus,
+        &:hover {
+          color: #000;
+        }
+      }
+    }
   }
   .content {
     .dataviz {
@@ -61,7 +79,14 @@ $resize-width: 3px;
         }
       }
 
+      
+
       .tools {
+        display: flex;
+        flex-direction: column;
+        z-index: 2;
+        flex-grow: 1;
+        height: calc($dataviz-height + $scaling-height);
         .btn {
           background-color: #fff;
           color: #1c1c1c;
@@ -303,7 +328,7 @@ $resize-width: 3px;
     .tooltip {
       position: fixed;
       background-color: $tooltip-bg-color;
-      opacity: 0.8;
+      opacity: 0.2;
       max-width: 25%;
       overflow: hidden;
       color: #fff;

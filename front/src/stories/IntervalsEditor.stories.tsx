@@ -3,6 +3,7 @@ import { LinearMetadataItem } from 'applications/editor/components/LinearMetadat
 import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
 import { JSONSchema7 } from 'json-schema';
 import React, { useState } from 'react';
+import 'stories/storybook.css';
 
 const SAMPLE_DATA = ['First Category of Speed Limits', 'Second Category of Speed Limits'];
 
@@ -70,6 +71,8 @@ export const Plain = {
     formContext: formContextSample,
     schema: schemaSample,
     valueField: 'gradient',
-    params: { deleteTool: true, translateTool: true, cutTool: true, addTool: true },
+    params: { deleteTool: true, translateTool: true, cutTool: true },
+    units: ['s', 'm'],
+    name: 'linearMetaData',
   },
 };

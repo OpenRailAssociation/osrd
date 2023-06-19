@@ -1,4 +1,7 @@
 .flexValuesEdition {
   display:flex;
   flex-direction: row;
+  div.flexValuesEditionSelect {
+    min-width: 7em
+  }
 }
