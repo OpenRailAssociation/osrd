@@ -204,8 +204,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   const [data4viz, setData4viz] = useState<Array<LinearMetadataItem & { index: number }>>([]);
   const [hoverAtx, setHoverAtx] = useState<number | null>(null);
 
-  console.log('Show dataViz with data', data);
-
   /**
    * When data change (or the field)
    * => we recompute the min/max
@@ -418,7 +416,12 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             }}
             onMouseDown={(e) => {
               // TODO use the frag tool context here
+              console.log('OnMouseUp');
               setDraginStartAt(e.clientX);
+            }}
+            onMouseUp={(e) => {
+              // TODO use the frag tool context here
+              console.log('OnMouseUp');
             }}
             onWheel={(e) => {
               if (!draginStartAt && onWheel && data[segment.index]) {

@@ -311,7 +311,7 @@ $resize-width: 3px;
       z-index: 999;
 
       .linear-metadata-tooltip {
-        .header {
+        .header, .footer {
           display: flex;
           flex-direction: row;
           justify-content: space-between;
