@@ -28,8 +28,9 @@ import {
 } from 'applications/editor/components/LinearMetadata';
 
 import Form, { FieldProps } from '@rjsf/core';
-import { isNil, omit, head, max as fnMax, min as fnMin } from 'lodash';
-
+import { JSONSchema7 } from 'json-schema';
+import { isNil, omit, head, max as fnMax, min as fnMin, cloneDeep } from 'lodash';
+import { IoIosCut } from 'react-icons/io';
 import { t } from 'i18next';
 import { tooltipPosition, notEmpty } from 'applications/editor/components/LinearMetadata/utils';
 import { ValueOf } from 'utils/types';
@@ -122,15 +123,39 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   return (
     <div className="linear-metadata">
       <div className="header">
-        <h4 className="control-label m-0">{schema.title || name}</h4>
-        <button
-          type="button"
-          className="btn btn-unstyled p-1 ml-1"
-          title={t('common.help-display')}
-          onClick={() => openModal(<HelpModal />, 'lg')}
-        >
-          <MdOutlineHelpOutline />
-        </button>
+        <h4 className="control-label m-0">{`${name} ${valueField} ${units ? ' (' : ''}${units?.join(
+          ' / '
+        )}${units ? ')' : ''}`}</h4>
+        <div>
+        <div className="zoom-horizontal">
+              <button
+                title={t('common.zoom-in')}
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
+              >
+                <TbZoomIn />
+              </button>
+              <button
+                title={t('common.zoom-reset')}
+                type="button"
+                disabled={viewBox === null}
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setViewBox(null)}
+              >
+                <TbZoomCancel />
+              </button>
+              <button
+                title={t('common.zoom-out')}
+                type="button"
+                disabled={viewBox === null}
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
+              >
+                <TbZoomOut />
+              </button>
+            </div>
+        </div>
       </div>
       <div className="content">
         <div className="dataviz">
@@ -216,34 +241,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
             }}
           />
           <div className="btn-group-vertical">
-            <div className="zoom">
-              <button
-                title={t('common.zoom-in')}
-                type="button"
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
-              >
-                <TbZoomIn />
-              </button>
-              <button
-                title={t('common.zoom-reset')}
-                type="button"
-                disabled={viewBox === null}
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setViewBox(null)}
-              >
-                <TbZoomCancel />
-              </button>
-              <button
-                title={t('common.zoom-out')}
-                type="button"
-                disabled={viewBox === null}
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
-              >
-                <TbZoomOut />
-              </button>
-            </div>
+            
             <div className="tools">
               {params?.addTool && (
                 <button
@@ -322,36 +320,73 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
 
         {/* Flex dedicated edition */}
 
-        {selected && (
+        {selected && data[selected] && (
           <div className="flexValuesEdition">
-            <InputSNCF
-              type="text"
-              id="trainlist-name"
-              label={t('begin')}
-              //onChange={(e) => handleChange(e.target.value)}
-              value={data[selected].begin}
-              noMargin
-              sm
-            />
-            <InputSNCF
-              type="text"
-              id="trainlist-name"
-              label={t('begin')}
-              //onChange={(e) => handleChange(e.target.value)}
-              value={data[selected][valueField] as number}
-              noMargin
-              sm
-            />
+            <div>
+              <InputSNCF
+                type="number"
+                id="item-begin"
+                label={t('begin')}
+                onChange={(e) => {
+                  if (parseFloat(e.target.value) >= data[selected].end) return;
+                  const gap = parseFloat(e.target.value) - data[selected].begin;
+                  const result = resizeSegment(data, selected, gap, 'begin');
+                  setData(result.result);
+                  //customOnChange(result.result); // on save system
+                }}
+                max={data[selected].end}
+                value={data[selected].begin}
+                noMargin
+                sm
+              />
+            </div>
+            <div>
+              <InputSNCF
+                type="number"
+                id="item-valueField"
+                label={valueField}
+                onChange={(e) => {
+                  const result = cloneDeep(data);
+                  result[selected][valueField] = parseFloat(e.target.value);
+                  setData(result);
+                }}
+                value={data[selected][valueField] as number}
+                noMargin
+                sm
+              />
+            </div>
+            {units && units.length > 1 && (
+              <div className="flexValuesEditionSelect">
+                <SelectSNCF
+                  id="item-unit"
+                  options={units}
+                  title={t('unit')}
+                  labelKey="label"
+                  onChange={() => null}
+                  sm
+                  value={data[selected].unit || defaultUnit}
+                />
+              </div>
+            )}
 
-            <InputSNCF
-              type="text"
-              id="trainlist-name"
-              label={t('end')}
-              //onChange={(e) => handleChange(e.target.value)}
-              value={data[selected].end}
-              noMargin
-              sm
-            />
+            <div>
+              <InputSNCF
+                type="number"
+                id="item-end"
+                label={t('end')}
+                onChange={(e) => {
+                  if (parseFloat(e.target.value) <= data[selected].begin) return;
+                  const gap = parseFloat(e.target.value) - data[selected].end;
+                  const result = resizeSegment(data, selected, gap, 'end');
+                  setData(result.result);
+                  //customOnChange(result.result); // on save system
+                }}
+                min={data[selected].begin}
+                value={data[selected].end}
+                noMargin
+                sm
+              />
+            </div>
           </div>
         )}
       </div>
