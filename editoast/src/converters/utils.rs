@@ -4,6 +4,7 @@ use crate::schema::*;
 use log::{error, warn};
 use osm4routing::{Coord, Edge, NodeId};
 use osmpbfreader::Node;
+use std::str::FromStr;
 
 pub fn default_switch_types() -> Vec<SwitchType> {
     let mut point_groups = std::collections::HashMap::new();
@@ -296,6 +297,65 @@ pub fn signals(
             }
         })
         .collect()
+}
+
+pub fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
+    match (
+        edge.tags.get("maxspeed"),
+        edge.tags.get("maxspeed:forward"),
+        edge.tags.get("maxspeed:backward"),
+    ) {
+        (None, None, None) => vec![],
+        (Some(default), None, None) => {
+            vec![speed_section(edge, default, ApplicableDirections::Both)]
+        }
+        (Some(default), None, Some(backward)) => vec![
+            speed_section(edge, default, ApplicableDirections::StartToStop),
+            speed_section(edge, backward, ApplicableDirections::StopToStart),
+        ],
+        (None, Some(forward), _) => vec![speed_section(
+            edge,
+            forward,
+            ApplicableDirections::StartToStop,
+        )],
+        (None, _, Some(backward)) => vec![speed_section(
+            edge,
+            backward,
+            ApplicableDirections::StopToStart,
+        )],
+        _ => {
+            warn!(
+                "OpenStreetMap way {} with incoherent maxspeed",
+                edge.osm_id.0
+            );
+            vec![]
+        }
+    }
+}
+
+fn speed_section(edge: &Edge, limit: &String, dir: ApplicableDirections) -> SpeedSection {
+    // We convert from km/h to m/s
+    let speed_limit = f64::from_str(limit).map(|speed| speed / 3.6).ok();
+    if speed_limit.is_none() {
+        warn!("Invalid speed limit '{limit}' for way {}", edge.osm_id.0);
+    }
+
+    let id = match dir {
+        ApplicableDirections::Both => edge.id.clone().into(),
+        ApplicableDirections::StartToStop => format!("{}-forward", edge.id).into(),
+        ApplicableDirections::StopToStart => format!("{}-backward", edge.id).into(),
+    };
+    SpeedSection {
+        id,
+        speed_limit,
+        track_ranges: vec![ApplicableDirectionsTrackRange {
+            track: edge.id.clone().into(),
+            begin: 0.,
+            end: edge.length(),
+            applicable_directions: dir,
+        }],
+        ..Default::default()
+    }
 }
 
 fn sncf_extensions(node: &Node) -> SignalSncfExtension {
