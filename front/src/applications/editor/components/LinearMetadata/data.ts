@@ -476,12 +476,13 @@ export function createSegmentAt<T>(
   distanceFrom: number,
   distanceTo: number,
   lineLength: number,
-  opts?: { fieldName: string; defaultValue: unknown }
+  opts?: { fieldName: string; defaultValue: unknown, tagNew?: boolean }
 ): Array<LinearMetadataItem<T>> {
   // apply the modification on the segment
   let result = cloneDeep(linearMetadata);
   result.push({
     ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+    ...(opts && opts.tagNew ? { new: true } : {}),
     begin: distanceFrom,
     end: distanceTo,
   } as LinearMetadataItem<T>);

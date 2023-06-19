@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { roundNumber, preventDefault, isNilObject, shortNumber } from './utils';
 import { LinearMetadataItem, cropForDatavizViewbox } from './data';
 import './style.scss';
+import { FaBullseye } from 'react-icons/fa';
 
 /**
  * Function that compute the div style attribut for a data value.
@@ -168,6 +169,11 @@ export interface LinearMetadataDatavizProps<T> {
    * Event when the user is resizing an item
    */
   onResize?: (index: number, gap: number, finalized: boolean) => void;
+
+  /**
+   * Event when the user is resizing an item
+   */
+  onCreate?: (startX: number, gap: number, init: boolean, finalized: boolean) => void;
 }
 
 /**
@@ -188,6 +194,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   onWheel,
   onDragX,
   onResize,
+  onCreate,
 }: LinearMetadataDatavizProps<T>) => {
   // Html ref of the div wrapper
   const wrapper = useRef<HTMLDivElement | null>(null);
@@ -197,6 +204,8 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   const [draginStartAt, setDraginStartAt] = useState<number | null>(null);
   // Store the data for the resizing:
   const [resizing, setResizing] = useState<{ index: number; startAt: number } | null>(null);
+  // Store the data for the creation:
+  const [creating, setCreating] = useState<{ startAt: number; endAt: number } | null>(null);
   // min & max of the data value
   const [min, setMin] = useState<number>(0);
   const [max, setMax] = useState<number>(0);
@@ -317,13 +326,61 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     };
   }, [resizing, onResize, wrapper, fullLength]);
 
+  /**
+   * When creating
+   * => register event on document for the mouseUp
+   */
+  useEffect(() => {
+    let fnUp: ((e: MouseEvent) => void) | undefined;
+    let fnMove: ((e: MouseEvent) => void) | undefined;
+    let fnDown: ((e: MouseEvent) => void) | undefined;
+
+    if (onCreate && wrapper.current && creating) {
+      const wrapperWidth = wrapper.current.offsetWidth;
+
+      // function for key up
+      fnUp = (e) => {
+        const delta = ((e.clientX - creating.startAt) / wrapperWidth) * fullLength;
+        setCreating(null);
+        onCreate(creating.startAt, delta, false, true);
+      };
+      // function for mouve
+      fnMove = (e) => {
+        const delta = ((e.clientX - creating.startAt) / wrapperWidth) * fullLength;
+
+        onCreate(creating.startAt, delta, false, false);
+      };
+      // function for key down
+      fnDown = (e) => {
+        const delta = ((e.clientX - creating.startAt) / wrapperWidth) * fullLength;
+      };
+
+      document.addEventListener('mouseup', fnUp, true);
+      document.addEventListener('mousemove', fnMove, true);
+      document.addEventListener('mousedown', fnDown, true);
+    }
+    // cleanup
+    return () => {
+      if (fnUp && fnMove && fnDown) {
+        document.removeEventListener('mouseup', fnUp, true);
+        document.removeEventListener('mousemove', fnMove, true);
+        document.removeEventListener('mousedown', fnDown, true);
+      }
+    };
+  }, [creating, onCreate, wrapper, fullLength]);
+
   return (
     <div className={cx('linear-metadata-visualisation')}>
       <div
         ref={wrapper}
+        role="presentation"
         onMouseLeave={(e) => {
           setHoverAtx(null);
           if (onMouseLeave) onMouseLeave(e);
+        }}
+        onMouseDown={(e) => {
+          // TODO use the frag tool context here
+          setCreating({ startAt: e.clientX, endAt: e.clientX });
         }}
         className={cx(
           'data',
@@ -416,12 +473,14 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             }}
             onMouseDown={(e) => {
               // TODO use the frag tool context here
-              console.log('OnMouseUp');
               setDraginStartAt(e.clientX);
+              e.stopPropagation();
+              e.preventDefault();
             }}
             onMouseUp={(e) => {
               // TODO use the frag tool context here
-              console.log('OnMouseUp');
+              e.stopPropagation();
+              e.preventDefault();
             }}
             onWheel={(e) => {
               if (!draginStartAt && onWheel && data[segment.index]) {
