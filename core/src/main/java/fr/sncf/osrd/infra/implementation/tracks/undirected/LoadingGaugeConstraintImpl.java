@@ -6,14 +6,17 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 
 public class LoadingGaugeConstraintImpl implements LoadingGaugeConstraint {
 
-    public final ImmutableSet<RJSLoadingGaugeType> blockedTypes;
+    public final ImmutableSet<Integer> blockedTypes;
 
     public LoadingGaugeConstraintImpl(ImmutableSet<RJSLoadingGaugeType> blockedTypes) {
-        this.blockedTypes = blockedTypes;
+        var builder = ImmutableSet.<Integer>builder();
+        for (var blockedType : blockedTypes)
+            builder.add(blockedType.ordinal());
+        this.blockedTypes = builder.build();
     }
 
     @Override
-    public boolean isCompatibleWith(RJSLoadingGaugeType trainType) {
+    public boolean isCompatibleWith(int trainType) {
         return !blockedTypes.contains(trainType);
     }
 }
