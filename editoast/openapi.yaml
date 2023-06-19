@@ -3670,6 +3670,8 @@ components:
     TrainSchedule:
       type: object
       properties:
+        id:
+          type: number
         train_name:
           type: string
         timetable:
