@@ -46,7 +46,7 @@ serde_derive = "1.0"
 serde_json = "1.0"
 serde_yaml = "0.9"
 strum = "~0.24.1"
-strum_macros = "~0.24.3"
+strum_macros = "~0.25.0"
 thiserror = "1.0"
 enum-map = "2.5"
 editoast_derive = { path = "./editoast_derive" }
