@@ -26,6 +26,7 @@ import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
 import ConflictsList, { Conflict } from './ConflictsList';
+import { TrainScheduleWithDetails, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
@@ -57,6 +58,15 @@ export default function Timetable({
 
   const debouncedTerm = useDebounce(filter, 500);
 
+  const { data: timetable } = osrdEditoastApi.useGetTimetableByIdQuery(
+    {
+      id: timetableID as number,
+    },
+    {
+      skip: !timetableID,
+    }
+  );
+
   const changeSelectedTrain = (idx: number) => {
     dispatch(updateSelectedTrain(idx));
     dispatch(updateMustRedraw(true));
@@ -68,7 +78,7 @@ export default function Timetable({
       getTimetable(timetableID);
       dispatch(
         setSuccess({
-          title: t('timetable.trainDeleted', { name: train.name }),
+          title: t('timetable.trainDeleted', { name: train.train_name }),
           text: '',
         })
       );
@@ -87,7 +97,7 @@ export default function Timetable({
 
   const duplicateTrain = async (train: ScheduledTrain) => {
     // Static for now, will be dynamic when UI will be ready
-    const trainName = `${train.name} (${t('timetable.copy')})`;
+    const trainName = `${train.train_name} (${t('timetable.copy')})`;
     const trainDelta = 5;
     const trainCount = 1;
     const trainStep = 5;
@@ -103,7 +113,7 @@ export default function Timetable({
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
       const newTrainDelta = 60 * trainDelta * nb;
-      const newOriginTime = train.departure + newTrainDelta;
+      const newOriginTime = train.departure_time + newTrainDelta;
       const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
       params.schedules.push({
         ...trainDetail,
@@ -148,25 +158,53 @@ export default function Timetable({
     setConflictsListExpanded(!conflictsListExpanded);
   };
 
-  useEffect(() => {
-    if (debouncedTerm !== '' && departureArrivalTimes) {
-      setTrainsList(
-        departureArrivalTimes.map((train: ScheduledTrain) => ({
-          ...train,
-          isFiltered:
-            !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
-            !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase()),
-        }))
-      );
-    } else {
-      setTrainsList(departureArrivalTimes);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [departureArrivalTimes, debouncedTerm]);
+  // useEffect(() => {
+  //   if (debouncedTerm !== '' && departureArrivalTimes) {
+  //     setTrainsList(
+  //       departureArrivalTimes.map((train: ScheduledTrain) => ({
+  //         ...train,
+  //         isFiltered:
+  //           !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
+  //           !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase()),
+  //       }))
+  //     );
+  //   } else {
+  //     setTrainsList(departureArrivalTimes);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [departureArrivalTimes, debouncedTerm]);
 
   useEffect(() => {
-    setTrainsDurationsIntervals(findTrainsDurationsIntervals(departureArrivalTimes));
-  }, [departureArrivalTimes]);
+    console.log('timetable : ', timetable);
+    if (timetable && timetable.train_schedules_with_details) {
+      if (debouncedTerm !== '') {
+        const trainsListWithFilter = timetable.train_schedules_with_details.map(
+          (train: ScheduledTrain) => ({
+            ...train,
+            isFiltered:
+              !train.train_name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
+              !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase()),
+          })
+        );
+        setTrainsList(trainsListWithFilter);
+      } else {
+        setTrainsList(timetable.train_schedules_with_details);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timetable, debouncedTerm]);
+
+  // useEffect(() => {
+  //   setTrainsDurationsIntervals(findTrainsDurationsIntervals(departureArrivalTimes));
+  // }, [departureArrivalTimes]);
+
+  useEffect(() => {
+    if (timetable && timetable.train_schedules_with_details) {
+      setTrainsDurationsIntervals(
+        findTrainsDurationsIntervals(timetable.train_schedules_with_details)
+      );
+    }
+  }, [timetable]);
 
   return (
     <div className="scenario-timetable">

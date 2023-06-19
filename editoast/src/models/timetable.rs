@@ -83,7 +83,11 @@ impl Timetable {
                         .expect("Train should have at least one position")
                         .time
                         + train_schedule.departure_time;
-                    let eco = result_train_eco.map(|eco| eco.0.mechanical_energy_consumed);
+                    let eco = if let Some(eco) = result_train_eco {
+                        Some(eco.0.mechanical_energy_consumed)
+                    } else {
+                        None
+                    };
                     let mechanical_energy_consumed = MechanicalEnergyConsumedBaseEco {
                         base: result_train.mechanical_energy_consumed,
                         eco,

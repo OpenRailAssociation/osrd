@@ -1458,32 +1458,7 @@ paths:
                   train_schedules_with_details:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        train_name:
-                          type: string
-                        departure_time:
-                          type: number
-                        train_path:
-                          type: number
-                        arrival_time:
-                          type: number
-                        mechanical_energy_consumed:
-                          type: number
-                        stops:
-                          type: integer
-                      required:
-                        [
-                          id,
-                          train_name,
-                          departure_time,
-                          train_path,
-                          arrival_time,
-                          mechanical_energy_consumed,
-                          stops,
-                        ]
+                      $ref: "#/components/schemas/TrainScheduleWithDetails"
 
   /timetable/{id}/conflicts/:
     get:
@@ -3819,6 +3794,16 @@ components:
           type: integer
         path_length:
           type: integer
+      required:
+        [
+          id,
+          train_name,
+          departure_time,
+          path,
+          labels,
+          arrival_time,
+          mechanical_energy_consumed,
+        ]
 
     TrainScheduleOptions:
       description: Options for the standalone simulation

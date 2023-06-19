@@ -146,6 +146,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
           draft.simulation.present.trains,
           0
         );
+        console.log('draft : ', draft.departureArrivalTimes);
 
         draft.consolidatedSimulation = createTrain(
           noop,

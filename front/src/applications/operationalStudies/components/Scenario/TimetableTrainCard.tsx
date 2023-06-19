@@ -87,7 +87,7 @@ function TimetableTrainCard({
               >
                 {idx + 1}
               </div>
-              {train.name}
+              {train.train_name}
               {rollingStock && (
                 <span className="img-container">
                   <RollingStock2Img rollingStock={rollingStock} />
@@ -95,33 +95,35 @@ function TimetableTrainCard({
               )}
             </div>
             <div className="scenario-timetable-train-times">
-              <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
-              <div className="scenario-timetable-train-arrival">{sec2time(train.arrival)}</div>
+              <div className="scenario-timetable-train-departure">
+                {sec2time(train.departure_time)}
+              </div>
+              <div className="scenario-timetable-train-arrival">{sec2time(train.arrival_time)}</div>
             </div>
           </div>
           <div className="scenario-timetable-train-body">
             <span className="flex-grow-1">{train.speed_limit_tags}</span>
-            {train.stopsCount !== undefined && train.stopsCount > 0 && (
-              <span className="mr-3">{t('timetable.stopsCount', { count: train.stopsCount })}</span>
+            {train.stops && train.stops > 0 && (
+              <span className="mr-3">{t('timetable.stopsCount', { count: train.stops })}</span>
             )}
-            {train.mechanicalEnergyConsumed?.eco && (
+            {train.mechanical_energy_consumed?.eco && (
               <small className="mx-xl-2 mr-lg-1 text-orange font-weight-bold">
-                ECO {+jouleToKwh(train.mechanicalEnergyConsumed.eco, true)}&nbsp;kWh
+                ECO {+jouleToKwh(train.mechanical_energy_consumed.eco, true)}&nbsp;kWh
               </small>
             )}
-            {train.mechanicalEnergyConsumed?.base && (
+            {train.mechanical_energy_consumed?.base && (
               <span className="mr-xl-3 mr-lg-2">
-                {jouleToKwh(train.mechanicalEnergyConsumed.base, true)}
+                {jouleToKwh(train.mechanical_energy_consumed.base, true)}
                 <span className="small ml-1">kWh</span>
               </span>
             )}
-            {train.pathLength && (
-              <span className="mr-xl-3 mr-lg-2">{mToKmOneDecimal(train.pathLength)}km</span>
+            {train.path_length && (
+              <span className="mr-xl-3 mr-lg-2">{mToKmOneDecimal(train.path_length)}km</span>
             )}
             <div className="text-nowrap text-right">
               <MdAvTimer />
               <span className="ml-1">
-                {sec2time(durationInSeconds(train.departure, train.arrival))}
+                {sec2time(durationInSeconds(train.departure_time, train.arrival_time))}
               </span>
             </div>
           </div>
