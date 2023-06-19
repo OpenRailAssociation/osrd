@@ -1,8 +1,6 @@
-package fr.sncf.osrd.railjson.schema.geom;
+package fr.sncf.osrd.geom;
 
 import com.carrotsearch.hppc.DoubleArrayList;
-import com.squareup.moshi.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -235,86 +233,5 @@ public class LineString {
         newBufferY.add(lastPoint.y());
 
         return LineString.make(newBufferX.toArray(), newBufferY.toArray());
-    }
-
-
-    public static final Adapter adapter = new Adapter();
-
-
-    public static class Adapter extends JsonAdapter<LineString> {
-
-        /**
-         * Deserialize a GeoJson file into a LineString
-         */
-        @FromJson
-        public LineString fromJson(JsonReader reader) throws IOException {
-            LineString lineString = null;
-
-            reader.beginObject();
-            for (int i = 0; i < 2; i++) {
-                var propertyName = reader.nextName();
-
-                if (propertyName.equals("type")) {
-                    var type = reader.nextString();
-                    if (!type.equals("LineString"))
-                        throw new JsonDataException(String.format("Expected a LineString got '%s'", type));
-                } else if (propertyName.equals("coordinates")) {
-                    if (lineString != null)
-                        throw new JsonDataException("Geometry has same property name (coordinates)");
-
-                    var bufferX = new DoubleArrayList();
-                    var bufferY = new DoubleArrayList();
-
-                    reader.beginArray();
-                    while (reader.hasNext()) {
-                        reader.beginArray();
-                        bufferX.add(reader.nextDouble());
-                        bufferY.add(reader.nextDouble());
-                        reader.endArray();
-                    }
-                    reader.endArray();
-
-                    lineString = LineString.make(bufferX.toArray(), bufferY.toArray());
-                } else {
-                    throw new JsonDataException(String.format("Unexpected geometry property '%s'", propertyName));
-                }
-            }
-            reader.endObject();
-
-            if (lineString == null)
-                throw new JsonDataException("Missing coordinates property");
-
-            return lineString;
-        }
-
-        /**
-         * Serialize a LineString into a GeoJson file
-         */
-        @ToJson
-        public void toJson(JsonWriter writer, LineString value) throws IOException {
-            if (value == null) {
-                writer.nullValue();
-                return;
-            }
-
-            writer.beginObject();
-            writer.name("type");
-            writer.value("LineString");
-            writer.name("coordinates");
-            writer.beginArray();
-            for (int i = 0; i < value.bufferX.length; i++) {
-                writer.beginArray();
-                writer.value(value.bufferX[i]);
-                writer.value(value.bufferY[i]);
-                writer.endArray();
-            }
-            writer.endArray();
-            writer.endObject();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return adapter.toJson(this);
     }
 }
