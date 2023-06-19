@@ -1,5 +1,4 @@
 import { baseApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -505,8 +504,7 @@ export type GetInfraByIdVoltagesApiArg = {
 };
 export type GetInfraSchemaApiResponse = /** status 200 Json schema */ object;
 export type GetInfraSchemaApiArg = void;
-export type PostStdcmApiResponse =
-  /** status 200 Simulation result */
+export type PostStdcmApiResponse = /** status 200 Simulation result */
   | {
       simulation?: TrainScheduleResult;
       path?: Path;
