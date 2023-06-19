@@ -16,6 +16,7 @@ import { MdOutlineHelpOutline } from 'react-icons/md';
 import {
   LinearMetadataItem,
   SEGMENT_MIN_SIZE,
+  createSegmentAt,
   fixLinearMetadataItems,
   getLineStringDistance,
   getZoomedViewBox,
@@ -30,7 +31,6 @@ import {
 import Form, { FieldProps } from '@rjsf/core';
 import { JSONSchema7 } from 'json-schema';
 import { isNil, omit, head, max as fnMax, min as fnMin, cloneDeep } from 'lodash';
-import { IoIosCut } from 'react-icons/io';
 import { t } from 'i18next';
 import { tooltipPosition, notEmpty } from 'applications/editor/components/LinearMetadata/utils';
 import { ValueOf } from 'utils/types';
@@ -38,6 +38,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import { useTranslation } from 'react-i18next';
 import IntervalsEditorTootlip from './IntervalsEditorTooltip';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 
 export const TOOLS = Object.freeze({
   cutTool: Symbol('cutTool'),
@@ -69,7 +70,7 @@ type IntervalsEditorProps = IntervalsEditorMetaProps & FieldProps;
  * version 0.1
  */
 export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
-  const { name, formContext, formData, schema, onChange, params, valueField } = props;
+  const { name, formContext, formData, onChange, params, valueField, units, defaultUnit } = props;
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
@@ -77,7 +78,9 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   // Wich segment is hovered
   const [hovered, setHovered] = useState<{ index: number; point: number } | null>(null);
   // Mode of the dataviz
-  const [mode, setMode] = useState<'dragging' | 'resizing' | null>(null);
+  const [mode, setMode] = useState<'dragging' | 'resizing' | 'creating' | null>(null);
+  // index of the interval being created
+  const [creatingIndex, setCreatingIndex] = useState<number | null>(null);
   // Fix the data (sort, fix gap, ...)
   const [data, setData] = useState<Array<LinearMetadataItem>>(formData);
   // Value of the selected item (needed for the its modification)
@@ -90,8 +93,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   const [selectedTool, setSelectedTool] = useState<ValueOf<typeof TOOLS> | null>(null);
 
   const { t } = useTranslation();
-
-  const { openModal, closeModal } = useModal();
 
   // Get the distance of the geometry
   const distance = useMemo(() => {
@@ -127,34 +128,34 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
           ' / '
         )}${units ? ')' : ''}`}</h4>
         <div>
-        <div className="zoom-horizontal">
-              <button
-                title={t('common.zoom-in')}
-                type="button"
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
-              >
-                <TbZoomIn />
-              </button>
-              <button
-                title={t('common.zoom-reset')}
-                type="button"
-                disabled={viewBox === null}
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setViewBox(null)}
-              >
-                <TbZoomCancel />
-              </button>
-              <button
-                title={t('common.zoom-out')}
-                type="button"
-                disabled={viewBox === null}
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
-              >
-                <TbZoomOut />
-              </button>
-            </div>
+          <div className="zoom-horizontal">
+            <button
+              title={t('common.zoom-in')}
+              type="button"
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
+            >
+              <TbZoomIn />
+            </button>
+            <button
+              title={t('common.zoom-reset')}
+              type="button"
+              disabled={viewBox === null}
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setViewBox(null)}
+            >
+              <TbZoomCancel />
+            </button>
+            <button
+              title={t('common.zoom-out')}
+              type="button"
+              disabled={viewBox === null}
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
+            >
+              <TbZoomOut />
+            </button>
+          </div>
         </div>
       </div>
       <div className="content">
@@ -239,9 +240,43 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                 console.log(e);
               }
             }}
+            onCreate={(startX, gap, init, finalized) => {
+              setMode(!finalized ? 'creating' : null);
+              try {
+                let result = cloneDeep(data);
+                if (hovered && data.length === fixedData.length) {
+                  result = createSegmentAt(
+                    result.filter((e) => (valueField ? !isNil(e[valueField]) : true)),
+                    hovered.point,
+                    hovered.point + 1,
+                    distance,
+                    { fieldName: valueField, defaultValue: 6, tagNew: true }
+                  );
+                  const newIntervalIndex = result.findIndex((intervalCloned) => intervalCloned.new);
+                  setSelected(newIntervalIndex);
+                  result[newIntervalIndex].new = null;
+                  setData(result);
+                } else if (selected) {
+                  const actualGap = gap - (result[selected].end - result[selected].begin);
+                  let resizeOp = resizeSegment(result, selected as number, actualGap, 'end');
+                  result = resizeOp.result;
+                  // VERIFIER COHERENCE SELECTIONNE
+                  setData(result);
+                }
+
+                // it is naturally the last temp segment
+                if (finalized) customOnChange(result);
+                else {
+                  // if index has changed, we need to impact the index modification
+                  
+                }
+              } catch (e) {
+                // TODO: should we display it ?
+                console.log(e);
+              }
+            }}
           />
           <div className="btn-group-vertical">
-            
             <div className="tools">
               {params?.addTool && (
                 <button
