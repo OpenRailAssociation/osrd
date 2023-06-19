@@ -15,6 +15,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection
 import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.TrackNode
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
@@ -289,6 +290,9 @@ private fun makeChunk(
             )
         }
         return res
+    }
+    for (entry in DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes)) {
+        entry.value!!.isCompatibleWith(LoadingGaugeTypeId(RJSLoadingGaugeType.G1.ordinal.toUInt()))
     }
 
     val chunkId = builder.trackChunk(

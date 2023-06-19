@@ -29,7 +29,7 @@ public record LoadingGaugeConstraints(
         var res = new HashSet<Pathfinding.Range>();
         for (var trackRange : route.getTrackRanges()) {
             for (var entry : trackRange.getBlockedGaugeTypes().asMapOfRanges().entrySet()) {
-                if (!entry.getValue().isCompatibleWith(stock.loadingGaugeType))
+                if (!entry.getValue().isCompatibleWith(stock.loadingGaugeType.ordinal()))
                     res.add(new Pathfinding.Range(
                             offset + entry.getKey().lowerEndpoint(),
                             offset + entry.getKey().upperEndpoint()

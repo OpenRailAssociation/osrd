@@ -1,8 +1,14 @@
 package fr.sncf.osrd.sim_infra.api
 
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.utils.indexing.StaticIdx
+
+
+sealed interface LoadingGaugeType
+typealias LoadingGaugeTypeId = StaticIdx<LoadingGaugeType>
 
 interface LoadingGaugeConstraint {
     /** Returns true if a train of the given type is compatible  */
-    fun isCompatibleWith(trainType: RJSLoadingGaugeType): Boolean
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("isCompatibleWith")
+    fun isCompatibleWith(trainType: LoadingGaugeTypeId): Boolean
 }
