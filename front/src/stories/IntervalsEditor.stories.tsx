@@ -70,6 +70,6 @@ export const Plain = {
     formContext: formContextSample,
     schema: schemaSample,
     valueField: 'gradient',
-    params: { deleteTool: true, translateTool: true, cutTool: true },
+    params: { deleteTool: true, translateTool: true, cutTool: true, addTool: true },
   },
 };
