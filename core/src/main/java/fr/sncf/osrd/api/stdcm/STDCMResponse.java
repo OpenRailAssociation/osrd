@@ -6,15 +6,11 @@ import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
-import fr.sncf.osrd.railjson.schema.geom.LineString;
-import fr.sncf.osrd.railjson.schema.geom.Point;
 
 public final class STDCMResponse {
     public static final JsonAdapter<STDCMResponse> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
-            .add(LineString.adapter)
-            .add(Point.adapter)
             .build()
             .adapter(STDCMResponse.class);
 

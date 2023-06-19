@@ -5,11 +5,14 @@ import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.*;
 import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
+import com.google.common.primitives.Doubles;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
+import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
@@ -222,14 +225,27 @@ public class UndirectedInfraBuilder {
                 track.length,
                 track.id,
                 ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id)),
-                track.geo,
-                track.sch,
+                parseLineString(track.geo),
+                parseLineString(track.sch),
                 buildLoadingGaugeLimits(track.loadingGaugeLimits)
         );
         builder.addEdge(begin, end, edge);
         edge.curves = makeCurves(track);
         edge.slopes = makeSlopes(track);
         return edge;
+    }
+
+    private LineString parseLineString(RJSLineString rjs) {
+        if (rjs == null)
+            return null;
+        var xs = new ArrayList<Double>();
+        var ys = new ArrayList<Double>();
+        for (var p : rjs.coordinates) {
+            assert (p.size() == 2);
+            xs.add(p.get(0));
+            ys.add(p.get(1));
+        }
+        return LineString.make(Doubles.toArray(xs), Doubles.toArray(ys));
     }
 
     /** Builds the ranges of blocked loading gauge types on the track */

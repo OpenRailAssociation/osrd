@@ -1,10 +1,12 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
+import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.railjson.schema.geom.LineString;
+import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class GeomUtils {
@@ -48,8 +50,15 @@ public class GeomUtils {
         sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
 
-        res.geographic = concatenate(geoList);
-        res.schematic = concatenate(schList);
+        res.geographic = toRJSLineString(concatenate(geoList));
+        res.schematic = toRJSLineString(concatenate(schList));
+    }
+
+    private static RJSLineString toRJSLineString(LineString lineString) {
+        var coordinates = new ArrayList<List<Double>>();
+        for (var p : lineString.getPoints())
+            coordinates.add(List.of(p.x(), p.y()));
+        return new RJSLineString("LineString", coordinates);
     }
 
     /** Concatenates a list of LineString into a single LineString.

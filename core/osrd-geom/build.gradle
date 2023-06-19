@@ -16,12 +16,11 @@ java {
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
 
+    // Geographic computations
+    implementation libs.geodesy
+
     // fast primitive collections
     implementation libs.hppc
-
-    // JSON parsing
-    implementation libs.moshi
-    implementation libs.moshi.adapters
 
     // for linter annotations
     compileOnly libs.jcip.annotations
@@ -32,9 +31,4 @@ dependencies {
     testImplementation libs.junit.jupiter.params
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
-}
-
-spotbugs {
-    // Ignores unread or unused errors, which are wrongly detected all over this subproject
-    excludeFilter = rootProject.file('config/spotbugs/exclude-railjson.xml')
 }
