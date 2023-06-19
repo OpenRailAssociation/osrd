@@ -10,6 +10,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
@@ -294,8 +295,8 @@ class PathTests {
 
         val pathBackward = pathFromTracks(infra, listOf("TA1", "TA0"), Direction.DECREASING, 450.meters, 2_950.meters)
         val loadingGauge = pathBackward.getLoadingGauge()
-        assert(loadingGauge.get(0.meters)!!.isCompatibleWith(RJSLoadingGaugeType.GC))
-        assert(!loadingGauge.get(1_000.meters)!!.isCompatibleWith(RJSLoadingGaugeType.GC))
+        assert(loadingGauge.get(0.meters)!!.isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt())))
+        assert(!loadingGauge.get(1_000.meters)!!.isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt())))
     }
 
     /** Assert that line strings are equal, with a certain tolerance for double values */
