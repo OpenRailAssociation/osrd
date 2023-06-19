@@ -8,7 +8,9 @@
   },
   "distribution": {
     "linear": "Linear",
-    "mareco": "Mareco"
+    "LINEAR": "Linear",
+    "mareco": "Mareco",
+    "MARECO": "Mareco"
   },
   "missingPathFinding": "Please define a path before specifying margins"
 }
