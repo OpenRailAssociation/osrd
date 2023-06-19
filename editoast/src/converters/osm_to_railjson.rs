@@ -49,6 +49,9 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .reject("railway", "Wendeanlage")
         .reject("roller_coaster", "*")
         .reject("construction", "*")
+        .read_tag("maxspeed")
+        .read_tag("maxspeed:forward")
+        .read_tag("maxspeed:backward")
         .read(osm_pbf_in.to_str().unwrap())?;
     info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
@@ -68,6 +71,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         switch_types: default_switch_types(),
         detectors: signals.iter().map(detector).collect(),
         signals,
+        speed_sections: rail_edges.clone().flat_map(speed_sections).collect(),
         ..Default::default()
     };
 
@@ -81,8 +85,6 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
                 length: e.length(),
                 geo: geo.clone(),
                 sch: geo,
-                slopes: vec![],
-                curves: vec![],
                 ..Default::default()
             }
         })
@@ -230,5 +232,23 @@ mod tests {
         let railjson = parse_osm("src/tests/signal_at_end_of_line.osm.pbf".into()).unwrap();
         assert!(railjson.signals.is_empty());
         assert_eq!(2, railjson.buffer_stops.len());
+    }
+
+    #[test]
+    fn parse_speed() {
+        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into()).unwrap();
+        assert_eq!(2, rj.speed_sections.len());
+        let forward = rj
+            .speed_sections
+            .iter()
+            .find(|s| s.track_ranges[0].applicable_directions == ApplicableDirections::StartToStop)
+            .unwrap();
+        assert!((120. / 3.6 - forward.speed_limit.unwrap()).abs() < 0.1);
+        let backward = rj
+            .speed_sections
+            .iter()
+            .find(|s| s.track_ranges[0].applicable_directions == ApplicableDirections::StopToStart)
+            .unwrap();
+        assert!((60. / 3.6 - backward.speed_limit.unwrap()).abs() < 0.1);
     }
 }
