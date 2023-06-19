@@ -9,11 +9,10 @@ import {
   getPowerRestriction,
   getPathfindingID,
 } from 'reducers/osrdconf/selectors';
-import { osrdEditoastApi, RollingStock } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, RollingStock, PowerRestrictionRange } from 'common/api/osrdEditoastApi';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 import { setWarning } from 'reducers/main';
 import { compact, isEmpty, reduce, uniq } from 'lodash';
-import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 
 type selectorOption = { key: string | undefined; value: string | undefined };
 
