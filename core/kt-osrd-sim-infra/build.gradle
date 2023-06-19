@@ -17,10 +17,10 @@ java {
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     implementation project(':kt-fast-collections')
+    implementation project(path: ':osrd-geom')
     ksp project(':kt-fast-collections-generator')
 
     api project(":kt-osrd-utils")
-    api project(":osrd-railjson")
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
 }

@@ -25,6 +25,7 @@ dependencies {
     implementation project(':osrd-railjson')
     implementation project(':osrd-reporting')
     implementation project(':envelope-sim')
+    implementation project(':osrd-geom')
     testImplementation(testFixtures(project(":envelope-sim")))
 
     // kotlin

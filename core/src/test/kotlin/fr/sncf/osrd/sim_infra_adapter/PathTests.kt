@@ -1,9 +1,10 @@
 package fr.sncf.osrd.sim_infra_adapter
 
 import fr.sncf.osrd.Helpers
+import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
-import fr.sncf.osrd.railjson.schema.geom.LineString
-import fr.sncf.osrd.railjson.schema.geom.Point
+import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
@@ -191,9 +192,9 @@ class PathTests {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
         for (track in rjsInfra.trackSections) {
             if (track.id.equals("TA0"))
-                track.geo = LineString.make(doubleArrayOf(0.0, 1.0, 1.0), doubleArrayOf(0.0, 0.0, 1.0))
+                track.geo = RJSLineString.make(listOf(0.0, 1.0, 1.0), listOf(0.0, 0.0, 1.0))
             if (track.id.equals("TA1"))
-                track.geo = LineString.make(doubleArrayOf(1.0, 2.0, 2.0), doubleArrayOf(1.0, 1.0, 1.95))
+                track.geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95))
         }
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
         val infra = adaptRawInfra(oldInfra)

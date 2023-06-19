@@ -10,7 +10,6 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDeadSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +19,6 @@ public class RJSInfra {
     public static final JsonAdapter<RJSInfra> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
-            .add(LineString.adapter)
             .build()
             .adapter(RJSInfra.class);
 

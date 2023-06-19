@@ -1,6 +1,6 @@
 package fr.sncf.osrd.sim_infra.api
 
-import fr.sncf.osrd.railjson.schema.geom.LineString
+import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.impl.PathImpl
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
