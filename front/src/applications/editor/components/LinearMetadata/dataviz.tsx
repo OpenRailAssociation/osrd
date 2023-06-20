@@ -173,7 +173,7 @@ export interface LinearMetadataDatavizProps<T> {
   /**
    * Event when the user is resizing an item
    */
-  onCreate?: (startX: number, gap: number, init: boolean, finalized: boolean) => void;
+  onCreate?: (finalized: boolean) => number | null;
 }
 
 /**
@@ -203,7 +203,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   // If the user is doing a drag'n'drop
   const [draginStartAt, setDraginStartAt] = useState<number | null>(null);
   // Store the data for the resizing:
-  const [resizing, setResizing] = useState<{ index: number; startAt: number } | null>(null);
+  const [resizing, setResizing] = useState<{ index: number | null; startAt: number } | null>(null);
   // Store the data for the creation:
   const [creating, setCreating] = useState<{ startAt: number; endAt: number } | null>(null);
   // min & max of the data value
@@ -306,12 +306,12 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       fnUp = (e) => {
         const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
         setResizing(null);
-        onResize(resizing.index, delta, true);
+        if (resizing.index) onResize(resizing.index, delta, true);
       };
       // function for mouve
       fnMove = (e) => {
         const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
-        onResize(resizing.index, delta, false);
+        if (resizing.index) onResize(resizing.index, delta, false);
       };
 
       document.addEventListener('mouseup', fnUp, true);
@@ -331,40 +331,24 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    * => register event on document for the mouseUp
    */
   useEffect(() => {
-    let fnUp: ((e: MouseEvent) => void) | undefined;
     let fnMove: ((e: MouseEvent) => void) | undefined;
-    let fnDown: ((e: MouseEvent) => void) | undefined;
 
     if (onCreate && wrapper.current && creating) {
       const wrapperWidth = wrapper.current.offsetWidth;
 
-      // function for key up
-      fnUp = (e) => {
-        const delta = ((e.clientX - creating.startAt) / wrapperWidth) * fullLength;
-        setCreating(null);
-        onCreate(creating.startAt, delta, false, true);
-      };
       // function for mouve
       fnMove = (e) => {
-        const delta = ((e.clientX - creating.startAt) / wrapperWidth) * fullLength;
-
-        onCreate(creating.startAt, delta, false, false);
-      };
-      // function for key down
-      fnDown = (e) => {
-        const delta = ((e.clientX - creating.startAt) / wrapperWidth) * fullLength;
+        const createdIntervalIndex = onCreate(false);
+        setCreating(null);
+        setResizing({ index: createdIntervalIndex, startAt: e.clientX });
       };
 
-      document.addEventListener('mouseup', fnUp, true);
       document.addEventListener('mousemove', fnMove, true);
-      document.addEventListener('mousedown', fnDown, true);
     }
     // cleanup
     return () => {
-      if (fnUp && fnMove && fnDown) {
-        document.removeEventListener('mouseup', fnUp, true);
+      if (fnMove) {
         document.removeEventListener('mousemove', fnMove, true);
-        document.removeEventListener('mousedown', fnDown, true);
       }
     };
   }, [creating, onCreate, wrapper, fullLength]);

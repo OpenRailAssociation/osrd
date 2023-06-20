@@ -33,6 +33,7 @@ $resize-width: 3px;
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
+    justify-content: space-between;
     .zoom-horizontal {
       display: flex;
       flex-direction: row;
@@ -79,7 +80,7 @@ $resize-width: 3px;
         }
       }
 
-      
+
 
       .tools {
         display: flex;
@@ -181,7 +182,7 @@ $resize-width: 3px;
               background-color: $color;
               text-align: center;
               white-space: nowrap;
-              overflow-x:hidden;
+              overflow-y:hidden;
               span {
                 //display: inline-block;
                 font-size: 0.6em;
@@ -360,6 +361,7 @@ $resize-width: 3px;
       padding: 1em;
 
       .header {
+
         .btn-toolbar {
           width: 100%;
           display: flex;
