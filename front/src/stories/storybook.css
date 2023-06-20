@@ -3560,9 +3560,16 @@ thead {
 .flexValuesEdition {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.flexValuesEdition > div {
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: row;
 }
 .flexValuesEdition div.flexValuesEditionSelect {
-  min-width: 7em;
+  max-width: 8em;
 }
 
 .stdcm-map-noSimulation {

@@ -1,7 +1,15 @@
 .flexValuesEdition {
   display:flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  //justify-content: space-evenly;
+  > div {
+    padding-left: 1.2em;
+    display:flex;
+    flex-direction: row;
+  }
   div.flexValuesEditionSelect {
-    min-width: 7em
+    max-width: 8em
   }
 }
