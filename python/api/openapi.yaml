@@ -2043,6 +2043,8 @@ components:
         begin_position: 0.0
         end_position: 1000.0
         power_restriction_code: "C1US"
+      required: [begin_position, end_position, power_restriction_code]
+
     WritableTrainSchedule:
       properties:
         train_name:

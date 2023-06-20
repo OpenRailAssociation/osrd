@@ -1,5 +1,4 @@
 import { baseApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -908,9 +907,9 @@ export type Allowance =
       allowance_type: 'standard';
     } & StandardAllowance);
 export type PowerRestrictionRange = {
-  begin_position?: number;
-  end_position?: number;
-  power_restriction_code?: string;
+  begin_position: number;
+  end_position: number;
+  power_restriction_code: string;
 };
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;

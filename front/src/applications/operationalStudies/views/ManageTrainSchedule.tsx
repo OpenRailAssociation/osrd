@@ -9,7 +9,6 @@ import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/SpeedLimitBy
 import PowerRestrictionSelector from 'applications/operationalStudies/components/ManageTrainSchedule/PowerRestrictionSelector';
 import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
-import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import {
   getPathfindingID,
   getRollingStockID,
@@ -18,7 +17,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 import { updatePathWithCatenaries, updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
-import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, CatenaryRange, TrainSchedule } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -32,7 +31,7 @@ export default function ManageTrainSchedule() {
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
-  const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
 
   const { pathWithCatenaries } = osrdEditoastApi.useGetPathfindingByPathIdCatenariesQuery(
@@ -122,8 +121,8 @@ export default function ManageTrainSchedule() {
       getTrainScheduleById({ id: trainScheduleIDsToModify[0] })
         .unwrap()
         .then((trainSchedule: TrainSchedule) => {
-          if (trainSchedule.path) {
-            getPathfindingById({ id: trainSchedule.path })
+          if (trainSchedule.path_id) {
+            getPathfindingById({ id: trainSchedule.path_id })
               .unwrap()
               .then((path) => {
                 adjustConfWithTrainToModify(trainSchedule, path, dispatch);

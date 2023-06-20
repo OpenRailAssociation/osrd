@@ -1,5 +1,4 @@
 import { baseEditoastApi as api } from './emptyApi';
-
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -1721,10 +1720,10 @@ export type PowerRestrictionRange = {
 export type TrainSchedule = {
   id?: number;
   train_name?: string;
-  timetable?: number;
-  rolling_stock?: number;
+  timetable_id?: number;
+  rolling_stock_id?: number;
   departure_time?: number;
-  path?: number;
+  path_id?: number;
   initial_speed?: number;
   labels?: string[];
   allowances?: Allowance[];

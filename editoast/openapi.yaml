@@ -3674,14 +3674,14 @@ components:
           type: number
         train_name:
           type: string
-        timetable:
+        timetable_id:
           type: integer
-        rolling_stock:
+        rolling_stock_id:
           type: integer
         departure_time:
           type: number
           format: float
-        path:
+        path_id:
           type: integer
         initial_speed:
           type: number
