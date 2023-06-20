@@ -83,6 +83,12 @@ impl Display for NonBlankString {
     }
 }
 
+impl PartialEq<NonBlankString> for &str {
+    fn eq(&self, other: &NonBlankString) -> bool {
+        self.eq(&other.as_ref())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::NonBlankString;
@@ -96,5 +102,12 @@ mod tests {
     fn test_de_not_blank_str_valid() {
         let res: NonBlankString = serde_json::from_str(r#""foo""#).unwrap();
         assert_eq!(res.0, "foo");
+    }
+
+    #[test]
+    fn test_comparison_with_str() {
+        let non_blank = NonBlankString("hello".into());
+        assert_eq!("hello", non_blank);
+        assert_ne!("bye", non_blank);
     }
 }
