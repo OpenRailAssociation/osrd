@@ -1,26 +1,16 @@
-import HelpModal from 'applications/editor/components/LinearMetadata/HelpModal';
-import {
-  BsBoxArrowInLeft,
-  BsBoxArrowInRight,
-  BsChevronLeft,
-  BsChevronRight,
-  BsFillTrashFill,
-} from 'react-icons/bs';
-import { IoIosCut, IoIosAdd } from 'react-icons/io';
+import { BsFillTrashFill } from 'react-icons/bs';
+import { IoIosAdd, IoIosSave } from 'react-icons/io';
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { LinearMetadataDataviz } from 'applications/editor/components/LinearMetadata/dataviz';
-import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 
 import { TbZoomIn, TbZoomOut, TbZoomCancel, TbScissors, TbArrowsHorizontal } from 'react-icons/tb';
-import { MdOutlineHelpOutline } from 'react-icons/md';
+
 import {
   LinearMetadataItem,
-  SEGMENT_MIN_SIZE,
   createSegmentAt,
   fixLinearMetadataItems,
   getLineStringDistance,
   getZoomedViewBox,
-  mergeIn,
   removeSegment,
   resizeSegment,
   splitAt,
@@ -29,13 +19,11 @@ import {
 } from 'applications/editor/components/LinearMetadata';
 
 import Form, { FieldProps } from '@rjsf/core';
-import { JSONSchema7 } from 'json-schema';
 import { isNil, omit, head, max as fnMax, min as fnMin, cloneDeep } from 'lodash';
 import { t } from 'i18next';
 import { tooltipPosition, notEmpty } from 'applications/editor/components/LinearMetadata/utils';
 import { ValueOf } from 'utils/types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import { useTranslation } from 'react-i18next';
 import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
@@ -61,6 +49,7 @@ type IntervalsEditorMetaProps = {
   defaultValue?: number;
   units?: string[];
   defaultUnit?: string;
+  onChange: (newData: LinearMetadataItem[]) => void;
 };
 
 type IntervalsEditorProps = IntervalsEditorMetaProps & FieldProps;
@@ -70,7 +59,17 @@ type IntervalsEditorProps = IntervalsEditorMetaProps & FieldProps;
  * version 0.1
  */
 export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
-  const { name, formContext, formData, onChange, params, valueField, units, defaultUnit } = props;
+  const {
+    name,
+    formContext,
+    formData,
+    onChange,
+    params,
+    valueField,
+    units,
+    defaultUnit,
+    defaultValue,
+  } = props;
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
@@ -79,12 +78,10 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   const [hovered, setHovered] = useState<{ index: number; point: number } | null>(null);
   // Mode of the dataviz
   const [mode, setMode] = useState<'dragging' | 'resizing' | 'creating' | null>(null);
-  // index of the interval being created
-  const [creatingIndex, setCreatingIndex] = useState<number | null>(null);
+
   // Fix the data (sort, fix gap, ...)
   const [data, setData] = useState<Array<LinearMetadataItem>>(formData);
-  // Value of the selected item (needed for the its modification)
-  const [selectedData, setSelectedData] = useState<LinearMetadataItem | null>(null);
+
   // Wich segment is selected
   const [selected, setSelected] = useState<number | null>(null);
   // For mouse click / doubleClick
@@ -124,9 +121,11 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   return (
     <div className="linear-metadata">
       <div className="header">
-        <h4 className="control-label m-0">{`${name} ${valueField} ${units ? ' (' : ''}${units?.join(
-          ' / '
-        )}${units ? ')' : ''}`}</h4>
+        <div>
+          <h4 className="control-label m-0">{`${name} ${valueField} ${
+            units ? ' (' : ''
+          }${units?.join(' / ')}${units ? ')' : ''}`}</h4>
+        </div>
         <div>
           <div className="zoom-horizontal">
             <button
@@ -237,43 +236,49 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                 }
               } catch (e) {
                 // TODO: should we display it ?
-                console.log(e);
+                console.warn(e);
               }
             }}
-            onCreate={(startX, gap, init, finalized) => {
+            onCreate={(finalized) => {
               setMode(!finalized ? 'creating' : null);
+              let newIntervalIndex = null;
               try {
                 let result = cloneDeep(data);
-                if (hovered && data.length === fixedData.length) {
-                  result = createSegmentAt(
-                    result.filter((e) => (valueField ? !isNil(e[valueField]) : true)),
-                    hovered.point,
-                    hovered.point + 1,
-                    distance,
-                    { fieldName: valueField, defaultValue: 6, tagNew: true }
+                if (hovered && selectedTool === TOOLS.addTool) {
+                  const filteredCurrentResults = result.filter((e) =>
+                    valueField ? !isNil(e[valueField]) : true
                   );
-                  const newIntervalIndex = result.findIndex((intervalCloned) => intervalCloned.new);
-                  setSelected(newIntervalIndex);
-                  result[newIntervalIndex].new = null;
-                  setData(result);
-                } else if (selected) {
-                  const actualGap = gap - (result[selected].end - result[selected].begin);
-                  let resizeOp = resizeSegment(result, selected as number, actualGap, 'end');
-                  result = resizeOp.result;
-                  // VERIFIER COHERENCE SELECTIONNE
+                  result = createSegmentAt(
+                    filteredCurrentResults,
+                    hovered.point - 1,
+                    hovered.point,
+                    distance,
+                    {
+                      fieldName: valueField,
+                      defaultValue:
+                        defaultValue ||
+                        fnMax(
+                          filteredCurrentResults.map(
+                            (filteredCurrentResult) => filteredCurrentResult[valueField]
+                          )
+                        ),
+                      tagNew: true,
+                    }
+                  );
+                  toggleSelectedTool(TOOLS.addTool);
+
+                  newIntervalIndex = result.findIndex((intervalCloned) => intervalCloned.new);
+                  delete result[newIntervalIndex].new;
                   setData(result);
                 }
+                customOnChange(result);
 
                 // it is naturally the last temp segment
-                if (finalized) customOnChange(result);
-                else {
-                  // if index has changed, we need to impact the index modification
-                  
-                }
               } catch (e) {
                 // TODO: should we display it ?
-                console.log(e);
+                console.warn(e);
               }
+              return newIntervalIndex;
             }}
           />
           <div className="btn-group-vertical">
@@ -284,7 +289,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                     selectedTool === TOOLS.addTool ? 'btn-selected' : 'btn'
                   } btn-sm btn-outline-secondary`}
                   type="button"
-                  title={t('common.next')}
+                  title={t('common.add')}
                   disabled={selected === data.length - 1}
                   onClick={() => {
                     toggleSelectedTool(TOOLS.addTool);
@@ -299,7 +304,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                     selectedTool === TOOLS.translateTool ? 'btn-selected' : 'btn'
                   } btn-sm btn-outline-secondary`}
                   type="button"
-                  title={t('common.next')}
+                  title={t('common.pan')}
                   disabled={selected === data.length - 1}
                   onClick={() => {
                     toggleSelectedTool(TOOLS.translateTool);
@@ -314,7 +319,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                     selectedTool === TOOLS.cutTool ? 'btn-selected' : 'btn'
                   } btn-sm btn-outline-secondary`}
                   type="button"
-                  title={t('common.next')}
+                  title={t('common.select')}
                   disabled={selected === data.length - 1}
                   onClick={() => {
                     toggleSelectedTool(TOOLS.cutTool);
@@ -329,10 +334,9 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                     selectedTool === TOOLS.deleteTool ? 'btn-selected' : 'btn'
                   } btn-sm btn-outline-secondary`}
                   type="button"
-                  title={t('common.next')}
+                  title={t('common.delete')}
                   disabled={selected === data.length - 1}
                   onClick={() => {
-                    console.log('click on delete');
                     toggleSelectedTool(TOOLS.deleteTool);
                   }}
                 >
@@ -357,70 +361,86 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
 
         {selected && data[selected] && (
           <div className="flexValuesEdition">
-            <div>
-              <InputSNCF
-                type="number"
-                id="item-begin"
-                label={t('begin')}
-                onChange={(e) => {
-                  if (parseFloat(e.target.value) >= data[selected].end) return;
-                  const gap = parseFloat(e.target.value) - data[selected].begin;
-                  const result = resizeSegment(data, selected, gap, 'begin');
-                  setData(result.result);
-                  //customOnChange(result.result); // on save system
-                }}
-                max={data[selected].end}
-                value={data[selected].begin}
-                noMargin
-                sm
-              />
-            </div>
-            <div>
-              <InputSNCF
-                type="number"
-                id="item-valueField"
-                label={valueField}
-                onChange={(e) => {
-                  const result = cloneDeep(data);
-                  result[selected][valueField] = parseFloat(e.target.value);
-                  setData(result);
-                }}
-                value={data[selected][valueField] as number}
-                noMargin
-                sm
-              />
-            </div>
-            {units && units.length > 1 && (
-              <div className="flexValuesEditionSelect">
-                <SelectSNCF
-                  id="item-unit"
-                  options={units}
-                  title={t('unit')}
-                  labelKey="label"
-                  onChange={() => null}
+            <div className="flexValues">
+              <div>
+                <InputSNCF
+                  type="number"
+                  id="item-begin"
+                  label={t('begin')}
+                  onChange={(e) => {
+                    if (parseFloat(e.target.value) >= data[selected].end) return;
+                    const gap = parseFloat(e.target.value) - data[selected].begin;
+                    const result = resizeSegment(data, selected, gap, 'begin');
+                    setData(result.result);
+                    //customOnChange(result.result); // on save system
+                  }}
+                  max={data[selected].end}
+                  value={data[selected].begin}
+                  isFlex
+                  noMargin
                   sm
-                  value={data[selected].unit || defaultUnit}
+                />
+                <InputSNCF
+                  type="number"
+                  id="item-end"
+                  label={t('end')}
+                  onChange={(e) => {
+                    if (parseFloat(e.target.value) <= data[selected].begin) return;
+                    const gap = parseFloat(e.target.value) - data[selected].end;
+                    const result = resizeSegment(data, selected, gap, 'end');
+                    setData(result.result);
+                    //
+                  }}
+                  min={data[selected].begin}
+                  value={data[selected].end}
+                  isFlex
+                  noMargin
+                  sm
                 />
               </div>
-            )}
-
+              <div>
+                <InputSNCF
+                  type="number"
+                  id="item-valueField"
+                  label={valueField}
+                  onChange={(e) => {
+                    const result = cloneDeep(data);
+                    result[selected][valueField] = parseFloat(e.target.value);
+                    setData(result);
+                  }}
+                  value={data[selected][valueField] as number}
+                  noMargin
+                  sm
+                  isFlex
+                />
+                {units && units.length > 1 && (
+                  <div className="flexValuesEditionSelect">
+                    <SelectSNCF
+                      id="item-unit"
+                      options={units}
+                      //title={t('unit')}
+                      labelKey="label"
+                      onChange={() => null}
+                      sm
+                      value={data[selected].unit || defaultUnit}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
             <div>
-              <InputSNCF
-                type="number"
-                id="item-end"
-                label={t('end')}
-                onChange={(e) => {
-                  if (parseFloat(e.target.value) <= data[selected].begin) return;
-                  const gap = parseFloat(e.target.value) - data[selected].end;
-                  const result = resizeSegment(data, selected, gap, 'end');
-                  setData(result.result);
-                  //customOnChange(result.result); // on save system
+              <button
+                className="btn"
+                type="button"
+                onClick={() => {
+                  customOnChange(data);
                 }}
-                min={data[selected].begin}
-                value={data[selected].end}
-                noMargin
-                sm
-              />
+              >
+                <span className="mr-2">
+                  <IoIosSave />
+                </span>
+                {t('save')}
+              </button>
             </div>
           </div>
         )}

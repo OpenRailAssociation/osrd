@@ -31,29 +31,22 @@ const formContextSample = {
   isCreation: false,
 };
 
-const schemaSample: JSONSchema7 = {
-  title: 'Linear Data',
-  description: 'List of slopes of corresponding track section',
-  type: 'array',
-  items: { $ref: '#/definitions/Slope' },
-};
-
 const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
-  const { formContext, schema, params, valueField } = props;
+  const { formContext, schema, params, valueField, defaultValue } = props;
   const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(formDataBase);
   const onChange = (newData: LinearMetadataItem[]) => {
+    console.log('Wrapper recieved new Data:', newData);
     setMockedData(newData);
   };
   return (
     <IntervalsEditor
       {...props}
       formContext={formContext}
-      schema={schema}
       formData={mockedData}
       params={params}
       valueField={valueField}
       onChange={onChange}
-      defaultValue={0}
+      defaultValue={defaultValue as number}
     />
   );
 };
@@ -61,6 +54,9 @@ const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
 const IntervalsDemonstrator = {
   title: 'IntervalsDemonstrator',
   component: IntervalsEditorWrapper,
+  argTypes: {
+    onChange: { description: 'Value sent back to wrapper', action: 'onChange' },
+  },
 };
 
 export default IntervalsDemonstrator;
@@ -68,10 +64,10 @@ export default IntervalsDemonstrator;
 export const Plain = {
   args: {
     formContext: formContextSample,
-    schema: schemaSample,
     valueField: 'gradient',
     params: { deleteTool: true, translateTool: false, cutTool: true, addTool: true },
     units: ['s', 'm'],
     name: 'linearMetaData',
+    defaultValue: 14,
   },
 };
