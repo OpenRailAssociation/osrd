@@ -52,6 +52,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .read_tag("maxspeed")
         .read_tag("maxspeed:forward")
         .read_tag("maxspeed:backward")
+        .read_tag("voltage")
         .read(osm_pbf_in.to_str().unwrap())?;
     info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
@@ -72,6 +73,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         detectors: signals.iter().map(detector).collect(),
         signals,
         speed_sections: rail_edges.clone().flat_map(speed_sections).collect(),
+        catenaries: rail_edges.clone().flat_map(catenaries).collect(),
         ..Default::default()
     };
 
@@ -250,5 +252,12 @@ mod tests {
             .find(|s| s.track_ranges[0].applicable_directions == ApplicableDirections::StopToStart)
             .unwrap();
         assert!((60. / 3.6 - backward.speed_limit.unwrap()).abs() < 0.1);
+    }
+
+    #[test]
+    fn parse_catenaries() {
+        let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into()).unwrap();
+        assert_eq!(1, rj.catenaries.len());
+        assert_eq!("15000", rj.catenaries[0].voltage);
     }
 }
