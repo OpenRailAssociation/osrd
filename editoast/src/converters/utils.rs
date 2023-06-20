@@ -423,6 +423,19 @@ pub fn edge_to_buffer(node: &NodeId, edge: &Edge, count: i64) -> BufferStop {
     }
 }
 
+pub fn catenaries(edge: &Edge) -> Option<Catenary> {
+    edge.tags.get("voltage").map(|voltage| Catenary {
+        id: edge.id.clone().into(),
+        voltage: voltage.clone().into(),
+        track_ranges: vec![ApplicableDirectionsTrackRange {
+            track: edge.id.clone().into(),
+            begin: 0.,
+            end: edge.length(),
+            applicable_directions: ApplicableDirections::Both,
+        }],
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use osm4routing::Coord;
