@@ -141,7 +141,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/infra/${queryArg.id}/pathfinding/`,
         method: 'POST',
         body: queryArg.body,
-        params: { number: queryArg.number },
+        params: { number: queryArg['number'] },
       }),
     }),
     postInfraByIdObjectsAndObjectType: build.mutation<
@@ -1719,6 +1719,7 @@ export type PowerRestrictionRange = {
   power_restriction_code: string;
 };
 export type TrainSchedule = {
+  id?: number;
   train_name?: string;
   timetable?: number;
   rolling_stock?: number;
