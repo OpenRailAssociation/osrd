@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
-
 import {
   Allowance,
   AllowanceValue,
   RangeAllowance,
   EngineeringAllowance,
-} from 'common/api/osrdMiddlewareApi';
-
+} from 'common/api/osrdEditoastApi';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';

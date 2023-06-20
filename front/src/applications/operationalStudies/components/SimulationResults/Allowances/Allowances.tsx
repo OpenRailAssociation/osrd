@@ -9,7 +9,7 @@ import {
   RangeAllowance,
   EngineeringAllowance,
   StandardAllowance,
-} from 'common/api/osrdMiddlewareApi';
+} from 'common/api/osrdEditoastApi';
 import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
 import { OsrdSimulationState } from 'reducers/osrdsimulation/types';
 

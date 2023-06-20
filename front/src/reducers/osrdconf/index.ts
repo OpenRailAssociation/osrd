@@ -15,8 +15,12 @@ import {
 import { formatIsoDate } from 'utils/date';
 import { ValueOf } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
-import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-import { CatenaryRange, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  CatenaryRange,
+  Path,
+  osrdEditoastApi,
+  PowerRestrictionRange,
+} from 'common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from '../../types';
 
 /* eslint-disable default-case */

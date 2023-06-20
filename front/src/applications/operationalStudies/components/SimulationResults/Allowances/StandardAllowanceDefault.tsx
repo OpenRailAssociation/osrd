@@ -13,7 +13,7 @@ import {
   RangeAllowance,
   StandardAllowance,
   TrainSchedule,
-} from 'common/api/osrdMiddlewareApi';
+} from 'common/api/osrdEditoastApi';
 import { SimulationSnapshot } from 'reducers/osrdsimulation/types';
 import { Dispatch } from 'redux';
 import { AxiosError } from 'axios';

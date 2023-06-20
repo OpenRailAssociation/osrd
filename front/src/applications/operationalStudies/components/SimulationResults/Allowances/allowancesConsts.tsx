@@ -1,4 +1,4 @@
-import { AllowanceValue } from 'common/api/osrdMiddlewareApi';
+import { AllowanceValue } from 'common/api/osrdEditoastApi';
 
 export const ALLOWANCE_UNITS_KEYS = {
   time: 's',

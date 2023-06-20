@@ -4,7 +4,7 @@ import { identity, isNumber } from 'lodash';
 
 import { FaTrash } from 'react-icons/fa';
 
-import { Allowance, RangeAllowance, AllowanceValue } from 'common/api/osrdMiddlewareApi';
+import { Allowance, RangeAllowance, AllowanceValue } from 'common/api/osrdEditoastApi';
 import { OsrdSimulationState } from 'reducers/osrdsimulation/types';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 

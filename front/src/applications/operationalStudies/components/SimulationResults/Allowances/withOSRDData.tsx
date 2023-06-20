@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { get, patch } from 'common/requests';
 
 import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
-import { TrainSchedule, Allowance } from 'common/api/osrdMiddlewareApi';
+import { TrainSchedule, Allowance } from 'common/api/osrdEditoastApi';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { setFailure, setSuccess } from 'reducers/main';
 import {
