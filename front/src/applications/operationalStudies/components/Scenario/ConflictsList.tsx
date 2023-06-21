@@ -9,6 +9,7 @@ export type Conflict = {
   conflict_type: string;
   start_time: string;
   end_time: string;
+  train_names: string[];
 };
 
 type ConflictTableProps = {
@@ -24,8 +25,8 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
     <div className="conflict-card">
       <BsLightningFill color="red" />
       <div className="conflict-trains">
-        <div className="card-text">{conflict.train_ids[0]}</div>
-        <div className="card-text">{conflict.train_ids[1]}</div>
+        <div className="card-text">{conflict.train_names[0]}</div>
+        <div className="card-text">{conflict.train_names[1]}</div>
       </div>
       <div className="conflict-type">
         <p className="card-text">{t(`${conflict.conflict_type}`)}</p>

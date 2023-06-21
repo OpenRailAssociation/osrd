@@ -127,6 +127,15 @@ export default function Scenario() {
         });
     }
   };
+  const refreshConflicts = () => {
+    if (timetableId) {
+      getTimetableConflicts({ id: timetableId })
+        .unwrap()
+        .then((data) => {
+          setConflicts(data as Conflict[]);
+        });
+    }
+  };
 
   useEffect(() => {
     if (!scenarioId || !studyId || !projectId) {
@@ -247,6 +256,7 @@ export default function Scenario() {
                   setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   trainsWithDetails={trainsWithDetails}
                   conflicts={conflicts}
+                  refreshConflict={refreshConflicts}
                 />
               </div>
             </div>
