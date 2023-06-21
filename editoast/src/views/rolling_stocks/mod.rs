@@ -47,7 +47,7 @@ pub enum RollingStockError {
     #[editoast_error(status = 400)]
     RollingStockIsLocked { rolling_stock_id: i64 },
     #[error("RollingStock '{rolling_stock_id}' is used")]
-    #[editoast_error(status = 400)]
+    #[editoast_error(status = 409)]
     RollingStockIsUsed {
         rolling_stock_id: i64,
         usage: Vec<TrainScheduleScenarioStudyProject>,
@@ -860,7 +860,7 @@ pub mod tests {
                 .unwrap(),
         }];
 
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        assert_eq!(response.status(), StatusCode::CONFLICT);
         assert_editoast_error_type!(
             response,
             RollingStockError::RollingStockIsUsed {

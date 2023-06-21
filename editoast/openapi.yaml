@@ -1212,9 +1212,21 @@ paths:
             type: integer
           description: rolling_stock id
           required: true
+        - in: query
+          name: force
+          description: force the deletion even if it’s used
+          schema:
+            type: boolean
+            default: false
       responses:
         204:
           description: No content
+        409:
+          description: Rolling stock is used in a train schedule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollingStockUsage"
 
   /rolling_stock/{id}/locked/:
     patch:
@@ -3729,6 +3741,43 @@ components:
           type: boolean
           nullable: true
 
+    RollingStockUsage:
+      type: object
+      properties:
+        rolling_stock_id:
+          type: integer
+        usage:
+          type: object
+          properties:
+            train_schedule_id:
+              type: integer
+            train_name:
+              type: string
+            project_id:
+              type: integer
+            project_name:
+              type: string
+            study_id:
+              type: integer
+            study_name:
+              type: string
+            scenario_id:
+              type: integer
+            scenario_name:
+              type: string
+          required:
+            - train_schedule_id
+            - train_name
+            - project_id
+            - project_name
+            - study_id
+            - study_name
+            - scenario_id
+            - scenario_name
+      required:
+        - rolling_stock_id
+        - usage
+    
     PowerRestrictionRange:
       description: A range along the train path where a power restriction is applied.
       type: object
