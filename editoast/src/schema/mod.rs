@@ -26,7 +26,10 @@ pub use detector::{Detector, DetectorCache};
 use enum_map::Enum;
 pub use errors::{InfraError, InfraErrorType};
 pub use geo_json::GeoJson;
-pub use operational_point::{OperationalPoint, OperationalPointCache, OperationalPointPart};
+pub use operational_point::{
+    OperationalPoint, OperationalPointCache, OperationalPointExtensions,
+    OperationalPointIdentifierExtension, OperationalPointPart,
+};
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
 use serde::{Deserialize, Serialize};
