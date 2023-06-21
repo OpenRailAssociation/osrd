@@ -267,6 +267,7 @@ async fn import_railjson(
     .into();
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
+    info!("🍞 Importing infra {}", infra.name.clone().unwrap().bold());
     let infra = infra.persist(railjson, pool.clone()).await?;
     block::<_, Result<(), Box<dyn Error + Send + Sync>>>(move || {
         let mut conn = pool.get()?;
