@@ -98,14 +98,14 @@ def fast_rolling_stocks(request: Any) -> Iterable[int]:
     ids = _create_fast_rolling_stocks(request.node.get_closest_marker("names_and_metadata").args[0])
     yield ids
     for id in ids:
-        requests.delete(f"{EDITOAST_URL}rolling_stock/{id}/")
+        requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
 
 @pytest.fixture
 def fast_rolling_stock() -> int:
     id = _create_fast_rolling_stocks()[0]
     yield id
-    requests.delete(f"{EDITOAST_URL}rolling_stock/{id}/")
+    requests.delete(f"{EDITOAST_URL}rolling_stock/{id}?force=true")
 
 
 @pytest.fixture

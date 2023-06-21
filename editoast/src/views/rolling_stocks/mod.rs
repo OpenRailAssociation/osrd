@@ -180,24 +180,47 @@ async fn update(
     Ok(Json(rolling_stock_with_liveries))
 }
 
+#[derive(Deserialize)]
+struct DeleteQueryParams {
+    #[serde(default)]
+    force: bool,
+}
+
 #[delete("/{rolling_stock_id}")]
-async fn delete(db_pool: Data<DbPool>, path: Path<i64>) -> Result<HttpResponse> {
+async fn delete(
+    db_pool: Data<DbPool>,
+    path: Path<i64>,
+    params: Query<DeleteQueryParams>,
+) -> Result<HttpResponse> {
     let rolling_stock_id = path.into_inner();
     assert_rolling_stock_unlocked(
         retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
     )?;
+
+    if params.force {
+        return delete_rolling_stock(db_pool.clone(), rolling_stock_id).await;
+    }
+
     let trains = get_rolling_stock_usage(db_pool.clone(), rolling_stock_id).await?;
     if trains.is_empty() {
-        return match RollingStockModel::delete(db_pool.clone(), rolling_stock_id).await {
-            Ok(_) => Ok(HttpResponse::NoContent().finish()),
-            Err(err) => Err(err),
-        };
+        return delete_rolling_stock(db_pool.clone(), rolling_stock_id).await;
     }
     Err(RollingStockError::RollingStockIsUsed {
         rolling_stock_id,
         usage: trains,
     }
     .into())
+}
+
+async fn delete_rolling_stock(
+    db_pool: Data<DbPool>,
+    rolling_stock_id: i64,
+) -> Result<HttpResponse> {
+    match RollingStockModel::delete(db_pool.clone(), rolling_stock_id).await {
+        Ok(false) => Err(RollingStockError::NotFound { rolling_stock_id }.into()),
+        Ok(true) => Ok(HttpResponse::NoContent().finish()),
+        Err(err) => Err(err),
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -845,5 +868,23 @@ pub mod tests {
                 usage: expected_usage
             }
         )
+    }
+
+    #[rstest]
+    async fn forcefully_delete_used_rolling_stock(
+        #[future] train_schedule_with_scenario: TrainScheduleFixtureSet,
+    ) {
+        let app = create_test_service().await;
+        let train_schedule_with_scenario = train_schedule_with_scenario.await;
+        let rolling_stock_id = train_schedule_with_scenario.rolling_stock.id();
+        let response = call_service(
+            &app,
+            TestRequest::delete()
+                .uri(format!("/rolling_stock/{}?force=true", rolling_stock_id).as_str())
+                .to_request(),
+        )
+        .await;
+
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }
