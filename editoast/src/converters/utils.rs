@@ -277,7 +277,7 @@ impl<'a> NodeToTrack<'a> {
 }
 
 pub fn signals(
-    osm_pbf_in: std::path::PathBuf,
+    osm_pbf_in: &std::path::PathBuf,
     nodes_to_tracks: &NodeToTrack,
     adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies>,
 ) -> Vec<Signal> {
@@ -454,6 +454,69 @@ pub fn catenaries(edge: &Edge) -> Option<Catenary> {
             applicable_directions: ApplicableDirections::Both,
         }],
     })
+}
+
+pub fn operational_points(
+    osm_pbf_in: &std::path::PathBuf,
+    nodes_to_tracks: &NodeToTrack,
+) -> Vec<OperationalPoint> {
+    let file = std::fs::File::open(osm_pbf_in).unwrap();
+    let mut pbf = osmpbfreader::OsmPbfReader::new(file);
+    pbf.iter()
+        .flatten()
+        .filter(|obj| obj.tags().contains("public_transport", "stop_area")) // https://wiki.openstreetmap.org/wiki/Tag:public_transport%3Dstop_area
+        .flat_map(|obj| match obj {
+            osmpbfreader::OsmObj::Relation(rel) => Some(rel), // Only consider OSM relations
+            _ => None,                                        // Discard Nodes and Ways
+        })
+        .map(|rel| {
+            let parts = rel
+                .refs
+                .iter()
+                .filter(|r| r.role == "stop") // We ignore other members of the relation
+                .flat_map(|r| match r.member {
+                    osmpbfreader::OsmId::Node(id) => Some(id),
+                    _ => {
+                        warn!("OpenStreetMap relation ({}) has a member ({:?}) with role `stop` that isn’t a node", rel.id.0, r.member);
+                        None
+                    },
+                })
+                .flat_map(|node| {
+                    nodes_to_tracks
+                        .track_and_position(node)
+                        .map(|(track, position)| OperationalPointPart { track, position })
+                })
+                .collect();
+
+            OperationalPoint {
+                id: rel.id.0.to_string().into(),
+                parts,
+                extensions: OperationalPointExtensions {
+                    identifier: identifier(&rel.tags),
+                    sncf: None,
+                },
+            }
+        })
+        .collect()
+}
+
+fn identifier(tags: &osmpbfreader::Tags) -> Option<OperationalPointIdentifierExtension> {
+    let uic = tags
+        .get("uic_ref")
+        .and_then(|uic| match i64::from_str(uic.as_str()) {
+            Ok(uic) => Some(uic),
+            Err(_) => {
+                warn!("Could not parse {uic} uic code as integer");
+                None
+            }
+        })
+        .unwrap_or_default();
+
+    tags.get("name")
+        .map(|name| OperationalPointIdentifierExtension {
+            name: name.as_str().into(),
+            uic,
+        })
 }
 
 #[cfg(test)]
