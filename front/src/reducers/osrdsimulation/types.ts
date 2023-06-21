@@ -108,21 +108,6 @@ export type MechanicalEnergyConsumedBaseEco = {
   eco?: number | null;
 };
 
-// export type ScheduledTrain = {
-//   id: number;
-//   labels: string[];
-//   name: string;
-//   path: number;
-//   pathLength?: number;
-//   departure: number;
-//   arrival: number;
-//   speed_limit_tags?: string;
-//   stopsCount?: number;
-//   duration?: number;
-//   isFiltered?: boolean;
-//   mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
-// };
-
 export type ScheduledTrain = TrainScheduleWithDetails & {
   duration?: number;
   isFiltered?: boolean;

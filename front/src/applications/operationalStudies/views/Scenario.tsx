@@ -65,7 +65,12 @@ export default function Scenario() {
     {}
   );
 
-  const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
+  const {
+    data: infra,
+    currentData: currentInfra,
+    isUninitialized,
+    isLoading,
+  } = osrdEditoastApi.useGetInfraByIdQuery(
     { id: infraId as number },
     {
       skip: !infraId,
@@ -85,7 +90,10 @@ export default function Scenario() {
   }, [infra, reloadCount]);
 
   useEffect(() => {
+    console.log('infra state : ', infra?.state);
+    console.log('current infra state : ', currentInfra?.state);
     if (infra && infra.state === 'NOT_LOADED') {
+      console.log('reload');
       reloadInfra({ id: infraId as number }).unwrap();
       setIsInfraLoaded(false);
     }
@@ -96,7 +104,25 @@ export default function Scenario() {
     ) {
       setIsInfraLoaded(true);
     }
+
+    if (infra && infra.state === 'CACHED') {
+      if (timetableId) {
+        getTimetable(timetableId);
+
+        getTimetableConflicts({ id: timetableId })
+          .unwrap()
+          .then((data) => {
+            setConflicts(data as Conflict[]);
+          });
+      }
+    }
   }, [infra]);
+
+  useEffect(() => {
+    if (infraId) {
+      reloadInfra({ id: infraId as number }).unwrap();
+    }
+  }, [infraId]);
 
   const getScenarioTimetable = async (withNotification = false) => {
     if (projectId && studyId && scenarioId) {
@@ -106,17 +132,17 @@ export default function Scenario() {
           dispatch(updateTimetableID(result.timetable_id));
           dispatch(updateInfraID(result.infra_id));
 
-          const preferredTimetableId = result.timetable_id || timetableId;
+          // const preferredTimetableId = result.timetable_id || timetableId;
 
-          getTimetable(preferredTimetableId);
+          // getTimetable(preferredTimetableId);
 
-          if (preferredTimetableId) {
-            getTimetableConflicts({ id: preferredTimetableId })
-              .unwrap()
-              .then((data) => {
-                setConflicts(data as Conflict[]);
-              });
-          }
+          // if (preferredTimetableId) {
+          //   getTimetableConflicts({ id: preferredTimetableId })
+          //     .unwrap()
+          //     .then((data) => {
+          //       setConflicts(data as Conflict[]);
+          //     });
+          // }
           if (withNotification) {
             dispatch(
               setSuccess({
@@ -159,7 +185,7 @@ export default function Scenario() {
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
-          {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
+          {/* {isUpdating && <ScenarioLoader msg={t('isUpdating')} />} */}
           <div className="row">
             <div className={collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}>
               <div className="scenario-sidemenu">
@@ -244,11 +270,15 @@ export default function Scenario() {
                     infraState={infra.state}
                   />
                 )}
-                <Timetable
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  trainsWithDetails={trainsWithDetails}
-                  conflicts={conflicts}
-                />
+                {infra && (
+                  <Timetable
+                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    trainsWithDetails={trainsWithDetails}
+                    conflicts={conflicts}
+                    infraState={infra.state}
+                    isUpdating={isUpdating}
+                  />
+                )}
               </div>
             </div>
             <div className={collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'}>
@@ -263,6 +293,7 @@ export default function Scenario() {
                   <ImportTrainSchedule />
                 </div>
               )}
+              {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
               <div className="scenario-results">
                 {collapsedTimetable && (
                   <div className="scenario-timetable-collapsed">
