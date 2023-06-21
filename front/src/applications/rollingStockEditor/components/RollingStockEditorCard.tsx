@@ -1,13 +1,17 @@
 import React, { SetStateAction, useState, Dispatch } from 'react';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
-import RollingStockCardDetail from 'common/RollingStockSelector/RollingStockCardDetail';
+import { RollingStock } from 'common/api/osrdEditoastApi';
+import RollingStockCardDetail, {
+  listCurvesComfort,
+} from 'common/RollingStockSelector/RollingStockCardDetail';
 import { RollingStockInfo } from 'common/RollingStockSelector/RollingStockHelpers';
+import RollingStockCurve from 'common/RollingStockSelector/RollingStockCurves';
 import RollingStockEditorForm from './RollingStockEditorForm';
+import RollingStockEditorCurves from './RollingStockEditorCurves';
 
 type RollingStockEditorCardProps = {
   isEditing: boolean;
   setIsEditing: Dispatch<SetStateAction<boolean>>;
-  rollingStock: LightRollingStock;
+  rollingStock: RollingStock;
 };
 
 export default function RollingStockEditorCard({
@@ -25,15 +29,24 @@ export default function RollingStockEditorCard({
         </div>
       </div>
       {isEditing ? (
-        <RollingStockEditorForm rollingStock={rollingStock} setIsEditing={setIsEditing} />
+        <>
+          <RollingStockEditorForm rollingStock={rollingStock} setIsEditing={setIsEditing} />
+          <RollingStockEditorCurves data={rollingStock} />
+        </>
       ) : (
-        <RollingStockCardDetail
-          id={rollingStock.id}
-          hideCurves
-          form="rollingstock-editor-form-text"
-          curvesComfortList={curvesComfortList}
-          setCurvesComfortList={setCurvesComfortList}
-        />
+        <div className="rollingstock-body">
+          <RollingStockCardDetail
+            id={rollingStock.id}
+            hideCurves
+            form="rollingstock-editor-form-text"
+            curvesComfortList={curvesComfortList}
+            setCurvesComfortList={setCurvesComfortList}
+          />
+          <RollingStockCurve
+            curvesComfortList={listCurvesComfort(rollingStock.effort_curves)}
+            data={rollingStock.effort_curves.modes}
+          />
+        </div>
       )}
     </div>
   );

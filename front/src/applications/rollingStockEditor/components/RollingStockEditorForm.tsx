@@ -200,7 +200,10 @@ const RollingStockEditorForm = ({ rollingStock, setIsEditing }: RollingStockPara
   };
 
   return (
-    <form className="d-flex flex-column form-control bg-white" onSubmit={handleSubmit(submit)}>
+    <form
+      className="d-flex flex-column form-control bg-white rounded-0"
+      onSubmit={handleSubmit(submit)}
+    >
       <div className="d-flex justify-content-center">
         <div className="col-6 mr-4">{parameterForm(sideValue.left, register)}</div>
         <div className="col-6">
@@ -219,10 +222,14 @@ const RollingStockEditorForm = ({ rollingStock, setIsEditing }: RollingStockPara
           </div>
         )}
         <div className="ml-auto">
-          <button type="button" className="btn btn-secondary mr-2" onClick={() => cancel()}>
+          <button
+            type="button"
+            className="btn btn-secondary mr-2 py-1 px-2"
+            onClick={() => cancel()}
+          >
             {t('cancel')}
           </button>
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="btn btn-primary py-1 px-2">
             {t('confirm')}
           </button>
         </div>

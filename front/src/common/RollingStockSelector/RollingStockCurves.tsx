@@ -1,16 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { ResponsiveLine } from '@nivo/line';
-import PropTypes from 'prop-types';
+import { PointTooltipProps, ResponsiveLine } from '@nivo/line';
+import { useTranslation } from 'react-i18next';
+import { RollingStock } from 'common/api/osrdEditoastApi';
 import { COLORS } from './consts/consts';
 import { comfort2pictogram } from './RollingStockHelpers';
 
+type EffortCurvesModes = RollingStock['effort_curves']['modes'];
+type TransformedCurves = {
+  [index: string]: {
+    mode: string;
+    comfort: string;
+    speeds: number[];
+    max_efforts: number[];
+  };
+};
+type ParsedCurves = {
+  color: string;
+  comfort: string;
+  data: {
+    x: number;
+    y: number;
+  }[];
+  id: string;
+  mode: string;
+};
+
 // Format RollingStock Curves to NIVO format
-const parseData = (label, color, curve) => {
+const parseData = (label: string, color: string, curve: TransformedCurves['index']) => {
   // Have to transform data, will change when we'll have multiples curves,
   // so initial transformation is commented :
   // const curveFormatted = curve.map((item)
   // => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
-  const curveFormatted = curve.speeds.map((speed, index) => ({
+
+  const curveFormatted = curve.speeds.map((speed: number, index: number) => ({
     x: speed * 3.6,
     y: curve.max_efforts[index] / 1000,
   }));
@@ -26,10 +48,14 @@ const parseData = (label, color, curve) => {
   };
 };
 
-function LegendComfortSwitches(props) {
+function LegendComfortSwitches(props: {
+  curvesComfortList: string[];
+  comfortsStates: { [key: string]: boolean };
+  setComfortsStates: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+}) {
   const { curvesComfortList, comfortsStates, setComfortsStates } = props;
-  const changeComfortState = (id) => {
-    setComfortsStates({ ...comfortsStates, [id]: !comfortsStates[id] });
+  const changeComfortState = (comfort: string) => {
+    setComfortsStates({ ...comfortsStates, [comfort]: !comfortsStates[comfort] });
   };
   return curvesComfortList ? (
     <span className="d-flex">
@@ -50,9 +76,13 @@ function LegendComfortSwitches(props) {
   ) : null;
 }
 
-function Legend(props) {
+function Legend(props: {
+  curves: ParsedCurves[];
+  curvesState: { [key: string]: boolean };
+  setCurvesState: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+}) {
   const { curves, curvesState, setCurvesState } = props;
-  const changeCurveState = (id) => {
+  const changeCurveState = (id: string) => {
     setCurvesState({ ...curvesState, [id]: !curvesState[id] });
   };
 
@@ -61,7 +91,7 @@ function Legend(props) {
       {curves.map((curve) => (
         <span
           className="curves-chart-legend-item"
-          style={curvesState[curve.id] ? { borderColor: curve.color } : null}
+          style={curvesState[curve.id] ? { borderColor: curve.color } : {}}
           key={`legend-${curve.id}`}
           role="button"
           tabIndex={0}
@@ -76,63 +106,98 @@ function Legend(props) {
 }
 
 // Choose cyclic color for curves
-function curveColor(index) {
+function curveColor(index: number) {
   const indexShort = index % Object.keys(COLORS).length;
   return Object.keys(COLORS)[indexShort];
 }
 
-function initialCurvesState(data) {
-  const curvesState = {};
+function initialCurvesState(data: TransformedCurves) {
+  const curvesState: { [key: string]: boolean } = {};
   Object.keys(data).forEach((id) => {
     curvesState[id] = true;
   });
   return curvesState;
 }
 
-function initialComfortsState(data) {
-  const comfortsState = {};
-  data.forEach((id) => {
+function initialComfortsState(curvesComfortList: string[]) {
+  const comfortsState: { [key: string]: boolean } = {};
+  curvesComfortList.forEach((id) => {
     comfortsState[id] = true;
   });
   return comfortsState;
 }
 
-export default function RollingStockCurve(props) {
+export default function RollingStockCurve(props: {
+  data: EffortCurvesModes;
+  curvesComfortList: string[];
+}) {
   const { data, curvesComfortList } = props;
-  const [curves, setCurves] = useState();
-  const [curvesState, setCurvesState] = useState(initialCurvesState(data));
-  const [curvesToDisplay, setCurvesToDisplay] = useState(curves);
-  const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
 
-  const formatTooltip = (tooltip) => (
+  const { t, ready } = useTranslation(['rollingstock']);
+  const mode2name = (mode: string) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
+
+  const transformCurves = (rollingStockCurves: EffortCurvesModes) => {
+    const transformedCurves: TransformedCurves = {};
+    Object.keys(rollingStockCurves).forEach((mode) => {
+      // Standard curves (required)
+      const name = mode2name(mode);
+      transformedCurves[`${name} STANDARD`] = {
+        ...(rollingStockCurves[mode].default_curve as TransformedCurves['index']),
+        mode: name,
+        comfort: 'STANDARD',
+      };
+      // AC & HEATING curves (optional)
+      rollingStockCurves[mode].curves.forEach((curve) => {
+        if (curve.cond?.comfort) {
+          const optionalCurveName = `${name} ${curve.cond.comfort}`;
+          transformedCurves[optionalCurveName] = {
+            ...(curve.curve as TransformedCurves['index']),
+            mode: name,
+            comfort: curve.cond.comfort as string,
+          };
+        }
+      });
+    });
+    return transformedCurves;
+  };
+
+  const [curves, setCurves] = useState<ParsedCurves[]>([]);
+  const [curvesToDisplay, setCurvesToDisplay] = useState(curves);
+  const transformedData = transformCurves(data);
+  const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
+  const [curvesState, setCurvesState] = useState(initialCurvesState(transformedData));
+
+  const formatTooltip = (tooltip: PointTooltipProps) => (
     <div className="curves-chart-tooltip" style={{ borderColor: tooltip.point.color }}>
-      <div
-        className="curves-chart-tooltip-head"
-        style={{
-          backgroundColor: tooltip.point.color,
-          color: COLORS[tooltip.point.color],
-          borderColor: tooltip.point.color,
-        }}
-      >
-        {data[tooltip.point.serieId].mode}
-        <span className="ml-1" />
-        {data[tooltip.point.serieId].comfort !== 'STANDARD' ? (
-          <span className="curves-chart-tooltip-comfort">
-            {comfort2pictogram(data[tooltip.point.serieId].comfort)}
-          </span>
-        ) : null}
-      </div>
+      {transformedData[tooltip.point.serieId] && (
+        <div
+          className="curves-chart-tooltip-head"
+          style={{
+            backgroundColor: tooltip.point.color,
+            color: COLORS[tooltip.point.color as keyof typeof COLORS],
+            borderColor: tooltip.point.color,
+          }}
+        >
+          {transformedData[tooltip.point.serieId].mode}
+          <span className="ml-1" />
+          {transformedData[tooltip.point.serieId].comfort !== 'STANDARD' ? (
+            <span className="curves-chart-tooltip-comfort">
+              {comfort2pictogram(transformedData[tooltip.point.serieId].comfort)}
+            </span>
+          ) : null}
+        </div>
+      )}
       <div className="curves-chart-tooltip-body">
-        {`${tooltip.point.data.y}kN ${Math.floor(tooltip.point.data.x)}km/h`}
+        {`${tooltip.point.data.y}kN ${Math.floor(tooltip.point.data.x as number)}km/h`}
       </div>
     </div>
   );
 
   useEffect(() => {
-    if (data && comfortsStates) {
+    if (transformedData && comfortsStates) {
       setCurves(
-        Object.keys(data)
-          .map((name, index) => parseData(name, curveColor(index), data[name]))
+        Object.keys(transformedData)
+          .map((name, index) => parseData(name, curveColor(index), transformedData[name]))
           .filter((curve) => comfortsStates[curve.comfort])
       );
     }
@@ -143,6 +208,11 @@ export default function RollingStockCurve(props) {
       setCurvesToDisplay(curves.filter((curve) => curvesState[curve.id]));
     }
   }, [curves, curvesState]);
+
+  useEffect(() => {
+    setComfortsStates(initialComfortsState(curvesComfortList));
+    setCurvesState(initialCurvesState(transformedData));
+  }, [data, ready]);
 
   return curves && curvesState && curvesToDisplay && comfortsStates ? (
     <div className="curves-container pt-1 pb-3">
@@ -176,7 +246,6 @@ export default function RollingStockCurve(props) {
         axisTop={null}
         axisRight={null}
         axisBottom={{
-          orient: 'bottom',
           tickSize: 5,
           tickPadding: 5,
           tickRotation: 0,
@@ -185,7 +254,6 @@ export default function RollingStockCurve(props) {
           legendPosition: 'middle',
         }}
         axisLeft={{
-          orient: 'left',
           tickSize: 5,
           tickPadding: 5,
           tickRotation: 0,
@@ -195,27 +263,9 @@ export default function RollingStockCurve(props) {
         }}
         colors={{ datum: 'color' }}
         lineWidth={2}
-        enablePoints={false}
         useMesh
         tooltip={formatTooltip}
       />
     </div>
   ) : null;
 }
-
-LegendComfortSwitches.propTypes = {
-  curvesComfortList: PropTypes.array.isRequired,
-  comfortsStates: PropTypes.object.isRequired,
-  setComfortsStates: PropTypes.func.isRequired,
-};
-
-Legend.propTypes = {
-  curves: PropTypes.array.isRequired,
-  curvesState: PropTypes.object.isRequired,
-  setCurvesState: PropTypes.func.isRequired,
-};
-
-RollingStockCurve.propTypes = {
-  data: PropTypes.object.isRequired,
-  curvesComfortList: PropTypes.array.isRequired,
-};

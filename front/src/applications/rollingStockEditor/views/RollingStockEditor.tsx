@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import Loader from 'common/Loader';
 import { useTranslation } from 'react-i18next';
-import { LightRollingStock } from 'common/api/osrdEditoastApi';
+import { LightRollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import RollingStockEditorButtons from '../components/RollingStockEditorButtons';
 import RollingStockEditorCard from '../components/RollingStockEditorCard';
 
@@ -21,7 +21,14 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
 
-  const selectedRollingStock = rollingStocks.find((rs) => rs.id === openedRollingStockCardId);
+  const { data: selectedRollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
+    {
+      id: openedRollingStockCardId as number,
+    },
+    {
+      skip: !openedRollingStockCardId,
+    }
+  );
 
   return (
     <div className="d-flex pt-5 mt-5">

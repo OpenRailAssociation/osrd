@@ -2,6 +2,7 @@
   &-form {
     width: 80%;
     align-self: center;
+    overflow: auto;
     &-text {
       *td,
       .formResistance {
@@ -101,6 +102,32 @@
         align-items: center;
         color: #4d4d4d;
         font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+.rollingstock-editor-spreadsheet {
+  width: 40%;
+  height: 20rem;
+  overflow: auto;
+  tr:not(:first-child) .Spreadsheet__header,
+  tr:first-child .Spreadsheet__header:first-child {
+    width: 4rem;
+    background-color: var(--white);
+    border: solid 1px var(--coolgray3);
+  }
+}
+
+.rollingstock-editor-curves {
+  background-color: white;
+  .rollingstock-body {
+    width: 60%;
+    border: none;
+    .curves-container {
+      height: 20rem;
+      div:nth-child(2) {
+        height: 100%;
       }
     }
   }
