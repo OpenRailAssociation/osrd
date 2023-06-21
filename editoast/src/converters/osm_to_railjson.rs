@@ -68,13 +68,14 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
     }
 
     let nodes_tracks = NodeToTrack::from_edges(&edges);
-    let signals = signals(osm_pbf_in, &nodes_tracks, &adjacencies);
+    let signals = signals(&osm_pbf_in, &nodes_tracks, &adjacencies);
     let mut railjson = RailJson {
         switch_types: default_switch_types(),
         detectors: signals.iter().map(detector).collect(),
         signals,
         speed_sections: rail_edges.clone().flat_map(speed_sections).collect(),
         catenaries: rail_edges.clone().flat_map(catenaries).collect(),
+        operational_points: operational_points(&osm_pbf_in, &nodes_tracks),
         ..Default::default()
     };
 
@@ -260,5 +261,16 @@ mod tests {
         let rj = parse_osm("src/tests/minimal_rail.osm.pbf".into()).unwrap();
         assert_eq!(1, rj.catenaries.len());
         assert_eq!("15000", rj.catenaries[0].voltage);
+    }
+
+    #[test]
+    fn parse_stations() {
+        let rj = parse_osm("src/tests/station.osm.pbf".into()).unwrap();
+        assert_eq!(1, rj.operational_points.len());
+        let op = &rj.operational_points[0];
+        assert_eq!(2, op.parts.len());
+        let ext = op.extensions.identifier.as_ref().unwrap();
+        assert_eq!("atlantis", ext.name);
+        assert_eq!(1234, ext.uic);
     }
 }
