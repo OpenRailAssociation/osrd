@@ -25,6 +25,7 @@ import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
+import { lengthFromLineCoordinates } from 'utils/geometry';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
@@ -36,6 +37,12 @@ export default function ManageTrainSchedule() {
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
   const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
+
+  // Details for tabs
+  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
+    { id: pathFindingID as number },
+    { skip: !pathFindingID }
+  );
 
   const { pathWithCatenaries } = osrdEditoastApi.useGetPathfindingByPathIdCatenariesQuery(
     { pathId: pathFindingID as number },
@@ -64,7 +71,14 @@ export default function ManageTrainSchedule() {
     title: (
       <>
         <img src={pahtFindingPic} alt="path finding" height={24} />
-        <span className="ml-2">{t('tabs.pathFinding')}</span>
+        <span className="ml-2 d-flex align-items-center w-100">
+          {t('tabs.pathFinding')}
+          <small className="ml-auto">
+            {Math.round(lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000) /
+              1000}
+            km
+          </small>
+        </span>
       </>
     ),
     withWarning: pathFindingID === undefined,
