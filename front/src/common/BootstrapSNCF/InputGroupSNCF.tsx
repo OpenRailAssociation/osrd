@@ -22,7 +22,12 @@ type Props = {
   title?: string;
   value?: number | string;
   type?: string;
+  typeValue?: string;
   condensed?: boolean;
+  isInvalid?: boolean;
+  errorMsg?: string;
+  min?: number;
+  max?: number;
 };
 
 export default function InputGroupSNCF({
@@ -36,7 +41,12 @@ export default function InputGroupSNCF({
   title,
   value,
   type,
+  typeValue = 'text',
   condensed = false,
+  isInvalid = false,
+  errorMsg,
+  min,
+  max,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -58,14 +68,22 @@ export default function InputGroupSNCF({
   }, [type, options]);
 
   const inputField = (
-    <div className={cx('form-control-container', selected.unit && 'has-right-icon')}>
+    <div
+      className={cx(
+        'form-control-container',
+        selected.unit && 'has-right-icon',
+        isInvalid && 'is-invalid'
+      )}
+    >
       <input
-        type="text"
+        type={typeValue}
         className={cx('form-control', condensed && 'px-2')}
         title={placeholder}
         placeholder={placeholder}
         onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
         value={value}
+        min={min}
+        max={max}
       />
       <span className="form-control-state" />
       {selected.unit && (
@@ -155,6 +173,7 @@ export default function InputGroupSNCF({
             &nbsp;
           </div>
         )}
+        {isInvalid && <div className="invalid-feedback">{errorMsg}</div>}
       </div>
     </>
   );
