@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::schema::utils::Identifier;
 use crate::schema::*;
 use log::{error, warn};
 use osm4routing::{Coord, Edge, NodeId};
@@ -242,18 +243,44 @@ fn main_signal(node: &osmpbfreader::OsmObj) -> bool {
         || node.tags().contains_key("railway:signal:combined")
 }
 
-pub fn signals(
-    osm_pbf_in: std::path::PathBuf,
-    edges: &Vec<Edge>,
-    adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies>,
-) -> Vec<Signal> {
-    let mut nodes_edges = HashMap::<NodeId, Vec<&Edge>>::new();
-    for edge in edges {
-        for node in &edge.nodes {
-            nodes_edges.entry(*node).or_default().push(edge);
+/// When reading OpenStreetMap data, we sometimes need to match a Node to a Track and position
+/// This struct maps the nodes to the Edges (a Way from OpenStreetMap that might have been split)
+pub struct NodeToTrack<'a> {
+    nodes_edges: HashMap<NodeId, Vec<&'a Edge>>,
+}
+
+impl<'a> NodeToTrack<'a> {
+    pub fn from_edges(edges: &'a Vec<Edge>) -> Self {
+        let mut nodes_edges = HashMap::<NodeId, Vec<&Edge>>::new();
+        for edge in edges {
+            for node in &edge.nodes {
+                nodes_edges.entry(*node).or_default().push(edge);
+            }
         }
+        Self { nodes_edges }
     }
 
+    /// Given an OSM node, returns the track and the position it is on
+    /// If there is an ambiguity (the node is at intersection), we just pick one
+    /// We log weird situations (the are 3 edges for that node)
+    pub fn track_and_position(&self, id: NodeId) -> Option<(Identifier, f64)> {
+        self.nodes_edges.get(&id).and_then(|edges| {
+            if edges.is_empty() {
+                error!("Missing edge for node {}", id.0);
+                return None;
+            } else if edges.len() >= 3 {
+                warn!("Too many edges for node {}", id.0);
+            }
+            Some((edges[0].id.clone().into(), edges[0].length_until(&id)))
+        })
+    }
+}
+
+pub fn signals(
+    osm_pbf_in: std::path::PathBuf,
+    nodes_to_tracks: &NodeToTrack,
+    adjacencies: &HashMap<osm4routing::NodeId, NodeAdjacencies>,
+) -> Vec<Signal> {
     let file = std::fs::File::open(osm_pbf_in).unwrap();
     let mut pbf = osmpbfreader::OsmPbfReader::new(file);
     pbf.iter()
@@ -265,22 +292,15 @@ pub fn signals(
         })
         .filter(|node| adjacencies.get(&node.id).map_or(0, |adj| adj.edges.len()) != 1) // Ignore all the nodes that are at the end of a track, as it will be buffer stops
         .flat_map(|node| {
-            if let Some(current_edges) = nodes_edges.get(&node.id) {
-                if current_edges.is_empty() {
-                    error!("Missing edge for node {}", node.id.0);
-                    return None;
-                } else if current_edges.len() >= 3 {
-                    warn!("Too many edges for node {}", node.id.0);
-                }
-
+            if let Some((track, position)) = nodes_to_tracks.track_and_position(node.id) {
                 let mut settings = HashMap::new();
                 settings.insert("Nf".into(), "true".into());
 
                 Some(Signal {
                     id: node.id.0.to_string().into(),
                     direction: direction(&node),
-                    track: current_edges[0].id.clone().into(),
-                    position: current_edges[0].length_until(&node.id),
+                    track,
+                    position,
                     sight_distance: 400.,
                     logical_signals: Some(vec![LogicalSignal {
                         signaling_system: "BAL".to_string(),
