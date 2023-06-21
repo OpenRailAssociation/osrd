@@ -1,5 +1,5 @@
 import { noop } from 'lodash';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -18,6 +18,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import STDCMAllowances from '../components/STDCMAllowances';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import RunningTime from '../components/RunningTime';
@@ -36,7 +37,10 @@ export default function OSRDConfig({
   const scenarioID = useSelector(getScenarioID);
   const timetableID = useSelector(getTimetableID);
   const infraID = useSelector(getInfraID);
+  const selectedTrain = useSelector(getSelectedTrain);
+  const simulation = useSelector(getPresentSimulation);
   const [showMap, setShowMap] = useState<boolean>(true);
+  const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
 
   const { t } = useTranslation([
     'translation',
@@ -44,9 +48,25 @@ export default function OSRDConfig({
     'simulation',
   ]);
 
-  const selectedTrain = useSelector(getSelectedTrain);
-  const simulation = useSelector(getPresentSimulation);
+  const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
+    { id: infraID as number },
+    {
+      skip: !infraID,
+      pollingInterval: !isInfraLoaded ? 1000 : undefined,
+    }
+  );
+
   const shouldDisplayStdcmResult = simulation.trains[selectedTrain] !== undefined;
+
+  useEffect(() => {
+    if (infra && infra.state === 'NOT_LOADED') {
+      setIsInfraLoaded(false);
+    }
+
+    if (infra && infra.state === 'CACHED') {
+      setIsInfraLoaded(true);
+    }
+  }, [infra]);
 
   return (
     <main
@@ -73,6 +93,7 @@ export default function OSRDConfig({
                 <button
                   className="btn btn-sm  btn-primary "
                   type="button"
+                  disabled={infra?.state !== 'CACHED'}
                   onClick={() => {
                     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending);
                     setShowMap(false);

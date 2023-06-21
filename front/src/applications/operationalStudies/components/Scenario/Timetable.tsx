@@ -47,9 +47,6 @@ export default function Timetable({
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
   );
-  const departureArrivalTimes = useSelector(
-    (state: RootState) => state.osrdsimulation.departureArrivalTimes
-  );
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const timetableID = useSelector(getTimetableID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
@@ -64,14 +61,6 @@ export default function Timetable({
 
   const debouncedTerm = useDebounce(filter, 500) as string;
 
-  // const { data: timetable } = osrdEditoastApi.useGetTimetableByIdQuery(
-  //   {
-  //     id: timetableID as number,
-  //   },
-  //   {
-  //     skip: !timetableID,
-  //   }
-  // );
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
 
   const changeSelectedTrain = (idx: number) => {
@@ -192,7 +181,6 @@ export default function Timetable({
   useEffect(() => {
     if (timetable && timetable.train_schedules_with_details) {
       const scheduledTrains = timetable?.train_schedules_with_details;
-      console.log('update trains list : ', timetable);
 
       const trainsListWithFilterAndDuration = scheduledTrains.map((train: ScheduledTrain) => ({
         ...train,
@@ -290,7 +278,6 @@ export default function Timetable({
                   key={`timetable-train-card-${train.id}-${train.path}`}
                   isSelected={infraState !== 'CACHED' ? false : selectedTrain === idx}
                   isModified={trainScheduleIDsToModify?.includes(train.id)}
-                  // projectionPathIsUsed={infraState !== 'CACHED' ? false : selectedProjection.id === train.id}
                   projectionPathIsUsed={isProjectionPathUsed(
                     infraState,
                     train.id,

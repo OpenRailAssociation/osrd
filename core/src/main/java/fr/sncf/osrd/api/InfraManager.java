@@ -129,6 +129,7 @@ public class InfraManager extends APIClient {
                     throw new UnexpectedHttpResponse(response);
 
                 // Parse the response
+
                 logger.info("parsing the JSON of {}", request.url());
                 cacheEntry.transitionTo(InfraStatus.PARSING_JSON);
                 version = response.header("x-infra-version");

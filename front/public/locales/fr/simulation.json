@@ -2,8 +2,10 @@
   "allowances": "Marges",
   "departureTime": "Départ",
   "errorMessages": {
-    "unableToRetrieveTrainSchedule": "Calcul de marche impossible"
+    "unableToRetrieveTrainSchedule": "Calcul de marche impossible",
+    "unableToLoadInfra": "Erreur de chargement de l'infra"
   },
+  "infraLoading": "Infra en cours de chargement",
   "isWorking": "Calcul de la simulation en cours…",
   "labels": "Étiquettes",
   "loadingTrain": "Chargement du train",
