@@ -1213,6 +1213,10 @@ export type MultiPoint = {
   type: 'MultiPoint';
   coordinates: Point3D[];
 };
+export type TrackLocation = {
+  track?: string;
+  offset?: number;
+};
 export type SearchOperationalPointResult = {
   obj_id: string;
   infra_id?: string;
@@ -1226,6 +1230,7 @@ export type SearchOperationalPointResult = {
   }[];
   geographic: MultiPoint;
   schematic: MultiPoint;
+  track_sections: TrackLocation[];
 };
 export type Point = {
   type: 'Point';
@@ -1432,10 +1437,6 @@ export type DirectionalTrackRange = {
 export type RouteTrackRangesComputed = {
   type: 'Computed';
   track_ranges: DirectionalTrackRange[];
-};
-export type TrackLocation = {
-  track?: string;
-  offset?: number;
 };
 export type TrackRange = {
   track?: string;
