@@ -257,7 +257,11 @@ const injectedRtkApi = api.injectEndpoints({
       DeleteRollingStockByIdApiResponse,
       DeleteRollingStockByIdApiArg
     >({
-      query: (queryArg) => ({ url: `/rolling_stock/${queryArg.id}/`, method: 'DELETE' }),
+      query: (queryArg) => ({
+        url: `/rolling_stock/${queryArg.id}/`,
+        method: 'DELETE',
+        params: { force: queryArg.force },
+      }),
     }),
     patchRollingStockByIdLocked: build.mutation<
       PatchRollingStockByIdLockedApiResponse,
@@ -826,10 +830,12 @@ export type PatchRollingStockByIdApiArg = {
   id: number;
   rollingStockUpsertPayload: RollingStockUpsertPayload;
 };
-export type DeleteRollingStockByIdApiResponse = unknown;
+export type DeleteRollingStockByIdApiResponse = /** status 204 No content */ undefined;
 export type DeleteRollingStockByIdApiArg = {
   /** rolling_stock id */
   id: number;
+  /** force the deletion even if it’s used */
+  force?: boolean;
 };
 export type PatchRollingStockByIdLockedApiResponse = unknown;
 export type PatchRollingStockByIdLockedApiArg = {
@@ -1510,6 +1516,19 @@ export type RollingStockUpsertPayload = RollingStockBase & {
 export type RollingStock = RollingStockUpsertPayload & {
   id: number;
   liveries: RollingStockLivery[];
+};
+export type RollingStockUsage = {
+  rolling_stock_id: number;
+  usage: {
+    train_schedule_id: number;
+    train_name: string;
+    project_id: number;
+    project_name: string;
+    study_id: number;
+    study_name: string;
+    scenario_id: number;
+    scenario_name: string;
+  };
 };
 export type ProjectResult = {
   id?: number;
