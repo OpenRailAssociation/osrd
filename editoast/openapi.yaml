@@ -3117,6 +3117,10 @@ components:
           $ref: "#/components/schemas/MultiPoint"
         schematic:
           $ref: "#/components/schemas/MultiPoint"
+        track_sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackLocation"
 
     SearchTrackResult:
       required:
