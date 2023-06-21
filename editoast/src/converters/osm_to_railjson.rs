@@ -67,7 +67,8 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         adjacencies.entry(edge.target).or_default().edges.push(edge);
     }
 
-    let signals = signals(osm_pbf_in, &edges, &adjacencies);
+    let nodes_tracks = NodeToTrack::from_edges(&edges);
+    let signals = signals(osm_pbf_in, &nodes_tracks, &adjacencies);
     let mut railjson = RailJson {
         switch_types: default_switch_types(),
         detectors: signals.iter().map(detector).collect(),
@@ -112,7 +113,7 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
                 .buffer_stops
                 .push(edge_to_buffer(&node, adj.edges[0], 0)),
             (2, 0) => {
-                // This can happens when data is trucated (e.g. cropped to a region, or the output track is a service track)
+                // This can happens when data is truncated (e.g. cropped to a region, or the output track is a service track)
                 railjson
                     .buffer_stops
                     .push(edge_to_buffer(&node, adj.edges[0], 0));
