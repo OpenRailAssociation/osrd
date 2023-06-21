@@ -18,6 +18,7 @@ use diesel::sql_types::{BigInt, Bool, Nullable, Text};
 use diesel::{sql_query, PgConnection, QueryDsl, RunQueryDsl};
 use diesel::{Connection, ExpressionMethods};
 use editoast_derive::Model;
+use log::debug;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -111,17 +112,29 @@ impl Infra {
             conn.transaction(|conn| {
                 let infra = self.create_conn(conn)?;
                 let infra_id = infra.id.unwrap();
-                BufferStop::persist_batch(&railjson.buffer_stops, infra_id, conn)?;
-                Catenary::persist_batch(&railjson.catenaries, infra_id, conn)?;
-                Detector::persist_batch(&railjson.detectors, infra_id, conn)?;
-                OperationalPoint::persist_batch(&railjson.operational_points, infra_id, conn)?;
-                Route::persist_batch(&railjson.routes, infra_id, conn)?;
-                Signal::persist_batch(&railjson.signals, infra_id, conn)?;
-                Switch::persist_batch(&railjson.switches, infra_id, conn)?;
-                SpeedSection::persist_batch(&railjson.speed_sections, infra_id, conn)?;
-                SwitchType::persist_batch(&railjson.switch_types, infra_id, conn)?;
-                TrackSectionLink::persist_batch(&railjson.track_section_links, infra_id, conn)?;
+                debug!("🛤️  Importing track sections");
                 TrackSection::persist_batch(&railjson.track_sections, infra_id, conn)?;
+                debug!("🛤️  Importing track section links");
+                TrackSectionLink::persist_batch(&railjson.track_section_links, infra_id, conn)?;
+                debug!("🛤️  Importing buffer stops");
+                BufferStop::persist_batch(&railjson.buffer_stops, infra_id, conn)?;
+                debug!("🛤️  Importing catenaries");
+                Catenary::persist_batch(&railjson.catenaries, infra_id, conn)?;
+                debug!("🛤️  Importing detectors");
+                Detector::persist_batch(&railjson.detectors, infra_id, conn)?;
+                debug!("🛤️  Importing operational points");
+                OperationalPoint::persist_batch(&railjson.operational_points, infra_id, conn)?;
+                debug!("🛤️  Importing routes");
+                Route::persist_batch(&railjson.routes, infra_id, conn)?;
+                debug!("🛤️  Importing signals");
+                Signal::persist_batch(&railjson.signals, infra_id, conn)?;
+                debug!("🛤️  Importing switches");
+                Switch::persist_batch(&railjson.switches, infra_id, conn)?;
+                debug!("🛤️  Importing speed sections");
+                SpeedSection::persist_batch(&railjson.speed_sections, infra_id, conn)?;
+                debug!("🛤️  Importing switch types");
+                SwitchType::persist_batch(&railjson.switch_types, infra_id, conn)?;
+                debug!("🛤️  Importing dead sections");
                 DeadSection::persist_batch(&railjson.dead_sections, infra_id, conn)?;
                 Ok(infra)
             })
