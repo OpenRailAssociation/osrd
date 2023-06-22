@@ -49,6 +49,8 @@ interface TrackNetworkInfra {
     /** Returns the time it takes for the node to change configuration */
     fun getTrackNodeDelay(trackNode: TrackNodeId): Duration
     fun getTrackNodeConfigName(trackNode: TrackNodeId, config: TrackNodeConfigId): String
+    fun getTrackNodeName(trackNode: TrackNodeId): String
+
 
     val trackNodes: StaticIdxSpace<TrackNode>
     val trackSections: StaticIdxSpace<TrackSection>

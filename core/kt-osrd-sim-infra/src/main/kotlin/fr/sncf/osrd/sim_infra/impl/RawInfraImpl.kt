@@ -8,15 +8,16 @@ import fr.sncf.osrd.utils.units.*
 import kotlin.time.Duration
 
 
-class MovableElementConfigDescriptor(
+class TrackNodeConfigDescriptor(
     val name: String,
     val portLink: Pair<TrackNodePortId, TrackNodePortId>,
 )
 
-class MovableElementDescriptor(
+class TrackNodeDescriptor(
+    val name: String,
     val delay: Duration,
     val ports: StaticPool<TrackNodePort, EndpointTrackSectionId>,
-    val configs: StaticPool<TrackNodeConfig, MovableElementConfigDescriptor>,
+    val configs: StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>,
 )
 
 class TrackSectionDescriptor(
@@ -117,7 +118,7 @@ class NeutralSection(
 
 
 class RawInfraImpl(
-    val trackNodePool: StaticPool<TrackNode, MovableElementDescriptor>,
+    val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
     val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,
     val trackChunkPool: StaticPool<TrackChunk, TrackChunkDescriptor>,
     val nextNode: IdxMap<DirTrackSectionId, TrackNodeId>,
@@ -271,6 +272,10 @@ class RawInfraImpl(
         config: TrackNodeConfigId
     ): String {
         return trackNodePool[trackNode].configs[config].name
+    }
+
+    override fun getTrackNodeName(trackNode: TrackNodeId): String {
+        return trackNodePool[trackNode].name
     }
 
     override val zones: StaticIdxSpace<Zone>

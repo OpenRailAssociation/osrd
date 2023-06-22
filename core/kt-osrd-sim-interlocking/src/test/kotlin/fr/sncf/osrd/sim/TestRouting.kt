@@ -36,13 +36,13 @@ class TestRouting {
         //           \
         // w       x  \    y       z
         // I---B---I---C---I---D---I
-        //
+        //             S
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
         val builder = RawInfraBuilder()
         // region switches
-        val switch = builder.movableElement(delay = 10L.milliseconds) {
+        val switch = builder.movableElement("S", delay = 10L.milliseconds) {
             config("xy", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
             config("vy", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
         }

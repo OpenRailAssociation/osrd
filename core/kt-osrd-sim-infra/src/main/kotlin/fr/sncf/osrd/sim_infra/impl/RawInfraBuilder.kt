@@ -16,20 +16,21 @@ interface MovableElementDescriptorBuilder {
 }
 
 class MovableElementDescriptorBuilderImpl(
+    private val name: String,
     private val delay: Duration,
     private val ports: StaticPool<TrackNodePort, EndpointTrackSectionId>,
-    private val configs: StaticPool<TrackNodeConfig, MovableElementConfigDescriptor>,
+    private val configs: StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>,
 ) : MovableElementDescriptorBuilder {
     override fun port(endpoint: EndpointTrackSectionId): TrackNodePortId {
         return ports.add(endpoint)
     }
 
     override fun config(name: String, portLink: Pair<TrackNodePortId, TrackNodePortId>): TrackNodeConfigId {
-        return configs.add(MovableElementConfigDescriptor(name, portLink))
+        return configs.add(TrackNodeConfigDescriptor(name, portLink))
     }
 
-    fun build(): MovableElementDescriptor {
-        return MovableElementDescriptor(delay, ports, configs)
+    fun build(): TrackNodeDescriptor {
+        return TrackNodeDescriptor(name, delay, ports, configs)
     }
 }
 
@@ -163,7 +164,7 @@ class RouteDescriptorImpl(
 ) : RouteDescriptor
 
 interface RestrictedRawInfraBuilder {
-    fun movableElement(delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId
+    fun movableElement(name: String, delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId
     fun detector(name: String?): DetectorId
     fun linkZones(zoneA: ZoneId, zoneB: ZoneId): DetectorId
     fun linkZones(detector: DetectorId, zoneA: ZoneId, zoneB: ZoneId)
@@ -232,7 +233,7 @@ interface RawInfraBuilder : RestrictedRawInfraBuilder {
 }
 
 class RawInfraBuilderImpl : RawInfraBuilder {
-    private val trackNodePool = StaticPool<TrackNode, MovableElementDescriptor>()
+    private val trackNodePool = StaticPool<TrackNode, TrackNodeDescriptor>()
     private val trackSectionPool = StaticPool<TrackSection, TrackSectionDescriptor>()
     private val trackChunkPool = StaticPool<TrackChunk, TrackChunkDescriptor>()
     private val nextNode = IdxMap<DirTrackSectionId, TrackNodeId>()
@@ -246,8 +247,8 @@ class RawInfraBuilderImpl : RawInfraBuilder {
     private val zonePathMap = mutableMapOf<ZonePathSpec, ZonePathId>()
     private val operationalPointPartPool = StaticPool<OperationalPointPart, OperationalPointPartDescriptor>()
 
-    override fun movableElement(delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId {
-        val movableElementBuilder = MovableElementDescriptorBuilderImpl(delay, StaticPool(), StaticPool())
+    override fun movableElement(name: String, delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): TrackNodeId {
+        val movableElementBuilder = MovableElementDescriptorBuilderImpl(name, delay, StaticPool(), StaticPool())
         movableElementBuilder.init()
         val movableElement = movableElementBuilder.build()
         return trackNodePool.add(movableElement)
