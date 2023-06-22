@@ -26,6 +26,7 @@ import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import { lengthFromLineCoordinates } from 'utils/geometry';
+import MemoRollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
@@ -39,9 +40,22 @@ export default function ManageTrainSchedule() {
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
 
   // Details for tabs
-  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
+  const { pathLength } = osrdEditoastApi.useGetPathfindingByIdQuery(
     { id: pathFindingID as number },
-    { skip: !pathFindingID }
+    {
+      skip: !pathFindingID,
+      selectFromResult: (response) => ({
+        pathLength:
+          Math.round(lengthFromLineCoordinates(response.data?.geographic?.coordinates) * 1000) /
+          1000,
+      }),
+    }
+  );
+  const { data: rollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
+    { id: rollingStockID as number },
+    {
+      skip: !rollingStockID,
+    }
   );
 
   const { pathWithCatenaries } = osrdEditoastApi.useGetPathfindingByPathIdCatenariesQuery(
@@ -56,11 +70,18 @@ export default function ManageTrainSchedule() {
     }
   );
   const tabRollingStock = {
-    title: (
-      <>
-        <img src={rollingStockPic} alt="rolling stock" height={24} />
-        <span className="ml-2">{t('tabs.rollingStock')}</span>
-      </>
+    title: rollingStock ? (
+      <div className="managetrainschedule-tab">
+        <span className="rolling-stock">
+          <MemoRollingStock2Img rollingStock={rollingStock} />
+        </span>
+        <span className="ml-2">{rollingStock.name}</span>
+      </div>
+    ) : (
+      <div className="managetrainschedule-tab">
+        <img src={rollingStockPic} alt="rolling stock" />
+        <span className="ml-2 d-none">{t('tabs.rollingStock')}</span>
+      </div>
     ),
     withWarning: rollingStockID === undefined,
     label: t('tabs.rollingStock'),
@@ -69,17 +90,16 @@ export default function ManageTrainSchedule() {
 
   const tabPathFinding = {
     title: (
-      <>
-        <img src={pahtFindingPic} alt="path finding" height={24} />
-        <span className="ml-2 d-flex align-items-center w-100">
+      <div className="managetrainschedule-tab">
+        <img src={pahtFindingPic} alt="path finding" />
+        <span className="ml-2 d-flex align-items-center flex-grow-1 w-100">
           {t('tabs.pathFinding')}
-          <small className="ml-auto">
-            {Math.round(lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000) /
-              1000}
+          <small className="ml-auto pl-1">
+            {pathLength}
             km
           </small>
         </span>
-      </>
+      </div>
     ),
     withWarning: pathFindingID === undefined,
     label: t('tabs.pathFinding'),
@@ -102,12 +122,23 @@ export default function ManageTrainSchedule() {
     ),
   };
 
+  const tabAllowances = {
+    title: (
+      <div className="managetrainschedule-tab">
+        <img src={allowancesPic} alt="allowances" />
+        <span className="ml-2">{t('tabs.allowances')}</span>
+      </div>
+    ),
+    label: t('tabs.allowances'),
+    content: <Allowances />,
+  };
+
   const tabSimulationSettings = {
     title: (
-      <>
-        <img src={simulationSettings} alt="simulation settings" height={24} />
+      <div className="managetrainschedule-tab">
+        <img src={simulationSettings} alt="simulation settings" />
         <span className="ml-2">{t('tabs.simulationSettings')}</span>
-      </>
+      </div>
     ),
     label: t('tabs.simulationSettings'),
     content: (
@@ -119,17 +150,6 @@ export default function ManageTrainSchedule() {
         </div>
       </div>
     ),
-  };
-
-  const tabAllowances = {
-    title: (
-      <>
-        <img src={allowancesPic} alt="allowances" height={24} />
-        <span className="ml-2">{t('tabs.allowances')}</span>
-      </>
-    ),
-    label: t('tabs.allowances'),
-    content: <Allowances />,
   };
 
   useEffect(() => {
