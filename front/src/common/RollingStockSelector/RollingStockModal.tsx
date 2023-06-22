@@ -166,7 +166,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
   }, [isError]);
 
   useEffect(() => {
-    if (rollingStocks !== undefined) {
+    if (rollingStocks && rollingStocks.length !== 0) {
       updateSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
