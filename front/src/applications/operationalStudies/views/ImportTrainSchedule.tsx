@@ -3,8 +3,7 @@ import ImportTrainScheduleConfig from 'applications/operationalStudies/component
 import ImportTrainScheduleTrainsList from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleTrainsList';
 import Loader from 'common/Loader';
 import { TrainSchedule, TrainScheduleImportConfig } from 'applications/operationalStudies/types';
-import { enhancedEditoastApi } from 'common/api/enhancedEditoastApi';
-
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
@@ -15,10 +14,17 @@ export default function ImportTrainSchedule() {
   const [config, setConfig] = useState<TrainScheduleImportConfig | undefined>(undefined);
   const [trainsList, setTrainsList] = useState<TrainSchedule[] | undefined>(undefined);
 
-  const { data: { results: rollingStocks } = { results: [] }, isError } =
-    enhancedEditoastApi.useGetLightRollingStockQuery({
-      pageSize: 100,
-    });
+  const { rollingStocks, isError } = osrdEditoastApi.useGetLightRollingStockQuery(
+    {
+      pageSize: 1000,
+    },
+    {
+      selectFromResult: (response) => ({
+        ...response,
+        rollingStocks: response.data?.results || [],
+      }),
+    }
+  );
 
   const updateTrainslist = (trainsSchedules?: TrainSchedule[]) => {
     setTrainsList(trainsSchedules);
