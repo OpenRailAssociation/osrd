@@ -17,6 +17,8 @@ import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
+import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
+import { compact } from 'lodash';
 
 /* METHOD
  *
@@ -158,12 +160,13 @@ export default function ImportTrainScheduleModal(props) {
     }
   }
 
-  function generatePaths(pathNumberToComplete = 0, pathsIDs = {}, autoComplete = false) {
+  function generatePaths(pathNumberToComplete = 0, pathsIds = {}, autoComplete = false) {
     if (autoComplete && pathNumberToComplete === 0) {
       setStatus({ ...initialStatus, uicComplete: true });
       setUicNumberToComplete(undefined);
     }
 
+    // TODO: recover train paths for reusage in search
     const pathfindingPayloads = generatePathfindingPayload(
       infraID,
       rollingStockID,
@@ -200,6 +203,78 @@ export default function ImportTrainScheduleModal(props) {
       );
       setStatus({ ...status, uicComplete: true, pathFindingDone: true });
     }
+  }
+
+  async function launchAutocompletePathfinding() {
+    // setup le payload
+    const payloads = pathsDictionnary.map((path) => {
+
+      const trainFromPathRef = trainsWithPathRef.find(
+        (train) => train.trainNumber === path.trainNumber
+      );
+      console.log({path, trainFromPathRef})
+
+      const rollingStockFound = rollingStockDB.find(
+        (rollingstock) =>
+          rollingstock.name === rollingstockOpenData2OSRD[trainFromPathRef.rollingStock]
+      );
+
+      const steps = compact(trainFromPathRef.steps.map((step, idx) => {
+        const isFirstOrLastStep = idx === 0 || idx === trainFromPathRef.steps.length - 1;
+        const opFirstTrackSection = step.tracks[0]
+        if (!opFirstTrackSection) {
+          console.log('error')
+          return;
+        }
+        return ({
+          duration: isFirstOrLastStep ? 0 : step.duration,
+          waypoints: [{ track_section: opFirstTrackSection.track, offset: opFirstTrackSection.position}]
+        });
+      }));
+      const payload = {
+        infra: infraID,
+        // rolling_stocks: [rollingStockFound ? rollingStockFound.id : rollingStockID],
+        rolling_stocks: [9],
+        steps,
+      }
+      return payload;
+    })
+    let count = 0
+
+    const results = [];
+    console.log('Nombre de pathfindings', payloads.length)
+    for (let i = 0; i < payloads.length; i += 1) {
+      const payload = payloads[i]
+      console.log(payload)
+      const result = await postPathFinding({ pathQuery: payload })
+        .then((result) => result)
+        .catch((e) => console.log('erreur de pathfinding'));
+      results.push(result)
+      count += 1
+      console.log(`${count}/${payloads.length}`)
+    }
+    
+    // console.log('hello number of pathfindings', payloads.length)
+    // const pathFindings = await sendRequests(payloads);
+    console.log(results)
+
+
+    // lance le pathfinding
+  }
+
+  async function sendRequests(payloads) {
+    const results = [];
+    let count = 0
+    for (const payload in payloads) {
+      console.log(payload)
+      const result = await postPathFinding({ pathQuery: payload })
+        .then((result) => result)
+        .catch((e) => console.log('erreur de pathfinding'));
+      results.push(result)
+      count += 1
+      console.log(`${count}/14`)
+    }
+    return results
   }
 
   //
@@ -306,7 +381,7 @@ export default function ImportTrainScheduleModal(props) {
                     : 'btn-primary'
                 }`}
                 type="button"
-                onClick={() => generatePaths(0, {}, true)}
+                onClick={launchAutocompletePathfinding}
               >
                 <span>1 — {t('operationalStudies/importTrainSchedule:generatePathsAuto')}</span>
                 <span>{pathsDictionnary.length}</span>
@@ -316,7 +391,7 @@ export default function ImportTrainScheduleModal(props) {
                   status.pathFindingDone ? 'btn-outline-success' : 'btn-primary'
                 } ${status.uicComplete ? '' : 'disabled'}`}
                 type="button"
-                onClick={() => generatePaths(0)}
+                onClick={launchAutocompletePathfinding}
               >
                 <span>2 — {t('operationalStudies/importTrainSchedule:generatePaths')}</span>
                 <span>{pathsDictionnary.length}</span>
