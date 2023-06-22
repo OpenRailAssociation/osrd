@@ -273,3 +273,20 @@
     }
   }
 }
+
+.managetrainschedule-tab {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  .rolling-stock {
+    width: 3rem;
+    overflow: hidden;
+    padding-bottom: 0.25rem;
+    img {
+      height: 1rem;
+    }
+  }
+  img {
+    height: 1.5rem;
+  }
+}
