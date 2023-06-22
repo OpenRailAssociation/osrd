@@ -103,8 +103,10 @@ function TimetableTrainCard({
           </div>
           <div className="scenario-timetable-train-body">
             <span className="flex-grow-1">{train.speed_limit_tags}</span>
-            {train.stops !== undefined && train.stops > 0 && (
-              <span className="mr-3">{t('timetable.stopsCount', { count: train.stops })}</span>
+            {train.stops_count !== undefined && train.stops_count > 0 && (
+              <span className="mr-3">
+                {t('timetable.stopsCount', { count: train.stops_count })}
+              </span>
             )}
             {train.mechanical_energy_consumed?.eco && (
               <small className="mx-xl-2 mr-lg-1 text-orange font-weight-bold">

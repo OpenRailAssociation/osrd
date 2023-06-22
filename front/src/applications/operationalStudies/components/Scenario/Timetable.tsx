@@ -145,7 +145,7 @@ export default function Timetable({
       dispatch(
         updateSelectedProjection({
           id: train.id,
-          path: train.path,
+          path: train.path_id,
         })
       );
     }
@@ -179,8 +179,8 @@ export default function Timetable({
   };
 
   useEffect(() => {
-    if (timetable && timetable.train_schedules_with_details) {
-      const scheduledTrains = timetable?.train_schedules_with_details;
+    if (timetable && timetable.detailed_train_schedules) {
+      const scheduledTrains = timetable?.detailed_train_schedules;
 
       const trainsListWithFilterAndDuration = scheduledTrains.map((train: ScheduledTrain) => ({
         ...train,
@@ -192,10 +192,8 @@ export default function Timetable({
   }, [timetable, debouncedTerm]);
 
   useEffect(() => {
-    if (timetable && timetable.train_schedules_with_details) {
-      setTrainsDurationsIntervals(
-        findTrainsDurationsIntervals(timetable.train_schedules_with_details)
-      );
+    if (timetable && timetable.detailed_train_schedules) {
+      setTrainsDurationsIntervals(findTrainsDurationsIntervals(timetable.detailed_train_schedules));
     }
   }, [timetable]);
 
@@ -275,7 +273,7 @@ export default function Timetable({
                 <TimetableTrainCard
                   train={train}
                   intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
-                  key={`timetable-train-card-${train.id}-${train.path}`}
+                  key={`timetable-train-card-${train.id}-${train.path_id}`}
                   isSelected={infraState !== 'CACHED' ? false : selectedTrain === idx}
                   isModified={trainScheduleIDsToModify?.includes(train.id)}
                   projectionPathIsUsed={isProjectionPathUsed(

@@ -1,9 +1,9 @@
-import { TrainScheduleWithDetails } from 'common/api/osrdEditoastApi';
+import { DetailedTrainSchedule } from 'common/api/osrdEditoastApi';
 import { distributedIntervalsFromArrayOfValues } from 'utils/numbers';
 import { compact } from 'lodash';
 
 // This helper takes a train list and find & return 3 distributed intervals of schedule duration
-const findTrainsDurationsIntervals = (trainsList: TrainScheduleWithDetails[]) => {
+const findTrainsDurationsIntervals = (trainsList: DetailedTrainSchedule[]) => {
   const durationsList = trainsList.map((train) => ({
     id: train.id,
     duration:

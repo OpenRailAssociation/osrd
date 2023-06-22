@@ -27,7 +27,7 @@ export default async function getTimetable(timetableID) {
       store.dispatch(updateSelectedTrain(0));
     }
     const timetable = await get(`${timetableURI}${timetableID}/`);
-    const trainSchedulesIDs = timetable.train_schedules_with_details.map((train) => train.id);
+    const trainSchedulesIDs = timetable.detailed_train_schedules.map((train) => train.id);
 
     if (trainSchedulesIDs && trainSchedulesIDs.length > 0) {
       let selectedProjectionPath;

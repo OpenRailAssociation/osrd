@@ -75,7 +75,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         id: 395,
         labels: [],
         train_name: 'Fonction ζ',
-        path: 596,
+        path_id: 596,
         departure_time: 43200,
         arrival_time: 44417.01477978789,
         speed_limit_tags: undefined,
@@ -85,7 +85,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
           eco: 4341138851.046319,
         },
         path_length: 54483.80299490723,
-        stops: 0,
+        stops_count: 0,
       });
     });
   });
@@ -97,7 +97,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         id: 395,
         labels: [],
         train_name: 'Fonction ζ',
-        path: 596,
+        path_id: 596,
         departure_time: 44200,
         arrival_time: 45417.01477978789,
         speed_limit_tags: undefined,
@@ -107,7 +107,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
           eco: 4341138851.046319,
         },
         path_length: 54483.80299490723,
-        stops: 0,
+        stops_count: 0,
       });
     });
     it('should handle time exceeding midnight', () => {
@@ -116,7 +116,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         id: 395,
         labels: [],
         train_name: 'Fonction ζ',
-        path: 596,
+        path_id: 596,
         departure_time: 43200,
         arrival_time: 44417.01477978789,
         speed_limit_tags: undefined,
@@ -126,7 +126,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
           eco: 4341138851.046319,
         },
         path_length: 54483.80299490723,
-        stops: 0,
+        stops_count: 0,
       });
     });
     it('should handle time before midnight', () => {
@@ -135,7 +135,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
         id: 395,
         labels: [],
         train_name: 'Fonction ζ',
-        path: 596,
+        path_id: 596,
         departure_time: 43200,
         arrival_time: 44417.01477978789,
         speed_limit_tags: undefined,
@@ -145,7 +145,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
           eco: 4341138851.046319,
         },
         path_length: 54483.80299490723,
-        stops: 0,
+        stops_count: 0,
       });
     });
   });
