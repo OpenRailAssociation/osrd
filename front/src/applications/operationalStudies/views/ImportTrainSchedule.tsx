@@ -17,7 +17,7 @@ export default function ImportTrainSchedule() {
 
   const { data: { results: rollingStocks } = { results: [] }, isError } =
     enhancedEditoastApi.useGetLightRollingStockQuery({
-      pageSize: 100,
+      pageSize: 1000,
     });
 
   const updateTrainslist = (trainsSchedules?: TrainSchedule[]) => {

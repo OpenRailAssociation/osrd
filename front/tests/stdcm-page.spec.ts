@@ -8,21 +8,21 @@ test.describe('STDCM page', () => {
   let playwrightHomePage: PlaywrightHomePage;
   let playwrightSTDCMPage: PlaywrightSTDCMPage;
 
-  test('should be correctly displays the rolling stock list and select one', async ({ page }) => {
+  test('should correctly display the rolling stock list and select one', async ({ page }) => {
     // Create an instance of the PlaywrightHomePage class
     playwrightHomePage = new PlaywrightHomePage(page);
 
     // Create an instance of the PlaywrightSTDCMPage class
     playwrightSTDCMPage = new PlaywrightSTDCMPage(page);
 
-    // Go to the home page of OSDR
+    // Go to the OSRD home page
     await playwrightHomePage.goToHomePage();
 
     await playwrightHomePage.goToSTDCMPage();
 
     await playwrightSTDCMPage.getScenarioExploratorModalClose();
 
-    // Opens the scenario explorator and selects project, study and scenario
+    // Opens the scenario explorer and selects project, study and scenario
     await playwrightSTDCMPage.openScenarioExplorator();
     await playwrightSTDCMPage.getScenarioExploratorModalOpen();
     await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
