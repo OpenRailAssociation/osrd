@@ -1228,6 +1228,10 @@ export type SearchOperationalPointResult = {
   uic?: number;
   trigram: string;
   ch: string;
+  track_sections: {
+    track: string;
+    position: number;
+  }[];
   geographic: MultiPoint;
   schematic: MultiPoint;
 };
