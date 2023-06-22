@@ -46,7 +46,6 @@
       }
       .first-line, .second-line {
         display: flex;
-        align-items: center;
         gap: 0.25rem;
       }
       .allowances-value {
@@ -63,6 +62,12 @@
           font-size: 0.8rem;
           height: 2rem;
         }
+      }
+      .bullet-linear {
+        color: var(--oldblue);
+      }
+      .bullet-mareco {
+        color: var(--purple);
       }
     }
     .allowances-list {
@@ -88,6 +93,9 @@
         border: 2px solid var(--white);
         &:hover {
           background-color: var(--coolgray3);
+        }
+        &.overlapped {
+          border-color: var(--danger);
         }
         &.selected {
           border-color: var(--primary);
@@ -130,6 +138,12 @@
           font-weight: bold;
           color: var(--secondary);
           font-size: 0.6rem;
+          &.LINEAR {
+            color: var(--oldblue);
+          }
+          &.MARECO {
+            color: var(--purple);
+          }
         }
         .value {
           width: 5rem;
