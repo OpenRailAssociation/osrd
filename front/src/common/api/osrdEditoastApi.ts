@@ -28,7 +28,12 @@ const injectedRtkApi = api
         query: () => ({ url: `/version/` }),
       }),
       postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
-        query: (queryArg) => ({ url: `/search/`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/search/`,
+          method: 'POST',
+          body: queryArg.body,
+          params: { page_size: queryArg.pageSize },
+        }),
       }),
       getLayersLayerByLayerSlugMvtAndViewSlug: build.query<
         GetLayersLayerByLayerSlugMvtAndViewSlugApiResponse,
@@ -619,6 +624,8 @@ export type PostSearchApiResponse =
     | SearchScenarioResult
   )[];
 export type PostSearchApiArg = {
+  /** number of results */
+  pageSize?: number;
   /** Search query */
   body: {
     object?: string;

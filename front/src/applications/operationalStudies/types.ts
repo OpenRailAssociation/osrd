@@ -1,5 +1,5 @@
 export interface Destination {
-  uic: string;
+  uic: number;
   yard: string;
   name: string;
   trigram: string;
