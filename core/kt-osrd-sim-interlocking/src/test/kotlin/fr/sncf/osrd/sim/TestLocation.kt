@@ -19,7 +19,7 @@ class TestLocation {
         // setup test data
         val infra = rawInfra {
             // create a test switch
-            val switchA = movableElement(delay = 42L.milliseconds) {
+            val switchA = movableElement("A", delay = 42L.milliseconds) {
                 config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
                 config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
             }

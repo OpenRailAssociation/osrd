@@ -18,7 +18,7 @@ class TestMovableElements {
     fun lockMoveTest() = runTest {
         // setup test data
         val infra = rawInfra {
-            movableElement(delay = 42L.milliseconds) {
+            movableElement("A", delay = 42L.milliseconds) {
                 config("a", Pair(TrackNodePortId(0u), TrackNodePortId(1u)))
                 config("b", Pair(TrackNodePortId(0u), TrackNodePortId(2u)))
             }

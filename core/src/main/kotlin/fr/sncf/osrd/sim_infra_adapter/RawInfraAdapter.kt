@@ -99,7 +99,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
         val oldSwitch = switchEntry.value!!
         val nodeGraph = oldSwitch.graph!!
         val infraGraph = infra.trackGraph!!
-        trackNodeMap[oldSwitch] = builder.movableElement(oldSwitch.groupChangeDelay.seconds) {
+        trackNodeMap[oldSwitch] = builder.movableElement(oldSwitch.id, oldSwitch.groupChangeDelay.seconds) {
             val nodeMap: MutableMap<SwitchPort, TrackNodePortId> = mutableMapOf()
             for (node in nodeGraph.nodes()) {
                 var track: TrackEdge? = null
@@ -132,7 +132,7 @@ fun adaptRawInfra(infra: SignalingInfra): SimInfraAdapter {
         if (node is Joint) {
             val edges = infra.trackGraph.incidentEdges(node)
             assert(edges.count() == 2)
-            builder.movableElement(ZERO) {
+            builder.movableElement(node.id, ZERO) {
                 val ports = ArrayList<TrackNodePortId>()
                 for (edge in edges) {
                     val endpoint = if (infra.trackGraph.incidentNodes(edge).nodeU() == node)
