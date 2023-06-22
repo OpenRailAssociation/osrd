@@ -46,6 +46,12 @@ paths:
   /search/:
     post:
       summary: Generic search endpoint
+      parameters:
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+          description: number of results
       requestBody:
         description: Search query
         required: true
