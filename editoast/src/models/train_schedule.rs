@@ -41,6 +41,7 @@ pub struct TrainSchedule {
     pub departure_time: f64,
     pub initial_speed: f64,
     pub allowances: DieselJson<Vec<Allowance>>,
+    #[serde(default = "default_diesel_json")]
     pub scheduled_points: DieselJson<Vec<ScheduledPoint>>,
     pub comfort: String,
     pub speed_limit_tags: Option<String>,
@@ -49,6 +50,12 @@ pub struct TrainSchedule {
     pub path_id: i64,
     pub rolling_stock_id: i64,
     pub timetable_id: i64,
+}
+
+// TODO: Remove this once this pr is merged:
+// https://github.com/PPakalns/diesel_json/pull/4
+fn default_diesel_json<T: Default>() -> DieselJson<T> {
+    DieselJson(Default::default())
 }
 
 impl Identifiable for TrainSchedule {
