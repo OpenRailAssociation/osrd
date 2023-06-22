@@ -11,16 +11,24 @@ import { formatIsoDate } from 'utils/date';
 import UploadFileModal from 'applications/customget/components/uploadFileModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { TrainSchedule, TrainScheduleImportConfig } from 'applications/operationalStudies/types';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import {
+  SearchOperationalPointResult,
+  PostSearchApiArg,
+  osrdEditoastApi,
+  TrackLocation,
+} from 'common/api/osrdEditoastApi';
 
 interface ImportTrainScheduleConfigProps {
   setConfig: (config: TrainScheduleImportConfig) => void;
   setTrainsList: (trainsList: TrainSchedule[]) => void;
 }
 
+type SearchConstraintType = (string | number | string[])[];
+
 export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConfigProps) {
   const { setConfig, setTrainsList } = props;
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
+  const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [from, setFrom] = useState();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState();
@@ -69,24 +77,30 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
     }
   }
 
-  function importTrackSections(uic: string) {
-    const requestOptions = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+  async function importTrackSections(opIds: number[]): Promise<Record<number, TrackLocation[]>> {
+    const constraint = opIds.reduce((res, uic) => [...res, ['=', ['uic'], Number(uic)]], ['or'] as (
+      | string
+      | SearchConstraintType
+    )[]);
+    const payload: PostSearchApiArg = {
+      body: {
         object: 'operationalpoint',
-        query: ['and', ['=', ['uic'], Number(uic)], ['=', ['infra_id'], 15]],
-        dry: false,
-      }),
+        query: ['and', constraint, ['=', ['infra_id'], 15]],
+      },
+      pageSize: 1000,
     };
-    let result;
-    // TODO: use RTK for query
-    fetch('http://localhost:8090/search', requestOptions)
-      .then((response) => response.json())
-      .then((response) => {
-        result = response[0].track_sections;
-      });
-    return result;
+    const operationalPoints = (await postSearch(payload).unwrap()) as SearchOperationalPointResult[];
+
+    return operationalPoints.reduce(
+      (res, operationalPoint) =>
+        operationalPoint.uic
+          ? {
+              ...res,
+              [operationalPoint.uic]: operationalPoint.track_sections,
+            }
+          : res,
+      {}
+    );
   }
 
   const importFile = async (file: File) => {
@@ -94,6 +108,12 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
     if (file) {
       const text = await file.text();
       const trainsSchedulesTemp: TrainSchedule[] = JSON.parse(text);
+
+      const opIds = trainsSchedulesTemp.flatMap((trainSchedule) =>
+        trainSchedule.steps.map((step) => step.uic)
+      );
+      const trackSectionsByOp = await importTrackSections(opIds);
+
       // For each train schedule, we add the duration of each step
       const trainsSchedules = trainsSchedulesTemp.map((trainSchedule) => {
         const stepsWithDuration = trainSchedule.steps.map((step) => {
@@ -103,12 +123,10 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
           const duration = Math.round(
             (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
           );
-
-          console.log(importTrackSections(step.uic));
-
           return {
             ...step,
             duration,
+            tracks: trackSectionsByOp[Number(step.uic)] || [],
           };
         });
         return {
