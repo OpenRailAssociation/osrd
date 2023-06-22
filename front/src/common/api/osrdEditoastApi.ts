@@ -888,7 +888,7 @@ export type GetLightRollingStockApiResponse = /** status 200 The rolling stock l
   count?: number;
   next?: any;
   previous?: any;
-  results?: LightRollingStock[];
+  results: LightRollingStock[];
 };
 export type GetLightRollingStockApiArg = {
   /** Page number */
