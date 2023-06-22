@@ -1038,8 +1038,6 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/LightRollingStock"
-                required:
-                  - results
 
   /light_rolling_stock/{id}/:
     get:
