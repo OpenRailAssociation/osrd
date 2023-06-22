@@ -8,40 +8,81 @@ import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
 import { AllowanceValue, EngineeringAllowance, RangeAllowance } from 'common/api/osrdEditoastApi';
 import { MdCancel } from 'react-icons/md';
-import { unitsList, unitsNames } from './consts';
-import { AllowancesTypes, SetAllowanceSelectedIndexType } from './types';
-import getAllowanceValue from './Helpers';
 import cx from 'classnames';
+import { unitsList, unitsNames } from './consts';
+import {
+  AllowancesTypes,
+  SetAllowanceSelectedIndexType,
+  ManageAllowancesType,
+  ActionOnAllowance,
+  OverlapAllowancesIndexesType,
+} from './types';
+import getAllowanceValue, { findAllowanceOverlap } from './helpers';
 
 type Props = {
   allowances: RangeAllowance[] | EngineeringAllowance[];
-  addAllowance: (allowance: RangeAllowance | EngineeringAllowance, type: AllowancesTypes) => void;
+  manageAllowance: (props: ManageAllowancesType) => void;
   pathLength: number;
   allowanceSelectedIndex?: number;
   setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
-  deleteAllowance: (allowanceIndex: number) => void;
+  setOverlapAllowancesIndexes?: (overlapAllowancesIndexes: OverlapAllowancesIndexesType) => void;
   type: 'engineering' | 'standard';
 };
 
 export default function AllowancesActions({
   allowances,
-  addAllowance,
+  manageAllowance,
   pathLength,
   allowanceSelectedIndex,
   setAllowanceSelectedIndex,
-  deleteAllowance,
+  setOverlapAllowancesIndexes,
   type,
 }: Props) {
   const { t } = useTranslation('operationalStudies/allowances');
   const distributionsList = [
-    { label: t('distribution.linear'), value: 'LINEAR' },
-    { label: t('distribution.mareco'), value: 'MARECO' },
+    {
+      label: (
+        <>
+          <span className="bullet-linear">●</span>
+          {t('distribution.linear')}
+        </>
+      ),
+      value: 'LINEAR',
+    },
+    {
+      label: (
+        <>
+          <span className="bullet-mareco mr-1">●</span>
+          {t('distribution.mareco')}
+        </>
+      ),
+      value: 'MARECO',
+    },
   ];
   const [beginPosition, setBeginPosition] = useState(0);
   const [endPosition, setEndPosition] = useState(pathLength);
   const [allowanceLength, setAllowanceLength] = useState(endPosition - beginPosition);
   const [distribution, setDistribution] = useState(distributionsList[0].value);
   const [valueAndUnit, setValueAndUnit] = useState<AllowanceValue>();
+  const [isValid, setIsValid] = useState(false);
+
+  function validityTest() {
+    if (setOverlapAllowancesIndexes) {
+      const overlapAllowancesIndexes = findAllowanceOverlap({
+        allowances,
+        beginPosition,
+        endPosition,
+        currentAllowanceSelected: allowanceSelectedIndex,
+      });
+      setOverlapAllowancesIndexes(overlapAllowancesIndexes);
+      if (!overlapAllowancesIndexes.every((index) => index === false || index === -1)) return false;
+    }
+    return (
+      beginPosition < endPosition &&
+      getAllowanceValue(valueAndUnit) > 0 &&
+      endPosition <= pathLength
+    );
+  }
 
   const handleInputFrom = (value: number) => {
     setBeginPosition(value);
@@ -58,44 +99,47 @@ export default function AllowancesActions({
     setEndPosition(beginPosition + value);
   };
 
-  const handleAddAllowance = () => {
-    if (type === 'standard') {
-      addAllowance(
-        {
+  const handleManageAllowance = (action: ActionOnAllowance) => {
+    let newAllowance;
+    if (action === ActionOnAllowance.add || action === ActionOnAllowance.update) {
+      if (type === 'standard') {
+        newAllowance = {
           begin_position: beginPosition,
           end_position: endPosition,
           value: valueAndUnit,
-        } as RangeAllowance,
-        AllowancesTypes.standard
-      );
-    }
-    if (type === 'engineering') {
-      addAllowance(
-        {
+        } as RangeAllowance;
+      }
+      if (type === 'engineering') {
+        newAllowance = {
           allowance_type: type,
           distribution,
-          capacity_speed_limit: 0,
           begin_position: beginPosition,
           end_position: endPosition,
           value: valueAndUnit,
-        } as EngineeringAllowance,
-        AllowancesTypes.engineering
-      );
+        } as EngineeringAllowance;
+      }
     }
+    manageAllowance({
+      type: type as AllowancesTypes,
+      newAllowance,
+      allowanceIndexToDelete:
+        action === ActionOnAllowance.delete || action === ActionOnAllowance.update
+          ? allowanceSelectedIndex
+          : undefined,
+    });
+    // Follow natural behaviour of allowances determination
+    setBeginPosition(endPosition + 1);
+    setEndPosition(pathLength);
   };
 
-  const handleTypePouet = (typePouet: InputGroupSNCFValue) => {
-    if (typePouet.type && typePouet.value !== undefined) {
+  const handleValueAndUnit = (newValueAndUnit: InputGroupSNCFValue) => {
+    if (newValueAndUnit.type && newValueAndUnit.value !== undefined) {
       setValueAndUnit({
-        value_type: typePouet.type as AllowanceValue['value_type'],
-        [unitsNames[typePouet.type as keyof typeof unitsNames]]: typePouet.value,
+        value_type: newValueAndUnit.type as AllowanceValue['value_type'],
+        [unitsNames[newValueAndUnit.type as keyof typeof unitsNames]]: +newValueAndUnit.value,
       } as AllowanceValue);
     }
   };
-
-  function validityTest() {
-    return beginPosition < endPosition && getAllowanceValue(valueAndUnit) > 0;
-  }
 
   useEffect(() => {
     if (allowanceSelectedIndex !== undefined) {
@@ -104,6 +148,7 @@ export default function AllowancesActions({
         setBeginPosition(selectedAllowance.begin_position);
         setEndPosition(selectedAllowance.end_position);
         setAllowanceLength(selectedAllowance.end_position - selectedAllowance.begin_position);
+        setValueAndUnit(selectedAllowance.value);
       }
       if (type === 'engineering') {
         const selectedAllowance = allowances[allowanceSelectedIndex] as EngineeringAllowance;
@@ -111,7 +156,23 @@ export default function AllowancesActions({
         setEndPosition(selectedAllowance.end_position);
         setAllowanceLength(selectedAllowance.end_position - selectedAllowance.begin_position);
         setDistribution(selectedAllowance.distribution);
+        setValueAndUnit(selectedAllowance.value);
       }
+    }
+  }, [allowanceSelectedIndex]);
+
+  // Test validity at each change
+  useEffect(() => {
+    setIsValid(validityTest());
+  }, [beginPosition, endPosition, valueAndUnit, allowanceSelectedIndex]);
+
+  useEffect(() => {
+    if (allowanceSelectedIndex === undefined) {
+      const newBeginPosition = allowances.at(-1)?.end_position;
+      setBeginPosition(newBeginPosition ? newBeginPosition + 1 : 0);
+      setEndPosition(
+        newBeginPosition && newBeginPosition === pathLength ? pathLength + 1 : pathLength
+      );
     }
   }, [allowanceSelectedIndex]);
 
@@ -152,7 +213,11 @@ export default function AllowancesActions({
             sm
             noMargin
             min={0}
-            isInvalid={beginPosition >= endPosition || (!endPosition && endPosition !== 0)}
+            isInvalid={
+              beginPosition >= endPosition ||
+              (!endPosition && endPosition !== 0) ||
+              endPosition > pathLength
+            }
             value={endPosition}
             onChange={(e) => handleInputTo(+e.target.value)}
             appendOptions={{ label: <FaSearch />, name: 'op-end-position', onClick: () => {} }}
@@ -186,6 +251,7 @@ export default function AllowancesActions({
               onChange={(e) => setDistribution(e.target.value)}
               selectedValue={distribution}
               options={distributionsList}
+              sm
             />
           </div>
         )}
@@ -196,22 +262,28 @@ export default function AllowancesActions({
             sm
             condensed
             value={getAllowanceValue(valueAndUnit)}
-            handleType={handleTypePouet}
+            handleType={handleValueAndUnit}
             options={unitsList}
             typeValue="number"
+            type={valueAndUnit?.value_type}
             min={0}
             isInvalid={!(getAllowanceValue(valueAndUnit) > 0)}
           />
         </div>
         {allowanceSelectedIndex !== undefined ? (
           <div className="update-buttons">
-            <button className="btn btn-sm btn-warning" type="button" onClick={() => {}}>
+            <button
+              className="btn btn-sm btn-warning"
+              type="button"
+              onClick={() => handleManageAllowance(ActionOnAllowance.update)}
+              disabled={!isValid}
+            >
               <FaPencilAlt />
             </button>
             <button
               className="btn btn-sm btn-danger"
               type="button"
-              onClick={() => deleteAllowance(allowanceSelectedIndex)}
+              onClick={() => handleManageAllowance(ActionOnAllowance.delete)}
             >
               <FaTrash />
             </button>
@@ -227,8 +299,8 @@ export default function AllowancesActions({
           <button
             className={cx('btn btn-sm btn-success')}
             type="button"
-            onClick={handleAddAllowance}
-            disabled={!validityTest()}
+            onClick={() => handleManageAllowance(ActionOnAllowance.add)}
+            disabled={!isValid}
           >
             <FaPlus />
           </button>

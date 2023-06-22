@@ -1,22 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getPathfindingID } from 'reducers/osrdconf/selectors';
 import { lengthFromLineCoordinates } from 'utils/geometry';
-import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import {
   Allowance,
-  RangeAllowance,
   StandardAllowance,
   EngineeringAllowance,
   AllowanceValue,
+  osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { AiOutlineDash } from 'react-icons/ai';
 import { BsDashLg } from 'react-icons/bs';
 import AllowancesStandardSettings from './AllowancesStandardSettings';
 import AllowancesActions from './AllowancesActions';
 import AllowancesList from './AllowancesList';
-import { AllowancesTypes } from './types';
+import { AllowancesTypes, ManageAllowancesType, OverlapAllowancesIndexesType } from './types';
 
 const jsonExample = [
   {
@@ -26,7 +25,7 @@ const jsonExample = [
     begin_position: 0,
     end_position: 150000,
     value: {
-      value_type: 'time_per_distance',
+      value_type: 'percentage',
       minutes: 5,
     },
   },
@@ -44,8 +43,8 @@ const jsonExample = [
   {
     allowance_type: 'standard',
     default_value: {
-      value_type: 'time_per_distance',
-      minutes: 5,
+      value_type: 'time',
+      seconds: 5,
     },
     ranges: [
       {
@@ -54,6 +53,22 @@ const jsonExample = [
         value: {
           value_type: 'time_per_distance',
           minutes: 5,
+        },
+      },
+      {
+        begin_position: 1001,
+        end_position: 2000,
+        value: {
+          value_type: 'percentage',
+          percentage: 13,
+        },
+      },
+      {
+        begin_position: 2001,
+        end_position: 5000,
+        value: {
+          value_type: 'time',
+          seconds: 600,
         },
       },
     ],
@@ -74,7 +89,7 @@ const MissingPathFindingMessage = () => {
 export default function Allowances() {
   const { t } = useTranslation('operationalStudies/allowances');
   const pathFindingID = useSelector(getPathfindingID);
-  const { data: pathFinding } = osrdMiddlewareApi.useGetPathfindingByIdQuery(
+  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
     { id: pathFindingID as number },
     { skip: !pathFindingID }
   );
@@ -96,72 +111,80 @@ export default function Allowances() {
   const [EngineeringAllowanceSelectedIndex, setEngineeringAllowanceSelectedIndex] = useState<
     number | undefined
   >();
+  const [overlapAllowancesIndexes, setOverlapAllowancesIndexes] =
+    useState<OverlapAllowancesIndexesType>([false, false]);
 
-  const setDistribution = (distribution: StandardAllowance['distribution']) => {
+  const setStandardDistribution = (distribution: StandardAllowance['distribution']) => {
     setStandardAllowance({ ...standardAllowance, distribution });
   };
 
-  const setValueAndUnit = (valueAndUnit: AllowanceValue) => {
+  const setStandardValueAndUnit = (valueAndUnit: AllowanceValue) => {
     setStandardAllowance({ ...standardAllowance, default_value: valueAndUnit });
   };
 
-  // Add allowances
-  const addAllowance = (
-    newAllowance: RangeAllowance | EngineeringAllowance,
-    type: AllowancesTypes
-  ) => {
+  const toggleStandardAllowanceSelectedIndex = (AllowanceIndex?: number) => {
+    setStandardAllowanceSelectedIndex(
+      AllowanceIndex !== standardAllowanceSelectedIndex ? AllowanceIndex : undefined
+    );
+  };
+  const toggleEngineeringAllowanceSelectedIndex = (AllowanceIndex?: number) => {
+    setEngineeringAllowanceSelectedIndex(
+      AllowanceIndex !== EngineeringAllowanceSelectedIndex ? AllowanceIndex : undefined
+    );
+  };
+
+  // This function manage "add" and "delete" allowance, "update" is "delete" followed by "add"
+  const manageAllowance = ({
+    type,
+    newAllowance,
+    allowanceIndexToDelete,
+  }: ManageAllowancesType) => {
     if (type === AllowancesTypes.standard) {
+      const newRanges =
+        allowanceIndexToDelete !== undefined
+          ? standardAllowance.ranges.filter((_, idx) => allowanceIndexToDelete !== idx)
+          : [...standardAllowance.ranges];
       setStandardAllowance({
         ...standardAllowance,
-        ranges: [...standardAllowance.ranges, newAllowance],
+        ranges: (newAllowance ? [...newRanges, newAllowance] : newRanges).sort(
+          (a, b) => a.begin_position - b.begin_position
+        ),
       });
+      setStandardAllowanceSelectedIndex(undefined);
     }
     if (type === AllowancesTypes.engineering) {
-      const updatedAllowances = [...engineeringAllowances, newAllowance] as EngineeringAllowance[];
-      setEngineeringAllowances(updatedAllowances);
+      const newEngineeringAllowances =
+        allowanceIndexToDelete !== undefined
+          ? engineeringAllowances.filter((_, index) => index !== allowanceIndexToDelete)
+          : [...engineeringAllowances];
+      setEngineeringAllowances(
+        (newAllowance
+          ? ([...newEngineeringAllowances, newAllowance] as EngineeringAllowance[])
+          : newEngineeringAllowances
+        ).sort((a, b) => a.begin_position - b.begin_position)
+      );
+      setEngineeringAllowanceSelectedIndex(undefined);
     }
   };
-
-  // Delete allowances
-  const deleteStandardAllowance = (allowanceIndex: number) => {
-    if (standardAllowance?.ranges) {
-      setStandardAllowance({
-        ...standardAllowance,
-        ranges: standardAllowance.ranges.filter((_, idx) => allowanceIndex !== idx),
-      });
-    }
-    setStandardAllowanceSelectedIndex(undefined);
-  };
-  const deleteEngineeringAllowance = (allowanceIndex: number) => {
-    setEngineeringAllowances(engineeringAllowances.filter((_, index) => index !== allowanceIndex));
-    setEngineeringAllowanceSelectedIndex(undefined);
-  };
-
-  // Update allowances
-
-  useEffect(() => {
-    setAllowances([standardAllowance, ...engineeringAllowances]);
-    console.log([standardAllowance, ...engineeringAllowances]);
-  }, [standardAllowance, engineeringAllowances]);
 
   return pathFindingID && pathLength && pathLength > 0 ? (
     <div className="operational-studies-allowances">
       <div className="allowances-container">
-        <h2 className="text-uppercase text-muted mb-1 mt-1">
+        <h2 className="text-uppercase text-muted mb-3 mt-1">
           {t('standardAllowance')}
           <small className="ml-2">
             {t('allowancesCount', { count: standardAllowance.ranges.length })}
           </small>
         </h2>
-        <div className="subtitle mb-1 mt-2">
+        <div className="subtitle mb-1">
           <BsDashLg />
           <span className="ml-1">{t('standardAllowanceWholePath')}</span>
         </div>
         <AllowancesStandardSettings
           distribution={standardAllowance.distribution}
           valueAndUnit={standardAllowance.default_value}
-          setDistribution={setDistribution}
-          setValueAndUnit={setValueAndUnit}
+          setDistribution={setStandardDistribution}
+          setValueAndUnit={setStandardValueAndUnit}
         />
         <div className="subtitle mb-1 mt-2">
           <AiOutlineDash />
@@ -170,21 +193,22 @@ export default function Allowances() {
         <AllowancesActions
           allowances={standardAllowance.ranges}
           pathLength={pathLength}
-          addAllowance={addAllowance}
+          manageAllowance={manageAllowance}
           type={AllowancesTypes.standard}
           allowanceSelectedIndex={standardAllowanceSelectedIndex}
           setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
-          deleteAllowance={deleteStandardAllowance}
+          setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
         />
         <AllowancesList
           allowances={standardAllowance.ranges}
           type={AllowancesTypes.standard}
           allowanceSelectedIndex={standardAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
+          setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+          overlapAllowancesIndexes={overlapAllowancesIndexes}
         />
       </div>
       <div className="allowances-container">
-        <h2 className="text-uppercase text-muted mb-1 mt-1">
+        <h2 className="text-uppercase text-muted mb-3 mt-1">
           {t('engineeringAllowances')}
           <small className="ml-2">
             {t('allowancesCount', { count: engineeringAllowances.length })}
@@ -193,17 +217,16 @@ export default function Allowances() {
         <AllowancesActions
           allowances={engineeringAllowances}
           pathLength={pathLength}
-          addAllowance={addAllowance}
+          manageAllowance={manageAllowance}
           type={AllowancesTypes.engineering}
           allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
           setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
-          deleteAllowance={deleteEngineeringAllowance}
         />
         <AllowancesList
           allowances={engineeringAllowances}
           type={AllowancesTypes.engineering}
           allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
+          setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
         />
       </div>
     </div>
