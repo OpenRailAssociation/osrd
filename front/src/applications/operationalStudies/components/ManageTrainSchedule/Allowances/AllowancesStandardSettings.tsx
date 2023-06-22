@@ -4,7 +4,7 @@ import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputG
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { AllowanceValue, StandardAllowance } from 'common/api/osrdEditoastApi';
 import { unitsList, unitsNames } from './consts';
-import getAllowanceValue from './Helpers';
+import getAllowanceValue from './helpers';
 
 type Props = {
   distribution: string;
@@ -29,7 +29,7 @@ export default function AllowancesStandardSettings({
     if (type.type && type.value !== undefined) {
       setValueAndUnit({
         value_type: type.type as AllowanceValue['value_type'],
-        [unitsNames[type.type as keyof typeof unitsNames]]: type.value,
+        [unitsNames[type.type as keyof typeof unitsNames]]: +type.value,
       } as AllowanceValue);
     }
   };
@@ -52,6 +52,7 @@ export default function AllowancesStandardSettings({
             sm
             condensed
             value={getAllowanceValue(valueAndUnit)}
+            type={valueAndUnit.value_type}
             handleType={handleType}
             options={unitsList}
             typeValue="number"
