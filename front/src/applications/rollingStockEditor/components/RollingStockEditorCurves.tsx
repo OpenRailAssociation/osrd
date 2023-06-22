@@ -10,8 +10,19 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
   const { data } = props;
   const [currentRs, setCurrentRs] = useState(data.effort_curves.modes);
   const selectedMode = Object.keys(data.effort_curves.modes)[0];
-  const EMPTY_MATRIX = createEmptyMatrix<CellBase<string>>(5, 2);
+  const EMPTY_MATRIX = createEmptyMatrix<CellBase<string>>(8, 2);
+
+  // const defaultCurve = currentRs[`${selectedMode}`].curves[0].curve?.max_efforts?.map(
+  //   (effort, index) => {
+  //     const speedsPath = currentRs[`${selectedMode}`].curves[0].curve?.speeds;
+  //     return speedsPath !== undefined
+  //       ? [{ value: speedsPath[index].toString() }, { value: effort.toString() }]
+  //       : EMPTY_MATRIX;
+  //   }
+  // );
   const [curves, setCurves] = useState<Matrix<CellBase<string>>>(EMPTY_MATRIX);
+
+  // console.log('data default Curve =>', defaultCurve);
 
   type Curve = {
     max_efforts: number[];
@@ -23,9 +34,15 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
     const sheetValues = e.filter(
       (step) => step[0]?.value !== undefined || step[1]?.value !== undefined
     );
-    if (!isEmpty(sheetValues)) {
+
+    // console.log('sheetValues =>', sheetValues);
+
+    if (!isEmpty(sheetValues) && sheetValues.length > 8) {
       sheetValues.push(emptyRow);
       setCurves(sheetValues);
+    } else if (!isEmpty(sheetValues) && sheetValues.length < 8) {
+      const fillingRows = createEmptyMatrix<CellBase<string>>(8 - sheetValues.length, 2);
+      setCurves(sheetValues.concat(fillingRows));
     } else {
       setCurves(EMPTY_MATRIX);
     }
@@ -65,11 +82,12 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
 
   useEffect(() => {
     setCurrentRs(data.effort_curves.modes);
+    // setCurves(defaultCurve);
   }, [data]);
 
   return (
     <div className="d-flex rollingstock-editor-curves">
-      <div className="rollingstock-editor-spreadsheet pt-4 pl-3">
+      <div className="rollingstock-editor-spreadsheet mt-4 pl-3">
         <Spreadsheet
           data={curves}
           onChange={(e) => {

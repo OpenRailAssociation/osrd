@@ -16,6 +16,7 @@
       width: 60%;
       position: fixed;
       right: 0;
+      height: 35rem;
     }
   }
   &-buttons {
@@ -113,7 +114,7 @@
   overflow: auto;
   tr:not(:first-child) .Spreadsheet__header,
   tr:first-child .Spreadsheet__header:first-child {
-    width: 4rem;
+    width: 2rem;
     background-color: var(--white);
     border: solid 1px var(--coolgray3);
   }

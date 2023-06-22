@@ -61,7 +61,7 @@ export default function RollingStockCardDetail({
   }, [error]);
 
   return rollingStock && curvesComfortList ? (
-    <div className={`rollingstock-body ${form ? 'px-4' : ''}`}>
+    <div className={`${form ? 'px-4' : 'rollingstock-body'}`}>
       <div className={`row pt-2  ${form}`}>
         <div className="col-sm-6">
           <table className="rollingstock-details-table">
