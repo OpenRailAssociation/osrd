@@ -231,83 +231,52 @@ impl List<Ordering> for ProjectWithStudies {
 
 #[cfg(test)]
 pub mod test {
-    use super::Project;
-    use crate::client::PostgresConfig;
-    use crate::models::{Create, Delete, List, Ordering, ProjectWithStudies, Retrieve};
-    use actix_web::test as actix_test;
+    use super::*;
+    use crate::fixtures::tests::{db_pool, project, TestFixture};
+    use crate::models::{Delete, List, Ordering, ProjectWithStudies, Retrieve};
     use actix_web::web::Data;
-    use chrono::Utc;
-    use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::rstest;
 
-    pub fn build_test_project() -> Project {
-        Project {
-            name: Some("test".into()),
-            objectives: Some("".into()),
-            description: Some("".into()),
-            funders: Some("".into()),
-            budget: Some(0),
-            tags: Some(vec![]),
-            creation_date: Some(Utc::now().naive_utc()),
-            ..Default::default()
-        }
-    }
-
-    #[actix_test]
-    async fn create_delete_project() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
+    #[rstest]
+    async fn create_delete_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+        let project = project.await;
         // Delete the project
-        assert!(Project::delete(pool.clone(), project_id).await.unwrap());
+        assert!(Project::delete(db_pool.clone(), project.id())
+            .await
+            .unwrap());
         // Second delete should be false
-        assert!(!Project::delete(pool.clone(), project_id).await.unwrap());
+        assert!(!Project::delete(db_pool, project.id()).await.unwrap());
     }
 
-    #[actix_test]
-    async fn get_project() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
+    #[rstest]
+    async fn get_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+        let project = project.await;
 
         // Get a project
-        assert!(Project::retrieve(pool.clone(), project_id)
+        assert!(Project::retrieve(db_pool.clone(), project.id())
             .await
             .unwrap()
             .is_some());
         assert!(
-            ProjectWithStudies::list(pool.clone(), 1, 25, Ordering::LastModifiedAsc)
+            ProjectWithStudies::list(db_pool.clone(), 1, 25, Ordering::LastModifiedAsc)
                 .await
                 .is_ok()
         );
-
-        // Delete the project
-        assert!(Project::delete(pool.clone(), project_id).await.unwrap());
     }
 
-    #[actix_test]
-    async fn sort_project() {
-        let mut project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+    #[rstest]
+    async fn sort_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+        let project = project.await;
 
-        // Create first project
-        let project_1 = project.clone().create(pool.clone()).await.unwrap();
-        let project_id_1 = project_1.id.unwrap();
         // Create second project
-        project.name = Some("project_test".into());
-        let project_2 = project.create(pool.clone()).await.unwrap();
-        let project_id_2 = project_2.id.unwrap();
+        let project_2 = Project {
+            name: Some(project.model.name.clone().unwrap() + "_bis"),
+            id: None,
+            ..project.model.clone()
+        };
+        let _project_2 = TestFixture::create(project_2, db_pool.clone()).await;
 
-        let projects = ProjectWithStudies::list(pool.clone(), 1, 25, Ordering::NameDesc)
+        let projects = ProjectWithStudies::list(db_pool.clone(), 1, 25, Ordering::NameDesc)
             .await
             .unwrap()
             .results;
@@ -317,29 +286,17 @@ pub mod test {
             let name_2 = p2.project.name.as_ref().unwrap().to_lowercase();
             assert!(name_1.ge(&name_2));
         }
-
-        // Delete the projects
-        assert!(Project::delete(pool.clone(), project_id_1).await.unwrap());
-        assert!(Project::delete(pool.clone(), project_id_2).await.unwrap());
     }
 
-    #[actix_test]
-    async fn update_project() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let mut project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
+    #[rstest]
+    async fn update_project(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
+        let project_fixture = project.await;
 
         // Patch a project
+        let mut project = project_fixture.model.clone();
         project.name = Some("update_name".into());
         project.budget = Some(1000);
-        let project_updated = project.update(pool.clone()).await.unwrap().unwrap();
+        let project_updated = project.update(db_pool.clone()).await.unwrap().unwrap();
         assert_eq!(project_updated.name.unwrap(), String::from("update_name"));
-
-        // Delete the project
-        assert!(Project::delete(pool.clone(), project_id).await.unwrap());
     }
 }

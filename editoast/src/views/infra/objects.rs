@@ -123,85 +123,68 @@ async fn get_objects(
 #[cfg(test)]
 mod tests {
     use actix_web::http::StatusCode;
-    use actix_web::test as actix_test;
-    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
+    use actix_web::test::{call_service, TestRequest};
 
+    use crate::fixtures::tests::{empty_infra, TestFixture};
     use crate::models::Infra;
     use crate::schema::SwitchType;
-    use crate::views::infra::tests::{
-        create_infra_request, create_object_request, delete_infra_request,
-    };
+    use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
+    use rstest::*;
 
-    #[actix_test]
-    async fn check_invalid_ids() {
+    #[rstest]
+    async fn check_invalid_ids(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_objects_test")).await;
 
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/objects/TrackSection", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id()).as_str())
             .set_json(["invalid_id"])
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn get_objects_no_ids() {
+    #[rstest]
+    async fn get_objects_no_ids(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_objects_no_id_test")).await;
 
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/objects/TrackSection", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id()).as_str())
             .set_json(vec![""; 0])
             .to_request();
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn get_objects_duplicate_ids() {
+    #[rstest]
+    async fn get_objects_duplicate_ids(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_objects_dup_ids_test")).await;
 
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/objects/TrackSection", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/objects/TrackSection", empty_infra.id()).as_str())
             .set_json(vec!["id"; 2])
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn get_switch_types() {
+    #[rstest]
+    async fn get_switch_types(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_switch_types_test")).await;
 
         // Add a switch type
         let switch_type = SwitchType::default();
         let switch_id = switch_type.id.clone();
-        let req = create_object_request(infra.id.unwrap(), switch_type.into());
+        let req = create_object_request(empty_infra.id(), switch_type.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/objects/SwitchType", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/objects/SwitchType", empty_infra.id()).as_str())
             .set_json(vec![switch_id])
             .to_request();
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

@@ -29,9 +29,18 @@ $ cargo run -- runserver
 
 ## Tests
 
+In order to run tests, you need to have a postgresql database running. 
+
+To avoid thread conflicts while accessing the database, use the `--test-threads=1` option.
+
+Finally, with target debug, the test threads overflow their stack. To avoid this, you can either increase the stack size with the `RUST_MIN_STACK` environment variable or use the release target.
+
 ```sh
-# limit threads to avoid test errors with database connections
-cargo test
+cargo test --release -- --test-threads=1
+
+# or
+
+RUST_MIN_STACK=8388608 cargo test -- --test-threads=1
 ```
 
 ## Useful tools

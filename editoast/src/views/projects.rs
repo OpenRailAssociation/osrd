@@ -203,36 +203,43 @@ async fn patch(
 
 #[cfg(test)]
 pub mod test {
-    use crate::models::Project;
+    use super::*;
+    use crate::fixtures::tests::{db_pool, project, TestFixture};
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
+    use actix_web::test::{call_service, read_body_json, TestRequest};
+    use rstest::rstest;
     use serde_json::json;
 
-    pub fn create_project_request() -> Request {
-        TestRequest::post()
-            .uri("/projects")
-            .set_json(json!({ "name": "test_project","description": "", "objectives":"" }))
-            .to_request()
-    }
-
-    pub fn delete_project_request(project_id: i64) -> Request {
+    fn delete_project_request(project_id: i64) -> Request {
         TestRequest::delete()
             .uri(format!("/projects/{project_id}").as_str())
             .to_request()
     }
 
-    #[actix_test]
-    async fn project_create_delete() {
+    #[rstest]
+    async fn project_create_delete(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let response = call_service(&app, create_project_request()).await;
+        let req = TestRequest::post()
+            .uri("/projects")
+            .set_json(json!({ "name": "test_project","description": "", "objectives":"" }))
+            .to_request();
+        let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let project: Project = read_body_json(response).await;
-        assert_eq!(project.name.unwrap(), "test_project");
-        let response = call_service(&app, delete_project_request(project.id.unwrap())).await;
+        Project::delete(db_pool, project.id.unwrap()).await.unwrap();
+    }
+
+    #[rstest]
+    async fn project_delete(#[future] project: TestFixture<Project>) {
+        let app = create_test_service().await;
+        let project = project.await;
+        let response = call_service(&app, delete_project_request(project.id())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let response = call_service(&app, delete_project_request(project.id())).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[actix_test]
@@ -243,38 +250,27 @@ pub mod test {
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    #[actix_test]
-    async fn project_get() {
+    #[rstest]
+    async fn project_get(#[future] project: TestFixture<Project>) {
         let app = create_test_service().await;
-        let project: Project = call_and_read_body_json(&app, create_project_request()).await;
+        let project = project.await;
 
         let req = TestRequest::get()
-            .uri(format!("/projects/{}", project.id.unwrap()).as_str())
+            .uri(format!("/projects/{}", project.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-
-        let req = TestRequest::delete()
-            .uri(format!("/projects/{}", project.id.unwrap()).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
-        let response = call_service(&app, delete_project_request(project.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
-    #[actix_test]
-    async fn project_patch() {
+    #[rstest]
+    async fn project_patch(#[future] project: TestFixture<Project>) {
         let app = create_test_service().await;
-        let project: Project = call_and_read_body_json(&app, create_project_request()).await;
+        let project = project.await;
         let req = TestRequest::patch()
-            .uri(format!("/projects/{}", project.id.unwrap()).as_str())
+            .uri(format!("/projects/{}", project.id()).as_str())
             .set_json(json!({"name": "rename_test", "budget":20000}))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let response = call_service(&app, delete_project_request(project.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

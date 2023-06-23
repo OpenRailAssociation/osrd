@@ -86,7 +86,7 @@ impl Identifiable for Study {
     }
 }
 
-#[derive(Debug, Clone, Serialize, QueryableByName)]
+#[derive(Debug, Clone, Serialize, Deserialize, QueryableByName)]
 pub struct StudyWithScenarios {
     #[serde(flatten)]
     #[diesel(embed)]
@@ -141,118 +141,58 @@ impl List<(i64, Ordering)> for StudyWithScenarios {
 
 #[cfg(test)]
 pub mod test {
-
-    use super::{Project, Study};
-    use crate::client::PostgresConfig;
-    use crate::models::projects::test::build_test_project;
-    use crate::models::Create;
+    use super::*;
+    use crate::fixtures::tests::{db_pool, study_fixture_set, StudyFixtureSet, TestFixture};
     use crate::models::Delete;
     use crate::models::List;
     use crate::models::Ordering;
     use crate::models::Retrieve;
-    use crate::models::StudyWithScenarios;
-    use actix_web::test as actix_test;
-    use actix_web::web::Data;
-    use chrono::Utc;
-    use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::rstest;
 
-    pub fn build_test_study(project_id: i64) -> Study {
-        Study {
-            name: Some("test".into()),
-            project_id: Some(project_id),
-            description: Some("test".into()),
-            creation_date: Some(Utc::now().naive_utc()),
-            business_code: Some("AAA".into()),
-            service_code: Some("BBB".into()),
-            state: Some("some_type".into()),
-            study_type: Some("some_type".into()),
-            budget: Some(0),
-            tags: Some(vec![]),
-            ..Default::default()
-        }
-    }
-
-    #[actix_test]
-    async fn create_delete_study() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
-
-        // Create a study
-        let study = build_test_study(project_id);
-        let study: Study = study.create(pool.clone()).await.unwrap();
+    #[rstest]
+    async fn create_delete_study(
+        #[future] study_fixture_set: StudyFixtureSet,
+        db_pool: Data<DbPool>,
+    ) {
+        let StudyFixtureSet { study, .. } = study_fixture_set.await;
 
         // Delete the study
-        Study::delete(pool.clone(), study.id.unwrap())
-            .await
-            .unwrap();
-        Project::delete(pool.clone(), project_id).await.unwrap();
+        Study::delete(db_pool.clone(), study.id()).await.unwrap();
 
         // Second delete should fail
-        assert!(!Study::delete(pool.clone(), study.id.unwrap())
-            .await
-            .unwrap());
+        assert!(!Study::delete(db_pool.clone(), study.id()).await.unwrap());
     }
 
-    #[actix_test]
-    async fn get_study() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
-
-        // Create a study
-        let study = build_test_study(project_id);
-        let study: Study = study.create(pool.clone()).await.unwrap();
+    #[rstest]
+    async fn get_study(#[future] study_fixture_set: StudyFixtureSet, db_pool: Data<DbPool>) {
+        let StudyFixtureSet { study, project } = study_fixture_set.await;
 
         // Get a study
-        assert!(Study::retrieve(pool.clone(), study.id.unwrap())
-            .await
-            .is_ok());
+        assert!(Study::retrieve(db_pool.clone(), study.id()).await.is_ok());
         assert!(StudyWithScenarios::list(
-            pool.clone(),
+            db_pool.clone(),
             1,
             25,
-            (project_id, Ordering::LastModifiedAsc)
+            (project.id(), Ordering::LastModifiedAsc)
         )
         .await
         .is_ok());
-
-        // Delete the study
-        Study::delete(pool.clone(), study.id.unwrap())
-            .await
-            .unwrap();
-        Project::delete(pool.clone(), project_id).await.unwrap();
     }
 
-    #[actix_test]
-    async fn sort_study() {
-        let project = build_test_project();
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Create a project
-        let project = project.clone().create(pool.clone()).await.unwrap();
-        let project_id = project.id.unwrap();
-
-        // Create first study
-        let mut study = build_test_study(project_id);
-        study.clone().create(pool.clone()).await.unwrap();
+    #[rstest]
+    async fn sort_study(#[future] study_fixture_set: StudyFixtureSet, db_pool: Data<DbPool>) {
+        let StudyFixtureSet { study, project } = study_fixture_set.await;
 
         // Create second study
-        study.name = Some("study_test".into());
-        study.create(pool.clone()).await.unwrap();
+        let study_2 = Study {
+            id: None,
+            name: Some(study.model.name.clone().unwrap() + "_bis"),
+            ..study.model.clone()
+        };
+        TestFixture::create(study_2, db_pool.clone()).await;
 
         let studies =
-            StudyWithScenarios::list(pool.clone(), 1, 25, (project_id, Ordering::NameDesc))
+            StudyWithScenarios::list(db_pool.clone(), 1, 25, (project.id(), Ordering::NameDesc))
                 .await
                 .unwrap()
                 .results;
@@ -261,8 +201,5 @@ pub mod test {
             let name_2 = p2.study.name.as_ref().unwrap().to_lowercase();
             assert!(name_1.ge(&name_2));
         }
-
-        // Delete the project
-        Project::delete(pool.clone(), project_id).await.unwrap();
     }
 }

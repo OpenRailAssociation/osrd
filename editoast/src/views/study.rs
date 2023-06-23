@@ -244,101 +244,109 @@ async fn patch(
 
 #[cfg(test)]
 pub mod test {
+    use super::*;
+    use crate::fixtures::tests::{
+        db_pool, project, study_fixture_set, StudyFixtureSet, TestFixture,
+    };
     use crate::models::Project;
     use crate::models::Study;
-    use crate::views::projects::test::{create_project_request, delete_project_request};
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
-    use actix_web::test as actix_test;
-    use actix_web::test::call_and_read_body_json;
     use actix_web::test::{call_service, read_body_json, TestRequest};
+    use rstest::rstest;
     use serde_json::json;
 
-    pub async fn create_study_request() -> Request {
-        let app = create_test_service().await;
-        let response = call_service(&app, create_project_request()).await;
-        let project: Project = read_body_json(response).await;
-        let project_id = project.id.unwrap();
-        TestRequest::post()
-            .uri(format!("/projects/{project_id}/studies/").as_str())
-            .set_json(json!({ "name": "study_test" }))
-            .to_request()
+    fn study_url(study_fixture_set: &StudyFixtureSet, detail: bool) -> String {
+        format!(
+            "/projects/{project_id}/studies/{study_id}",
+            project_id = study_fixture_set.project.id(),
+            study_id = if detail {
+                study_fixture_set.study.id().to_string()
+            } else {
+                "".to_string()
+            }
+        )
     }
 
-    pub fn delete_study_request(project_id: i64, study_id: i64) -> Request {
+    fn delete_study_request(study_fixture_set: &StudyFixtureSet) -> Request {
         TestRequest::delete()
-            .uri(format!("/projects/{project_id}/studies/{study_id}").as_str())
+            .uri(study_url(study_fixture_set, true).as_str())
             .to_request()
     }
 
-    #[actix_test]
-    async fn study_create_delete() {
+    #[rstest]
+    async fn study_create(#[future] project: TestFixture<Project>, db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let response = call_service(&app, create_study_request().await).await;
+        let project = project.await;
+        let req = TestRequest::post()
+            .uri(format!("/projects/{}/studies/", project.id()).as_str())
+            .set_json(json!({ "name": "study_test" }))
+            .to_request();
+        let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+
         let study: Study = read_body_json(response).await;
         assert_eq!(study.name.unwrap(), "study_test");
-        let response = call_service(
-            &app,
-            delete_study_request(study.project_id.unwrap(), study.id.unwrap()),
-        )
-        .await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(&app, delete_project_request(study.project_id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        assert!(Study::delete(db_pool, study.id.unwrap()).await.unwrap());
     }
 
-    #[actix_test]
-    async fn study_list() {
+    #[rstest]
+    async fn study_delete(#[future] study_fixture_set: StudyFixtureSet) {
         let app = create_test_service().await;
-        let response = call_service(&app, create_study_request().await).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let study: Study = read_body_json(response).await;
-        let project_id = study.project_id.unwrap();
+        let study_fixture_set = study_fixture_set.await;
+        let response = call_service(&app, delete_study_request(&study_fixture_set)).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let response = call_service(&app, delete_study_request(&study_fixture_set)).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn study_list(#[future] study_fixture_set: StudyFixtureSet) {
+        let app = create_test_service().await;
+
         let req = TestRequest::get()
-            .uri(format!("/projects/{project_id}/studies").as_str())
+            .uri(study_url(&study_fixture_set.await, false).as_str())
             .to_request();
 
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    #[actix_test]
-    async fn study_get() {
+    #[rstest]
+    async fn study_get(#[future] study_fixture_set: StudyFixtureSet, db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let study: Study = call_and_read_body_json(&app, create_study_request().await).await;
-        let project_id = study.project_id.unwrap();
-        let study_id = study.id.unwrap();
-        let url = format!("/projects/{project_id}/studies/{study_id}/");
+        let study_fixture_set = study_fixture_set.await;
+
+        let url = study_url(&study_fixture_set, true);
+
         let req = TestRequest::get().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let req = TestRequest::delete().uri(url.as_str()).to_request();
+        assert!(Study::delete(db_pool, study_fixture_set.study.id())
+            .await
+            .unwrap());
+
+        let req = TestRequest::get().uri(url.as_str()).to_request();
         let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_project_request(project_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
-    #[actix_test]
-    async fn study_patch() {
+    #[rstest]
+    async fn study_patch(#[future] study_fixture_set: StudyFixtureSet) {
         let app = create_test_service().await;
-        let study: Study = call_and_read_body_json(&app, create_study_request().await).await;
-        let project_id = study.project_id.unwrap();
-        let study_id = study.id.unwrap();
-        let url = format!("/projects/{project_id}/studies/{study_id}");
+        let study_fixture_set = study_fixture_set.await;
         let req = TestRequest::patch()
-            .uri(url.as_str())
+            .uri(study_url(&study_fixture_set, true).as_str())
             .set_json(json!({"name": "rename_test", "budget":20000}))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let response = call_service(&app, delete_study_request(project_id, study_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_project_request(project_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let StudyWithScenarios { study, .. } = read_body_json(response).await;
+        assert_eq!(study.name.unwrap(), "rename_test");
     }
 }
