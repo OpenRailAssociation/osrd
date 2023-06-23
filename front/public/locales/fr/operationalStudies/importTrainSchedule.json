@@ -33,6 +33,7 @@
     "missingTimetable": "Vous devez choisir une grille horaire",
     "noImportationPossible": "L'importation n'est pas possible pour l'instant :",
     "pathComplete": "Tous les pathfinding ont été effectués",
+    "pathsFailed": "Tous les pathfindings ont échoué",
     "ready": "Prêt.",
     "searchingPath": "Génération pathfinding",
     "uicComplete": "Tous les lieux ont été renseignés."

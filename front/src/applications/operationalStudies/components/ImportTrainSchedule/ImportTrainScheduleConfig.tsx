@@ -19,14 +19,18 @@ import {
 } from 'common/api/osrdEditoastApi';
 
 interface ImportTrainScheduleConfigProps {
+  infraId: number;
   setConfig: (config: TrainScheduleImportConfig) => void;
   setTrainsList: (trainsList: TrainSchedule[]) => void;
 }
 
 type SearchConstraintType = (string | number | string[])[];
 
-export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConfigProps) {
-  const { setConfig, setTrainsList } = props;
+export default function ImportTrainScheduleConfig({
+  setConfig,
+  setTrainsList,
+  infraId,
+}: ImportTrainScheduleConfigProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const [postSearch] = osrdEditoastApi.usePostSearchMutation();
   const [from, setFrom] = useState();
@@ -85,11 +89,13 @@ export default function ImportTrainScheduleConfig(props: ImportTrainScheduleConf
     const payload: PostSearchApiArg = {
       body: {
         object: 'operationalpoint',
-        query: ['and', constraint, ['=', ['infra_id'], 15]],
+        query: ['and', constraint, ['=', ['infra_id'], infraId]],
       },
       pageSize: 1000,
     };
-    const operationalPoints = (await postSearch(payload).unwrap()) as SearchOperationalPointResult[];
+    const operationalPoints = (await postSearch(
+      payload
+    ).unwrap()) as SearchOperationalPointResult[];
 
     return operationalPoints.reduce(
       (res, operationalPoint) =>

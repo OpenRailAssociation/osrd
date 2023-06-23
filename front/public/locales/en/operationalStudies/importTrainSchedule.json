@@ -33,6 +33,7 @@
     "missingTimetable": "You must choose a timetable",
     "noImportationPossible": "Import is currently not available:",
     "pathComplete": "Pathfinding complete",
+    "pathsFailed": "All the pathfindings have failed",
     "ready": "Ready.",
     "searchingPath": "Search for a path",
     "uicComplete": "All locations have been completed."
