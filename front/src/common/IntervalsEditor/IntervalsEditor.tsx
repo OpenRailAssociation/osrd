@@ -350,10 +350,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
         {/* Data visualisation tooltip when item is hovered */}
         {mode !== 'dragging' && hovered !== null && data[hovered.index] && (
           <div className="tooltip" ref={tooltipRef}>
-            <IntervalsEditorTootlip
-              item={data[hovered.index]}
-              point={!mode ? hovered.point : undefined}
-            />
+            <IntervalsEditorTootlip item={data[hovered.index]} point={hovered.point} />
           </div>
         )}
 
@@ -420,7 +417,11 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                       options={units}
                       //title={t('unit')}
                       labelKey="label"
-                      onChange={() => null}
+                      onChange={(e) => {
+                        const intervalsCloned = cloneDeep(data)
+                        intervalsCloned[selected].unit = e.target.value;
+                        setData(intervalsCloned);
+                      }}
                       sm
                       value={data[selected].unit || defaultUnit}
                     />
