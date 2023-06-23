@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
@@ -43,9 +42,7 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
         <span className="import-train-schedule-traindetail-idx">{idx + 1}</span>
         <span className="import-train-schedule-traindetail-num">
           {trainData.trainNumber}
-          <span className="import-train-schedule-traindetail-activity">
-            {trainData.departure.name}
-          </span>
+          <span className="import-train-schedule-traindetail-activity">{trainData.departure}</span>
         </span>
         <span className="import-train-schedule-traindetail-startend">
           {trainData.departureTime.slice(-8)} - {trainData.arrivalTime.slice(-8)}
@@ -78,7 +75,7 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
       </div>
       <div className={`import-train-schedule-traindetail-steps ${isOpened ? 'opened' : ''}`}>
         {trainData.steps.map(
-          (step: any, stepIdx: number) =>
+          (step, stepIdx) =>
             // Remove origin & destination
             stepIdx !== 0 &&
             stepIdx !== trainData.steps.length - 1 && (
@@ -90,7 +87,7 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
                 <span className="import-train-schedule-traindetail-step-duration">
                   {step.duration}s
                 </span>
-                <span className="import-train-schedule-traindetail-step-name">{step.gare}</span>
+                <span className="import-train-schedule-traindetail-step-name">{step.name}</span>
               </div>
             )
         )}

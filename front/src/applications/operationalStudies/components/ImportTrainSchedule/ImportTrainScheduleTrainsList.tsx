@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Loader from 'common/Loader';
-import get from 'axios';
 import ImportTrainScheduleTrainDetail from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleTrainDetail';
 import ImportTrainScheduleModal from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleModal';
 import { GoRocket } from 'react-icons/go';
@@ -9,73 +8,38 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { keyBy } from 'lodash';
 import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 import nextId from 'react-id-generator';
-import { TrainSchedule, TrainScheduleImportConfig } from 'applications/operationalStudies/types';
+import { TrainSchedule } from 'applications/operationalStudies/types';
 import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
-import { GRAOU_URL } from './consts';
+import { TFunction } from 'i18next';
 
-type LoadingProps = {
-  isSearching: boolean;
-};
-
-function LoadingIfSearching({ isSearching }: LoadingProps) {
-  const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
+function LoadingIfSearching({ isLoading, t }: { isLoading: boolean; t: TFunction }) {
   return (
     <h1 className="text-center text-muted my-5">
-      {isSearching ? <Loader position="center" /> : t('noResults')}
+      {isLoading ? <Loader position="center" /> : `${t('noResults')}`}
     </h1>
   );
 }
 
 type ImportTrainScheduleTrainsListProps = {
-  config?: TrainScheduleImportConfig;
-  trainsList?: TrainSchedule[];
+  trainsList: TrainSchedule[];
   rollingStockDB: RollingStock[] | LightRollingStock[];
-  setTrainList: (trainsSchedules?: TrainSchedule[]) => void;
+  isLoading: boolean;
 };
 
 export default function ImportTrainScheduleTrainsList({
-  config,
   trainsList,
   rollingStockDB,
-  setTrainList,
+  isLoading,
 }: ImportTrainScheduleTrainsListProps) {
   const { t } = useTranslation(['operationalStudies/importTrainSchedule']);
   const { openModal } = useModal();
-  const [isSearching, setIsSearching] = useState(false);
 
   const rollingStockDict = useMemo(
     () => keyBy(rollingStockDB, (rollingStock) => rollingStock.name),
     [rollingStockDB]
   );
 
-  async function getTrains() {
-    setTrainList(undefined);
-    setIsSearching(true);
-    try {
-      const params = {
-        q: 'trains',
-        config,
-      };
-      const result = await get(`${GRAOU_URL}/api/trainschedules.php`, { params });
-      setTrainList(result.data);
-      setIsSearching(false);
-    } catch (error) {
-      console.error(error);
-      setIsSearching(false);
-    }
-  }
-
-  useEffect(() => {
-    if (config) {
-      getTrains();
-    } else {
-      setTrainList(undefined);
-    }
-  }, [config]);
-
-  // if (!config) return null;
-
-  return trainsList && trainsList.length > 0 ? (
+  return trainsList.length > 0 ? (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container import-train-schedule-trainlist">
         <div className="import-train-schedule-trainlist-launchbar">
@@ -116,7 +80,7 @@ export default function ImportTrainScheduleTrainsList({
   ) : (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container">
-        <LoadingIfSearching isSearching={isSearching} />
+        <LoadingIfSearching isLoading={isLoading} t={t} />
       </div>
     </div>
   );
