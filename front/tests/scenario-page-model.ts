@@ -23,6 +23,8 @@ class PlaywrightScenarioPage {
 
   readonly getResultPathfindingDistance: Locator;
 
+  readonly getInfraLoadState: Locator;
+
   constructor(readonly page: Page) {
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
@@ -41,6 +43,7 @@ class PlaywrightScenarioPage {
     this.getMapModule = page.getByTestId('map');
     this.getSettingSimulationBtn = page.locator('span', { hasText: 'Paramètres de simulation' });
     this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
+    this.getInfraLoadState = page.locator('.infra-loading-state');
   }
 
   async openTabByText(text: string) {
@@ -49,6 +52,10 @@ class PlaywrightScenarioPage {
 
   async checkPathfindingDistance(distance: string | RegExp) {
     await expect(this.getResultPathfindingDistance).toHaveText(distance);
+  }
+
+  async checkInfraLoaded() {
+    await expect(this.getInfraLoadState).toHaveClass(/cached/);
   }
 }
 

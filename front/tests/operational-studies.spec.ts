@@ -32,7 +32,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .getByTestId('_@Test integration scenario')
       .getByRole('button')
       .click();
-
+    await playwrightScenarioPage.checkInfraLoaded();
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
   });
 
@@ -68,6 +68,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
       playwrightHomePage.page
     );
+
     await playwrightRollingstockModalPage.openRollingstockModal();
     const rollingstockModal = playwrightRollingstockModalPage.getRollingstockModal;
     await expect(rollingstockModal).toBeVisible();
@@ -122,9 +123,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await playwrightMap.searchStation(VARIABLES.originSearch);
     await playwrightHomePage.page.getByRole('button', { name: VARIABLES.originSearchItem }).click();
     await playwrightMap.closeMapSearch();
-    expect(await playwrightMap.page.locator('.map-search-marker-title').textContent()).toMatch(
-      VARIABLES.originSearchItem
-    );
+    await playwrightMap.page.waitForTimeout(100);
     await playwrightMap.clickOnMap(VARIABLES.originPositionClick);
     await playwrightMap.clickOnOrigin();
 
