@@ -34,6 +34,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .click();
 
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
+    await playwrightHomePage.page.waitForTimeout(500);
   });
 
   test('RollingStockSelector is displayed', async () => {
@@ -125,6 +126,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     expect(await playwrightMap.page.locator('.map-search-marker-title').textContent()).toMatch(
       VARIABLES.originSearchItem
     );
+    await playwrightMap.page.waitForTimeout(100);
     await playwrightMap.clickOnMap(VARIABLES.originPositionClick);
     await playwrightMap.clickOnOrigin();
 
