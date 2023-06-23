@@ -133,6 +133,7 @@ pub enum ElectricalProfilesError {
 mod tests {
     use super::ElectricalProfileSet;
     use crate::client::PostgresConfig;
+    use crate::fixtures::tests::{db_pool, TestFixture};
     use crate::schema::electrical_profiles::ElectricalProfile;
     use crate::views::tests::create_test_service;
     use actix_http::StatusCode;
@@ -140,9 +141,13 @@ mod tests {
     use actix_web::test as actix_test;
     use actix_web::test::TestRequest;
     use actix_web::test::{call_service, read_body_json};
+    use actix_web::web::Data;
     use diesel::prelude::*;
+    use diesel::r2d2::ConnectionManager;
     use diesel::result::Error;
     use diesel_json::Json as DieselJson;
+    use r2d2::Pool;
+    use rstest::rstest;
 
     use crate::tables::osrd_infra_electricalprofileset::dsl;
 
@@ -235,8 +240,10 @@ mod tests {
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
-    #[actix_test]
-    async fn test_post_electrical_profile() {
+    #[rstest]
+    async fn test_post_electrical_profile(
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
+    ) {
         let app = create_test_service().await;
         let ep_set = ElectricalProfileSetData {
             levels: vec![ElectricalProfile {
@@ -254,8 +261,12 @@ mod tests {
 
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let created_ep_set: ElectricalProfileSet = read_body_json(response).await;
-        assert_eq!(created_ep_set.name.unwrap(), "elec");
+        let created_ep_set = TestFixture::<ElectricalProfileSet> {
+            model: read_body_json(response).await,
+            db_pool,
+            infra: None,
+        };
+        assert_eq!(created_ep_set.model.name.clone().unwrap(), "elec");
     }
 
     #[actix_test]
