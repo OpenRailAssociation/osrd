@@ -53,10 +53,10 @@ export default function ImportTrainScheduleConfig({
   const { openModal, closeModal } = useContext(ModalContext);
 
   async function importTrackSections(opIds: number[]): Promise<Record<number, TrackLocation[]>> {
-    const constraint = opIds.reduce((res, uic) => [...res, ['=', ['uic'], Number(uic)]], ['or'] as (
-      | string
-      | SearchConstraintType
-    )[]);
+    const uniqueOpIds = Array.from(new Set(opIds));
+    const constraint = uniqueOpIds.reduce((res, uic) => [...res, ['=', ['uic'], Number(uic)]], [
+      'or',
+    ] as (string | SearchConstraintType)[]);
     const payload: PostSearchApiArg = {
       body: {
         object: 'operationalpoint',
@@ -89,7 +89,7 @@ export default function ImportTrainScheduleConfig({
         const uicFormatted = Number(step.uic);
         const latitudeFormatted = Number(step.latitude);
         const longitudeFormatted = Number(step.longitude);
-        if (!uicFormatted) {
+        if (!uicFormatted || !latitudeFormatted || !longitudeFormatted) {
           return null;
         }
         return {

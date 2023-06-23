@@ -1221,8 +1221,8 @@ export type MultiPoint = {
   coordinates: Point3D[];
 };
 export type TrackLocation = {
-  track?: string;
-  offset?: number;
+  track: string;
+  offset: number;
 };
 export type SearchOperationalPointResult = {
   obj_id: string;

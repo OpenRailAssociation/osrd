@@ -2562,6 +2562,7 @@ components:
           format: float
           description: The offset on the track section
           example: 42.
+      required: [track, offset]
 
     Direction:
       type: string

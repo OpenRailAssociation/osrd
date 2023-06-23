@@ -42,7 +42,11 @@ export default function ImportTrainScheduleTrainDetail({ trainData, idx, rolling
         <span className="import-train-schedule-traindetail-idx">{idx + 1}</span>
         <span className="import-train-schedule-traindetail-num">
           {trainData.trainNumber}
-          <span className="import-train-schedule-traindetail-activity">{trainData.departure}</span>
+          {trainData.departure && (
+            <span className="import-train-schedule-traindetail-activity">
+              {trainData.departure}
+            </span>
+          )}
         </span>
         <span className="import-train-schedule-traindetail-startend">
           {trainData.departureTime.slice(-8)} - {trainData.arrivalTime.slice(-8)}
