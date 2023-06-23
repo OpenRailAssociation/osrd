@@ -65,32 +65,23 @@ async fn delete(db_pool: Data<DbPool>, document_key: Path<i64>) -> Result<HttpRe
 
 #[cfg(test)]
 mod tests {
-    use actix_web::http::header::ContentType;
-    use actix_web::test as actix_test;
+    use super::*;
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
-    use actix_web::web::Data;
-    use diesel::r2d2::{ConnectionManager, Pool};
-    use diesel::PgConnection;
+    use rstest::rstest;
     use serde::Deserialize;
 
-    use crate::client::PostgresConfig;
-    use crate::models::{Create, Delete, Document};
+    use crate::fixtures::tests::{db_pool, document_example, TestFixture};
     use crate::views::tests::create_test_service;
 
-    #[actix_test]
-    async fn get_document() {
+    #[rstest]
+    async fn get_document(
+        #[future] document_example: TestFixture<Document>,
+        db_pool: Data<DbPool>,
+    ) {
         let service = create_test_service().await;
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
+        let doc = document_example.await;
 
-        // Creating the document
-        let doc_data = "Test data".as_bytes().to_vec();
-        let doc = Document::new("text/plain".to_string(), doc_data.clone())
-            .create(pool.clone())
-            .await
-            .unwrap();
-
-        let doc_key = doc.id.unwrap();
+        let doc_key = doc.id();
         let url = format!("/documents/{}", doc_key);
 
         // Should succeed
@@ -99,7 +90,7 @@ mod tests {
         assert!(response.status().is_success());
 
         // Delete the document
-        assert!(Document::delete(pool.clone(), doc_key).await.unwrap());
+        assert!(Document::delete(db_pool, doc_key).await.unwrap());
 
         // Should fail
         let request = TestRequest::get().uri(&url).to_request();
@@ -107,30 +98,13 @@ mod tests {
         assert!(response.status().is_client_error());
     }
 
-    #[actix_test]
-    async fn document_get_url() {
-        let manager = ConnectionManager::<PgConnection>::new(PostgresConfig::default().url());
-        let pool = Data::new(Pool::builder().max_size(1).build(manager).unwrap());
-
-        // Creating the document
-        let doc_data = "Test data".as_bytes().to_vec();
-        let doc = Document::new("text/plain".to_string(), doc_data.clone())
-            .create(pool.clone())
-            .await
-            .unwrap();
-        let key = doc.id.unwrap();
-
-        // Delete doc
-        assert!(Document::delete(pool.clone(), key).await.unwrap());
-    }
-
     #[derive(Deserialize, Clone, Debug)]
     struct PostDocumentResponse {
         document_key: i64,
     }
 
-    #[actix_test]
-    async fn document_post_and_delete() {
+    #[rstest]
+    async fn document_post(db_pool: Data<DbPool>) {
         let service = create_test_service().await;
 
         // Insert document
@@ -142,8 +116,17 @@ mod tests {
         let response: PostDocumentResponse = call_and_read_body_json(&service, request).await;
 
         // Delete the document
+        assert!(Document::delete(db_pool, response.document_key)
+            .await
+            .unwrap());
+    }
+
+    #[rstest]
+    async fn document_delete(#[future] document_example: TestFixture<Document>) {
+        let document_example = document_example.await;
+        let service = create_test_service().await;
         let request = TestRequest::delete()
-            .uri(format!("/documents/{}", response.document_key).as_str())
+            .uri(format!("/documents/{}", document_example.id()).as_str())
             .to_request();
         assert!(call_service(&service, request).await.status().is_success());
     }

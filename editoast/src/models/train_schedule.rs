@@ -129,7 +129,7 @@ impl From<TrainScheduleChangeset> for TrainSchedule {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Queryable)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Queryable)]
 pub struct TrainScheduleDetails {
     pub id: i64,
     pub train_name: String,

@@ -171,43 +171,39 @@ async fn post_railjson(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use actix_http::StatusCode;
     use actix_web::test as actix_test;
-    use actix_web::test::{call_and_read_body_json, call_service, read_body_json};
+    use actix_web::test::{call_service, read_body_json};
 
-    use crate::models::Infra;
-    use crate::schema::{RailJson, SwitchType};
-    use crate::views::infra::railjson::PostRailjsonResponse;
-    use crate::views::infra::tests::{
-        create_infra_request, create_object_request, delete_infra_request,
-    };
+    use crate::fixtures::tests::{db_pool, empty_infra, TestFixture};
+    use crate::models::Delete;
+    use crate::schema::SwitchType;
+    use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
+    use rstest::*;
 
-    #[actix_test]
-    async fn test_get_railjson() {
+    #[rstest]
+    async fn test_get_railjson(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let req = create_infra_request("get_railjson_test");
-        let infra: Infra = call_and_read_body_json(&app, req).await;
 
-        let req = create_object_request(infra.id.unwrap(), SwitchType::default().into());
+        let req = create_object_request(empty_infra.id(), SwitchType::default().into());
         let response = call_service(&app, req).await;
         assert!(response.status().is_success());
 
         let req = actix_test::TestRequest::get()
-            .uri(&format!("/infra/{}/railjson", infra.id.unwrap()))
+            .uri(&format!("/infra/{}/railjson", empty_infra.id()))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let railjson: RailJson = read_body_json(response).await;
         assert_eq!(railjson.version, crate::models::infra::RAILJSON_VERSION);
         assert_eq!(railjson.switch_types.len(), 1);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn test_post_railjson() {
+    #[rstest]
+    async fn test_post_railjson(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
 
         let railjson = RailJson {
@@ -233,7 +229,6 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let infra: PostRailjsonResponse = read_body_json(response).await;
 
-        let response = call_service(&app, delete_infra_request(infra.infra)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        assert!(Infra::delete(db_pool, infra.infra).await.unwrap());
     }
 }

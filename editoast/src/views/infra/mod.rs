@@ -326,9 +326,12 @@ async fn delete(
     infra_caches: Data<CHashMap<i64, InfraCache>>,
 ) -> Result<HttpResponse> {
     let infra = infra.into_inner();
-    assert!(Infra::delete(db_pool.clone(), infra).await?);
-    infra_caches.remove(&infra);
-    Ok(HttpResponse::NoContent().finish())
+    if Infra::delete(db_pool.clone(), infra).await? {
+        infra_caches.remove(&infra);
+        Ok(HttpResponse::NoContent().finish())
+    } else {
+        Ok(HttpResponse::NotFound().finish())
+    }
 }
 
 /// Patch form for a project
@@ -561,29 +564,20 @@ async fn cache_status(
 
 #[cfg(test)]
 pub mod tests {
+    use super::*;
     use crate::core::mocking::MockingClient;
-    use crate::fixtures::tests::{empty_infra, other_rolling_stock, TestFixture};
-    use crate::models::infra::INFRA_VERSION;
-    use crate::models::{Infra, RollingStockModel, RAILJSON_VERSION};
+    use crate::fixtures::tests::{db_pool, empty_infra, other_rolling_stock, TestFixture};
+    use crate::models::RollingStockModel;
     use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::{Catenary, SpeedSection, SwitchType};
+    use crate::schema::{Catenary, SpeedSection};
     use crate::views::tests::{create_test_service, create_test_service_with_core_client};
     use actix_http::Request;
     use actix_web::http::StatusCode;
     use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, read_body_json, TestRequest};
     use rstest::*;
-    use serde::Deserialize;
-    use serde_json::json;
 
-    pub fn create_infra_request(name: &'static str) -> Request {
-        TestRequest::post()
-            .uri("/infra")
-            .set_json(json!({ "name": name }))
-            .to_request()
-    }
-
-    pub fn delete_infra_request(infra_id: i64) -> Request {
+    fn delete_infra_request(infra_id: i64) -> Request {
         TestRequest::delete()
             .uri(format!("/infra/{infra_id}").as_str())
             .to_request()
@@ -597,21 +591,35 @@ pub mod tests {
             .to_request()
     }
 
-    #[actix_test]
-    async fn infra_clone() {
+    #[rstest]
+    async fn infra_clone(db_pool: Data<DbPool>, #[future] empty_infra: TestFixture<Infra>) {
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("clone_infra_test")).await;
+        let infra = empty_infra.await;
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/clone/?name=cloned_infra/", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/clone/?name=cloned_infra", infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
+
         let cloned_infra_id: i64 = read_body_json(response).await;
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
+        let cloned_infra = Infra::retrieve(db_pool.clone(), cloned_infra_id)
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(cloned_infra.name.unwrap(), "cloned_infra");
+        assert!(Infra::delete(db_pool, cloned_infra_id).await.unwrap());
+    }
+
+    #[rstest]
+    async fn infra_delete(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
+        let app = create_test_service().await;
+
+        let response = call_service(&app, delete_infra_request(empty_infra.id())).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_infra_request(cloned_infra_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let response = call_service(&app, delete_infra_request(empty_infra.id())).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     #[actix_test]
@@ -628,10 +636,14 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    #[actix_test]
-    async fn default_infra_create_delete() {
+    #[rstest]
+    async fn default_infra_create(db_pool: Data<DbPool>) {
         let app = create_test_service().await;
-        let response = call_service(&app, create_infra_request("create_infra_test")).await;
+        let req = TestRequest::post()
+            .uri("/infra")
+            .set_json(json!({ "name": "create_infra_test" }))
+            .to_request();
+        let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::CREATED);
         let infra: Infra = read_body_json(response).await;
         assert_eq!(infra.name.unwrap(), "create_infra_test");
@@ -640,12 +652,12 @@ pub mod tests {
         assert_eq!(infra.generated_version.unwrap().unwrap(), INFRA_VERSION);
         assert!(!infra.locked.unwrap());
 
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        assert!(Infra::delete(db_pool, infra.id.unwrap()).await.unwrap());
     }
 
-    #[actix_test]
-    async fn infra_get() {
+    #[rstest]
+    async fn infra_get(#[future] empty_infra: TestFixture<Infra>, db_pool: Data<DbPool>) {
+        let empty_infra = empty_infra.await;
         let mut core = MockingClient::new();
         core.stub("/cache_status")
             .method(reqwest::Method::POST)
@@ -653,38 +665,34 @@ pub mod tests {
             .body("{}")
             .finish();
         let app = create_test_service_with_core_client(core).await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_infra_test")).await;
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
 
-        let req = TestRequest::delete()
-            .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
+        Infra::delete(db_pool, empty_infra.id()).await.unwrap();
+
+        let req = TestRequest::get()
+            .uri(format!("/infra/{}", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
-    #[actix_test]
-    async fn infra_rename() {
+    #[rstest]
+    async fn infra_rename(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("infra_rename_test")).await;
         let req = TestRequest::put()
-            .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}", empty_infra.id()).as_str())
             .set_json(json!({"name": "rename_test"}))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let infra: Infra = read_body_json(response).await;
         assert_eq!(infra.name.unwrap(), "rename_test");
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[derive(Deserialize)]
@@ -692,61 +700,47 @@ pub mod tests {
         infra_refreshed: Vec<i64>,
     }
 
-    #[actix_test]
-    async fn infra_refresh() {
+    #[rstest]
+    async fn infra_refresh(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("reresh_infra_test")).await;
 
         let req = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/refresh/?infras={}", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let refreshed_infras: InfraRefreshedResponse = read_body_json(response).await;
         assert!(refreshed_infras.infra_refreshed.is_empty());
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn infra_refresh_force() {
+    #[rstest]
+    async fn infra_refresh_force(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("refresh_force_infra_test")).await;
 
         let req = TestRequest::post()
-            .uri(format!("/infra/refresh/?infras={}&force=true", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/refresh/?infras={}&force=true", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let refreshed_infras: InfraRefreshedResponse = read_body_json(response).await;
-        assert!(refreshed_infras
-            .infra_refreshed
-            .contains(&infra.id.unwrap()));
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id()));
     }
 
-    #[actix_test]
-    async fn infra_get_speed_limit_tags() {
+    #[rstest]
+    async fn infra_get_speed_limit_tags(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_speed_tags_test")).await;
 
-        let req = create_object_request(infra.id.unwrap(), SpeedSection::default().into());
+        let req = create_object_request(empty_infra.id(), SpeedSection::default().into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/speed_limit_tags/", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/speed_limit_tags/", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
     #[rstest]
@@ -797,32 +791,29 @@ pub mod tests {
         }
     }
 
-    #[actix_test]
-    async fn infra_get_switch_types() {
+    #[rstest]
+    async fn infra_get_switch_types(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_switch_types_test")).await;
 
         let switch_type = SwitchType::default();
         let switch_type_id = switch_type.id.clone();
-        let req = create_object_request(infra.id.unwrap(), switch_type.into());
+        let req = create_object_request(empty_infra.id(), switch_type.into());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/switch_types/", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/switch_types/", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
         let switch_types: Vec<SwitchType> = read_body_json(response).await;
         assert_eq!(switch_types.len(), 1);
         assert_eq!(switch_types[0].id, switch_type_id);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn infra_lock() {
+    #[rstest]
+    async fn infra_lock(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let mut core = MockingClient::new();
         core.stub("/cache_status")
             .method(reqwest::Method::POST)
@@ -830,45 +821,42 @@ pub mod tests {
             .body("{}")
             .finish();
         let app = create_test_service_with_core_client(core).await;
-        let infra: Infra = call_and_read_body_json(&app, create_infra_request("lock_test")).await;
-        assert!(!infra.locked.unwrap());
+        assert!(!empty_infra.model.locked.unwrap());
+
+        let infra_id = empty_infra.id();
 
         // Lock infra
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/lock/", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/lock/", infra_id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         // Check lock
         let req = TestRequest::get()
-            .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}", infra_id).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
         assert!(infra.locked.unwrap());
 
         // Unlock infra
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/unlock/", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/unlock/", infra_id).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
         // Check lock
         let req = TestRequest::get()
-            .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}", infra_id).as_str())
             .to_request();
         let infra: Infra = call_and_read_body_json(&app, req).await;
         assert!(!infra.locked.unwrap());
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn infra_load_core() {
-        let app = create_test_service().await;
-        let infra: Infra = call_and_read_body_json(&app, create_infra_request("lock_test")).await;
+    #[rstest]
+    async fn infra_load_core(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
         let mut core = MockingClient::new();
         core.stub("/infra_load")
             .method(reqwest::Method::POST)
@@ -877,20 +865,15 @@ pub mod tests {
             .finish();
         let app = create_test_service_with_core_client(core).await;
         let req = TestRequest::post()
-            .uri(format!("/infra/{}/load", infra.id.unwrap()).as_str())
+            .uri(format!("/infra/{}/load", empty_infra.id()).as_str())
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn infra_get_state_no_result() {
-        let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_state_test")).await;
+    #[rstest]
+    async fn infra_get_state_no_result(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
 
         let mut core = MockingClient::new();
         core.stub("/cache_status")
@@ -899,7 +882,7 @@ pub mod tests {
             .body("{}")
             .finish();
         let app = create_test_service_with_core_client(core).await;
-        let payload = json!({"infra": infra.id.unwrap()});
+        let payload = json!({"infra": empty_infra.id()});
         let req = TestRequest::get()
             .uri("/infra/cache_status")
             .set_json(payload)
@@ -908,12 +891,10 @@ pub mod tests {
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    #[actix_test]
-    async fn infra_get_state_with_result() {
-        let app = create_test_service().await;
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_state_test")).await;
-        let infra_id = infra.id.unwrap();
+    #[rstest]
+    async fn infra_get_state_with_result(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
+        let infra_id = empty_infra.id();
         let mut core = MockingClient::new();
         core.stub("/cache_status")
             .method(reqwest::Method::POST)

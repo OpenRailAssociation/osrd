@@ -242,129 +242,119 @@ async fn list(
 
 #[cfg(test)]
 mod test {
-    use crate::models::Infra;
-    use crate::models::Scenario;
-    use crate::models::Study;
-    use crate::views::infra::tests::{create_infra_request, delete_infra_request};
-    use crate::views::projects::test::delete_project_request;
-    use crate::views::study::test::create_study_request;
+    use super::*;
+    use crate::fixtures::tests::{
+        db_pool, empty_infra, scenario_fixture_set, study_fixture_set, ScenarioFixtureSet,
+        StudyFixtureSet, TestFixture,
+    };
 
+    use crate::models::Infra;
     use crate::views::tests::create_test_service;
     use actix_http::Request;
     use actix_web::http::StatusCode;
-    use actix_web::test as actix_test;
-    use actix_web::test::call_and_read_body_json;
     use actix_web::test::{call_service, read_body_json, TestRequest};
+    use rstest::rstest;
     use serde_json::json;
 
-    pub async fn create_scenario_request() -> (Request, i64) {
-        let app = create_test_service().await;
-        let response = call_service(&app, create_study_request().await).await;
-        let study: Study = read_body_json(response).await;
-        let response = call_service(&app, create_infra_request("infra_test")).await;
-        let infra: Infra = read_body_json(response).await;
-        let project_id = study.project_id.unwrap();
-        let study_id = study.id.unwrap();
-
-        (
-            TestRequest::post()
-                .uri(format!("/projects/{project_id}/studies/{study_id}/scenarios").as_str())
-                .set_json(json!({ "name": "scenario_test" ,"infra_id": infra.id }))
-                .to_request(),
-            project_id,
+    pub fn easy_scenario_url(scenario_fixture_set: &ScenarioFixtureSet, detail: bool) -> String {
+        scenario_url(
+            scenario_fixture_set.project.id(),
+            scenario_fixture_set.study.id(),
+            detail.then_some(scenario_fixture_set.scenario.id()),
         )
     }
 
-    pub fn delete_scenario_request(project_id: i64, study_id: i64, scenario_id: i64) -> Request {
-        let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
+    pub fn scenario_url(project_id: i64, study_id: i64, scenario_id: Option<i64>) -> String {
+        format!(
+            "/projects/{}/studies/{}/scenarios/{}",
+            project_id,
+            study_id,
+            scenario_id.map_or_else(|| "".to_owned(), |v| v.to_string())
+        )
+    }
+
+    fn delete_scenario_request(scenario_fixture_set: &ScenarioFixtureSet) -> Request {
+        let url = easy_scenario_url(scenario_fixture_set, true);
         TestRequest::delete().uri(url.as_str()).to_request()
     }
 
-    #[actix_test]
-    async fn scenario_create_delete() {
+    #[rstest]
+    async fn scenario_create(
+        db_pool: Data<DbPool>,
+        #[future] study_fixture_set: StudyFixtureSet,
+        #[future] empty_infra: TestFixture<Infra>,
+    ) {
         let app = create_test_service().await;
-        let (request, project_id) = create_scenario_request().await;
+        let StudyFixtureSet { study, project } = study_fixture_set.await;
+        let empty_infra = empty_infra.await;
+
+        let request = TestRequest::post()
+            .uri(scenario_url(project.id(), study.id(), None).as_str())
+            .set_json(json!({ "name": "scenario_test" ,"infra_id": empty_infra.id() }))
+            .to_request();
         let response = call_service(&app, request).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let scenario: Scenario = read_body_json(response).await;
-        assert_eq!(scenario.name.unwrap(), "scenario_test");
-        let response = call_service(
-            &app,
-            delete_scenario_request(project_id, scenario.study_id.unwrap(), scenario.id.unwrap()),
-        )
-        .await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(&app, delete_project_request(project_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-
-        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let scenario = TestFixture::<Scenario>::new(read_body_json(response).await, db_pool);
+        assert_eq!(scenario.model.name.clone().unwrap(), "scenario_test");
     }
 
-    #[actix_test]
-    async fn scenario_list() {
+    #[rstest]
+    async fn scenario_delete(#[future] scenario_fixture_set: ScenarioFixtureSet) {
         let app = create_test_service().await;
-        let (request, project_id) = create_scenario_request().await;
-        let response = call_service(&app, request).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let scenario: Scenario = read_body_json(response).await;
-        let study_id = scenario.study_id.unwrap();
-        let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/");
-        let req = TestRequest::get().uri(url.as_str()).to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-        let response = call_service(&app, delete_project_request(project_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-    }
+        let scenario_fixture_set = scenario_fixture_set.await;
 
-    #[actix_test]
-    async fn scenario_get() {
-        let app = create_test_service().await;
-        let (request, project_id) = create_scenario_request().await;
-        let scenario: Scenario = call_and_read_body_json(&app, request).await;
-        let study_id = scenario.study_id.unwrap();
-        let scenario_id = scenario.id.unwrap();
-        let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
-        let req = TestRequest::get().uri(url.as_str()).to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::OK);
-
-        let req = TestRequest::delete().uri(url.as_str()).to_request();
-        let response = call_service(&app, req).await;
+        let response = call_service(&app, delete_scenario_request(&scenario_fixture_set)).await;
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
 
-        let response = call_service(
-            &app,
-            delete_scenario_request(project_id, study_id, scenario_id),
-        )
-        .await;
+        let response = call_service(&app, delete_scenario_request(&scenario_fixture_set)).await;
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
-        let response = call_service(&app, delete_project_request(project_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 
-    #[actix_test]
-    async fn scenario_patch() {
+    #[rstest]
+    async fn scenario_list(#[future] scenario_fixture_set: ScenarioFixtureSet) {
         let app = create_test_service().await;
-        let (request, project_id) = create_scenario_request().await;
-        let scenario: Scenario = call_and_read_body_json(&app, request).await;
-        let study_id = scenario.study_id.unwrap();
-        let scenario_id = scenario.id.unwrap();
-        let url = format!("/projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}");
+        let scenario_fixture_set = scenario_fixture_set.await;
+
+        let url = easy_scenario_url(&scenario_fixture_set, false);
+        let req = TestRequest::get().uri(url.as_str()).to_request();
+        let response = call_service(&app, req).await;
+
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[rstest]
+    async fn scenario_get(#[future] scenario_fixture_set: ScenarioFixtureSet) {
+        let app = create_test_service().await;
+        let scenario_fixture_set = scenario_fixture_set.await;
+
+        let url = easy_scenario_url(&scenario_fixture_set, true);
+        let response = call_service(&app, TestRequest::get().uri(url.as_str()).to_request()).await;
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let response =
+            call_service(&app, TestRequest::delete().uri(url.as_str()).to_request()).await;
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let response = call_service(&app, TestRequest::get().uri(url.as_str()).to_request()).await;
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn scenario_patch(#[future] scenario_fixture_set: ScenarioFixtureSet) {
+        let app = create_test_service().await;
+        let scenario_fixture_set = scenario_fixture_set.await;
+
+        let url = easy_scenario_url(&scenario_fixture_set, true);
+        let new_name = scenario_fixture_set.scenario.model.name.clone().unwrap() + "_patched";
         let req = TestRequest::patch()
             .uri(url.as_str())
-            .set_json(json!({"name": "rename_test"}))
+            .set_json(json!({ "name": new_name }))
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-        let response = call_service(&app, delete_project_request(project_id)).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
-        let response = call_service(&app, delete_infra_request(scenario.infra_id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let scenario: ScenarioWithDetails = read_body_json(response).await;
+        assert_eq!(scenario.scenario.name.unwrap(), new_name);
     }
 }

@@ -121,13 +121,13 @@ async fn get_paginated_infra_errors(
 
 #[cfg(test)]
 mod tests {
+    use crate::fixtures::tests::{empty_infra, TestFixture};
     use crate::models::Infra;
     use crate::views::infra::errors::check_error_type_query;
     use crate::views::tests::create_test_service;
-    use actix_web::http::StatusCode;
-    use actix_web::test as actix_test;
-    use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
-    use serde_json::json;
+    use actix_http::StatusCode;
+    use actix_web::test::{call_service, TestRequest};
+    use rstest::rstest;
 
     #[test]
     fn check_error_type() {
@@ -135,23 +135,20 @@ mod tests {
         assert!(check_error_type_query(&error_type));
     }
 
-    #[actix_test]
-    async fn list_errors_get() {
+    #[rstest]
+    async fn list_errors_get(#[future] empty_infra: TestFixture<Infra>) {
+        let empty_infra = empty_infra.await;
+
         let error_type = "overlapping_track_links";
         let level = "warnings";
 
         let app = create_test_service().await;
-        let req = TestRequest::post()
-            .uri("/infra")
-            .set_json(json!({"name":"list_errors_test"}))
-            .to_request();
-        let infra: Infra = call_and_read_body_json(&app, req).await;
 
         let req = TestRequest::get()
             .uri(
                 format!(
                     "/infra/{}/errors?error_type={}&level={}",
-                    infra.id.unwrap(),
+                    empty_infra.id(),
                     error_type,
                     level
                 )
@@ -160,11 +157,5 @@ mod tests {
             .to_request();
         let response = call_service(&app, req).await;
         assert_eq!(response.status(), StatusCode::OK);
-
-        let req = TestRequest::delete()
-            .uri(format!("/infra/{}", infra.id.unwrap()).as_str())
-            .to_request();
-        let response = call_service(&app, req).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }

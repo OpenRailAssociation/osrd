@@ -85,30 +85,27 @@ mod tests {
     use std::collections::HashMap;
 
     use actix_http::StatusCode;
-    use actix_web::test as actix_test;
     use actix_web::test::{call_and_read_body_json, call_service, TestRequest};
 
+    use crate::fixtures::tests::{empty_infra, TestFixture};
     use crate::models::Infra;
     use crate::schema::operation::RailjsonObject;
     use crate::schema::{Detector, OSRDIdentified, ObjectType, TrackSection};
-    use crate::views::infra::tests::{
-        create_infra_request, create_object_request, delete_infra_request,
-    };
+    use crate::views::infra::tests::create_object_request;
     use crate::views::tests::create_test_service;
+    use rstest::rstest;
 
-    #[actix_test]
-    async fn get_attached_detector() {
+    #[rstest]
+    async fn get_attached_detector(#[future] empty_infra: TestFixture<Infra>) {
         let app = create_test_service().await;
-
-        let infra: Infra =
-            call_and_read_body_json(&app, create_infra_request("get_speed_tags_test")).await;
+        let empty_infra = empty_infra.await;
 
         // Create a track and a detector on it
         let track: RailjsonObject = TrackSection::default().into();
-        let req = create_object_request(infra.id.unwrap(), track.clone());
+        let req = create_object_request(empty_infra.id(), track.clone());
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
         let req = create_object_request(
-            infra.id.unwrap(),
+            empty_infra.id(),
             Detector {
                 track: track.get_id().clone().into(),
                 ..Default::default()
@@ -118,12 +115,9 @@ mod tests {
         assert_eq!(call_service(&app, req).await.status(), StatusCode::OK);
 
         let req = TestRequest::get()
-            .uri(format!("/infra/{}/attached/{}/", infra.id.unwrap(), track.get_id()).as_str())
+            .uri(format!("/infra/{}/attached/{}/", empty_infra.id(), track.get_id()).as_str())
             .to_request();
         let response: HashMap<ObjectType, Vec<String>> = call_and_read_body_json(&app, req).await;
         assert_eq!(response.get(&ObjectType::Detector).unwrap().len(), 1);
-
-        let response = call_service(&app, delete_infra_request(infra.id.unwrap())).await;
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }
