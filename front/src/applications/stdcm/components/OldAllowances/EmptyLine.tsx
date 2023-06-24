@@ -8,11 +8,11 @@ import { Allowance, RangeAllowance, EngineeringAllowance } from 'common/api/osrd
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import OPModal from 'applications/operationalStudies/components/SimulationResults/Allowances/OPModal';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import OPModal from './OPModal';
 import { AllowanceType, TYPES_UNITS } from './allowancesConsts';
 
 function getAllowanceValue(values: RangeAllowance | EngineeringAllowance) {
