@@ -10,8 +10,6 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import Allowances from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDData';
-
 import SimulationResultsMap from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap';
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/operationalStudies/components/SimulationResults/SpaceCurvesSlopes';
@@ -38,10 +36,9 @@ export default function SimulationResults({
   isDisplayed: boolean;
   collapsedTimetable: boolean;
 }) {
-  const { t } = useTranslation(['translation', 'simulation', 'allowances']);
+  const { t } = useTranslation(['translation', 'simulation']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
-  const [displayAllowances, setDisplayAllowances] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
 
@@ -64,10 +61,6 @@ export default function SimulationResults({
   );
   const timetableID = useSelector(getTimetableID);
   const dispatch = useDispatch();
-
-  const toggleAllowancesDisplay = () => {
-    setDisplayAllowances(!displayAllowances);
-  };
 
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
@@ -207,22 +200,6 @@ export default function SimulationResults({
       {simulation.trains[selectedTrain] && (
         <div className="osrd-simulation-container mb-2">
           <DriverTrainSchedule train={simulation.trains[selectedTrain]} />
-        </div>
-      )}
-
-      {displayAllowances ? (
-        <div className="mb-2">
-          <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
-        </div>
-      ) : (
-        <div
-          role="button"
-          tabIndex={-1}
-          className="btn osrd-config-item-container d-flex align-items-center mb-2 font-weight-bold"
-          onClick={toggleAllowancesDisplay}
-        >
-          {t('simulation:allowances')}
-          <i className="icons-arrow-down ml-auto" />
         </div>
       )}
 

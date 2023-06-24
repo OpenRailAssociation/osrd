@@ -4,7 +4,7 @@ import { TFunction } from 'i18next';
 import {
   ALLOWANCE_UNIT_TYPES,
   TYPES_UNITS,
-} from 'applications/operationalStudies/components/SimulationResults/Allowances/allowancesConsts';
+} from 'applications/stdcm/components/OldAllowances/allowancesConsts';
 import { STDCM_MODES, OsrdStdcmConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
