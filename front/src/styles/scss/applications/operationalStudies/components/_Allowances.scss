@@ -1,4 +1,6 @@
 .operational-studies-allowances {
+  --mareco-color: var(--yellow);
+  --linear-color: var(--teal);
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
@@ -9,6 +11,7 @@
   }
   .allowances-container {
     display: flex;
+    position: relative;
     flex-direction: column;
     flex-grow: 1;
     background-color: var(--white);
@@ -64,10 +67,78 @@
         }
       }
       .bullet-linear {
-        color: var(--oldblue);
+        color: var(--linear-color);
       }
       .bullet-mareco {
-        color: var(--purple);
+        color: var(--mareco-color);
+      }
+    }
+    .outside-container {
+      position: relative;
+      background-color: var(--coolgray1);
+      margin-left: -0.5rem;
+      padding: 0.5rem 0;
+      width: calc(100% + 1rem);
+      .allowances-linear-view {
+        display: flex;
+        position: relative;
+        gap: 0.1rem;
+        width: 100%;
+        height: 1.5rem;
+        color: var(--secondary); 
+        background-color: var(--coolgray3);
+        background-image: repeating-linear-gradient(-45deg, transparent, transparent 3px, var(--coolgray1) 3px, var(--coolgray1) 6px);
+        .range-no-allowance {
+          margin-top: 0.35rem;
+          margin-left: 0.5rem;
+          font-weight: 500;
+          color: var(--coolgray5);
+          background-color: var(--coolgray1);
+          border-radius: var(--border-radius);
+          line-height: 0.8rem;
+          font-size: 0.8rem;
+          height: 0.8rem;
+          padding: 0rem 0.25rem;
+        }
+        .range {
+          display: flex;
+          position: absolute;
+          height: 100%;
+          padding: 0 0.5px;
+          cursor: pointer;
+          transition: 0.2s;
+          .value {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background-color: var(--coolgray9);
+            height: 100%;
+            width: 100%;
+            .unit {
+              overflow: hidden;
+              font-size: 0.5rem;
+            }
+            &.MARECO {
+              background-color: var(--mareco-color);
+            }
+            &.LINEAR {
+              background-color: var(--linear-color);
+            }
+          }
+          &:hover {
+            .value {
+              border: 2px solid var(--secondary);
+            }
+          }
+          &.selected {
+            .value {
+              color: var(--white);
+              background-color: var(--secondary);
+            }
+          }
+        }
       }
     }
     .allowances-list {
@@ -98,7 +169,7 @@
           border-color: var(--danger);
         }
         &.selected {
-          border-color: var(--primary);
+          border-color: var(--secondary);
         }
         .index {
           font-size: 0.6rem;
@@ -138,11 +209,14 @@
           font-weight: bold;
           color: var(--secondary);
           font-size: 0.6rem;
+          background-color: var(--coolgray9);
+          border-radius: var(--border-radius);
+          padding: 0.1rem 0;
           &.LINEAR {
-            color: var(--oldblue);
+            color: var(--linear-color);
           }
           &.MARECO {
-            color: var(--purple);
+            color: var(--mareco-color);
           }
         }
         .value {

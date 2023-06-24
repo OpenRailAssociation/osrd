@@ -10,13 +10,14 @@
   "allowancesCount_other": "{{ count }} intervalles définis",
   "allowancesCount_zero": "Aucun intervalle défini",
   "distribution": {
-    "linear": "Linéaire",
     "LINEAR": "Linéaire",
-    "mareco": "Mareco",
-    "MARECO": "Mareco"
+    "MARECO": "Mareco",
+    "linear": "Linéaire",
+    "mareco": "Mareco"
   },
   "engineeringAllowances": "Marges de construction",
   "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges",
+  "no-allowance": "Aucune marge définie",
   "standardAllowance": "Marge de régularité",
   "standardAllowanceByIntervals": "Par intervalles",
   "standardAllowanceWholePath": "Ensemble du parcours"
