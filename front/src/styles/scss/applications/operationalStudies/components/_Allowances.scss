@@ -167,3 +167,14 @@
     text-align: center;
   }
 }
+
+.allowances-op-list {
+  .allowances-op {
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: 0.2s;
+    &:hover {
+      background-color: var(--coolgray1);
+    }
+  }
+}

@@ -6,9 +6,15 @@ import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { FaPencilAlt, FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
-import { AllowanceValue, EngineeringAllowance, RangeAllowance } from 'common/api/osrdEditoastApi';
+import {
+  AllowanceValue,
+  EngineeringAllowance,
+  PathStep,
+  RangeAllowance,
+} from 'common/api/osrdEditoastApi';
 import { MdCancel } from 'react-icons/md';
 import cx from 'classnames';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { unitsList, unitsNames } from './consts';
 import {
   AllowancesTypes,
@@ -18,11 +24,13 @@ import {
   OverlapAllowancesIndexesType,
 } from './types';
 import getAllowanceValue, { findAllowanceOverlap } from './helpers';
+import AllowancesModalOP from './AllowancesModalOP';
 
 type Props = {
   allowances: RangeAllowance[] | EngineeringAllowance[];
   manageAllowance: (props: ManageAllowancesType) => void;
   pathLength: number;
+  pathFindingSteps?: PathStep[];
   allowanceSelectedIndex?: number;
   setAllowanceSelectedIndex: SetAllowanceSelectedIndexType;
   setOverlapAllowancesIndexes?: (overlapAllowancesIndexes: OverlapAllowancesIndexesType) => void;
@@ -33,12 +41,14 @@ export default function AllowancesActions({
   allowances,
   manageAllowance,
   pathLength,
+  pathFindingSteps,
   allowanceSelectedIndex,
   setAllowanceSelectedIndex,
   setOverlapAllowancesIndexes,
   type,
 }: Props) {
   const { t } = useTranslation('operationalStudies/allowances');
+  const { openModal } = useModal();
   const distributionsList = [
     {
       label: (
@@ -196,7 +206,19 @@ export default function AllowancesActions({
             isInvalid={beginPosition >= endPosition || (!beginPosition && beginPosition !== 0)}
             value={beginPosition}
             onChange={(e) => handleInputFrom(+e.target.value)}
-            appendOptions={{ label: <FaSearch />, name: 'op-begin-position', onClick: () => {} }}
+            appendOptions={
+              pathFindingSteps && {
+                label: <FaSearch />,
+                name: 'op-begin-position',
+                onClick: () =>
+                  openModal(
+                    <AllowancesModalOP
+                      setPosition={setBeginPosition}
+                      pathFindingSteps={pathFindingSteps}
+                    />
+                  ),
+              }
+            }
           />
         </div>
         <div>
@@ -220,7 +242,19 @@ export default function AllowancesActions({
             }
             value={endPosition}
             onChange={(e) => handleInputTo(+e.target.value)}
-            appendOptions={{ label: <FaSearch />, name: 'op-end-position', onClick: () => {} }}
+            appendOptions={
+              pathFindingSteps && {
+                label: <FaSearch />,
+                name: 'op-end-position',
+                onClick: () =>
+                  openModal(
+                    <AllowancesModalOP
+                      setPosition={setEndPosition}
+                      pathFindingSteps={pathFindingSteps}
+                    />
+                  ),
+              }
+            }
           />
         </div>
         <div>

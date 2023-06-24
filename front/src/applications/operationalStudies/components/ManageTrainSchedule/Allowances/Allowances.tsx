@@ -198,6 +198,7 @@ export default function Allowances() {
           allowanceSelectedIndex={standardAllowanceSelectedIndex}
           setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
           setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
+          pathFindingSteps={pathFinding?.steps}
         />
         <AllowancesList
           allowances={standardAllowance.ranges}
@@ -221,6 +222,7 @@ export default function Allowances() {
           type={AllowancesTypes.engineering}
           allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
           setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
+          pathFindingSteps={pathFinding?.steps}
         />
         <AllowancesList
           allowances={engineeringAllowances}
