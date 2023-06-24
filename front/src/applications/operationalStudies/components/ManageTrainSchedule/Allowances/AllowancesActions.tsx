@@ -62,7 +62,7 @@ export default function AllowancesActions({
     {
       label: (
         <>
-          <span className="bullet-mareco mr-1">●</span>
+          <span className="bullet-mareco">●</span>
           {t('distribution.mareco')}
         </>
       ),

@@ -21,8 +21,24 @@ export default function AllowancesStandardSettings({
 }: Props) {
   const { t } = useTranslation('operationalStudies/allowances');
   const distributionsList = [
-    { label: t('distribution.linear'), value: 'LINEAR' },
-    { label: t('distribution.mareco'), value: 'MARECO' },
+    {
+      label: (
+        <>
+          <span className="bullet-linear">●</span>
+          {t('distribution.linear')}
+        </>
+      ),
+      value: 'LINEAR',
+    },
+    {
+      label: (
+        <>
+          <span className="bullet-mareco">●</span>
+          {t('distribution.mareco')}
+        </>
+      ),
+      value: 'MARECO',
+    },
   ];
 
   const handleType = (type: InputGroupSNCFValue) => {

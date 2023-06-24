@@ -16,6 +16,7 @@ import AllowancesStandardSettings from './AllowancesStandardSettings';
 import AllowancesActions from './AllowancesActions';
 import AllowancesList from './AllowancesList';
 import { AllowancesTypes, ManageAllowancesType, OverlapAllowancesIndexesType } from './types';
+import AllowancesLinearView from './AllowancesLinearView';
 
 const jsonExample = [
   {
@@ -200,6 +201,13 @@ export default function Allowances() {
           setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
           pathFindingSteps={pathFinding?.steps}
         />
+        <AllowancesLinearView
+          allowances={standardAllowance.ranges}
+          pathLength={pathLength}
+          allowanceSelectedIndex={standardAllowanceSelectedIndex}
+          setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+          globalDistribution={standardAllowance.distribution}
+        />
         <AllowancesList
           allowances={standardAllowance.ranges}
           type={AllowancesTypes.standard}
@@ -223,6 +231,12 @@ export default function Allowances() {
           allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
           setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
           pathFindingSteps={pathFinding?.steps}
+        />
+        <AllowancesLinearView
+          allowances={engineeringAllowances}
+          pathLength={pathLength}
+          allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
+          setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
         />
         <AllowancesList
           allowances={engineeringAllowances}
