@@ -1,5 +1,5 @@
 import React from 'react';
-import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
+import StdcmSingleAllowance from 'applications/stdcm/components/OldAllowances/withOSRDStdcmParams';
 import { useTranslation } from 'react-i18next';
 
 const STDCMAllowances = () => {
