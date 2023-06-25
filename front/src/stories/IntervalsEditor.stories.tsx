@@ -60,15 +60,13 @@ const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
   );
 };
 
-const IntervalsDemonstrator = {
+export default {
   title: 'IntervalsDemonstrator',
   component: IntervalsEditorWrapper,
   argTypes: {
     onChange: { description: 'Value sent back to wrapper', action: 'onChange' },
   },
 };
-
-export default IntervalsDemonstrator;
 
 export const ByContinousValues = {
   args: {
