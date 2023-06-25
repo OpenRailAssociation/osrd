@@ -65,7 +65,6 @@ $resize-width: 3px;
         display: flex;
         flex-direction: column;
         z-index: 2;
-        flex-grow: 1;
         height: calc($dataviz-height + $scaling-height);
         .btn {
           background-color: #fff;
@@ -86,7 +85,6 @@ $resize-width: 3px;
         display: flex;
         flex-direction: column;
         z-index: 2;
-        flex-grow: 1;
         height: calc($dataviz-height + $scaling-height);
         .btn {
           background-color: #fff;
@@ -120,6 +118,7 @@ $resize-width: 3px;
         @include unselectable;
         flex-grow: 1;
         padding-left: $scaling-y-width;
+        pointer-events: auto;
 
         .data {
           @include unselectable;
@@ -166,6 +165,10 @@ $resize-width: 3px;
               &.highlighted {
                 background-color: $color-highlight;
               }
+            }
+
+            &.with-data {
+                z-index: 2;
             }
 
             &.highlighted {
@@ -219,12 +222,10 @@ $resize-width: 3px;
         .scale {
           display: flex;
           justify-content: space-between;
-          div {
-            span{
-              font-size: 0.6em;
-              overflow: hidden;
-              align-self: end;
-            }
+          span{
+            font-size: 0.6em;
+            overflow: hidden;
+            align-self: end;
           }
 
           &.scale-x {

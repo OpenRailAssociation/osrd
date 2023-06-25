@@ -1,6 +1,6 @@
 import { BsFillTrashFill } from 'react-icons/bs';
 import { IoIosAdd, IoIosSave } from 'react-icons/io';
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { LinearMetadataDataviz } from 'applications/editor/components/LinearMetadata/dataviz';
 
 import { TbZoomIn, TbZoomOut, TbZoomCancel, TbScissors, TbArrowsHorizontal } from 'react-icons/tb';
@@ -15,18 +15,17 @@ import {
   resizeSegment,
   splitAt,
   transalteViewBox,
-  viewboxForSelection,
 } from 'applications/editor/components/LinearMetadata';
 
-import Form, { FieldProps } from '@rjsf/core';
-import { isNil, omit, head, max as fnMax, min as fnMin, cloneDeep } from 'lodash';
-import { t } from 'i18next';
+import { FieldProps } from '@rjsf/core';
+import { isNil, max as fnMax, cloneDeep } from 'lodash';
+
 import { tooltipPosition, notEmpty } from 'applications/editor/components/LinearMetadata/utils';
 import { ValueOf } from 'utils/types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
-import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 
 export const TOOLS = Object.freeze({
   cutTool: Symbol('cutTool'),
@@ -43,9 +42,9 @@ type IntervalsEditorParams = {
 };
 
 type IntervalsEditorMetaProps = {
-  text?: string;
   params?: IntervalsEditorParams;
   valueField: string;
+  values?: string[];
   defaultValue?: number;
   units?: string[];
   defaultUnit?: string;
@@ -68,6 +67,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     valueField,
     units,
     defaultUnit,
+    values,
     defaultValue,
   } = props;
   // Wich segment area is visible
@@ -107,6 +107,9 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     [formData, distance]
   );
 
+  /**
+   * Main Callback: the wrapper will recieve a list on intervals with values
+   */
   const customOnChange = useCallback(
     (newData: Array<LinearMetadataItem>) => {
       onChange(newData.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
@@ -114,9 +117,25 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     [onChange, valueField]
   );
 
+  /**
+   * Resize segment after specific input (it does not trigger a callback for controlled input behavior, we choosed to let the user manually confirm it)
+   */
+  const resizeSegmentByInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>, context: 'begin' | 'end') => {
+      if (!isNil(selected)) {
+        const gap = parseFloat(e.target.value) - data[selected][context];
+        const result = resizeSegment(data, selected, gap, context);
+        setData(result.result);
+      }
+    },
+    [selected]
+  );
+
   const toggleSelectedTool = (tool: symbol) => {
     setSelectedTool(selectedTool === tool ? null : tool);
   };
+
+  const dataVizParams = { ticks: true, stringValues: isNil(units) };
 
   return (
     <div className="linear-metadata">
@@ -255,13 +274,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                     distance,
                     {
                       fieldName: valueField,
-                      defaultValue:
-                        defaultValue ||
-                        fnMax(
-                          filteredCurrentResults.map(
-                            (filteredCurrentResult) => filteredCurrentResult[valueField]
-                          )
-                        ),
+                      defaultValue: defaultValue || (values ? '' : 0),
                       tagNew: true,
                     }
                   );
@@ -272,14 +285,13 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   setData(result);
                 }
                 customOnChange(result);
-
-                // it is naturally the last temp segment
               } catch (e) {
                 // TODO: should we display it ?
                 console.warn(e);
               }
               return newIntervalIndex;
             }}
+            params={dataVizParams}
           />
           <div className="btn-group-vertical">
             <div className="tools">
@@ -355,8 +367,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
         )}
 
         {/* Flex dedicated edition */}
-
-        {selected && data[selected] && (
+        {!isNil(selected) && data[selected] && (
           <div className="flexValuesEdition">
             <div className="flexValues">
               <div>
@@ -365,11 +376,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   id="item-begin"
                   label={t('begin')}
                   onChange={(e) => {
-                    if (parseFloat(e.target.value) >= data[selected].end) return;
-                    const gap = parseFloat(e.target.value) - data[selected].begin;
-                    const result = resizeSegment(data, selected, gap, 'begin');
-                    setData(result.result);
-                    //customOnChange(result.result); // on save system
+                    resizeSegmentByInput(e, 'begin');
                   }}
                   max={data[selected].end}
                   value={data[selected].begin}
@@ -382,11 +389,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   id="item-end"
                   label={t('end')}
                   onChange={(e) => {
-                    if (parseFloat(e.target.value) <= data[selected].begin) return;
-                    const gap = parseFloat(e.target.value) - data[selected].end;
-                    const result = resizeSegment(data, selected, gap, 'end');
-                    setData(result.result);
-                    //
+                    resizeSegmentByInput(e, 'end');
                   }}
                   min={data[selected].begin}
                   value={data[selected].end}
@@ -396,34 +399,54 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                 />
               </div>
               <div>
-                <InputSNCF
-                  type="number"
-                  id="item-valueField"
-                  label={valueField}
-                  onChange={(e) => {
-                    const result = cloneDeep(data);
-                    result[selected][valueField] = parseFloat(e.target.value);
-                    setData(result);
-                  }}
-                  value={data[selected][valueField] as number}
-                  noMargin
-                  sm
-                  isFlex
-                />
+                {values && values.length > 1 ? (
+                  <div className="flexValuesEditionSelect">
+                    <SelectSNCF
+                      id="item-valueField"
+                      options={values}
+                      labelKey="label"
+                      onChange={(e) => {
+                        const result = cloneDeep(data);
+                        if (result && result[selected]) {
+                          result[selected][valueField] = e.target.value;
+                          setData(result as LinearMetadataItem[]);
+                        }
+                      }}
+                      sm
+                      value={(data[selected][valueField] as string) || values[0]}
+                    />
+                  </div>
+                ) : (
+                  <InputSNCF
+                    type="number"
+                    id="item-valueField"
+                    label={valueField}
+                    onChange={(e) => {
+                      const result = cloneDeep(data);
+                      if (result && result[selected]) {
+                        result[selected][valueField] = parseFloat(e.target.value);
+                        setData(result as LinearMetadataItem[]);
+                      }
+                    }}
+                    value={data[selected][valueField] as number}
+                    noMargin
+                    sm
+                    isFlex
+                  />
+                )}
                 {units && units.length > 1 && (
                   <div className="flexValuesEditionSelect">
                     <SelectSNCF
                       id="item-unit"
                       options={units}
-                      //title={t('unit')}
                       labelKey="label"
                       onChange={(e) => {
-                        const intervalsCloned = cloneDeep(data)
-                        intervalsCloned[selected].unit = e.target.value;
-                        setData(intervalsCloned);
+                        const result = cloneDeep(data);
+                        result[selected].unit = e.target.value;
+                        setData(result as LinearMetadataItem[]);
                       }}
                       sm
-                      value={data[selected].unit || defaultUnit}
+                      value={(data[selected].unit as string) || defaultUnit}
                     />
                   </div>
                 )}
