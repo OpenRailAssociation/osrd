@@ -3568,8 +3568,9 @@ thead {
   display: flex;
   flex-direction: row;
 }
-.flexValuesEdition div.flexValuesEditionSelect {
+.flexValuesEdition .flexValuesEditionSelect {
   max-width: 8em;
+  min-width: 8em;
 }
 
 .stdcm-map-noSimulation {

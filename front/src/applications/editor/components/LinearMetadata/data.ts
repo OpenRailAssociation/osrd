@@ -82,10 +82,14 @@ export function resizeSegment<T>(
     return acc;
   }, {} as Record<number, number | null>);
 
+  // TODO: ask Sim51 why this safeguard here
+  /*
   if (itemChangeIndex === 0 && beginOrEnd === 'begin')
     return { result: linearMetadata, newIndexMapping };
+
   if (itemChangeIndex === linearMetadata.length - 1 && beginOrEnd === 'end')
     return { result: linearMetadata, newIndexMapping };
+  */
 
   const min = linearMetadata[0].begin;
   const max = last(linearMetadata)?.end || 0;
@@ -297,14 +301,13 @@ export function fixLinearMetadataItems<T>(
   let noEmptyAdjacentItems = false;
   while (!noEmptyAdjacentItems) {
     noEmptyAdjacentItems = true;
-    for (let i = 0; i < fixedLinearMetadata.length; i++) {
+    for (let i = 0; i < fixedLinearMetadata.length; i += 1) {
       if (i >= 1) {
         const item = fixedLinearMetadata[i];
         const prev = fixedLinearMetadata[i - 1];
         if (item.begin === prev.end && !haveAdditionalKeys(item, prev)) {
-
           fixedLinearMetadata = mergeIn(fixedLinearMetadata, i, 'left');
-          noEmptyAdjacentItems = false
+          noEmptyAdjacentItems = false;
           break;
         }
       }
@@ -476,7 +479,7 @@ export function createSegmentAt<T>(
   distanceFrom: number,
   distanceTo: number,
   lineLength: number,
-  opts?: { fieldName: string; defaultValue: unknown, tagNew?: boolean }
+  opts?: { fieldName: string; defaultValue: unknown; tagNew?: boolean }
 ): Array<LinearMetadataItem<T>> {
   // apply the modification on the segment
   let result = cloneDeep(linearMetadata);

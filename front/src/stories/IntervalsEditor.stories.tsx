@@ -1,13 +1,10 @@
 import { FieldProps } from '@rjsf/core';
 import { LinearMetadataItem } from 'applications/editor/components/LinearMetadata';
 import IntervalsEditor from 'common/IntervalsEditor/IntervalsEditor';
-import { JSONSchema7 } from 'json-schema';
 import React, { useState } from 'react';
 import 'stories/storybook.css';
 
-const SAMPLE_DATA = ['First Category of Speed Limits', 'Second Category of Speed Limits'];
-
-let formDataBase = [
+const formDataBase = [
   { begin: 0, end: 6000 },
   { begin: 6000, end: 7000, gradient: 3 },
   { begin: 7000, end: 8000, gradient: 6 },
@@ -16,6 +13,18 @@ let formDataBase = [
   { begin: 14000, end: 15000, gradient: -3 },
   { begin: 15000, end: 16000, gradient: -6 },
   { begin: 16000, end: 17000, gradient: -3 },
+  { begin: 17000, end: 25000 },
+];
+
+const formDataBaseCategories = [
+  { begin: 0, end: 6000 },
+  { begin: 6000, end: 7000, power: 'U3' },
+  { begin: 7000, end: 8000, power: 'U5' },
+  { begin: 8000, end: 9000, power: 'U4' },
+  { begin: 9000, end: 14000 },
+  { begin: 14000, end: 15000, power: 'U1' },
+  { begin: 15000, end: 16000, power: 'U3' },
+  { begin: 16000, end: 17000, power: 'U3' },
   { begin: 17000, end: 25000 },
 ];
 
@@ -32,10 +41,9 @@ const formContextSample = {
 };
 
 const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
-  const { formContext, schema, params, valueField, defaultValue } = props;
-  const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(formDataBase);
+  const { formContext, params, valueField, defaultValue, dataBase, values } = props;
+  const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(dataBase);
   const onChange = (newData: LinearMetadataItem[]) => {
-    console.log('Wrapper recieved new Data:', newData);
     setMockedData(newData);
   };
   return (
@@ -47,6 +55,7 @@ const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
       valueField={valueField}
       onChange={onChange}
       defaultValue={defaultValue as number}
+      values={values}
     />
   );
 };
@@ -61,13 +70,39 @@ const IntervalsDemonstrator = {
 
 export default IntervalsDemonstrator;
 
-export const Plain = {
+export const ByContinousValues = {
   args: {
     formContext: formContextSample,
     valueField: 'gradient',
-    params: { deleteTool: true, translateTool: false, cutTool: true, addTool: true },
+    params: {
+      deleteTool: true,
+      translateTool: false,
+      cutTool: true,
+      addTool: true,
+      stringValues: false,
+    },
     units: ['s', 'm'],
     name: 'linearMetaData',
-    defaultValue: 14,
+    defaultValue: null,
+    dataBase: formDataBase,
+  },
+};
+
+export const ByCategories = {
+  args: {
+    formContext: formContextSample,
+    valueField: 'power',
+    params: {
+      deleteTool: true,
+      translateTool: false,
+      cutTool: true,
+      addTool: true,
+      stringValues: true,
+    },
+    units: null,
+    name: 'linearMetaData',
+    defaultValue: null,
+    dataBase: formDataBaseCategories,
+    values: ['U1', 'U2', 'U3', 'U4', 'U5'],
   },
 };

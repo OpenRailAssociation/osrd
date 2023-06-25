@@ -9,7 +9,8 @@
     display:flex;
     flex-direction: row;
   }
-  div.flexValuesEditionSelect {
-    max-width: 8em
+  .flexValuesEditionSelect {
+    max-width: 8em;
+    min-width: 8em
   }
 }
