@@ -5,12 +5,22 @@ import cx from 'classnames';
 import { roundNumber, preventDefault, isNilObject, shortNumber } from './utils';
 import { LinearMetadataItem, cropForDatavizViewbox } from './data';
 import './style.scss';
-import { FaBullseye } from 'react-icons/fa';
 
 /**
  * Function that compute the div style attribut for a data value.
  */
-function computeStyleForDataValue(value: number, min: number, max: number): CSSProperties {
+function computeStyleForDataValue(
+  value: number,
+  min: number,
+  max: number,
+  stringValues?: boolean
+): CSSProperties {
+  if (stringValues)
+    return {
+      height: `100%`,
+      opacity: 0.8,
+      zIndex: 2,
+    };
   if (min < 0) {
     const negativeAreaHeightRatio = Math.abs(min / (max - min));
     const dataHeight = Math.abs(value / (max - min));
@@ -20,10 +30,14 @@ function computeStyleForDataValue(value: number, min: number, max: number): CSSP
         (value >= 0 ? negativeAreaHeightRatio : negativeAreaHeightRatio - dataHeight) * 100
       }%`,
       position: 'relative',
+      opacity: 0.8,
+      zIndex: 2,
     };
   }
   return {
     height: `${((value - min) / (max - min)) * 100}%`,
+    opacity: 0.8,
+    zIndex: 2,
   };
 }
 
@@ -41,14 +55,12 @@ function getPositionFromMouseEvent(
   return Math.round(segment.begin + (pxOffset / pxSize) * (segment.end - segment.begin));
 }
 
-const Scale: React.FC<{
+const ScaleTicked: React.FC<{
   className?: string;
   begin: number;
   end: number;
   steps: number;
-  min?: number;
-  max?: number;
-}> = ({ className, begin, end, min, max, steps }) => {
+}> = ({ className, begin, end, steps }) => {
   const [inf, setInf] = useState<number>(0);
   const [sup, setSup] = useState<number>(0);
   const [inc, setInc] = useState<number>(0);
@@ -70,6 +82,45 @@ const Scale: React.FC<{
           </div>
         ))}
       </div>
+    </div>
+  );
+};
+
+const Scale: React.FC<{
+  className?: string;
+  begin: number;
+  end: number;
+  min?: number;
+  max?: number;
+}> = ({ className, begin, end, min, max }) => {
+  const [inf, setInf] = useState<number>(0);
+  const [sup, setSup] = useState<number>(0);
+
+  useEffect(() => {
+    setInf(roundNumber(begin, true));
+    setSup(roundNumber(end, false));
+  }, [begin, end]);
+
+  return (
+    <div className={`scale ${className}`}>
+      <span
+        className={cx(
+          min !== undefined && min === begin && 'font-weight-bold',
+          min === undefined && 'font-weight-bold'
+        )}
+        title={`${inf}`}
+      >
+        {shortNumber(inf)}
+      </span>
+      <span
+        className={cx(
+          max !== undefined && max === end && 'font-weight-bold',
+          max === undefined && 'font-weight-bold'
+        )}
+        title={`${sup}`}
+      >
+        {shortNumber(sup)}
+      </span>
     </div>
   );
 };
@@ -174,6 +225,13 @@ export interface LinearMetadataDatavizProps<T> {
    * Event when the user is resizing an item
    */
   onCreate?: (finalized: boolean) => number | null;
+
+  /**
+   * Params on dataviz behavior
+   * ticks: should scale be ticked ?
+   * stringValues: each interval has just a category ref, not a continuous value
+   */
+  params?: { ticks?: boolean; stringValues?: boolean };
 }
 
 /**
@@ -195,6 +253,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   onDragX,
   onResize,
   onCreate,
+  params,
 }: LinearMetadataDatavizProps<T>) => {
   // Html ref of the div wrapper
   const wrapper = useRef<HTMLDivElement | null>(null);
@@ -219,6 +278,11 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    */
   useEffect(() => {
     if (field) {
+      if (params?.stringValues) {
+        // we just need an arbitrary space for scaleY in that case
+        setMin(0);
+        setMax(1);
+      }
       const dMin = minBy(data, field);
       const dMax = maxBy(data, field);
       setMin(dMin && dMin[field] < 0 ? dMin[field] : 0);
@@ -301,17 +365,16 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
 
     if (onResize && wrapper.current && resizing) {
       const wrapperWidth = wrapper.current.offsetWidth;
-
       // function for key up
       fnUp = (e) => {
         const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
         setResizing(null);
-        if (resizing.index) onResize(resizing.index, delta, true);
+        if (resizing.index !== null) onResize(resizing.index, delta, true);
       };
-      // function for mouve
+      // function for move
       fnMove = (e) => {
         const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
-        if (resizing.index) onResize(resizing.index, delta, false);
+        if (resizing.index !== null) onResize(resizing.index, delta, false);
       };
 
       document.addEventListener('mouseup', fnUp, true);
@@ -334,9 +397,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     let fnMove: ((e: MouseEvent) => void) | undefined;
 
     if (onCreate && wrapper.current && creating) {
-      const wrapperWidth = wrapper.current.offsetWidth;
-
-      // function for mouve
+      // function for move, only the first move trigger a creating context. Thereafter, we are resizing the newly created segment
       fnMove = (e) => {
         const createdIntervalIndex = onCreate(false);
         setCreating(null);
@@ -380,7 +441,14 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <div className="axis-zero" style={computeStyleForDataValue(0, min, max)} />
         )}
         {/* Display the Y axis if there is one */}
-        {field && min !== max && <Scale className="scale-y" steps={4} begin={min} end={max} />}
+        {field &&
+          min !== max &&
+          !params?.stringValues &&
+          (params?.ticks ? (
+            <ScaleTicked className="scale-y" steps={4} begin={min} end={max} />
+          ) : (
+            <Scale className="scale-y" begin={min} end={max} />
+          ))}
 
         {hoverAtx && !draginStartAt && (
           <div
@@ -401,6 +469,10 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             className={cx(
               'item',
               highlighted.includes(segment.index) && 'highlighted',
+              field &&
+                data[segment.index] !== undefined &&
+                data[segment.index][field] !== undefined &&
+                'with-data',
               field &&
                 (data[segment.index] === undefined || data[segment.index][field] === undefined) &&
                 'no-data',
@@ -480,7 +552,12 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
               data[segment.index][field] !== undefined && (
                 <div
                   className="value"
-                  style={computeStyleForDataValue(data[segment.index][field], min, max)}
+                  style={computeStyleForDataValue(
+                    data[segment.index][field],
+                    min,
+                    max,
+                    params?.stringValues
+                  )}
                 >
                   <span>{data[segment.index][field]}</span>
                 </div>
@@ -513,14 +590,22 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       </div>
 
       {/* Display the X axis */}
-      <Scale
-        className="scale-x"
-        begin={head(data4viz)?.begin || 0}
-        end={last(data4viz)?.end || 0}
-        steps={10}
-        min={head(data)?.begin || 0}
-        max={last(data)?.end || 0}
-      />
+      {params?.ticks ? (
+        <ScaleTicked
+          className="scale-x"
+          begin={head(data4viz)?.begin || 0}
+          end={last(data4viz)?.end || 0}
+          steps={10}
+        />
+      ) : (
+        <Scale
+          className="scale-x"
+          begin={head(data4viz)?.begin || 0}
+          end={last(data4viz)?.end || 0}
+          min={head(data)?.begin || 0}
+          max={last(data)?.end || 0}
+        />
+      )}
     </div>
   );
 };
