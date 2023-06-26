@@ -47,11 +47,13 @@ const ToastSNCF: FC<Notification> = ({ title, date, type = 'info', text }) => {
   const [open, setOpen] = useState<boolean>(true);
 
   return (
-    <div className={`toast fade ${open ? 'show' : 'hide'} ${type}`}>
+    <div className={`toast fade ${open ? 'show' : 'hide'} ${type}`} data-testid="toast-SNCF">
       <div className="toast-header">
         <i className={`icons-size-1x25 ${typeToIcon[type]}`} />
         &nbsp;
-        <strong className="mr-auto ml-1">{title || type}</strong>
+        <strong className="mr-auto ml-1" data-testid="toast-SNCF-title">
+          {title || type}
+        </strong>
         {date && <small>{dateToFromAgo(date)}</small>}
         <button type="button" className="ml-2 close" onClick={() => setOpen(false)}>
           <span>&times;</span>
