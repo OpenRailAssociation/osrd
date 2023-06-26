@@ -138,6 +138,7 @@ class PlaywrightScenarioPage {
 
   async setTrainScheduleName(name: string) {
     await this.getTrainScheduleNameInput.fill(name);
+    await expect(this.getTrainScheduleNameInput).toHaveValue(name);
   }
 
   async checkNumberOfTrains(number: number) {

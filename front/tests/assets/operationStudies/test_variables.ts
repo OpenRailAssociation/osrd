@@ -17,7 +17,7 @@ export default process.env.CI
       destinationSearch: {
         stationName: 'nor',
         stationItemName: /North_East_station/,
-        positionClick: { x: 415, y: 210 },
+        positionClick: { x: 415, y: 215 },
       },
       pathfindingDistance: '22 km',
     }
@@ -32,7 +32,7 @@ export default process.env.CI
       originSearch: {
         stationName: 'beaune',
         stationItemName: 'BEA Beaune 87713545',
-        positionClick: { x: 430, y: 200 },
+        positionClick: { x: 430, y: 205 },
       },
       originSearchQuimper: {
         stationName: 'quimper',
@@ -42,7 +42,7 @@ export default process.env.CI
       destinationSearch: {
         stationName: 'miramas',
         stationItemName: 'MAS Miramas A1 87753004',
-        positionClick: { x: 415, y: 200 },
+        positionClick: { x: 415, y: 220 },
       },
       destinationSearchBrest: {
         stationName: 'brest',
