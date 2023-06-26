@@ -76,7 +76,11 @@ export default function TimetableManageTrainSchedule({
         tabIndex={0}
         onClick={leaveManageTrainSchedule}
       >
-        <button className="btn btn-secondary btn-block" type="button">
+        <button
+          className="btn btn-secondary btn-block"
+          data-testid="return-simulation-result"
+          type="button"
+        >
           <i className="icons-arrow-prev mr-2" />
           {t('returnToSimulationResults')}
         </button>

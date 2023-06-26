@@ -122,6 +122,7 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
       type="button"
       disabled={infraState !== 'CACHED'}
       onClick={submitConfAddTrainSchedules}
+      data-testid="add-train-schedules"
     >
       <span className="mr-2">
         <FaPlus />

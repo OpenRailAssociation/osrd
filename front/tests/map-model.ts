@@ -1,13 +1,15 @@
 import { Locator, Page } from '@playwright/test';
 
 class PlaywrightMap {
+  readonly getMap: Locator;
+
   readonly getBtnShearch: Locator;
 
   readonly getBtnCloseShearch: Locator;
 
   readonly getSearchedStation: Locator;
 
-  readonly getMap: Locator;
+  readonly getMapLibreBox: Locator;
 
   readonly getBtnOrigin: Locator;
 
@@ -16,10 +18,11 @@ class PlaywrightMap {
   readonly getPathFindingResult: Locator;
 
   constructor(readonly page: Page) {
-    this.getBtnShearch = page.locator('.btn-map-search');
+    this.getMap = page.getByTestId('map');
+    this.getBtnShearch = this.getMap.getByRole('button', { name: /Search/ });
     this.getBtnCloseShearch = page.locator('.map-modal').locator('.close');
     this.getSearchedStation = page.locator('#map-search-station');
-    this.getMap = page.locator('.maplibregl-map.mapboxgl-map');
+    this.getMapLibreBox = this.getMap.locator('.maplibregl-map.mapboxgl-map');
     this.getBtnOrigin = page.getByRole('button').filter({ hasText: 'Origine' });
     this.getBtnDestination = page.getByRole('button').filter({ hasText: 'Destination' });
     this.getPathFindingResult = page.locator('.pathfinding-done');
@@ -38,7 +41,7 @@ class PlaywrightMap {
   }
 
   async clickOnMap(position: { x: number; y: number }) {
-    await this.getMap.click({ position });
+    await this.getMapLibreBox.click({ position });
   }
 
   async clickOnOrigin() {
