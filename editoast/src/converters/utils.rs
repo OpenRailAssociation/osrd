@@ -470,8 +470,8 @@ pub fn operational_points(
             osmpbfreader::OsmObj::Relation(rel) => Some(rel), // Only consider OSM relations
             _ => None,                                        // Discard Nodes and Ways
         })
-        .map(|rel| {
-            let parts = rel
+        .flat_map(|rel| {
+            let parts: Vec<_> = rel
                 .refs
                 .iter()
                 .filter(|r| r.role == "stop") // We ignore other members of the relation
@@ -488,14 +488,18 @@ pub fn operational_points(
                         .map(|(track, position)| OperationalPointPart { track, position })
                 })
                 .collect();
-
-            OperationalPoint {
-                id: rel.id.0.to_string().into(),
-                parts,
-                extensions: OperationalPointExtensions {
-                    identifier: identifier(&rel.tags),
-                    sncf: None,
-                },
+            // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)
+            if parts.is_empty() {
+                None
+            } else {
+                Some(OperationalPoint {
+                    id: rel.id.0.to_string().into(),
+                    parts,
+                    extensions: OperationalPointExtensions {
+                        identifier: identifier(&rel.tags),
+                        sncf: None,
+                    },
+                })
             }
         })
         .collect()
