@@ -333,23 +333,24 @@ pub fn speed_sections(edge: &Edge) -> Vec<SpeedSection> {
             speed_section(edge, default, ApplicableDirections::StartToStop),
             speed_section(edge, backward, ApplicableDirections::StopToStart),
         ],
-        (None, Some(forward), _) => vec![speed_section(
+        (Some(default), Some(forward), None) => vec![
+            speed_section(edge, forward, ApplicableDirections::StartToStop),
+            speed_section(edge, default, ApplicableDirections::StopToStart),
+        ],
+        (None, Some(forward), None) => vec![speed_section(
             edge,
             forward,
             ApplicableDirections::StartToStop,
         )],
-        (None, _, Some(backward)) => vec![speed_section(
+        (None, None, Some(backward)) => vec![speed_section(
             edge,
             backward,
             ApplicableDirections::StopToStart,
         )],
-        _ => {
-            warn!(
-                "OpenStreetMap way {} with incoherent maxspeed",
-                edge.osm_id.0
-            );
-            vec![]
-        }
+        (_, Some(forward), Some(backward)) => vec![
+            speed_section(edge, forward, ApplicableDirections::StartToStop),
+            speed_section(edge, backward, ApplicableDirections::StopToStart),
+        ],
     }
 }
 
