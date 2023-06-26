@@ -16,7 +16,7 @@ import { formatIsoDate } from 'utils/date';
 import { ValueOf } from 'utils/types';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-import { CatenaryRange, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Allowance, CatenaryRange, Path, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { SwitchType, ThunkAction } from '../../types';
 
 /* eslint-disable default-case */
@@ -28,6 +28,7 @@ export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_TRAIN_COUNT = 'osrdconf/UPDATE_TRAIN_COUNT';
 export const UPDATE_TRAIN_DELTA = 'osrdconf/UPDATE_TRAIN_DELTA';
 export const UPDATE_TRAIN_STEP = 'osrdconf/UPDATE_TRAIN_STEP';
+export const UPDATE_ALLOWANCES = 'osrdconf/UPDATE_ALLOWANCES';
 export const TOGGLE_USING_ELECTRICAL_PROFILES = 'osrdconf/TOGGLE_USING_ELECTRICAL_PROFILES';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_PROJECT_ID = 'osrdconf/UPDATE_PROJECT_ID';
@@ -75,6 +76,7 @@ const defaultCommonConf = {
   trainCount: 1,
   trainDelta: 15,
   trainStep: 2,
+  allowances: [],
   usingElectricalProfiles: true,
   labels: [],
   projectID: undefined,
@@ -156,6 +158,9 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         break;
       case UPDATE_TRAIN_STEP:
         draft[section].trainStep = action.trainStep;
+        break;
+      case UPDATE_ALLOWANCES:
+        draft[section].allowances = action.allowances;
         break;
       case TOGGLE_USING_ELECTRICAL_PROFILES:
         draft[section].usingElectricalProfiles = !draft[section].usingElectricalProfiles;
@@ -350,6 +355,14 @@ export function updateTrainStep(trainStep: number) {
     dispatch({
       type: UPDATE_TRAIN_STEP,
       trainStep,
+    });
+  };
+}
+export function updateAllowances(allowances: Allowance[]) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_ALLOWANCES,
+      allowances,
     });
   };
 }
