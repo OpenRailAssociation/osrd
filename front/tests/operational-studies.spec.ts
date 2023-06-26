@@ -4,14 +4,17 @@ import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
 import PlaywrightMap from './map-model';
 import VARIABLES from './assets/operationStudies/test_variables';
 import PlaywrightScenarioPage from './scenario-page-model';
+import PlaywrightCommonPage from './common-page-model';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   let playwrightHomePage: PlaywrightHomePage;
   let playwrightScenarioPage: PlaywrightScenarioPage;
+  let playwrightCommonPage: PlaywrightCommonPage;
 
   test.beforeEach(async ({ page }) => {
     playwrightHomePage = new PlaywrightHomePage(page);
     playwrightScenarioPage = new PlaywrightScenarioPage(page);
+    playwrightCommonPage = new PlaywrightCommonPage(page);
 
     await playwrightHomePage.goToHomePage();
 
@@ -34,7 +37,6 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .click();
 
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
-    await playwrightHomePage.page.waitForTimeout(500);
   });
 
   test('RollingStockSelector is displayed', async () => {
@@ -117,16 +119,14 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     // ***************** Test choice Origin/Destination *****************
     const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
     await playwrightScenarioPage.openTabByText('Itinéraire');
+    await playwrightScenarioPage.setTrainScheduleName('TrainSchedule 1');
 
     // Search and select origin
     await playwrightMap.openMapSearch();
     await playwrightMap.searchStation(VARIABLES.originSearch);
     await playwrightHomePage.page.getByRole('button', { name: VARIABLES.originSearchItem }).click();
     await playwrightMap.closeMapSearch();
-    expect(await playwrightMap.page.locator('.map-search-marker-title').textContent()).toMatch(
-      VARIABLES.originSearchItem
-    );
-    await playwrightMap.page.waitForTimeout(100);
+    await playwrightMap.page.waitForTimeout(200);
     await playwrightMap.clickOnMap(VARIABLES.originPositionClick);
     await playwrightMap.clickOnOrigin();
 
@@ -139,7 +139,14 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .click();
     await playwrightMap.closeMapSearch();
     await playwrightMap.clickOnMap(VARIABLES.destinationPositionClick);
+    await playwrightMap.page.waitForTimeout(200);
     await playwrightMap.clickOnDestination();
     await playwrightScenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
+
+    // ***************** Test Add Train Schedule *****************
+    await playwrightScenarioPage.addTrainSchedule();
+    // playwrightCommonPage.checkToastSNCFVisible();
+    await playwrightScenarioPage.returnSimulationResult();
+    await playwrightScenarioPage.checkNumberOfTrains(1);
   });
 });

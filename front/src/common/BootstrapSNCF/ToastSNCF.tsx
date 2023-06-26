@@ -47,7 +47,7 @@ const ToastSNCF: FC<Notification> = ({ title, date, type = 'info', text }) => {
   const [open, setOpen] = useState<boolean>(true);
 
   return (
-    <div className={`toast fade ${open ? 'show' : 'hide'} ${type}`}>
+    <div className={`toast fade ${open ? 'show' : 'hide'} ${type}`} data-testid="toast-SNCF">
       <div className="toast-header">
         <i className={`icons-size-1x25 ${typeToIcon[type]}`} />
         &nbsp;
