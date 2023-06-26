@@ -178,7 +178,7 @@ export default function AllowancesActions({
 
   useEffect(() => {
     if (allowanceSelectedIndex === undefined) {
-      const newBeginPosition = allowances.at(-1)?.end_position;
+      const newBeginPosition = allowances?.at(-1)?.end_position;
       setBeginPosition(newBeginPosition ? newBeginPosition + 1 : 0);
       setEndPosition(
         newBeginPosition && newBeginPosition === pathLength ? pathLength + 1 : pathLength

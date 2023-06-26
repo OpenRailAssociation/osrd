@@ -151,7 +151,7 @@ export interface OsrdConfState {
   trainCount: number;
   trainStep: number;
   trainDelta: number;
-  allowances?: Allowance[];
+  allowances: Allowance[];
   usingElectricalProfiles: boolean;
   labels: string[];
   projectID?: number;

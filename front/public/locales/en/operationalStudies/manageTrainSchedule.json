@@ -31,6 +31,7 @@
     "noTrainStepInput": "Must be > 0",
     "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
     "stdcmError": "Calculation error for last minute train path",
+    "TOO_MUCH_TIME": "We could not go slow enough in this setting to match the given allowance time",
     "The requested train couldn't reach its destination": "The train cannot reach its destination",
     "trainScheduleTitle": "An error has occurred",
     "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",

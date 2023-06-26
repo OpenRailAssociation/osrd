@@ -33,7 +33,7 @@ export default function AllowancesLinearView({
   return (
     <div className="outside-container">
       <div className="allowances-linear-view">
-        {allowances.length > 0 ? (
+        {allowances && allowances.length > 0 ? (
           allowances.map((allowance, idx) => (
             <div
               className={cx('range', allowanceSelectedIndex === idx && 'selected')}
@@ -44,6 +44,7 @@ export default function AllowancesLinearView({
               role="button"
               tabIndex={0}
               onClick={() => setAllowanceSelectedIndex(idx)}
+              key={`linearview-${typeof allowance}-${idx}`}
             >
               <div
                 className={`value ${coloredDistribution(

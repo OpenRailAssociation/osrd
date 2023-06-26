@@ -1,3 +1,5 @@
+import { StandardAllowance } from 'common/api/osrdEditoastApi';
+
 export enum unitsNames {
   time_per_distance = 'minutes',
   time = 'seconds',
@@ -9,6 +11,17 @@ export enum unitsLabels {
   time = 's',
   percentage = '%',
 }
+
+export const initialStandardAllowance: StandardAllowance = {
+  allowance_type: 'standard',
+  default_value: {
+    value_type: 'time',
+    seconds: 0,
+  },
+  ranges: [],
+  distribution: 'MARECO',
+  capacity_speed_limit: 30,
+};
 
 export const unitsList = Object.keys(unitsLabels).map((unit) => ({
   id: unit,
