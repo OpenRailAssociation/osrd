@@ -151,7 +151,7 @@ export default function StdcmRequestModal(props) {
             <div className="d-flex flex-column text-center">
               {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
                 <>
-                  <img src={rabbit} alt="runnning stdcm" className="w-50"/>
+                  <img src={rabbit} alt="runnning stdcm" className="w-50" />
                   <div className="p-1 text-info">
                     {t('operationalStudies/manageTrainSchedule:searchingItinerary')}
                   </div>

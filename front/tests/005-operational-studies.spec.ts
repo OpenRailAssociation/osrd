@@ -30,6 +30,8 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await scenarioPage.checkInfraLoaded();
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
 
+    await scenarioPage.setTrainScheduleName('TrainSchedule 1');
+
     // ***************** Test Rolling Stock *****************
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
       playwrightHomePage.page
@@ -96,5 +98,13 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await playwrightMap.selectDestination(VARIABLES.destinationSearch);
 
     await scenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
+
+    // ***************** Test Add Train Schedule *****************
+    await scenarioPage.addTrainSchedule();
+    await scenarioPage.checkToastSNCFTitle('Train ajouté');
+    await scenarioPage.returnSimulationResult();
+    await scenarioPage.checkNumberOfTrains(1);
+    await scenarioPage.getTrainTimetableByName(/TrainSchedule 1/).hover();
+    await scenarioPage.page.getByRole('button', { name: 'Supprimer' }).click();
   });
 });
