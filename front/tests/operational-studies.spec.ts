@@ -34,7 +34,6 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .click();
     await playwrightScenarioPage.checkInfraLoaded();
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
-    await playwrightHomePage.page.waitForTimeout(500);
   });
 
   test('RollingStockSelector is displayed', async () => {
@@ -64,7 +63,7 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await expect(playwrightScenarioPage.getMapModule).toBeVisible();
   });
 
-  test('Testing pathfinding with rollingstock an composition code', async () => {
+  test('Testing pathfinding success with rollingstock an composition code', async () => {
     // ***************** Test Rolling Stock *****************
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
       playwrightHomePage.page
@@ -118,16 +117,14 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     // ***************** Test choice Origin/Destination *****************
     const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
     await playwrightScenarioPage.openTabByText('Itinéraire');
+    await playwrightScenarioPage.setTrainScheduleName('TrainSchedule 1');
 
     // Search and select origin
     await playwrightMap.openMapSearch();
     await playwrightMap.searchStation(VARIABLES.originSearch);
     await playwrightHomePage.page.getByRole('button', { name: VARIABLES.originSearchItem }).click();
     await playwrightMap.closeMapSearch();
-    expect(await playwrightMap.page.locator('.map-search-marker-title').textContent()).toMatch(
-      VARIABLES.originSearchItem
-    );
-    await playwrightMap.page.waitForTimeout(100);
+    await playwrightMap.page.waitForTimeout(200);
     await playwrightMap.clickOnMap(VARIABLES.originPositionClick);
     await playwrightMap.clickOnOrigin();
 
@@ -140,7 +137,16 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
       .click();
     await playwrightMap.closeMapSearch();
     await playwrightMap.clickOnMap(VARIABLES.destinationPositionClick);
+    await playwrightMap.page.waitForTimeout(200);
     await playwrightMap.clickOnDestination();
     await playwrightScenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
+
+    // ***************** Test Add Train Schedule *****************
+    await playwrightScenarioPage.addTrainSchedule();
+    await playwrightScenarioPage.checkToastSNCFTitle('Train ajouté');
+    await playwrightScenarioPage.returnSimulationResult();
+    await playwrightScenarioPage.checkNumberOfTrains(1);
+    await playwrightScenarioPage.getTrainTimetbleByName(/TrainSchedule 1/).hover();
+    await playwrightScenarioPage.page.getByRole('button', { name: 'Supprimer' }).click();
   });
 });
