@@ -3,7 +3,7 @@ import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
 import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
 import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
-import { CatenaryRange, Comfort, Path } from 'common/api/osrdEditoastApi';
+import { Allowance, CatenaryRange, Comfort, Path } from 'common/api/osrdEditoastApi';
 
 export const BLOCKTYPES = [
   {
@@ -127,6 +127,7 @@ export interface OsrdConfState {
   trainCount: number;
   trainStep: number;
   trainDelta: number;
+  allowances?: Allowance[];
   usingElectricalProfiles: boolean;
   labels: string[];
   projectID?: number;
