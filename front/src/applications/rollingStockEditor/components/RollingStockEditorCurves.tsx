@@ -12,17 +12,16 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
   const selectedMode = Object.keys(data.effort_curves.modes)[0];
   const EMPTY_MATRIX = createEmptyMatrix<CellBase<string>>(8, 2);
 
-  // const defaultCurve = currentRs[`${selectedMode}`].curves[0].curve?.max_efforts?.map(
-  //   (effort, index) => {
-  //     const speedsPath = currentRs[`${selectedMode}`].curves[0].curve?.speeds;
-  //     return speedsPath !== undefined
-  //       ? [{ value: speedsPath[index].toString() }, { value: effort.toString() }]
-  //       : EMPTY_MATRIX;
-  //   }
-  // );
-  const [curves, setCurves] = useState<Matrix<CellBase<string>>>(EMPTY_MATRIX);
-
-  // console.log('data default Curve =>', defaultCurve);
+  const speedsList = data.effort_curves.modes[`${selectedMode}`].curves[0].curve?.speeds;
+  const effortsList = data.effort_curves.modes[`${selectedMode}`].curves[0].curve?.max_efforts;
+  const defaultCurve =
+    speedsList !== undefined && effortsList !== undefined
+      ? effortsList.map((effort, index) => [
+          { value: (speedsList[index] * 3.6).toString() },
+          { value: (effort / 10).toString() },
+        ])
+      : EMPTY_MATRIX;
+  const [curves, setCurves] = useState<Matrix<CellBase<string>>>(defaultCurve);
 
   type Curve = {
     max_efforts: number[];
@@ -35,8 +34,6 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
       (step) => step[0]?.value !== undefined || step[1]?.value !== undefined
     );
 
-    // console.log('sheetValues =>', sheetValues);
-
     if (!isEmpty(sheetValues) && sheetValues.length > 8) {
       sheetValues.push(emptyRow);
       setCurves(sheetValues);
@@ -44,7 +41,7 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
       const fillingRows = createEmptyMatrix<CellBase<string>>(8 - sheetValues.length, 2);
       setCurves(sheetValues.concat(fillingRows));
     } else {
-      setCurves(EMPTY_MATRIX);
+      setCurves(defaultCurve);
     }
   };
 
@@ -82,7 +79,6 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
 
   useEffect(() => {
     setCurrentRs(data.effort_curves.modes);
-    // setCurves(defaultCurve);
   }, [data]);
 
   return (
@@ -101,6 +97,7 @@ export default function RollingStockEditorCurves(props: { data: RollingStock }) 
         <RollingStockCurve
           curvesComfortList={listCurvesComfort(data.effort_curves)}
           data={currentRs}
+          isOnEditionMode
         />
         <div className="rollingstock-detail-container-img">
           <div className="rollingstock-detail-img">

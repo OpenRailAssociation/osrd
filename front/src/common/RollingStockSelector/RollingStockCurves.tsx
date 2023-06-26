@@ -57,7 +57,8 @@ function LegendComfortSwitches(props: {
   const changeComfortState = (comfort: string) => {
     setComfortsStates({ ...comfortsStates, [comfort]: !comfortsStates[comfort] });
   };
-  return curvesComfortList ? (
+
+  return curvesComfortList.length > 1 ? (
     <span className="d-flex">
       {curvesComfortList.map((comfort) => (
         <span
@@ -73,7 +74,11 @@ function LegendComfortSwitches(props: {
         </span>
       ))}
     </span>
-  ) : null;
+  ) : (
+    <span className="curves-chart-legend-comfort-button active">
+      {comfort2pictogram(curvesComfortList[0])}
+    </span>
+  );
 }
 
 function Legend(props: {
@@ -130,8 +135,9 @@ function initialComfortsState(curvesComfortList: string[]) {
 export default function RollingStockCurve(props: {
   data: EffortCurvesModes;
   curvesComfortList: string[];
+  isOnEditionMode?: boolean;
 }) {
-  const { data, curvesComfortList } = props;
+  const { data, curvesComfortList, isOnEditionMode } = props;
 
   const { t, ready } = useTranslation(['rollingstock']);
   const mode2name = (mode: string) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
@@ -201,6 +207,14 @@ export default function RollingStockCurve(props: {
           .filter((curve) => comfortsStates[curve.comfort])
       );
     }
+
+    if (isOnEditionMode && curves[0] !== undefined) {
+      setCurves(
+        [Object.keys(transformedData)[0]]
+          .map((name, index) => parseData(name, curveColor(index), transformedData[name]))
+          .filter((curve) => comfortsStates[curve.comfort])
+      );
+    }
   }, [data, comfortsStates]);
 
   useEffect(() => {
@@ -210,15 +224,19 @@ export default function RollingStockCurve(props: {
   }, [curves, curvesState]);
 
   useEffect(() => {
-    setComfortsStates(initialComfortsState(curvesComfortList));
+    if (isOnEditionMode) {
+      setComfortsStates(initialComfortsState([curvesComfortList[0]]));
+    } else {
+      setComfortsStates(initialComfortsState(curvesComfortList));
+    }
     setCurvesState(initialCurvesState(transformedData));
   }, [data, ready]);
 
-  return curves && curvesState && curvesToDisplay && comfortsStates ? (
+  return curves[0] !== undefined && curvesState && curvesToDisplay && comfortsStates ? (
     <div className="curves-container pt-1 pb-3">
       <div className="curves-chart-legend mr-2 mb-1">
         <LegendComfortSwitches
-          curvesComfortList={curvesComfortList}
+          curvesComfortList={isOnEditionMode ? [curvesComfortList[0]] : curvesComfortList}
           comfortsStates={comfortsStates}
           setComfortsStates={setComfortsStates}
         />

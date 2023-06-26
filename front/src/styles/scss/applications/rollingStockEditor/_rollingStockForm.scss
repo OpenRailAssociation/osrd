@@ -3,6 +3,9 @@
     width: 80%;
     align-self: center;
     overflow: auto;
+    .form-control {
+      height: auto;
+    }
     &-text {
       *td,
       .formResistance {
@@ -115,13 +118,18 @@
   tr:not(:first-child) .Spreadsheet__header,
   tr:first-child .Spreadsheet__header:first-child {
     width: 2rem;
-    background-color: var(--white);
     border: solid 1px var(--coolgray3);
+  }
+  tr:not(:first-child) .Spreadsheet__header {
+    background-color: var(--white);
+  }
+  tr:first-child .Spreadsheet__header {
+    color: var(--blue);
   }
 }
 
 .rollingstock-editor-curves {
-  background-color: white;
+  background-color: var(--white);
   .rollingstock-body {
     width: 60%;
     border: none;
