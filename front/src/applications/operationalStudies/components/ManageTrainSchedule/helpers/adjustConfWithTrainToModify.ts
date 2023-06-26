@@ -2,6 +2,7 @@ import {
   updateLabels,
   updateRollingStockID,
   updateSpeedLimitByTag,
+  updateAllowances,
   toggleUsingElectricalProfiles,
   updateName,
   updateDepartureTime,
@@ -16,11 +17,10 @@ import {
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
 import { store } from 'Store';
-import { TrainSchedule } from 'common/api/osrdMiddlewareApi';
+import { TrainSchedule, Path } from 'common/api/osrdEditoastApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { compact } from 'lodash';
-import { Path } from 'common/api/osrdEditoastApi';
 
 function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap | undefined {
   return step
@@ -52,6 +52,8 @@ export default function adjustConfWithTrainToModify(
   if (trainSchedule.departure_time)
     dispatch(updateDepartureTime(sec2time(trainSchedule.departure_time)));
   dispatch(updateInitialSpeed(trainSchedule.initial_speed || 0));
+
+  if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances));
 
   if (path.steps && path.steps.length > 1) {
     dispatch(updatePathfindingID(trainSchedule.path));

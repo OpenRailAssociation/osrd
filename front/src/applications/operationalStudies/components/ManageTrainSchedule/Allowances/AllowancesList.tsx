@@ -53,15 +53,16 @@ export default function AllowancesList({
   if (type === AllowancesTypes.engineering) {
     return (
       <div className="allowances-list mt-2">
-        {allowances.map((allowance, idx) => (
-          <AllowancesListItem
-            allowance={allowance}
-            idx={idx}
-            isSelected={allowanceSelectedIndex === idx}
-            setAllowanceSelectedIndex={setAllowanceSelectedIndex}
-            key={`allowance-${type}-${idx}`}
-          />
-        ))}
+        {allowances &&
+          allowances.map((allowance, idx) => (
+            <AllowancesListItem
+              allowance={allowance}
+              idx={idx}
+              isSelected={allowanceSelectedIndex === idx}
+              setAllowanceSelectedIndex={setAllowanceSelectedIndex}
+              key={`allowance-${type}-${idx}`}
+            />
+          ))}
       </div>
     );
   }

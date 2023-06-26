@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { getPathfindingID } from 'reducers/osrdconf/selectors';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllowances, getPathfindingID } from 'reducers/osrdconf/selectors';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 import {
-  Allowance,
   StandardAllowance,
   EngineeringAllowance,
   AllowanceValue,
@@ -12,71 +11,13 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { AiOutlineDash } from 'react-icons/ai';
 import { BsDashLg } from 'react-icons/bs';
+import { updateAllowances } from 'reducers/osrdconf';
 import AllowancesStandardSettings from './AllowancesStandardSettings';
 import AllowancesActions from './AllowancesActions';
 import AllowancesList from './AllowancesList';
 import { AllowancesTypes, ManageAllowancesType, OverlapAllowancesIndexesType } from './types';
 import AllowancesLinearView from './AllowancesLinearView';
-
-const jsonExample = [
-  {
-    allowance_type: 'engineering',
-    distribution: 'MARECO',
-    capacity_speed_limit: 0,
-    begin_position: 0,
-    end_position: 150000,
-    value: {
-      value_type: 'percentage',
-      minutes: 5,
-    },
-  },
-  {
-    allowance_type: 'engineering',
-    distribution: 'LINEAR',
-    capacity_speed_limit: 0,
-    begin_position: 150001,
-    end_position: 250000,
-    value: {
-      value_type: 'time_per_distance',
-      minutes: 5,
-    },
-  },
-  {
-    allowance_type: 'standard',
-    default_value: {
-      value_type: 'time',
-      seconds: 5,
-    },
-    ranges: [
-      {
-        begin_position: 0,
-        end_position: 1000,
-        value: {
-          value_type: 'time_per_distance',
-          minutes: 5,
-        },
-      },
-      {
-        begin_position: 1001,
-        end_position: 2000,
-        value: {
-          value_type: 'percentage',
-          percentage: 13,
-        },
-      },
-      {
-        begin_position: 2001,
-        end_position: 5000,
-        value: {
-          value_type: 'time',
-          seconds: 600,
-        },
-      },
-    ],
-    distribution: 'MARECO',
-    capacity_speed_limit: 0,
-  },
-] as Allowance[];
+import { initialStandardAllowance } from './consts';
 
 const MissingPathFindingMessage = () => {
   const { t } = useTranslation('operationalStudies/allowances');
@@ -89,6 +30,7 @@ const MissingPathFindingMessage = () => {
 
 export default function Allowances() {
   const { t } = useTranslation('operationalStudies/allowances');
+  const dispatch = useDispatch();
   const pathFindingID = useSelector(getPathfindingID);
   const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
     { id: pathFindingID as number },
@@ -97,14 +39,20 @@ export default function Allowances() {
   const pathLength = Math.round(
     lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000
   );
-  const [allowances, setAllowances] = useState<Allowance[]>(jsonExample);
+  const allowances = useSelector(getAllowances);
   const [standardAllowance, setStandardAllowance] = useState(
-    allowances.find((allowance) => allowance.allowance_type === 'standard') as StandardAllowance
+    (allowances &&
+      (allowances.find(
+        (allowance) => allowance.allowance_type === 'standard'
+      ) as StandardAllowance)) ||
+      initialStandardAllowance
   );
   const [engineeringAllowances, setEngineeringAllowances] = useState(
-    allowances.filter(
-      (allowance) => allowance.allowance_type === 'engineering'
-    ) as EngineeringAllowance[]
+    (allowances &&
+      (allowances.filter(
+        (allowance) => allowance.allowance_type === 'engineering'
+      ) as EngineeringAllowance[])) ||
+      []
   );
   const [standardAllowanceSelectedIndex, setStandardAllowanceSelectedIndex] = useState<
     number | undefined
@@ -168,6 +116,10 @@ export default function Allowances() {
     }
   };
 
+  useEffect(() => {
+    dispatch(updateAllowances([standardAllowance, ...engineeringAllowances]));
+  }, [standardAllowance, engineeringAllowances]);
+
   return pathFindingID && pathLength && pathLength > 0 ? (
     <div className="operational-studies-allowances">
       <div className="allowances-container">
@@ -220,7 +172,9 @@ export default function Allowances() {
         <h2 className="text-uppercase text-muted mb-3 mt-1">
           {t('engineeringAllowances')}
           <small className="ml-2">
-            {t('allowancesCount', { count: engineeringAllowances.length })}
+            {t('allowancesCount', {
+              count: engineeringAllowances ? engineeringAllowances.length : 0,
+            })}
           </small>
         </h2>
         <AllowancesActions

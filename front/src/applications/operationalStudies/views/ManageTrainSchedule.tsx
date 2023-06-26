@@ -10,7 +10,6 @@ import PowerRestrictionSelector from 'applications/operationalStudies/components
 import adjustConfWithTrainToModify from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/adjustConfWithTrainToModify';
 import ElectricalProfiles from 'applications/operationalStudies/components/ManageTrainSchedule/ElectricalProfiles';
 import Allowances from 'applications/operationalStudies/components/ManageTrainSchedule/Allowances/Allowances';
-import { TrainSchedule, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import {
   getPathfindingID,
   getRollingStockID,
@@ -19,7 +18,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 import { updatePathWithCatenaries, updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
-import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, CatenaryRange, TrainSchedule } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -36,7 +35,7 @@ export default function ManageTrainSchedule() {
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
-  const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
 
   // Details for tabs
@@ -69,6 +68,7 @@ export default function ManageTrainSchedule() {
       }),
     }
   );
+
   const tabRollingStock = {
     title: rollingStock ? (
       <div className="managetrainschedule-tab">
@@ -80,7 +80,7 @@ export default function ManageTrainSchedule() {
     ) : (
       <div className="managetrainschedule-tab">
         <img src={rollingStockPic} alt="rolling stock" />
-        <span className="ml-2 d-none">{t('tabs.rollingStock')}</span>
+        <span className="ml-2">{t('tabs.rollingStock')}</span>
       </div>
     ),
     withWarning: rollingStockID === undefined,
@@ -94,10 +94,12 @@ export default function ManageTrainSchedule() {
         <img src={pahtFindingPic} alt="path finding" />
         <span className="ml-2 d-flex align-items-center flex-grow-1 w-100">
           {t('tabs.pathFinding')}
-          <small className="ml-auto pl-1">
-            {pathLength}
-            km
-          </small>
+          {!Number.isNaN(pathLength) && (
+            <small className="ml-auto pl-1">
+              {pathLength}
+              km
+            </small>
+          )}
         </span>
       </div>
     ),

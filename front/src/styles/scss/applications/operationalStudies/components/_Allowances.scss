@@ -1,6 +1,6 @@
 .operational-studies-allowances {
-  --mareco-color: var(--yellow);
-  --linear-color: var(--teal);
+  --mareco-color: var(--teal);
+  --linear-color: var(--yellow);
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
@@ -133,6 +133,7 @@
             }
           }
           &.selected {
+            z-index: 1;
             .value {
               color: var(--white);
               background-color: var(--secondary);

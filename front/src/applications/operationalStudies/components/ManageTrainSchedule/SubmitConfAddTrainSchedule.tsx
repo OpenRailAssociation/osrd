@@ -9,16 +9,26 @@ import getTimetable from 'applications/operationalStudies/components/Scenario/ge
 import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/formatConf';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import {
-  Allowance,
   PowerRestrictionRange,
   TrainScheduleOptions,
   osrdMiddlewareApi,
 } from 'common/api/osrdMiddlewareApi';
-import { Comfort, Infra } from 'common/api/osrdEditoastApi';
+import { Allowance, Comfort, Infra } from 'common/api/osrdEditoastApi';
 
 type Props = {
   infraState?: Infra['state'];
   setIsWorking: (isWorking: boolean) => void;
+};
+
+type error400 = {
+  status: 400;
+  data: {
+    cause: string;
+    errorType: string;
+    message: string;
+    trace: unknown;
+    type: string;
+  };
 };
 
 type ScheduleType = {
@@ -91,6 +101,14 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
             setFailure({
               name: e.name,
               message: t(`errorMessages.${e.message}`),
+            })
+          );
+        } else {
+          const error = { ...(e as error400) };
+          dispatch(
+            setFailure({
+              name: t('errorMessages.error'),
+              message: t(`errorMessages.${error.data.errorType}`),
             })
           );
         }
