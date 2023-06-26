@@ -103,6 +103,7 @@ export default function formatConf(
       train_name: osrdconf.name,
       labels: osrdconf.labels,
       departure_time: time2sec(osrdconf.departureTime),
+      allowances: osrdconf.allowances,
       initial_speed: osrdconf.initialSpeed ? kmh2ms(osrdconf.initialSpeed) : 0,
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
