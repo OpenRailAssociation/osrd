@@ -1,5 +1,6 @@
 import React from 'react';
 import { EngineeringAllowance, RangeAllowance } from 'common/api/osrdEditoastApi';
+import { useTranslation } from 'react-i18next';
 import {
   SetAllowanceSelectedIndexType,
   AllowancesTypes,
@@ -22,6 +23,7 @@ export default function AllowancesList({
   setAllowanceSelectedIndex,
   overlapAllowancesIndexes,
 }: AllowancesListProps) {
+  const { t } = useTranslation('operationalStudies/allowances');
   const isOverlapped = (index: number) =>
     overlapAllowancesIndexes &&
     (index === overlapAllowancesIndexes[0] ||
@@ -66,5 +68,5 @@ export default function AllowancesList({
       </div>
     );
   }
-  return <>pas de marges</>;
+  return <>{t('no-allowance')}</>;
 }

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { FaPencilAlt, FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaTrash } from 'react-icons/fa';
 import { CgArrowsShrinkH } from 'react-icons/cg';
 import { BiArrowFromLeft, BiArrowFromRight } from 'react-icons/bi';
 import {
@@ -12,6 +12,7 @@ import {
   PathStep,
   RangeAllowance,
 } from 'common/api/osrdEditoastApi';
+import { BsCheckLg } from 'react-icons/bs';
 import { MdCancel } from 'react-icons/md';
 import cx from 'classnames';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -179,10 +180,11 @@ export default function AllowancesActions({
   useEffect(() => {
     if (allowanceSelectedIndex === undefined) {
       const newBeginPosition = allowances?.at(-1)?.end_position;
+      const newEndPosition =
+        newBeginPosition && newBeginPosition === pathLength ? pathLength + 1 : pathLength;
       setBeginPosition(newBeginPosition ? newBeginPosition + 1 : 0);
-      setEndPosition(
-        newBeginPosition && newBeginPosition === pathLength ? pathLength + 1 : pathLength
-      );
+      setEndPosition(newEndPosition);
+      if (newBeginPosition) setAllowanceLength(newEndPosition - newBeginPosition + 1);
     }
   }, [allowanceSelectedIndex]);
 
@@ -307,12 +309,12 @@ export default function AllowancesActions({
         {allowanceSelectedIndex !== undefined ? (
           <div className="update-buttons">
             <button
-              className="btn btn-sm btn-warning"
+              className="btn btn-sm btn-success"
               type="button"
               onClick={() => handleManageAllowance(ActionOnAllowance.update)}
               disabled={!isValid}
             >
-              <FaPencilAlt />
+              <BsCheckLg />
             </button>
             <button
               className="btn btn-sm btn-danger"

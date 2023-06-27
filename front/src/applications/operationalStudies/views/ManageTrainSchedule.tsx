@@ -18,7 +18,7 @@ import {
 } from 'reducers/osrdconf/selectors';
 import { updatePathWithCatenaries, updateShouldRunPathfinding } from 'reducers/osrdconf';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
-import { osrdEditoastApi, CatenaryRange, TrainSchedule } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, CatenaryRange } from 'common/api/osrdEditoastApi';
 import Tabs from 'common/Tabs';
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
@@ -26,6 +26,7 @@ import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import { lengthFromLineCoordinates } from 'utils/geometry';
 import MemoRollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
+import { osrdMiddlewareApi, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
@@ -35,7 +36,7 @@ export default function ManageTrainSchedule() {
   const rollingStockID = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
   const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
-  const [getTrainScheduleById] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery({});
+  const [getTrainScheduleById] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
 
   // Details for tabs
