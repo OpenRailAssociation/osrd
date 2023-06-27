@@ -180,10 +180,10 @@ public class PathfindingRoutesEndpoint implements Take {
      * Checks that the results make sense
      */
     private void validate(SignalingInfra infra, PathfindingResult res, PathfindingWaypoint[][] reqWaypoints) {
-        var start = res.pathWaypoints.get(0);
-        var end = res.pathWaypoints.get(res.pathWaypoints.size() - 1);
-        var startLocation = new TrackLocation(infra.getTrackSection(start.track), start.position);
-        var endLocation = new TrackLocation(infra.getTrackSection(end.track), end.position);
+        var start = res.pathWaypoints.get(0).location;
+        var end = res.pathWaypoints.get(res.pathWaypoints.size() - 1).location;
+        var startLocation = new TrackLocation(infra.getTrackSection(start.trackSection), start.offset);
+        var endLocation = new TrackLocation(infra.getTrackSection(end.trackSection), end.offset);
         var routes = new ArrayList<SignalingRoute>();
         for (var route : res.routePaths) {
             var signalingRoute = infra.findSignalingRoute(route.route, route.signalingType);

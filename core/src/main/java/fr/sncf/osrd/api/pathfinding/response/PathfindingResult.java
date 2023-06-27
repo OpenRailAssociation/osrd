@@ -21,6 +21,8 @@ public class PathfindingResult {
     @Json(name = "path_waypoints")
     public final List<PathWaypointResult> pathWaypoints = new ArrayList<>();
 
+    public final double length;
+
     public RJSLineString geographic = null;
     public RJSLineString schematic = null;
 
@@ -28,4 +30,8 @@ public class PathfindingResult {
     public List<CurveChartPointResult> curves = new ArrayList<>();
 
     public List<Warning> warnings = null;
+
+    public PathfindingResult(double length) {
+        this.length = length;
+    }
 }
