@@ -72,7 +72,7 @@ public class PathfindingTest extends ApiTest {
     public void simpleRoutes() throws Exception {
         var waypointStart = new PathfindingWaypoint(
                 "ne.micro.foo_b",
-                100,
+                50,
                 EdgeDirection.START_TO_STOP
         );
         var waypointEnd = new PathfindingWaypoint(
@@ -100,9 +100,18 @@ public class PathfindingTest extends ApiTest {
         assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route);
         assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route);
 
-        assertEquals(2, response.pathWaypoints.size());
-        assertEquals("op.station_foo", response.pathWaypoints.get(0).id);
-        assertEquals("op.station_bar", response.pathWaypoints.get(1).id);
+        assertEquals(10250.0, response.length, 0.001);
+
+        assertEquals(3, response.pathWaypoints.size());
+        assertNull(response.pathWaypoints.get(0).id);
+        assertFalse(response.pathWaypoints.get(0).suggestion);
+        assertEquals(0.0, response.pathWaypoints.get(0).pathOffset, 0.001);
+        assertEquals("op.station_foo", response.pathWaypoints.get(1).id);
+        assertEquals(50.0, response.pathWaypoints.get(1).pathOffset, 0.001);
+        assertTrue(response.pathWaypoints.get(1).suggestion);
+        assertEquals("op.station_bar", response.pathWaypoints.get(2).id);
+        assertEquals(10250.0, response.pathWaypoints.get(2).pathOffset, 0.001);
+        assertFalse(response.pathWaypoints.get(2).suggestion);
     }
 
     @Test
@@ -461,7 +470,7 @@ public class PathfindingTest extends ApiTest {
                     loc.offset() / 2,
                     loc.offset() + (loc.edge().getInfraRoute().getLength() - loc.offset()) / 2
             );
-            var waypoints = PathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()));
+            var waypoints = PathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()), 0.);
             var userDefinedWaypoints = waypoints.stream()
                     .filter(wp -> !wp.suggestion)
                     .toList();
@@ -472,8 +481,8 @@ public class PathfindingTest extends ApiTest {
                 // Waypoints placed on track transitions can be on either side
                 continue;
             }
-            assertEquals(waypointTrack, userDefinedWaypoints.get(0).track);
-            assertEquals(waypointOff, userDefinedWaypoints.get(0).position, POSITION_EPSILON);
+            assertEquals(waypointTrack, userDefinedWaypoints.get(0).location.trackSection);
+            assertEquals(waypointOff, userDefinedWaypoints.get(0).location.offset, POSITION_EPSILON);
         }
     }
 
