@@ -32,7 +32,7 @@ const MissingPathFindingMessage = () => {
 const ResetButton = ({ resetFunction }: { resetFunction: () => void }) => {
   const { t } = useTranslation('operationalStudies/allowances');
   return (
-    <button className="btn btn-link ml-auto" type="button" onClick={resetFunction}>
+    <button className="btn btn-link ml-auto px-1" type="button" onClick={resetFunction}>
       {t('reset')}
     </button>
   );

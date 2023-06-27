@@ -24,15 +24,25 @@ export default function AllowancesList({
   overlapAllowancesIndexes,
 }: AllowancesListProps) {
   const { t } = useTranslation('operationalStudies/allowances');
+
+  // Test if index of allowance is part of overlapped allowances
+  // It's an array with index of first and last allowance concerned
+  // false if selected, -1 if no allowance founded
+  //
+  // Have to test if :
   const isOverlapped = (index: number) =>
     overlapAllowancesIndexes &&
+    // indexes ARE thoses concerned
     (index === overlapAllowancesIndexes[0] ||
       index === overlapAllowancesIndexes[1] ||
+      // If [0] is not selected (not false)
       (overlapAllowancesIndexes[0] !== false &&
-        overlapAllowancesIndexes[1] !== false &&
+        // If [0] is a find one, so !== -1
         overlapAllowancesIndexes[0] > -1 &&
-        overlapAllowancesIndexes[1] > -1 &&
+        // if [0] is concerned
         index > overlapAllowancesIndexes[0] &&
+        overlapAllowancesIndexes[1] !== false &&
+        overlapAllowancesIndexes[1] > -1 &&
         index < overlapAllowancesIndexes[1]));
 
   if (type === AllowancesTypes.standard) {
