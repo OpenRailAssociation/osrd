@@ -18,6 +18,7 @@ import AllowancesList from './AllowancesList';
 import { AllowancesTypes, ManageAllowancesType, OverlapAllowancesIndexesType } from './types';
 import AllowancesLinearView from './AllowancesLinearView';
 import { initialStandardAllowance } from './consts';
+import getAllowanceValue from './helpers';
 
 const MissingPathFindingMessage = () => {
   const { t } = useTranslation('operationalStudies/allowances');
@@ -25,6 +26,15 @@ const MissingPathFindingMessage = () => {
     <div className="operational-studies-allowances">
       <div className="missing-pathfinding">{t('missingPathFinding')}</div>
     </div>
+  );
+};
+
+const ResetButton = ({ resetFunction }: { resetFunction: () => void }) => {
+  const { t } = useTranslation('operationalStudies/allowances');
+  return (
+    <button className="btn btn-link ml-auto" type="button" onClick={resetFunction}>
+      {t('reset')}
+    </button>
   );
 };
 
@@ -82,6 +92,15 @@ export default function Allowances() {
     );
   };
 
+  const resetFunction = (type: AllowancesTypes) => {
+    if (type === AllowancesTypes.standard) {
+      setStandardAllowance(initialStandardAllowance);
+    }
+    if (type === AllowancesTypes.standard) {
+      setEngineeringAllowances([]);
+    }
+  };
+
   // This function manage "add" and "delete" allowance, "update" is "delete" followed by "add"
   const manageAllowance = ({
     type,
@@ -117,17 +136,22 @@ export default function Allowances() {
   };
 
   useEffect(() => {
-    dispatch(updateAllowances([standardAllowance, ...engineeringAllowances]));
+    if (getAllowanceValue(standardAllowance.default_value) === 0) {
+      dispatch(updateAllowances(engineeringAllowances));
+    } else {
+      dispatch(updateAllowances([standardAllowance, ...engineeringAllowances]));
+    }
   }, [standardAllowance, engineeringAllowances]);
 
   return pathFindingID && pathLength && pathLength > 0 ? (
     <div className="operational-studies-allowances">
       <div className="allowances-container">
-        <h2 className="text-uppercase text-muted mb-3 mt-1">
+        <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">
           {t('standardAllowance')}
           <small className="ml-2">
             {t('allowancesCount', { count: standardAllowance.ranges.length })}
           </small>
+          <ResetButton resetFunction={() => resetFunction(AllowancesTypes.standard)} />
         </h2>
         <div className="subtitle mb-1">
           <BsDashLg />
@@ -139,6 +163,9 @@ export default function Allowances() {
           setDistribution={setStandardDistribution}
           setValueAndUnit={setStandardValueAndUnit}
         />
+        {getAllowanceValue(standardAllowance.default_value) === 0 && (
+          <div className="text-muted font-weight-light font-italic text-center">{t('notUsed')}</div>
+        )}
         <div className="subtitle mb-1 mt-2">
           <AiOutlineDash />
           <span className="ml-1">{t('standardAllowanceByIntervals')}</span>
@@ -169,13 +196,20 @@ export default function Allowances() {
         />
       </div>
       <div className="allowances-container">
-        <h2 className="text-uppercase text-muted mb-3 mt-1">
+        <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">
           {t('engineeringAllowances')}
           <small className="ml-2">
             {t('allowancesCount', {
               count: engineeringAllowances ? engineeringAllowances.length : 0,
             })}
           </small>
+          <button
+            className="btn btn-link ml-auto"
+            type="button"
+            onClick={() => setEngineeringAllowances([])}
+          >
+            {t('reset')}
+          </button>
         </h2>
         <AllowancesActions
           allowances={engineeringAllowances}
@@ -186,12 +220,16 @@ export default function Allowances() {
           setAllowanceSelectedIndex={setEngineeringAllowanceSelectedIndex}
           pathFindingSteps={pathFinding?.steps}
         />
-        <AllowancesLinearView
-          allowances={engineeringAllowances}
-          pathLength={pathLength}
-          allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
-        />
+        {/*
+          * Temporary desactivated until new version with overlap
+          *
+          <AllowancesLinearView
+            allowances={engineeringAllowances}
+            pathLength={pathLength}
+            allowanceSelectedIndex={EngineeringAllowanceSelectedIndex}
+            setAllowanceSelectedIndex={toggleEngineeringAllowanceSelectedIndex}
+          />
+        */}
         <AllowancesList
           allowances={engineeringAllowances}
           type={AllowancesTypes.engineering}

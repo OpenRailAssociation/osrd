@@ -6,18 +6,20 @@
     "length": "Longueur",
     "value": "Valeur"
   },
-  "allowancesCount_one": "1 intervalle défini",
-  "allowancesCount_other": "{{ count }} intervalles définis",
-  "allowancesCount_zero": "Aucun intervalle défini",
+  "allowancesCount_one": "1 intervalle",
+  "allowancesCount_other": "{{ count }} intervalles",
+  "allowancesCount_zero": "Aucun intervalle",
   "distribution": {
-    "LINEAR": "Linéaire",
-    "MARECO": "Mareco",
     "linear": "Linéaire",
-    "mareco": "Mareco"
+    "LINEAR": "Linéaire",
+    "mareco": "Mareco",
+    "MARECO": "Mareco"
   },
   "engineeringAllowances": "Marges de construction",
   "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges",
   "no-allowance": "Aucune marge définie",
+  "notUsed": "La valeur globale étant à zéro, les marges de régularité ne seront pas utilisées.",
+  "reset": "Réinitialiser",
   "standardAllowance": "Marge de régularité",
   "standardAllowanceByIntervals": "Par intervalles",
   "standardAllowanceWholePath": "Ensemble du parcours"
