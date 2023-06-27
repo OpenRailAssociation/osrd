@@ -125,8 +125,9 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     (e: React.ChangeEvent<HTMLInputElement>, context: 'begin' | 'end') => {
       if (!isNil(selected)) {
         const gap = parseFloat(e.target.value) - data[selected][context];
-        const result = resizeSegment(data, selected, gap, context);
-        setData(result.result);
+        const result = resizeSegment(data, selected, gap, context, false);
+        const fixedResults = fixLinearMetadataItems(result.result?.filter(notEmpty), distance);
+        setData(fixedResults);
       }
     },
     [selected]
@@ -191,7 +192,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               if (mode === null) setHovered({ index, point });
             }}
             onMouseLeave={() => {
-              if (mode === null) setHovered(null);
+              setHovered(null);
             }}
             onMouseMove={(e, _item, _index, point) => {
               if (tooltipRef.current) {
@@ -200,15 +201,18 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
             }}
             onClick={(_e, _item, index, point) => {
-              if (mode === null) {
+              if (mode === null && !isNil(_item[valueField])) {
                 const timer = window.setTimeout(() => {
                   if (!clickPrevent) {
                     // case when you click on the already selected item => reset
-                    setSelected((old) => ((old ?? -1) === index ? null : index));
-                    setHovered(null);
+                    // you can't select a blank interval
+                    if (!isNil(_item[valueField])) {
+                      setSelected((old) => ((old ?? -1) === index ? null : index));
+                      setHovered(null);
+                    }
                   }
                   setClickPrevent(false);
-                }, 150) as number;
+                }, 50) as number;
                 setClickTimeout(timer);
               }
               if (selectedTool === TOOLS.cutTool) {
@@ -220,18 +224,21 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
               if (selectedTool === TOOLS.deleteTool) {
                 const newData = removeSegment(data, index, distance);
-                setSelected(null);
                 setClickPrevent(false);
                 setData(newData);
+                setSelected(null);
                 customOnChange(newData);
+                toggleSelectedTool(TOOLS.deleteTool);
               }
             }}
             onDoubleClick={(_e, _item, _index, point) => {
+              /*
               if (clickTimeout) clearTimeout(clickTimeout);
               setClickPrevent(true);
               const newData = splitAt(data, point);
               setData(newData);
               customOnChange(newData);
+              */
             }}
             onWheel={(e, _item, _index, point) => {
               setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
@@ -306,7 +313,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   } btn-sm btn-outline-secondary`}
                   type="button"
                   title={t('common.add')}
-                  disabled={selected === data.length - 1}
                   onClick={() => {
                     toggleSelectedTool(TOOLS.addTool);
                   }}
@@ -321,7 +327,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   } btn-sm btn-outline-secondary`}
                   type="button"
                   title={t('common.pan')}
-                  disabled={selected === data.length - 1}
                   onClick={() => {
                     toggleSelectedTool(TOOLS.translateTool);
                   }}
@@ -336,7 +341,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   } btn-sm btn-outline-secondary`}
                   type="button"
                   title={t('common.select')}
-                  disabled={selected === data.length - 1}
                   onClick={() => {
                     toggleSelectedTool(TOOLS.cutTool);
                   }}
@@ -351,7 +355,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                   } btn-sm btn-outline-secondary`}
                   type="button"
                   title={t('common.delete')}
-                  disabled={selected === data.length - 1}
                   onClick={() => {
                     toggleSelectedTool(TOOLS.deleteTool);
                   }}
