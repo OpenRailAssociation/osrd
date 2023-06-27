@@ -1,8 +1,8 @@
 import { expect, Locator, Page } from '@playwright/test';
 /* eslint-disable import/prefer-default-export */
-import infraManagement from '../public/locales/fr/infraManagement.json';
-import rollingstockTranslation from '../public/locales/fr/rollingstock.json';
-import manageTrainScheduleTranslation from '../public/locales/fr/operationalStudies/manageTrainSchedule.json';
+import infraManagement from '../../public/locales/fr/infraManagement.json';
+import rollingstockTranslation from '../../public/locales/fr/rollingstock.json';
+import manageTrainScheduleTranslation from '../../public/locales/fr/operationalStudies/manageTrainSchedule.json';
 
 export class PlaywrightSTDCMPage {
   readonly page: Page;

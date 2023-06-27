@@ -1,5 +1,5 @@
 import { Locator, Page, expect } from '@playwright/test';
-import PlaywrightCommonPage from './pages/common-page-model';
+import PlaywrightCommonPage from './common-page-model';
 
 class PlaywrightRollingstockModalPage {
   readonly page: Page;

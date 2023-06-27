@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './pages/home-page-model';
-import { PlaywrightSTDCMPage } from './stdcm-page-model';
+import { PlaywrightSTDCMPage } from './pages/stdcm-page-model';
 import project from './assets/operationStudies/project.json';
 import study from './assets/operationStudies/study.json';
 import scenario from './assets/operationStudies/scenario.json';

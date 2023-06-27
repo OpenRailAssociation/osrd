@@ -51,6 +51,8 @@ class PlaywrightScenarioPage {
 
   readonly getToastSNCFTitle: Locator;
 
+  readonly getPathfindingState: Locator;
+
   constructor(readonly page: Page) {
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
@@ -85,6 +87,7 @@ class PlaywrightScenarioPage {
     this.getReturnSimulationResultBtn = page.getByTestId('return-simulation-result');
     this.getToastSNCF = page.getByTestId('toast-SNCF');
     this.getToastSNCFTitle = this.getToastSNCF.getByTestId('toast-SNCF-title');
+    this.getPathfindingState = page.locator('.pathfinding-state-main-container');
   }
 
   async openTabByText(text: string) {
@@ -149,8 +152,12 @@ class PlaywrightScenarioPage {
     await expect(this.getToastSNCFTitle).toHaveText(title);
   }
 
-  getTrainTimetbleByName(name: string | RegExp) {
+  getTrainTimetableByName(name: string | RegExp) {
     return this.page.getByRole('button', { name });
+  }
+
+  async checkPathfingingStateText(text: string | RegExp) {
+    await expect(this.getPathfindingState).toHaveText(text);
   }
 }
 
