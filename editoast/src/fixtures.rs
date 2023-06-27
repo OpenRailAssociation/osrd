@@ -352,6 +352,7 @@ pub mod tests {
                 ))
                 .unwrap(),
             ),
+            length: Some(46776.),
             slopes: Some(diesel_json::Json(vec![])),
             curves: Some(diesel_json::Json(vec![])),
             geographic: Some(LineString::new(None)),

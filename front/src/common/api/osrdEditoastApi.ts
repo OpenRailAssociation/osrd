@@ -1562,17 +1562,21 @@ export type GeoJsonObject = {
   coordinates: number[][];
   type: string;
 };
+export type TrackSectionLocation = {
+  track_section: string;
+  offset: number;
+};
 export type GeoJsonPosition = {
   coordinates: number[];
   type: string;
 };
 export type PathStep = {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
   suggestion: boolean;
   duration: number;
-  track: string;
   position: number;
+  location: TrackSectionLocation;
   sch: GeoJsonPosition;
   geo: GeoJsonPosition;
 };
@@ -1580,6 +1584,7 @@ export type Path = {
   id: number;
   owner: string;
   created: string;
+  length: number;
   geographic: GeoJsonObject;
   schematic: GeoJsonObject;
   slopes: {

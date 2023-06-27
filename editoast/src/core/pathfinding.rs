@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::{CurveGraph, SlopeGraph};
 use crate::schema::rolling_stock::RollingStock;
+use crate::schema::TrackLocation;
 use crate::{models::RoutePath, schema::Direction};
 
 use super::{AsCoreRequest, Json};
@@ -30,6 +31,7 @@ pub struct Waypoint {
 #[derive(Debug, Clone, Derivative, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct PathfindingResponse {
+    pub length: f64,
     #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
     pub geographic: Geometry,
     #[derivative(Default(value = "Geometry::new(LineString(Default::default()))"))]
@@ -45,7 +47,7 @@ pub struct PathfindingResponse {
 pub struct PathWaypoint {
     pub id: Option<String>,
     pub name: Option<String>,
-    pub track: String,
+    pub location: TrackLocation,
     pub position: f64,
     pub suggestion: bool,
 }

@@ -342,3 +342,9 @@ pub struct Panel {
     pub panel_type: NonBlankString,
     pub value: Option<NonBlankString>,
 }
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+pub struct TrackLocation {
+    pub track_section: Identifier,
+    pub offset: f64,
+}

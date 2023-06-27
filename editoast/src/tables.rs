@@ -370,6 +370,7 @@ table! {
         id -> BigInt,
         owner -> Uuid,
         created -> Timestamp,
+        length -> Double,
         payload -> Jsonb,
         slopes -> Jsonb,
         curves -> Jsonb,

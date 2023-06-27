@@ -1,4 +1,5 @@
 {
+    "length": 46776.18633140542,
     "curves": [
         {
             "position": 0.0,
@@ -80,33 +81,55 @@
     },
     "path_waypoints": [
         {
-            "position": 819.0899794930589,
-            "suggestion": false,
-            "track": "TB0"
-        },
-        {
+            "id": null,
+            "name": null,
+            "location": {
+              "offset": 819.0899794930589,
+              "track_section": "TB0"
+            },
+            "position": 0,
+            "suggestion": false
+          },
+          {
             "id": "Mid_West_station",
-            "position": 450.0,
-            "suggestion": true,
-            "track": "TC2"
-        },
-        {
+            "name": "Mid_West_station",
+            "location": {
+              "offset": 450,
+              "track_section": "TC2"
+            },
+            "position": 12680.91002050694,
+            "suggestion": true
+          },
+          {
             "id": "Mid_East_station",
-            "position": 14000.0,
-            "suggestion": true,
-            "track": "TD1"
-        },
-        {
+            "name": "Mid_East_station",
+            "location": {
+              "offset": 14000,
+              "track_section": "TD1"
+            },
+            "position": 27230.91002050694,
+            "suggestion": true
+          },
+          {
             "id": "South_East_station",
-            "position": 4400.0,
-            "suggestion": true,
-            "track": "TH1"
-        },
-        {
-            "position": 4545.276310898476,
-            "suggestion": false,
-            "track": "TH1"
-        }
+            "name": "South_East_station",
+            "location": {
+              "offset": 4400,
+              "track_section": "TH1"
+            },
+            "position": 46630.91002050694,
+            "suggestion": true
+          },
+          {
+            "id": null,
+            "name": null,
+            "location": {
+              "offset": 4545.276310898476,
+              "track_section": "TH1"
+            },
+            "position": 46776.18633140542,
+            "suggestion": false
+          }
     ],
     "route_paths": [
         {

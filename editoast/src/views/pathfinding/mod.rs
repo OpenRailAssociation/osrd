@@ -77,6 +77,7 @@ pub fn routes() -> impl HttpServiceFactory {
 struct Response {
     id: i64,
     owner: uuid::Uuid,
+    length: f64,
     created: NaiveDateTime,
     slopes: SlopeGraph,
     curves: CurveGraph,
@@ -90,6 +91,7 @@ impl From<Pathfinding> for Response {
         let Pathfinding {
             id,
             owner,
+            length,
             created,
             slopes,
             curves,
@@ -101,6 +103,7 @@ impl From<Pathfinding> for Response {
         Self {
             id,
             owner,
+            length,
             created,
             slopes: slopes.0,
             curves: curves.0,
@@ -276,7 +279,9 @@ impl PathfindingResponse {
         track_map(
             conn,
             infra,
-            self.path_waypoints.iter().map(|wp| wp.track.clone()),
+            self.path_waypoints
+                .iter()
+                .map(|wp| wp.location.track_section.0.clone()),
         )
     }
 
@@ -298,6 +303,7 @@ impl Pathfinding {
         op_map: &OpMap,
     ) -> Result<Self> {
         let PathfindingResponse {
+            length,
             geographic,
             schematic,
             route_paths,
@@ -326,7 +332,9 @@ impl Pathfinding {
                     .map(|op_id| op_map.get(op_id).expect("unexpected OP id"))
                     .and_then(|op| op.extensions.identifier.as_ref())
                     .map(|ident| ident.name.as_ref().to_owned());
-                let track = track_map.get(&waypoint.track).expect("unexpected track id");
+                let track = track_map
+                    .get(&waypoint.location.track_section.0)
+                    .expect("unexpected track id");
                 let normalized_offset = waypoint.position / track.length;
                 let geo = geos::Geometry::try_from(&track.geo)
                     .unwrap()
@@ -341,7 +349,7 @@ impl Pathfinding {
                 PathWaypoint {
                     id: waypoint.id,
                     name: op_name,
-                    track: waypoint.track,
+                    location: waypoint.location,
                     duration,
                     position: waypoint.position,
                     suggestion: waypoint.suggestion,
@@ -351,6 +359,7 @@ impl Pathfinding {
             })
             .collect();
         Ok(Pathfinding {
+            length,
             payload: diesel_json::Json(PathfindingPayload {
                 route_paths,
                 path_waypoints,
