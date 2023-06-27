@@ -5,6 +5,7 @@ use std::collections::HashSet;
 use crate::models::Identifiable;
 use crate::schema::Direction;
 use crate::schema::DirectionalTrackRange;
+use crate::schema::TrackLocation;
 use crate::tables::osrd_infra_pathmodel;
 use chrono::{NaiveDateTime, Utc};
 use derivative::Derivative;
@@ -39,6 +40,7 @@ pub struct Pathfinding {
     pub owner: uuid::Uuid,
     #[derivative(Default(value = "Utc::now().naive_utc()"))]
     pub created: NaiveDateTime,
+    pub length: f64,
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
     pub payload: diesel_json::Json<PathfindingPayload>,
     #[derivative(Default(value = "diesel_json::Json::new(Default::default())"))]
@@ -64,6 +66,8 @@ pub struct PathfindingChangeset {
     pub owner: Option<uuid::Uuid>,
     #[diesel(deserialize_as=NaiveDateTime)]
     pub created: Option<NaiveDateTime>,
+    #[diesel(deserialize_as=f64)]
+    pub length: Option<f64>,
     #[diesel(deserialize_as=diesel_json::Json<PathfindingPayload>)]
     pub payload: Option<diesel_json::Json<PathfindingPayload>>,
     #[diesel(deserialize_as=diesel_json::Json<SlopeGraph>)]
@@ -83,6 +87,7 @@ impl From<Pathfinding> for PathfindingChangeset {
         Self {
             id: Some(value.id),
             owner: Some(value.owner),
+            length: Some(value.length),
             created: Some(value.created),
             payload: Some(value.payload),
             slopes: Some(value.slopes),
@@ -100,6 +105,7 @@ impl From<PathfindingChangeset> for Pathfinding {
             id: value.id.expect("invalid changeset result"),
             owner: value.owner.expect("invalid changeset result"),
             created: value.created.expect("invalid changeset result"),
+            length: value.length.expect("invalid changeset result"),
             payload: value.payload.expect("invalid changeset result"),
             slopes: value.slopes.expect("invalid changeset result"),
             curves: value.curves.expect("invalid changeset result"),
@@ -145,9 +151,9 @@ pub struct RoutePath {
 pub struct PathWaypoint {
     pub id: Option<String>,
     pub name: Option<String>,
-    pub track: String,
+    pub location: TrackLocation,
     pub duration: f64,
-    pub position: f64,
+    pub path_offset: f64,
     pub suggestion: bool,
     #[derivative(Default(
         value = "geojson::Geometry::new(geojson::Value::LineString(Default::default()))"

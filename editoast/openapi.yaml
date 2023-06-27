@@ -2546,6 +2546,21 @@ components:
             is_warning:
               type: boolean
 
+    TrackSectionLocation:
+      type: object
+      description: A track location (track section and offset)
+      properties:
+        track_section:
+          type: string
+          description: The track section ID
+          example: 61205924-6667-11e3-81ff-01f464e0362d
+        offset:
+          type: number
+          format: float
+          description: The offset on the track section
+          example: 42.
+      required: [track_section, offset]
+
     TrackLocation:
       type: object
       description: A track location (track section and offset)
@@ -2637,6 +2652,10 @@ components:
         created:
           type: string
           format: date-time
+        length:
+          type: number
+          format: float
+          description: Length of the path
         geographic:
           $ref: "#/components/schemas/GeoJsonObject"
         schematic:
@@ -2664,7 +2683,17 @@ components:
           items:
             $ref: "#/components/schemas/PathStep"
       required:
-        [id, owner, created, geographic, schematic, slopes, curves, steps]
+        [
+          id,
+          owner,
+          created,
+          length,
+          geographic,
+          schematic,
+          slopes,
+          curves,
+          steps,
+        ]
 
     PathQuery:
       type: object
@@ -2696,13 +2725,17 @@ components:
         name: { type: string }
         suggestion: { type: boolean }
         duration: { type: number, format: float }
-        track: { type: string }
-        position: { type: number, format: float }
+        path_offset:
+          type: number
+          format: float
+          description: Offset of the step in the path
+        location:
+          $ref: "#/components/schemas/TrackSectionLocation"
         sch:
           $ref: "#/components/schemas/GeoJsonPosition"
         geo:
           $ref: "#/components/schemas/GeoJsonPosition"
-      required: [id, name, suggestion, duration, track, position, sch, geo]
+      required: [suggestion, duration, path_offset, location, sch, geo]
 
     PathWaypoint:
       type: object
@@ -3777,7 +3810,7 @@ components:
       required:
         - rolling_stock_id
         - usage
-    
+
     PowerRestrictionRange:
       description: A range along the train path where a power restriction is applied.
       type: object
