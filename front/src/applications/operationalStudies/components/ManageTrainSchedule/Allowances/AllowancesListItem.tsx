@@ -3,7 +3,7 @@ import { TbArrowRightBar } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
 import { EngineeringAllowance, RangeAllowance } from 'common/api/osrdEditoastApi';
 import cx from 'classnames';
-import { SetAllowanceSelectedIndexType } from './types';
+import { AllowancesTypes, SetAllowanceSelectedIndexType } from './types';
 import { unitsLabels } from './consts';
 import getAllowanceValue from './helpers';
 
@@ -38,11 +38,12 @@ export default function AllowancesListItem({
         <span className="end">{allowance.end_position}m</span>
       </div>
       <div className="length">{allowance.end_position - allowance.begin_position}m</div>
-      {'allowance_type' in allowance && allowance.allowance_type === 'engineering' && (
-        <div className={`distribution ${allowance.distribution}`}>
-          {t(`distribution.${allowance.distribution}`)}
-        </div>
-      )}
+      {'allowance_type' in allowance &&
+        allowance.allowance_type === AllowancesTypes.engineering && (
+          <div className={`distribution ${allowance.distribution}`}>
+            {t(`distribution.${allowance.distribution}`)}
+          </div>
+        )}
       <div className="value">
         {getAllowanceValue(allowance.value)}
         <span className="unit">{unitsLabels[allowance.value.value_type]}</span>

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { PathStep } from 'common/api/osrdEditoastApi';
-import { ModalBodySNCF } from 'common/BootstrapSNCF/ModalSNCF';
+import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 
 export default function AllowancesModalOP({
   setPosition,
@@ -12,23 +12,26 @@ export default function AllowancesModalOP({
 }) {
   const { closeModal } = useContext(ModalContext);
   return (
-    <ModalBodySNCF>
-      <div className="allowances-op-list">
-        {pathFindingSteps.map((step) => (
-          <div
-            className="row allowances-op"
-            role="button"
-            tabIndex={0}
-            onClick={() => {
-              setPosition(step.position);
-              closeModal();
-            }}
-          >
-            <div className="col-6">{step.position}</div>
-            <div className="col-6">{step.name}</div>
-          </div>
-        ))}
-      </div>
-    </ModalBodySNCF>
+    <>
+      <ModalHeaderSNCF withCloseButton />
+      <ModalBodySNCF>
+        <div className="allowances-op-list">
+          {pathFindingSteps.map((step) => (
+            <button
+              className="row allowances-op"
+              type="button"
+              onClick={() => {
+                setPosition(step.position);
+                closeModal();
+              }}
+              disabled
+            >
+              <div className="col-6">{step.position}</div>
+              <div className="col-6">{step.name}</div>
+            </button>
+          ))}
+        </div>
+      </ModalBodySNCF>
+    </>
   );
 }

@@ -113,14 +113,14 @@ export default function AllowancesActions({
   const handleManageAllowance = (action: ActionOnAllowance) => {
     let newAllowance;
     if (action === ActionOnAllowance.add || action === ActionOnAllowance.update) {
-      if (type === 'standard') {
+      if (type === AllowancesTypes.standard) {
         newAllowance = {
           begin_position: beginPosition,
           end_position: endPosition,
           value: valueAndUnit,
         } as RangeAllowance;
       }
-      if (type === 'engineering') {
+      if (type === AllowancesTypes.engineering) {
         newAllowance = {
           allowance_type: type,
           distribution,
@@ -280,7 +280,7 @@ export default function AllowancesActions({
         </div>
       </div>
       <div className="second-line">
-        {type === 'engineering' && (
+        {type === AllowancesTypes.engineering && (
           <div>
             <OptionsSNCF
               name="allowances-engineering-distribution-switch"
