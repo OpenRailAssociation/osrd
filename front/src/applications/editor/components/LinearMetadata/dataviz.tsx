@@ -399,7 +399,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     if (onCreate && wrapper.current && creating) {
       // function for move, only the first move trigger a creating context. Thereafter, we are resizing the newly created segment
       fnMove = (e) => {
-        const createdIntervalIndex = onCreate(false);
+        const createdIntervalIndex = onCreate(true);
         setCreating(null);
         setResizing({ index: createdIntervalIndex, startAt: e.clientX });
       };
