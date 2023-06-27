@@ -55,6 +55,10 @@ class PlaywrightMap {
   async checkPathFindingResult(result: string | RegExp) {
     await expect(this.getPathFindingResult).toHaveText(result);
   }
+
+  async addTimeoutForMapToLoad(timer: number) {
+    await this.page.waitForTimeout(timer);
+  }
 }
 
 export default PlaywrightMap;

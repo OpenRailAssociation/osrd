@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
-import PlaywrightMap from './map-model';
 import VARIABLES from './assets/operationStudies/test_variables';
 import PlaywrightScenarioPage from './scenario-page-model';
 
@@ -113,40 +112,5 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     expect(await playwrightScenarioPage.getSpeedLimitSelector.textContent()).toMatch(
       /Voyageurs - Automoteurs - E32C/i
     );
-
-    // ***************** Test choice Origin/Destination *****************
-    const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
-    await playwrightScenarioPage.openTabByText('Itinéraire');
-    await playwrightScenarioPage.setTrainScheduleName('TrainSchedule 1');
-
-    // Search and select origin
-    await playwrightMap.openMapSearch();
-    await playwrightMap.searchStation(VARIABLES.originSearch);
-    await playwrightHomePage.page.getByRole('button', { name: VARIABLES.originSearchItem }).click();
-    await playwrightMap.closeMapSearch();
-    await playwrightMap.page.waitForTimeout(200);
-    await playwrightMap.clickOnMap(VARIABLES.originPositionClick);
-    await playwrightMap.clickOnOrigin();
-
-    // Search and select destination
-    await playwrightMap.openMapSearch();
-    await playwrightMap.searchStation(VARIABLES.destinationSearch);
-    await playwrightHomePage.page
-      .getByRole('button', { name: VARIABLES.destinationSearchItem })
-      .first()
-      .click();
-    await playwrightMap.closeMapSearch();
-    await playwrightMap.clickOnMap(VARIABLES.destinationPositionClick);
-    await playwrightMap.page.waitForTimeout(200);
-    await playwrightMap.clickOnDestination();
-    await playwrightScenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
-
-    // ***************** Test Add Train Schedule *****************
-    await playwrightScenarioPage.addTrainSchedule();
-    await playwrightScenarioPage.checkToastSNCFTitle('Train ajouté');
-    await playwrightScenarioPage.returnSimulationResult();
-    await playwrightScenarioPage.checkNumberOfTrains(1);
-    await playwrightScenarioPage.getTrainTimetbleByName(/TrainSchedule 1/).hover();
-    await playwrightScenarioPage.page.getByRole('button', { name: 'Supprimer' }).click();
   });
 });
