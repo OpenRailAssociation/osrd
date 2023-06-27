@@ -73,7 +73,8 @@ export function resizeSegment<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
   itemChangeIndex: number,
   gap: number,
-  beginOrEnd: 'begin' | 'end' = 'end'
+  beginOrEnd: 'begin' | 'end' = 'end',
+  preventBoundsChanges = true
 ): { result: Array<LinearMetadataItem<T>>; newIndexMapping: Record<number, number | null> } {
   if (itemChangeIndex >= linearMetadata.length) throw new Error("Given index doesn't exist");
 
@@ -82,11 +83,10 @@ export function resizeSegment<T>(
     return acc;
   }, {} as Record<number, number | null>);
 
-  // TODO: ask Sim51 why this safeguard here
-  if (itemChangeIndex === 0 && beginOrEnd === 'begin')
+  if (preventBoundsChanges && itemChangeIndex === 0 && beginOrEnd === 'begin')
     return { result: linearMetadata, newIndexMapping };
 
-  if (itemChangeIndex === linearMetadata.length - 1 && beginOrEnd === 'end')
+  if (preventBoundsChanges && itemChangeIndex === linearMetadata.length - 1 && beginOrEnd === 'end')
     return { result: linearMetadata, newIndexMapping };
 
   const min = linearMetadata[0].begin;

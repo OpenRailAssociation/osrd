@@ -77,7 +77,7 @@ export const ByContinousValues = {
       translateTool: false,
       cutTool: true,
       addTool: true,
-      stringValues: false,
+      showValues: true,
     },
     units: ['s', 'm'],
     name: 'linearMetaData',
