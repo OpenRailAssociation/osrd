@@ -17,10 +17,11 @@ import {
 import { sec2time } from 'utils/timeManipulation';
 import { Dispatch } from 'redux';
 import { store } from 'Store';
-import { TrainSchedule, Path } from 'common/api/osrdEditoastApi';
+import { Allowance, Path } from 'common/api/osrdEditoastApi';
 import { ArrayElement } from 'utils/types';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 import { compact } from 'lodash';
+import { TrainSchedule } from 'common/api/osrdMiddlewareApi';
 
 function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap | undefined {
   return step
@@ -53,7 +54,7 @@ export default function adjustConfWithTrainToModify(
     dispatch(updateDepartureTime(sec2time(trainSchedule.departure_time)));
   dispatch(updateInitialSpeed(trainSchedule.initial_speed || 0));
 
-  if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances));
+  if (trainSchedule.allowances) dispatch(updateAllowances(trainSchedule.allowances as Allowance[]));
 
   if (path.steps && path.steps.length > 1) {
     dispatch(updatePathfindingID(trainSchedule.path));
