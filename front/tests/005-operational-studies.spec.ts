@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './pages/home-page-model';
-import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
+import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
 import PlaywrightMap from './pages/map-model';
 import VARIABLES from './assets/operationStudies/test_variables';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
