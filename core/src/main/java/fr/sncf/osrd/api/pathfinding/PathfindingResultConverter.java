@@ -33,7 +33,12 @@ public class PathfindingResultConverter {
             SignalingInfra infra,
             DiagnosticRecorderImpl warningRecorder
     ) {
-        var res = new PathfindingResult();
+        // Compute the path length
+        double pathLength = 0.;
+        for (var range : path.ranges())
+            pathLength += range.end() - range.start();
+
+        var res = new PathfindingResult(pathLength);
 
         // Builds a mapping between routes and all user defined waypoints on the route
         var userDefinedWaypointsPerRoute = HashMultimap.<SignalingRoute, Double>create();
@@ -41,15 +46,19 @@ public class PathfindingResultConverter {
             userDefinedWaypointsPerRoute.put(waypoint.edge(), waypoint.offset());
 
         // for each signaling route slice, find the waypoints on this slice, and merge these with user defined waypoints
+        double pathOffset = 0.;
         for (var signalingRouteEdgeRange : path.ranges()) {
+            // Ignore cases where the range length is 0
             if (signalingRouteEdgeRange.start() < signalingRouteEdgeRange.end())
                 res.routePaths.add(makeRouteResult(signalingRouteEdgeRange));
             var waypoints = getWaypointsOnRoute(
                     signalingRouteEdgeRange,
-                    userDefinedWaypointsPerRoute.get(signalingRouteEdgeRange.edge())
+                    userDefinedWaypointsPerRoute.get(signalingRouteEdgeRange.edge()),
+                    pathOffset
             );
             for (var waypoint : waypoints)
                 addStep(res, waypoint);
+            pathOffset += signalingRouteEdgeRange.end() - signalingRouteEdgeRange.start();
         }
 
         // iterate on all the track section ranges of all routes, and build a schematic and geographic result geometry
@@ -73,57 +82,67 @@ public class PathfindingResultConverter {
     /** Adds all waypoints on the route range, both suggestions (OP) and user defined waypoints */
     public static List<PathWaypointResult> getWaypointsOnRoute(
             Pathfinding.EdgeRange<SignalingRoute> routeRange,
-            Set<Double> userDefinedWaypointOffsets
+            Set<Double> userDefinedWaypointOffsets,
+            double pathOffset
     ) {
         var res = new ArrayList<PathWaypointResult>();
 
         // We need a mutable copy to remove elements as we find them
         var waypointsOffsetsList = new ArrayList<>(userDefinedWaypointOffsets);
 
-        double offset = 0;
-        for (var range : routeRange.edge().getInfraRoute().getTrackRanges()) {
-            if (!(range.track.getEdge() instanceof TrackSection trackSection))
+        double routeOffset = 0;
+        for (var routeTrackRange : routeRange.edge().getInfraRoute().getTrackRanges()) {
+            if (!(routeTrackRange.track.getEdge() instanceof TrackSection trackSection))
                 continue;
 
-            if (offset > routeRange.end())
+            if (routeOffset > routeRange.end())
                 break;
 
-            if (offset + range.getLength() >= routeRange.start()) {
+            if (routeOffset + routeTrackRange.getLength() >= routeRange.start()) {
                 // Truncate the range to match the part of the route we use
-                var truncatedRange = truncateTrackRange(range, offset, routeRange);
-                if (truncatedRange != null) {
+                var pathTrackRange = truncateTrackRange(routeTrackRange, routeOffset, routeRange);
+                if (pathTrackRange != null) {
                     // List all waypoints on the track range in a tree map, with offsets from the range start as key
                     var waypoints = new ArrayList<PathWaypointResult>();
 
+                    // Offset of the track on the path
+                    var trackPathOffset = pathOffset + routeOffset - routeRange.start();
+
                     // Add operational points as optional waypoints
-                    for (var op : truncatedRange.getOperationalPoints())
-                        waypoints.add(PathWaypointResult.suggestion(op.element(), trackSection, op.offset()));
+                    for (var op : pathTrackRange.getOperationalPoints()) {
+                        var waypointTrackOffset = routeTrackRange.offsetOf(op.element().offset());
+                        var waypointPathOffset = trackPathOffset + waypointTrackOffset;
+                        waypoints.add(PathWaypointResult.suggestion(op.element(), trackSection, waypointPathOffset));
+                    }
 
                     // Add user defined waypoints
-                    var truncatedRangeOffset = offset + Math.abs(truncatedRange.getStart() - range.getStart());
+                    var pathTrackRangeRouteOffset =
+                            routeOffset + Math.abs(pathTrackRange.getStart() - routeTrackRange.getStart());
                     for (int i = 0; i < waypointsOffsetsList.size(); i++) {
-                        var trackRangeOffset = waypointsOffsetsList.get(i) - truncatedRangeOffset;
+                        var waypointRouteOffset = waypointsOffsetsList.get(i);
+                        var trackRangeOffset = waypointRouteOffset - pathTrackRangeRouteOffset;
 
                         // We can have tiny differences here because we accumulate offsets in a different way
-                        if (Math.abs(trackRangeOffset - truncatedRange.getLength()) < POSITION_EPSILON)
-                            trackRangeOffset = truncatedRange.getLength();
+                        if (Math.abs(trackRangeOffset - pathTrackRange.getLength()) < POSITION_EPSILON)
+                            trackRangeOffset = pathTrackRange.getLength();
                         if (Math.abs(trackRangeOffset) < POSITION_EPSILON)
                             trackRangeOffset = 0;
 
-                        if (trackRangeOffset >= 0 && trackRangeOffset <= truncatedRange.getLength()) {
-                            var location = truncatedRange.offsetLocation(trackRangeOffset);
-                            waypoints.add(PathWaypointResult.userDefined(location, trackRangeOffset));
+                        if (trackRangeOffset >= 0 && trackRangeOffset <= pathTrackRange.getLength()) {
+                            var location = pathTrackRange.offsetLocation(trackRangeOffset);
+                            var waypointPathOffset = pathOffset + waypointRouteOffset - routeRange.start();
+                            waypoints.add(PathWaypointResult.userDefined(location, waypointPathOffset));
                             waypointsOffsetsList.remove(i--); // Avoids duplicates on track transitions
                         }
                     }
 
                     // Adds all waypoints in order
-                    waypoints.sort(Comparator.comparingDouble(x -> x.trackRangeOffset));
+                    waypoints.sort(Comparator.comparingDouble(x -> x.pathOffset));
                     res.addAll(waypoints);
                 }
             }
 
-            offset += range.getLength();
+            routeOffset += routeTrackRange.getLength();
         }
         assert waypointsOffsetsList.isEmpty();
         return res;
