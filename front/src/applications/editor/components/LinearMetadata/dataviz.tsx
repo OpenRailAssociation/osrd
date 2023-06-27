@@ -231,7 +231,7 @@ export interface LinearMetadataDatavizProps<T> {
    * ticks: should scale be ticked ?
    * stringValues: each interval has just a category ref, not a continuous value
    */
-  params?: { ticks?: boolean; stringValues?: boolean };
+  params?: { ticks?: boolean; stringValues?: boolean; showValues?: boolean };
 }
 
 /**
@@ -559,7 +559,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
                     params?.stringValues
                   )}
                 >
-                  <span>{data[segment.index][field]}</span>
+                  {params?.showValues && <span>{data[segment.index][field]}</span>}
                 </div>
               )}
             {!field && !isNilObject(data[segment.index], ['begin', 'end', 'index']) && (

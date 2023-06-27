@@ -83,13 +83,11 @@ export function resizeSegment<T>(
   }, {} as Record<number, number | null>);
 
   // TODO: ask Sim51 why this safeguard here
-  /*
   if (itemChangeIndex === 0 && beginOrEnd === 'begin')
     return { result: linearMetadata, newIndexMapping };
 
   if (itemChangeIndex === linearMetadata.length - 1 && beginOrEnd === 'end')
     return { result: linearMetadata, newIndexMapping };
-  */
 
   const min = linearMetadata[0].begin;
   const max = last(linearMetadata)?.end || 0;
