@@ -39,6 +39,7 @@ type IntervalsEditorParams = {
   deleteTool?: boolean;
   translateTool?: boolean;
   addTool?: boolean;
+  showValues?: boolean;
 };
 
 type IntervalsEditorMetaProps = {
@@ -135,7 +136,10 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     setSelectedTool(selectedTool === tool ? null : tool);
   };
 
-  const dataVizParams = { ticks: true, stringValues: isNil(units) };
+  const dataVizParams = useMemo(
+    () => ({ ticks: true, stringValues: isNil(units), showValues: params?.showValues }),
+    [params]
+  );
 
   return (
     <div className="linear-metadata">

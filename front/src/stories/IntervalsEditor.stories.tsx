@@ -95,7 +95,7 @@ export const ByCategories = {
       translateTool: false,
       cutTool: true,
       addTool: true,
-      stringValues: true,
+      showValues: true,
     },
     units: null,
     name: 'linearMetaData',
