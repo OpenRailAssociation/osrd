@@ -65,13 +65,9 @@ pub enum TrainScheduleError {
 }
 
 pub fn routes() -> impl HttpServiceFactory {
-    web::scope("/train_schedule/{id}").service((
-        get,
-        patch,
-        standalone_simulation,
-        get_result,
-        get_results,
-    ))
+    web::scope("/train_schedule")
+        .service((standalone_simulation, get_results))
+        .service(web::scope("/{id}").service((get, delete, patch, get_result)))
 }
 
 /// Return a specific timetable with its associated schedules
@@ -182,7 +178,7 @@ struct GetResultQuery {
     path_id: i64,
 }
 
-#[get("/{id}/result")]
+#[get("/result")]
 async fn get_result(
     db_pool: Data<DbPool>,
     id: Path<i64>,
