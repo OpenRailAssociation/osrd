@@ -1,10 +1,10 @@
 package fr.sncf.osrd.api.pathfinding.response;
 
+import com.squareup.moshi.Json;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 
 /**
  * One waypoint in the path, represents an operational point
@@ -19,49 +19,44 @@ public class PathWaypointResult {
      */
     public boolean suggestion;
     /**
-     * Track the point is on
+     * Track location
      */
-    public String track;
+    public PathWaypointLocation location;
     /**
-     * Offset of the point on the track
+     * Waypoint position on the path
      */
-    public double position;
-    /**
-     * Used to sort the waypoint, not a part of the actual response (transient)
-     */
-    public final transient double trackRangeOffset;
+    @Json(name = "path_offset")
+    public double pathOffset;
 
     /**
      * Constructor
      */
     private PathWaypointResult(
-            String trackID,
-            double offset,
+            PathWaypointLocation location,
+            double pathOffset,
             boolean suggestion,
-            String opID,
-            double trackRangeOffset
+            String opID
     ) {
+        this.location = location;
+        this.pathOffset = pathOffset;
         this.suggestion = suggestion;
-        this.track = trackID;
-        this.position = offset;
         this.id = opID;
-        this.trackRangeOffset = trackRangeOffset;
     }
 
     /**
      * Creates a suggested waypoint from an OP
      */
-    public static PathWaypointResult suggestion(
-            OperationalPoint op, TrackSection trackSection, double trackRangeOffset
-    ) {
-        return new PathWaypointResult(trackSection.getID(), op.offset(), true, op.id(), trackRangeOffset);
+    public static PathWaypointResult suggestion(OperationalPoint op, TrackSection trackSection, double pathPosition) {
+        var location = new PathWaypointLocation(trackSection.getID(), op.offset());
+        return new PathWaypointResult(location, pathPosition, true, op.id());
     }
 
     /**
      * Creates a user defined waypoint
      */
-    public static PathWaypointResult userDefined(TrackLocation location, double trackRangeOffset) {
-        return new PathWaypointResult(location.track().getID(), location.offset(), false, null, trackRangeOffset);
+    public static PathWaypointResult userDefined(TrackLocation location, double pathPosition) {
+        var loc = new PathWaypointLocation(location.track().getID(), location.offset());
+        return new PathWaypointResult(loc, pathPosition, false, null);
     }
 
 
@@ -69,9 +64,9 @@ public class PathWaypointResult {
      * Check if two steps result are at the same location
      */
     public boolean isDuplicate(PathWaypointResult other) {
-        if (!track.equals(other.track))
+        if (!location.trackSection.equals(other.location.trackSection))
             return false;
-        return Math.abs(position - other.position) < 0.001;
+        return Math.abs(pathOffset - other.pathOffset) < 0.001;
     }
 
     /**
@@ -81,7 +76,19 @@ public class PathWaypointResult {
         suggestion &= other.suggestion;
         if (!other.suggestion)
             return;
-        position = other.position;
+        pathOffset = other.pathOffset;
         id = other.id;
+    }
+
+    @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
+    public static class PathWaypointLocation {
+        @Json(name = "track_section")
+        public final String trackSection;
+        public final double offset;
+
+        public PathWaypointLocation(String trackSection, double offset) {
+            this.trackSection = trackSection;
+            this.offset = offset;
+        }
     }
 }

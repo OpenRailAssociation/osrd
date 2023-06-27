@@ -461,7 +461,7 @@ public class PathfindingTest extends ApiTest {
                     loc.offset() / 2,
                     loc.offset() + (loc.edge().getInfraRoute().getLength() - loc.offset()) / 2
             );
-            var waypoints = PathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()));
+            var waypoints = PathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()), 0.);
             var userDefinedWaypoints = waypoints.stream()
                     .filter(wp -> !wp.suggestion)
                     .toList();
@@ -472,8 +472,8 @@ public class PathfindingTest extends ApiTest {
                 // Waypoints placed on track transitions can be on either side
                 continue;
             }
-            assertEquals(waypointTrack, userDefinedWaypoints.get(0).track);
-            assertEquals(waypointOff, userDefinedWaypoints.get(0).position, POSITION_EPSILON);
+            assertEquals(waypointTrack, userDefinedWaypoints.get(0).location.trackSection);
+            assertEquals(waypointOff, userDefinedWaypoints.get(0).location.offset, POSITION_EPSILON);
         }
     }
 
