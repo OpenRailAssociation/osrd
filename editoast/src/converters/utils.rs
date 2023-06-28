@@ -96,11 +96,24 @@ pub fn default_switch_types() -> Vec<SwitchType> {
 // Given an edge and a coordinate, returns the coordinates used to compute the angle
 // It uses the nearest OpenStreetMap node, and the other as the the rails might do a loop
 // that would result in a bad angle
+// However, sometimes nodes can be stacked at the same coordinates (e.g. to have different signals at the end of the way)
+// That is why look for the first node that is at least 1m away from the edge start
 fn reference_coord(n: NodeId, edge: &Edge) -> Coord {
-    if edge.source == n {
-        edge.geometry[1]
+    if edge.nodes[0] == n {
+        let start = edge.geometry[0];
+        *edge
+            .geometry
+            .iter()
+            .find(|coord| coord.distance_to(start) > 10.0)
+            .unwrap_or(&edge.geometry[edge.geometry.len() - 1])
     } else {
-        edge.geometry[edge.geometry.len() - 2]
+        let start = edge.geometry[edge.geometry.len() - 1];
+        *edge
+            .geometry
+            .iter()
+            .rev()
+            .find(|coord| coord.distance_to(start) > 10.0)
+            .unwrap_or(&edge.geometry[0])
     }
 }
 
@@ -548,5 +561,31 @@ mod tests {
         assert!(!flat(10.0));
         assert!(!flat(350.0));
         assert!(!flat(90.0));
+    }
+
+    #[test]
+    fn test_reference_coord() {
+        let edge = Edge {
+            nodes: vec![NodeId(0), NodeId(1)],
+            geometry: vec![Coord { lon: 0., lat: 0. }, Coord { lon: 1., lat: 1. }],
+            ..Default::default()
+        };
+        assert_eq!(1., reference_coord(NodeId(0), &edge).lon);
+        assert_eq!(0., reference_coord(NodeId(1), &edge).lon);
+    }
+
+    #[test]
+    fn test_reference_coord_overlapping_nodes() {
+        let edge = Edge {
+            nodes: vec![NodeId(0), NodeId(1), NodeId(2)],
+            geometry: vec![
+                Coord { lon: 0., lat: 0. },
+                Coord { lon: 0., lat: 0. },
+                Coord { lon: 1., lat: 1. },
+            ],
+            ..Default::default()
+        };
+        assert_eq!(1., reference_coord(NodeId(0), &edge).lon);
+        assert_eq!(0., reference_coord(NodeId(2), &edge).lon);
     }
 }
