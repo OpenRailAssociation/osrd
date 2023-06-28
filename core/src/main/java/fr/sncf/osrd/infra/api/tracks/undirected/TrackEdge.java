@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.RangeMap;
-import com.google.common.collect.RangeSet;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
@@ -54,5 +53,5 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     RangeMap<Double, String> getVoltages();
 
     /** Returns the ranges covered by dead sections */
-    RangeSet<Double> getDeadSections(Direction direction);
+    RangeMap<Double, DeadSection> getDeadSections(Direction direction);
 }

@@ -3,10 +3,13 @@ package fr.sncf.osrd.infra.implementation.tracks.undirected;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.*;
+import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
+import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
+import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
@@ -85,8 +88,8 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
-    public ImmutableRangeSet<Double> getDeadSections(Direction direction) {
-        return ImmutableRangeSet.of();
+    public RangeMap<Double, DeadSection> getDeadSections(Direction direction) {
+        return ImmutableRangeMap.of();
     }
 
     @Override

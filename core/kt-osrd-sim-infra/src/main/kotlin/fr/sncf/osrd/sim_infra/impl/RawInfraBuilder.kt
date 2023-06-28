@@ -197,7 +197,7 @@ interface RestrictedRawInfraBuilder {
         gradients: DirectionalMap<DistanceRangeMap<Double>>,
         loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
         catenaryVoltage: DistanceRangeMap<String>,
-        deadSections: DirectionalMap<DistanceRangeSet>,
+        deadSections: DirectionalMap<DistanceRangeMap<DeadSection>>,
         speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId
     fun operationalPointPart(name: String, chunkOffset: Distance, chunk: TrackChunkId): OperationalPointPartId
@@ -349,7 +349,7 @@ class RawInfraBuilderImpl : RawInfraBuilder {
         gradients: DirectionalMap<DistanceRangeMap<Double>>,
         loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
         catenaryVoltage: DistanceRangeMap<String>,
-        deadSections: DirectionalMap<DistanceRangeSet>,
+        deadSections: DirectionalMap<DistanceRangeMap<DeadSection>>,
         speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
     ): TrackChunkId {
         return trackChunkPool.add(TrackChunkDescriptor(

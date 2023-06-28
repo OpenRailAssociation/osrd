@@ -9,7 +9,16 @@ import com.google.common.primitives.Doubles;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.*;
+import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
+import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
+import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
+import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
+import fr.sncf.osrd.infra.api.tracks.undirected.SwitchPort;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackInfra;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
@@ -153,7 +162,6 @@ public class UndirectedInfraBuilder {
         addSpeedSections(infra.speedSections, trackSectionsByID);
 
         loadCatenaries(infra.catenaries, trackSectionsByID);
-
         loadDeadSections(infra.deadSections, trackSectionsByID);
 
         return TrackInfraImpl.from(switches.build(), builder.build());
@@ -174,11 +182,15 @@ public class UndirectedInfraBuilder {
         if (deadSections == null)
             return;
         for (var deadSection : deadSections) {
-            for (var trackRange : deadSection.trackRanges) {
+            var trackRanges = !deadSection.backsidePantographTrackRanges.isEmpty()
+                    ? deadSection.backsidePantographTrackRanges
+                    : deadSection.trackRanges;
+            for (var trackRange : trackRanges) {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
                 assert track != null;
-                track.getDeadSections(Direction.fromEdgeDir(trackRange.direction))
-                        .add(Range.closed(trackRange.begin, trackRange.end));
+                var dir = Direction.fromEdgeDir(trackRange.direction);
+                var range = Range.open(trackRange.begin, trackRange.end);
+                track.getDeadSections(dir).put(range, new DeadSection(deadSection.isPantographDropZone));
             }
         }
     }
