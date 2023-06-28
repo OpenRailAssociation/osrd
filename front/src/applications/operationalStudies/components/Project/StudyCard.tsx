@@ -95,7 +95,7 @@ export default function StudyCard({ setFilterChips, study }: Props) {
           <span className="mr-1">
             <FcCalendar />
           </span>
-          <span className="mr-1">{t('modifiedOn')}</span>
+          <span className="mr-1">{t('updatedOn')}</span>
           {study.last_modification && dateTimeFrenchFormatting(new Date(study.last_modification))}
         </div>
       </div>
