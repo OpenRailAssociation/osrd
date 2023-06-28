@@ -43,11 +43,11 @@ function displayStudiesList(
 ) {
   return studiesList ? (
     <div className="row no-gutters">
-      <div className="col-xl-4 col-lg-6">
+      <div className="col-hdp-3 col-hd-4 col-lg-6">
         <StudyCardEmpty />
       </div>
       {studiesList.map((study) => (
-        <div className="col-xl-4 col-lg-6" key={`project-displayStudiesList-${study.id}`}>
+        <div className="col-hdp-3 col-hd-4 col-lg-6" key={`project-displayStudiesList-${study.id}`}>
           <StudyCard study={study} setFilterChips={setFilterChips} />
         </div>
       ))}
