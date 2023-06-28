@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux';
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
-import { isPlainObject, keyBy, mapValues } from 'lodash';
+import { isPlainObject, keyBy, mapValues, omit } from 'lodash';
 import { AnyLayer, Layer, Source, LayerProps } from 'react-map-gl/maplibre';
 import { FilterSpecification } from 'maplibre-gl';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -333,6 +333,7 @@ const GeoJSONs: FC<{
   fingerprint?: string | number;
   isEmphasized?: boolean;
   beforeId?: string;
+  renderAll?: boolean;
 }> = ({
   colors,
   layersSettings,
@@ -343,6 +344,7 @@ const GeoJSONs: FC<{
   prefix = 'editor/',
   isEmphasized = true,
   beforeId,
+  renderAll,
 }) => {
   const infraID = useSelector(getInfraID);
   const selectedPrefix = `${prefix}selected/`;
@@ -386,38 +388,54 @@ const GeoJSONs: FC<{
     [hiddenColors, layerContext]
   );
 
-  const sources = useMemo(
-    () =>
-      SOURCES_DEFINITION.flatMap((source) =>
-        !layers || layers.has(source.entityType)
-          ? [
-              {
-                id: `${prefix}geo/${source.entityType}`,
-                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
-                layers: source
-                  .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
-                  .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
-              },
-              {
-                id: `${selectedPrefix}geo/${source.entityType}`,
-                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
-                layers: source
-                  .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
-                  .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
-              },
-            ]
-          : []
-      ),
-    [hidden, hiddenLayerContext, layerContext, layers, infraID, prefix, selectedPrefix, selection]
-  );
+  const sources = useMemo(() => {
+    const res = SOURCES_DEFINITION.flatMap((source) =>
+      !layers || layers.has(source.entityType)
+        ? [
+            {
+              id: `${prefix}geo/${source.entityType}`,
+              url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
+              layers: source
+                .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
+                .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
+            },
+            {
+              id: `${selectedPrefix}geo/${source.entityType}`,
+              url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${infraID}`,
+              layers: source
+                .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
+                .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
+            },
+          ]
+        : []
+    );
+
+    return renderAll
+      ? res.map((source) => ({
+          ...source,
+          layers: source.layers.map((layer) => omit(layer, 'minzoom') as typeof layer),
+        }))
+      : res;
+  }, [
+    hidden,
+    hiddenLayerContext,
+    layerContext,
+    layers,
+    infraID,
+    prefix,
+    selectedPrefix,
+    selection,
+    renderAll,
+  ]);
 
   if (skipSources) {
     return null;
   }
+
   return (
     <>
       {sources.map((source) => (
-        <Source key={source.id} promoteId="id" type="vector" url={source.url}>
+        <Source key={source.id} promoteId="id" type="vector" url={source.url} id={source.id}>
           {source.layers.map((layer) => (
             <Layer source-layer={MAP_TRACK_SOURCE} key={layer.id} {...layer} beforeId={beforeId} />
           ))}

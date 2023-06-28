@@ -3534,6 +3534,14 @@
     "@turf/bbox" "^6.5.0"
     "@turf/helpers" "^6.5.0"
 
+"@turf/clean-coords@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/clean-coords/-/clean-coords-6.5.0.tgz#6690adf764ec4b649710a8a20dab7005efbea53f"
+  integrity sha512-EMX7gyZz0WTH/ET7xV8MyrExywfm9qUi0/MY89yNffzGIEHuFfqwhcCqZ8O00rZIPZHUTxpmsxQSTfzJJA1CPw==
+  dependencies:
+    "@turf/helpers" "^6.5.0"
+    "@turf/invariant" "^6.5.0"
+
 "@turf/clone@^6.5.0":
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/@turf/clone/-/clone-6.5.0.tgz#895860573881ae10a02dfff95f274388b1cda51a"
@@ -3694,6 +3702,16 @@
   dependencies:
     "@turf/helpers" "^6.5.0"
     "@turf/invariant" "^6.5.0"
+
+"@turf/simplify@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/simplify/-/simplify-6.5.0.tgz#ec435460bde0985b781618b05d97146c32c8bc16"
+  integrity sha512-USas3QqffPHUY184dwQdP8qsvcVH/PWBYdXY5am7YTBACaQOMAlf6AKJs9FT8jiO6fQpxfgxuEtwmox+pBtlOg==
+  dependencies:
+    "@turf/clean-coords" "^6.5.0"
+    "@turf/clone" "^6.5.0"
+    "@turf/helpers" "^6.5.0"
+    "@turf/meta" "^6.5.0"
 
 "@turf/square@^6.5.0":
   version "6.5.0"
