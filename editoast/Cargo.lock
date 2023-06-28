@@ -2242,9 +2242,9 @@ dependencies = [
 
 [[package]]
 name = "osm4routing"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c5789bf28a888bf881384b15d686bacd14645f6614aa35cbe1c4cddcf9419d2"
+checksum = "c3dc129b5257785c8df7fa69fb0e8ab48ed27ae759c3906166d1fde0f583c42b"
 dependencies = [
  "csv",
  "docopt",
