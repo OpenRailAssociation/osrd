@@ -2,6 +2,7 @@ import produce from 'immer';
 import { Feature } from 'geojson';
 import { without, omit, clone } from 'lodash';
 
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { osrdEditoastApi } from '../common/api/osrdEditoastApi';
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
@@ -63,25 +64,27 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
     if (!Object.keys(getState().editor.editorSchema).length) {
       dispatch(setLoading());
       try {
-        const schemaResponse = infra_schema as any;
+        const schemaResponse = infra_schema as JSONSchema7;
         // parse the schema
         const fieldToOmit = ['id', 'geo', 'sch'];
         const schema = Object.keys(schemaResponse.properties || {})
-          .filter(
-            (e: string) =>
-              schemaResponse.properties &&
-              schemaResponse.properties[e] &&
-              schemaResponse.properties[e].type === 'array'
-          )
+          .filter((e: string) => {
+            const property: JSONSchema7Definition | undefined = schemaResponse?.properties?.[e];
+            return typeof property !== 'boolean' && property && property.type === 'array';
+          })
           .map((e: string) => {
             // we assume here, that the definition of the object is ref and not inline
-            const ref = schemaResponse.properties[e].items.$ref.split('/');
-            const refTarget = clone(schemaResponse[ref[1]][ref[2]]);
+            const property: JSONSchema7 | undefined = schemaResponse?.properties?.[
+              e
+            ] as JSONSchema7;
+            const items = property.items as JSONSchema7;
+            type keys = keyof typeof items.$ref;
+            const ref = items?.$ref?.split('/') as keys;
+            const refTarget = clone(schemaResponse[ref[1]][ref[2]]) as JSONSchema7;
             refTarget.properties = omit(refTarget.properties, fieldToOmit);
             refTarget.required = (refTarget.required || []).filter(
               (field: string) => !fieldToOmit.includes(field)
             );
-
             return {
               layer: e,
               objType: ref[2],
