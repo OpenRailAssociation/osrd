@@ -2,13 +2,12 @@ package fr.sncf.osrd.infra.implementation.tracks.directed;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
-import com.google.common.collect.RangeSet;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
+import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
@@ -202,7 +201,7 @@ public class TrackRangeView {
     }
 
     /** Converts a single range based on the original track so that the positions refer to the range */
-    public Range<Double> convertRange(Range<Double> range) {
+    private Range<Double> convertRange(Range<Double> range) {
         var rangeStart = convertPosition(range.lowerEndpoint());
         var rangeEnd = convertPosition(range.upperEndpoint());
         if (rangeStart > rangeEnd) {
@@ -230,20 +229,6 @@ public class TrackRangeView {
         return builder.build();
     }
 
-    /** Converts a RangeSet based on the original track so that the positions refer to the range */
-    public ImmutableRangeSet<Double> convertSet(RangeSet<Double> set) {
-        if (getLength() == 0)
-            return ImmutableRangeSet.of();
-        var builder = ImmutableRangeSet.<Double>builder();
-        var subSet = set.subRangeSet(Range.open(begin, end));
-        for (var range : subSet.asRanges()) {
-            var newRange = convertRange(range);
-            if (newRange != null)
-                builder.add(newRange);
-        }
-        return builder.build();
-    }
-
     /** Returns the blocked gauge types projected on the range */
     public ImmutableRangeMap<Double, LoadingGaugeConstraint> getBlockedGaugeTypes() {
         return convertMap(track.getEdge().getLoadingGaugeConstraints());
@@ -255,8 +240,8 @@ public class TrackRangeView {
     }
 
     /** Returns the ranges marked as dead section on the track */
-    public RangeSet<Double> getDeadSections() {
-        return convertSet(track.getEdge().getDeadSections(track.getDirection()));
+    public RangeMap<Double, DeadSection> getDeadSections() {
+        return convertMap(track.getEdge().getDeadSections(track.getDirection()));
     }
 
     /** Returns true if the element is inside the range */

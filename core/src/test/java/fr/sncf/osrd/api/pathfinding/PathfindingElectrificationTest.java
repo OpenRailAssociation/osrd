@@ -1,6 +1,9 @@
 package fr.sncf.osrd.api.pathfinding;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Range;
 import fr.sncf.osrd.Helpers;
@@ -9,6 +12,7 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
@@ -47,7 +51,8 @@ public class PathfindingElectrificationTest extends ApiTest {
 
     private static void addMiddleDeadSection(Pathfinding.Result<SignalingRoute> normalPath, Direction direction) {
         var middleTrack = getMiddleTrackEdge(normalPath);
-        middleTrack.getDeadSections(direction).add(Range.closed(0., middleTrack.getLength() * 0.9));
+        var range = Range.closed(0., middleTrack.getLength() * 0.9);
+        middleTrack.getDeadSections(direction).put(range, new DeadSection(false));
     }
 
     @Test

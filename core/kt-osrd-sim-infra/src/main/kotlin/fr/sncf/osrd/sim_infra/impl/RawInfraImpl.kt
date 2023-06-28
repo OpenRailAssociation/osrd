@@ -36,7 +36,7 @@ class TrackChunkDescriptor(
     var operationalPointParts: StaticIdxList<OperationalPointPart>,
     val loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
     val catenaryVoltage: DistanceRangeMap<String>,
-    val deadSections: DirectionalMap<DistanceRangeSet>,
+    val deadSections: DirectionalMap<DistanceRangeMap<DeadSection>>,
     val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
 )
 
@@ -109,6 +109,10 @@ class OperationalPointPartDescriptor(
 class SpeedSection(
     val default: Speed,
     val speedByTrainTag: Map<String, Speed>,
+)
+
+class DeadSection(
+    val isDropPantograph: Boolean,
 )
 
 
@@ -197,7 +201,7 @@ class RawInfraImpl(
         return trackChunkPool[trackChunk].catenaryVoltage
     }
 
-    override fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeSet {
+    override fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeMap<DeadSection> {
         return trackChunkPool[trackChunk.value].deadSections.get(trackChunk.direction)
     }
 

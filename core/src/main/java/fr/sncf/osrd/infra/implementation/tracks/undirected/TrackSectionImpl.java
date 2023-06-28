@@ -3,7 +3,12 @@ package fr.sncf.osrd.infra.implementation.tracks.undirected;
 import static java.lang.Math.abs;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
@@ -20,7 +25,7 @@ public class TrackSectionImpl implements TrackSection {
     EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections;
     RangeMap<Double, String> catenaryVoltages = TreeRangeMap.create();
 
-    EnumMap<Direction, RangeSet<Double>> deadSections;
+    EnumMap<Direction, RangeMap<Double, DeadSection>> deadSections;
     EnumMap<Direction, RangeMap<Double, Double>> curves;
     EnumMap<Direction, RangeMap<Double, Double>> slopes;
     ImmutableList<Detector> detectors = ImmutableList.of();
@@ -56,7 +61,7 @@ public class TrackSectionImpl implements TrackSection {
         this.catenaryVoltages.put(Range.closed(0., length), "");
         deadSections = new EnumMap<>(Direction.class);
         for (var dir : Direction.values()) {
-            deadSections.put(dir, TreeRangeSet.create());
+            deadSections.put(dir, TreeRangeMap.create());
         }
     }
 
@@ -152,7 +157,7 @@ public class TrackSectionImpl implements TrackSection {
     }
 
     @Override
-    public RangeSet<Double> getDeadSections(Direction direction) {
+    public RangeMap<Double, DeadSection> getDeadSections(Direction direction) {
         return deadSections.get(direction);
     }
 
