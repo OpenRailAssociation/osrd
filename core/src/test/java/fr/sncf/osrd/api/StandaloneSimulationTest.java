@@ -462,7 +462,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
         var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
         for (int i = 1; i <= 5; i++) {
-            var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
+            var rollingStock = getExampleRollingStock("electric_rolling_stock.json");
             rollingStock.name += i;
             rollingStock.basePowerClass = String.valueOf(i);
             rollingStocks.add(rollingStock);
@@ -470,7 +470,7 @@ public class StandaloneSimulationTest extends ApiTest {
             var trainSchedule = new RJSStandaloneTrainSchedule("Test." + i, rollingStock.name, 0, null, stops, null);
             trainSchedules.add(trainSchedule);
         }
-        var trainSchedule = new RJSStandaloneTrainSchedule("Test", "fast_rolling_stock1", 0, null, stops, null,
+        var trainSchedule = new RJSStandaloneTrainSchedule("Test", "electric_rolling_stock1", 0, null, stops, null,
                 RJSComfortType.AC, null, null);
         trainSchedules.add(trainSchedule);
 
@@ -513,9 +513,9 @@ public class StandaloneSimulationTest extends ApiTest {
                 new RJSPowerRestrictionRange(6000., 8000., "Unknown"),
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
-        trains.add(new RJSStandaloneTrainSchedule("with", "fast_rolling_stock", 0, null, stops, null,
+        trains.add(new RJSStandaloneTrainSchedule("with", "electric_rolling_stock", 0, null, stops, null,
                 RJSComfortType.STANDARD, null, powerRestrictionRanges));
-        trains.add(new RJSStandaloneTrainSchedule("without", "fast_rolling_stock", 0, null, stops, null));
+        trains.add(new RJSStandaloneTrainSchedule("without", "electric_rolling_stock", 0, null, stops, null));
 
         var query = new StandaloneSimulationRequest("small_infra/infra.json", "1", 2, getExampleRollingStocks(), trains,
                 rjsTrainPath);
@@ -524,7 +524,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var resultWith = Iterables.getLast(simResult.baseSimulations.get(0).headPositions).time;
         var resultWithout = Iterables.getLast(simResult.baseSimulations.get(1).headPositions).time;
         assertTrue(resultWith > resultWithout + 1,
-                "With power restrictions should be  a lot slower than without, but was "
+                "With power restrictions should be a lot slower than without, but was "
                         + resultWith + " vs " + resultWithout);
     }
 
@@ -539,9 +539,9 @@ public class StandaloneSimulationTest extends ApiTest {
                 new RJSPowerRestrictionRange(6000., 8000., "Unknown"),
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
-        trains.add(new RJSStandaloneTrainSchedule("with", "fast_rolling_stock", 0, null, stops, null,
+        trains.add(new RJSStandaloneTrainSchedule("with", "electric_rolling_stock", 0, null, stops, null,
                 RJSComfortType.STANDARD, null, powerRestrictionRanges));
-        trains.add(new RJSStandaloneTrainSchedule("without", "fast_rolling_stock", 0, null, stops, null));
+        trains.add(new RJSStandaloneTrainSchedule("without", "electric_rolling_stock", 0, null, stops, null));
 
         var query = new StandaloneSimulationRequest("small_infra/infra.json",
                 "small_infra/external_generated_inputs.json", "1", 2, getExampleRollingStocks(), trains, rjsTrainPath);
@@ -562,8 +562,7 @@ public class StandaloneSimulationTest extends ApiTest {
     public void testElectrificationConditionsInResult() throws IOException {
         final var rjsTrainPath = smallInfraTrainPath();
 
-        var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
-        rollingStock.basePowerClass = "5";
+        var rollingStock = getExampleRollingStock("electric_rolling_stock.json");
 
         var trainSchedule = new RJSStandaloneTrainSchedule("Test", rollingStock.name, 0, new RJSAllowance[0],
                 new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }, null, RJSComfortType.AC, null, null);
@@ -583,7 +582,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var simResult = runStandaloneSimulation(query);
         var electrificationConditionsRanges = simResult.electrificationConditions.get(0);
 
-        var expectedUsedModes = List.of("thermal", "25000", "25000", "25000", "25000", "25000");
+        var expectedUsedModes = List.of("1500", "25000", "25000", "25000", "25000", "25000");
         var usedModes = gather(electrificationConditionsRanges, e -> e.usedMode);
         assertEquals(expectedUsedModes, usedModes);
 
@@ -591,7 +590,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var usedProfiles = gather(electrificationConditionsRanges, e -> e.usedProfile);
         assertEquals(expectedUsedProfiles, usedProfiles);
 
-        var expectedSeenModes = List.of("1500", "null",  "null", "null", "null", "null");
+        var expectedSeenModes = List.of("null", "null",  "null", "null", "null", "null");
         var seenModes = gather(electrificationConditionsRanges, e -> e.seenMode);
         assertEquals(expectedSeenModes, seenModes);
 
@@ -604,8 +603,7 @@ public class StandaloneSimulationTest extends ApiTest {
     public void testElectrificationConditionsInResultWithIgnored() throws IOException {
         final var rjsTrainPath = smallInfraTrainPath();
 
-        var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
-        rollingStock.basePowerClass = "5";
+        var rollingStock = getExampleRollingStock("electric_rolling_stock.json");
 
         var trainSchedule1 = new RJSStandaloneTrainSchedule("Test", rollingStock.name, 0, new RJSAllowance[0],
                 new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }, null, RJSComfortType.AC, null, null);
@@ -642,8 +640,7 @@ public class StandaloneSimulationTest extends ApiTest {
     public void testElectrificationConditionsInResultWithPowerRestriction() throws IOException {
         final var rjsTrainPath = smallInfraTrainPath();
 
-        var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
-        rollingStock.basePowerClass = "5";
+        var rollingStock = getExampleRollingStock("electric_rolling_stock.json");
 
         var trainSchedule = new RJSStandaloneTrainSchedule("Test", rollingStock.name, 0, new RJSAllowance[0],
                 new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }, null, RJSComfortType.AC, null,
@@ -664,7 +661,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var simResult = runStandaloneSimulation(query);
         var electrificationConditionsRanges = simResult.electrificationConditions.get(0);
 
-        var expectedUsedModes = List.of("thermal", "thermal", "25000", "25000", "25000", "25000", "25000");
+        var expectedUsedModes = List.of("1500", "1500", "25000", "25000", "25000", "25000", "25000");
         var usedModes = gather(electrificationConditionsRanges, e -> e.usedMode);
         assertEquals(expectedUsedModes, usedModes);
 
@@ -676,7 +673,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var usedRestrictions = gather(electrificationConditionsRanges, e -> e.usedRestriction);
         assertEquals(expectedUsedRestrictions, usedRestrictions);
 
-        var expectedSeenModes = List.of("1500", "1500", "null", "null", "null", "null", "null");
+        var expectedSeenModes = List.of("null", "null", "null", "null", "null", "null", "null");
         var seenModes = gather(electrificationConditionsRanges, e -> e.seenMode);
         assertEquals(expectedSeenModes, seenModes);
 
