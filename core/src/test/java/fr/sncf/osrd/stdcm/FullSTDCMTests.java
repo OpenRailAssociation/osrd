@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.Helpers.getResourcePath;
-import static fr.sncf.osrd.Helpers.parseRollingStockDir;
+import static fr.sncf.osrd.Helpers.getExampleRollingStock;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import fr.sncf.osrd.Helpers;
@@ -24,7 +23,7 @@ public class FullSTDCMTests {
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setRollingStock(
-                        RJSRollingStockParser.parse(parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0))
+                        RJSRollingStockParser.parse(getExampleRollingStock("fast_rolling_stock.json"))
                 )
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125)))

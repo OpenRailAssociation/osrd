@@ -22,7 +22,7 @@ public class STDCMEndpointTest extends ApiTest {
         var requestBody = STDCMRequest.adapter.toJson(new STDCMRequest(
                 "tiny_infra/infra.json",
                 "1",
-                parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0),
+                getExampleRollingStock("fast_rolling_stock.json"),
                 Set.of(),
                 List.of(
                         new STDCMRequest.STDCMStep(0, true, Set.of(new PathfindingWaypoint(
