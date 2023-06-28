@@ -29,6 +29,7 @@ import cx from 'classnames';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import ScenarioLoader from 'modules/scenario/components/ScenarioLoader';
+import { WarpedMap } from 'common/Map/WarpedMap/WarpedMap';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -130,6 +131,7 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
   if (!displaySimulation || isUpdating) {
     return <div className="pt-5 mt-5">{waitingMessage()}</div>;
   }
+
   return (
     <div className="simulation-results">
       {/* SIMULATION : STICKY BAR */}
@@ -153,15 +155,22 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
       <TimeLine />
 
       {/* SIMULATION : SPACE TIME CHART */}
-      <div className="osrd-simulation-container d-flex mb-2">
-        <div className="spacetimechart-container" style={{ height: `${heightOfSpaceTimeChart}px` }}>
-          {displaySimulation && (
-            <SpaceTimeChartIsolated
-              initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
-              onSetBaseHeightOfSpaceTimeChart={setHeightOfSpaceTimeChart}
-              isDisplayed={isDisplayed}
-            />
-          )}
+      <div className="d-flex flex-row align-items-stretch mb-2">
+        <WarpedMap />
+
+        <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
+          <div
+            className="spacetimechart-container"
+            style={{ height: `${heightOfSpaceTimeChart}px` }}
+          >
+            {displaySimulation && (
+              <SpaceTimeChartIsolated
+                initialHeightOfSpaceTimeChart={heightOfSpaceTimeChart}
+                onSetBaseHeightOfSpaceTimeChart={setHeightOfSpaceTimeChart}
+                isDisplayed={isDisplayed}
+              />
+            )}
+          </div>
         </div>
       </div>
 
