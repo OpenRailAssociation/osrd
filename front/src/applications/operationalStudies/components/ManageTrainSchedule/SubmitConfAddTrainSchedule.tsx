@@ -13,7 +13,7 @@ import {
   TrainScheduleOptions,
   osrdMiddlewareApi,
 } from 'common/api/osrdMiddlewareApi';
-import { Comfort, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { Allowance, Comfort, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 type Props = {
   infraState?: Infra['state'];

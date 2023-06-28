@@ -65,10 +65,6 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
 
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
 
-  const toggleAllowancesDisplay = () => {
-    setDisplayAllowances(!displayAllowances);
-  };
-
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
       dispatch(persistentUndoSimulation());
