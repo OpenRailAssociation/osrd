@@ -116,11 +116,14 @@ export default function Home() {
     return projectsList ? (
       <div className="projects-list">
         <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-6">
+          <div className="col-hdp-2 col-lg-3 col-md-4 col-sm-6">
             <ProjectCardEmpty />
           </div>
           {projectsList.map((project) => (
-            <div className="col-lg-3 col-md-4 col-sm-6" key={`home-projectsList-${project.id}`}>
+            <div
+              className="col-hdp-2 col-lg-3 col-md-4 col-sm-6"
+              key={`home-projectsList-${project.id}`}
+            >
               <ProjectCard
                 project={project}
                 setFilterChips={setFilterChips}

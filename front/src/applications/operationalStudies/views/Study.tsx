@@ -52,11 +52,14 @@ function displayScenariosList(
 ) {
   return scenariosList ? (
     <div className="row no-gutters">
-      <div className="col-xl-4 col-lg-6">
+      <div className="col-hdp-3 col-hd-4 col-lg-6">
         <ScenarioCardEmpty />
       </div>
       {scenariosList.map((scenario) => (
-        <div className="col-xl-4 col-lg-6" key={`study-displayScenariosList-${scenario.id}`}>
+        <div
+          className="col-hdp-3 col-hd-4 col-lg-6"
+          key={`study-displayScenariosList-${scenario.id}`}
+        >
           <ScenarioCard scenario={scenario} setFilterChips={setFilterChips} />
         </div>
       ))}
