@@ -231,15 +231,6 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                 toggleSelectedTool(TOOLS.deleteTool);
               }
             }}
-            onDoubleClick={(_e, _item, _index, point) => {
-              /*
-              if (clickTimeout) clearTimeout(clickTimeout);
-              setClickPrevent(true);
-              const newData = splitAt(data, point);
-              setData(newData);
-              customOnChange(newData);
-              */
-            }}
             onWheel={(e, _item, _index, point) => {
               setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
             }}
