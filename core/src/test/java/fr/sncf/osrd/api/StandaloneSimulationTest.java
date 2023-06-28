@@ -2,8 +2,17 @@ package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.Helpers.getExampleRollingStock;
 import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
+import static fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage;
+import static fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.ElectrifiedUsage;
+import static fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.NeutralUsage;
+import static fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUsage.NonElectrifiedUsage;
 import static fr.sncf.osrd.utils.takes.TakesUtils.readBodyResponse;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.Iterables;
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
@@ -12,9 +21,18 @@ import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import fr.sncf.osrd.standalone_sim.result.ElectrificationConditionsRange;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceRange;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
+import fr.sncf.osrd.railjson.schema.schedule.RJSPowerRestrictionRange;
+import fr.sncf.osrd.railjson.schema.schedule.RJSSchedulePoint;
+import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainScheduleOptions;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
+import fr.sncf.osrd.standalone_sim.result.PowerRestrictionRange;
 import fr.sncf.osrd.standalone_sim.result.ResultPosition;
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
@@ -23,7 +41,6 @@ import org.takes.rq.RqFake;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 
 public class StandaloneSimulationTest extends ApiTest {
@@ -552,14 +569,8 @@ public class StandaloneSimulationTest extends ApiTest {
         assertNotEquals(resultWith, resultWithout, 0.001);
     }
 
-
-    List<String> gather(List<ElectrificationConditionsRange> ranges,
-                        Function<ElectrificationConditionsRange, String> f) {
-        return ranges.stream().map(r -> f.apply(r) == null ? "null" : f.apply(r)).toList();
-    }
-
     @Test
-    public void testElectrificationConditionsInResult() throws IOException {
+    public void testElectrificationRangesInResult() throws IOException {
         final var rjsTrainPath = smallInfraTrainPath();
 
         var rollingStock = getExampleRollingStock("electric_rolling_stock.json");
@@ -580,27 +591,27 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // parse back the simulation result
         var simResult = runStandaloneSimulation(query);
-        var electrificationConditionsRanges = simResult.electrificationConditions.get(0);
 
-        var expectedUsedModes = List.of("1500", "25000", "25000", "25000", "25000", "25000");
-        var usedModes = gather(electrificationConditionsRanges, e -> e.usedMode);
-        assertEquals(expectedUsedModes, usedModes);
+        var electrificationRanges = simResult.electrificationRanges.get(0);
 
-        var expectedUsedProfiles = List.of("null", "25000", "22500", "20000", "22500", "25000");
-        var usedProfiles = gather(electrificationConditionsRanges, e -> e.usedProfile);
-        assertEquals(expectedUsedProfiles, usedProfiles);
+        ElectrificationUsage[] expected = {
+                new ElectrifiedUsage("1500", true, "O", false),
+                new NeutralUsage(true),
+                new ElectrifiedUsage("1500", true, "O", false),
+                new ElectrifiedUsage("25000", true, "25000", true),
+                new ElectrifiedUsage("25000", true, "22500", true),
+                new ElectrifiedUsage("25000", true, "20000", true),
+                new ElectrifiedUsage("25000", true, "22500", true),
+                new NeutralUsage(false),
+                new ElectrifiedUsage("25000", true, "22500", true),
+                new ElectrifiedUsage("25000", true, "25000", true),
+        };
 
-        var expectedSeenModes = List.of("null", "null",  "null", "null", "null", "null");
-        var seenModes = gather(electrificationConditionsRanges, e -> e.seenMode);
-        assertEquals(expectedSeenModes, seenModes);
-
-        var expectedSeenProfiles = List.of("O", "null", "null", "null", "null", "null");
-        var seenProfiles = gather(electrificationConditionsRanges, e -> e.seenProfile);
-        assertEquals(expectedSeenProfiles, seenProfiles);
+        assertArrayEquals(expected, electrificationRanges.stream().map(r -> r.electrificationUsage).toArray());
     }
 
     @Test
-    public void testElectrificationConditionsInResultWithIgnored() throws IOException {
+    public void testElectrificationRangesInResultWithIgnored() throws IOException {
         final var rjsTrainPath = smallInfraTrainPath();
 
         var rollingStock = getExampleRollingStock("electric_rolling_stock.json");
@@ -625,26 +636,32 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // parse back the simulation result
         var simResult = runStandaloneSimulation(query);
-        var electrificationConditions1 = simResult.electrificationConditions.get(0);
+        var electrificationRanges1 = simResult.electrificationRanges.get(0);
 
-        assertNotNull(electrificationConditions1);
-        assertEquals(6, electrificationConditions1.size());
+        assertNotNull(electrificationRanges1);
+        assertEquals(10, electrificationRanges1.size());
 
-        var electrificationConditions2 = simResult.electrificationConditions.get(1);
+        var electrificationRanges2 = simResult.electrificationRanges.get(1);
 
-        assertNotNull(electrificationConditions2);
-        assertEquals(2, electrificationConditions2.size());
+        assertNotNull(electrificationRanges2);
+        assertEquals(6, electrificationRanges2.size());
+    }
+
+    record PowerRestrictionUsage(String code, boolean handled) {
+        static PowerRestrictionUsage from(PowerRestrictionRange r) {
+            return new PowerRestrictionUsage(r.code, r.handled);
+        }
     }
 
     @Test
-    public void testElectrificationConditionsInResultWithPowerRestriction() throws IOException {
+    public void testElectrificationRangesInResultWithPowerRestriction() throws IOException {
         final var rjsTrainPath = smallInfraTrainPath();
 
         var rollingStock = getExampleRollingStock("electric_rolling_stock.json");
 
         var trainSchedule = new RJSStandaloneTrainSchedule("Test", rollingStock.name, 0, new RJSAllowance[0],
                 new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }, null, RJSComfortType.AC, null,
-                new RJSPowerRestrictionRange[]{ new RJSPowerRestrictionRange(90.0, 5000.0, "C1")});
+                new RJSPowerRestrictionRange[] { new RJSPowerRestrictionRange(90.0, 5000.0, "C2") });
 
         // build the simulation request
         var query = new StandaloneSimulationRequest(
@@ -659,30 +676,56 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // parse back the simulation result
         var simResult = runStandaloneSimulation(query);
-        var electrificationConditionsRanges = simResult.electrificationConditions.get(0);
+        var electrificationRanges = simResult.electrificationRanges.get(0);
 
-        var expectedUsedModes = List.of("1500", "1500", "25000", "25000", "25000", "25000", "25000");
-        var usedModes = gather(electrificationConditionsRanges, e -> e.usedMode);
-        assertEquals(expectedUsedModes, usedModes);
+        ElectrificationUsage[] expected = {
+                new ElectrifiedUsage("1500", true, "O", false),
+                new NeutralUsage(true),
+                new ElectrifiedUsage("1500", true, null, true),
+                new ElectrifiedUsage("25000", true, "25000", true),
+                new ElectrifiedUsage("25000", true, "20000", true),
+                new ElectrifiedUsage("25000", true, "22500", true),
+                new NeutralUsage(false),
+                new ElectrifiedUsage("25000", true, "22500", true),
+                new ElectrifiedUsage("25000", true, "25000", true),
+        };
 
-        var expectedUsedProfiles = List.of("null", "null", "25000", "22500", "20000", "22500", "25000");
-        var usedProfiles = gather(electrificationConditionsRanges, e -> e.usedProfile);
-        assertEquals(expectedUsedProfiles, usedProfiles);
+        assertArrayEquals(expected, electrificationRanges.stream().map(r -> r.electrificationUsage).toArray());
 
-        var expectedUsedRestrictions = List.of("null", "null", "C1", "C1", "null", "null", "null");
-        var usedRestrictions = gather(electrificationConditionsRanges, e -> e.usedRestriction);
-        assertEquals(expectedUsedRestrictions, usedRestrictions);
+        var powerRestrictionRanges = simResult.powerRestrictionRanges.get(0);
 
-        var expectedSeenModes = List.of("null", "null", "null", "null", "null", "null", "null");
-        var seenModes = gather(electrificationConditionsRanges, e -> e.seenMode);
-        assertEquals(expectedSeenModes, seenModes);
+        PowerRestrictionUsage[] expectedPowerRestrictionRanges = {
+                new PowerRestrictionUsage("C2", false),
+                new PowerRestrictionUsage("C2", true),
+        };
+        assertArrayEquals(expectedPowerRestrictionRanges,
+                powerRestrictionRanges.stream().map(PowerRestrictionUsage::from).toArray());
+    }
 
-        var expectedSeenProfiles = List.of("O", "null", "null", "null", "null", "null", "null");
-        var seenProfiles = gather(electrificationConditionsRanges, e -> e.seenProfile);
-        assertEquals(expectedSeenProfiles, seenProfiles);
 
-        var expectedSeenRestrictions = List.of("null", "C1", "null", "null", "null", "null", "null");
-        var seenRestrictions = gather(electrificationConditionsRanges, e -> e.seenRestriction);
-        assertEquals(expectedSeenRestrictions, seenRestrictions);
+    @Test
+    public void testElectrificationRangesThermal() throws IOException {
+        final var rjsTrainPath = tinyInfraTrainPath();
+
+        // build the simulation request
+        var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
+        trainSchedules.add(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0,
+                new RJSAllowance[0],
+                new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null));
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                "1",
+                2,
+                getExampleRollingStocks(),
+                trainSchedules,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+        var electrificationRanges = simResult.electrificationRanges.get(0);
+
+        assertEquals(1, electrificationRanges.size());
+        assertEquals(new NonElectrifiedUsage(), electrificationRanges.get(0).electrificationUsage);
     }
 }
