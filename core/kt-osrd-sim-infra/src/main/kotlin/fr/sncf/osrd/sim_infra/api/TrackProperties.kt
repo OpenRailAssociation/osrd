@@ -1,6 +1,7 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.sim_infra.impl.DeadSection
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeSet
@@ -29,7 +30,7 @@ interface TrackProperties {
     fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
     fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint>
     fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
-    fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeSet
+    fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeMap<DeadSection>
     fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 

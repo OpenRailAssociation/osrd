@@ -1,5 +1,8 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
@@ -33,7 +36,7 @@ public record ElectrificationConstraints(
         double offset = 0;
         for (var range : route.getTrackRanges()) {
             var voltages = range.getCatenaryVoltages();
-            var deadSections = range.getDeadSections();
+            var deadSections = rangeSetFromMap(range.getDeadSections());
             for (var section : voltages.asMapOfRanges().entrySet()) {
                 var interval = section.getKey();
                 if (Math.abs(interval.lowerEndpoint() - interval.upperEndpoint()) < 1e-5)
@@ -52,5 +55,9 @@ public record ElectrificationConstraints(
             offset += range.getLength();
         }
         return res;
+    }
+
+    private static <T> RangeSet<Double> rangeSetFromMap(RangeMap<Double, T> rangeMap) {
+        return TreeRangeSet.create(rangeMap.asMapOfRanges().keySet());
     }
 }
