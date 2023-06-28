@@ -1,4 +1,6 @@
 {
+  "confirmDeleteMessage_one": "Voulez-vous réellement supprimer le projet ?",
+  "confirmDeleteMessage_other": "Voulez-vous réellement supprimer les {{ count }} projets ?",
   "createProject": "Créer un projet",
   "deleteProjects": "Supprimer",
   "filterPlaceholder": "Rechercher…",

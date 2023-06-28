@@ -1,9 +1,11 @@
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { ProjectResult, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiFillCheckCircle } from 'react-icons/ai';
 import { FaTrash } from 'react-icons/fa';
 import { MdOutlineDeselect } from 'react-icons/md';
+import DeleteProjectsModal from './DeleteProjectsModal';
 
 type Props = {
   selectedProjectIds: number[];
@@ -19,6 +21,7 @@ export default function ProjectSelectionToolbar({
   setProjectsList,
 }: Props) {
   const { t } = useTranslation('operationalStudies/home');
+  const { openModal } = useModal();
   const [deleteProject] = osrdEditoastApi.useDeleteProjectsByProjectIdMutation();
 
   const handleDeleteProjects = () => {
@@ -47,7 +50,19 @@ export default function ProjectSelectionToolbar({
             <MdOutlineDeselect />
             <span className="ml-2">{t('unselectAllProjects')}</span>
           </button>
-          <button className="btn btn-sm btn-danger" type="button" onClick={handleDeleteProjects}>
+          <button
+            className="btn btn-sm btn-danger"
+            type="button"
+            onClick={() =>
+              openModal(
+                <DeleteProjectsModal
+                  handleDeleteProjects={handleDeleteProjects}
+                  projectCount={selectedProjectIds.length}
+                />,
+                'sm'
+              )
+            }
+          >
             <FaTrash />
             <span className="ml-2">{t('deleteProjects')}</span>
           </button>
