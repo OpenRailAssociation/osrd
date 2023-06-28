@@ -31,7 +31,7 @@ class PlaywrightScenarioPage {
 
   readonly getScenarioName: Locator;
 
-  readonly getScenarioDesciption: Locator;
+  readonly getScenarioDescription: Locator;
 
   readonly getScenarioInfraName: Locator;
 
@@ -75,7 +75,7 @@ class PlaywrightScenarioPage {
     this.getScenarioInfraList = page.getByTestId('infraslist');
     this.getScenarioElectricProfileSelect = page.locator('.input-group');
     this.getScenarioName = page.locator('.scenario-details-name .scenario-name');
-    this.getScenarioDesciption = page.locator('.scenario-details-description');
+    this.getScenarioDescription = page.locator('.scenario-details-description');
     this.getScenarioInfraName = page.locator('.scenario-infra-name');
     this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.getInfraLoadState = page.locator('.infra-loading-state');
@@ -151,6 +151,10 @@ class PlaywrightScenarioPage {
 
   async checkToastSNCFTitle(title: string | RegExp) {
     await expect(this.getToastSNCFTitle).toHaveText(title);
+  }
+
+  async checkToastSNCFBody(text: string | RegExp) {
+    await expect(this.getToastSNCF.locator('.toast-body')).toHaveText(text);
   }
 
   getTrainTimetableByName(name: string | RegExp) {

@@ -1,40 +1,53 @@
 import { test } from '@playwright/test';
 import { PlaywrightHomePage } from './pages/home-page-model';
+import { ProjectPage } from './pages/project-page-model';
+import { StudyPage } from './pages/study-page-model';
 import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
 import PlaywrightMap from './pages/map-model';
 import VARIABLES from './assets/operationStudies/test_variables';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 
 test.describe('Testing pathfinding', () => {
-  test('Test pathfinding: no electrified rolling stock for this path throws error', async ({
-    page,
-  }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
-    const scenarioPage = new PlaywrightScenarioPage(page);
+  let playwrightHomePage: PlaywrightHomePage;
+  let projectPage: ProjectPage;
+  let studyPage: StudyPage;
+  let scenarioPage: PlaywrightScenarioPage;
+  let playwrightMap: PlaywrightMap;
+  let isScenarioCreated = false;
+
+  test.beforeEach(async ({ page }) => {
+    playwrightHomePage = new PlaywrightHomePage(page);
+    projectPage = new ProjectPage(page);
+    studyPage = new StudyPage(page);
+    scenarioPage = new PlaywrightScenarioPage(page);
+    playwrightMap = new PlaywrightMap(page);
 
     await playwrightHomePage.goToHomePage();
 
-    // Real click on project, study, scenario
+    // Click on project, study
     await playwrightHomePage.goToOperationalStudiesPage();
-    await playwrightHomePage.page
-      .getByTestId('_@Test integration project')
-      .locator('div')
-      .getByRole('button')
-      .click();
-
-    await playwrightHomePage.page
-      .getByTestId('_@Test integration study')
-      .getByRole('button')
-      .click();
+    await projectPage.openProjectByTestId('_@Test integration project');
+    await studyPage.openStudyByTestId('_@Test integration study');
 
     // Create scenario with infra France
-    await scenarioPage.openScenarioCreationModal();
-    await scenarioPage.setScenarioName('_@Test integration scenario created local');
-    await scenarioPage.setSenarioInfraByName(VARIABLES.infraName);
-    const createButton = playwrightHomePage.page.getByText('Créer le scénario');
-    await createButton.click();
+    if (!isScenarioCreated) {
+      await scenarioPage.openScenarioCreationModal();
+      await scenarioPage.setScenarioName(
+        '_@Test integration scenario created for test pathfinding'
+      );
+      await scenarioPage.setSenarioInfraByName(VARIABLES.infraName);
+      const createButton = playwrightHomePage.page.getByText('Créer le scénario');
+      await createButton.click();
 
-    await scenarioPage.checkInfraLoaded();
+      await scenarioPage.checkInfraLoaded();
+
+      isScenarioCreated = true;
+    } else {
+      await scenarioPage.openScenarioByTestId(
+        '_@Test integration scenario created for test pathfinding'
+      );
+    }
+
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
 
     // ***************** Rolling Stock *****************
@@ -58,9 +71,12 @@ test.describe('Testing pathfinding', () => {
     await scenarioPage.getSpeedLimitSelector.locator('input').fill('Haut');
     await scenarioPage.getSpeedLimitSelector.getByRole('button', { name: 'Haut le pied' }).click();
 
-    // ***************** Choice Origin/Destination *****************
-    const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
     await scenarioPage.openTabByText('Itinéraire');
+  });
+
+  test('Test pathfinding: no electrified rolling stock for this path throws error', async () => {
+    await scenarioPage.setTrainScheduleName('TrainSchedule electrification error');
+    // ***************** Choice Origin/Destination *****************
 
     // Search and select origin
     await playwrightMap.selectOrigin(VARIABLES.originSearchQuimper || VARIABLES.originSearch);
@@ -73,5 +89,31 @@ test.describe('Testing pathfinding', () => {
     await scenarioPage.checkPathfingingStateText(
       'Erreur dans la recherche d’itinéraire : Aucun itinéraire trouvé pour un matériel avec ce type d’électrification.'
     );
+  });
+
+  test('Test pathfinding: missing origin throws error', async () => {
+    await scenarioPage.setTrainScheduleName('TrainSchedule missing origin');
+    // ***************** Choice Destination *****************
+    // Search and select destination
+    await playwrightMap.selectDestination(
+      VARIABLES.destinationSearchBrest || VARIABLES.destinationSearch
+    );
+
+    await scenarioPage.addTrainSchedule();
+    await scenarioPage.checkPathfingingStateText('Éléments manquants pour la recherche : Origine.');
+    await scenarioPage.checkToastSNCFBody("L'origine n'est pas définie");
+  });
+
+  test('Test pathfinding: missing destination throws error', async () => {
+    await scenarioPage.setTrainScheduleName('TrainSchedule missing destination');
+    // ***************** Choice Origin *****************
+    // Search and select origin
+    await playwrightMap.selectOrigin(VARIABLES.originSearchQuimper || VARIABLES.originSearch);
+
+    await scenarioPage.addTrainSchedule();
+    await scenarioPage.checkPathfingingStateText(
+      'Éléments manquants pour la recherche : Destination.'
+    );
+    await scenarioPage.checkToastSNCFBody("La destination n'est pas définie");
   });
 });
