@@ -42,7 +42,7 @@ test.describe('Test is operationnal study : scenario creation workflow is workin
     await createButton.click();
     await playwrightHomePage.page.waitForURL('**/scenario');
     expect(await scenarioPage.getScenarioName.textContent()).toContain(scenario.name);
-    expect(await scenarioPage.getScenarioDesciption.textContent()).toContain(scenario.description);
+    expect(await scenarioPage.getScenarioDescription.textContent()).toContain(scenario.description);
     expect(await scenarioPage.getScenarioInfraName.textContent()).toContain(VARIABLES.infraName);
   });
 });

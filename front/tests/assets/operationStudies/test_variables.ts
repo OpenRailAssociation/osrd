@@ -42,7 +42,7 @@ export default process.env.CI
       destinationSearch: {
         stationName: 'miramas',
         stationItemName: 'MAS Miramas A1 87753004',
-        positionClick: { x: 415, y: 220 },
+        positionClick: { x: 415, y: 215 },
       },
       destinationSearchBrest: {
         stationName: 'brest',
