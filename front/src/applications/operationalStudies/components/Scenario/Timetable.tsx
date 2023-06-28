@@ -34,7 +34,6 @@ type Props = {
   trainsWithDetails: boolean;
   conflicts: Conflict[];
   infraState: Infra['state'];
-  isUpdating: boolean;
 };
 
 export default function Timetable({
@@ -42,7 +41,6 @@ export default function Timetable({
   trainsWithDetails,
   conflicts,
   infraState,
-  isUpdating,
 }: Props) {
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
@@ -50,6 +48,7 @@ export default function Timetable({
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const timetableID = useSelector(getTimetableID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
+  const reloadTimetable = useSelector((state: RootState) => state.osrdsimulation.reloadTimetable);
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
   const [trainsDurationsIntervals, setTrainsDurationsIntervals] = useState<number[]>();
@@ -71,7 +70,10 @@ export default function Timetable({
   const deleteTrain = async (train: ScheduledTrain) => {
     try {
       await deleteRequest(`${trainscheduleURI}${train.id}/`);
-      getTimetable(timetableID);
+      const currentTimetable = await getTimetableWithTrainSchedulesDetails({
+        id: timetableID as number,
+      }).unwrap();
+      getTimetable(currentTimetable);
       dispatch(
         setSuccess({
           title: t('timetable.trainDeleted', { name: train.train_name }),
@@ -120,7 +122,10 @@ export default function Timetable({
     }
     try {
       await post(`${trainscheduleURI}standalone_simulation/`, params);
-      getTimetable(timetableID);
+      const currentTimetable = await getTimetableWithTrainSchedulesDetails({
+        id: timetableID as number,
+      }).unwrap();
+      getTimetable(currentTimetable);
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
@@ -180,7 +185,7 @@ export default function Timetable({
 
   useEffect(() => {
     if (timetable && timetable.detailed_train_schedules) {
-      const scheduledTrains = timetable?.detailed_train_schedules;
+      const scheduledTrains = timetable.detailed_train_schedules;
 
       const trainsListWithFilterAndDuration = scheduledTrains.map((train: ScheduledTrain) => ({
         ...train,
@@ -189,7 +194,7 @@ export default function Timetable({
       }));
       setTrainsList(trainsListWithFilterAndDuration);
     }
-  }, [timetable, debouncedTerm]);
+  }, [trainsDurationsIntervals, debouncedTerm]);
 
   useEffect(() => {
     if (timetable && timetable.detailed_train_schedules) {
@@ -198,12 +203,14 @@ export default function Timetable({
   }, [timetable]);
 
   useEffect(() => {
-    if (timetableID && isUpdating) {
+    if (timetableID && !reloadTimetable) {
       getTimetableWithTrainSchedulesDetails({ id: timetableID })
         .unwrap()
-        .then((result) => setTimetable(result));
+        .then((result) => {
+          setTimetable(result);
+        });
     }
-  }, [timetableID, isUpdating]);
+  }, [timetableID, reloadTimetable]);
 
   return (
     <div className="scenario-timetable">

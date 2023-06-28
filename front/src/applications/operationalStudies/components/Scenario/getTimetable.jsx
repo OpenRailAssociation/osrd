@@ -1,14 +1,12 @@
 import {
   updateAllowancesSettings,
   updateIsUpdating,
+  updateReloadTimetable,
   updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
-import {
-  trainscheduleURI,
-  timetableURI,
-} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { store } from 'Store';
@@ -18,21 +16,24 @@ import i18n from 'i18next';
  * Recover the time table for all the trains
  */
 
-export default async function getTimetable(timetableID) {
+export default async function getTimetable(timetable) {
   const { selectedProjection, allowancesSettings, displaySimulation } =
     store.getState().osrdsimulation;
   try {
     store.dispatch(updateIsUpdating(true));
+    store.dispatch(updateReloadTimetable(true));
     if (displaySimulation) {
       store.dispatch(updateSelectedTrain(0));
     }
-    const timetable = await get(`${timetableURI}${timetableID}/`);
     const trainSchedulesIDs = timetable.detailed_train_schedules.map((train) => train.id);
 
     if (trainSchedulesIDs && trainSchedulesIDs.length > 0) {
       let selectedProjectionPath;
       if (!selectedProjection) {
-        const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
+        const tempSelectedProjection = {
+          id: timetable.detailed_train_schedules[0].id,
+          path: timetable.detailed_train_schedules[0].path_id,
+        };
         store.dispatch(updateSelectedProjection(tempSelectedProjection));
         selectedProjectionPath = tempSelectedProjection.path;
       } else if (selectedProjection) {
@@ -41,7 +42,7 @@ export default async function getTimetable(timetableID) {
 
       const simulationLocal = await get(`${trainscheduleURI}results/`, {
         params: {
-          timetable_id: timetableID,
+          timetable_id: timetable.id,
           path_id: selectedProjectionPath,
         },
       });
@@ -62,9 +63,11 @@ export default async function getTimetable(timetableID) {
       });
       store.dispatch(updateAllowancesSettings(newAllowancesSettings));
       store.dispatch(updateIsUpdating(false));
+      store.dispatch(updateReloadTimetable(false));
     } else {
       store.dispatch(updateSimulation({ trains: [] }));
       store.dispatch(updateIsUpdating(false));
+      store.dispatch(updateReloadTimetable(false));
       store.dispatch(updateSelectedProjection(undefined));
     }
   } catch (e) {
@@ -75,6 +78,7 @@ export default async function getTimetable(timetableID) {
       })
     );
     store.dispatch(updateIsUpdating(false));
+    store.dispatch(updateReloadTimetable(true));
     console.error(e);
   }
 }

@@ -26,6 +26,7 @@ import {
   UPDATE_CONTEXTMENU,
   UPDATE_IS_PLAYING,
   UPDATE_IS_UPDATING,
+  UPDATE_RELOAD_TIMETABLE,
   UPDATE_ALLOWANCES_SETTINGS,
   UPDATE_MUST_REDRAW,
   UPDATE_POSITION_VALUES,
@@ -47,6 +48,7 @@ export const initialState: OsrdSimulationState = {
   contextMenu: undefined,
   isPlaying: false,
   isUpdating: false,
+  reloadTimetable: false,
   allowancesSettings: undefined,
   mustRedraw: true,
   positionValues: {
@@ -108,6 +110,9 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         break;
       case UPDATE_IS_UPDATING:
         draft.isUpdating = action.isUpdating;
+        break;
+      case UPDATE_RELOAD_TIMETABLE:
+        draft.reloadTimetable = action.reloadTimetable;
         break;
       case UPDATE_ALLOWANCES_SETTINGS:
         draft.allowancesSettings = action.allowancesSettings;

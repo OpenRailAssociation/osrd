@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
-import { Infra } from 'common/api/osrdEditoastApi';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 const MAP_MIN_HEIGHT = 450;
 
@@ -63,6 +63,12 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
   const timetableID = useSelector(getTimetableID);
   const dispatch = useDispatch();
 
+  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+
+  const toggleAllowancesDisplay = () => {
+    setDisplayAllowances(!displayAllowances);
+  };
+
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
       dispatch(persistentUndoSimulation());
@@ -84,7 +90,11 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
 
   useEffect(() => {
     if (timetableID && selectedProjection) {
-      getTimetable(timetableID);
+      getTimetableWithTrainSchedulesDetails({ id: timetableID })
+        .unwrap()
+        .then((result) => {
+          getTimetable(result);
+        });
     }
     return function cleanup() {
       dispatch(updateSimulation({ trains: [] }));

@@ -13,7 +13,7 @@ import {
   TrainScheduleOptions,
   osrdMiddlewareApi,
 } from 'common/api/osrdMiddlewareApi';
-import { Allowance, Comfort, Infra } from 'common/api/osrdEditoastApi';
+import { Comfort, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 type Props = {
   infraState?: Infra['state'];
@@ -48,6 +48,7 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
   const [postTrainSchedule] = osrdMiddlewareApi.usePostTrainScheduleStandaloneSimulationMutation();
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
 
   async function submitConfAddTrainSchedules() {
     const { osrdconf } = store.getState();
@@ -93,7 +94,10 @@ export default function SubmitConfAddTrainSchedule({ infraState, setIsWorking }:
           })
         );
         setIsWorking(false);
-        getTimetable(osrdconf.simulationConf.timetableID);
+        const timetable = await getTimetableWithTrainSchedulesDetails({
+          id: osrdconf.simulationConf.timetableID as number,
+        }).unwrap();
+        getTimetable(timetable);
       } catch (e: unknown) {
         setIsWorking(false);
         if (e instanceof Error) {

@@ -213,6 +213,7 @@ export interface OsrdSimulationState {
   };
   isPlaying: boolean;
   isUpdating: boolean;
+  reloadTimetable: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionValues;

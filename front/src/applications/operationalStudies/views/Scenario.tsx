@@ -65,6 +65,8 @@ export default function Scenario() {
     {}
   );
 
+  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+
   const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
     { id: infraId as number },
     {
@@ -99,7 +101,11 @@ export default function Scenario() {
 
   useEffect(() => {
     if (infra && infra.state === 'CACHED' && timetableId) {
-      getTimetable(timetableId);
+      getTimetableWithTrainSchedulesDetails({ id: timetableId })
+        .unwrap()
+        .then((result) => {
+          getTimetable(result);
+        });
 
       getTimetableConflicts({ id: timetableId })
         .unwrap()
@@ -254,7 +260,6 @@ export default function Scenario() {
                     trainsWithDetails={trainsWithDetails}
                     conflicts={conflicts}
                     infraState={infra.state}
-                    isUpdating={isUpdating}
                   />
                 )}
               </div>
@@ -303,7 +308,7 @@ export default function Scenario() {
                       displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
                     }
                     collapsedTimetable={collapsedTimetable}
-                    infraState={infra.state}
+                    infraState={infra?.state}
                   />
                 )}
               </div>
