@@ -184,38 +184,25 @@ paths:
                           speed:
                             type: number
                             format: double
-                  electrification_conditions:
+                  electrification_ranges:
                     type: array
                     items:
-                      description: The catenary mode, electrical profile and power restriction encountered along the path. <*_seen> variables are filled only when they differ from the ones <*_used>.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          start:
-                            type: number
-                            format: double
-                          stop:
-                            type: number
-                            format: double
-                          mode_used:
-                            type: string
-                          profile_used:
-                            type: string
-                            nullable: true
-                          restriction_used:
-                            type: string
-                            nullable: true
-                          mode_seen:
-                            type: string
-                            nullable: true
-                          profile_seen:
-                            type: string
-                            nullable: true
-                          restriction_seen:
-                            type: string
-                            nullable: true
+                      $ref: "#/components/schemas/ElectrificationRange"
+                    minItems: 1
 
+                  dead_sections_on_path:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        start:
+                          type: number
+                          format: double
+                        stop:
+                          type: number
+                          format: double
+                        is_drop_pantograph:
+                          type: boolean
                   warnings:
                     type: array
         400:
@@ -1022,3 +1009,38 @@ components:
         state:
           type: string
           description: The expected state of the signal, if the train is alone in the infra
+    ElectrificationRange:
+      properties:
+        start:
+          type: number
+          format: double
+        stop:
+          type: number
+          format: double
+        electrification:
+          oneOf:
+            - $ref: "#/components/schemas/Electrified"
+            - $ref: "#/components/schemas/Neutral"
+            - $ref: "#/components/schemas/NonElectrified"
+          discriminator:
+            propertyName: object_type
+      required: [start, stop, is_electrified, electrification]
+    Electrified:
+      properties:
+        mode:
+          type: string
+        mode_handled:
+          type: boolean
+        profile:
+          type: string
+          nullable: true
+        profile_handled:
+          type: boolean
+      required: [mode, mode_handled, profile_handled]
+    Neutral:
+      properties:
+        is_lower_pantograph:
+          type: boolean
+      required: [is_lower_pantograph]
+    NonElectrified:
+      type: object

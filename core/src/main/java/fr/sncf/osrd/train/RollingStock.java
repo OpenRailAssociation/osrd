@@ -7,6 +7,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.electrification.Electrification;
 import fr.sncf.osrd.envelope_sim.electrification.Electrified;
+import fr.sncf.osrd.envelope_sim.electrification.Neutral;
+import fr.sncf.osrd.envelope_sim.electrification.NonElectrified;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +20,9 @@ import java.util.Set;
  */
 @SuppressFBWarnings({ "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" })
 public class RollingStock implements PhysicsRollingStock {
+    private static final TractiveEffortPoint[] COASTING_CURVE =
+            { new TractiveEffortPoint(0, 0), new TractiveEffortPoint(1, 0) };
+
     public final String id;
 
     public final double A; // in newtons
@@ -183,18 +188,26 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Returns the tractive effort curve that matches best, along with the catenary conditions that matched
+     * Returns the tractive effort curve that matches best, along with the infra conditions that matched
      */
     protected CurveAndCondition findTractiveEffortCurve(Comfort comfort, Electrification electrification) {
-        var usedMode = defaultMode;
-        var chosenCond = new EffortCurveConditions(comfort, null, null);
-
-        if (electrification instanceof Electrified e) {
-            usedMode = modes.containsKey(e.mode) ? e.mode : defaultMode;
-            chosenCond = new EffortCurveConditions(comfort, e.profile, e.powerRestriction);
+        if (electrification instanceof Neutral n) {
+            var wouldUseRes = findTractiveEffortCurve(comfort, n.overlappedElectrification);
+            if (!modes.get(wouldUseRes.cond.mode).isElectric) {
+                return wouldUseRes;
+            } else {
+                return new CurveAndCondition(COASTING_CURVE, new InfraConditions(null, null, null));
+            }
+        } else if (electrification instanceof NonElectrified) {
+            return new CurveAndCondition(modes.get(defaultMode).defaultCurve,
+                    new InfraConditions(defaultMode, null, null));
         }
 
+        var electrified = (Electrified) electrification;
+
+        String usedMode = modes.containsKey(electrified.mode) ? electrified.mode : defaultMode;
         var mode = modes.get(usedMode);
+        var chosenCond = new EffortCurveConditions(comfort, electrified.profile, electrified.powerRestriction);
         // Get first matching curve
         for (var condCurve : mode.curves) {
             if (condCurve.cond.match(chosenCond)) {

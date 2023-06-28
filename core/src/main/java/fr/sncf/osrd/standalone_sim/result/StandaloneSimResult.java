@@ -12,6 +12,7 @@ import java.util.List;
 public class StandaloneSimResult {
     public static final JsonAdapter<StandaloneSimResult> adapter = new Moshi
             .Builder()
+            .add(ElectrificationRange.adapter)
             .build()
             .adapter(StandaloneSimResult.class);
 
@@ -22,8 +23,10 @@ public class StandaloneSimResult {
     @Json(name = "speed_limits")
     public List<List<ResultEnvelopePoint>> speedLimits = new ArrayList<>();
     public List<Warning> warnings = new ArrayList<>();
-    @Json(name = "electrification_conditions")
-    public List<List<ElectrificationConditionsRange>> electrificationConditions = new ArrayList<>();
+    @Json(name = "electrification_ranges")
+    public List<List<ElectrificationRange>> electrificationRanges = new ArrayList<>();
+    @Json(name = "power_restriction_ranges")
+    public List<List<PowerRestrictionRange>> powerRestrictionRanges = new ArrayList<>();
 
     /** Update all trainResults with the given departure times */
     public void addDepartureTimes(List<Double> departureTimes) {
