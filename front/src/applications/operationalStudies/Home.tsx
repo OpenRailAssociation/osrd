@@ -101,14 +101,11 @@ export default function Home() {
 
   const toggleProjectSelection = (id?: number) => {
     if (id !== undefined) {
-      const idPosition = selectedProjectIds.indexOf(id);
-      if (idPosition !== -1) {
-        const tempSelectedProjectIds = [...selectedProjectIds];
-        tempSelectedProjectIds.splice(idPosition, 1);
-        setSelectedProjectIds(tempSelectedProjectIds);
-      } else {
-        setSelectedProjectIds(selectedProjectIds.concat([id]));
-      }
+      setSelectedProjectIds(
+        selectedProjectIds.indexOf(id) !== -1
+          ? selectedProjectIds.filter((projectId) => projectId !== id)
+          : selectedProjectIds.concat([id])
+      );
     }
   };
 
