@@ -24,10 +24,10 @@ import java.util.*;
 
 
 public class Helpers {
-    /** Parse all serialized .json rolling stock files and add these to the given map */
-    public static List<RJSRollingStock> parseRollingStockDir(Path dirPath) throws IOException, OSRDError {
+    /** Parse all serialized .json rolling stock files */
+    public static List<RJSRollingStock> getExampleRollingStocks() throws IOException, OSRDError {
         var jsonMatcher = FileSystems.getDefault().getPathMatcher("glob:**.json");
-        var rollingStocksPaths = Files.list(dirPath)
+        var rollingStocksPaths = Files.list(getResourcePath("rolling_stocks/"))
                 .filter((path) -> path.toFile().isFile())
                 .filter(jsonMatcher::matches)
                 .toList();
@@ -37,10 +37,6 @@ public class Helpers {
             res.add(MoshiUtils.deserialize(RJSRollingStock.adapter, filePath));
         res.sort(Comparator.comparing(x -> x.name)); // Prevents different behaviors on different OS when running tests
         return res;
-    }
-
-    public static List<RJSRollingStock> getExampleRollingStocks() throws OSRDError, IOException {
-        return parseRollingStockDir(getResourcePath("rolling_stocks/"));
     }
 
     public static RJSRollingStock getExampleRollingStock(String fileName) throws IOException, OSRDError {
