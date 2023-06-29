@@ -8,7 +8,7 @@ import { Feature, FeatureCollection } from 'geojson';
 import ReactMapGL, { Source, MapRef, MapboxGeoJSONFeature } from 'react-map-gl';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { featureCollection } from '@turf/helpers';
-import { groupBy, mapValues } from 'lodash';
+import { map, sum, uniqBy } from 'lodash';
 
 import { LayerType } from '../../../applications/editor/tools/types';
 import osmBlankStyle from '../Layers/osmBlankStyle';
@@ -40,23 +40,23 @@ const DataLoader: FC<{
   layers: Set<LayerType>;
 }> = ({ bbox, getGeoJSONs, layers }) => {
   const { mapStyle, layersSettings } = useSelector(getMap);
-  const [map, setMap] = useState<MapRef | null>(null);
+  const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const [state, setState] = useState<'idle' | 'render' | 'loaded'>('idle');
   const osmLayers = useMemo(() => genLayers(mapStyle), [mapStyle]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!mapRef) return;
 
-    map.fitBounds(bbox, { animate: false });
+    mapRef.fitBounds(bbox, { animate: false });
     setTimeout(() => {
       console.time(TIME_LABEL);
       setState('render');
     }, 0);
-  }, [map, bbox]);
+  }, [mapRef, bbox]);
 
   useEffect(() => {
     if (state === 'render') {
-      const m = map as MapRef;
+      const m = mapRef as MapRef;
 
       const querySources = () => {
         // Retrieve OSRD data:
@@ -64,9 +64,12 @@ const DataLoader: FC<{
         const osrdData: Partial<Record<LayerType, FeatureCollection>> = {};
         layers.forEach((layer) => {
           osrdData[layer] = featureCollection(
-            m
-              .querySourceFeatures(`editor/geo/${layer}`, { sourceLayer: layer })
-              .map(simplifyFeature)
+            uniqBy(
+              m
+                .querySourceFeatures(`editor/geo/${layer}`, { sourceLayer: layer })
+                .map(simplifyFeature),
+              (f) => f.id
+            )
           );
           osrdFeaturesCount += osrdData[layer]?.features.length || 0;
         });
@@ -75,27 +78,25 @@ const DataLoader: FC<{
         // (we have to force cast, because in our weird setup, osmSource is
         // typed as if it was from mapbox when it actually comes from maplibre)
         const osmSource = m.getSource('osm') as unknown as { vectorLayerIds: string[] };
-        const osmFeatures: Feature[] = osmSource.vectorLayerIds.flatMap((layer) =>
-          m.querySourceFeatures('osm', { sourceLayer: layer }).map((feature) => {
-            const f = simplifyFeature(feature);
-
-            return {
-              ...f,
-              properties: {
-                ...(f.properties || {}),
-                sourceLayer: layer,
-              },
-            };
-          })
+        let incrementalID = 1;
+        const osmData: Record<string, FeatureCollection> = osmSource.vectorLayerIds.reduce(
+          (iter, sourceLayer) => ({
+            ...iter,
+            [sourceLayer]: featureCollection(
+              uniqBy(
+                m.querySourceFeatures('osm', { sourceLayer }).map(simplifyFeature),
+                // eslint-disable-next-line no-plusplus
+                (f) => (f.id ? `osm-${f.id}` : `generated-${++incrementalID}`) // only deduplicate features with IDs
+              )
+            ),
+          }),
+          {}
         );
-        const osmData: Record<string, FeatureCollection> = mapValues(
-          groupBy(osmFeatures, (feature) => feature.properties?.sourceLayer),
-          (features) => featureCollection(features)
-        );
+        const osmFeaturesCount = sum(map(osmData, (collection) => collection.features.length));
 
         console.timeEnd(TIME_LABEL);
         console.log('  - OSRD features: ', osrdFeaturesCount);
-        console.log('  - OSM features: ', osmFeatures.length);
+        console.log('  - OSM features: ', osmFeaturesCount);
 
         // Finalize:
         getGeoJSONs(osrdData, osmData);
@@ -123,7 +124,7 @@ const DataLoader: FC<{
           }}
         >
           <ReactMapGL
-            ref={setMap}
+            ref={setMapRef}
             mapLib={maplibregl}
             mapStyle={osmBlankStyle}
             style={{ width: '100%', height: '100%' }}
