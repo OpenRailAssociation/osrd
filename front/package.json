@@ -72,6 +72,7 @@
     "lodash": "^4.17.15",
     "maplibre-gl": "^2.4.0",
     "openapi-typescript-codegen": "^0.24.0",
+    "party-js": "^2.2.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",

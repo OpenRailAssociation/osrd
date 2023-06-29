@@ -10,6 +10,7 @@ import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import osrdLogo from 'assets/pictures/osrd.png';
+import motriceParty from 'common/MotriceRelated/motriceParty';
 import LicenseAttributions from './LicenseAttributions';
 
 function ReleaseInformations() {
@@ -40,7 +41,13 @@ function ReleaseInformations() {
           <div className="row h-100">
             <div className="col-md-6">
               <div className="d-flex flex-column align-items-center mb-4">
-                <a href={osrdWebSite} className="mb-4" target="_blank" rel="noreferrer">
+                <a
+                  href={osrdWebSite}
+                  className="mb-4"
+                  target="_blank"
+                  rel="noreferrer"
+                  onMouseEnter={motriceParty}
+                >
                   <img src={osrdLogo} alt="OSRD logo" />
                 </a>
                 <h2>OSRD</h2>
