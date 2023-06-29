@@ -1,6 +1,4 @@
 .project-edition-modal {
-  max-height: 80vh;
-  overflow: auto;
 
   .project-edition-modal-picture {
     position: absolute;
@@ -55,12 +53,13 @@
       .project-edition-modal-picture-placeholder-buttons {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        flex-flow: row;
+        justify-content: end;
         gap: 0.5rem;
         position: absolute;
         z-index: 1;
         right: 0.5rem;
-        bottom: 0.5rem;
+        top: 0.5rem;
         flex-wrap: wrap;
         button {
           display: flex;
@@ -105,7 +104,7 @@
     }
   }
   .project-edition-modal-name {
-    height: 5rem;
+    height: 6rem;
   }
   .project-edition-modal-description {
     textarea {

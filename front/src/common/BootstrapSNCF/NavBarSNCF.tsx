@@ -1,24 +1,30 @@
-import { FaPowerOff, FaInfoCircle } from 'react-icons/fa';
+import { FaPowerOff, FaInfoCircle, FaCog } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { logout } from 'reducers/user';
 import { useTranslation } from 'react-i18next';
 import ReleaseInformations from 'common/ReleaseInformations/ReleaseInformations';
 import ChangeLanguageModal from 'common/ChangeLanguageModal';
+import UserSettings from 'common/UserSettings';
 import i18n from 'i18next';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { language2flag } from 'utils/strings';
+import { RootState } from 'reducers';
+import { AiFillSafetyCertificate } from 'react-icons/ai';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { useModal } from './ModalSNCF';
 
-export default function LegacyNavBarSNCF(props) {
+type Props = {
+  appName: string | ReactElement;
+  logo: string;
+};
+
+export default function LegacyNavBarSNCF({ appName, logo }: Props) {
   const { openModal } = useModal();
-  const user = useSelector((state) => state.user);
-  const { fullscreen } = useSelector((state) => state.main);
-  const { appName, logo } = props;
+  const user = useSelector((state: RootState) => state.user);
+  const { fullscreen, safeWord } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const { t } = useTranslation('home/navbar');
 
@@ -30,13 +36,25 @@ export default function LegacyNavBarSNCF(props) {
     <div className={`mastheader${fullscreen ? ' fullscreen' : ''}`}>
       <div className="mastheader-logo flex-grow-0">
         <Link to="/">
-          <img alt={appName} src={logo} width="70" />
+          <img src={logo} width="70" alt="" />
         </Link>
       </div>
       <header role="banner" className="mastheader-title d-flex flex-grow-1">
         <h1 className="text-white pl-3 mb-0">{appName}</h1>
       </header>
       <ul className="mastheader-toolbar toolbar mb-0">
+        {safeWord !== '' && (
+          <li className="toolbar-item separator-gray-500 d-none d-md-flex">
+            <button
+              type="button"
+              className="btn btn-only-icon btn-link btn-notif toolbar-item-spacing text-success"
+              onClick={() => openModal(<UserSettings />)}
+              title={t('safeWordActivated')}
+            >
+              <AiFillSafetyCertificate />
+            </button>
+          </li>
+        )}
         <li className="toolbar-item separator-gray-500">
           <DropdownSNCF
             titleContent={
@@ -75,6 +93,17 @@ export default function LegacyNavBarSNCF(props) {
                 </span>
                 {t(`language.${i18n.language}`)}
               </button>,
+              <button
+                type="button"
+                className="btn-link text-reset"
+                onClick={() => openModal(<UserSettings />)}
+                key="release"
+              >
+                <span className="mr-2">
+                  <FaCog />
+                </span>
+                {t('userSettings')}
+              </button>,
               <button type="button" className="btn-link text-reset" onClick={toLogout} key="logout">
                 <span className="mr-2">
                   <FaPowerOff />
@@ -88,8 +117,3 @@ export default function LegacyNavBarSNCF(props) {
     </div>
   );
 }
-
-LegacyNavBarSNCF.propTypes = {
-  appName: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
-  logo: PropTypes.string.isRequired,
-};

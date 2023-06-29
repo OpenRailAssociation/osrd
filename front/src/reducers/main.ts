@@ -25,6 +25,16 @@ export function toggleFullscreen(): ThunkAction<ActionToggleFullscreen> {
   };
 }
 
+export const TOGGLE_MOTRICE_RELATED = 'main/TOGGLE_MOTRICE_RELATED';
+type ActionToggleMotriceRelated = { type: typeof TOGGLE_MOTRICE_RELATED };
+export function toggleMotriceRelated(): ThunkAction<ActionToggleMotriceRelated> {
+  return (dispatch) => {
+    dispatch({
+      type: TOGGLE_MOTRICE_RELATED,
+    });
+  };
+}
+
 export const ACTION_LOADING = 'main/ACTION_LOADING';
 type ActionLoading = { type: typeof ACTION_LOADING };
 export function setLoading(): ThunkAction<ActionLoading> {
@@ -109,6 +119,20 @@ export function updateLastInterfaceVersion(
   };
 }
 
+export const UPDATE_SAFE_WORD = 'main/UPDATE_SAFE_WORD';
+type ActionSetSafeWord = {
+  type: typeof UPDATE_SAFE_WORD;
+  safeWord: string;
+};
+export function updateSafeWord(safeWord: string): ThunkAction<ActionSetSafeWord> {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SAFE_WORD,
+      safeWord,
+    });
+  };
+}
+
 export type MainActions =
   | ActionFailure
   | ActionSuccess
@@ -116,9 +140,11 @@ export type MainActions =
   | ActionLoading
   | ActionToggleDarkmode
   | ActionToggleFullscreen
+  | ActionToggleMotriceRelated
   | ActionNotificationAdd
   | ActionNotificationDelete
-  | ActionSetLastInterfaceVersion;
+  | ActionSetLastInterfaceVersion
+  | ActionSetSafeWord;
 
 //
 // State definition
@@ -126,18 +152,22 @@ export type MainActions =
 export interface MainState {
   darkmode: boolean;
   fullscreen: boolean;
+  motriceRelated: boolean;
   loading: number;
   notifications: Array<Notification>;
   lastInterfaceVersion: string;
+  safeWord: string;
 }
 export const initialState: MainState = {
   darkmode: false,
   fullscreen: false,
+  motriceRelated: false,
   // Number of running task
   loading: 0,
   // errors
   notifications: [],
   lastInterfaceVersion: '',
+  safeWord: '',
 };
 
 //
@@ -152,6 +182,9 @@ export default function reducer(inputState: MainState | undefined, action: MainA
         break;
       case TOGGLE_FULLSCREEN:
         draft.fullscreen = !state.fullscreen;
+        break;
+      case TOGGLE_MOTRICE_RELATED:
+        draft.motriceRelated = !state.motriceRelated;
         break;
       case ACTION_LOADING:
         draft.loading = state.loading + 1;
@@ -203,6 +236,10 @@ export default function reducer(inputState: MainState | undefined, action: MainA
         break;
       case UPDATE_LAST_INTERFACE_VERSION:
         draft.lastInterfaceVersion = action.lastInterfaceVersion;
+        break;
+      case UPDATE_SAFE_WORD:
+        draft.safeWord = action.safeWord;
+        break;
     }
   });
 }
