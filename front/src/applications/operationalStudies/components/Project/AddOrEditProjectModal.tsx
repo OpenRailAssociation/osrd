@@ -173,7 +173,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         <div className="row mb-3">
-          <div className="col-xl-4 col-lg-5 col-md-6">
+          <div className="col-lg-5 col-md-6">
             <div className="project-edition-modal-picture">
               <PictureUploader
                 image={currentProject?.image}
@@ -182,7 +182,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
               />
             </div>
           </div>
-          <div className="col-xl-8 col-lg-7 col-md-6">
+          <div className="col-lg-7 col-md-6">
             <div className="project-edition-modal-name">
               <InputSNCF
                 id="projectInputName"

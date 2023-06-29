@@ -1,9 +1,12 @@
 .modal {
   .modal-content {
-    max-height: calc(100vh - 8rem);
-    overflow: auto;
-  }
-  .modal-body {
-    overflow: auto;
+    position: relative;
+    .modal-body {
+      overflow: auto;
+      max-height: 60vh;
+    }
+    .modal-footer {
+      padding-top: 0.5rem;
+    }
   }
 }
