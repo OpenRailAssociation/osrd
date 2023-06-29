@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { createPortal } from 'react-dom';
@@ -28,6 +29,8 @@ function simplifyFeature(feature: MapboxGeoJSONFeature): Feature {
   };
 }
 
+const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
+
 const DataLoader: FC<{
   bbox: BBox2d;
   getGeoJSONs: (
@@ -46,6 +49,7 @@ const DataLoader: FC<{
 
     map.fitBounds(bbox, { animate: false });
     setTimeout(() => {
+      console.time(TIME_LABEL);
       setState('render');
     }, 0);
   }, [map, bbox]);
@@ -56,6 +60,7 @@ const DataLoader: FC<{
 
       const querySources = () => {
         // Retrieve OSRD data:
+        let osrdFeaturesCount = 0;
         const osrdData: Partial<Record<LayerType, FeatureCollection>> = {};
         layers.forEach((layer) => {
           osrdData[layer] = featureCollection(
@@ -63,6 +68,7 @@ const DataLoader: FC<{
               .querySourceFeatures(`editor/geo/${layer}`, { sourceLayer: layer })
               .map(simplifyFeature)
           );
+          osrdFeaturesCount += osrdData[layer]?.features.length || 0;
         });
 
         // Retrieve OSM data:
@@ -87,6 +93,10 @@ const DataLoader: FC<{
           (features) => featureCollection(features)
         );
 
+        console.timeEnd(TIME_LABEL);
+        console.log('  - OSRD features: ', osrdFeaturesCount);
+        console.log('  - OSM features: ', osmFeatures.length);
+
         // Finalize:
         getGeoJSONs(osrdData, osmData);
         setState('loaded');
@@ -108,8 +118,8 @@ const DataLoader: FC<{
           className="position-absolute"
           style={{
             bottom: '110%',
-            height: 3000,
-            width: 3000,
+            height: 1200,
+            width: 1200,
           }}
         >
           <ReactMapGL

@@ -85,12 +85,14 @@ const DataDisplay: FC<{
   const osmSources = useMemo(
     () =>
       groupBy(
-        genLayerProps(
-          mapStyle,
-          LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
-        ) as (OrderedLayerProps & {
-          'source-layer': string;
-        })[],
+        (
+          genLayerProps(
+            mapStyle,
+            LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]
+          ) as (OrderedLayerProps & {
+            'source-layer': string;
+          })[]
+        ).filter((layer) => !layer.id?.match(/-en$/)),
         (layer) => layer['source-layer']
       ),
     [mapStyle]
