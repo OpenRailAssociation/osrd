@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { isNil, mapValues, omitBy } from 'lodash';
@@ -30,12 +31,10 @@ type TransformedData = {
   osrd: Partial<Record<LayerType, FeatureCollection>>;
 };
 
+const TIME_LABEL = 'Warping OSRD and OSM data';
+
 export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
-  const layers = useMemo(
-    () =>
-      new Set<LayerType>(['buffer_stops', 'detectors', 'signals', 'switches', 'track_sections']),
-    []
-  );
+  const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
   const [transformedData, setTransformedData] = useState<TransformedData | null>(null);
   const pathBBox = useMemo(() => bbox(path) as BBox2d, [path]);
 
@@ -85,6 +84,7 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
         bbox={pathBBox}
         layers={layers}
         getGeoJSONs={(osrdData, osmData) => {
+          console.time(TIME_LABEL);
           const transformed = {
             osm: omitBy(
               mapValues(osmData, (collection) => transform(collection)),
@@ -95,6 +95,7 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
               isNil
             ),
           } as TransformedData;
+          console.timeEnd(TIME_LABEL);
           setTransformedData(transformed);
         }}
       />
