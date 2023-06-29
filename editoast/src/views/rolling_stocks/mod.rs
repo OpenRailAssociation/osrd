@@ -323,9 +323,6 @@ async fn create_livery(
     MultipartForm(form): MultipartForm<RollingStockLiveryCreateForm>,
 ) -> Result<Json<RollingStockLivery>> {
     let rolling_stock_id = rolling_stock_id.into_inner();
-    assert_rolling_stock_unlocked(
-        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
-    )?;
 
     let formatted_images = format_images(form.images)?;
 
