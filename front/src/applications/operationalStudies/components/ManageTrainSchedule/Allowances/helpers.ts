@@ -16,16 +16,18 @@ export function findAllowanceOverlap({
   const after = allowances.findIndex(
     (allowance) => endPosition >= allowance.begin_position && endPosition <= allowance.end_position
   );
-  return [
-    before !== currentAllowanceSelected &&
-      // Could be BEFORE the first allowance
-      (beginPosition < allowances[0].begin_position ? 0 : before),
-    after !== currentAllowanceSelected &&
-      // Could be AFTER the last allowance
-      (endPosition > allowances[allowances.length - 1].end_position
-        ? allowances.length - 1
-        : after),
-  ];
+  return allowances.length > 0
+    ? [
+        before !== currentAllowanceSelected &&
+          // Could be BEFORE the first allowance
+          (beginPosition < allowances[0].begin_position ? 0 : before),
+        after !== currentAllowanceSelected &&
+          // Could be AFTER the last allowance
+          (endPosition > allowances[allowances.length - 1].end_position
+            ? allowances.length - 1
+            : after),
+      ]
+    : [-1, -1];
 }
 
 export default function getAllowanceValue(value?: AllowanceValue) {
