@@ -54,11 +54,13 @@ export function getGrids(line: Feature<LineString>, params?: { stripsPerSide?: n
         const p10 = destination(p1, step * j, direction * 90).geometry.coordinates;
         const p11 = destination(p1, step * (j + 1), direction * 90).geometry.coordinates;
         flatGrid.features.push(
-          polygon([[p00, p10, p01, p00]], { triangleId: `step:${i}/strip:${direction * j}/inside` })
+          polygon([[p00, p10, p01, p00]], {
+            triangleId: `step:${i}/strip:${direction * (j + 1)}/inside`,
+          })
         );
         flatGrid.features.push(
           polygon([[p11, p10, p01, p11]], {
-            triangleId: `step:${i}/strip:${direction * j}/outside`,
+            triangleId: `step:${i}/strip:${direction * (j + 1)}/outside`,
           })
         );
       }

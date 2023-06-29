@@ -100,8 +100,8 @@ export function featureToPointsGrid(grid: GridFeature, steps: number): PointsGri
     points[i + 1] = points[i + 1] || {};
     for (let direction = -1; direction <= 1; direction += 2) {
       for (let j = 0; j < stripsPerSide; j++) {
-        const inside = gridIndex[`step:${i}/strip:${direction * j}/inside`];
-        const outside = gridIndex[`step:${i}/strip:${direction * j}/outside`];
+        const inside = gridIndex[`step:${i}/strip:${direction * (j + 1)}/inside`];
+        const outside = gridIndex[`step:${i}/strip:${direction * (j + 1)}/outside`];
         const [[p00, p10, p01]] = inside.geometry.coordinates;
         const [[p11]] = outside.geometry.coordinates;
 
@@ -129,12 +129,12 @@ export function pointsGridToFeature(points: PointsGrid): GridFeature {
         const p11 = points[i + 1][direction * (j + 1)];
         grid.features.push(
           polygon([[p00, p10, p01, p00]], {
-            triangleId: `step:${i}/strip:${direction * j}/inside`,
+            triangleId: `step:${i}/strip:${direction * (j + 1)}/inside`,
           }) as Triangle
         );
         grid.features.push(
           polygon([[p11, p10, p01, p11]], {
-            triangleId: `step:${i}/strip:${direction * j}/outside`,
+            triangleId: `step:${i}/strip:${direction * (j + 1)}/outside`,
           }) as Triangle
         );
       }
