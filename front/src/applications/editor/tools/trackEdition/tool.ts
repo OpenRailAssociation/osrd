@@ -14,6 +14,7 @@ import nearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-l
 import getNearestPoint from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
 
+import { entityDoUpdate } from 'common/IntervalsDataViz/data';
 import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
 import {
   POINTS_LAYER_ID,
@@ -24,7 +25,6 @@ import {
 } from './components';
 import { TrackEditionState } from './types';
 import { getNewLine } from './utils';
-import { entityDoUpdate } from '../../components/LinearMetadata';
 import { Tool } from '../editorContextTypes';
 import { DEFAULT_COMMON_TOOL_STATE } from '../commonToolState';
 
