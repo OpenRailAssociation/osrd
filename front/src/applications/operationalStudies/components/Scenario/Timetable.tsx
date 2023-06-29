@@ -184,8 +184,8 @@ export default function Timetable({
   };
 
   useEffect(() => {
-    if (timetable && timetable.detailed_train_schedules) {
-      const scheduledTrains = timetable.detailed_train_schedules;
+    if (timetable && timetable.train_schedule_summaries) {
+      const scheduledTrains = timetable.train_schedule_summaries;
 
       const trainsListWithFilterAndDuration = scheduledTrains.map((train: ScheduledTrain) => ({
         ...train,
@@ -197,8 +197,8 @@ export default function Timetable({
   }, [trainsDurationsIntervals, debouncedTerm]);
 
   useEffect(() => {
-    if (timetable && timetable.detailed_train_schedules) {
-      setTrainsDurationsIntervals(findTrainsDurationsIntervals(timetable.detailed_train_schedules));
+    if (timetable && timetable.train_schedule_summaries) {
+      setTrainsDurationsIntervals(findTrainsDurationsIntervals(timetable.train_schedule_summaries));
     }
   }, [timetable]);
 

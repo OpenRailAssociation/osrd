@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { TimeString } from 'common/types';
 import { SIGNAL_BASE_DEFAULT } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import { DetailedTrainSchedule } from 'common/api/osrdEditoastApi';
+import { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
 
 export type MergedDataPoint<T = number> = {
   [key: string]: number | T;
@@ -108,7 +108,7 @@ export type MechanicalEnergyConsumedBaseEco = {
   eco?: number | null;
 };
 
-export type ScheduledTrain = DetailedTrainSchedule & {
+export type ScheduledTrain = TrainScheduleSummary & {
   duration?: number;
   isFiltered?: boolean;
 };
