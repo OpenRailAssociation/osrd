@@ -5,18 +5,19 @@
   "deleteProjects": "Supprimer",
   "filterPlaceholder": "Rechercher…",
   "openProject": "Ouvrir",
-  "projectsCount_zero": "Aucun projet",
+  "projects": "Projets",
   "projectsCount_one": "1 projet",
   "projectsCount_other": "{{count}} projets",
-  "projects": "Projets",
+  "projectsCount_zero": "Aucun projet",
+  "safeWordActivated": "Mode « sûr » activé",
+  "selectedProjects_one": "1 projet sélectionné",
+  "selectedProjects_other": "{{count}} projets sélectionnés",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
   },
-  "selectedProjects_one": "1 projet sélectionné",
-  "selectedProjects_other": "{{count}} projets sélectionnés",
-  "studiesCount_zero": "Aucune étude",
   "studiesCount_one": "1 étude",
   "studiesCount_other": "{{count}} études",
+  "studiesCount_zero": "Aucune étude",
   "unselectAllProjects": "Déselectionner"
 }

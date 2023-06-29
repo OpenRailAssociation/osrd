@@ -15,6 +15,8 @@ import {
   SearchProjectResult,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
+import { useSelector } from 'react-redux';
+import { RootState } from 'reducers';
 
 type SortOptions =
   | 'NameAsc'
@@ -26,6 +28,7 @@ type SortOptions =
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
+  const { safeWord } = useSelector((state: RootState) => state.main);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);
@@ -46,7 +49,7 @@ export default function Home() {
   ];
 
   const getProjectList = async () => {
-    if (filter) {
+    if (filter || safeWord !== '') {
       const payload: PostSearchApiArg = {
         body: {
           object: 'project',
@@ -61,6 +64,9 @@ export default function Home() {
           ],
         },
       };
+      if (safeWord !== '') {
+        payload?.body?.query?.push(['search', ['tags'], safeWord]);
+      }
       try {
         const data = await postSearch(payload).unwrap();
         let filteredData = [...data] as SearchProjectResult[];
@@ -140,7 +146,7 @@ export default function Home() {
 
   useEffect(() => {
     getProjectList();
-  }, [sortOption, filter]);
+  }, [sortOption, filter, safeWord]);
 
   return (
     <>
