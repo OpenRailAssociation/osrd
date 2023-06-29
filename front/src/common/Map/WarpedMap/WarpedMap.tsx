@@ -1,12 +1,12 @@
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { mapValues } from 'lodash';
+import { isNil, mapValues, omitBy } from 'lodash';
 
 import bbox from '@turf/bbox';
 import simplify from '@turf/simplify';
 import { lineString } from '@turf/helpers';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
-import { Feature, FeatureCollection, GeoJSON, Geometry, LineString, Position } from 'geojson';
+import { Feature, FeatureCollection, Geometry, LineString, Position } from 'geojson';
 
 import {
   extendLine,
@@ -25,15 +25,18 @@ import { LayerType } from '../../../applications/editor/tools/types';
 import DataLoader from './DataLoader';
 import DataDisplay from './DataDisplay';
 
+type TransformedData = {
+  osm: Record<string, FeatureCollection>;
+  osrd: Partial<Record<LayerType, FeatureCollection>>;
+};
+
 export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
   const layers = useMemo(
     () =>
       new Set<LayerType>(['buffer_stops', 'detectors', 'signals', 'switches', 'track_sections']),
     []
   );
-  const [transformedData, setTransformedData] = useState<Partial<
-    Record<LayerType, GeoJSON[]>
-  > | null>(null);
+  const [transformedData, setTransformedData] = useState<TransformedData | null>(null);
   const pathBBox = useMemo(() => bbox(path) as BBox2d, [path]);
 
   // Transformation function:
@@ -43,7 +46,7 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
     const simplifiedPath = simplify(path, { tolerance: 0.01 });
 
     // Cut the simplified path as N equal length segments
-    const sample = getSamples(simplifiedPath, 30);
+    const sample = getSamples(simplifiedPath, 15);
     const samplePath = lineString(sample.points.map((point) => point.geometry.coordinates));
 
     // Extend the sample, so that we can warp things right before and right
@@ -52,10 +55,10 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
     const steps = extendedSamples.geometry.coordinates.length - 1;
 
     // Generate our base grids:
-    const { regular, warped } = getGrids(extendedSamples, { stripsPerSide: 12 });
+    const { regular, warped } = getGrids(extendedSamples, { stripsPerSide: 3 });
 
     // Improve the warped grid, to get it less discontinuous:
-    const betterWarped = straightenGrid(warped, steps, { force: 0.8, iterations: 3 });
+    const betterWarped = straightenGrid(warped, steps, { force: 0.8, iterations: 5 });
 
     // Index the grids:
     const regularIndex = getGridIndex(regular);
@@ -81,28 +84,36 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
       <DataLoader
         bbox={pathBBox}
         layers={layers}
-        getGeoJSONs={(data) => {
-          setTransformedData(
-            mapValues(data, (geoJSONs: GeoJSON[]) =>
-              geoJSONs.flatMap((geoJSON) => {
-                const transformed = transform(geoJSON);
-                return transformed ? [transformed] : [];
-              })
-            )
-          );
+        getGeoJSONs={(osrdData, osmData) => {
+          const transformed = {
+            osm: omitBy(
+              mapValues(osmData, (collection) => transform(collection)),
+              isNil
+            ),
+            osrd: omitBy(
+              mapValues(osrdData, (collection: FeatureCollection) => transform(collection)),
+              isNil
+            ),
+          } as TransformedData;
+          setTransformedData(transformed);
         }}
       />
       <div
         className="bg-white"
         style={{
-          width: 300,
+          width: 200,
           height: '100%',
           padding: '1rem',
           borderRadius: 4,
           marginRight: '0.5rem',
         }}
       >
-        <DataDisplay layers={layers} bbox={regularBBox} data={transformedData} />
+        <DataDisplay
+          osrdLayers={layers}
+          bbox={regularBBox}
+          osrdData={transformedData?.osrd}
+          osmData={transformedData?.osm}
+        />
       </div>
     </div>
   );

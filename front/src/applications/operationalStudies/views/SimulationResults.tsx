@@ -44,7 +44,7 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
 
-  const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
+  const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(600);
 
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
 

@@ -47,6 +47,7 @@ import {
 } from './extensions/SNCF/SNCF_LPV_PANELS';
 import { LayerContext } from './types';
 import { getCatenariesProps, getCatenariesTextParams } from './Catenaries';
+import OrderedLayer from './OrderedLayer';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
@@ -315,11 +316,16 @@ export const EditorSource: FC<{
   id?: string;
   data: Feature | FeatureCollection;
   layers: AnyLayer[];
-}> = ({ id, data, layers }) => (
+  layerOrder?: number;
+}> = ({ id, data, layers, layerOrder }) => (
   <Source type="geojson" id={id} data={data}>
-    {layers.map((layer) => (
-      <Layer key={layer.id} {...layer} />
-    ))}
+    {layers.map((layer) =>
+      typeof layerOrder === 'number' ? (
+        <OrderedLayer key={layer.id} {...layer} layerOrder={layerOrder} />
+      ) : (
+        <Layer key={layer.id} {...layer} />
+      )
+    )}
   </Source>
 );
 
