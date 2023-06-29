@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { WidgetProps } from '@rjsf/core';
 import { useTranslation } from 'react-i18next';
 import { isNil, toNumber, isEmpty } from 'lodash';
-import { getLineStringDistance, DISTANCE_ERROR_RANGE } from './data';
+import { getLineStringDistance, DISTANCE_ERROR_RANGE } from 'common/IntervalsDataViz/data';
 
 export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
   const { t } = useTranslation();

@@ -4,8 +4,7 @@ import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { utils } from '@rjsf/core';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
-
-import { EditorEntity } from '../../../../types';
+import { EditorEntity } from 'types/editor';
 
 export const LINEAR_METADATA_FIELDS = ['slopes', 'curves'];
 // Min size of a linear metadata segment

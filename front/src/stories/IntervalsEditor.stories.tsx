@@ -1,5 +1,5 @@
 import { FieldProps } from '@rjsf/core';
-import { LinearMetadataItem } from 'applications/editor/components/LinearMetadata';
+import { LinearMetadataItem } from 'common/IntervalsDataViz/data';
 import { IntervalsEditor } from 'common/IntervalsEditor/IntervalsEditor';
 import React, { useState } from 'react';
 import 'stories/storybook.css';

@@ -1,7 +1,7 @@
 import { BsFillTrashFill } from 'react-icons/bs';
 import { IoIosAdd, IoIosSave } from 'react-icons/io';
 import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { LinearMetadataDataviz } from 'applications/editor/components/LinearMetadata/dataviz';
+import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
 
 import { TbZoomIn, TbZoomOut, TbZoomCancel, TbScissors, TbArrowsHorizontal } from 'react-icons/tb';
 
@@ -15,12 +15,12 @@ import {
   resizeSegment,
   splitAt,
   transalteViewBox,
-} from 'applications/editor/components/LinearMetadata';
+} from 'common/IntervalsDataViz/data';
 
 import { FieldProps } from '@rjsf/core';
 import { isNil, max as fnMax, cloneDeep } from 'lodash';
 
-import { tooltipPosition, notEmpty } from 'applications/editor/components/LinearMetadata/utils';
+import { tooltipPosition, notEmpty } from 'common/IntervalsDataViz/utils';
 import { ValueOf } from 'utils/types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
@@ -147,8 +147,8 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
       <div className="header">
         <div>
           <h4 className="control-label m-0">{`${name} ${valueField} ${
-            units ? ' (' : ''
-          }${units?.join(' / ')}${units ? ')' : ''}`}</h4>
+            units ? `(${units.join(' / ')})` : ``
+          }`}</h4>
         </div>
         <div>
           <div className="zoom-horizontal">
