@@ -52,7 +52,7 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
     const steps = extendedSamples.geometry.coordinates.length - 1;
 
     // Generate our base grids:
-    const { regular, warped } = getGrids(extendedSamples);
+    const { regular, warped } = getGrids(extendedSamples, { stripsPerSide: 12 });
 
     // Improve the warped grid, to get it less discontinuous:
     const betterWarped = straightenGrid(warped, steps, { force: 0.8, iterations: 3 });
@@ -77,22 +77,20 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
   }, [path]);
 
   return (
-    <div className="warped-map position-relative">
+    <div className="warped-map position-relative d-flex flex-row">
       <DataLoader
         bbox={pathBBox}
+        layers={layers}
         getGeoJSONs={(data) => {
           setTransformedData(
-            mapValues(
-              data,
-              (geoJSONs) =>
-                geoJSONs?.flatMap((geoJSON) => {
-                  const transformed = transform(geoJSON);
-                  return transformed ? [transformed] : [];
-                }) || []
+            mapValues(data, (geoJSONs: GeoJSON[]) =>
+              geoJSONs.flatMap((geoJSON) => {
+                const transformed = transform(geoJSON);
+                return transformed ? [transformed] : [];
+              })
             )
           );
         }}
-        layers={layers}
       />
       <div
         className="bg-white"
