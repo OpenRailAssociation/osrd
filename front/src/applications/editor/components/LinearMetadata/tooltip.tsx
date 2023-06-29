@@ -1,7 +1,7 @@
 import React from 'react';
 import { JSONSchema7 } from 'json-schema';
 
-import { LinearMetadataItem } from './data';
+import { LinearMetadataItem } from 'common/IntervalsDataViz/data';
 
 interface LinearMetadataTooltipProps<T> {
   item: LinearMetadataItem<T>;

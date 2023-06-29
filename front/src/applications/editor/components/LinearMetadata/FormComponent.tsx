@@ -8,9 +8,6 @@ import { IoIosCut } from 'react-icons/io';
 import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
-import { useModal } from '../../../../common/BootstrapSNCF/ModalSNCF';
-import HelpModal from './HelpModal';
-import { tooltipPosition, notEmpty } from './utils';
 import {
   LinearMetadataItem,
   getZoomedViewBox,
@@ -24,11 +21,15 @@ import {
   viewboxForSelection,
   getLineStringDistance,
   fixLinearMetadataItems,
-} from './data';
-import { LinearMetadataDataviz } from './dataviz';
+} from 'common/IntervalsDataViz/data';
+import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
+import { useModal } from '../../../../common/BootstrapSNCF/ModalSNCF';
+import HelpModal from './HelpModal';
+import { tooltipPosition, notEmpty } from '../../../../common/IntervalsDataViz/utils';
+
 import { LinearMetadataTooltip } from './tooltip';
 import { FormBeginEndWidget } from './FormBeginEndWidget';
-import './style.scss';
+import 'common/IntervalsDataViz/style.scss';
 
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
