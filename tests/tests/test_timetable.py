@@ -10,7 +10,7 @@ from .services import API_URL, EDITOAST_URL
 
 
 @dataclass(frozen=True)
-class _TrainScheduleDetails:
+class _TrainScheduleSummary:
     id: int
     train_name: str
     departure_time: int
@@ -34,7 +34,7 @@ class _TrainScheduleDetails:
 class _TimetableResponse:
     id: int
     name: str
-    detailed_train_schedules: List[dict]
+    train_schedule_summaries: List[dict]
 
 
 @dataclass(frozen=True)
@@ -101,7 +101,7 @@ def test_get_timetable(
 
     timetable = _TimetableResponse(**response.json())
     assert timetable.name == "timetable"
-    assert len(timetable.detailed_train_schedules) == 0
+    assert len(timetable.train_schedule_summaries) == 0
 
     # add simulation
     simulation_response = requests.post(
@@ -115,9 +115,9 @@ def test_get_timetable(
     timetable = _TimetableResponse(**response.json())
     assert timetable.id == small_scenario.timetable
     assert timetable.name == "timetable"
-    assert len(timetable.detailed_train_schedules) == 2
+    assert len(timetable.train_schedule_summaries) == 2
     expected_schedules = [
-        _TrainScheduleDetails(
+        _TrainScheduleSummary(
             id=simulation.ids[0],
             train_name="West to South East 1",
             departure_time=3600,
@@ -136,7 +136,7 @@ def test_get_timetable(
             stops=0,
             path_length=45549.5653000392,
         ),
-        _TrainScheduleDetails(
+        _TrainScheduleSummary(
             id=simulation.ids[1],
             train_name="West to South East 3",
             departure_time=5100,
@@ -157,5 +157,5 @@ def test_get_timetable(
         ),
     ]
     assert expected_schedules == [
-        _TrainScheduleDetails(**train_schedule) for train_schedule in timetable.detailed_train_schedules
+        _TrainScheduleSummary(**train_schedule) for train_schedule in timetable.train_schedule_summaries
     ]
