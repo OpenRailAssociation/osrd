@@ -21,24 +21,24 @@ export default async function getTimetable(timetable) {
     store.getState().osrdsimulation;
   try {
     store.dispatch(updateIsUpdating(true));
-    store.dispatch(updateReloadTimetable(true));
     if (displaySimulation) {
       store.dispatch(updateSelectedTrain(0));
     }
-    const trainSchedulesIDs = timetable.detailed_train_schedules.map((train) => train.id);
+    const trainSchedulesIDs = timetable.train_schedule_summaries.map((train) => train.id);
 
     if (trainSchedulesIDs && trainSchedulesIDs.length > 0) {
       let selectedProjectionPath;
       if (!selectedProjection) {
         const tempSelectedProjection = {
-          id: timetable.detailed_train_schedules[0].id,
-          path: timetable.detailed_train_schedules[0].path_id,
+          id: timetable.train_schedule_summaries[0].id,
+          path: timetable.train_schedule_summaries[0].path_id,
         };
         store.dispatch(updateSelectedProjection(tempSelectedProjection));
         selectedProjectionPath = tempSelectedProjection.path;
       } else if (selectedProjection) {
         selectedProjectionPath = selectedProjection.path;
       }
+      store.dispatch(updateReloadTimetable(true));
 
       const simulationLocal = await get(`${trainscheduleURI}results/`, {
         params: {

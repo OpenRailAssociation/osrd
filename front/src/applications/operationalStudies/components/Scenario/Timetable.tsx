@@ -203,7 +203,17 @@ export default function Timetable({
   }, [timetable]);
 
   useEffect(() => {
-    if (timetableID && !reloadTimetable) {
+    if (timetableID) {
+      getTimetableWithTrainSchedulesDetails({ id: timetableID })
+        .unwrap()
+        .then((result) => {
+          setTimetable(result);
+        });
+    }
+  }, [timetableID]);
+
+  useEffect(() => {
+    if (timetableID && reloadTimetable) {
       getTimetableWithTrainSchedulesDetails({ id: timetableID })
         .unwrap()
         .then((result) => {

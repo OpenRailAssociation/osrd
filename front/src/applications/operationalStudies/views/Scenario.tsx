@@ -36,6 +36,7 @@ export default function Scenario() {
   const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
+  const reloadTimetable = useSelector((state: RootState) => state.osrdsimulation.reloadTimetable);
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
@@ -114,6 +115,16 @@ export default function Scenario() {
         });
     }
   }, [infra, timetableId]);
+
+  useEffect(() => {
+    if (timetableId && reloadTimetable) {
+      getTimetableConflicts({ id: timetableId })
+        .unwrap()
+        .then((data) => {
+          setConflicts(data as Conflict[]);
+        });
+    }
+  }, [reloadTimetable]);
 
   useEffect(() => {
     if (infraId) {

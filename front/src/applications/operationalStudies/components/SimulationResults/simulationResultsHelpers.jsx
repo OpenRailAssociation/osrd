@@ -27,7 +27,6 @@ export function getTrainDetailsForAPI(simulationTrain) {
 export async function changeTrain(details, id, dispatch = noop) {
   try {
     const trainDetail = await get(`${trainscheduleURI}${id}/`);
-    dispatch(updateReloadTimetable(true));
     try {
       const params = {
         id,
@@ -39,6 +38,7 @@ export async function changeTrain(details, id, dispatch = noop) {
         timetable: details.timetable || trainDetail.timetable,
         train_name: details.train_name || trainDetail.train_name,
       };
+      dispatch(updateReloadTimetable(true));
       await patch(`${trainscheduleURI}${id}/`, params);
       dispatch(updateReloadTimetable(false));
     } catch (e) {
