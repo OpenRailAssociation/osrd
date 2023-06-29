@@ -21,10 +21,10 @@ class _TrainScheduleSummary:
     initial_speed: int
     labels: List[str]
     allowances: List[dict]
-    speed_limit_tags: str | None
+    speed_limit_tags: Optional[str]
     comfort: str
-    options: dict | None
-    power_restriction_ranges: List[dict] | None
+    options: Optional[dict]
+    power_restriction_ranges: Optional[List[dict]]
     mechanical_energy_consumed: dict
     stops: int
     path_length: float
