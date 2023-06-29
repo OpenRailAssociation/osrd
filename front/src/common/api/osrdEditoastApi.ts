@@ -1019,7 +1019,7 @@ export type DeleteProjectsByProjectIdApiArg = {
 export type GetTimetableByIdApiResponse = /** status 200 The timetable content */ {
   id?: number;
   name?: string;
-  train_schedules_with_details?: TrainScheduleWithDetails[];
+  train_schedules_with_details?: TrainScheduleSummary[];
 };
 export type GetTimetableByIdApiArg = {
   /** Timetable ID */
@@ -1727,13 +1727,13 @@ export type PowerRestrictionRange = {
   end_position: number;
   power_restriction_code: string;
 };
-export type TrainScheduleWithDetails = {
+export type TrainScheduleSummary = {
   id: number;
   train_name: string;
-  timetable?: number;
-  rolling_stock?: number;
+  timetable_id?: number;
+  rolling_stock_id?: number;
   departure_time: number;
-  path: number;
+  path_id?: number;
   initial_speed?: number;
   labels: string[];
   allowances?: Allowance[];
@@ -1746,7 +1746,7 @@ export type TrainScheduleWithDetails = {
     base?: number;
     eco?: number;
   };
-  stops?: number;
+  stops_count?: number;
   path_length?: number;
 };
 export type StudyResult = {

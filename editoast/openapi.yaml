@@ -1458,7 +1458,7 @@ paths:
                   train_schedules_with_details:
                     type: array
                     items:
-                      $ref: "#/components/schemas/TrainScheduleWithDetails"
+                      $ref: "#/components/schemas/TrainScheduleSummary"
 
   /timetable/{id}/conflicts/:
     get:
