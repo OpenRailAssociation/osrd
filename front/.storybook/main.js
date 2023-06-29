@@ -20,7 +20,6 @@ module.exports = {
       optimizeDeps: {
         include: ['storybook-addon-designs'],
       },
-      minify: false,
     });
   },
 };
