@@ -1016,11 +1016,8 @@ export type DeleteProjectsByProjectIdApiArg = {
   /** project id you want to delete */
   projectId: number;
 };
-export type GetTimetableByIdApiResponse = /** status 200 The timetable content */ {
-  id?: number;
-  name?: string;
-  train_schedules_with_details?: TrainScheduleSummary[];
-};
+export type GetTimetableByIdApiResponse =
+  /** status 200 The timetable content */ TimetableWithSchedulesDetails;
 export type GetTimetableByIdApiArg = {
   /** Timetable ID */
   id: number;
@@ -1748,6 +1745,11 @@ export type TrainScheduleSummary = {
   };
   stops_count?: number;
   path_length?: number;
+};
+export type TimetableWithSchedulesDetails = {
+  id: number;
+  name: string;
+  train_schedule_summaries?: TrainScheduleSummary[];
 };
 export type StudyResult = {
   id: number;

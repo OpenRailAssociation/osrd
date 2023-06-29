@@ -1449,16 +1449,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: number
-                  name:
-                    type: string
-                  train_schedules_with_details:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/TrainScheduleSummary"
+                $ref: "#/components/schemas/TimetableWithSchedulesDetails"
 
   /timetable/{id}/conflicts/:
     get:
