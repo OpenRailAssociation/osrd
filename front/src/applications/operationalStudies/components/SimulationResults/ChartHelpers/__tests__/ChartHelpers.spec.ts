@@ -74,18 +74,18 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       expect(result).toEqual({
         id: 395,
         labels: [],
-        name: 'Fonction ζ',
-        path: 596,
-        departure: 43200,
-        arrival: 44417.01477978789,
+        train_name: 'Fonction ζ',
+        path_id: 596,
+        departure_time: 43200,
+        arrival_time: 44417.01477978789,
         speed_limit_tags: undefined,
         duration: 1217.014779787889,
-        mechanicalEnergyConsumed: {
+        mechanical_energy_consumed: {
           base: 4341138851.046319,
           eco: 4341138851.046319,
         },
-        pathLength: 54483.80299490723,
-        stopsCount: 0,
+        path_length: 54483.80299490723,
+        stops_count: 0,
       });
     });
   });
@@ -96,18 +96,18 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       expect(result).toEqual({
         id: 395,
         labels: [],
-        name: 'Fonction ζ',
-        path: 596,
-        departure: 44200,
-        arrival: 45417.01477978789,
+        train_name: 'Fonction ζ',
+        path_id: 596,
+        departure_time: 44200,
+        arrival_time: 45417.01477978789,
         speed_limit_tags: undefined,
         duration: 1217.014779787889,
-        mechanicalEnergyConsumed: {
+        mechanical_energy_consumed: {
           base: 4341138851.046319,
           eco: 4341138851.046319,
         },
-        pathLength: 54483.80299490723,
-        stopsCount: 0,
+        path_length: 54483.80299490723,
+        stops_count: 0,
       });
     });
     it('should handle time exceeding midnight', () => {
@@ -115,18 +115,18 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       expect(result).toEqual({
         id: 395,
         labels: [],
-        name: 'Fonction ζ',
-        path: 596,
-        departure: 43200,
-        arrival: 44417.01477978789,
+        train_name: 'Fonction ζ',
+        path_id: 596,
+        departure_time: 43200,
+        arrival_time: 44417.01477978789,
         speed_limit_tags: undefined,
         duration: 1217.014779787889,
-        mechanicalEnergyConsumed: {
+        mechanical_energy_consumed: {
           base: 4341138851.046319,
           eco: 4341138851.046319,
         },
-        pathLength: 54483.80299490723,
-        stopsCount: 0,
+        path_length: 54483.80299490723,
+        stops_count: 0,
       });
     });
     it('should handle time before midnight', () => {
@@ -134,18 +134,18 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       expect(result).toEqual({
         id: 395,
         labels: [],
-        name: 'Fonction ζ',
-        path: 596,
-        departure: 43200,
-        arrival: 44417.01477978789,
+        train_name: 'Fonction ζ',
+        path_id: 596,
+        departure_time: 43200,
+        arrival_time: 44417.01477978789,
         speed_limit_tags: undefined,
         duration: 1217.014779787889,
-        mechanicalEnergyConsumed: {
+        mechanical_energy_consumed: {
           base: 4341138851.046319,
           eco: 4341138851.046319,
         },
-        pathLength: 54483.80299490723,
-        stopsCount: 0,
+        path_length: 54483.80299490723,
+        stops_count: 0,
       });
     });
   });

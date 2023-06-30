@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { TimeString } from 'common/types';
 import { SIGNAL_BASE_DEFAULT } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
 
 export type MergedDataPoint<T = number> = {
   [key: string]: number | T;
@@ -104,22 +105,12 @@ export interface ElectrificationConditions {
 
 export type MechanicalEnergyConsumedBaseEco = {
   base?: number;
-  eco?: number;
+  eco?: number | null;
 };
 
-export type ScheduledTrain = {
-  id: number;
-  labels: string[];
-  name: string;
-  path: number;
-  pathLength?: number;
-  departure: number;
-  arrival: number;
-  speed_limit_tags?: string;
-  stopsCount?: number;
+export type ScheduledTrain = TrainScheduleSummary & {
   duration?: number;
   isFiltered?: boolean;
-  mechanicalEnergyConsumed?: MechanicalEnergyConsumedBaseEco;
 };
 
 export interface GradientPosition {
@@ -222,6 +213,7 @@ export interface OsrdSimulationState {
   };
   isPlaying: boolean;
   isUpdating: boolean;
+  reloadTimetable: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionValues;
