@@ -319,6 +319,7 @@ function Pathfinding({ mustUpdate = true, zoomToFeature }: PathfindingProps) {
         }
         case 'CACHED': {
           setIsInfraLoaded(true);
+          if (isInfraError) setIsInfraError(false);
           pathfindingDispatch({
             type: 'INFRA_CHANGED',
             params: {

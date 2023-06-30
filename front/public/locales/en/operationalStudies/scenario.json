@@ -12,7 +12,6 @@
   },
   "filterPlaceholder": "Filter, tags",
   "infraLoadingState": "{{step}}/8",
-  "isUpdating": "Updating...",
   "modifyScenario": "Modify scenario",
   "noElectricalProfileSet": "No electrical profile",
   "scenarioCancel": "Cancel",

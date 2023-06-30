@@ -1,5 +1,7 @@
 import { get, patch } from 'common/requests';
+import { noop } from 'lodash';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 
 /**
  * Premare the params to override the trains details and save them
@@ -22,7 +24,7 @@ export function getTrainDetailsForAPI(simulationTrain) {
  * @param {object} details
  * @param {int} id
  */
-export async function changeTrain(details, id) {
+export async function changeTrain(details, id, dispatch = noop) {
   try {
     const trainDetail = await get(`${trainscheduleURI}${id}/`);
     try {
@@ -36,8 +38,12 @@ export async function changeTrain(details, id) {
         timetable: details.timetable || trainDetail.timetable,
         train_name: details.train_name || trainDetail.train_name,
       };
+      dispatch(updateReloadTimetable(true));
       await patch(`${trainscheduleURI}${id}/`, params);
+      dispatch(updateReloadTimetable(false));
     } catch (e) {
+      dispatch(updateReloadTimetable(false));
+
       /* empty */
     }
   } catch (e) {
