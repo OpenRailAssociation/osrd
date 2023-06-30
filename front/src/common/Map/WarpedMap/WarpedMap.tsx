@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { isNil, mapValues, omitBy } from 'lodash';
+import _, { isEmpty, isNil, mapValues, omitBy } from 'lodash';
 
 import bbox from '@turf/bbox';
 import simplify from '@turf/simplify';
@@ -22,18 +22,61 @@ import { clipAndProjectGeoJSON, projectBetweenGrids } from './core/projection';
 import { RootState } from '../../../reducers';
 import { LoaderFill } from '../../Loader';
 import { osrdEditoastApi } from '../../api/osrdEditoastApi';
-import { LayerType } from '../../../applications/editor/tools/types';
+import {
+  EditoastType,
+  LAYER_TO_EDITOAST_DICT,
+  LayerType,
+} from '../../../applications/editor/tools/types';
 import DataLoader from './DataLoader';
 import DataDisplay from './DataDisplay';
+import { getMixedEntities } from '../../../applications/editor/data/api';
+import { flattenEntity } from '../../../applications/editor/data/utils';
+import { getInfraID } from '../../../reducers/osrdconf/selectors';
+
+const TIME_LABEL = 'Warping OSRD and OSM data';
+const OSRD_BATCH_SIZE = 500;
 
 type TransformedData = {
   osm: Record<string, FeatureCollection>;
   osrd: Partial<Record<LayerType, FeatureCollection>>;
 };
 
-const TIME_LABEL = 'Warping OSRD and OSM data';
+async function getImprovedOSRDData(
+  infra: number | string,
+  data: Partial<Record<LayerType, FeatureCollection>>
+): Promise<Record<string, Feature>> {
+  const queries = _(data)
+    .flatMap((collection: FeatureCollection, layerType: LayerType) => {
+      const editoastType = LAYER_TO_EDITOAST_DICT[layerType];
+      return collection.features.flatMap((feature) =>
+        feature.properties?.fromEditoast || typeof feature.properties?.id !== 'string'
+          ? []
+          : [
+              {
+                id: feature.properties.id,
+                type: editoastType,
+              },
+            ]
+      );
+    })
+    .take(OSRD_BATCH_SIZE)
+    .value() as unknown as { id: string; type: EditoastType }[];
+
+  if (!queries.length) return {};
+
+  return mapValues(await getMixedEntities(infra, queries), (e) =>
+    flattenEntity({
+      ...e,
+      properties: {
+        ...e.properties,
+        fromEditoast: true,
+      },
+    })
+  );
+}
 
 export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
+  const infraID = useSelector(getInfraID);
   const layers = useMemo(() => new Set<LayerType>(['track_sections']), []);
   const [transformedData, setTransformedData] = useState<TransformedData | null>(null);
   const pathBBox = useMemo(() => bbox(path) as BBox2d, [path]);
@@ -82,6 +125,31 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
     () => transform(multiLineString([path.geometry.coordinates])),
     [transform, path]
   );
+
+  /**
+   * This effect tries to gradually improve the quality of the OSRD data.
+   * Initially, all OSRD entities are with "simplified" geometries, due to the
+   * fact that they are loaded directly using an unzoomed map.
+   */
+  useEffect(() => {
+    if (!transformedData?.osrd) return;
+
+    getImprovedOSRDData(infraID as number, transformedData.osrd).then((betterFeatures) => {
+      if (!isEmpty(betterFeatures)) {
+        const betterTransformedFeatures = mapValues(betterFeatures, transform);
+        const newTransformedOSRDData = mapValues(
+          transformedData.osrd,
+          (collection: FeatureCollection) => ({
+            ...collection,
+            features: collection.features.map(
+              (feature) => betterTransformedFeatures[feature.properties?.id] || feature
+            ),
+          })
+        );
+        setTransformedData({ ...transformedData, osrd: newTransformedOSRDData });
+      }
+    });
+  }, [transformedData]);
 
   return (
     <div className="warped-map position-relative d-flex flex-row">
