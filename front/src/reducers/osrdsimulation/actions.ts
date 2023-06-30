@@ -8,6 +8,7 @@ export const UPDATE_CONTEXTMENU = 'osrdsimu/UPDATE_CONTEXTMENU';
 export const UPDATE_HOVER_POSITION = 'osrdsimu/UPDATE_HOVER_POSITION';
 export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
 export const UPDATE_IS_UPDATING = 'osrdsimu/UPDATE_IS_UPDATING';
+export const UPDATE_RELOAD_TIMETABLE = 'osrdsimu/UPDATE_RELOAD_TIMETABLE';
 export const UPDATE_ALLOWANCES_SETTINGS = 'osrdsimu/UPDATE_ALLOWANCES_SETTINGS';
 export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
@@ -60,6 +61,14 @@ export function updateIsUpdating(isUpdating: OsrdSimulationState['isUpdating']) 
     dispatch({
       type: UPDATE_IS_UPDATING,
       isUpdating,
+    });
+  };
+}
+export function updateReloadTimetable(reloadTimetable: OsrdSimulationState['reloadTimetable']) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_RELOAD_TIMETABLE,
+      reloadTimetable,
     });
   };
 }

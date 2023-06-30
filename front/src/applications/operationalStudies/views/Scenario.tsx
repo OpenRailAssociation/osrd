@@ -4,38 +4,27 @@ import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
 import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
 import { useSelector, useDispatch } from 'react-redux';
 import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { updateInfraID, updateMode, updateTimetableID } from 'reducers/osrdconf';
 import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
-import {
-  getInfraID,
-  getProjectID,
-  getScenarioID,
-  getStudyID,
-  getTimetableID,
-} from 'reducers/osrdconf/selectors';
+import { getInfraID, getProjectID, getScenarioID, getStudyID } from 'reducers/osrdconf/selectors';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { FaEye, FaEyeSlash, FaPencilAlt } from 'react-icons/fa';
 import { GiElectric } from 'react-icons/gi';
 import { setSuccess } from 'reducers/main';
 import { useNavigate } from 'react-router-dom';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { RootState } from 'reducers';
 import AddAndEditScenarioModal from '../components/Scenario/AddOrEditScenarioModal';
-import getTimetable from '../components/Scenario/getTimetable';
 import ImportTrainSchedule from './ImportTrainSchedule';
 import ManageTrainSchedule from './ManageTrainSchedule';
 import SimulationResults from './SimulationResults';
 import InfraLoadingState from '../components/Scenario/InfraLoadingState';
-import { Conflict } from '../components/Scenario/ConflictsList';
 
 export default function Scenario() {
   const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
-  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
   const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState<string>(
     MANAGE_TRAIN_SCHEDULE_TYPES.none
   );
@@ -49,9 +38,7 @@ export default function Scenario() {
   const projectId = useSelector(getProjectID);
   const studyId = useSelector(getStudyID);
   const scenarioId = useSelector(getScenarioID);
-  const timetableId = useSelector(getTimetableID);
   const infraId = useSelector(getInfraID);
-  const [conflicts, setConflicts] = useState<Conflict[]>([]);
 
   const [getProject, { data: project }] =
     osrdEditoastApi.endpoints.getProjectsByProjectId.useLazyQuery({});
@@ -61,13 +48,11 @@ export default function Scenario() {
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useLazyQuery(
       {}
     );
-  const [getTimetableConflicts] = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useLazyQuery(
-    {}
-  );
 
   const { data: infra } = osrdEditoastApi.useGetInfraByIdQuery(
     { id: infraId as number },
     {
+      skip: !infraId,
       refetchOnMountOrArgChange: true,
       pollingInterval: !isInfraLoaded ? 1000 : undefined,
     }
@@ -84,8 +69,7 @@ export default function Scenario() {
   }, [infra, reloadCount]);
 
   useEffect(() => {
-    if (infra && infra.state === 'NOT_LOADED') {
-      reloadInfra({ id: infraId as number }).unwrap();
+    if (infra && (infra.state === 'NOT_LOADED' || infra.state === 'DOWNLOADING')) {
       setIsInfraLoaded(false);
     }
 
@@ -97,6 +81,12 @@ export default function Scenario() {
     }
   }, [infra]);
 
+  useEffect(() => {
+    if (infraId) {
+      reloadInfra({ id: infraId as number }).unwrap();
+    }
+  }, [infraId]);
+
   const getScenarioTimetable = async (withNotification = false) => {
     if (projectId && studyId && scenarioId) {
       getScenario({ projectId, studyId, scenarioId })
@@ -104,18 +94,6 @@ export default function Scenario() {
         .then((result) => {
           dispatch(updateTimetableID(result.timetable_id));
           dispatch(updateInfraID(result.infra_id));
-
-          const preferredTimetableId = result.timetable_id || timetableId;
-
-          getTimetable(preferredTimetableId);
-
-          if (preferredTimetableId) {
-            getTimetableConflicts({ id: preferredTimetableId })
-              .unwrap()
-              .then((data) => {
-                setConflicts(data as Conflict[]);
-              });
-          }
           if (withNotification) {
             dispatch(
               setSuccess({
@@ -158,7 +136,6 @@ export default function Scenario() {
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
-          {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
           <div className="row">
             <div className={collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}>
               <div className="scenario-sidemenu">
@@ -243,11 +220,13 @@ export default function Scenario() {
                     infraState={infra.state}
                   />
                 )}
-                <Timetable
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                  trainsWithDetails={trainsWithDetails}
-                  conflicts={conflicts}
-                />
+                {infra && (
+                  <Timetable
+                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                    trainsWithDetails={trainsWithDetails}
+                    infraState={infra.state}
+                  />
+                )}
               </div>
             </div>
             <div className={collapsedTimetable ? 'col-12' : 'col-hdp-9 col-xl-8 col-lg-7 col-md-6'}>
@@ -287,12 +266,15 @@ export default function Scenario() {
                     </div>
                   </div>
                 )}
-                <SimulationResults
-                  isDisplayed={
-                    displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
-                  }
-                  collapsedTimetable={collapsedTimetable}
-                />
+                {infra && (
+                  <SimulationResults
+                    isDisplayed={
+                      displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.import
+                    }
+                    collapsedTimetable={collapsedTimetable}
+                    infraState={infra?.state}
+                  />
+                )}
               </div>
             </div>
           </div>

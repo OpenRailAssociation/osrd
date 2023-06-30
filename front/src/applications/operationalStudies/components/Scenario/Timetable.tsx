@@ -9,6 +9,7 @@ import { useDebounce } from 'utils/helpers';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import {
   updateMustRedraw,
+  updateReloadTimetable,
   updateSelectedProjection,
   updateSelectedTrain,
 } from 'reducers/osrdsimulation/actions';
@@ -17,11 +18,13 @@ import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/helpers/trainNameHelper';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { getTimetableID, getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
-import { ScheduledTrain } from 'reducers/osrdsimulation/types';
+import { OsrdSimulationState, ScheduledTrain } from 'reducers/osrdsimulation/types';
 import { RootState } from 'reducers';
 import { Path } from 'types';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
+import { GetTimetableByIdApiResponse, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { durationInSeconds } from 'utils/timeManipulation';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
@@ -30,32 +33,35 @@ import ConflictsList, { Conflict } from './ConflictsList';
 type Props = {
   setDisplayTrainScheduleManagement: (mode: string) => void;
   trainsWithDetails: boolean;
-  conflicts: Conflict[];
+  infraState: Infra['state'];
 };
 
 export default function Timetable({
   setDisplayTrainScheduleManagement,
   trainsWithDetails,
-  conflicts,
+  infraState,
 }: Props) {
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
   );
-  const departureArrivalTimes = useSelector(
-    (state: RootState) => state.osrdsimulation.departureArrivalTimes
-  );
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const timetableID = useSelector(getTimetableID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
+  const reloadTimetable = useSelector((state: RootState) => state.osrdsimulation.reloadTimetable);
   const [filter, setFilter] = useState('');
   const [trainsList, setTrainsList] = useState<ScheduledTrain[]>();
   const [trainsDurationsIntervals, setTrainsDurationsIntervals] = useState<number[]>();
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
+  const [timetable, setTimetable] = useState<GetTimetableByIdApiResponse>();
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/scenario']);
 
-  const debouncedTerm = useDebounce(filter, 500);
+  const debouncedTerm = useDebounce(filter, 500) as string;
+
+  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+  const [getTimetableConflicts] = osrdEditoastApi.useLazyGetTimetableByIdConflictsQuery();
 
   const changeSelectedTrain = (idx: number) => {
     dispatch(updateSelectedTrain(idx));
@@ -65,13 +71,18 @@ export default function Timetable({
   const deleteTrain = async (train: ScheduledTrain) => {
     try {
       await deleteRequest(`${trainscheduleURI}${train.id}/`);
-      getTimetable(timetableID);
+      dispatch(updateReloadTimetable(true));
+      const currentTimetable = await getTimetableWithTrainSchedulesDetails({
+        id: timetableID as number,
+      }).unwrap();
+      getTimetable(currentTimetable);
       dispatch(
         setSuccess({
-          title: t('timetable.trainDeleted', { name: train.name }),
+          title: t('timetable.trainDeleted', { name: train.train_name }),
           text: '',
         })
       );
+      dispatch(updateReloadTimetable(false));
     } catch (e) {
       console.error(e);
       if (e instanceof Error) {
@@ -87,7 +98,7 @@ export default function Timetable({
 
   const duplicateTrain = async (train: ScheduledTrain) => {
     // Static for now, will be dynamic when UI will be ready
-    const trainName = `${train.name} (${t('timetable.copy')})`;
+    const trainName = `${train.train_name} (${t('timetable.copy')})`;
     const trainDelta = 5;
     const trainCount = 1;
     const trainStep = 5;
@@ -103,7 +114,7 @@ export default function Timetable({
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
       const newTrainDelta = 60 * trainDelta * nb;
-      const newOriginTime = train.departure + newTrainDelta;
+      const newOriginTime = train.departure_time + newTrainDelta;
       const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
       params.schedules.push({
         ...trainDetail,
@@ -114,13 +125,19 @@ export default function Timetable({
     }
     try {
       await post(`${trainscheduleURI}standalone_simulation/`, params);
-      getTimetable(timetableID);
+      dispatch(updateReloadTimetable(true));
+
+      const currentTimetable = await getTimetableWithTrainSchedulesDetails({
+        id: timetableID as number,
+      }).unwrap();
+      getTimetable(currentTimetable);
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
           text: `${trainName}`,
         })
       );
+      dispatch(updateReloadTimetable(false));
     } catch (e) {
       console.error(e);
       if (e instanceof Error) {
@@ -139,7 +156,7 @@ export default function Timetable({
       dispatch(
         updateSelectedProjection({
           id: train.id,
-          path: train.path,
+          path: train.path_id,
         })
       );
     }
@@ -148,25 +165,79 @@ export default function Timetable({
     setConflictsListExpanded(!conflictsListExpanded);
   };
 
-  useEffect(() => {
-    if (debouncedTerm !== '' && departureArrivalTimes) {
-      setTrainsList(
-        departureArrivalTimes.map((train: ScheduledTrain) => ({
-          ...train,
-          isFiltered:
-            !train.name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
-            !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase()),
-        }))
+  const isTrainFiltered = (train: ScheduledTrain, debounce?: string): boolean => {
+    if (debounce) {
+      return (
+        !train.train_name.toLowerCase().includes(debouncedTerm.toLowerCase()) &&
+        !train.labels.join('').toLowerCase().includes(debouncedTerm.toLowerCase())
       );
-    } else {
-      setTrainsList(departureArrivalTimes);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [departureArrivalTimes, debouncedTerm]);
+    return false;
+  };
+
+  const isProjectionPathUsed = (
+    infraStateStatus: Infra['state'],
+    trainId: number,
+    projection?: OsrdSimulationState['selectedProjection']
+  ): boolean => {
+    if (infraStateStatus !== 'CACHED' && !projection) {
+      return false;
+    }
+    if (infraStateStatus === 'CACHED' && projection) {
+      return projection.id === trainId;
+    }
+    return false;
+  };
 
   useEffect(() => {
-    setTrainsDurationsIntervals(findTrainsDurationsIntervals(departureArrivalTimes));
-  }, [departureArrivalTimes]);
+    if (timetable && timetable.train_schedule_summaries) {
+      const scheduledTrains = timetable.train_schedule_summaries;
+
+      const trainsListWithFilterAndDuration = scheduledTrains.map((train: ScheduledTrain) => ({
+        ...train,
+        isFiltered: isTrainFiltered(train, debouncedTerm),
+        duration: durationInSeconds(train.departure_time, train.arrival_time),
+      }));
+      setTrainsList(trainsListWithFilterAndDuration);
+    }
+  }, [trainsDurationsIntervals, debouncedTerm]);
+
+  useEffect(() => {
+    if (infraState === 'CACHED' && timetableID) {
+      getTimetableWithTrainSchedulesDetails({ id: timetableID })
+        .unwrap()
+        .then((result) => {
+          setTimetable(result);
+          if (result.train_schedule_summaries) {
+            setTrainsDurationsIntervals(
+              findTrainsDurationsIntervals(result.train_schedule_summaries)
+            );
+          }
+          getTimetable(result);
+        });
+    }
+  }, [infraState]);
+
+  useEffect(() => {
+    if (timetableID && !reloadTimetable) {
+      getTimetableWithTrainSchedulesDetails({ id: timetableID })
+        .unwrap()
+        .then((result) => {
+          setTimetable(result);
+          if (result.train_schedule_summaries) {
+            setTrainsDurationsIntervals(
+              findTrainsDurationsIntervals(result.train_schedule_summaries)
+            );
+          }
+        });
+
+      getTimetableConflicts({ id: timetableID })
+        .unwrap()
+        .then((data) => {
+          setConflicts(data as Conflict[]);
+        });
+    }
+  }, [reloadTimetable]);
 
   // Avoid keeping this on refresh
   useEffect(() => {
@@ -234,7 +305,6 @@ export default function Timetable({
         )}
       >
         {trainsList &&
-          selectedProjection &&
           trainsDurationsIntervals &&
           trainsList.map(
             (train: ScheduledTrain, idx: number) =>
@@ -242,10 +312,14 @@ export default function Timetable({
                 <TimetableTrainCard
                   train={train}
                   intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
-                  key={`timetable-train-card-${train.id}-${train.path}`}
-                  isSelected={selectedTrain === idx}
+                  key={`timetable-train-card-${train.id}-${train.path_id}`}
+                  isSelected={infraState !== 'CACHED' ? false : selectedTrain === idx}
                   isModified={trainScheduleIDsToModify?.includes(train.id)}
-                  projectionPathIsUsed={selectedProjection.id === train.id}
+                  projectionPathIsUsed={isProjectionPathUsed(
+                    infraState,
+                    train.id,
+                    selectedProjection
+                  )}
                   idx={idx}
                   changeSelectedTrain={changeSelectedTrain}
                   deleteTrain={deleteTrain}

@@ -4,6 +4,7 @@
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Train schedule impossible"
   },
+  "isUpdating": "Updating...",
   "isWorking": "Generating simulation...",
   "labels": "Tags",
   "loadingTrain": "Loading train",
