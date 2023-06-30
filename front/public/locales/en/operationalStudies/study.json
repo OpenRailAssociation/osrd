@@ -4,13 +4,14 @@
   "createdOn": "Created on ",
   "createScenario": "Create a scenario",
   "dates": {
-    "creation": "Created",
+    "creation": "Create",
     "estimatedend": "Expected ending",
     "modified": "Updated",
     "realend": "Real end",
     "start": "Started"
   },
   "description": "description",
+  "errorHappened": "An error has occurred",
   "filesAndLinks": "Files & links",
   "filterPlaceholder": "Search...",
   "geremiCode": "GEREMI code",
@@ -66,5 +67,6 @@
     "timeTables": "Timetable"
   },
   "studyUpdated": "Successful update!",
-  "studyUpdatedDetails": "The {{ name }} study has been updated."
+  "studyUpdatedDetails": "The {{ name }} study has been updated.",
+  "unableToRetrieveStudyState": "Unsuccessful recovery of study types"
 }
