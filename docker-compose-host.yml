@@ -114,8 +114,6 @@ services:
       args:
         OSRD_GIT_DESCRIBE: ${OSRD_GIT_DESCRIBE}
     restart: unless-stopped
-    environment:
-      ROCKET_PROFILE: debug
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
       start_period: 4s
