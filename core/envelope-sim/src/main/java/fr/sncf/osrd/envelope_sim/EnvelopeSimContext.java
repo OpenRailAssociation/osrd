@@ -20,4 +20,9 @@ public class EnvelopeSimContext {
         this.timeStep = timeStep;
         this.tractiveEffortCurveMap = tractiveEffortCurveMap;
     }
+
+    public EnvelopeSimContext updateCurves(
+            RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap) {
+        return new EnvelopeSimContext(rollingStock, path, timeStep, tractiveEffortCurveMap);
+    }
 }

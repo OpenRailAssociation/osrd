@@ -89,7 +89,5 @@
     "unit": ""
   },
   "power_restrictions": {},
-  "energy_sources": [],
-  "electrical_power_startup_time": 5.0,
-  "raise_pantograph_time": 15.0
+  "energy_sources": []
 }

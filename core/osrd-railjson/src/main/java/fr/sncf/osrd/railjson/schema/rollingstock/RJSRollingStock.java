@@ -88,6 +88,12 @@ public class RJSRollingStock implements Identified {
     @Json(name = "loading_gauge")
     public RJSLoadingGaugeType loadingGauge = null;
 
+    @Json(name = "electrical_power_startup_time")
+    public Double electricalPowerStartUpTime = null;
+
+    @Json(name = "raise_pantograph_time")
+    public Double raisePantographTime = null;
+
     public enum GammaType {
         CONST,
         MAX

@@ -29,7 +29,7 @@ public record ElectrificationConstraints(
      * because it needs electrified tracks and isn't compatible with the catenaries in some range
      */
     private static Set<Pathfinding.Range> getBlockedRanges(RollingStock stock, ReservationRoute route) {
-        if (!stock.isElectricOnly())
+        if (stock.isThermal())
             return Set.of();
 
         var res = new HashSet<Pathfinding.Range>();

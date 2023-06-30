@@ -121,7 +121,9 @@ public class RJSRollingStockParser {
                 modes,
                 rjsRollingStock.effortCurves.defaultMode,
                 rjsRollingStock.basePowerClass,
-                rjsRollingStock.powerRestrictions
+                rjsRollingStock.powerRestrictions,
+                rjsRollingStock.electricalPowerStartUpTime,
+                rjsRollingStock.raisePantographTime
         );
     }
 
