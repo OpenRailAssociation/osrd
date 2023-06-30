@@ -8,15 +8,13 @@ use crate::models::{
 };
 use crate::models::{Timetable, TrainSchedule};
 
-use crate::DieselJson;
-
 use crate::DbPool;
+use crate::DieselJson;
 use actix_web::dev::HttpServiceFactory;
-use actix_web::web::{self, Data, Json, Path, Query};
+use actix_web::web::{self, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
 use diesel::Connection;
 use editoast_derive::EditoastError;
-
 use itertools::izip;
 use serde_derive::Deserialize;
 
@@ -29,7 +27,7 @@ use crate::models::electrical_profile::ElectricalProfileSet;
 use futures::executor;
 
 mod projection;
-mod simulation_report;
+pub mod simulation_report;
 use self::projection::Projection;
 
 #[derive(Debug, Error, EditoastError)]
@@ -66,8 +64,8 @@ pub enum TrainScheduleError {
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/train_schedule")
-        .service((standalone_simulation, get_results))
-        .service(web::scope("/{id}").service((get, delete, patch, get_result)))
+        .service((get_results, standalone_simulation))
+        .service(scope("/{id}").service((delete, get, patch, get_result)))
 }
 
 /// Return a specific timetable with its associated schedules
@@ -272,7 +270,6 @@ async fn get_results(
     let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
-
     let mut res = Vec::new();
     for schedule in schedules {
         let sim_report = simulation_report::create_simulation_report(
