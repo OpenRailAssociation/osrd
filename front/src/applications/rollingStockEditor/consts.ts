@@ -11,6 +11,9 @@ export type RollingStockParametersValues = {
     subseries: string;
     type: string;
     unit: string;
+    length: number;
+    mass: number;
+    max_speed: number;
     startup_time: number;
     startup_acceleration: number;
     comfort_acceleration: number;
@@ -26,6 +29,7 @@ export type RollingStockParametersValues = {
     is_electric: boolean;
   };
 };
+
 export enum Metadata {
   name = 'name',
   version = 'version',
@@ -41,6 +45,9 @@ export enum Metadata {
 }
 
 export enum Parameter {
+  length = 'length',
+  mass = 'mass',
+  max_speed = 'max_speed',
   startup_time = 'startup_time',
   startup_acceleration = 'startup_acceleration',
   comfort_acceleration = 'comfort_acceleration',

@@ -193,7 +193,7 @@ const RollingStockEditorForm = ({
             label={property}
             register={registerForm}
             position={position}
-            error={errors[property] as string}
+            error={errors[property]?.message as string}
           />
         </div>
       ));
@@ -216,14 +216,14 @@ const RollingStockEditorForm = ({
               options={schema.properties[property]?.enum}
               register={registerForm}
               position={position}
-              error={errors[property] as string}
+              error={errors[property]?.message as string}
             />
           ) : (
             <RollingStockEditorInput
               label={property}
               register={registerForm}
               position={position}
-              error={errors[property] as string}
+              error={errors[property]?.message as string}
             />
           )}
         </div>
