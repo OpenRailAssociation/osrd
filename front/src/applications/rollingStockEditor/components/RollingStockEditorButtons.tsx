@@ -66,7 +66,7 @@ function RollingStockEditorButtons({
     >
       <button
         type="button"
-        className="btn btn-primary px-1 py-0"
+        className="btn btn-primary bg-orange px-1 py-0"
         tabIndex={0}
         disabled={isRollingStockLocked}
         onClick={() => setIsEditing(true)}
@@ -78,7 +78,7 @@ function RollingStockEditorButtons({
       </button>
       <button
         type="button"
-        className="btn btn-primary px-1 py-0"
+        className="btn btn-primary bg-red px-1 py-0"
         tabIndex={0}
         disabled={isRollingStockLocked}
         onClick={() => confirmDelete()}
