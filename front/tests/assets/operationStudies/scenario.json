@@ -12,5 +12,11 @@
     "trains_count": 0,
     "trains_schedules": [
       "string"
+    ],
+    "electric_profile_set" : "small_infra",
+    "tags": [
+      "tag1",
+      "tag2",
+      "tag3"
     ]
   }

@@ -72,6 +72,7 @@ export default function ChipsSNCF({
         <input
           data-role="typewriter"
           type="text"
+          data-testid="chips-input"
           className="chips-input stretchy"
           id={chipsID}
           onKeyDown={validateInput}

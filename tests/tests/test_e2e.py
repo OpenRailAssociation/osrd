@@ -45,7 +45,7 @@ import pytest
 @pytest.mark.usefixtures("small_scenario", "fast_rolling_stocks")
 def test_e2e():
     result = subprocess.run(
-        ["yarn", "--cwd", "front", "playwright", "test", "--reporter=line"],
+        ["yarn", "--cwd", "front", "playwright", "test","--ui", "--reporter=line"],
         cwd=Path(__file__).parents[2],
         check=False,
     )

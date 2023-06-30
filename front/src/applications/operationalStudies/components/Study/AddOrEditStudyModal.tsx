@@ -203,6 +203,7 @@ export default function AddOrEditStudyModal({ editionMode, study }: Props) {
                     }}
                     options={studyCategoriesOptions}
                     onChange={(e) => setCurrentStudy({ ...currentStudy, study_type: e.key })}
+                    data-testid="studyType"
                   />
                 </div>
               </div>

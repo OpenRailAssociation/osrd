@@ -2,7 +2,7 @@
     "id": 0,
     "name": "Test e2e étude",
     "description": "Ceci est un test e2e pour la description de l'étude",
-    "budget": 1234567890,
+    "budget": "1234567890",
     "service_code": "A1234",
     "business_code": "B1234",
     "creation_date": "2023-02-02T23:37:21.271Z",
