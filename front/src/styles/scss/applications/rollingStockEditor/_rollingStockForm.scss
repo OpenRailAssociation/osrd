@@ -1,6 +1,13 @@
 .rollingstock-editor {
-  max-height: 80vh;
-  overflow-y: scroll;
+  padding-top: 15%;
+  @media screen and (min-width: 1024px) {
+    max-height: 100vh;
+    padding-top: 100px;
+  }
+  &-list {
+    height: 100%;
+    overflow-y: scroll;
+  }
   &-form {
     > .rollingstock-header {
       @media screen and (min-width: 1024px) {
