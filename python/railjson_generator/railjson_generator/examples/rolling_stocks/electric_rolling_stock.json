@@ -1903,5 +1903,7 @@
     "C1": 3,
     "C2": 1
   },
-  "energy_sources": []
+  "energy_sources": [],
+  "electrical_power_startup_time": 5.0,
+  "raise_pantograph_time": 15.0
 }

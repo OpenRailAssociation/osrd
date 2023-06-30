@@ -59,13 +59,14 @@ public class StandaloneSim {
         for (var trainSchedule : schedules) {
             if (!cacheMaxEffort.containsKey(trainSchedule)) {
                 var rollingStock = trainSchedule.rollingStock;
+
                 // MRSP & SpeedLimits
                 var mrsp = MRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
                 var speedLimits = MRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
                 mrsp = driverBehaviour.applyToMRSP(mrsp);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
-                // Base
+                // Context
                 var electrificationMap = envelopeSimPath.getElectrificationMap(rollingStock.basePowerClass,
                         trainSchedule.powerRestrictionMap, rollingStock.powerRestrictions,
                         trainSchedule.options.ignoreElectricalProfiles);
@@ -78,7 +79,18 @@ public class StandaloneSim {
                         curvesAndConditions.conditions(), electrificationMap));
                 cachePowerRestrictionRanges.put(trainSchedule, PowerRestrictionRange.from(
                         curvesAndConditions.conditions(), trainSchedule.powerRestrictionMap));
-                var envelope = computeMaxEffortEnvelope(context, mrsp, trainSchedule);
+
+                // MaxSpeedEnvelope
+                var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, trainSchedule.getStopsPositions(), mrsp);
+
+                // MaxEffortEnvelope
+                // need to compute a new effort curve mapping with the maxSpeedEnvelope in order to extend the
+                // neutral sections (with time to lower/raise pantograph...)
+                context = context.updateCurves(
+                        rollingStock.addNeutralSystemTimes(electrificationMap, trainSchedule.comfort, maxSpeedEnvelope,
+                                context.tractiveEffortCurveMap));
+                var envelope = MaxEffortEnvelope.from(context, trainSchedule.initialSpeed, maxSpeedEnvelope);
+
                 var simResultTrain = ScheduleMetadataExtractor.run(
                         envelope,
                         trainPath,
@@ -138,19 +150,6 @@ public class StandaloneSim {
                 timeStep,
                 new DriverBehaviour()
         );
-    }
-
-    /**
-     * Compute the max effort envelope given a path, MRSP and a schedule
-     */
-    public static Envelope computeMaxEffortEnvelope(
-            EnvelopeSimContext context,
-            Envelope mrsp,
-            StandaloneTrainSchedule schedule
-    ) {
-        final var stops = schedule.getStopsPositions();
-        final var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
-        return MaxEffortEnvelope.from(context, schedule.initialSpeed, maxSpeedEnvelope);
     }
 
     /**

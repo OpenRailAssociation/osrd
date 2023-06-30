@@ -1,9 +1,11 @@
 package fr.sncf.osrd.train;
 
 import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.electrification.Electrification;
 import fr.sncf.osrd.envelope_sim.electrification.Electrified;
@@ -96,6 +98,8 @@ public class RollingStock implements PhysicsRollingStock {
     private final String defaultMode;
     public final String basePowerClass;
     public final Map<String, String> powerRestrictions;
+    public final Double electricalPowerStartUpTime;
+    public final Double raisePantographTime;
 
     @Override
     public double getMass() {
@@ -188,17 +192,18 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     /**
-     * Returns the tractive effort curve that matches best, along with the infra conditions that matched
+     * Returns the tractive effort curve that matches best, along with the electrification conditions that matched
      */
     protected CurveAndCondition findTractiveEffortCurve(Comfort comfort, Electrification electrification) {
         if (electrification instanceof Neutral n) {
-            var wouldUseRes = findTractiveEffortCurve(comfort, n.overlappedElectrification);
-            if (!modes.get(wouldUseRes.cond.mode).isElectric) {
-                return wouldUseRes;
-            } else {
-                return new CurveAndCondition(COASTING_CURVE, new InfraConditions(null, null, null));
+            var overlappedCurve = findTractiveEffortCurve(comfort, n.overlappedElectrification);
+            var isOverlappedCurveThermal = !modes.get(overlappedCurve.cond.mode).isElectric;
+            if (isOverlappedCurveThermal) {
+                return overlappedCurve;
             }
-        } else if (electrification instanceof NonElectrified) {
+            return new CurveAndCondition(COASTING_CURVE, new InfraConditions(null, null, null));
+        }
+        if (electrification instanceof NonElectrified) {
             return new CurveAndCondition(modes.get(defaultMode).defaultCurve,
                     new InfraConditions(defaultMode, null, null));
         }
@@ -221,6 +226,7 @@ public class RollingStock implements PhysicsRollingStock {
 
     /**
      * Returns the tractive effort curves corresponding to the electrical conditions map
+     * The neutral sections are not extended in this function.
      *
      * @param electrificationMap The map of electrification conditions to use
      * @param comfort            The comfort level to get the curves for
@@ -238,19 +244,88 @@ public class RollingStock implements PhysicsRollingStock {
         return new CurvesAndConditions(ImmutableRangeMap.copyOf(res), ImmutableRangeMap.copyOf(conditionsUsed));
     }
 
+
+    protected Range<Double> computeDeadSectionRange(Range<Double> neutralRange, Neutral n, Envelope maxEffortEnvelope) {
+        var endRange = neutralRange.upperEndpoint();
+        var finalSpeed = maxEffortEnvelope.interpolateSpeedLeftDir(endRange, 1);
+        double additionalRange = finalSpeed * electricalPowerStartUpTime;
+        if (n.lowerPantograph) {
+            additionalRange += finalSpeed * raisePantographTime;
+        }
+        return Range.closed(neutralRange.lowerEndpoint(), neutralRange.upperEndpoint() + additionalRange);
+    }
+
+    /**
+     * Returns the tractive effort curves corresponding to the electrical conditions map with neutral sections
+     *
+     * @param electrificationMap The map of electrification conditions to use
+     * @param comfort            The comfort level to get the curves for
+     * @param maxSpeedEnvelope   The maxSpeedEnvelope used to extend the neutral sections
+     */
+    public RangeMap<Double, TractiveEffortPoint[]> addNeutralSystemTimes(
+            RangeMap<Double, Electrification> electrificationMap, Comfort comfort, Envelope maxSpeedEnvelope,
+            RangeMap<Double, TractiveEffortPoint[]> curvesUsed) {
+
+        TreeRangeMap<Double, TractiveEffortPoint[]> newCurves = TreeRangeMap.create();
+        newCurves.putAll(curvesUsed);
+
+        for (var elecCondEntry : electrificationMap.asMapOfRanges().entrySet()) {
+            if (elecCondEntry.getValue() instanceof Neutral n) {
+                // estimate the distance during which the train will be coasting, due to having respected the
+                // neutral section
+                var deadSectionRange = computeDeadSectionRange(elecCondEntry.getKey(), n, maxSpeedEnvelope);
+                var curveAndCondition = findTractiveEffortCurve(comfort, n);
+                if (curveAndCondition.cond.mode == null) { // The train is effectively coasting
+                    newCurves.put(deadSectionRange, curveAndCondition.curve);
+                }
+            }
+        }
+        return ImmutableRangeMap.copyOf(newCurves);
+    }
+
     public Set<String> getModeNames() {
         return modes.keySet();
     }
 
     /**
-     * Return whether this rolling stock support only electric modes
+     * Return whether this rolling stock's default mode is thermal
      */
-    public boolean isElectricOnly() {
-        for (var mode : modes.values()) {
-            if (!mode.isElectric)
-                return false;
-        }
-        return true;
+    public boolean isThermal() {
+        return !modes.get(defaultMode).isElectric();
+    }
+
+    /**
+     * Return whether this rolling stock's has an electric mode
+     */
+    public final boolean isElectric() {
+        return modes.values().stream().anyMatch(ModeEffortCurves::isElectric);
+    }
+
+    /**
+     * Creates a new rolling stock (a physical train inventory item).
+     */
+    public RollingStock(
+            String id,
+            double length,
+            double mass,
+            double inertiaCoefficient,
+            double a,
+            double b,
+            double c,
+            double maxSpeed,
+            double startUpTime,
+            double startUpAcceleration,
+            double comfortAcceleration,
+            double gamma,
+            GammaType gammaType,
+            RJSLoadingGaugeType loadingGaugeType,
+            Map<String, ModeEffortCurves> modes,
+            String defaultMode,
+            String basePowerclass
+    ) {
+        this(id, length, mass, inertiaCoefficient, a, b, c, maxSpeed, startUpTime, startUpAcceleration,
+                comfortAcceleration, gamma, gammaType, loadingGaugeType, modes, defaultMode, basePowerclass, Map.of(),
+                0., 0.);
     }
 
     /**
@@ -274,7 +349,9 @@ public class RollingStock implements PhysicsRollingStock {
             Map<String, ModeEffortCurves> modes,
             String defaultMode,
             String basePowerclass,
-            Map<String, String> powerRestrictions
+            Map<String, String> powerRestrictions,
+            Double electricalPowerStartUpTime,
+            Double raisePantographTime
     ) {
         this.id = id;
         this.A = a;
@@ -295,5 +372,10 @@ public class RollingStock implements PhysicsRollingStock {
         this.loadingGaugeType = loadingGaugeType;
         this.basePowerClass = basePowerclass;
         this.powerRestrictions = powerRestrictions;
+        this.electricalPowerStartUpTime = electricalPowerStartUpTime;
+        this.raisePantographTime = raisePantographTime;
+
+        assert !isElectric() || (this.electricalPowerStartUpTime != null && this.raisePantographTime != null) :
+                "Electrical power start up time and Raise pantograph time must be defined for an electric train";
     }
 }
