@@ -10,8 +10,8 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { AiOutlineDash } from 'react-icons/ai';
-import { BsDashLg } from 'react-icons/bs';
 import { updateAllowances } from 'reducers/osrdconf';
+import cx from 'classnames';
 import AllowancesStandardSettings from './AllowancesStandardSettings';
 import AllowancesActions from './AllowancesActions';
 import AllowancesList from './AllowancesList';
@@ -50,6 +50,7 @@ export default function Allowances() {
     lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000
   );
   const allowances = useSelector(getAllowances);
+  const [collapsedStandardAllowanceRanges, setCollapsedStandardAllowanceRanges] = useState(true);
   const [standardAllowance, setStandardAllowance] = useState(
     (allowances &&
       (allowances.find(
@@ -148,52 +149,61 @@ export default function Allowances() {
       <div className="allowances-container">
         <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">
           {t('standardAllowance')}
-          <small className="ml-2">
-            {t('allowancesCount', { count: standardAllowance.ranges.length })}
-          </small>
           <ResetButton resetFunction={() => resetFunction(AllowancesTypes.standard)} />
         </h2>
-        <div className="subtitle mb-1">
-          <BsDashLg />
-          <span className="ml-1">{t('standardAllowanceWholePath')}</span>
-        </div>
         <AllowancesStandardSettings
           distribution={standardAllowance.distribution}
           valueAndUnit={standardAllowance.default_value}
           setDistribution={setStandardDistribution}
           setValueAndUnit={setStandardValueAndUnit}
         />
-        {getAllowanceValue(standardAllowance.default_value) === 0 && (
-          <div className="text-muted font-weight-light font-italic text-center">{t('notUsed')}</div>
+        {getAllowanceValue(standardAllowance.default_value) !== 0 && (
+          <>
+            <button
+              className="subtitle mb-1 mt-2"
+              type="button"
+              onClick={() => setCollapsedStandardAllowanceRanges(!collapsedStandardAllowanceRanges)}
+            >
+              <AiOutlineDash />
+              <span className="ml-1">{t('standardAllowanceIntervals')}</span>
+              <span className={cx('ml-auto', standardAllowance.ranges.length > 0 && 'd-none')}>
+                {collapsedStandardAllowanceRanges ? (
+                  <i className="icons-arrow-down" />
+                ) : (
+                  <i className="icons-arrow-up" />
+                )}
+              </span>
+            </button>
+            {(!collapsedStandardAllowanceRanges || standardAllowance.ranges.length > 0) && (
+              <>
+                <AllowancesActions
+                  allowances={standardAllowance.ranges}
+                  pathLength={pathLength}
+                  manageAllowance={manageAllowance}
+                  type={AllowancesTypes.standard}
+                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                  setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
+                  setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
+                  pathFindingSteps={pathFinding?.steps}
+                />
+                <AllowancesLinearView
+                  allowances={standardAllowance.ranges}
+                  pathLength={pathLength}
+                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                  setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+                  globalDistribution={standardAllowance.distribution}
+                />
+                <AllowancesList
+                  allowances={standardAllowance.ranges}
+                  type={AllowancesTypes.standard}
+                  allowanceSelectedIndex={standardAllowanceSelectedIndex}
+                  setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
+                  overlapAllowancesIndexes={overlapAllowancesIndexes}
+                />
+              </>
+            )}
+          </>
         )}
-        <div className="subtitle mb-1 mt-2">
-          <AiOutlineDash />
-          <span className="ml-1">{t('standardAllowanceByIntervals')}</span>
-        </div>
-        <AllowancesActions
-          allowances={standardAllowance.ranges}
-          pathLength={pathLength}
-          manageAllowance={manageAllowance}
-          type={AllowancesTypes.standard}
-          allowanceSelectedIndex={standardAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={setStandardAllowanceSelectedIndex}
-          setOverlapAllowancesIndexes={setOverlapAllowancesIndexes}
-          pathFindingSteps={pathFinding?.steps}
-        />
-        <AllowancesLinearView
-          allowances={standardAllowance.ranges}
-          pathLength={pathLength}
-          allowanceSelectedIndex={standardAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
-          globalDistribution={standardAllowance.distribution}
-        />
-        <AllowancesList
-          allowances={standardAllowance.ranges}
-          type={AllowancesTypes.standard}
-          allowanceSelectedIndex={standardAllowanceSelectedIndex}
-          setAllowanceSelectedIndex={toggleStandardAllowanceSelectedIndex}
-          overlapAllowancesIndexes={overlapAllowancesIndexes}
-        />
       </div>
       <div className="allowances-container">
         <h2 className="text-uppercase text-muted mb-3 mt-1 d-flex align-items-center">

@@ -115,3 +115,23 @@ blockquote {
   background-color: var(--coolgray1);
   padding-left: 0.5rem;
 }
+
+/*
+*
+*   INPUT
+*
+*/
+.has-right-icon input, .input-group input {
+  text-align: right;
+}
+input {
+  &.form-control {
+    padding-bottom: 0.45rem;
+  }
+  &.form-control-sm {
+    padding-bottom: 0;
+  }
+}
+.input-group-sm input {
+  padding-bottom: 0.45rem;
+}

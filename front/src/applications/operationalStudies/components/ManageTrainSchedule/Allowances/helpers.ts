@@ -23,7 +23,8 @@ export function findAllowanceOverlap({
           (beginPosition < allowances[0].begin_position ? 0 : before),
         after !== currentAllowanceSelected &&
           // Could be AFTER the last allowance
-          (endPosition > allowances[allowances.length - 1].end_position
+          (endPosition > allowances[allowances.length - 1].end_position &&
+          beginPosition < allowances[allowances.length - 1].begin_position
             ? allowances.length - 1
             : after),
       ]
