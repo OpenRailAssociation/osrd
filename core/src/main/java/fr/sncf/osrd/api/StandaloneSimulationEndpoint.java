@@ -58,8 +58,7 @@ public class StandaloneSimulationEndpoint implements Take {
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
-            // TODO : change with get infra when the front is ready
-            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
 
             // load electrical profile set
             var electricalProfileMap = electricalProfileSetManager.getProfileMap(request.electricalProfileSet);
