@@ -2,10 +2,9 @@
   "allowances": "Margins",
   "departureTime": "Departure",
   "errorMessages": {
-    "unableToRetrieveTrainSchedule": "Train schedule impossible",
-    "unableToLoadInfra": "Failed to load the infrastructure"
+    "unableToRetrieveTrainSchedule": "Train schedule impossible"
   },
-  "infraLoading": "Infrastructure loading",
+  "isUpdating": "Updating...",
   "isWorking": "Generating simulation...",
   "labels": "Tags",
   "loadingTrain": "Loading train",
