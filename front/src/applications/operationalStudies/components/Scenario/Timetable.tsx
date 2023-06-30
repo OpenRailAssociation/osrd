@@ -168,6 +168,11 @@ export default function Timetable({
     setTrainsDurationsIntervals(findTrainsDurationsIntervals(departureArrivalTimes));
   }, [departureArrivalTimes]);
 
+  // Avoid keeping this on refresh
+  useEffect(() => {
+    dispatch(updateTrainScheduleIDsToModify());
+  }, []);
+
   return (
     <div className="scenario-timetable">
       <div className="scenario-timetable-addtrains-buttons">

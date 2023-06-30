@@ -18,9 +18,7 @@
   "engineeringAllowances": "Marges de construction",
   "missingPathFinding": "Veuillez déterminer un itinéraire avant de pouvoir définir des marges",
   "no-allowance": "Aucune marge définie",
-  "notUsed": "La valeur globale étant à zéro, les marges de régularité ne seront pas utilisées.",
   "reset": "Réinitialiser",
   "standardAllowance": "Marge de régularité",
-  "standardAllowanceByIntervals": "Par intervalles",
-  "standardAllowanceWholePath": "Ensemble du parcours"
+  "standardAllowanceIntervals": "Valeurs différentes sur intervalles"
 }

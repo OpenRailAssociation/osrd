@@ -1,22 +1,28 @@
 import { StandardAllowance } from 'common/api/osrdEditoastApi';
 
+export enum unitsTypes {
+  percentage = 'percentage',
+  time_per_distance = 'time_per_distance',
+  time = 'time',
+}
+
 export enum unitsNames {
+  percentage = 'percentage',
   time_per_distance = 'minutes',
   time = 'seconds',
-  percentage = 'percentage',
 }
 
 export enum unitsLabels {
+  percentage = '%',
   time_per_distance = 'min/100km',
   time = 's',
-  percentage = '%',
 }
 
 export const initialStandardAllowance: StandardAllowance = {
   allowance_type: 'standard',
   default_value: {
-    value_type: 'time',
-    seconds: 0,
+    value_type: 'percentage',
+    percentage: 0,
   },
   ranges: [],
   distribution: 'MARECO',
