@@ -1,6 +1,6 @@
 {
   "confirmDeleteMessage_one": "Do you really want to delete the project?",
-  "confirmDeleteMessage_other": "Do you really want to delete these {{ count }} projects?",
+  "confirmDeleteMessage_other": "Do you really want to delete the {{ count }} projects?",
   "createProject": "Create a project",
   "deleteProjects": "Delete",
   "filterPlaceholder": "Search...",
@@ -13,10 +13,10 @@
     "byName": "Sort by name",
     "byRecentDate": "Latest"
   },
-  "selectedProjects_one": "1 selected project",
-  "selectedProjects_other": "{{count}} selected projects",
+  "selectedProjects_one": "1 projet selected",
+  "selectedProjects_other": "{{ count }} projects selected",
   "studiesCount_zero": "No study",
   "studiesCount_one": "1 study",
   "studiesCount_other": "{{count}} studies",
-  "unselectAllProjects": "Unselect all"
+  "unselectAllProjects": "Deselect"
 }
