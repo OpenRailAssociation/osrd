@@ -18,6 +18,9 @@
     border-radius: var(--border-radius);
     padding: 0.5rem;
     .subtitle {
+      all: unset;
+      cursor: pointer;
+      display: flex;
       text-transform: uppercase;
       color: var(--coolgray9);
       font-size: 0.8rem;

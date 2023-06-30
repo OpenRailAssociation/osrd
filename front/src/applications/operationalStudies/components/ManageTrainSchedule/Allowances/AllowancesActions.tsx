@@ -16,7 +16,7 @@ import { BsCheckLg } from 'react-icons/bs';
 import { MdCancel } from 'react-icons/md';
 import cx from 'classnames';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { unitsList, unitsNames } from './consts';
+import { unitsList, unitsNames, unitsTypes } from './consts';
 import {
   AllowancesTypes,
   SetAllowanceSelectedIndexType,
@@ -152,16 +152,22 @@ export default function AllowancesActions({
     }
   };
 
+  const defaultType = () => {
+    if (type === AllowancesTypes.standard) return unitsTypes.percentage;
+    if (type === AllowancesTypes.engineering) return unitsTypes.time;
+    return unitsNames.percentage;
+  };
+
   useEffect(() => {
     if (allowanceSelectedIndex !== undefined) {
-      if (type === 'standard') {
+      if (type === AllowancesTypes.standard) {
         const selectedAllowance = allowances[allowanceSelectedIndex] as RangeAllowance;
         setBeginPosition(selectedAllowance.begin_position);
         setEndPosition(selectedAllowance.end_position);
         setAllowanceLength(selectedAllowance.end_position - selectedAllowance.begin_position);
         setValueAndUnit(selectedAllowance.value);
       }
-      if (type === 'engineering') {
+      if (type === AllowancesTypes.engineering) {
         const selectedAllowance = allowances[allowanceSelectedIndex] as EngineeringAllowance;
         setBeginPosition(selectedAllowance.begin_position);
         setEndPosition(selectedAllowance.end_position);
@@ -301,7 +307,7 @@ export default function AllowancesActions({
             handleType={handleValueAndUnit}
             options={unitsList}
             typeValue="number"
-            type={valueAndUnit?.value_type}
+            type={valueAndUnit?.value_type || defaultType()}
             min={0}
             isInvalid={!(getAllowanceValue(valueAndUnit) > 0)}
           />
