@@ -1,12 +1,12 @@
 import React, { FC, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { omit, map, groupBy } from 'lodash';
+import { omit, map, groupBy, first, last } from 'lodash';
 
 import maplibregl from 'maplibre-gl';
-import ReactMapGL, { Layer, MapRef, Source } from 'react-map-gl';
+import ReactMapGL, { Layer, LineLayer, MapRef, Marker, Source } from 'react-map-gl';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { featureCollection } from '@turf/helpers';
-import { FeatureCollection } from 'geojson';
+import { Feature, FeatureCollection, MultiLineString } from 'geojson';
 
 import colors from '../Consts/colors';
 import { EditorSource, SourcesDefinitionsIndex } from '../Layers/GeoJSONs';
@@ -20,6 +20,8 @@ import { genLayerProps } from '../Layers/OSM';
 import { LAYER_GROUPS_ORDER, LAYERS } from '../../../config/layerOrder';
 import OrderedLayer, { OrderedLayerProps } from '../Layers/OrderedLayer';
 import VirtualLayers from '../../../applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
+import originSVG from '../../../assets/pictures/origin.svg';
+import destinationSVG from '../../../assets/pictures/destination.svg';
 
 const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
   buffer_stops: LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP],
@@ -36,12 +38,22 @@ const OSRD_LAYER_ORDERS: Record<LayerType, number> = {
   errors: 0,
 };
 
+const PATH_STYLE: LineLayer = {
+  id: 'data',
+  type: 'line',
+  paint: {
+    'line-width': 5,
+    'line-color': 'rgba(210, 225, 0, 0.75)',
+  },
+};
+
 const DataDisplay: FC<{
   bbox: BBox2d;
   osrdLayers: Set<LayerType>;
   osrdData?: Partial<Record<LayerType, FeatureCollection>>;
   osmData?: Record<string, FeatureCollection>;
-}> = ({ bbox, osrdLayers, osrdData, osmData }) => {
+  path?: Feature<MultiLineString>;
+}> = ({ bbox, osrdLayers, osrdData, osmData, path }) => {
   const prefix = 'warped/';
   const [mapRef, setMapRef] = useState<MapRef | null>(null);
   const { mapStyle, layersSettings, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
@@ -98,6 +110,15 @@ const DataDisplay: FC<{
     [mapStyle]
   );
 
+  const origin = useMemo(
+    () => (path ? first(first(path.geometry.coordinates)) : undefined),
+    [path]
+  );
+  const destination = useMemo(
+    () => (path ? last(last(path.geometry.coordinates)) : undefined),
+    [path]
+  );
+
   return osrdData && osmData ? (
     <ReactMapGL
       ref={setMapRef}
@@ -128,6 +149,21 @@ const DataDisplay: FC<{
           layerOrder={s.order}
         />
       ))}
+      {path && (
+        <Source id="path" type="geojson" data={path}>
+          <OrderedLayer {...PATH_STYLE} layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]} />
+        </Source>
+      )}
+      {origin && (
+        <Marker longitude={origin[0]} latitude={origin[1]} offset={[0, -12]}>
+          <img src={originSVG} alt="Origin" style={{ height: '1.5rem' }} />
+        </Marker>
+      )}
+      {destination && (
+        <Marker longitude={destination[0]} latitude={destination[1]} offset={[0, -24]}>
+          <img src={destinationSVG} alt="Destination" style={{ height: '3rem' }} />
+        </Marker>
+      )}
     </ReactMapGL>
   ) : (
     <LoaderFill />
