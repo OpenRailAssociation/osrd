@@ -5,7 +5,7 @@ import { isNil, mapValues, omitBy } from 'lodash';
 
 import bbox from '@turf/bbox';
 import simplify from '@turf/simplify';
-import { lineString } from '@turf/helpers';
+import { lineString, multiLineString } from '@turf/helpers';
 import { BBox2d } from '@turf/helpers/dist/js/lib/geojson';
 import { Feature, FeatureCollection, Geometry, LineString, Position } from 'geojson';
 
@@ -78,6 +78,11 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
     };
   }, [path]);
 
+  const transformedPath = useMemo(
+    () => transform(multiLineString([path.geometry.coordinates])),
+    [transform, path]
+  );
+
   return (
     <div className="warped-map position-relative d-flex flex-row">
       <DataLoader
@@ -114,6 +119,7 @@ export const PathWarpedMap: FC<{ path: Feature<LineString> }> = ({ path }) => {
           bbox={regularBBox}
           osrdData={transformedData?.osrd}
           osmData={transformedData?.osm}
+          path={transformedPath || undefined}
         />
       </div>
     </div>
