@@ -53,8 +53,8 @@ def compute_path_payload(infra, back_payload, step_durations, track_map) -> Path
                 path_waypoint["name"] = identifier.name
 
         # Add geometry
-        track = track_map[path_waypoint["track"]]
-        norm_offset = path_waypoint["position"] / track["length"]
+        track = track_map[path_waypoint["location"]["track_section"]]
+        norm_offset = path_waypoint["location"]["offset"] / track["length"]
 
         path_waypoint["geo"] = json.loads(track["geo"].interpolate_normalized(norm_offset).json)
         path_waypoint["sch"] = json.loads(track["sch"].interpolate_normalized(norm_offset).json)
@@ -158,6 +158,7 @@ def parse_waypoint(waypoint, track_map):
 
 
 def postprocess_path(path, payload, infra, owner, step_durations):
+    path.length = payload.pop("length")
     path.geographic = json.dumps(payload.pop("geographic"))
     path.schematic = json.dumps(payload.pop("schematic"))
 

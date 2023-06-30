@@ -28,7 +28,7 @@ def create_backend_request_payload(train_schedules: Iterator[TrainSchedule]):
         stops.append(
             {
                 "duration": waypoint["duration"],
-                "location": {"track_section": waypoint["track"], "offset": waypoint["position"]},
+                "location": waypoint["location"],
             }
         )
 
@@ -127,12 +127,13 @@ def process_simulation_response(
     assert len(electrification_conditions) == 0 or len(train_schedules) == len(electrification_conditions)
 
     stops = train_schedules[0].path.payload["path_waypoints"]
-    track_sections = TrackSectionModel.objects.filter(infra=infra, obj_id__in=[stop["track"] for stop in stops])
+    track_stops_id = [stop["location"]["track_section"] for stop in stops]
+    track_sections = TrackSectionModel.objects.filter(infra=infra, obj_id__in=track_stops_id)
     id_to_tracks = {track.obj_id: track for track in track_sections}
 
     stops_additional_information = []
     for stop in stops:
-        extensions = id_to_tracks[stop["track"]].data.get("extensions") or {}
+        extensions = id_to_tracks[stop["location"]["track_section"]].data.get("extensions") or {}
         ext_sncf = extensions.get("sncf") or {}
         stops_additional_information.append(
             {
