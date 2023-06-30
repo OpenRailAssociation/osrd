@@ -10,6 +10,7 @@ class PathModel(models.Model):
     owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     created = models.DateTimeField(editable=False, auto_now_add=True)
+    length = models.FloatField(editable=False)
     payload = models.JSONField(validators=[PydanticValidator(PathPayload)])
     slopes = models.JSONField(validators=[PydanticValidator(Slopes)])
     curves = models.JSONField(validators=[PydanticValidator(Curves)])
