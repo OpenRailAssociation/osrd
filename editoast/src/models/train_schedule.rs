@@ -129,12 +129,30 @@ impl From<TrainScheduleChangeset> for TrainSchedule {
     }
 }
 
+/// Returns the timetable with the main information about a train
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Queryable)]
-pub struct TrainScheduleDetails {
+pub struct LightTrainSchedule {
     pub id: i64,
     pub train_name: String,
     pub departure_time: f64,
     pub train_path: i64,
+}
+
+#[derive(Serialize, Debug, PartialEq, Clone, Default)]
+pub struct MechanicalEnergyConsumedBaseEco {
+    pub base: f64,
+    pub eco: Option<f64>,
+}
+
+/// Returns the timetable with the train's important route information (distance travelled, arrival time, etc.)
+#[derive(Serialize, Debug, PartialEq, Clone, Queryable)]
+pub struct TrainScheduleSummary {
+    #[serde(flatten)]
+    pub train_schedule: TrainSchedule,
+    pub arrival_time: f64,
+    pub mechanical_energy_consumed: MechanicalEnergyConsumedBaseEco,
+    pub stops_count: i64,
+    pub path_length: f64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

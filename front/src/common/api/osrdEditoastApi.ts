@@ -1016,16 +1016,8 @@ export type DeleteProjectsByProjectIdApiArg = {
   /** project id you want to delete */
   projectId: number;
 };
-export type GetTimetableByIdApiResponse = /** status 200 The timetable content */ {
-  id?: number;
-  name?: string;
-  train_schedules?: {
-    id?: number;
-    train_name?: string;
-    departure_time?: number;
-    train_path?: number;
-  }[];
-};
+export type GetTimetableByIdApiResponse =
+  /** status 200 The timetable content */ TimetableWithSchedulesDetails;
 export type GetTimetableByIdApiArg = {
   /** Timetable ID */
   id: number;
@@ -1678,6 +1670,87 @@ export type ProjectPatchRequest = {
   image?: number;
   tags?: string[];
 };
+export type AllowanceTimePerDistanceValue = {
+  value_type: 'time_per_distance';
+  minutes: number;
+};
+export type AllowanceTimeValue = {
+  value_type: 'time';
+  seconds: number;
+};
+export type AllowancePercentValue = {
+  value_type: 'percentage';
+  percentage: number;
+};
+export type AllowanceValue =
+  | ({
+      value_type: 'time_per_distance';
+    } & AllowanceTimePerDistanceValue)
+  | ({
+      value_type: 'time';
+    } & AllowanceTimeValue)
+  | ({
+      value_type: 'percentage';
+    } & AllowancePercentValue);
+export type RangeAllowance = {
+  begin_position: number;
+  end_position: number;
+  value: AllowanceValue;
+};
+export type EngineeringAllowance = {
+  allowance_type: 'engineering';
+  distribution: 'MARECO' | 'LINEAR';
+  capacity_speed_limit: number;
+} & RangeAllowance;
+export type StandardAllowance = {
+  allowance_type: 'standard';
+  default_value: AllowanceValue;
+  ranges: RangeAllowance[];
+  distribution: 'MARECO' | 'LINEAR';
+  capacity_speed_limit: number;
+};
+export type Allowance =
+  | ({
+      allowance_type: 'engineering';
+    } & EngineeringAllowance)
+  | ({
+      allowance_type: 'standard';
+    } & StandardAllowance);
+export type TrainScheduleOptions = {
+  ignore_electrical_profiles?: boolean | null;
+};
+export type PowerRestrictionRange = {
+  begin_position: number;
+  end_position: number;
+  power_restriction_code: string;
+};
+export type TrainScheduleSummary = {
+  id: number;
+  train_name: string;
+  timetable_id?: number;
+  rolling_stock_id?: number;
+  departure_time: number;
+  path_id?: number;
+  initial_speed?: number;
+  labels: string[];
+  allowances?: Allowance[];
+  speed_limit_tags?: string;
+  comfort?: Comfort;
+  options?: TrainScheduleOptions | null;
+  power_restriction_ranges?: PowerRestrictionRange[] | null;
+  arrival_time: number;
+  mechanical_energy_consumed: {
+    base?: number;
+    eco?: number;
+  };
+  stops_count?: number;
+  path_length?: number;
+};
+export type TimetableWithSchedulesDetails = {
+  id: number;
+  name: string;
+  train_schedule_summaries: TrainScheduleSummary[];
+};
 export type StudyResult = {
   id: number;
   name: string;
@@ -1779,60 +1852,6 @@ export type CatenaryRange = {
   begin?: number;
   end?: number;
   mode?: string;
-};
-export type AllowanceTimePerDistanceValue = {
-  value_type: 'time_per_distance';
-  minutes: number;
-};
-export type AllowanceTimeValue = {
-  value_type: 'time';
-  seconds: number;
-};
-export type AllowancePercentValue = {
-  value_type: 'percentage';
-  percentage: number;
-};
-export type AllowanceValue =
-  | ({
-      value_type: 'time_per_distance';
-    } & AllowanceTimePerDistanceValue)
-  | ({
-      value_type: 'time';
-    } & AllowanceTimeValue)
-  | ({
-      value_type: 'percentage';
-    } & AllowancePercentValue);
-export type RangeAllowance = {
-  begin_position: number;
-  end_position: number;
-  value: AllowanceValue;
-};
-export type EngineeringAllowance = {
-  allowance_type: 'engineering';
-  distribution: 'MARECO' | 'LINEAR';
-  capacity_speed_limit: number;
-} & RangeAllowance;
-export type StandardAllowance = {
-  allowance_type: 'standard';
-  default_value: AllowanceValue;
-  ranges: RangeAllowance[];
-  distribution: 'MARECO' | 'LINEAR';
-  capacity_speed_limit: number;
-};
-export type Allowance =
-  | ({
-      allowance_type: 'engineering';
-    } & EngineeringAllowance)
-  | ({
-      allowance_type: 'standard';
-    } & StandardAllowance);
-export type TrainScheduleOptions = {
-  ignore_electrical_profiles?: boolean | null;
-};
-export type PowerRestrictionRange = {
-  begin_position: number;
-  end_position: number;
-  power_restriction_code: string;
 };
 export type TrainSchedule = {
   train_name?: string;
