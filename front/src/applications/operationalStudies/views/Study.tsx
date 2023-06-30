@@ -273,7 +273,7 @@ export default function Study() {
               <div className="row">
                 <div className="col-xl-9 col-lg-8 col-md-7">
                   <div className="study-details-name">
-                    {study.name}
+                    <div className="study-name">{study.name}</div>
                     <button
                       className="study-details-modify-button"
                       type="button"
@@ -320,11 +320,11 @@ export default function Study() {
                 <div className="study-details-financials-infos">
                   <div className="study-details-financials-infos-item">
                     <h3>{t('geremiCode')}</h3>
-                    <div>{study.service_code}</div>
+                    <div className="code">{study.service_code}</div>
                   </div>
                   <div className="study-details-financials-infos-item">
                     <h3>{t('affairCode')}</h3>
-                    <div>{study.business_code}</div>
+                    <div className="code">{study.business_code}</div>
                   </div>
                 </div>
                 <div className="study-details-financials-amount">
