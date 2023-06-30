@@ -115,7 +115,7 @@ function apiSyncOnDiff(present, nextPresent, dispatch = noop) {
       JSON.stringify(apiDetailsForNextTrain) !== JSON.stringify(apiDetailsForPresentTrain)
     ) {
       // train exists, but is different. Patch this train
-      changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
+      changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id, dispatch);
     }
   }
 }

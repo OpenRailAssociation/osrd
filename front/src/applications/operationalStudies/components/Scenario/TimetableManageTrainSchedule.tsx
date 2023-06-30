@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { FaPen } from 'react-icons/fa';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { useTranslation } from 'react-i18next';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { useDispatch, useSelector } from 'react-redux';
-import { getTrainScheduleIDsToModify } from 'reducers/osrdconf/selectors';
+import { useDispatch } from 'react-redux';
 import TrainAddingSettings from 'applications/operationalStudies/components/ManageTrainSchedule/TrainAddingSettings';
 import { Infra } from 'common/api/osrdEditoastApi';
-import submitConfUpdateTrainSchedules from '../ManageTrainSchedule/helpers/submitConfUpdateTrainSchedules';
 import SubmitConfAddTrainSchedule from '../ManageTrainSchedule/SubmitConfAddTrainSchedule';
+import SubmitConfUpdateTrainSchedules from '../ManageTrainSchedule/SubmitConfUpdateTrainSchedules';
 
 type Props = {
   displayTrainScheduleManagement: string;
@@ -24,7 +22,6 @@ export default function TimetableManageTrainSchedule({
 }: Props) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const dispatch = useDispatch();
-  const trainScheduleIDsToModify: undefined | number[] = useSelector(getTrainScheduleIDsToModify);
   const [isWorking, setIsWorking] = useState(false);
 
   const leaveManageTrainSchedule = () => {
@@ -35,27 +32,12 @@ export default function TimetableManageTrainSchedule({
   return (
     <div className="scenario-timetable-managetrainschedule">
       <div className="scenario-timetable-managetrainschedule-header">
-        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit &&
-          trainScheduleIDsToModify && (
-            <button
-              className="btn btn-warning"
-              type="button"
-              onClick={() =>
-                submitConfUpdateTrainSchedules(
-                  dispatch,
-                  t,
-                  setIsWorking,
-                  trainScheduleIDsToModify,
-                  setDisplayTrainScheduleManagement
-                )
-              }
-            >
-              <span className="mr-2">
-                <FaPen />
-              </span>
-              {t('updateTrainSchedule')}
-            </button>
-          )}
+        {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.edit && (
+          <SubmitConfUpdateTrainSchedules
+            setIsWorking={setIsWorking}
+            setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+          />
+        )}
 
         {displayTrainScheduleManagement === MANAGE_TRAIN_SCHEDULE_TYPES.add && (
           <>

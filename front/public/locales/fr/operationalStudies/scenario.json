@@ -12,7 +12,6 @@
   },
   "filterPlaceholder": "Filtre, étiquettes",
   "infraLoadingState": "{{step}}/8",
-  "isUpdating": "Mise à jour...",
   "modifyScenario": "Modifier le scénario",
   "noElectricalProfileSet": "Pas de profils électriques",
   "scenarioCancel": "Annuler",

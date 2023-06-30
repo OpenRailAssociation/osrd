@@ -26,17 +26,19 @@ import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/SimulationResults/DriverTrainSchedule/DriverTrainSchedule';
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import ScenarioLoader from '../components/Scenario/ScenarioLoader';
 
 const MAP_MIN_HEIGHT = 450;
 
-export default function SimulationResults({
-  isDisplayed,
-  collapsedTimetable,
-}: {
+type Props = {
   isDisplayed: boolean;
   collapsedTimetable: boolean;
-}) {
-  const { t } = useTranslation(['translation', 'simulation']);
+  infraState: Infra['state'];
+};
+
+export default function SimulationResults({ isDisplayed, collapsedTimetable, infraState }: Props) {
+  const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
 
@@ -62,6 +64,8 @@ export default function SimulationResults({
   const timetableID = useSelector(getTimetableID);
   const dispatch = useDispatch();
 
+  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
+
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
       dispatch(persistentUndoSimulation());
@@ -83,7 +87,11 @@ export default function SimulationResults({
 
   useEffect(() => {
     if (timetableID && selectedProjection) {
-      getTimetable(timetableID);
+      getTimetableWithTrainSchedulesDetails({ id: timetableID })
+        .unwrap()
+        .then((result) => {
+          getTimetable(result);
+        });
     }
     return function cleanup() {
       dispatch(updateSimulation({ trains: [] }));
@@ -102,13 +110,24 @@ export default function SimulationResults({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
 
-  const waitingLoader =
-    (!simulation || simulation.trains.length === 0) && !isUpdating ? (
-      <h1 className="text-center">{t('simulation:noData')}</h1>
-    ) : null;
+  const waitingMessage = () => {
+    if (infraState === 'ERROR' || infraState === 'TRANSIENT_ERROR') {
+      return <h1 className="text-center">{t('simulation:errorMessages.errorLoadingInfra')}</h1>;
+    }
+    if (infraState !== 'CACHED') {
+      return <ScenarioLoader msg={t('simulation:infraLoading')} />;
+    }
+    if ((!simulation || simulation.trains.length === 0) && !isUpdating && infraState === 'CACHED') {
+      return <h1 className="text-center">{t('simulation:noData')}</h1>;
+    }
+    if (isUpdating) {
+      return <ScenarioLoader msg={t('simulation:isUpdating')} />;
+    }
+    return null;
+  };
 
   if (!displaySimulation || isUpdating) {
-    return <div className="pt-5 mt-5">{waitingLoader}</div>;
+    return <div className="pt-5 mt-5">{waitingMessage()}</div>;
   }
   return (
     <div className="simulation-results">
