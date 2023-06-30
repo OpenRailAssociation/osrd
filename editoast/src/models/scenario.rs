@@ -1,6 +1,6 @@
 use crate::error::Result;
-use crate::models::train_schedule::TrainScheduleDetails;
-use crate::models::{Delete, Identifiable};
+use crate::models::train_schedule::LightTrainSchedule;
+use crate::models::Delete;
 use crate::tables::osrd_infra_scenario;
 use crate::views::pagination::Paginate;
 use crate::views::pagination::PaginatedResponse;
@@ -62,7 +62,7 @@ pub struct Scenario {
     pub tags: Option<Vec<String>>,
 }
 
-impl Identifiable for Scenario {
+impl crate::models::Identifiable for Scenario {
     fn get_id(&self) -> i64 {
         self.id.expect("Scenario id not found")
     }
@@ -77,8 +77,8 @@ pub struct ScenarioWithDetails {
     pub infra_name: String,
     #[diesel(sql_type = Nullable<Text>)]
     pub electrical_profile_set_name: Option<String>,
-    #[diesel(sql_type = Array<TrainScheduleDetails>)]
-    pub train_schedules: Vec<TrainScheduleDetails>,
+    #[diesel(sql_type = Array<LightTrainSchedule>)]
+    pub train_schedules: Vec<LightTrainSchedule>,
     #[diesel(sql_type = BigInt)]
     pub trains_count: i64,
 }
@@ -117,7 +117,7 @@ impl Scenario {
             let train_schedules = osrd_infra_trainschedule
                 .filter(timetable_id.eq(self.timetable_id.unwrap()))
                 .select((id, train_name, departure_time, path_id))
-                .load::<TrainScheduleDetails>(&mut conn)?;
+                .load::<LightTrainSchedule>(&mut conn)?;
 
             let trains_count = train_schedules.len() as i64;
 

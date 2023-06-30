@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use crate::error::Result;
-use crate::models::{Retrieve, SimulationOutput, Timetable, TimetableWithSchedules, TrainSchedule};
+use crate::models::{
+    Retrieve, SimulationOutput, Timetable, TimetableWithSchedulesDetails, TrainSchedule,
+};
 use crate::views::train_schedule::TrainScheduleError;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -29,7 +31,7 @@ enum TimetableError {
 async fn get(
     db_pool: Data<DbPool>,
     timetable_id: Path<i64>,
-) -> Result<Json<TimetableWithSchedules>> {
+) -> Result<Json<TimetableWithSchedulesDetails>> {
     let timetable_id = timetable_id.into_inner();
 
     // Return the timetable
@@ -37,7 +39,7 @@ async fn get(
         Some(timetable) => timetable,
         None => return Err(TimetableError::NotFound { timetable_id }.into()),
     };
-    let timetable_with_schedules = timetable.with_train_schedules(db_pool).await?;
+    let timetable_with_schedules = timetable.with_detailed_train_schedules(db_pool).await?;
     Ok(Json(timetable_with_schedules))
 }
 
@@ -55,7 +57,7 @@ struct Conflict {
     conflict_type: ConflictType,
 }
 
-// This is a dummy implementation for now
+/// This is a dummy implementation for now
 #[get("conflicts")]
 async fn get_conflicts(
     db_pool: Data<DbPool>,
