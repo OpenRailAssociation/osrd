@@ -142,7 +142,7 @@ export default function Scenario() {
                 {scenario && (
                   <div className="scenario-details">
                     <div className="scenario-details-name">
-                      <span className="flex-grow-1">{scenario.name}</span>
+                      <span className="flex-grow-1 scenario-name">{scenario.name}</span>
                       <button
                         className="scenario-details-modify-button"
                         type="button"
@@ -179,7 +179,7 @@ export default function Scenario() {
                         <div className="scenario-details-infra-name">
                           <img src={infraLogo} alt="Infra logo" className="mr-2" />
                           {infra && <InfraLoadingState infra={infra} />}
-                          {scenario.infra_name}
+                          <span className="scenario-infra-name">{scenario.infra_name}</span>
                           <small className="ml-auto text-muted">ID {scenario.infra_id}</small>
                         </div>
                       </div>
