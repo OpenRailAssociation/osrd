@@ -32,7 +32,7 @@ function Vias(props: ViasProps) {
           <FaPlus />
         </button>
       )}
-      <div className="mb-2">
+      <div className="vias-list">
         {vias && vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (

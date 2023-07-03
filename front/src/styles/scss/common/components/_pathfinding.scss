@@ -1,4 +1,9 @@
 .pathfinding-details {
+  position: relative;
+  .vias-list {
+    max-height: calc(50vh);
+    overflow: auto;
+  }
   .place {
     position: relative;
     i {
@@ -35,7 +40,8 @@
       }
 
       .default-durations-button {
-        display: none;
+        display: flex;
+        opacity: 0;
         align-items: center;
         button {
           display: flex;
@@ -68,7 +74,7 @@
       &:hover {
         background-color: var(--coolgray1);
         .default-durations-button {
-          display: flex;
+          opacity: 1;
         }
       }
       &.is-a-stop {
