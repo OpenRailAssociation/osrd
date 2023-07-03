@@ -23,7 +23,7 @@ type Props = {
   isModified?: boolean;
   projectionPathIsUsed: boolean;
   idx: number;
-  changeSelectedTrain: (idx: number) => void;
+  changeSelectedTrainId: (trainId: number) => void;
   deleteTrain: (train: ScheduledTrain) => void;
   selectPathProjection: (train: ScheduledTrain) => void;
   duplicateTrain: (train: ScheduledTrain) => void;
@@ -37,7 +37,7 @@ function TimetableTrainCard({
   isModified,
   projectionPathIsUsed,
   idx,
-  changeSelectedTrain,
+  changeSelectedTrainId,
   deleteTrain,
   selectPathProjection,
   duplicateTrain,
@@ -78,7 +78,7 @@ function TimetableTrainCard({
           className="scenario-timetable-train-container"
           role="button"
           tabIndex={0}
-          onClick={() => changeSelectedTrain(idx)}
+          onClick={() => changeSelectedTrainId(train.id)}
         >
           <div className="scenario-timetable-train-header">
             <div className="scenario-timetable-train-name">

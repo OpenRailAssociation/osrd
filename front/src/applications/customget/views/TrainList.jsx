@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { sec2datetime, sec2time, time2datetime } from 'utils/timeManipulation';
 import {
   updateMustRedraw,
-  updateSelectedTrain,
+  updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import PropTypes from 'prop-types';
@@ -57,7 +58,8 @@ function InputTime(props) {
 }
 
 export default function TrainsList() {
-  const { selectedTrain, departureArrivalTimes } = useSelector((state) => state.osrdsimulation);
+  const { departureArrivalTimes } = useSelector((state) => state.osrdsimulation);
+  const selectedTrain = useSelector(getSelectedTrain);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const [formattedList, setFormattedList] = useState(null);
@@ -70,7 +72,7 @@ export default function TrainsList() {
   const { t } = useTranslation(['simulation']);
 
   const changeSelectedTrain = (idx, typeOfInputToFocus) => {
-    dispatch(updateSelectedTrain(idx));
+    dispatch(updateSelectedTrainId(idx));
     setTrainNameClickedIDX(idx);
     setTypeOfInputFocused(typeOfInputToFocus);
     dispatch(updateMustRedraw(true));
@@ -106,7 +108,7 @@ export default function TrainsList() {
 
   const formatTrainsList = () => {
     const newFormattedList = departureArrivalTimes.map((train, idx) => (
-      <tr className={selectedTrain === idx ? 'table-cell-selected' : null} key={nextId()}>
+      <tr className={selectedTrain.id === train.id ? 'table-cell-selected' : null} key={nextId()}>
         <td>
           <div className="cell-inner">
             <i className="icons-slider-on" style={{ color: simulation.trains[idx].color }} />
@@ -116,7 +118,9 @@ export default function TrainsList() {
           <div
             className="cell-inner cell-inner-button"
             role="button"
-            onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.departure))}
+            onClick={() =>
+              changeSelectedTrain(train.id, 'name', train.name, sec2time(train.departure))
+            }
             tabIndex={0}
           >
             {trainNameClickedIDX === idx ? (
@@ -135,7 +139,9 @@ export default function TrainsList() {
           <div
             className="cell-inner cell-inner-button"
             role="button"
-            onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.departure))}
+            onClick={() =>
+              changeSelectedTrain(train.id, 'time', train.name, sec2time(train.departure))
+            }
             tabIndex={0}
           >
             {trainNameClickedIDX === idx ? (

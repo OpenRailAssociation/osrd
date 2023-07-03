@@ -11,7 +11,7 @@ import {
   updateMustRedraw,
   updateReloadTimetable,
   updateSelectedProjection,
-  updateSelectedTrain,
+  updateSelectedTrainId,
 } from 'reducers/osrdsimulation/actions';
 import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -25,6 +25,7 @@ import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { valueToInterval } from 'utils/numbers';
 import { GetTimetableByIdApiResponse, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
+import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
@@ -44,7 +45,7 @@ export default function Timetable({
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
   );
-  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
+  const selectedTrainId = useSelector(getSelectedTrainId);
   const timetableID = useSelector(getTimetableID);
   const trainScheduleIDsToModify = useSelector(getTrainScheduleIDsToModify);
   const reloadTimetable = useSelector((state: RootState) => state.osrdsimulation.reloadTimetable);
@@ -63,8 +64,8 @@ export default function Timetable({
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
   const [getTimetableConflicts] = osrdEditoastApi.useLazyGetTimetableByIdConflictsQuery();
 
-  const changeSelectedTrain = (idx: number) => {
-    dispatch(updateSelectedTrain(idx));
+  const changeSelectedTrainId = (trainId: number) => {
+    dispatch(updateSelectedTrainId(trainId));
     dispatch(updateMustRedraw(true));
   };
 
@@ -102,7 +103,6 @@ export default function Timetable({
     const trainDelta = 5;
     const trainCount = 1;
     const trainStep = 5;
-    //
 
     const trainDetail = await get(`${trainscheduleURI}${train.id}/`);
 
@@ -306,29 +306,31 @@ export default function Timetable({
       >
         {trainsList &&
           trainsDurationsIntervals &&
-          trainsList.map(
-            (train: ScheduledTrain, idx: number) =>
-              !train.isFiltered && (
-                <TimetableTrainCard
-                  train={train}
-                  intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
-                  key={`timetable-train-card-${train.id}-${train.path_id}`}
-                  isSelected={infraState !== 'CACHED' ? false : selectedTrain === idx}
-                  isModified={trainScheduleIDsToModify?.includes(train.id)}
-                  projectionPathIsUsed={isProjectionPathUsed(
-                    infraState,
-                    train.id,
-                    selectedProjection
-                  )}
-                  idx={idx}
-                  changeSelectedTrain={changeSelectedTrain}
-                  deleteTrain={deleteTrain}
-                  duplicateTrain={duplicateTrain}
-                  selectPathProjection={selectPathProjection}
-                  setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
-                />
-              )
-          )}
+          trainsList
+            .sort((trainA, trainB) => trainA.departure_time - trainB.departure_time)
+            .map(
+              (train: ScheduledTrain, idx: number) =>
+                !train.isFiltered && (
+                  <TimetableTrainCard
+                    train={train}
+                    intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
+                    key={`timetable-train-card-${train.id}-${train.path_id}`}
+                    isSelected={infraState !== 'CACHED' ? false : selectedTrainId === train.id}
+                    isModified={trainScheduleIDsToModify?.includes(train.id)}
+                    projectionPathIsUsed={isProjectionPathUsed(
+                      infraState,
+                      train.id,
+                      selectedProjection
+                    )}
+                    idx={idx}
+                    changeSelectedTrainId={changeSelectedTrainId}
+                    deleteTrain={deleteTrain}
+                    duplicateTrain={duplicateTrain}
+                    selectPathProjection={selectPathProjection}
+                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                  />
+                )
+            )}
       </div>
       <ConflictsList
         conflicts={conflicts}

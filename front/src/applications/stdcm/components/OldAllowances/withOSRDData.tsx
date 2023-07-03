@@ -32,18 +32,20 @@ function withOSRDData<T>(Component: ComponentType<T>) {
     const [trainDetail, setTrainDetail] = useState<TrainSchedule>({ allowances: [] });
 
     const getAllowances = async () => {
-      try {
-        setSyncInProgress(true);
-        const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
-        setTrainDetail(result);
-        setSyncInProgress(false);
-      } catch (e: unknown) {
-        dispatch(
-          setFailure({
-            name: (e as Error).name,
-            message: (e as Error).message,
-          })
-        );
+      if (selectedTrain) {
+        try {
+          setSyncInProgress(true);
+          const result = await get(`${trainscheduleURI}${selectedTrain.id}/`);
+          setTrainDetail(result);
+          setSyncInProgress(false);
+        } catch (e: unknown) {
+          dispatch(
+            setFailure({
+              name: (e as Error).name,
+              message: (e as Error).message,
+            })
+          );
+        }
       }
     };
 
@@ -69,41 +71,42 @@ function withOSRDData<T>(Component: ComponentType<T>) {
 
     // Alowance mutation in REST strat
     const mutateAllowances = async (newAllowances: Allowance[]) => {
-      try {
-        setSyncInProgress(true);
-        await patch(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
-          ...trainDetail,
-          allowances: newAllowances,
-        });
-        const newSimulationTrains = Array.from(simulation.trains);
-        newSimulationTrains[selectedTrain] = await get(
-          `${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
-          {
+      if (selectedTrain) {
+        try {
+          setSyncInProgress(true);
+          await patch(`${trainscheduleURI}${selectedTrain.id}/`, {
+            ...trainDetail,
+            allowances: newAllowances,
+          });
+          const updatedSelectedTrain = await get(`${trainscheduleURI}${selectedTrain.id}/result/`, {
             params: {
-              id: simulation.trains[selectedTrain].id,
+              id: selectedTrain.id,
               path: selectedProjection?.path,
             },
-          }
-        );
+          });
+          const trains = simulation.trains.map((train) =>
+            train.id === selectedTrain.id ? updatedSelectedTrain : train
+          );
 
-        getAllowances();
-        dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
-        dispatch(updateMustRedraw(true));
-        dispatch(
-          setSuccess({
-            title: t('allowanceModified.anyAllowanceModified'),
-            text: '',
-          })
-        );
-        setSyncInProgress(false);
-      } catch (e: unknown) {
-        setSyncInProgress(false);
-        dispatch(
-          setFailure({
-            name: (e as Error).name,
-            message: t('allowanceModified.anyAllowanceModificationError'),
-          })
-        );
+          getAllowances();
+          dispatch(updateSimulation({ ...simulation, trains }));
+          dispatch(updateMustRedraw(true));
+          dispatch(
+            setSuccess({
+              title: t('allowanceModified.anyAllowanceModified'),
+              text: '',
+            })
+          );
+          setSyncInProgress(false);
+        } catch (e: unknown) {
+          setSyncInProgress(false);
+          dispatch(
+            setFailure({
+              name: (e as Error).name,
+              message: t('allowanceModified.anyAllowanceModificationError'),
+            })
+          );
+        }
       }
     };
 

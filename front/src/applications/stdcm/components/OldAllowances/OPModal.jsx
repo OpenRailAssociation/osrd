@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import React, { useContext } from 'react';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 
 export default function OPModal(props) {
   const { values, setValues, fromTo } = props;
-  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  const selectedTrain = useSelector(getSelectedTrain);
   const { closeModal } = useContext(ModalContext);
   return (
     <table className="table table-condensed table-hover">
@@ -18,7 +18,7 @@ export default function OPModal(props) {
         </tr>
       </thead>
       <tbody>
-        {simulation.trains[selectedTrain].base.stops.map((stop) => (
+        {selectedTrain.base.stops.map((stop) => (
           <tr
             role="button"
             key={nextId()}

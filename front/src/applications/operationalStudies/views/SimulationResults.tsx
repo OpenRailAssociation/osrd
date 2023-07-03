@@ -27,6 +27,7 @@ import DriverTrainSchedule from 'applications/operationalStudies/components/Simu
 import { getTimetableID } from 'reducers/osrdconf/selectors';
 import cx from 'classnames';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import ScenarioLoader from '../components/Scenario/ScenarioLoader';
 
 const MAP_MIN_HEIGHT = 450;
@@ -54,7 +55,7 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
 
   const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
-  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
+  const selectedTrain = useSelector(getSelectedTrain);
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
   );
@@ -216,9 +217,9 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
       </div>
 
       {/* TRAIN : DRIVER TRAIN SCHEDULE */}
-      {simulation.trains[selectedTrain] && (
+      {selectedTrain && (
         <div className="osrd-simulation-container mb-2">
-          <DriverTrainSchedule train={simulation.trains[selectedTrain]} />
+          <DriverTrainSchedule train={selectedTrain} />
         </div>
       )}
 

@@ -35,7 +35,7 @@ interface PlatformProps {
 function Signals(props: PlatformProps) {
   const { mapStyle, signalsSettings, viewport } = useSelector((state: RootState) => state.map);
   const timePosition = useSelector((state: RootState) => state.osrdsimulation.timePosition);
-  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
+  const selectedTrainId = useSelector((state: RootState) => state.osrdsimulation.selectedTrainId);
   const consolidatedSimulation = useSelector(
     (state: RootState) => state.osrdsimulation.consolidatedSimulation
   );
@@ -63,9 +63,10 @@ function Signals(props: PlatformProps) {
    note: mapBox featureState is unfortunatly useless here for know so we setState
   */
   useEffect(() => {
-    if (mapRef && mapRef.current) {
-      const selectedTrainConsolidatedSimulation = consolidatedSimulation[selectedTrain];
-
+    const selectedTrainConsolidatedSimulation = consolidatedSimulation.find(
+      (train) => train.id === selectedTrainId
+    );
+    if (mapRef && mapRef.current && selectedTrainConsolidatedSimulation) {
       const renderedDynamicStopsFeatures = mapRef.current.queryRenderedFeatures(
         mapRef.current.getBounds().toArray() as [[number, number], [number, number]],
         { layers: dynamicLayersIds }
@@ -113,7 +114,7 @@ function Signals(props: PlatformProps) {
       setYellowSignalsIds(tmpYellowIds);
       setGreenSignalsIds(tmpRedIds);
     }
-  }, [timePosition, consolidatedSimulation, viewport, selectedTrain]);
+  }, [timePosition, consolidatedSimulation, viewport, selectedTrainId]);
 
   const getSignalsList = () => {
     let signalsList: Array<string> = [];
