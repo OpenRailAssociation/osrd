@@ -2,7 +2,7 @@ import party from 'party-js';
 
 export default function motriceParty() {
   const listOfShapes: string[] = [];
-  for (let i = 0; i <= 22; i += 1) {
+  for (let i = 0; i <= 21; i += 1) {
     party.resolvableShapes[`motrice${i}`] = `<img src="/pictures/minimotrices/motrice_${i}.png" />`;
     // listOfShapes.push(`motrice${i}`);
   }
