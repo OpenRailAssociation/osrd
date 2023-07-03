@@ -1,0 +1,19 @@
+{
+    "id": 0,
+    "name": "Test e2e projet",
+    "objectives": "# Titre 1 \n## Titre 2 \n### Titre 3  \n* Liste item  \n- [ ] Liste item with checkbox",
+    "description": "Ceci est un test e2e pour la description du projet",
+    "funders": "Financé par les développeurs",
+    "budget": "1234567890",
+    "image_url": "string",
+    "creation_date": "2023-02-02T23:37:43.385Z",
+    "last_modification": "2023-02-02T23:37:43.385Z",
+    "studies": [
+      0
+    ],
+    "tags": [
+      "tag1",
+      "tag2",
+      "tag3"
+    ]
+  }

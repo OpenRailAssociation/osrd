@@ -196,6 +196,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
                 id="projectInputName"
                 type="text"
                 name="projectInputName"
+                data-testid="projectInputName"
                 label={
                   <div className="d-flex align-items-center">
                     <span className="mr-2">
