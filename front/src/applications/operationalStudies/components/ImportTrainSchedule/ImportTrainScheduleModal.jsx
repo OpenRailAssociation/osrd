@@ -137,7 +137,11 @@ export default function ImportTrainScheduleModal(props) {
         pathNumberToComplete + 1,
         {
           ...pathsIDs,
-          [pathRefNum]: { pathId: itineraryCreated.id, rollingStockId: params.rolling_stocks[0] },
+          [pathRefNum]: {
+            pathId: itineraryCreated.id,
+            rollingStockId: params.rolling_stocks[0],
+            pathFinding: itineraryCreated,
+          },
         },
         autoComplete
       );
@@ -188,6 +192,7 @@ export default function ImportTrainScheduleModal(props) {
           ...train,
           pathId: pathsIDs[train.pathRef].pathId,
           rollingStockId: pathsIDs[train.pathRef].rollingStockId,
+          pathFinding: pathsIDs[train.pathRef].pathFinding,
         }))
       );
       setStatus({ ...status, uicComplete: true, pathFindingDone: true });
