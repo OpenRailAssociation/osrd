@@ -10,7 +10,6 @@ import {
   getPathfindingID,
 } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi, RollingStock } from 'common/api/osrdEditoastApi';
-import { lengthFromLineCoordinates } from 'utils/geometry';
 import { setWarning } from 'reducers/main';
 import { compact, isEmpty, reduce, uniq } from 'lodash';
 import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
@@ -76,13 +75,10 @@ export default function PowerRestrictionSelector() {
 
   const definePowerRestrictionRange = async (powerRestrictionCode?: string) => {
     if (powerRestrictionCode && pathFinding) {
-      const pathLength = Math.round(
-        lengthFromLineCoordinates(pathFinding.geographic?.coordinates) * 1000
-      );
       const powerRestrictionRange: PowerRestrictionRange[] = [
         {
           begin_position: 0,
-          end_position: pathLength,
+          end_position: pathFinding.length,
           power_restriction_code: powerRestrictionCode,
         },
       ];

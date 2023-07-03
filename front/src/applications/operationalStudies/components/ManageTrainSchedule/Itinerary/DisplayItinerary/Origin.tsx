@@ -59,7 +59,7 @@ function Origin(props: OriginProps) {
       tabIndex={0}
     >
       <strong className="mr-1 text-nowrap">
-        {origin?.name ? origin?.name : origin?.id?.split('-')[0]}
+        {origin?.name || origin?.location?.track_section?.split('-')[0]}
       </strong>
     </div>
   );
