@@ -10,8 +10,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
-import { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import OPModal from './OPModal';
 import { AllowanceType, TYPES_UNITS } from './allowancesConsts';
 
@@ -32,40 +31,37 @@ function getAllowanceValue(values: RangeAllowance | EngineeringAllowance) {
 function getNewLine<T extends RangeAllowance>(
   allowanceType: string,
   defaultDistributionId: string | undefined,
-  simulation: OsrdSimulationState['simulation']['present'],
-  selectedTrain: OsrdSimulationState['selectedTrain'],
   marecoBeginPosition: number,
   marecoEndPosition?: number
 ) {
-  if (allowanceType === 'engineering') {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+  const selectedTrain = useSelector(getSelectedTrain);
+
+  if (selectedTrain) {
+    if (allowanceType === 'engineering') {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return {
+        allowance_type: 'engineering',
+        distribution: defaultDistributionId,
+        begin_position: 0,
+        end_position: selectedTrain.base.stops[selectedTrain.base.stops.length - 1].position,
+        value: {
+          value_type: 'time',
+          seconds: 0,
+        },
+      } as T;
+    }
     return {
-      allowance_type: 'engineering',
-      distribution: defaultDistributionId,
-      begin_position: 0,
+      begin_position: marecoBeginPosition ?? 0,
       end_position:
-        simulation.trains[selectedTrain].base.stops[
-          simulation.trains[selectedTrain].base.stops.length - 1
-        ].position,
+        marecoEndPosition ?? selectedTrain.base.stops[selectedTrain.base.stops.length - 1].position,
       value: {
         value_type: 'time',
         seconds: 0,
       },
     } as T;
   }
-  return {
-    begin_position: marecoBeginPosition ?? 0,
-    end_position:
-      marecoEndPosition ??
-      simulation.trains[selectedTrain].base.stops[
-        simulation.trains[selectedTrain].base.stops.length - 1
-      ].position,
-    value: {
-      value_type: 'time',
-      seconds: 0,
-    },
-  } as T;
+  return {} as T;
 }
 
 interface EmptyLineProps<T> {
@@ -93,13 +89,9 @@ function EmptyLine<T extends RangeAllowance>(props: EmptyLineProps<T>) {
   } = props;
   const { openModal } = useModal();
 
-  const selectedTrain = useSelector(getSelectedTrain);
-  const simulation = useSelector(getPresentSimulation);
   const allowanceNewDatas = getNewLine<T>(
     allowanceType,
     defaultDistributionId,
-    simulation,
-    selectedTrain,
     marecoBeginPosition,
     marecoEndPosition
   );

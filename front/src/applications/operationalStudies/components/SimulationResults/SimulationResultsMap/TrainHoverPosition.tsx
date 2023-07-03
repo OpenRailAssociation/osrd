@@ -14,6 +14,7 @@ import { mapValues, get } from 'lodash';
 import { RootState } from 'reducers';
 import { Viewport } from 'reducers/map';
 import { AllowancesSetting } from 'reducers/osrdsimulation/types';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { sec2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
 import { getCurrentBearing } from 'utils/geometry';
@@ -187,17 +188,15 @@ const labelShiftFactor = {
 
 function TrainHoverPosition(props: TrainHoverPositionProps) {
   const { point, isSelectedTrain = false, geojsonPath, layerOrder } = props;
-  const { selectedTrain, allowancesSettings } = useSelector(
-    (state: RootState) => state.osrdsimulation
-  );
+  const { allowancesSettings } = useSelector((state: RootState) => state.osrdsimulation);
   const { viewport } = useSelector((state: RootState) => state.map);
-  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
-  const trainID = simulation.trains[selectedTrain].id;
-  const { ecoBlocks } = get(allowancesSettings, trainID, {} as AllowancesSetting);
-  const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
-  const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
+  const selectedTrain = useSelector(getSelectedTrain);
 
-  if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
+  if (selectedTrain && geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
+    const { ecoBlocks } = get(allowancesSettings, selectedTrain.id, {} as AllowancesSetting);
+    const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
+    const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
+
     const zoomLengthFactor = getzoomPowerOf2LengthFactor(viewport);
     const [trainGeoJsonPath, headTriangle, rearTriangle] = getTrainPieces(
       point,

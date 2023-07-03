@@ -13,10 +13,12 @@ import lineSlice from '@turf/line-slice';
 import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import {
   AllowancesSettings,
   PositionValues,
   PositionSpeedTime,
+  Train,
 } from 'reducers/osrdsimulation/types';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
@@ -69,11 +71,13 @@ import { MapLayerMouseEvent } from '../../../../types';
 function getPosition(
   positionValues: PositionValues,
   allowancesSettings?: AllowancesSettings,
-  id?: number,
+  trainId?: number,
   baseKey?: string
 ) {
   const key = (
-    allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? `eco_${baseKey}` : baseKey
+    allowancesSettings && trainId && allowancesSettings[trainId]?.ecoBlocks
+      ? `eco_${baseKey}`
+      : baseKey
   ) as keyof PositionValues;
   return positionValues[key] as PositionSpeedTime;
 }
@@ -95,12 +99,15 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM } = useSelector(
     (state: RootState) => state.map
   );
-  const { isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings } =
-    useSelector((state: RootState) => state.osrdsimulation);
+  const { isPlaying, positionValues, timePosition, allowancesSettings } = useSelector(
+    (state: RootState) => state.osrdsimulation
+  );
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
+  const selectedTrain = useSelector(getSelectedTrain);
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
+  const [simulationSelectedTrain, setSimulationSelectedTrain] = useState<Train>();
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const [getPath] = osrdEditoastApi.useLazyGetPathfindingByIdQuery();
@@ -137,7 +144,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       if (train[key].head_positions[0]) {
         const trainTime = train[key].head_positions[0][0].time;
         const train2ndTime = last(last(train[key].head_positions))?.time as number;
-        if (actualTime >= trainTime && actualTime <= train2ndTime && idx !== selectedTrain) {
+        if (
+          actualTime >= trainTime &&
+          actualTime <= train2ndTime &&
+          train.id !== selectedTrain?.id
+        ) {
           const interpolation = interpolateOnTime(
             train[key],
             ['time', 'position'],
@@ -161,30 +172,41 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const getSimulationHoverPositions = () => {
     if (geojsonPath) {
       const line = lineString(geojsonPath.geometry.coordinates);
-      const id = simulation.trains[selectedTrain]?.id;
-      const headPositionRaw = getPosition(positionValues, allowancesSettings, id, 'headPosition');
-      const tailPositionRaw = getPosition(positionValues, allowancesSettings, id, 'tailPosition');
-      if (headPositionRaw) {
-        setTrainHoverPosition(() => {
-          const headDistanceAlong = headPositionRaw.position / 1000;
-          const tailDistanceAlong = tailPositionRaw.position / 1000;
-          const headPosition = along(line, headDistanceAlong, {
-            units: 'kilometers',
+      if (selectedTrain) {
+        const headPositionRaw = getPosition(
+          positionValues,
+          allowancesSettings,
+          selectedTrain.id,
+          'headPosition'
+        );
+        const tailPositionRaw = getPosition(
+          positionValues,
+          allowancesSettings,
+          selectedTrain.id,
+          'tailPosition'
+        );
+        if (headPositionRaw) {
+          setTrainHoverPosition(() => {
+            const headDistanceAlong = headPositionRaw.position / 1000;
+            const tailDistanceAlong = tailPositionRaw.position / 1000;
+            const headPosition = along(line, headDistanceAlong, {
+              units: 'kilometers',
+            });
+            const tailPosition = tailPositionRaw
+              ? along(line, tailDistanceAlong, { units: 'kilometers' })
+              : headPosition;
+            const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
+            return {
+              id: 'main-train',
+              headPosition,
+              tailPosition,
+              headDistanceAlong,
+              tailDistanceAlong,
+              speedTime: positionValues.speed,
+              trainLength,
+            };
           });
-          const tailPosition = tailPositionRaw
-            ? along(line, tailDistanceAlong, { units: 'kilometers' })
-            : headPosition;
-          const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
-          return {
-            id: 'main-train',
-            headPosition,
-            tailPosition,
-            headDistanceAlong,
-            tailDistanceAlong,
-            speedTime: positionValues.speed,
-            trainLength,
-          };
-        });
+        }
       }
 
       // Found trains including timePosition, and organize them with geojson collection of points
@@ -256,11 +278,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   };
 
   const onFeatureHover = (e: MapLayerMouseEvent) => {
-    if (mapLoaded && !isPlaying && e && geojsonPath?.geometry?.coordinates) {
+    if (mapLoaded && !isPlaying && e && geojsonPath?.geometry?.coordinates && selectedTrain) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat.toArray());
-      const key = getRegimeKey(simulation.trains[selectedTrain].id);
-      const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
+      const key = getRegimeKey(selectedTrain.id);
+      const startCoordinates = getDirection(selectedTrain[key].head_positions)
         ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
         : [
             geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
@@ -273,11 +295,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       const timePositionLocal = interpolateOnPosition<
         (typeof keyValues)[number],
         PositionSpeedTime
-      >(
-        { speed: simulation.trains[selectedTrain][key].speeds },
-        ['position', 'speed'] as const,
-        positionLocal
-      );
+      >({ speed: selectedTrain[key].speeds }, ['position', 'speed'] as const, positionLocal);
       if (timePositionLocal instanceof Date) {
         dispatch(updateTimePositionValues(datetime2Isostring(timePositionLocal)));
       } else {
@@ -292,8 +310,8 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   };
 
   const displayPath = () => {
-    if (simulation.trains.length > 0) {
-      getGeoJSONPath(simulation.trains[selectedTrain].path);
+    if (simulationSelectedTrain) {
+      getGeoJSONPath(simulationSelectedTrain.path);
     }
   };
 
@@ -332,6 +350,10 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
 
   useEffect(() => {
     displayPath();
+    if (selectedTrain) {
+      const foundTrain = simulation.trains.find((train) => train.id === selectedTrain?.id);
+      setSimulationSelectedTrain(foundTrain);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTrain]);
 

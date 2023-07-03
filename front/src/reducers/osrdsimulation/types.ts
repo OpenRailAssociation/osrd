@@ -171,7 +171,6 @@ export interface SimulationTrain<DateType = Date> {
   id: number;
   isStdcm?: boolean;
   name: string;
-  trainNumber: number;
   headPosition: ConsolidatedPosition<DateType>[][];
   tailPosition: ConsolidatedPosition<DateType>[][];
   routeAspects: ConsolidatedRouteAspect<DateType>[];
@@ -221,7 +220,7 @@ export interface OsrdSimulationState {
     id: unknown;
     path: unknown;
   };
-  selectedTrain: number;
+  selectedTrainId?: number;
   speedSpaceSettings: {
     [key in SpeedSpaceSettingKey]: boolean;
   };

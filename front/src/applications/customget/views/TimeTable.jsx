@@ -3,7 +3,7 @@ import nextId from 'react-id-generator';
 import { sec2time } from 'utils/timeManipulation';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { BsArrowRightShort } from 'react-icons/bs';
 import signalIcon from 'assets/pictures/layersicons/layer_signal_open.svg';
 import stopIcon from 'assets/pictures/layersicons/ops.svg';
@@ -49,24 +49,24 @@ function formatStops(stop, idx) {
 
 export default function TimeTable() {
   const { t } = useTranslation(['simulation']);
-  const { departureArrivalTimes, selectedTrain } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const data = simulation.trains[selectedTrain].base.stops;
+  const { departureArrivalTimes } = useSelector((state) => state.osrdsimulation);
+  const train = useSelector(getSelectedTrain);
+  const trainStops = train.base.stops;
 
   return (
     <>
       <div
         className="train-name-timetable p-1 d-flex align-items-center mb-2"
-        style={{ 'background-color': simulation.trains[selectedTrain].color }}
+        style={{ 'background-color': train.color }}
       >
         <div className="mr-2">
-          <span className="ml-2">{departureArrivalTimes[selectedTrain].name}</span>
+          <span className="ml-2">{departureArrivalTimes[train.id].name}</span>
         </div>
-        <div className="small mr-1">{sec2time(departureArrivalTimes[selectedTrain].departure)}</div>
+        <div className="small mr-1">{sec2time(departureArrivalTimes[train.id].departure)}</div>
         <span className="ml-1 mr-2">
           <BsArrowRightShort />
         </span>
-        <div className="small">{sec2time(departureArrivalTimes[selectedTrain].arrival)}</div>
+        <div className="small">{sec2time(departureArrivalTimes[train.id].arrival)}</div>
       </div>
       <div className="table-wrapper" style={{ maxHeight: '40vh', overflow: 'auto' }}>
         <div className="table-scroller dragscroll">
@@ -94,9 +94,7 @@ export default function TimeTable() {
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {data.map((stop, idx) => formatStops(stop, idx, simulation.trains[selectedTrain]))}
-            </tbody>
+            <tbody>{trainStops.map((stop, idx) => formatStops(stop, idx, train))}</tbody>
           </table>
         </div>
       </div>

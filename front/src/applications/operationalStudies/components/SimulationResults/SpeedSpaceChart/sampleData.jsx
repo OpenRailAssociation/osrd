@@ -128,7 +128,1641 @@ const ORSD_GRAPH_SAMPLE_DATA = {
     rolling_stock: 103,
     path: 59,
   },
-  selectedTrain: 0,
+  selectedTrain: {
+    id: 6,
+    labels: [],
+    path: 59,
+    name: 'train',
+    vmax: [
+      {
+        speed: 27.77777777777778,
+        position: 0,
+      },
+      {
+        speed: 27.77777777777778,
+        position: 50745.16179319808,
+      },
+    ],
+    slopes: [
+      {
+        gradient: 0,
+        position: 0,
+      },
+      {
+        gradient: 0,
+        position: 360.2882429865422,
+      },
+      {
+        gradient: -14,
+        position: 360.2882429865422,
+      },
+      {
+        gradient: -14,
+        position: 642.2882429865422,
+      },
+      {
+        gradient: 0,
+        position: 642.2882429865422,
+      },
+      {
+        gradient: 0,
+        position: 1209.2882429865422,
+      },
+      {
+        gradient: 13,
+        position: 1209.2882429865422,
+      },
+      {
+        gradient: 13,
+        position: 1480.2882429865422,
+      },
+      {
+        gradient: 0,
+        position: 1480.2882429865422,
+      },
+      {
+        gradient: 0,
+        position: 1648.2882429865422,
+      },
+      {
+        gradient: 7,
+        position: 1648.2882429865422,
+      },
+      {
+        gradient: 7,
+        position: 1839.2882429865422,
+      },
+      {
+        gradient: 0,
+        position: 1839.2882429865422,
+      },
+      {
+        gradient: 0,
+        position: 2244.288242986542,
+      },
+      {
+        gradient: 21.5,
+        position: 2244.288242986542,
+      },
+      {
+        gradient: 21.5,
+        position: 2480.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 2480.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 3193.288242986542,
+      },
+      {
+        gradient: -4,
+        position: 3193.288242986542,
+      },
+      {
+        gradient: -4,
+        position: 4895.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 4895.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 5714.288242986542,
+      },
+      {
+        gradient: 35,
+        position: 5714.288242986542,
+      },
+      {
+        gradient: 35,
+        position: 5973.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 5973.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 6424.288242986542,
+      },
+      {
+        gradient: 13.5,
+        position: 6424.288242986542,
+      },
+      {
+        gradient: 13.5,
+        position: 7369.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 7369.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 7894.288242986542,
+      },
+      {
+        gradient: -11.5,
+        position: 7894.288242986542,
+      },
+      {
+        gradient: -11.5,
+        position: 8512.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 8512.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 8652.288242986542,
+      },
+      {
+        gradient: -16,
+        position: 8652.288242986542,
+      },
+      {
+        gradient: -16,
+        position: 8986.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 8986.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 9732.288242986542,
+      },
+      {
+        gradient: 19.5,
+        position: 9732.288242986542,
+      },
+      {
+        gradient: 19.5,
+        position: 10178.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 10178.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 10944.288242986542,
+      },
+      {
+        gradient: -17,
+        position: 10944.288242986542,
+      },
+      {
+        gradient: -17,
+        position: 11733.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 11733.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 12395.288242986542,
+      },
+      {
+        gradient: 14.5,
+        position: 12395.288242986542,
+      },
+      {
+        gradient: 14.5,
+        position: 12795.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 12795.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 12935.288242986542,
+      },
+      {
+        gradient: 11,
+        position: 12935.288242986542,
+      },
+      {
+        gradient: 11,
+        position: 13510.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 13510.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 14161.288242986542,
+      },
+      {
+        gradient: -20,
+        position: 14161.288242986542,
+      },
+      {
+        gradient: -20,
+        position: 15537.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 15537.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 16019.288242986542,
+      },
+      {
+        gradient: 3,
+        position: 16019.288242986542,
+      },
+      {
+        gradient: 3,
+        position: 17322.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 17322.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 17658.288242986542,
+      },
+      {
+        gradient: 19,
+        position: 17658.288242986542,
+      },
+      {
+        gradient: 19,
+        position: 17810.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 17810.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 18272.288242986542,
+      },
+      {
+        gradient: -3,
+        position: 18272.288242986542,
+      },
+      {
+        gradient: -3,
+        position: 18572.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 18572.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 19369.288242986542,
+      },
+      {
+        gradient: 35,
+        position: 19369.288242986542,
+      },
+      {
+        gradient: 35,
+        position: 19513.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 19513.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 19922.288242986542,
+      },
+      {
+        gradient: 15.5,
+        position: 19922.288242986542,
+      },
+      {
+        gradient: 15.5,
+        position: 20121.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 20121.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 20530.288242986542,
+      },
+      {
+        gradient: -4,
+        position: 20530.288242986542,
+      },
+      {
+        gradient: -4,
+        position: 21716.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 21716.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 22325.288242986542,
+      },
+      {
+        gradient: -35,
+        position: 22325.288242986542,
+      },
+      {
+        gradient: -35,
+        position: 22484.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 22484.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 23009.288242986542,
+      },
+      {
+        gradient: -8,
+        position: 23009.288242986542,
+      },
+      {
+        gradient: -8,
+        position: 23353.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 23353.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 23966.288242986542,
+      },
+      {
+        gradient: 21.3,
+        position: 23966.288242986542,
+      },
+      {
+        gradient: 21.3,
+        position: 24817.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 24817.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 26047.288242986542,
+      },
+      {
+        gradient: -28,
+        position: 26047.288242986542,
+      },
+      {
+        gradient: -28,
+        position: 26806.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 26806.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 28128.288242986542,
+      },
+      {
+        gradient: 35,
+        position: 28128.288242986542,
+      },
+      {
+        gradient: 35,
+        position: 28574.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 28574.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 29929.288242986542,
+      },
+      {
+        gradient: 2.5,
+        position: 29929.288242986542,
+      },
+      {
+        gradient: 2.5,
+        position: 30418.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 30418.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 30486.288242986542,
+      },
+      {
+        gradient: 2.5,
+        position: 30486.288242986542,
+      },
+      {
+        gradient: 2.5,
+        position: 30893.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 30893.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 31133.288242986542,
+      },
+      {
+        gradient: -5,
+        position: 31133.288242986542,
+      },
+      {
+        gradient: -5,
+        position: 31972.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 31972.288242986542,
+      },
+      {
+        gradient: 0,
+        position: 32178.288242986542,
+      },
+      {
+        gradient: 4.8,
+        position: 32178.288242986542,
+      },
+      {
+        gradient: 4.8,
+        position: 33467.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 33467.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 33741.28824298654,
+      },
+      {
+        gradient: -5,
+        position: 33741.28824298654,
+      },
+      {
+        gradient: -5,
+        position: 34358.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 34358.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 34554.28824298654,
+      },
+      {
+        gradient: -12,
+        position: 34554.28824298654,
+      },
+      {
+        gradient: -12,
+        position: 35974.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 35974.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 36176.28824298654,
+      },
+      {
+        gradient: -3,
+        position: 36176.28824298654,
+      },
+      {
+        gradient: -3,
+        position: 37932.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 37932.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 38415.28824298654,
+      },
+      {
+        gradient: 20,
+        position: 38415.28824298654,
+      },
+      {
+        gradient: 20,
+        position: 38780.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 38780.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 39273.28824298654,
+      },
+      {
+        gradient: -3.5,
+        position: 39273.28824298654,
+      },
+      {
+        gradient: -3.5,
+        position: 40291.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 40291.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 40658.28824298654,
+      },
+      {
+        gradient: 14,
+        position: 40658.28824298654,
+      },
+      {
+        gradient: 14,
+        position: 40859.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 40859.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 41009.28824298654,
+      },
+      {
+        gradient: 8,
+        position: 41009.28824298654,
+      },
+      {
+        gradient: 8,
+        position: 41482.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 41482.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 41757.28824298654,
+      },
+      {
+        gradient: -3,
+        position: 41757.28824298654,
+      },
+      {
+        gradient: -3,
+        position: 42889.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 42889.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 43162.28824298654,
+      },
+      {
+        gradient: 10,
+        position: 43162.28824298654,
+      },
+      {
+        gradient: 10,
+        position: 43600.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 43600.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 44041.28824298654,
+      },
+      {
+        gradient: -11,
+        position: 44041.28824298654,
+      },
+      {
+        gradient: -11,
+        position: 44490.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 44490.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 44993.28824298654,
+      },
+      {
+        gradient: -35,
+        position: 44993.28824298654,
+      },
+      {
+        gradient: -35,
+        position: 46016.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 46016.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 46624.28824298654,
+      },
+      {
+        gradient: -6,
+        position: 46624.28824298654,
+      },
+      {
+        gradient: -6,
+        position: 47145.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 47145.28824298654,
+      },
+      {
+        gradient: 0,
+        position: 47845.28824298654,
+      },
+      {
+        gradient: -22,
+        position: 47845.28824298654,
+      },
+      {
+        gradient: -22,
+        position: 50745.16179319808,
+      },
+    ],
+    curves: [
+      {
+        radius: 8333,
+        position: 0,
+      },
+      {
+        radius: 8333,
+        position: 3706.288242986542,
+      },
+      {
+        radius: 0,
+        position: 3706.288242986542,
+      },
+      {
+        radius: 0,
+        position: 6615.288242986542,
+      },
+      {
+        radius: -10000,
+        position: 6615.288242986542,
+      },
+      {
+        radius: -10000,
+        position: 8293.288242986542,
+      },
+      {
+        radius: 0,
+        position: 8293.288242986542,
+      },
+      {
+        radius: 0,
+        position: 11033.288242986542,
+      },
+      {
+        radius: -16667,
+        position: 11033.288242986542,
+      },
+      {
+        radius: -16667,
+        position: 15027.288242986542,
+      },
+      {
+        radius: -8333,
+        position: 15027.288242986542,
+      },
+      {
+        radius: -8333,
+        position: 16956.288242986542,
+      },
+      {
+        radius: 0,
+        position: 16956.288242986542,
+      },
+      {
+        radius: 0,
+        position: 18400.288242986542,
+      },
+      {
+        radius: 16667,
+        position: 18400.288242986542,
+      },
+      {
+        radius: 16667,
+        position: 20086.288242986542,
+      },
+      {
+        radius: 0,
+        position: 20086.288242986542,
+      },
+      {
+        radius: 0,
+        position: 23042.288242986542,
+      },
+      {
+        radius: 8333,
+        position: 23042.288242986542,
+      },
+      {
+        radius: 8333,
+        position: 24553.288242986542,
+      },
+      {
+        radius: 0,
+        position: 24553.288242986542,
+      },
+      {
+        radius: 0,
+        position: 26107.288242986542,
+      },
+      {
+        radius: -12500,
+        position: 26107.288242986542,
+      },
+      {
+        radius: -12500,
+        position: 29713.288242986542,
+      },
+      {
+        radius: 0,
+        position: 29713.288242986542,
+      },
+      {
+        radius: 0,
+        position: 32506.288242986542,
+      },
+      {
+        radius: 12500,
+        position: 32506.288242986542,
+      },
+      {
+        radius: 12500,
+        position: 33409.28824298654,
+      },
+      {
+        radius: 0,
+        position: 33409.28824298654,
+      },
+      {
+        radius: 0,
+        position: 33839.28824298654,
+      },
+      {
+        radius: -7692,
+        position: 33839.28824298654,
+      },
+      {
+        radius: -7692,
+        position: 35564.28824298654,
+      },
+      {
+        radius: 0,
+        position: 35564.28824298654,
+      },
+      {
+        radius: 0,
+        position: 36530.28824298654,
+      },
+      {
+        radius: 7699,
+        position: 36530.28824298654,
+      },
+      {
+        radius: 7699,
+        position: 37761.28824298654,
+      },
+      {
+        radius: 0,
+        position: 37761.28824298654,
+      },
+      {
+        radius: 0,
+        position: 39900.28824298654,
+      },
+      {
+        radius: 6250,
+        position: 39900.28824298654,
+      },
+      {
+        radius: 6250,
+        position: 41419.28824298654,
+      },
+      {
+        radius: 0,
+        position: 41419.28824298654,
+      },
+      {
+        radius: 0,
+        position: 41860.28824298654,
+      },
+      {
+        radius: -7692,
+        position: 41860.28824298654,
+      },
+      {
+        radius: -7692,
+        position: 43544.28824298654,
+      },
+      {
+        radius: 0,
+        position: 43544.28824298654,
+      },
+      {
+        radius: 0,
+        position: 44084.28824298654,
+      },
+      {
+        radius: 8333,
+        position: 44084.28824298654,
+      },
+      {
+        radius: 8333,
+        position: 48618.28824298654,
+      },
+      {
+        radius: 0,
+        position: 48618.28824298654,
+      },
+      {
+        radius: 0,
+        position: 49893.28824298654,
+      },
+      {
+        radius: -8333,
+        position: 49893.28824298654,
+      },
+      {
+        radius: -8333,
+        position: 50745.16179319808,
+      },
+    ],
+    base: {
+      head_positions: [
+        [
+          {
+            time: 37445,
+            position: 0,
+          },
+          {
+            time: 37451,
+            position: 13.596969203914341,
+          },
+          {
+            time: 37459,
+            position: 69.96218478364608,
+          },
+          {
+            time: 37467,
+            position: 162.04241791318054,
+          },
+          {
+            time: 37475,
+            position: 283.53763177170185,
+          },
+          {
+            time: 37483,
+            position: 430.1452530276474,
+          },
+          {
+            time: 37491,
+            position: 602.9523983112995,
+          },
+          {
+            time: 37499,
+            position: 797.7623283320645,
+          },
+          {
+            time: 37509,
+            position: 1061.5756905290946,
+          },
+          {
+            time: 38484.43558734961,
+            position: 28149.749196609468,
+          },
+          {
+            time: 38507.51611773336,
+            position: 28774.79706780819,
+          },
+          {
+            time: 39272.22702562517,
+            position: 50016.16179319808,
+          },
+          {
+            time: 39278.22702562517,
+            position: 50169.16179319808,
+          },
+          {
+            time: 39286.22702562517,
+            position: 50345.16179319808,
+          },
+          {
+            time: 39292.22702562517,
+            position: 50456.16179319808,
+          },
+          {
+            time: 39300.22702562517,
+            position: 50576.16179319808,
+          },
+          {
+            time: 39306.22702562517,
+            position: 50645.16179319808,
+          },
+          {
+            time: 39314.22702562517,
+            position: 50709.16179319808,
+          },
+          {
+            time: 39320.22702562517,
+            position: 50736.16179319808,
+          },
+          {
+            time: 39327.22702562517,
+            position: 50745.16179319808,
+          },
+        ],
+      ],
+      tail_positions: [
+        [
+          {
+            time: 37445,
+            position: 0,
+          },
+          {
+            time: 37451,
+            position: 0,
+          },
+          {
+            time: 37459,
+            position: 45.96218478364608,
+          },
+          {
+            time: 37467,
+            position: 138.04241791318054,
+          },
+          {
+            time: 37475,
+            position: 259.53763177170185,
+          },
+          {
+            time: 37483,
+            position: 406.1452530276474,
+          },
+          {
+            time: 37491,
+            position: 578.9523983112995,
+          },
+          {
+            time: 37499,
+            position: 773.7623283320645,
+          },
+          {
+            time: 37509,
+            position: 1037.5756905290946,
+          },
+          {
+            time: 38484.43558734961,
+            position: 28125.749196609468,
+          },
+          {
+            time: 38507.51611773336,
+            position: 28750.79706780819,
+          },
+          {
+            time: 39272.22702562517,
+            position: 49992.16179319808,
+          },
+          {
+            time: 39278.22702562517,
+            position: 50145.16179319808,
+          },
+          {
+            time: 39286.22702562517,
+            position: 50321.16179319808,
+          },
+          {
+            time: 39292.22702562517,
+            position: 50432.16179319808,
+          },
+          {
+            time: 39300.22702562517,
+            position: 50552.16179319808,
+          },
+          {
+            time: 39306.22702562517,
+            position: 50621.16179319808,
+          },
+          {
+            time: 39314.22702562517,
+            position: 50685.16179319808,
+          },
+          {
+            time: 39320.22702562517,
+            position: 50712.16179319808,
+          },
+          {
+            time: 39327.22702562517,
+            position: 50721.16179319808,
+          },
+        ],
+      ],
+      route_end_occupancy: [
+        [
+          {
+            time: 37445,
+            position: 0,
+          },
+          {
+            time: 37632.159,
+            position: 0,
+          },
+          {
+            time: 37632.159,
+            position: 4458.288242986542,
+          },
+          {
+            time: 38099.796,
+            position: 4458.288242986542,
+          },
+          {
+            time: 38099.796,
+            position: 17442.788242986542,
+          },
+          {
+            time: 38568.029,
+            position: 17442.788242986542,
+          },
+          {
+            time: 38568.029,
+            position: 30431.788242986542,
+          },
+          {
+            time: 38587.757,
+            position: 30431.788242986542,
+          },
+          {
+            time: 38587.757,
+            position: 30979.788242986542,
+          },
+          {
+            time: 38607.503,
+            position: 30979.788242986542,
+          },
+          {
+            time: 38607.503,
+            position: 31528.288242986542,
+          },
+          {
+            time: 38927.003,
+            position: 31528.288242986542,
+          },
+          {
+            time: 38927.003,
+            position: 40403.28824298654,
+          },
+          {
+            time: 39246.323,
+            position: 40403.28824298654,
+          },
+          {
+            time: 39246.323,
+            position: 49273.28824298654,
+          },
+          {
+            time: 39251.363,
+            position: 49273.28824298654,
+          },
+          {
+            time: 39251.363,
+            position: 49413.28824298654,
+          },
+          {
+            time: 39327.224,
+            position: 49413.28824298654,
+          },
+          {
+            time: 39327.224,
+            position: 50745.16179319808,
+          },
+        ],
+      ],
+      route_begin_occupancy: [
+        [
+          {
+            time: 37445,
+            position: 0,
+          },
+          {
+            time: 37445,
+            position: 4458.288242986542,
+          },
+          {
+            time: 37631.295,
+            position: 4458.288242986542,
+          },
+          {
+            time: 37631.295,
+            position: 17442.788242986542,
+          },
+          {
+            time: 38098.932,
+            position: 17442.788242986542,
+          },
+          {
+            time: 38098.932,
+            position: 30431.788242986542,
+          },
+          {
+            time: 38567.165,
+            position: 30431.788242986542,
+          },
+          {
+            time: 38567.165,
+            position: 30979.788242986542,
+          },
+          {
+            time: 38586.893,
+            position: 30979.788242986542,
+          },
+          {
+            time: 38586.893,
+            position: 31528.288242986542,
+          },
+          {
+            time: 38606.639,
+            position: 31528.288242986542,
+          },
+          {
+            time: 38606.639,
+            position: 40403.28824298654,
+          },
+          {
+            time: 38926.139,
+            position: 40403.28824298654,
+          },
+          {
+            time: 38926.139,
+            position: 49273.28824298654,
+          },
+          {
+            time: 39245.459,
+            position: 49273.28824298654,
+          },
+          {
+            time: 39245.459,
+            position: 49413.28824298654,
+          },
+          {
+            time: 39250.499,
+            position: 49413.28824298654,
+          },
+          {
+            time: 39250.499,
+            position: 50745.16179319808,
+          },
+          {
+            time: 39327.224,
+            position: 50745.16179319808,
+          },
+        ],
+      ],
+      route_aspects: [
+        {
+          route_id: 'route.30470',
+          time_start: 37445,
+          time_end: 37632.159,
+          position_start: 0,
+          position_end: 4458.288242986542,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30473',
+          time_start: 37631.295,
+          time_end: 38099.796,
+          position_start: 4458.288242986542,
+          position_end: 17442.788242986542,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30470',
+          time_start: 37632.159,
+          time_end: 38099.796,
+          position_start: 0,
+          position_end: 4458.288242986542,
+          color: -256,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30477',
+          time_start: 38098.932,
+          time_end: 38568.029,
+          position_start: 17442.788242986542,
+          position_end: 30431.788242986542,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30473',
+          time_start: 38099.796,
+          time_end: 38568.029,
+          position_start: 4458.288242986542,
+          position_end: 17442.788242986542,
+          color: -256,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30479',
+          time_start: 38567.165,
+          time_end: 38587.757,
+          position_start: 30431.788242986542,
+          position_end: 30979.788242986542,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30477',
+          time_start: 38568.029,
+          time_end: 38587.757,
+          position_start: 17442.788242986542,
+          position_end: 30431.788242986542,
+          color: -256,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30483',
+          time_start: 38586.893,
+          time_end: 38607.503,
+          position_start: 30979.788242986542,
+          position_end: 31528.288242986542,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30479',
+          time_start: 38587.757,
+          time_end: 38607.503,
+          position_start: 30431.788242986542,
+          position_end: 30979.788242986542,
+          color: -256,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30486',
+          time_start: 38606.639,
+          time_end: 38927.003,
+          position_start: 31528.288242986542,
+          position_end: 40403.28824298654,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30483',
+          time_start: 38607.503,
+          time_end: 38927.003,
+          position_start: 30979.788242986542,
+          position_end: 31528.288242986542,
+          color: -256,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30489',
+          time_start: 38926.139,
+          time_end: 39246.323,
+          position_start: 40403.28824298654,
+          position_end: 49273.28824298654,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30486',
+          time_start: 38927.003,
+          time_end: 39246.323,
+          position_start: 31528.288242986542,
+          position_end: 40403.28824298654,
+          color: -256,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30491',
+          time_start: 39245.459,
+          time_end: 39251.363,
+          position_start: 49273.28824298654,
+          position_end: 49413.28824298654,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30489',
+          time_start: 39246.323,
+          time_end: 39251.363,
+          position_start: 40403.28824298654,
+          position_end: 49273.28824298654,
+          color: -256,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30496',
+          time_start: 39250.499,
+          time_end: 39327.224,
+          position_start: 49413.28824298654,
+          position_end: 50745.16179319808,
+          color: -65536,
+          blinking: false,
+        },
+        {
+          route_id: 'route.30491',
+          time_start: 39251.363,
+          time_end: 39327.224,
+          position_start: 49273.28824298654,
+          position_end: 49413.28824298654,
+          color: -256,
+          blinking: false,
+        },
+      ],
+      speeds: [
+        {
+          time: 37445,
+          speed: 0,
+          position: 0,
+        },
+        {
+          time: 37447,
+          speed: 1.5359735677925117,
+          position: 1.5359735677925117,
+        },
+        {
+          time: 37449,
+          speed: 3.0282953207983105,
+          position: 6.100242456383334,
+        },
+        {
+          time: 37451,
+          speed: 4.4684314267313345,
+          position: 13.59696920391298,
+        },
+        {
+          time: 37455,
+          speed: 7.101540109321336,
+          position: 36.82284999915665,
+        },
+        {
+          time: 37459,
+          speed: 9.436424906099923,
+          position: 69.96218478364501,
+        },
+        {
+          time: 37465,
+          speed: 12.527292265614761,
+          position: 136.0500790581395,
+        },
+        {
+          time: 37473,
+          speed: 16.032359463974636,
+          position: 250.692320902583,
+        },
+        {
+          time: 37485,
+          speed: 20.80524494390391,
+          position: 470.90850002692684,
+        },
+        {
+          time: 37493,
+          speed: 23.89037555129454,
+          position: 650.0142825967046,
+        },
+        {
+          time: 37501,
+          speed: 25.7606404191717,
+          position: 848.8442031717772,
+        },
+        {
+          time: 37511.036023086664,
+          speed: 27.77777777777778,
+          position: 1117.738706028259,
+        },
+        {
+          time: 37677.212023086664,
+          speed: 27.77777777777778,
+          position: 5733.738706028259,
+        },
+        {
+          time: 37685.212023086664,
+          speed: 27.067602258594857,
+          position: 5953.1168407046825,
+        },
+        {
+          time: 37687.212023086664,
+          speed: 27.10078222305289,
+          position: 6007.2852251863305,
+        },
+        {
+          time: 37690.73254132518,
+          speed: 27.77777777777778,
+          position: 6103.892542258313,
+        },
+        {
+          time: 38168.99254132518,
+          speed: 27.77777777777778,
+          position: 19388.892542258312,
+        },
+        {
+          time: 38172.99254132518,
+          speed: 27.418240587779525,
+          position: 19499.29551069272,
+        },
+        {
+          time: 38176.23958734961,
+          speed: 27.77777777777778,
+          position: 19588.749196609468,
+        },
+        {
+          time: 38484.43558734961,
+          speed: 27.77777777777778,
+          position: 28149.749196609468,
+        },
+        {
+          time: 38500.43558734961,
+          speed: 26.442609218240428,
+          position: 28582.912650172835,
+        },
+        {
+          time: 38507.51611773336,
+          speed: 27.77777777777778,
+          position: 28774.79706780819,
+        },
+        {
+          time: 39270.67147006962,
+          speed: 27.77777777777778,
+          position: 49973.55685492647,
+        },
+        {
+          time: 39278.22702562517,
+          speed: 24,
+          position: 50169.16179319808,
+        },
+        {
+          time: 39284.22702562517,
+          speed: 21,
+          position: 50304.16179319808,
+        },
+        {
+          time: 39290.22702562517,
+          speed: 18,
+          position: 50421.16179319808,
+        },
+        {
+          time: 39298.22702562517,
+          speed: 14,
+          position: 50549.16179319808,
+        },
+        {
+          time: 39304.22702562517,
+          speed: 11,
+          position: 50624.16179319808,
+        },
+        {
+          time: 39308.22702562517,
+          speed: 9,
+          position: 50664.16179319808,
+        },
+        {
+          time: 39312.22702562517,
+          speed: 7,
+          position: 50696.16179319808,
+        },
+        {
+          time: 39318.22702562517,
+          speed: 4,
+          position: 50729.16179319808,
+        },
+        {
+          time: 39322.22702562517,
+          speed: 2,
+          position: 50741.16179319808,
+        },
+        {
+          time: 39324.22702562517,
+          speed: 1,
+          position: 50744.16179319808,
+        },
+        {
+          time: 39327.22702562517,
+          speed: 0,
+          position: 50745.16179319808,
+        },
+      ],
+      stops: [
+        {
+          id: null,
+          name: null,
+          time: 37445,
+          duration: 0,
+          position: 0,
+          line_code: 5000,
+          line_name: 'Ligne de Paris à Strasbourg (LGV)',
+          track_name: 'V1',
+          track_number: 12351,
+        },
+        {
+          id: 'd9db0d3e-6667-11e3-89ff-01f464e0362d',
+          name: 'Poste 14 Coulombs',
+          time: 37619.071142422945,
+          duration: 0,
+          position: 4118.288242986542,
+          line_code: 5000,
+          line_name: 'Ligne de Paris à Strasbourg (LGV)',
+          track_name: 'V1',
+          track_number: 12351,
+        },
+        {
+          id: null,
+          name: null,
+          time: 38165.623530596444,
+          duration: 0,
+          position: 19296.23142346215,
+          line_code: 5000,
+          line_name: 'Ligne de Paris à Strasbourg (LGV)',
+          track_name: 'V1',
+          track_number: 12351,
+        },
+        {
+          id: 'd945099a-6667-11e3-89ff-01f464e0362d',
+          name: 'Poste 15 Beuvardes',
+          time: 38577.23178543361,
+          duration: 0,
+          position: 30711.288242986542,
+          line_code: 5000,
+          line_name: 'Ligne de Paris à Strasbourg (LGV)',
+          track_name: 'V1',
+          track_number: 12351,
+        },
+        {
+          id: 'd98dd8da-6667-11e3-89ff-01f464e0362d',
+          name: 'Poste 16 Villers-Agron-Aiguisy',
+          time: 39245.59081925981,
+          duration: 0,
+          position: 49276.28824298654,
+          line_code: 5000,
+          line_name: 'Ligne de Paris à Strasbourg (LGV)',
+          track_name: 'V1',
+          track_number: 12351,
+        },
+        {
+          id: null,
+          name: null,
+          time: 39327.22702562517,
+          duration: 1,
+          position: 50745.16179319808,
+          line_code: 5000,
+          line_name: 'Ligne de Paris à Strasbourg (LGV)',
+          track_name: 'V1',
+          track_number: 12351,
+        },
+      ],
+    },
+    speed_limit_tags: 'Marchandise - MA100',
+    electrification_conditions: [
+      {
+        stop: 50745.16179319808,
+        start: 0,
+        used_mode: '25000',
+      },
+    ],
+    margins: null,
+    eco: null,
+  },
   speedSpaceSettings: {
     altitude: false,
     curves: false,

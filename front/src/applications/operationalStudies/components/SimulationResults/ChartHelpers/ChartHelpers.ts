@@ -356,7 +356,7 @@ export function trainWithDepartureAndArrivalTimes(train: Train, dragOffset = 0) 
 
 export function makeTrainList(trains: Train[], trainToOffset: number, dragOffset = 0) {
   return trains.map((train) => {
-    const usedOffset = trainToOffset !== undefined && trainToOffset === train.id ? dragOffset : 0;
+    const usedOffset = trainToOffset === train.id ? dragOffset : 0;
     return trainWithDepartureAndArrivalTimes(train, usedOffset);
   });
 }

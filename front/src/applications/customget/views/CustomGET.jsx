@@ -4,7 +4,7 @@ import {
   updateConsolidatedSimulation,
   updateMustRedraw,
   updateSelectedProjection,
-  updateSelectedTrain,
+  updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
@@ -34,7 +34,7 @@ function CustomGET() {
 
   useEffect(() => {
     dispatch(updateSimulation({ trains: [] }));
-    dispatch(updateSelectedTrain(0));
+    dispatch(updateSelectedTrainId(undefined));
     return function cleanup() {
       dispatch(updateSelectedProjection(undefined));
       dispatch(updateSimulation({ trains: [] }));

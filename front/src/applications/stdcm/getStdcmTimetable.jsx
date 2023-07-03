@@ -3,7 +3,7 @@ import { setFailure } from 'reducers/main';
 import {
   updateAllowancesSettings,
   updateSelectedProjection,
-  updateSelectedTrain,
+  updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
 import {
@@ -25,7 +25,7 @@ export default async function getStdcmTimetable(
 ) {
   try {
     if (!simulation.trains || !simulation.trains[selectedTrain]) {
-      dispatch(updateSelectedTrain(0));
+      dispatch(updateSelectedTrainId(undefined));
     }
     const timetable = await get(`${timetableURI}${timetableID}/`);
     /*

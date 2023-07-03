@@ -16,7 +16,7 @@ import {
   getStudyID,
   getTimetableID,
 } from 'reducers/osrdconf/selectors';
-import { getPresentSimulation, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import STDCMAllowances from '../components/STDCMAllowances';
@@ -38,7 +38,6 @@ export default function OSRDConfig({
   const timetableID = useSelector(getTimetableID);
   const infraID = useSelector(getInfraID);
   const selectedTrain = useSelector(getSelectedTrain);
-  const simulation = useSelector(getPresentSimulation);
   const [showMap, setShowMap] = useState<boolean>(true);
   const [isInfraLoaded, setIsInfraLoaded] = useState<boolean>(false);
 
@@ -56,7 +55,7 @@ export default function OSRDConfig({
     }
   );
 
-  const shouldDisplayStdcmResult = simulation.trains[selectedTrain] !== undefined;
+  const shouldDisplayStdcmResult = selectedTrain !== undefined;
 
   useEffect(() => {
     if (infra && infra.state === 'NOT_LOADED') {

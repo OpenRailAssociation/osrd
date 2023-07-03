@@ -9,7 +9,7 @@ import {
   updateDepartureArrivalTimes,
   updateContextMenu,
   updateMustRedraw,
-  updateSelectedTrain,
+  updateSelectedTrainId,
 } from 'reducers/osrdsimulation/actions';
 
 export default function drawTrain(
@@ -73,7 +73,7 @@ export default function drawTrain(
     })
     .on('start', () => {
       dragFullOffset = 0;
-      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
+      dispatch(updateSelectedTrainId(dataSimulation.id));
     })
     .on('drag', () => {
       dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
@@ -97,7 +97,7 @@ export default function drawTrain(
           yPos: d3.event.layerY,
         })
       );
-      dispatch(updateSelectedTrain(dataSimulation.trainNumber));
+      dispatch(updateSelectedTrainId(dataSimulation.id));
       dispatch(updateMustRedraw(true));
     });
 

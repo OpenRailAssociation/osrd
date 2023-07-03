@@ -304,7 +304,5 @@ SpeedSpaceChart.defaultProps = {
   simulationIsPlaying: false,
   speedSpaceSettings: ORSD_GRAPH_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GRAPH_SAMPLE_DATA.timePosition,
-  trainSimulation: prepareData(
-    ORSD_GRAPH_SAMPLE_DATA.simulation.present.trains[ORSD_GRAPH_SAMPLE_DATA.selectedTrain]
-  ),
+  trainSimulation: prepareData(ORSD_GRAPH_SAMPLE_DATA.selectedTrain),
 };

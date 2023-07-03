@@ -14,7 +14,7 @@ import {
   StandardAllowance,
   TrainSchedule,
 } from 'common/api/osrdMiddlewareApi';
-import { SimulationSnapshot } from 'reducers/osrdsimulation/types';
+import { SimulationSnapshot, Train } from 'reducers/osrdsimulation/types';
 import { Dispatch } from 'redux';
 import { AxiosError } from 'axios';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS, AllowanceType } from './allowancesConsts';
@@ -24,7 +24,7 @@ interface StandardAllowanceDefaultProps {
   getAllowances?: () => void;
   setIsUpdating?: (isUpdating: boolean) => void;
   trainDetail?: TrainSchedule;
-  selectedTrain?: number;
+  selectedTrain?: Train;
   mutateSingleAllowance?: () => void;
   changeType?: (type: unknown, typekey: string) => void;
   options?: {
@@ -129,15 +129,14 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
   // To be moved to HOC, use mutateSigleAllowance
   const updateTrain = async () => {
     if (simulation && selectedTrain) {
-      const newSimulationTrains = Array.from(simulation.trains);
-      newSimulationTrains[selectedTrain] = await get(
-        `${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
-        {
-          params: {
-            id: simulation.trains[selectedTrain].id,
-            path: selectedProjection?.path,
-          },
-        }
+      const updatedSelectedTrain = await get(`${trainscheduleURI}${selectedTrain.id}/result/`, {
+        params: {
+          id: selectedTrain.id,
+          path: selectedProjection?.path,
+        },
+      });
+      const newSimulationTrains = simulation.trains.map((train) =>
+        train.id === selectedTrain.id ? updatedSelectedTrain : train
       );
       if (getAllowances) getAllowances();
       if (dispatch) {

@@ -2,7 +2,7 @@ import {
   updateAllowancesSettings,
   updateIsUpdating,
   updateSelectedProjection,
-  updateSelectedTrain,
+  updateSelectedTrainId,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
@@ -16,13 +16,11 @@ import i18n from 'i18next';
  */
 
 export default async function getTimetable(timetable) {
-  const { selectedProjection, allowancesSettings, displaySimulation } =
-    store.getState().osrdsimulation;
+  const { selectedProjection, allowancesSettings } = store.getState().osrdsimulation;
   try {
     store.dispatch(updateIsUpdating(true));
-    if (displaySimulation) {
-      store.dispatch(updateSelectedTrain(0));
-    }
+    store.dispatch(updateSelectedTrainId(timetable.train_schedule_summaries[0].id));
+
     const trainSchedulesIDs = timetable.train_schedule_summaries.map((train) => train.id);
 
     if (trainSchedulesIDs && trainSchedulesIDs.length > 0) {
@@ -37,7 +35,6 @@ export default async function getTimetable(timetable) {
       } else if (selectedProjection) {
         selectedProjectionPath = selectedProjection.path;
       }
-
       const simulationLocal = await get(`${trainscheduleURI}results/`, {
         params: {
           timetable_id: timetable.id,
