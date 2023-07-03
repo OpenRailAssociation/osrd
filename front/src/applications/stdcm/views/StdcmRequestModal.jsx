@@ -24,7 +24,7 @@ import ReactModal from 'react-modal';
 import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
-import rabbit from 'assets/pictures/KLCW_nc_standard.png';
+import rabbit from 'assets/pictures/rabbit.svg';
 import { setFailure } from 'reducers/main';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateItinerary } from 'reducers/osrdconf';
@@ -34,6 +34,7 @@ import { Spinner } from 'common/Loader';
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector(getConf);
+  const { safeWord } = useSelector((state) => state.main);
   const dispatch = useDispatch();
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
@@ -153,9 +154,11 @@ export default function StdcmRequestModal(props) {
             <div className="d-flex flex-column text-center">
               {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
                 <>
-                  <div className="">
-                    <img src={rabbit} alt="runnning stdcm" width="50%" />
-                  </div>
+                  {!safeWord && (
+                    <div className="w-100">
+                      <img src={rabbit} alt="runnning stdcm" />
+                    </div>
+                  )}
                   <div className="p-1 text-info">
                     {t('operationalStudies/manageTrainSchedule:searchingItinerary')}
                   </div>

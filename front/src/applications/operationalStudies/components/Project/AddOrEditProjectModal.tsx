@@ -167,9 +167,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
 
   useEffect(() => {
     if (safeWord !== '') {
-      const newTags: string[] = currentProject?.tags ? Array.from(currentProject.tags) : [];
-      newTags.push(safeWord);
-      setCurrentProject({ ...currentProject, tags: newTags });
+      addTag(safeWord);
     }
   }, [safeWord]);
 
