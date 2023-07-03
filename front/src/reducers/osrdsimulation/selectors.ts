@@ -24,10 +24,11 @@ export const getSelectedProjection = makeSubSelector<OsrdSimulationState, 'selec
   getOsrdSimulation,
   'selectedProjection'
 );
-export const getSelectedTrain = makeSubSelector<OsrdSimulationState, 'selectedTrain'>(
+export const getSelectedTrainId = makeSubSelector<OsrdSimulationState, 'selectedTrainId'>(
   getOsrdSimulation,
-  'selectedTrain'
+  'selectedTrainId'
 );
+
 export const getTimePosition = makeSubSelector<OsrdSimulationState, 'timePosition'>(
   getOsrdSimulation,
   'timePosition'
@@ -37,3 +38,9 @@ export const getConsolidatedSimulation = makeSubSelector<
   'consolidatedSimulation'
 >(getOsrdSimulation, 'consolidatedSimulation');
 export const getPresentSimulation = (state: RootState) => state.osrdsimulation.simulation.present;
+
+export const getSelectedTrain = (state: RootState) => {
+  const { trains } = getPresentSimulation(state);
+  const selectedTrainId = getSelectedTrainId(state);
+  return trains.find((train) => train.id && train.id === selectedTrainId);
+};

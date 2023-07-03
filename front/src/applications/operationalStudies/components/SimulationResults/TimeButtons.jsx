@@ -1,8 +1,9 @@
 import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
@@ -15,8 +16,8 @@ const factor2ms = (factor) => {
 
 export default function TimeButtons() {
   const dispatch = useDispatch();
-  const { timePosition, selectedTrain } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  const { timePosition } = useSelector((state) => state.osrdsimulation);
+  const selectedTrain = useSelector(getSelectedTrain);
   const [playInterval, setPlayInterval] = useState(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
@@ -24,9 +25,9 @@ export default function TimeButtons() {
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    dispatch(
-      updateTimePositionValues(sec2datetime(simulation.trains[selectedTrain].base.stops[0].time))
-    );
+    if (selectedTrain) {
+      dispatch(updateTimePositionValues(sec2datetime(selectedTrain.base.stops[0].time)));
+    }
     dispatch(updateIsPlaying(false));
   };
   const pause = () => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMode } from 'reducers/osrdconf/selectors';
-import { updateSelectedTrain, updateSelectedProjection } from 'reducers/osrdsimulation/actions';
+import { updateSelectedTrainId, updateSelectedProjection } from 'reducers/osrdsimulation/actions';
 import { MODES, STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateMode } from 'reducers/osrdconf';
 import OSRDStdcmConfig from './OSRDCStdcmConfig';
@@ -18,7 +18,7 @@ export default function OSRDSTDCM() {
     if (mode !== MODES.stdcm) dispatch(updateMode(MODES.stdcm));
     return () => {
       dispatch(updateMode(MODES.simulation));
-      dispatch(updateSelectedTrain(0));
+      dispatch(updateSelectedTrainId(undefined));
       dispatch(updateSelectedProjection(undefined));
     };
   }, []);

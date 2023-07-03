@@ -33,19 +33,19 @@ export async function progressiveDuplicateTrain(
   trainDelta,
   dispatch
 ) {
-  const trainDetail = await get(`${trainscheduleURI}${simulationTrains[selectedTrain].id}/`);
+  const trainDetail = await get(`${trainscheduleURI}${selectedTrain.id}/`);
   const params = {
     timetable: trainDetail.timetable,
     path: trainDetail.path,
     schedules: [],
   };
   let actualTrainCount = 1;
-  const trainName = simulationTrains[selectedTrain]?.name;
+  const trainName = selectedTrain.name;
   const trainCount = simulationTrains.length;
   const trainStep = 10;
   for (let nb = 1; nb <= trainCount; nb += 1) {
     const newTrainDelta = 60 * trainDelta * nb;
-    const newOriginTime = simulationTrains[selectedTrain].base.stops[0].time + newTrainDelta;
+    const newOriginTime = selectedTrain.base.stops[0].time + newTrainDelta;
     const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
     params.schedules.push({
       departure_time: newOriginTime,

@@ -14,17 +14,16 @@ export default function drawTrain(
   chart,
   dispatchUpdateDepartureArrivalTimes,
   dispatchUpdateMustRedraw,
-  dispatchUpdateSelectedTrain,
+  dispatchUpdateSelectedTrainId,
   isPathSelected,
   isSelected,
   keyValues,
   rotate,
   setDragOffset,
-  setSelectedTrain,
   simulationTrains,
   trainToDraw
 ) {
-  const groupID = `spaceTime-${trainToDraw.trainNumber}`;
+  const groupID = `spaceTime-${trainToDraw.id}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
 
@@ -71,8 +70,7 @@ export default function drawTrain(
     })
     .on('start', () => {
       dragFullOffset = 0;
-      setSelectedTrain(trainToDraw.trainNumber);
-      dispatchUpdateSelectedTrain(trainToDraw.trainNumber);
+      dispatchUpdateSelectedTrainId(trainToDraw.id);
     })
     .on('drag', (event) => {
       dragFullOffset += rotate ? event.dy : event.dx;

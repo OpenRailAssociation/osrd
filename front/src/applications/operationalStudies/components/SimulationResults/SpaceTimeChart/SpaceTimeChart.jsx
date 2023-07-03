@@ -51,7 +51,7 @@ export default function SpaceTimeChart(props) {
     dispatchUpdateChart,
     dispatchUpdateDepartureArrivalTimes,
     dispatchUpdateMustRedraw,
-    dispatchUpdateSelectedTrain,
+    dispatchUpdateSelectedTrainId,
     dispatchUpdateTimePositionValues,
     initialHeightOfSpaceTimeChart,
     inputSelectedTrain,
@@ -85,8 +85,8 @@ export default function SpaceTimeChart(props) {
   const dragShiftTrain = useCallback(
     (offset) => {
       if (trainSimulations) {
-        const trains = trainSimulations.map((train, ind) =>
-          ind === selectedTrain ? timeShiftTrain(train, offset) : train
+        const trains = trainSimulations.map((train) =>
+          train.id === selectedTrain.id ? timeShiftTrain(train, offset) : train
         );
         setTrainSimulations(trains);
         onOffsetTimeByDragging(trains, offset);
@@ -117,11 +117,11 @@ export default function SpaceTimeChart(props) {
 
   useEffect(() => {
     // avoid useless re-render if selectedTrain is already correct
-    if (selectedTrain !== inputSelectedTrain) {
+    if (selectedTrain.id !== inputSelectedTrain.id) {
       setSelectedTrain(inputSelectedTrain);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputSelectedTrain]);
+  }, [inputSelectedTrain.id]);
 
   /**
    * ACTIONS HANDLE
@@ -161,7 +161,9 @@ export default function SpaceTimeChart(props) {
    */
   useEffect(() => {
     if (trainSimulations) {
-      const trainsToDraw = createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, trainSimulations);
+      const trainsToDraw = trainSimulations.map((train) =>
+        createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, train)
+      );
       drawAllTrains(
         allowancesSettings,
         chart,
@@ -169,7 +171,7 @@ export default function SpaceTimeChart(props) {
         dispatchUpdateChart,
         dispatchUpdateDepartureArrivalTimes,
         dispatchUpdateMustRedraw,
-        dispatchUpdateSelectedTrain,
+        dispatchUpdateSelectedTrainId,
         heightOfSpaceTimeChart,
         KEY_VALUES_FOR_SPACE_TIME_CHART,
         ref,
@@ -179,7 +181,6 @@ export default function SpaceTimeChart(props) {
         selectedTrain,
         setChart,
         setDragOffset,
-        setSelectedTrain,
         trainSimulations,
         simulationIsPlaying,
         trainsToDraw
@@ -194,9 +195,7 @@ export default function SpaceTimeChart(props) {
    */
   useEffect(() => {
     if (trainSimulations) {
-      const dataSimulation = createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, trainSimulations)[
-        selectedTrain
-      ];
+      const dataSimulation = createTrain(KEY_VALUES_FOR_SPACE_TIME_CHART, selectedTrain);
       isolatedEnableInteractivity(
         chart,
         dataSimulation,
@@ -237,7 +236,7 @@ export default function SpaceTimeChart(props) {
     if (trainSimulations) {
       traceVerticalLine(
         chart,
-        trainSimulations?.[selectedTrain],
+        selectedTrain,
         KEY_VALUES_FOR_SPACE_TIME_CHART,
         LIST_VALUES_NAME_SPACE_TIME,
         positionValues,
@@ -308,7 +307,7 @@ export default function SpaceTimeChart(props) {
           <ChartModal
             type={showModal}
             setShowModal={setShowModal}
-            trainName={trainSimulations?.[selectedTrain]?.name}
+            trainName={selectedTrain?.name}
             offsetTimeByDragging={dragShiftTrain}
           />
         ) : null}
@@ -343,7 +342,7 @@ SpaceTimeChart.propTypes = {
   dispatchUpdateChart: PropTypes.any,
   dispatchUpdateDepartureArrivalTimes: PropTypes.func,
   dispatchUpdateMustRedraw: PropTypes.func,
-  dispatchUpdateSelectedTrain: PropTypes.func,
+  dispatchUpdateSelectedTrainId: PropTypes.func,
   dispatchUpdateTimePositionValues: PropTypes.any,
   initialHeightOfSpaceTimeChart: PropTypes.any,
   inputSelectedTrain: PropTypes.any,
@@ -362,7 +361,7 @@ SpaceTimeChart.defaultProps = {
   dispatchUpdateChart: noop,
   dispatchUpdateDepartureArrivalTimes: noop,
   dispatchUpdateMustRedraw: noop,
-  dispatchUpdateSelectedTrain: noop,
+  dispatchUpdateSelectedTrainId: noop,
   dispatchUpdateTimePositionValues: noop,
   inputSelectedTrain: ORSD_GRAPH_SAMPLE_DATA.selectedTrain,
   initialHeightOfSpaceTimeChart: 400,

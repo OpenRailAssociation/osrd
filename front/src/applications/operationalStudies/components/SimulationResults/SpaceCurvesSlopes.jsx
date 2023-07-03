@@ -9,7 +9,7 @@ import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { getSelectedTrain } from 'reducers/osrdsimulation/selectors';
 import { CgLoadbar } from 'react-icons/cg';
 import { LIST_VALUES_NAME_SPACE_CURVES_SLOPES } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import PropTypes from 'prop-types';
@@ -45,45 +45,18 @@ const drawAxisTitle = (chart, rotate) => {
 export default function SpaceCurvesSlopes(props) {
   const { heightOfSpaceCurvesSlopesChart } = props;
   const dispatch = useDispatch();
-  const { chartXGEV, mustRedraw, positionValues, selectedTrain, timePosition } = useSelector(
+  const { chartXGEV, mustRedraw, positionValues, timePosition } = useSelector(
     (state) => state.osrdsimulation
   );
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  // eslint-disable-next-line no-unused-vars
-  const [rotate, setRotate] = useState(false);
+  const selectedTrain = useSelector(getSelectedTrain);
+  const [rotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
+  const [dataSimulation, setDataSimulation] = useState();
+
   const ref = useRef();
   const keyValues = ['position', 'gradient'];
-
-  // Prepare data
-  const dataSimulation = {};
-  // Speeds : reference needed for interpolate position of cursor
-  dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map((step) => ({
-    ...step,
-    speed: step.speed * 3.6,
-  }));
-  // Slopes
-  dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map((step) => ({
-    position: step.position,
-    gradient: step.gradient,
-  }));
-  dataSimulation.areaSlopesHistogram = mergeDatasAreaConstant(dataSimulation.slopesHistogram, 0, [
-    'position',
-    'gradient',
-  ]);
-  dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.trains[selectedTrain].slopes,
-    dataSimulation.slopesHistogram,
-    'gradient'
-  );
-  // Curves
-  dataSimulation.curvesHistogram = createCurveCurve(
-    simulation.trains[selectedTrain].curves,
-    dataSimulation.slopesHistogram,
-    'gradient'
-  );
 
   const createChart = () => {
     d3.select(`#${CHART_ID}`).remove();
@@ -123,7 +96,7 @@ export default function SpaceCurvesSlopes(props) {
     const operationalPointsZone = chartLocal.drawZone
       .append('g')
       .attr('id', 'gev-operationalPointsZone');
-    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
+    selectedTrain.base.stops.forEach((stop) => {
       operationalPointsZone
         .append('line')
         .datum(stop.position)
@@ -148,7 +121,7 @@ export default function SpaceCurvesSlopes(props) {
   };
 
   const drawTrain = () => {
-    if (mustRedraw) {
+    if (mustRedraw && dataSimulation) {
       const chartLocal = createChart();
       chartLocal.drawZone.append('g').attr('id', 'curvesSlopesChart').attr('class', 'chartTrain');
       drawAxisTitle(chartLocal, rotate);
@@ -221,23 +194,27 @@ export default function SpaceCurvesSlopes(props) {
   };
 
   useEffect(() => {
-    drawTrain();
+    if (selectedTrain) {
+      drawTrain();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, mustRedraw, rotate]);
+  }, [chart, mustRedraw, rotate, dataSimulation]);
 
   useEffect(() => {
-    traceVerticalLine(
-      chart,
-      dataSimulation,
-      keyValues,
-      LIST_VALUES_NAME_SPACE_CURVES_SLOPES,
-      positionValues,
-      'slopesCurve',
-      rotate,
-      timePosition
-    );
+    if (dataSimulation) {
+      traceVerticalLine(
+        chart,
+        dataSimulation,
+        keyValues,
+        LIST_VALUES_NAME_SPACE_CURVES_SLOPES,
+        positionValues,
+        'slopesCurve',
+        rotate,
+        timePosition
+      );
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, mustRedraw, positionValues, timePosition]);
+  }, [chart, mustRedraw, positionValues, timePosition, dataSimulation]);
 
   useEffect(() => {
     if (chartXGEV) {
@@ -245,6 +222,35 @@ export default function SpaceCurvesSlopes(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartXGEV]);
+
+  useEffect(() => {
+    if (selectedTrain) {
+      const speed = selectedTrain.base.speeds.map((step) => ({
+        ...step,
+        speed: step.speed * 3.6,
+      }));
+      // Slopes
+      const slopesHistogram = selectedTrain.slopes.map((step) => ({
+        position: step.position,
+        gradient: step.gradient,
+      }));
+      const areaSlopesHistogram = mergeDatasAreaConstant(slopesHistogram, 0, [
+        'position',
+        'gradient',
+      ]);
+      const slopesCurve = createSlopeCurve(selectedTrain.slopes, slopesHistogram, 'gradient');
+      // Curves
+      const curvesHistogram = createCurveCurve(selectedTrain.curves, slopesHistogram, 'gradient');
+
+      setDataSimulation({
+        speed,
+        slopesHistogram,
+        areaSlopesHistogram,
+        slopesCurve,
+        curvesHistogram,
+      });
+    }
+  }, [selectedTrain]);
 
   useEffect(() => {
     let timeOutFunctionId;

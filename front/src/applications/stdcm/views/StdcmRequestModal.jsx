@@ -4,7 +4,7 @@ import { get, post } from 'common/requests';
 import {
   updateConsolidatedSimulation,
   updateMustRedraw,
-  updateSelectedTrain,
+  updateSelectedTrainId,
   updateSimulation,
   updateSelectedProjection,
 } from 'reducers/osrdsimulation/actions';
@@ -79,18 +79,16 @@ export default function StdcmRequestModal(props) {
               path_id: result.path.id,
             },
           }).then((simulationLocal) => {
-            const newSimulation = {};
-            newSimulation.trains = [...simulationLocal];
-            newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
+            const trains = [...simulationLocal, fakedNewTrain];
             const consolidatedSimulation = createTrain(
               dispatch,
               KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-              newSimulation.trains,
+              trains,
               t
             );
             dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-            dispatch(updateSimulation(newSimulation));
-            dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
+            dispatch(updateSimulation({ trains }));
+            dispatch(updateSelectedTrainId(fakedNewTrain.id));
 
             dispatch(
               updateSelectedProjection({

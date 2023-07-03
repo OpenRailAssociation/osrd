@@ -11,7 +11,7 @@ import {
   StandardAllowance,
 } from 'common/api/osrdMiddlewareApi';
 import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
-import { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import { OsrdSimulationState, Train } from 'reducers/osrdsimulation/types';
 
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { AllowanceType } from './allowancesConsts';
@@ -26,7 +26,7 @@ interface AllowancesProps {
   simulation: OsrdSimulationState['simulation']['present'];
   allowancesSettings: OsrdSimulationState['allowancesSettings'];
   selectedProjection: OsrdSimulationState['selectedProjection'];
-  selectedTrain: OsrdSimulationState['selectedTrain'];
+  selectedTrain: Train;
   persistentAllowances: TrainSchedule['allowances'];
   syncInProgress: boolean;
   mutateAllowances: (newAllowances: Allowance[]) => void;
@@ -87,8 +87,8 @@ export default function Allowances(props: AllowancesProps) {
         dispatch(
           updateAllowancesSettings({
             ...newAllowancesSettings,
-            [simulation.trains[selectedTrain].id]: {
-              ...newAllowancesSettings[simulation.trains[selectedTrain].id],
+            [selectedTrain.id]: {
+              ...newAllowancesSettings[selectedTrain.id],
               ecoBlocks: false,
               baseBlocks: true,
             },
@@ -180,7 +180,6 @@ export default function Allowances(props: AllowancesProps) {
           idx={idx}
           key={nextId()}
           selectedTrain={selectedTrain}
-          simulation={simulation}
         />
       ))}
 
@@ -219,7 +218,6 @@ export default function Allowances(props: AllowancesProps) {
               idx={idx}
               key={nextId()}
               selectedTrain={selectedTrain}
-              simulation={simulation}
             />
           );
         }

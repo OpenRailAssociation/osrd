@@ -5,7 +5,7 @@ import { identity, isNumber } from 'lodash';
 import { FaTrash } from 'react-icons/fa';
 
 import { Allowance, RangeAllowance, AllowanceValue } from 'common/api/osrdMiddlewareApi';
-import { OsrdSimulationState } from 'reducers/osrdsimulation/types';
+import { Train } from 'reducers/osrdsimulation/types';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
 function valueWithUnits(allowanceValue: AllowanceValue | undefined, t: TFunction) {
@@ -35,8 +35,7 @@ interface AllowanceProps<T> {
   delAllowance: (idx: number, allowanceType?: Allowance['allowance_type']) => void;
   idx: number;
   t: TFunction;
-  selectedTrain: OsrdSimulationState['selectedTrain'];
-  simulation: OsrdSimulationState['simulation']['present'];
+  selectedTrain: Train;
 }
 
 function Allowance<T extends RangeAllowance>({
@@ -46,16 +45,13 @@ function Allowance<T extends RangeAllowance>({
   delAllowance,
   idx,
   selectedTrain,
-  simulation,
   t = identity,
 }: AllowanceProps<T>) {
   const position2name = (position?: number) => {
-    if (!isNumber(position)) {
+    if (!isNumber(position) || !selectedTrain) {
       return '-';
     }
-    const place = simulation.trains[selectedTrain].base.stops.find(
-      (element) => element.position === position
-    );
+    const place = selectedTrain.base.stops.find((element) => element.position === position);
     return place && place.name !== null
       ? `${place.name} (${Math.round(position)}m)`
       : `${position}m`;

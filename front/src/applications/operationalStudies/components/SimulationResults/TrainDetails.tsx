@@ -26,20 +26,20 @@ const getOccupancyBounds = (routeAspects: ConsolidatedRouteAspect[], time: Date)
 };
 
 export default function TrainDetails() {
-  const { positionValues, timePosition, consolidatedSimulation, selectedTrain } = useSelector(
+  const { positionValues, timePosition, consolidatedSimulation, selectedTrainId } = useSelector(
     (state: RootState) => state.osrdsimulation
   );
 
   const { t } = useTranslation(['simulation']);
 
-  const occupancyBounds = useMemo(
-    () =>
-      getOccupancyBounds(
-        consolidatedSimulation[selectedTrain]?.routeAspects,
-        new Date(positionValues?.headPosition?.time)
-      ),
-    [consolidatedSimulation, positionValues, selectedTrain]
-  );
+  const occupancyBounds = useMemo(() => {
+    const foundTrain = consolidatedSimulation.find((train) => train.id === selectedTrainId);
+
+    return (
+      foundTrain &&
+      getOccupancyBounds(foundTrain.routeAspects, new Date(positionValues?.headPosition?.time))
+    );
+  }, [consolidatedSimulation, positionValues, selectedTrainId]);
 
   return (
     <div className="d-flex">

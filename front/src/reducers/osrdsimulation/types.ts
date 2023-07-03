@@ -221,7 +221,7 @@ export interface OsrdSimulationState {
     id: unknown;
     path: unknown;
   };
-  selectedTrain: number;
+  selectedTrainId?: number;
   speedSpaceSettings: {
     [key in SpeedSpaceSettingKey]: boolean;
   };

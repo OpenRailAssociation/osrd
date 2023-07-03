@@ -8,10 +8,11 @@ import {
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/ChartHelpers';
 import { sec2datetime, time2datetime } from 'utils/timeManipulation';
 import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation/actions';
+import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { useDispatch, useSelector } from 'react-redux';
 
-const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
-  trains.forEach((train, idx) => {
+const drawTrains = (trains, selectedTrainId, xScale, svg, height) => {
+  trains.forEach((train) => {
     const startTime = train.base.stops[0].time;
     const endTime = train.base.stops[train.base.stops.length - 1].time;
     const direction = getDirection(train.base.head_positions);
@@ -21,7 +22,7 @@ const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
 
     svg
       .append('line')
-      .attr('class', selectedTrain === idx ? 'timeline-train selected' : 'timeline-train')
+      .attr('class', selectedTrainId === train.id ? 'timeline-train selected' : 'timeline-train')
       .attr('x1', xScale(sec2datetime(startTime)))
       .attr('y1', y1)
       .attr('x2', xScale(sec2datetime(endTime)))
@@ -30,7 +31,8 @@ const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
 };
 
 export default function TimeLine() {
-  const { chart, selectedTrain, timePosition } = useSelector((state) => state.osrdsimulation);
+  const { chart, timePosition } = useSelector((state) => state.osrdsimulation);
+  const selectedTrainId = useSelector(getSelectedTrainId);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const ref = useRef();
@@ -129,7 +131,7 @@ export default function TimeLine() {
       .select('#timePositionTimeLine')
       .attr('transform', `translate(${xScale(time2datetime(timePosition))},0)`);
 
-    drawTrains(simulation.trains, selectedTrain, xScale, svg, dimensions.height);
+    drawTrains(simulation.trains, selectedTrainId, xScale, svg, dimensions.height);
 
     const drag = d3
       .drag()
