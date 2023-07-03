@@ -6,7 +6,9 @@ import {
   updateSpeedSpaceSettings,
   updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
-import { getIsPlaying } from 'reducers/osrdsimulation/selectors';
+
+import { getIsPlaying, getSelectedTrain } from 'reducers/osrdsimulation/selectors';
+
 import prepareData from './prepareData';
 import SpeedSpaceChart from './SpeedSpaceChart';
 
@@ -18,10 +20,9 @@ import SpeedSpaceChart from './SpeedSpaceChart';
 const withOSRDData = (Component) =>
   function WrapperComponent(props) {
     const positionValues = useSelector((state) => state.osrdsimulation.positionValues);
-    const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
+    const selectedTrain = useSelector(getSelectedTrain);
     const speedSpaceSettings = useSelector((state) => state.osrdsimulation.speedSpaceSettings);
     const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
-    const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
 
     const isPlaying = useSelector(getIsPlaying);
 
@@ -47,11 +48,11 @@ const withOSRDData = (Component) =>
 
     // Prepare data
     const trainSimulation = useMemo(
-      () => prepareData(simulation.trains[selectedTrain]),
-      [simulation, selectedTrain]
+      () => (selectedTrain ? prepareData(selectedTrain) : null),
+      [selectedTrain]
     );
 
-    return (
+    return trainSimulation ? (
       <Component
         {...props}
         trainSimulation={trainSimulation}
@@ -63,7 +64,7 @@ const withOSRDData = (Component) =>
         toggleSetting={toggleSetting}
         simulationIsPlaying={isPlaying}
       />
-    );
+    ) : null;
   };
 
 export const OSRDSpeedSpaceChart = withOSRDData(SpeedSpaceChart);

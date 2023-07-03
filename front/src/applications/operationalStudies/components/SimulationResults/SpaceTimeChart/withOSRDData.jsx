@@ -6,19 +6,18 @@ import PropTypes from 'prop-types';
 import {
   updateMustRedraw,
   updateChart,
-  updatePositionValues,
   updateTimePositionValues,
-  updateSelectedTrain,
+  updateSelectedTrainId,
   updateDepartureArrivalTimes,
 } from 'reducers/osrdsimulation/actions';
 import {
   getAllowancesSettings,
   getPositionValues,
   getSelectedProjection,
-  getSelectedTrain,
   getTimePosition,
   getPresentSimulation,
   getIsPlaying,
+  getSelectedTrain,
 } from 'reducers/osrdsimulation/selectors';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import { time2sec, datetime2time, sec2datetime } from 'utils/timeManipulation';
@@ -68,7 +67,6 @@ const withOSRDData = (Component) =>
     const allowancesSettings = useSelector(getAllowancesSettings);
     const positionValues = useSelector(getPositionValues);
     const selectedTrain = useSelector(getSelectedTrain);
-    // à quoi correspond selectedProjection ?
     const selectedProjection = useSelector(getSelectedProjection);
     const timePosition = useSelector(getTimePosition);
     const simulation = useSelector(getPresentSimulation);
@@ -86,11 +84,6 @@ const withOSRDData = (Component) =>
       }
     };
 
-    const dispatchUpdatePositionValues = (newPositionValues) => {
-      dispatch(updatePositionValues(newPositionValues));
-    };
-
-    // difference entre TimePositionValues et PositionValues (besoin cruel de typage)
     const dispatchUpdateTimePositionValues = (newTimePositionValues) => {
       dispatch(updateTimePositionValues(newTimePositionValues));
     };
@@ -103,8 +96,8 @@ const withOSRDData = (Component) =>
       dispatch(updateChart(chart));
     };
 
-    const dispatchUpdateSelectedTrain = (_selectedTrain) => {
-      dispatch(updateSelectedTrain(_selectedTrain));
+    const dispatchUpdateSelectedTrainId = (_selectedTrainId) => {
+      dispatch(updateSelectedTrainId(_selectedTrainId));
     };
 
     const dispatchUpdateDepartureArrivalTimes = (newDepartureArrivalTimes) => {
@@ -118,8 +111,7 @@ const withOSRDData = (Component) =>
         dispatchUpdateChart={dispatchUpdateChart}
         dispatchUpdateDepartureArrivalTimes={dispatchUpdateDepartureArrivalTimes}
         dispatchUpdateMustRedraw={dispatchUpdateMustRedraw}
-        dispatchUpdateSelectedTrain={dispatchUpdateSelectedTrain}
-        dispatchUpdatePositionValues={dispatchUpdatePositionValues}
+        dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
         dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
         inputSelectedTrain={selectedTrain}
         onOffsetTimeByDragging={onOffsetTimeByDragging}

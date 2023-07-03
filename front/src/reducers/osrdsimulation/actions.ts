@@ -13,7 +13,7 @@ export const UPDATE_ALLOWANCES_SETTINGS = 'osrdsimu/UPDATE_ALLOWANCES_SETTINGS';
 export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
 export const UPDATE_SELECTED_PROJECTION = 'osrdsimu/UPDATE_SELECTED_PROJECTION';
-export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
+export const UPDATE_SELECTED_TRAIN_ID = 'osrdsimu/UPDATE_SELECTED_TRAIN_ID';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
 export const UPDATE_SIGNAL_BASE = 'osrdsimu/UPDATE_SIGNAL_BASE';
@@ -108,11 +108,11 @@ export function updateSelectedProjection(
     });
   };
 }
-export function updateSelectedTrain(selectedTrain: OsrdSimulationState['selectedTrain']) {
+export function updateSelectedTrainId(selectedTrainId: OsrdSimulationState['selectedTrainId']) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_SELECTED_TRAIN,
-      selectedTrain,
+      type: UPDATE_SELECTED_TRAIN_ID,
+      selectedTrainId,
     });
   };
 }
@@ -170,6 +170,10 @@ export function updateConsolidatedSimulation(
     });
   };
 }
+
+/**
+ * Update timePosition in the store and interpolate positionValue from timePosition
+ */
 export function updateTimePositionValues(timePosition: OsrdSimulationState['timePosition']) {
   return (dispatch: Dispatch) => {
     dispatch({

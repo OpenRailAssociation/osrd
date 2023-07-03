@@ -39,7 +39,6 @@ const drawAxisTitle = (chart, rotate) => {
     .text('KM');
 };
 
-// eslint-disable-next-line default-param-last
 const drawAllTrains = (
   allowancesSettings,
   chart,
@@ -47,7 +46,7 @@ const drawAllTrains = (
   dispatchUpdateChart,
   dispatchUpdateDepartureArrivalTimes,
   dispatchUpdateMustRedraw,
-  dispatchUpdateSelectedTrain,
+  dispatchUpdateSelectedTrainId,
   heightOfSpaceTimeChart,
   keyValues,
   ref,
@@ -57,7 +56,6 @@ const drawAllTrains = (
   selectedTrain,
   setChart,
   setDragOffset,
-  setSelectedTrain,
   simulationTrains,
   simulationIsPlaying,
   trainsToDraw
@@ -73,22 +71,23 @@ const drawAllTrains = (
     rotate
   );
 
-  drawOPs(chartLocal, simulationTrains[selectedTrain], rotate);
+  if (selectedTrain) {
+    drawOPs(chartLocal, selectedTrain, rotate);
+  }
 
   drawAxisTitle(chartLocal, rotate);
-  trainsToDraw.forEach((train, idx) => {
+  trainsToDraw.forEach((train) => {
     drawTrain(
       allowancesSettings,
       chartLocal,
       dispatchUpdateDepartureArrivalTimes,
       dispatchUpdateMustRedraw,
-      dispatchUpdateSelectedTrain,
+      dispatchUpdateSelectedTrainId,
       train.id === selectedProjection?.id,
-      idx === selectedTrain,
+      train.id === selectedTrain?.id,
       keyValues,
       rotate,
       setDragOffset,
-      setSelectedTrain,
       simulationTrains,
       train
     );

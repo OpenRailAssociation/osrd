@@ -31,7 +31,7 @@ import {
   UPDATE_MUST_REDRAW,
   UPDATE_POSITION_VALUES,
   UPDATE_SELECTED_PROJECTION,
-  UPDATE_SELECTED_TRAIN,
+  UPDATE_SELECTED_TRAIN_ID,
   UPDATE_SIMULATION,
   UPDATE_SPEEDSPACE_SETTINGS,
   UPDATE_SIGNAL_BASE,
@@ -68,7 +68,7 @@ export const initialState: OsrdSimulationState = {
     },
   },
   selectedProjection: undefined,
-  selectedTrain: 0,
+  selectedTrainId: undefined,
   speedSpaceSettings: {
     [SPEED_SPACE_SETTINGS_KEYS.ALTITUDE]: false,
     [SPEED_SPACE_SETTINGS_KEYS.CURVES]: false,
@@ -126,11 +126,11 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
       case UPDATE_SELECTED_PROJECTION:
         draft.selectedProjection = action.selectedProjection;
         break;
-      case UPDATE_SELECTED_TRAIN:
-        draft.selectedTrain = action.selectedTrain;
+      case UPDATE_SELECTED_TRAIN_ID:
+        draft.selectedTrainId = action.selectedTrainId;
         currentTrainSimulation = state.consolidatedSimulation.find(
           (consolidatedSimulation: SimulationTrain) =>
-            consolidatedSimulation.trainNumber === draft.selectedTrain
+            consolidatedSimulation.id === draft.selectedTrainId
         );
         draft.positionValues = interpolateOnTime(
           currentTrainSimulation,
@@ -160,7 +160,8 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         );
         draft.displaySimulation =
           draft.simulation.present?.trains.length > 0 &&
-          draft.simulation.present.trains[state.selectedTrain] !== undefined;
+          draft.simulation.present.trains.find((train) => train.id === state.selectedTrainId) !==
+            undefined;
 
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
@@ -180,7 +181,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         // position value will be computed depending on current data simulation
         currentTrainSimulation = state.consolidatedSimulation.find(
           (consolidatedSimulation: SimulationTrain) =>
-            consolidatedSimulation.trainNumber === state.selectedTrain
+            consolidatedSimulation.id === state.selectedTrainId
         );
         draft.positionValues = interpolateOnTime(
           currentTrainSimulation,

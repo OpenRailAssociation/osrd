@@ -22,11 +22,12 @@ class _TrainScheduleSummary:
     labels: List[str]
     allowances: List[dict]
     speed_limit_tags: Optional[str]
+    scheduled_points: List[dict]
     comfort: str
     options: Optional[dict]
     power_restriction_ranges: Optional[List[dict]]
     mechanical_energy_consumed: dict
-    stops: int
+    stops_count: int
     path_length: float
 
 
@@ -93,7 +94,6 @@ def test_get_timetable(
     timetable_id = timetable_id or small_scenario.timetable
 
     response = requests.get(f"{service_url}timetable/{timetable_id}/")
-    print(response.json())
     assert response.status_code == status_code
     if status_code == 404:
         assert expected_error == response.json()
@@ -129,11 +129,12 @@ def test_get_timetable(
             labels=["new train", "west", "south east"],
             allowances=[],
             speed_limit_tags=None,
+            scheduled_points=[],
             comfort="STANDARD",
             options=None,
             power_restriction_ranges=None,
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
-            stops=0,
+            stops_count=0,
             path_length=45549.5653000392,
         ),
         _TrainScheduleSummary(
@@ -148,11 +149,12 @@ def test_get_timetable(
             labels=["new train", "west", "south east"],
             allowances=[],
             speed_limit_tags=None,
+            scheduled_points=[],
             comfort="STANDARD",
             options=None,
             power_restriction_ranges=None,
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
-            stops=0,
+            stops_count=0,
             path_length=45549.5653000392,
         ),
     ]
