@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import projectLogo from 'assets/pictures/views/projects.svg';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -14,7 +14,7 @@ import { FaPencilAlt, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdBusinessCenter, MdDescription, MdTitle } from 'react-icons/md';
 import { RiMoneyEuroCircleLine } from 'react-icons/ri';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateProjectID } from 'reducers/osrdconf';
@@ -27,6 +27,7 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { postDocument } from 'common/api/documentApi';
+import { RootState } from 'reducers';
 import { PROJECTS_URI } from '../operationalStudiesConsts';
 import PictureUploader from './PictureUploader';
 
@@ -45,6 +46,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { safeWord } = useSelector((state: RootState) => state.main);
 
   const [postProject] = osrdEditoastApi.usePostProjectsMutation();
   const [patchProject] = osrdEditoastApi.usePatchProjectsByProjectIdMutation();
@@ -162,6 +164,14 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   };
 
   const debouncedObjectives = useDebounce(currentProject?.objectives, 500);
+
+  useEffect(() => {
+    if (safeWord !== '') {
+      const newTags: string[] = currentProject?.tags ? Array.from(currentProject.tags) : [];
+      newTags.push(safeWord);
+      setCurrentProject({ ...currentProject, tags: newTags });
+    }
+  }, [safeWord]);
 
   return (
     <div className="project-edition-modal">
