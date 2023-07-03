@@ -35,7 +35,7 @@ export const onResultSearchClick = ({
     ...map.viewport,
     longitude: center.geometry.coordinates[0],
     latitude: center.geometry.coordinates[1],
-    zoom: 12,
+    zoom: 16,
   };
   updateExtViewport(newViewport);
   dispatch(

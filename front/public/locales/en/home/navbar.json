@@ -18,8 +18,8 @@
     "ru": "Русский",
     "uk": "Українська"
   },
-  "safeWord": "Mot clé de sécurité",
-  "safeWordHelp": "Le « mot-clé de sécurité » permet de filtrer de manière transparente la liste des projets avec le mot renseigné. Préférez un mot compliqué dans l'idée que personne ne l'utilise par inadvertance. Ajoutez-le en tag à un projet par exemple, et utilisez pourquoi pas « nom.prenom ».",
-  "userSettings": "Paramètres utilisateur",
-  "yourSafeWord": "Tapez votre mot"
+  "safeWord": "Safe word",
+  "safeWordHelp": "The \"safe word\" is used to filter project list with this word used as a transparent tag. Choose a complex word to ensure it's not already used by someone else. Use it as a tag when creating or updating a project; it will be automatically added as a tag on project creation if already entered here.",
+  "userSettings": "User settings",
+  "yourSafeWord": "Enter your safe word"
 }
