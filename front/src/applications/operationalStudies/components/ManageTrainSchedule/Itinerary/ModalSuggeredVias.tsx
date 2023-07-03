@@ -43,7 +43,11 @@ export default function ModalSugerredVias({
   const removeViaFromPath = (step: ArrayElement<Path['steps']>) => {
     dispatch(updateShouldRunPathfinding(true));
     dispatch(
-      replaceVias(vias.filter((via) => via.track !== step.track || via.position !== step.position))
+      replaceVias(
+        vias.filter(
+          (via) => via.track !== step.location.track_section || via.position !== step.position
+        )
+      )
     );
   };
 
