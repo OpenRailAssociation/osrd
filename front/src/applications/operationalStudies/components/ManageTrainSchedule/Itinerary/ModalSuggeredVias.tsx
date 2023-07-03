@@ -45,7 +45,7 @@ export default function ModalSugerredVias({
     dispatch(
       replaceVias(
         vias.filter(
-          (via) => via.track !== step.location.track_section || via.position !== step.position
+          (via) => via.track !== step.location.track_section || via.position !== step.path_offset
         )
       )
     );
@@ -74,7 +74,9 @@ export default function ModalSugerredVias({
       {!via.suggestion && <small className="pr-2">{idxTrueVia}</small>}
       <i className={`${via.suggestion ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
       {via.name || ''}
-      <small className="ml-2">{via.position && `KM ${Math.round(via.position) / 1000}`}</small>
+      <small className="ml-2">
+        {via.path_offset && `KM ${Math.round(via.path_offset) / 1000}`}
+      </small>
       {via.suggestion && !selectedViasTracks.includes(via.id) ? (
         <button
           className="btn btn-sm btn-only-icon ml-auto"

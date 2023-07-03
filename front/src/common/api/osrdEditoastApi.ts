@@ -1575,7 +1575,7 @@ export type PathStep = {
   name?: string;
   suggestion: boolean;
   duration: number;
-  position: number;
+  path_offset: number;
   location: TrackSectionLocation;
   sch: GeoJsonPosition;
   geo: GeoJsonPosition;
