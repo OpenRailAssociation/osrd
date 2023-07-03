@@ -50,6 +50,7 @@ export default function Home() {
       const payload: PostSearchApiArg = {
         body: {
           object: 'project',
+          page_size: 1000,
           query: [
             'and',
             [

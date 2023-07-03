@@ -33,7 +33,7 @@ export default function ScenarioExplorerModal({
     isError: isProjectsError,
     error: projectsError,
   } = osrdEditoastApi.useGetProjectsQuery(
-    { ordering: 'NameAsc' },
+    { ordering: 'NameAsc', pageSize: 1000 },
     {
       selectFromResult: (response) => ({
         ...response,
@@ -60,7 +60,7 @@ export default function ScenarioExplorerModal({
 
   useEffect(() => {
     if (projectID && !isProjectsError) {
-      getStudiesList({ projectId: projectID, ordering: 'NameAsc' })
+      getStudiesList({ projectId: projectID, ordering: 'NameAsc', pageSize: 1000 })
         .unwrap()
         .then(({ results }) => setStudiesList(results))
         .catch((error) => console.error(error));
@@ -71,7 +71,12 @@ export default function ScenarioExplorerModal({
 
   useEffect(() => {
     if (projectID && studyID && !isProjectsError) {
-      getScenariosList({ projectId: projectID, studyId: studyID, ordering: 'NameAsc' })
+      getScenariosList({
+        projectId: projectID,
+        studyId: studyID,
+        ordering: 'NameAsc',
+        pageSize: 1000,
+      })
         .unwrap()
         .then(({ results }) => setScenariosList(results))
         .catch((error) => console.error(error));
