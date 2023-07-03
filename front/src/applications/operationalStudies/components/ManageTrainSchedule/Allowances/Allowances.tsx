@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllowances, getPathfindingID } from 'reducers/osrdconf/selectors';
-import { lengthFromLineCoordinates } from 'utils/geometry';
 import {
   StandardAllowance,
   EngineeringAllowance,
@@ -46,9 +45,7 @@ export default function Allowances() {
     { id: pathFindingID as number },
     { skip: !pathFindingID }
   );
-  const pathLength = Math.round(
-    lengthFromLineCoordinates(pathFinding?.geographic?.coordinates) * 1000
-  );
+  const pathLength = pathFinding?.length ? Math.round(pathFinding.length) : 0;
   const allowances = useSelector(getAllowances);
   const [collapsedStandardAllowanceRanges, setCollapsedStandardAllowanceRanges] = useState(true);
   const [standardAllowance, setStandardAllowance] = useState(

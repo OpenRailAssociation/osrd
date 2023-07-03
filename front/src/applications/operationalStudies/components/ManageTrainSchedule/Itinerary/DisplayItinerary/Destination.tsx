@@ -55,7 +55,7 @@ function Destination(props: DestinationProps) {
               className="flex-grow-1"
             >
               <strong className="mr-1 text-nowrap">
-                {destination.name ? destination.name : destination.id?.split('-')[0]}
+                {destination.name || destination.location?.track_section?.split('-')[0]}
               </strong>
             </div>
             <button

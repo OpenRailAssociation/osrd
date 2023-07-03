@@ -27,7 +27,7 @@ function convertStepToPointOnMap(step?: ArrayElement<Path['steps']>): PointOnMap
   return step
     ? {
         ...step,
-        id: step.track,
+        id: step.location.track_section,
         coordinates: step.geo?.coordinates,
       }
     : undefined;
