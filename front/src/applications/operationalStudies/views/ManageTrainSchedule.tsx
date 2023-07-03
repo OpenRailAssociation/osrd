@@ -107,20 +107,11 @@ export default function ManageTrainSchedule() {
     withWarning: pathFindingID === undefined,
     label: t('tabs.pathFinding'),
     content: (
-      <div className="row no-gutters">
-        <div className="col-fhd-3 col-hdp-4 col-xl-5 col-lg-6 pr-md-2">
+      <div className="osrd-config-item-container-map" data-testid="map">
+        <span className="floating-itinerary">
           <Itinerary mustUpdate={mustUpdatePathfinding} />
-        </div>
-        <div className="col-fhd-9 col-hdp-8 col-xl-7 col-lg-6">
-          <div className="osrd-config-item mb-2">
-            <div
-              className="osrd-config-item-container osrd-config-item-container-map"
-              data-testid="map"
-            >
-              <Map />
-            </div>
-          </div>
-        </div>
+        </span>
+        <Map />
       </div>
     ),
   };

@@ -47,8 +47,20 @@
 }
 
 .osrd-config-item-container-map {
-  border-radius: 0 0 4px 4px;
-  height: 50vh;
+  position: relative;
+  border-radius: var(--border-radius);
+  background-color: var(--white);
+  padding: 0.5rem;
+  height: 100%;
+
+  .floating-itinerary  {
+    position: absolute;
+    z-index: 1;
+    top: 1rem;
+    left: 1rem;
+    max-height: calc(100% - 2rem);
+    overflow: auto;
+  }
 
   .btn-map-container {
     top: 1.5rem;
