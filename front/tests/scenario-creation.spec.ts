@@ -45,5 +45,14 @@ test.describe('Test is operationnal study : scenario creation workflow is workin
     const createButton = playwrightHomePage.page.getByText('Créer le scénario');
     await createButton.click();
     await playwrightHomePage.page.waitForURL('**/scenario');
+    expect(
+      await playwrightHomePage.page.locator('.scenario-details-name .scenario-name').textContent()
+    ).toContain(scenario.name);
+    expect(
+      await playwrightHomePage.page.locator('.scenario-details-description').textContent()
+    ).toContain(scenario.description);
+    expect(await playwrightHomePage.page.locator('.scenario-infra-name').textContent()).toContain(
+      scenario.electric_profile_set
+    );
   });
 });
