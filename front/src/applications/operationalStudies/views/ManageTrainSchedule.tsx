@@ -91,7 +91,7 @@ export default function ManageTrainSchedule() {
           {t('tabs.pathFinding')}
           {pathFinding?.length && !Number.isNaN(pathFinding.length) && (
             <small className="ml-auto pl-1">
-              {Math.round(pathFinding.length)}
+              {Math.round(pathFinding.length) / 1000}
               km
             </small>
           )}
