@@ -24,7 +24,6 @@ import rollingStockPic from 'assets/pictures/components/train.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
-import { lengthFromLineCoordinates } from 'utils/geometry';
 import MemoRollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import { osrdMiddlewareApi, TrainSchedule } from 'common/api/osrdMiddlewareApi';
 
@@ -40,15 +39,10 @@ export default function ManageTrainSchedule() {
   const [getPathfindingById] = osrdEditoastApi.endpoints.getPathfindingById.useLazyQuery({});
 
   // Details for tabs
-  const { pathLength } = osrdEditoastApi.useGetPathfindingByIdQuery(
+  const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
     { id: pathFindingID as number },
     {
       skip: !pathFindingID,
-      selectFromResult: (response) => ({
-        pathLength:
-          Math.round(lengthFromLineCoordinates(response.data?.geographic?.coordinates) * 1000) /
-          1000,
-      }),
     }
   );
   const { data: rollingStock } = osrdEditoastApi.useGetRollingStockByIdQuery(
@@ -95,9 +89,9 @@ export default function ManageTrainSchedule() {
         <img src={pahtFindingPic} alt="path finding" />
         <span className="ml-2 d-flex align-items-center flex-grow-1 w-100">
           {t('tabs.pathFinding')}
-          {!Number.isNaN(pathLength) && (
+          {pathFinding?.length && !Number.isNaN(pathFinding.length) && (
             <small className="ml-auto pl-1">
-              {pathLength}
+              {Math.round(pathFinding.length)}
               km
             </small>
           )}

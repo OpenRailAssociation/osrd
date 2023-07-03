@@ -194,27 +194,31 @@ export function getOpenApiSteps({
     origin &&
     destination &&
     rollingStockID &&
-    origin.id &&
+    origin.location?.track_section &&
     origin.coordinates &&
     infraID &&
-    destination.id &&
+    destination.location?.track_section &&
     destination.coordinates
   ) {
     const intermediateSteps = compact(
-      vias.map((via) => {
-        const trackSectionId = via.track || via.id;
-        return trackSectionId && via.coordinates
+      vias.map((via) =>
+        via.location?.track_section && via.location?.offset && via.coordinates
           ? {
               duration: Math.round(via.duration || 0),
               waypoints: [
-                {
-                  track_section: trackSectionId,
-                  geo_coordinate: via.coordinates,
-                },
+                via.location.offset !== undefined
+                  ? {
+                      track_section: via.location.track_section,
+                      offset: via.location.offset,
+                    }
+                  : {
+                      track_section: via.location.track_section,
+                      geo_coordinate: via.coordinates,
+                    },
               ],
             }
-          : null;
-      })
+          : null
+      )
     );
     return {
       infra: infraID,
@@ -222,20 +226,30 @@ export function getOpenApiSteps({
         {
           duration: 0,
           waypoints: [
-            {
-              track_section: origin.id,
-              geo_coordinate: origin.coordinates,
-            },
+            origin.location.offset !== undefined
+              ? {
+                  track_section: origin.location.track_section,
+                  offset: origin.location.offset,
+                }
+              : {
+                  track_section: origin.location.track_section,
+                  geo_coordinate: origin.coordinates,
+                },
           ],
         },
         ...intermediateSteps,
         {
           duration: 1,
           waypoints: [
-            {
-              track_section: destination.id,
-              geo_coordinate: destination.coordinates,
-            },
+            destination.location.offset !== undefined
+              ? {
+                  track_section: destination.location.track_section,
+                  offset: destination.location.offset,
+                }
+              : {
+                  track_section: destination.location.track_section,
+                  geo_coordinate: destination.coordinates,
+                },
           ],
         },
       ],

@@ -119,6 +119,11 @@ export interface PointOnMap {
   duration?: number;
   track?: string;
   position?: number;
+  location?: {
+    track_section?: string;
+    offset?: number;
+    geo_coordinates?: Position | number[];
+  };
 }
 
 const STUDY_STATES = {
