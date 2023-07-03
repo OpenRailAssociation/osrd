@@ -1,0 +1,24 @@
+{
+  "addLine": {
+    "beginPosition": "From",
+    "distribution": "Distribution",
+    "endPosition": "To",
+    "length": "Length",
+    "value": "Value"
+  },
+  "allowancesCount_one": "1 interval",
+  "allowancesCount_other": "{{ count }} intervals",
+  "allowancesCount_zero": "no interval",
+  "distribution": {
+    "linear": "Linear",
+    "LINEAR": "Linear",
+    "mareco": "Mareco",
+    "MARECO": "Mareco"
+  },
+  "engineeringAllowances": "Time allowance",
+  "missingPathFinding": "Please define a path before specifying margins",
+  "no-allowance": "No allowance set",
+  "reset": "Reset",
+  "standardAllowance": "Recovery margin",
+  "standardAllowanceIntervals": "Standard allowance intervals"
+}
