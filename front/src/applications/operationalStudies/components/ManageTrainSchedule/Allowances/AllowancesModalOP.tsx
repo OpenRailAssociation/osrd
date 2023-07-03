@@ -21,12 +21,12 @@ export default function AllowancesModalOP({
               className="row allowances-op"
               type="button"
               onClick={() => {
-                setPosition(step.position);
+                setPosition(step.path_offset);
                 closeModal();
               }}
               disabled
             >
-              <div className="col-6">{step.position}</div>
+              <div className="col-6">{step.path_offset}</div>
               <div className="col-6">{step.name}</div>
             </button>
           ))}
