@@ -6,11 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { AiFillFolderOpen, AiFillCheckCircle } from 'react-icons/ai';
 import nextId from 'react-id-generator';
 import { dateTimeFrenchFormatting } from 'utils/date';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { updateProjectID, updateScenarioID, updateStudyID } from 'reducers/osrdconf';
 import { ProjectResult } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
 import cx from 'classnames';
+import { RootState } from 'reducers';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -24,6 +25,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
   const [imageUrl, setImageUrl] = useState<string>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { safeWord } = useSelector((state: RootState) => state.main);
 
   const openProject = () => {
     dispatch(updateProjectID(project.id));
@@ -90,17 +92,19 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
       <div className="projects-list-project-card-tags">
         {project.tags &&
           project.tags.length > 0 &&
-          project.tags?.map((tag) => (
-            <div
-              className="projects-list-project-card-tags-tag"
-              key={nextId()}
-              role="button"
-              tabIndex={0}
-              onClick={() => setFilterChips(tag)}
-            >
-              {tag}
-            </div>
-          ))}
+          project.tags
+            ?.filter((tag) => tag !== safeWord)
+            .map((tag) => (
+              <div
+                className="projects-list-project-card-tags-tag"
+                key={nextId()}
+                role="button"
+                tabIndex={0}
+                onClick={() => setFilterChips(tag)}
+              >
+                {tag}
+              </div>
+            ))}
       </div>
     </div>
   );
