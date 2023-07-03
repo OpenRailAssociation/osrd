@@ -117,6 +117,7 @@ export default function Project() {
         const payload: PostSearchApiArg = {
           body: {
             object: 'study',
+            page_size: 1000,
             query: [
               'and',
               [

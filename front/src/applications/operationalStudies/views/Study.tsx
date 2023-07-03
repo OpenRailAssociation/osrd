@@ -178,6 +178,7 @@ export default function Study() {
         const payload: PostSearchApiArg = {
           body: {
             object: 'scenario',
+            page_size: 1000,
             query: [
               'and',
               [
