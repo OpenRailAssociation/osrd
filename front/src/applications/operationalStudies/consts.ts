@@ -1,9 +1,19 @@
+import i18n from 'i18n';
 import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature } from 'geojson';
-import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-import { ElectrificationConditions } from 'reducers/osrdsimulation/types';
-import { Allowance, CatenaryRange, Comfort, Path } from 'common/api/osrdEditoastApi';
+import { PowerRestrictionRange as PowerRestritionSchedule } from 'common/api/osrdMiddlewareApi';
+import {
+  Allowance,
+  CatenaryRange,
+  Comfort,
+  ElectrificationRange,
+  Electrified,
+  Neutral,
+  NonElectrified,
+  Path,
+  PowerRestrictionRangeItem,
+} from 'common/api/osrdEditoastApi';
 
 export const BLOCKTYPES = [
   {
@@ -170,7 +180,7 @@ export interface OsrdConfState {
   timetableID?: number;
   rollingStockID?: number;
   speedLimitByTag?: string;
-  powerRestriction?: PowerRestrictionRange[];
+  powerRestrictionRanges?: PowerRestritionSchedule[] | null;
   origin?: PointOnMap;
   initialSpeed?: number;
   departureTime: string;
@@ -221,8 +231,7 @@ interface ElectricalConditionSegment {
   height_start: number;
   height_end: number;
   height_middle: number;
-  usedMode: string;
-  usedProfile: string;
+  electrification: Electrified | Neutral | NonElectrified;
   seenRestriction?: string;
   usedRestriction?: string;
   color: string;
@@ -260,6 +269,33 @@ interface Mode {
   3000: string;
 }
 
+const electricalProfileColorsWithProfile: Mode = {
+  25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
+  1500: {
+    O: '#FF0037',
+    A: '#FF335F',
+    A1: '#FF335F',
+    B: '#FF6687',
+    B1: '#FF6687',
+    C: '#FF99AF',
+    D: '#FF99AF',
+    E: '#FFCCD7',
+    F: '#FFCCD7',
+    G: '#FFF',
+  },
+  thermal: '#333',
+  15000: '#009AA6',
+  3000: '#1FBE00',
+};
+
+const electricalProfileColorsWithoutProfile: Mode = {
+  25000: '#6E1E78',
+  1500: '#FF0037',
+  thermal: '#333',
+  15000: '#009AA6',
+  3000: '#1FBE00',
+};
+
 export const legend: Profile[] = [
   { mode: '25000', color: ['25KA', '25KB'], isStriped: false },
   { mode: '1500', color: ['1500A', '1500B', '1500C'], isStriped: false },
@@ -278,19 +314,19 @@ export const legend: Profile[] = [
 ];
 
 export const createProfileSegment = (
-  fullElectrificationConditions: ElectrificationConditions[],
-  electrificationConditions: ElectrificationConditions
+  fullElectrificationRange: ElectrificationRange[],
+  electrificationRange: ElectrificationRange
 ) => {
+  const electrification = electrificationRange.electrificationUsage;
   const segment: ElectricalConditionSegment = {
-    position_start: electrificationConditions.start,
-    position_end: electrificationConditions.stop,
-    position_middle: (electrificationConditions.start + electrificationConditions.stop) / 2,
-    lastPosition: fullElectrificationConditions.slice(-1)[0].stop,
+    position_start: electrificationRange.start,
+    position_end: electrificationRange.stop,
+    position_middle: (electrificationRange.start + electrificationRange.stop) / 2,
+    lastPosition: fullElectrificationRange.slice(-1)[0].stop,
     height_start: 4,
     height_end: 24,
     height_middle: 14,
-    usedMode: electrificationConditions.used_mode,
-    usedProfile: electrificationConditions.used_profile,
+    electrification,
     color: '',
     textColor: '',
     text: '',
@@ -300,72 +336,47 @@ export const createProfileSegment = (
     isIncompatiblePowerRestriction: false,
   };
 
-  // prepare colors
-  const electricalProfileColorsWithProfile: Mode = {
-    25000: { 25000: '#6E1E78', 22500: '#A453AD', 20000: '#DD87E5' },
-    1500: {
-      O: '#FF0037',
-      A: '#FF335F',
-      A1: '#FF335F',
-      B: '#FF6687',
-      B1: '#FF6687',
-      C: '#FF99AF',
-      D: '#FF99AF',
-      E: '#FFCCD7',
-      F: '#FFCCD7',
-      G: '#FFF',
-    },
-    thermal: '#333',
-    15000: '#009AA6',
-    3000: '#1FBE00',
-  };
+  // add colors to object depending of the type of electrification
+  if (electrification.object_type === 'Electrified') {
+    const { mode, mode_handled, profile, profile_handled } = electrification;
+    segment.color =
+      electricalProfileColorsWithProfile[mode as keyof unknown][
+        electrification.profile as string
+      ] || electricalProfileColorsWithoutProfile[mode as keyof unknown];
 
-  const electricalProfileColorsWithoutProfile: Mode = {
-    25000: '#6E1E78',
-    1500: '#FF0037',
-    thermal: '#333',
-    15000: '#009AA6',
-    3000: '#1FBE00',
-  };
+    segment.textColor = electricalProfileColorsWithoutProfile[mode as keyof unknown];
 
-  // add colors to object depending of the presence of used_profile
-  segment.color =
-    electricalProfileColorsWithProfile[segment.usedMode as keyof unknown][
-      segment.usedProfile as string
-    ] || electricalProfileColorsWithoutProfile[segment.usedMode as keyof unknown];
-
-  segment.textColor = electricalProfileColorsWithoutProfile[segment.usedMode as keyof unknown];
-
-  // adapt text depending of the mode and profile
-  if (segment.usedMode === 'thermal') {
-    segment.text = `${segment.usedMode}`;
-  } else if (!segment.usedProfile) {
-    segment.text = `${segment.usedMode}V`;
-  } else if (segment.usedMode === '25000') {
-    segment.text = `${segment.usedProfile}V`;
+    if (!mode_handled) {
+      // uncompatible mode
+      segment.text = `${i18n.t('electricalProfiles.incompatibleMode', { ns: 'simulation' })}`;
+    } else if (mode !== 'thermal') {
+      // compatible electric mode (themal modes are not displayed)
+      if (profile) {
+        if (profile_handled) {
+          // compatible electric mode, with compatible profile
+          segment.text = `${mode}V ${profile}`;
+        } else {
+          // compatible electric mode, with uncompatible profile
+          segment.isIncompatibleElectricalProfile = true;
+          segment.isStriped = true;
+          segment.text = `${mode}V, ${i18n.t('electricalProfiles.incompatibleProfile', {
+            ns: 'simulation',
+          })}`;
+        }
+      } else {
+        // compatible electric mode, but missing profile
+        segment.text = `${mode}V`;
+        segment.isStriped = true;
+      }
+    }
+  } else if (electrification.object_type === 'Neutral') {
+    segment.text = 'Neutral';
+    segment.color = electrification.is_lower_pantograph ? '#ff0000' : '#000000';
+    segment.textColor = electrification.is_lower_pantograph ? '#ff0000' : '#000000';
   } else {
-    segment.text = `${segment.usedMode}V ${segment.usedProfile}`;
-  }
-
-  // figure out if the profile is incompatible or missing
-  if (!segment.usedProfile && (segment.text === '25000V' || segment.text === '1500V')) {
-    segment.isStriped = true;
-  } else if (
-    segment.usedProfile &&
-    segment.usedMode === '1500' &&
-    !segment.usedProfile.match(/O|A|B|C|D|E|F|G/)
-  ) {
-    segment.isIncompatibleElectricalProfile = true;
-    segment.isStriped = true;
-    segment.text = `${segment.usedMode}V`;
-  } else if (
-    segment.usedProfile &&
-    segment.usedMode === '25000' &&
-    !segment.usedProfile.match(/25000|22500|20000/)
-  ) {
-    segment.isIncompatibleElectricalProfile = true;
-    segment.isStriped = true;
-    segment.text = `${segment.usedMode}V`;
+    segment.text = 'NonElectrified';
+    segment.color = '#000000';
+    segment.textColor = '#000';
   }
 
   return segment;
@@ -380,40 +391,36 @@ interface PowerRestrictionSegment {
   height_end: number;
   height_middle: number;
   seenRestriction: string;
-  usedRestriction: string;
+  usedRestriction: boolean;
   isStriped: boolean;
   isRestriction: boolean;
   isIncompatiblePowerRestriction: boolean;
 }
 
 export const createPowerRestrictionSegment = (
-  fullElectrificationConditions: ElectrificationConditions[],
-  electrificationConditions: ElectrificationConditions
+  fullPowerRestrictionRange: PowerRestrictionRangeItem[],
+  powerRestrictionRange: PowerRestrictionRangeItem
 ) => {
+  // figure out if the power restriction is incompatible or missing
+  const isRestriction = powerRestrictionRange.handled;
+  const isIncompatiblePowerRestriction =
+    !!powerRestrictionRange.code && !powerRestrictionRange.handled;
+  const isStriped = !!powerRestrictionRange.code && !powerRestrictionRange.handled;
+
   const segment: PowerRestrictionSegment = {
-    position_start: electrificationConditions.start,
-    position_end: electrificationConditions.stop,
-    position_middle: (electrificationConditions.start + electrificationConditions.stop) / 2,
-    lastPosition: fullElectrificationConditions.slice(-1)[0].stop,
+    position_start: powerRestrictionRange.start,
+    position_end: powerRestrictionRange.stop,
+    position_middle: (powerRestrictionRange.start + powerRestrictionRange.stop) / 2,
+    lastPosition: fullPowerRestrictionRange.slice(-1)[0].stop,
     height_start: 4,
     height_end: 24,
     height_middle: 14,
-    seenRestriction: electrificationConditions.seen_restriction || '',
-    usedRestriction: electrificationConditions.used_restriction || '',
-    isStriped: false,
-    isRestriction: false,
-    isIncompatiblePowerRestriction: false,
+    seenRestriction: powerRestrictionRange.code || '',
+    usedRestriction: powerRestrictionRange.handled,
+    isStriped,
+    isRestriction,
+    isIncompatiblePowerRestriction,
   };
-
-  // figure out if the power restriction is incompatible or missing
-  if (segment.usedRestriction) {
-    segment.isRestriction = true;
-    if (segment.seenRestriction && segment.usedRestriction !== segment.seenRestriction) {
-      segment.isIncompatiblePowerRestriction = true;
-    }
-  }
-  if (!segment.isRestriction) segment.isStriped = true;
-  if (segment.isIncompatiblePowerRestriction) segment.isStriped = true;
 
   return segment;
 };

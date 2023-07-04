@@ -125,7 +125,7 @@ const drawPowerRestriction = (
         .attr('class', `electricalProfileText ${classes}`)
         .attr('dominant-baseline', 'middle')
         .attr('text-anchor', 'middle')
-        .text(dataSimulation.usedRestriction)
+        .text(dataSimulation.seenRestriction)
         .attr('fill', '#333')
         .attr('font-size', 8)
         .attr('font-weight', 'bold')
@@ -213,7 +213,7 @@ const drawPowerRestriction = (
       let text;
 
       if (isRestriction) {
-        text = `${dataSimulation.usedRestriction} ${i18n.t('powerRestriction.used', {
+        text = `${dataSimulation.seenRestriction} ${i18n.t('powerRestriction.used', {
           ns: 'simulation',
         })}`;
       } else {

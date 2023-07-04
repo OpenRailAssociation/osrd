@@ -4233,7 +4233,7 @@ components:
         stop:
           type: number
           format: double
-        electrification:
+        electrificationUsage:
           oneOf:
             - $ref: "#/components/schemas/Electrified"
             - $ref: "#/components/schemas/Neutral"
