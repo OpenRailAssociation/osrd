@@ -4,8 +4,11 @@
     "averagespeed": "Moyenne",
     "averagespeed-short": "Moy.",
     "composition": "Composition",
-    "dcmdetails": "Détails du sillon",
+    "dcmdetails": "Sillon n°",
     "destination": "Destination",
+    "energyconsumed-basic": "base",
+    "energyconsumed-eco": "eco",
+    "energydetails": "Énergie consommée à la jante",
     "mass": "Masse",
     "numberoflines": "Nombre de lignes",
     "origin": "Origine",
@@ -14,13 +17,11 @@
     "placeholderline": "N°",
     "rollingstock": "Matériel roulant",
     "speed": "Vitesse",
-    "speedLimitByTag": "Code de composition",
     "speedlimit": "Limite",
     "speedlimit-short": "Lim.",
+    "speedLimitByTag": "Code de composition",
     "time": "Horaire",
     "timetable": "Table horaire",
     "trackname": "Voie",
-    "energyconsumed-basic": "Marche de base",
-    "energyconsumed-eco": "Marche Type",
-    "energydetails": "Énergie consommée à la jante"
+    "unknownStop": "Inconnu"
 }
