@@ -587,32 +587,32 @@ select.sm {
 
   /* TIMELINE */
   .timeline {
-    background-color: var(--secondary);
+    background-color: var(--white);
     padding: 0.5rem;
     border-radius: 4px;
     margin-bottom: 0.5rem;
     .tick {
-      color: var(--coolgray1);
+      color: var(--coolgray9);
     }
     .domain {
       opacity: 0.5;
-      stroke: var(--coolgray3);
+      stroke: var(--coolgray9);
     }
     .grid .tick line {
-      stroke: var(--coolgray1);
+      stroke: var(--coolgray9);
     }
     .timeline-train {
-      stroke: var(--coolgray1);
+      stroke: var(--coolgray11);
       &.selected {
         stroke-width: 2;
-        stroke: var(--teal);
+        stroke: var(--green);
       }
     }
     #rectZoomTimeLine {
       cursor: move;
       transition: 0.2s;
       stroke: var(--coolgray5);
-      fill: rgba(255, 255, 255, 0.05);
+      fill: rgba(0, 0, 0, 0.1);
       &:hover {
         stroke: var(--green);
         fill: rgba(#82be00, 0.05);

@@ -12,7 +12,7 @@ type Props = {
 
 export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props) {
   const { t } = useTranslation(['operationalStudies/drivertrainschedule']);
-  return (
+  return train[baseOrEco] ? (
     <>
       <div className="small text-right text-muted mt-1">
         {t('numberoflines')} :
@@ -54,5 +54,5 @@ export default function DriverTrainScheduleStopList({ train, baseOrEco }: Props)
         </table>
       </div>
     </>
-  );
+  ) : null;
 }

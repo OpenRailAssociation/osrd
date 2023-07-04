@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Train } from 'reducers/osrdsimulation/types';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -15,6 +15,10 @@ export default function DriverTrainSchedule({ train }: { train: Train }) {
     { skip: !trainSchedule || !trainSchedule.rolling_stock }
   );
   const [baseOrEco, setBaseOrEco] = useState<BaseOrEcoType>(BaseOrEco.base);
+
+  useEffect(() => {
+    if (baseOrEco === BaseOrEco.eco && !train[baseOrEco]) setBaseOrEco(BaseOrEco.base);
+  }, [train]);
 
   return rollingStock ? (
     <div className="container-drivertrainschedule">
