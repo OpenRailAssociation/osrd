@@ -68,5 +68,5 @@
   },
   "studyUpdated": "Successful update!",
   "studyUpdatedDetails": "The {{ name }} study has been updated.",
-  "unableToRetrieveStudyState": "Failed to restore study types"
+  "unableToRetrieveStudyState": "Failed to retrieve study types"
 }
