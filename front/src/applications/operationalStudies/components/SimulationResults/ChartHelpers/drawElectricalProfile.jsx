@@ -1,7 +1,6 @@
 import { pointer } from 'd3-selection';
 import i18n from 'i18n';
 
-/* eslint-disable no-unused-vars */
 const drawElectricalProfile = (
   chart,
   classes,
@@ -149,9 +148,9 @@ const drawElectricalProfile = (
       const pointerPositionY = pointer(event, event.currentTarget)[1];
       let popUpWidth;
 
-      if (!dataSimulation.usedProfile) {
+      if (!dataSimulation.electrification.profile) {
         popUpWidth = 175;
-      } else if (dataSimulation.usedMode === '1500') {
+      } else if (dataSimulation.electrification.mode === '1500') {
         popUpWidth = 125;
       } else {
         popUpWidth = 165;
@@ -185,7 +184,7 @@ const drawElectricalProfile = (
           rotate
             ? 'translate(80, 0)'
             : `translate(${0 - popUpPosition}, ${
-                isIncompatible || !dataSimulation.usedProfile ? '-65' : '-45'
+                isIncompatible || !dataSimulation.electrification.profile ? '-65' : '-45'
               } )`
         )
         .attr('x', pointerPositionX)
@@ -194,7 +193,7 @@ const drawElectricalProfile = (
           rotate ? pointerPositionY : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
         )
         .attr('width', popUpWidth)
-        .attr('height', isIncompatible || !dataSimulation.usedProfile ? 55 : 35);
+        .attr('height', isIncompatible || !dataSimulation.electrification.profile ? 55 : 35);
 
       // add profile pop-up rect
       drawZone
@@ -206,9 +205,11 @@ const drawElectricalProfile = (
         .attr(
           'transform',
           rotate
-            ? `translate(88, ${isIncompatible || !dataSimulation.usedProfile ? '16' : '8'})`
+            ? `translate(88, ${
+                isIncompatible || !dataSimulation.electrification.profile ? '16' : '8'
+              })`
             : `translate(${8 - popUpPosition}, ${
-                isIncompatible || !dataSimulation.usedProfile ? '-47' : '-37'
+                isIncompatible || !dataSimulation.electrification.profile ? '-47' : '-37'
               } )`
         )
         .attr('x', pointerPositionX)
@@ -216,52 +217,29 @@ const drawElectricalProfile = (
           'y',
           rotate ? pointerPositionY : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
         )
-        .attr('width', dataSimulation.usedMode === 1500 ? 20 : 28)
+        .attr('width', dataSimulation.electrification.mode === 1500 ? 20 : 28)
         .attr('height', 20);
 
       // add profile pop-up text
-      drawZone
-        .append('text')
-        .attr('class', `data`)
-        .attr('dominant-baseline', 'middle')
-        .text(
-          isIncompatible || !dataSimulation.usedProfile
-            ? `${dataSimulation.usedMode}V ${i18n.t('electricalProfiles.used', {
-                ns: 'simulation',
-              })}`
-            : `${dataSimulation.usedMode}V ${dataSimulation.usedProfile}`
-        )
-        .attr(
-          'transform',
-          rotate
-            ? `translate(123,${isIncompatible || !dataSimulation.usedProfile ? 18 : 20})`
-            : `translate(${48 - popUpPosition}, ${
-                isIncompatible || !dataSimulation.usedProfile ? '-45' : '-25'
-              })`
-        )
-        .attr('x', pointerPositionX)
-        .attr(
-          'y',
-          rotate ? pointerPositionY : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
-        );
-
-      if (isIncompatible || !dataSimulation.usedProfile) {
+      if (dataSimulation.electrification.object_type !== 'Electrified') {
         drawZone
           .append('text')
           .attr('class', `data`)
           .attr('dominant-baseline', 'middle')
           .text(
-            dataSimulation.usedProfile
-              ? `${dataSimulation.usedProfile} ${i18n.t('electricalProfiles.incompatible', {
-                  ns: 'simulation',
-                })}`
-              : `${i18n.t('electricalProfiles.missingProfile', {
-                  ns: 'simulation',
-                })}`
+            `${i18n.t('electricalProfiles.notElectrified', {
+              ns: 'simulation',
+            })}`
           )
           .attr(
             'transform',
-            rotate ? 'translate(123, 40)' : `translate(${48 - popUpPosition}, -25)`
+            rotate
+              ? `translate(123,${
+                  isIncompatible || !dataSimulation.electrification.profile ? 18 : 20
+                })`
+              : `translate(${48 - popUpPosition}, ${
+                  isIncompatible || !dataSimulation.electrification.profile ? '-37' : '-25'
+                })`
           )
           .attr('x', pointerPositionX)
           .attr(
@@ -270,6 +248,65 @@ const drawElectricalProfile = (
               ? pointerPositionY
               : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
           );
+      } else {
+        drawZone
+          .append('text')
+          .attr('class', `data`)
+          .attr('dominant-baseline', 'middle')
+          .text(
+            isIncompatible || !dataSimulation.electrification.profile
+              ? `${dataSimulation.electrification.mode}V ${i18n.t('electricalProfiles.used', {
+                  ns: 'simulation',
+                })}`
+              : `${dataSimulation.electrification.mode}V ${dataSimulation.electrification.profile}`
+          )
+          .attr(
+            'transform',
+            rotate
+              ? `translate(123,${
+                  isIncompatible || !dataSimulation.electrification.profile ? 18 : 20
+                })`
+              : `translate(${48 - popUpPosition}, ${
+                  isIncompatible || !dataSimulation.electrification.profile ? '-45' : '-25'
+                })`
+          )
+          .attr('x', pointerPositionX)
+          .attr(
+            'y',
+            rotate
+              ? pointerPositionY
+              : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
+          );
+
+        if (isIncompatible || !dataSimulation.electrification.profile) {
+          drawZone
+            .append('text')
+            .attr('class', `data`)
+            .attr('dominant-baseline', 'middle')
+            .text(
+              dataSimulation.electrification.profile
+                ? `${dataSimulation.electrification.profile} ${i18n.t(
+                    'electricalProfiles.incompatible',
+                    {
+                      ns: 'simulation',
+                    }
+                  )}`
+                : `${i18n.t('electricalProfiles.missingProfile', {
+                    ns: 'simulation',
+                  })}`
+            )
+            .attr(
+              'transform',
+              rotate ? 'translate(123, 40)' : `translate(${48 - popUpPosition}, -25)`
+            )
+            .attr('x', pointerPositionX)
+            .attr(
+              'y',
+              rotate
+                ? pointerPositionY
+                : chart.y(dataSimulation[`${keyValues[1]}_start`]) - height * -1
+            );
+        }
       }
     })
     .on('mouseout', () => {

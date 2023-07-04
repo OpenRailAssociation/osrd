@@ -108,7 +108,7 @@ export default function formatConf(
       rolling_stock: osrdconf.rollingStockID,
       comfort: osrdconf.rollingStockComfort,
       speed_limit_tags: osrdconf.speedLimitByTag,
-      power_restriction_ranges: osrdconf.powerRestriction,
+      power_restriction_ranges: osrdconf.powerRestrictionRanges,
       options: {
         ignore_electrical_profiles: !osrdconf.usingElectricalProfiles,
       },

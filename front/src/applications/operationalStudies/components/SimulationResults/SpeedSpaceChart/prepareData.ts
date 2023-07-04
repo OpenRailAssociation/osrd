@@ -1,7 +1,6 @@
 import createSlopeCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/createCurveCurve';
 import {
-  ElectrificationConditions,
   GradientPosition,
   HeightPosition,
   PositionSpeedTime,
@@ -9,6 +8,7 @@ import {
   SpeedPosition,
   Train,
 } from 'reducers/osrdsimulation/types';
+import { ElectrificationRange, PowerRestrictionRangeItem } from 'common/api/osrdEditoastApi';
 
 interface IAreaBlock {
   position: number;
@@ -21,7 +21,8 @@ export interface GevPreparedata {
   areaSlopesHistogram: IAreaBlock[];
   curvesHistogram: RadiusPosition[];
   eco_speed: PositionSpeedTime[];
-  electrificationConditions: ElectrificationConditions[];
+  electrificationRanges: ElectrificationRange[];
+  powerRestrictionRanges: PowerRestrictionRangeItem[];
   margins_speed: PositionSpeedTime[];
   slopesCurve: HeightPosition[];
   slopesHistogram: GradientPosition[];
@@ -59,8 +60,12 @@ function prepareData(trainSimulation: Train): GevPreparedata {
     speed: step.speed * 3.6,
   }));
 
-  const electrificationConditions = trainSimulation.electrification_conditions
-    ? trainSimulation.electrification_conditions
+  const electrificationRanges = trainSimulation.electrification_ranges
+    ? trainSimulation.electrification_ranges
+    : [];
+
+  const powerRestrictionRanges = trainSimulation.power_restriction_ranges
+    ? trainSimulation.power_restriction_ranges
     : [];
 
   const margins_speed =
@@ -110,7 +115,8 @@ function prepareData(trainSimulation: Train): GevPreparedata {
     areaSlopesHistogram,
     curvesHistogram,
     eco_speed,
-    electrificationConditions,
+    electrificationRanges,
+    powerRestrictionRanges,
     margins_speed,
     slopesCurve,
     slopesHistogram,

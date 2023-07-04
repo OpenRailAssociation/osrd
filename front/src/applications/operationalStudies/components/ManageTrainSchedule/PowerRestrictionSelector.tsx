@@ -6,15 +6,13 @@ import icon from 'assets/pictures/components/power_restrictions.svg';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import {
   getRollingStockID,
-  getPowerRestriction,
+  getPowerRestrictionRanges,
   getPathfindingID,
 } from 'reducers/osrdconf/selectors';
 import { osrdEditoastApi, RollingStock } from 'common/api/osrdEditoastApi';
 import { setWarning } from 'reducers/main';
 import { compact, isEmpty, reduce, uniq } from 'lodash';
 import { PowerRestrictionRange } from 'common/api/osrdMiddlewareApi';
-
-type selectorOption = { key: string | undefined; value: string | undefined };
 
 type ElectrificationPR = {
   [key: string]: string[] | string[];
@@ -25,7 +23,7 @@ export default function PowerRestrictionSelector() {
   const dispatch = useDispatch();
   const rollingStockID: number | undefined = useSelector(getRollingStockID);
   const pathFindingID = useSelector(getPathfindingID);
-  const powerRestriction = useSelector(getPowerRestriction);
+  const powerRestrictionRanges = useSelector(getPowerRestrictionRanges);
 
   const { data: pathFinding } = osrdEditoastApi.useGetPathfindingByIdQuery(
     { id: pathFindingID as number },
@@ -88,10 +86,10 @@ export default function PowerRestrictionSelector() {
   };
 
   useEffect(() => {
-    if (powerRestriction && rollingStock && pathWithCatenaries) {
+    if (powerRestrictionRanges && rollingStock && pathWithCatenaries) {
       const parsedElectrification = cleanConditionalEffortCurves(rollingStock);
 
-      const powerRestrictionCode = powerRestriction[0].power_restriction_code;
+      const powerRestrictionCode = powerRestrictionRanges[0].power_restriction_code;
       const pathCatenaryRanges = pathWithCatenaries.catenary_ranges;
 
       if (pathCatenaryRanges && powerRestrictionCode) {
@@ -120,7 +118,7 @@ export default function PowerRestrictionSelector() {
         });
       }
     }
-  }, [powerRestriction]);
+  }, [powerRestrictionRanges]);
 
   return powerRestrictions.length > 0 && pathFindingID ? (
     <div className="osrd-config-item mb-2">
@@ -130,11 +128,13 @@ export default function PowerRestrictionSelector() {
         <SelectImprovedSNCF
           sm
           options={powerRestrictions}
-          onChange={(e: selectorOption) => definePowerRestrictionRange(e.key)}
+          onChange={(e: string) => {
+            definePowerRestrictionRange(e);
+          }}
           selectedValue={
-            (powerRestriction &&
-              powerRestriction[0] &&
-              powerRestriction[0].power_restriction_code) ||
+            (powerRestrictionRanges &&
+              powerRestrictionRanges[0] &&
+              powerRestrictionRanges[0].power_restriction_code) ||
             t('noPowerRestriction')
           }
         />

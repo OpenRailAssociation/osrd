@@ -39,8 +39,11 @@
     "used": "used",
     "unused": "unused",
     "incompatible": "incompatible",
+    "incompatibleMode": "Incompatible mode",
+    "incompatibleProfile": "incompatible profile",
     "missingProfile": "Missing profile",
-    "legend": "Legend"
+    "legend": "Legend",
+    "notElectrified": "Not electrified"
   },
   "start": "Departure",
   "stop": "Arrival",

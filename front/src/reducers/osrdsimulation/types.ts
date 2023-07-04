@@ -1,7 +1,11 @@
 import * as d3 from 'd3';
 import { TimeString } from 'common/types';
 import { SIGNAL_BASE_DEFAULT } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
-import { TrainScheduleSummary } from 'common/api/osrdEditoastApi';
+import {
+  ElectrificationRange,
+  PowerRestrictionRangeItem,
+  TrainScheduleSummary,
+} from 'common/api/osrdEditoastApi';
 
 export type MergedDataPoint<T = number> = {
   [key: string]: number | T;
@@ -94,15 +98,6 @@ export interface Regime {
   mechanical_energy_consumed: number;
 }
 
-export interface ElectrificationConditions {
-  start: number;
-  stop: number;
-  used_mode: string;
-  used_profile: string;
-  used_restriction?: string;
-  seen_restriction?: string;
-}
-
 export type MechanicalEnergyConsumedBaseEco = {
   base?: number;
   eco?: number | null;
@@ -134,7 +129,8 @@ export interface HeightPosition {
 }
 
 export interface Train {
-  electrification_conditions: ElectrificationConditions[];
+  electrification_ranges: ElectrificationRange[];
+  power_restriction_ranges: PowerRestrictionRangeItem[];
   id: number;
   labels: string[];
   path: number;
