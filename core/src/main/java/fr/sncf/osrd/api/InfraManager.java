@@ -240,15 +240,15 @@ public class InfraManager extends APIClient {
     public FullInfra getInfra(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws OSRDError, InterruptedException {
         try {
-            infraCache.putIfAbsent(infraId, new InfraCacheEntry());
             var cacheEntry = infraCache.get(infraId);
-            // download the infra for tests
-            if (loadIfMissing) {
-                return load(infraId, expectedVersion, diagnosticRecorder);
+            if (cacheEntry == null || !cacheEntry.status.isStable) {
+                if (loadIfMissing) {
+                    // download the infra for tests
+                    return load(infraId, expectedVersion, diagnosticRecorder);
+                } else
+                    throw new OSRDError(ErrorType.InfraNotLoadedException);
             }
             var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.version);
-            if (!cacheEntry.status.isStable)
-                throw new OSRDError(ErrorType.InfraNotLoadedException);
             if (obsoleteVersion) {
                 deleteFromInfraCache(infraId);
                 throw new OSRDError(ErrorType.InfraInvalidVersionException);
