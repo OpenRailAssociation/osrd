@@ -1,5 +1,5 @@
 WITH panels AS (
-    SELECT id AS sc_id,
+    SELECT obj_id AS sc_id,
         (
             jsonb_array_elements(data->'extensions'->'lpv_sncf'->'announcement')->'position'
         )::float AS position,
@@ -9,7 +9,7 @@ WITH panels AS (
     WHERE infra_id = $1
         AND osrd_infra_speedsectionmodel.data @? '$.extensions.lpv_sncf.z'
     UNION
-    SELECT id AS sc_id,
+    SELECT obj_id AS sc_id,
         (
             jsonb_array_elements(data->'extensions'->'lpv_sncf'->'r')->'position'
         )::float AS position,
@@ -19,7 +19,7 @@ WITH panels AS (
     WHERE infra_id = $1
         AND osrd_infra_speedsectionmodel.data @? '$.extensions.lpv_sncf.z'
     UNION
-    SELECT id AS sc_id,
+    SELECT obj_id AS sc_id,
         (data->'extensions'->'lpv_sncf'->'z'->'position')::float AS position,
         data->'extensions'->'lpv_sncf'->'z'->>'track' AS track_id,
         data->'extensions'->'lpv_sncf'->'z' AS data
