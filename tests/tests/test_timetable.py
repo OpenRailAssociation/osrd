@@ -22,11 +22,12 @@ class _TrainScheduleSummary:
     labels: List[str]
     allowances: List[dict]
     speed_limit_tags: Optional[str]
+    scheduled_points: List[dict]
     comfort: str
     options: Optional[dict]
     power_restriction_ranges: Optional[List[dict]]
     mechanical_energy_consumed: dict
-    stops: int
+    stops_count: int
     path_length: float
 
 
@@ -130,10 +131,11 @@ def test_get_timetable(
             allowances=[],
             speed_limit_tags=None,
             comfort="STANDARD",
+            scheduled_points=[],
             options=None,
             power_restriction_ranges=None,
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
-            stops=0,
+            stops_count=0,
             path_length=45549.5653000392,
         ),
         _TrainScheduleSummary(
@@ -149,10 +151,11 @@ def test_get_timetable(
             allowances=[],
             speed_limit_tags=None,
             comfort="STANDARD",
+            scheduled_points=[],
             options=None,
             power_restriction_ranges=None,
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
-            stops=0,
+            stops_count=0,
             path_length=45549.5653000392,
         ),
     ]
