@@ -298,6 +298,6 @@ pub enum Allowance {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ScheduledPoint {
-    position: f64,
+    path_offset: f64,
     time: f64,
 }

@@ -139,7 +139,7 @@ class Allowances(BaseModel):
 class ScheduledPoint(BaseModel):
     """A schedule point is a point on the path where the train must be at a given time."""
 
-    position: float = Field(description="Position on a path. If negative then represents the end of the path.")
+    path_offset: float = Field(description="Offset on a path. If negative then represents the end of the path.")
     time: float = Field(
         description="Time in seconds (elapsed since the train's departure) at which the train must be.", ge=0
     )

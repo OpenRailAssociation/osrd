@@ -11,7 +11,7 @@ function mixPathPositionsAndTimes(requiredSteps, pathFindingSteps) {
     if (idx !== 0) {
       const arrivalTime = new Date(step.arrivalTime);
       scheduledPoints.push({
-        position: pathFindingStepsFiltered[idx].path_offset,
+        path_offset: pathFindingStepsFiltered[idx].path_offset,
         time: Math.round((arrivalTime.getTime() - startTime.getTime()) / 1000),
       });
     }

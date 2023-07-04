@@ -1848,7 +1848,7 @@ export type TrainSchedule = {
   initial_speed?: number;
   labels?: string[];
   scheduled_points?: {
-    position: number;
+    path_offset: number;
     time: number;
   }[];
   allowances?: Allowance[];

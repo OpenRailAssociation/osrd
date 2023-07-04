@@ -62,12 +62,12 @@ public class RJSStandaloneTrainScheduleParser {
         var scheduledPoints = new ArrayList<ScheduledPoint>();
         if (rjsTrainSchedule.scheduledPoints != null) {
             for (var rjsSchedulePoints : rjsTrainSchedule.scheduledPoints) {
-                if (rjsSchedulePoints.position < 0)
+                if (rjsSchedulePoints.pathOffset < 0)
                     scheduledPoints.add(new ScheduledPoint(trainPath.length(), rjsSchedulePoints.time));
-                else if (rjsSchedulePoints.position > trainPath.length())
+                else if (rjsSchedulePoints.pathOffset > trainPath.length())
                     throw new OSRDError(ErrorType.InvalidSchedulePoint);
                 else
-                    scheduledPoints.add(new ScheduledPoint(rjsSchedulePoints.position, rjsSchedulePoints.time));
+                    scheduledPoints.add(new ScheduledPoint(rjsSchedulePoints.pathOffset, rjsSchedulePoints.time));
             }
         }
 
