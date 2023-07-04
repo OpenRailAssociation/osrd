@@ -1,26 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 import scenario from './assets/operationStudies/scenario.json';
+import { ProjectPage } from './pages/project-page-model';
+import { StudyPage } from './pages/study-page-model';
 
 test.describe('Test is operationnal study : scenario creation workflow is working properly', () => {
-  let playwrightHomePage: PlaywrightHomePage;
+  test('Create a new scenario', async ({ page }) => {
+    const playwrightHomePage = new PlaywrightHomePage(page);
+    const projectPage = new ProjectPage(page);
+    const studyPage = new StudyPage(page);
 
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-    playwrightHomePage = new PlaywrightHomePage(page);
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
-    const projectCardButton = playwrightHomePage.page
-      .getByTestId('Test e2e projet')
-      .getByRole('button', { name: 'Ouvrir' });
-    await projectCardButton.click();
-    const studyCardButton = playwrightHomePage.page
-      .getByTestId('Test e2e étude')
-      .getByRole('button', { name: 'Ouvrir' });
-    await studyCardButton.click();
-  });
+    await projectPage.openProjectByTestId('Test e2e projet');
+    await studyPage.openStudyByTestId('Test e2e étude');
 
-  test('Create a new scenario', async () => {
     const addScenario = playwrightHomePage.page.getByRole('button', { name: 'Créer un scénario' });
     expect(addScenario).not.toEqual(null);
     await addScenario.click();
@@ -28,12 +22,16 @@ test.describe('Test is operationnal study : scenario creation workflow is workin
     await scenarioNameInput.fill(scenario.name);
     const scenarioDescriptionInput = playwrightHomePage.page.locator('#scenarioDescription');
     await scenarioDescriptionInput.fill(scenario.description);
-    const electricProfileInput = playwrightHomePage.page.locator('.input-group');
-    await electricProfileInput.click();
-    await playwrightHomePage.page
-      .locator('[id="-selecttoggle"]')
-      .getByText(`${scenario.electric_profile_set}`)
-      .click();
+
+    // Infra created by CI has no electrical profile
+    if (!process.env.CI) {
+      const electricProfileInput = playwrightHomePage.page.locator('.input-group');
+      await electricProfileInput.click();
+      await playwrightHomePage.page
+        .locator('[id="-selecttoggle"]')
+        .getByText(`${scenario.electric_profile_set}`)
+        .click();
+    }
     const tagsInput = playwrightHomePage.page.getByTestId('chips-input');
     await tagsInput.fill(scenario.tags[0]);
     await tagsInput.press('Enter');

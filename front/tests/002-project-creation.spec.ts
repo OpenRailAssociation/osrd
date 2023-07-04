@@ -4,18 +4,12 @@ import project from './assets/operationStudies/project.json';
 import { ProjectPage } from './pages/project-page-model';
 
 test.describe('Test is operationnal study  : project workflow is working properly', () => {
-  let playwrightHomePage: PlaywrightHomePage;
-  let projectPage: ProjectPage;
-
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-    playwrightHomePage = new PlaywrightHomePage(page);
-    projectPage = new ProjectPage(page);
+  test('Create a new project', async ({ page }) => {
+    const playwrightHomePage = new PlaywrightHomePage(page);
+    const projectPage = new ProjectPage(page);
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
-  });
 
-  test('Create a new project', async () => {
     const addProject = playwrightHomePage.page.getByRole('button', { name: 'Créer un projet' });
     expect(addProject).not.toEqual(null);
     await addProject.click();

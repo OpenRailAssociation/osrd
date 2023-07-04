@@ -79,4 +79,12 @@ export class StudyPage {
   getTranslations(key: keyof typeof study) {
     return this.translation[key];
   }
+
+  async openStudyByTestId(studyTestId: string | RegExp) {
+    await this.page
+      .getByTestId(studyTestId)
+      .getByRole('button', { name: 'Ouvrir' })
+      .first()
+      .click();
+  }
 }
