@@ -3,24 +3,17 @@ import { PlaywrightHomePage } from './home-page-model';
 import project from './assets/operationStudies/project.json';
 import study from './assets/operationStudies/study.json';
 import { StudyPage } from './pages/study-page-model';
+import { ProjectPage } from './pages/project-page-model';
 
 test.describe('Test is operationnal study: study creation workflow is working properly', () => {
-  let playwrightHomePage: PlaywrightHomePage;
-  let studyPage: StudyPage;
-
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-    playwrightHomePage = new PlaywrightHomePage(page);
-    studyPage = new StudyPage(page);
+  test('Create a new study', async ({ page }) => {
+    const playwrightHomePage = new PlaywrightHomePage(page);
+    const studyPage = new StudyPage(page);
+    const projectPage = new ProjectPage(page);
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
-    const projectCardButton = playwrightHomePage.page
-      .getByTestId('Test e2e projet')
-      .getByRole('button', { name: 'Ouvrir' });
-    await projectCardButton.click();
-  });
+    await projectPage.openProjectByTestId('Test e2e projet');
 
-  test('Create a new study', async () => {
     const addStudy = playwrightHomePage.page.getByRole('button', { name: 'Créer une étude' });
     expect(addStudy).not.toEqual(null);
     await addStudy.click();
