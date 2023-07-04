@@ -25,7 +25,7 @@ export default function ProjectCard({ setFilterChips, project, isSelected, toggl
   const [imageUrl, setImageUrl] = useState<string>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { safeWord } = useSelector((state: RootState) => state.main);
+  const safeWord = useSelector((state: RootState) => state.main.safeWord);
 
   const openProject = () => {
     dispatch(updateProjectID(project.id));

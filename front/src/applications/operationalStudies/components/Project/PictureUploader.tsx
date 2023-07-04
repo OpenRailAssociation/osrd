@@ -181,7 +181,7 @@ function PicturePlaceholderButtons({ setTempProjectImage, safeWord }: PropsButto
 
 export default function PictureUploader({ image, setTempProjectImage, tempProjectImage }: Props) {
   const [isValid, setIsValid] = useState<boolean>(true);
-  const { safeWord } = useSelector((state: RootState) => state.main);
+  const safeWord = useSelector((state: RootState) => state.main.safeWord);
   const handleUpload = async (file?: File) => {
     if (file && file.type.startsWith('image/')) {
       setTempProjectImage(file);
