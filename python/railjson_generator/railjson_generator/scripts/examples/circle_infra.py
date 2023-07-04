@@ -1,8 +1,4 @@
-from railjson_generator import (
-    ApplicableDirection,
-    InfraBuilder,
-    get_output_dir,
-)
+from railjson_generator import ApplicableDirection, InfraBuilder, get_output_dir
 
 OUTPUT_DIR = get_output_dir()
 
@@ -18,13 +14,9 @@ track_c = builder.add_track_section(length=200, label="track_c")
 track_d = builder.add_track_section(length=200, label="track_d")
 link = builder.add_link(track_d.end(), track_a.begin(), ApplicableDirection.BOTH)
 
-switch1 = builder.add_point_switch(
-    track_a.end(), track_b.begin(), track_c.begin(), label="switch1"
-)
+switch1 = builder.add_point_switch(track_a.end(), track_b.begin(), track_c.begin(), label="switch1")
 
-switch2 = builder.add_point_switch(
-    track_d.begin(), track_b.end(), track_c.end(), label="switch2"
-)
+switch2 = builder.add_point_switch(track_d.begin(), track_b.end(), track_c.end(), label="switch2")
 
 # Build infra
 infra = builder.build()
