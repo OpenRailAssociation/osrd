@@ -46,7 +46,7 @@ export default function AddOrEditProjectModal({ editionMode, project, getProject
   const [displayErrors, setDisplayErrors] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { safeWord } = useSelector((state: RootState) => state.main);
+  const safeWord = useSelector((state: RootState) => state.main.safeWord);
 
   const [postProject] = osrdEditoastApi.usePostProjectsMutation();
   const [patchProject] = osrdEditoastApi.usePatchProjectsByProjectIdMutation();
