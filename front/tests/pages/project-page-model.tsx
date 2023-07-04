@@ -74,4 +74,12 @@ export class ProjectPage {
   getTranslations(key: keyof typeof project) {
     return this.translation[key];
   }
+
+  async openProjectByTestId(projectTestId: string | RegExp) {
+    await this.page
+      .getByTestId(projectTestId)
+      .getByRole('button', { name: 'Ouvrir' })
+      .first()
+      .click();
+  }
 }
