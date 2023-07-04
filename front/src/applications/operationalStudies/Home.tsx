@@ -28,7 +28,7 @@ type SortOptions =
 
 export default function Home() {
   const { t } = useTranslation('operationalStudies/home');
-  const { safeWord } = useSelector((state: RootState) => state.main);
+  const safeWord = useSelector((state: RootState) => state.main.safeWord);
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
   const [projectsList, setProjectsList] = useState<ProjectResult[]>([]);
   const [selectedProjectIds, setSelectedProjectIds] = useState<number[]>([]);

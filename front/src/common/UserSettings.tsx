@@ -11,7 +11,7 @@ import { useDebounce } from 'utils/helpers';
 import InputSNCF from './BootstrapSNCF/InputSNCF';
 
 export default function UserSettings() {
-  const { safeWord } = useSelector((state: RootState) => state.main);
+  const safeWord = useSelector((state: RootState) => state.main.safeWord);
   const [safeWordText, setSafeWordText] = useState(safeWord);
   const dispatch = useDispatch();
 

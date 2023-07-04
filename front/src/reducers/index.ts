@@ -39,7 +39,7 @@ const mapWhiteList = [
 
 const userWhiteList = ['account'];
 
-const mainWhiteList = ['fullscreen', 'darkmode', 'lastInterfaceVersion'];
+const mainWhiteList = ['fullscreen', 'darkmode', 'lastInterfaceVersion', 'safeWord'];
 
 const simulationWhiteList = ['marginsSettings'];
 
