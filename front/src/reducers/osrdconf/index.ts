@@ -313,7 +313,7 @@ export default function reducer(inputState: OsrdMultiConfState | undefined, acti
         draft.stdcmConf.standardStdcmAllowance = action.standardStdcmAllowance;
         break;
       case UPDATE_POWER_RESTRICTION:
-        draft[section].powerRestriction = action.powerRestriction;
+        draft[section].powerRestrictionRanges = action.powerRestrictionRanges;
         break;
       case UPDATE_TRAIN_SCHEDULE_IDS_TO_MODIFY:
         draft[section].trainScheduleIDsToModify = action.trainScheduleIDsToModify;
@@ -697,11 +697,11 @@ export function deleteItinerary() {
     });
   };
 }
-export function updatePowerRestriction(powerRestriction?: PowerRestrictionRange[]) {
+export function updatePowerRestriction(powerRestrictionRanges?: PowerRestrictionRange[]) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_POWER_RESTRICTION,
-      powerRestriction,
+      powerRestrictionRanges,
     });
   };
 }

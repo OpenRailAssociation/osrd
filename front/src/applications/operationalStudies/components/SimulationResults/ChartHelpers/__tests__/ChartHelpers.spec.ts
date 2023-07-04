@@ -1,4 +1,4 @@
-import { Regime, SimulationTrain } from 'reducers/osrdsimulation/types';
+import { SimulationTrain } from 'reducers/osrdsimulation/types';
 import {
   mergeDatasArea,
   interpolateOnTime,
@@ -6,7 +6,7 @@ import {
 } from '../ChartHelpers';
 import { LIST_VALUES_NAME_SPACE_TIME } from '../../simulationResultsConsts';
 
-import train from '../../../../../../../tests/assets/operationStudies/train.json';
+import train from '../../../../../../../tests/assets/operationStudies/trainExample';
 import simulationTrain from '../../../../../../../tests/assets/operationStudies/simulationTrain';
 
 describe('mergeDatasArea', () => {
@@ -18,7 +18,7 @@ describe('mergeDatasArea', () => {
 describe('interpolateOnTime', () => {
   describe('Regime', () => {
     it('should interpolate t=43294 using values t=43290 t=43298', () => {
-      const dataSimulation: Regime = train[0].base;
+      const dataSimulation = train.base;
       const keyValues = ['time', 'position'];
       const listValues = ['head_positions', 'tail_positions', 'speeds'];
       const time = 43294;
@@ -70,7 +70,7 @@ describe('interpolateOnTime', () => {
 describe('offsetTrainDepartureAndArrivalTimes', () => {
   describe('no offset', () => {
     test('add departure & arrival time', () => {
-      const result = trainWithDepartureAndArrivalTimes(train[0]);
+      const result = trainWithDepartureAndArrivalTimes(train);
       expect(result).toEqual({
         id: 395,
         labels: [],
@@ -92,7 +92,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
 
   describe('with offset', () => {
     it('should add the given offset to arrival and departure', () => {
-      const result = trainWithDepartureAndArrivalTimes(train[0], 1000);
+      const result = trainWithDepartureAndArrivalTimes(train, 1000);
       expect(result).toEqual({
         id: 395,
         labels: [],
@@ -111,7 +111,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       });
     });
     it('should handle time exceeding midnight', () => {
-      const result = trainWithDepartureAndArrivalTimes(train[0], 86400);
+      const result = trainWithDepartureAndArrivalTimes(train, 86400);
       expect(result).toEqual({
         id: 395,
         labels: [],
@@ -130,7 +130,7 @@ describe('offsetTrainDepartureAndArrivalTimes', () => {
       });
     });
     it('should handle time before midnight', () => {
-      const result = trainWithDepartureAndArrivalTimes(train[0], -86400);
+      const result = trainWithDepartureAndArrivalTimes(train, -86400);
       expect(result).toEqual({
         id: 395,
         labels: [],

@@ -1933,7 +1933,7 @@ export type NonElectrified = {
 export type ElectrificationRange = {
   start: number;
   stop: number;
-  electrification?:
+  electrificationUsage:
     | ({
         object_type: 'Electrified';
       } & Electrified)

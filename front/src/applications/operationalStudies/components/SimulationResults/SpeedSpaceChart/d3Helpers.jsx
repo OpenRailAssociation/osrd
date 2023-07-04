@@ -7,6 +7,7 @@ import {
   createProfileSegment,
   createPowerRestrictionSegment,
 } from 'applications/operationalStudies/consts';
+import { isEmpty } from 'lodash';
 import drawElectricalProfile from '../ChartHelpers/drawElectricalProfile';
 import { POSITION, SPEED, SPEED_SPACE_CHART_KEY_VALUES } from '../simulationResultsConsts';
 import drawPowerRestriction from '../ChartHelpers/drawPowerRestriction';
@@ -184,47 +185,55 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
         rotate
       );
     }
-    if (dataSimulation.electrificationConditions && speedSpaceSettings.electricalProfiles) {
-      dataSimulation.electrificationConditions.forEach((source, index) => {
-        const segment = createProfileSegment(dataSimulation.electrificationConditions, source);
 
-        drawElectricalProfile(
-          chartLocal,
-          `electricalProfiles_${index}`,
-          segment,
-          'speedSpaceChart',
-          'curveLinear',
-          ['position', 'height'],
-          'electrical_profiles',
-          rotate,
-          segment.isStriped,
-          segment.isIncompatibleElectricalProfile,
-          `electricalProfiles_${index}`
-        );
+    const { electrificationRanges, powerRestrictionRanges } = dataSimulation;
+    if (!isEmpty(electrificationRanges) && speedSpaceSettings.electricalProfiles) {
+      electrificationRanges.forEach((source, index) => {
+        if (source.electrificationUsage) {
+          const segment = createProfileSegment(electrificationRanges, source);
+          drawElectricalProfile(
+            chartLocal,
+            `electricalProfiles_${index}`,
+            segment,
+            'speedSpaceChart',
+            'curveLinear',
+            ['position', 'height'],
+            'electrical_profiles',
+            rotate,
+            segment.isStriped,
+            segment.isIncompatibleElectricalProfile,
+            `electricalProfiles_${index}`
+          );
+        }
       });
     }
-    if (dataSimulation.electrificationConditions && speedSpaceSettings.powerRestriction) {
-      let newSimulation = [];
-      let prevRestriction = '';
-
-      dataSimulation.electrificationConditions.forEach((elem, index) => {
-        if (index && elem.used_restriction && prevRestriction === elem.used_restriction) {
-          newSimulation[newSimulation.length - 1].position_end += elem.stop - elem.start;
-          newSimulation[newSimulation.length - 1].position_middle += (elem.stop - elem.start) / 2;
-        } else if (index && elem.seen_restriction && prevRestriction === elem.used_restriction) {
-          newSimulation[newSimulation.length - 1].position_end += elem.stop - elem.start;
-          newSimulation[newSimulation.length - 1].position_middle += (elem.stop - elem.start) / 2;
+    if (!isEmpty(powerRestrictionRanges) && speedSpaceSettings.powerRestriction) {
+      const restrictionSegments = [];
+      let currentRestrictionSegment = createPowerRestrictionSegment(
+        electrificationRanges,
+        powerRestrictionRanges[0]
+      );
+      powerRestrictionRanges.forEach((powerRestrictionRange, index) => {
+        if (index === 0) return;
+        if (
+          powerRestrictionRange.code === currentRestrictionSegment.seenRestriction &&
+          powerRestrictionRange.handled === currentRestrictionSegment.usedRestriction
+        ) {
+          const powerRestrictionRangeLength =
+            powerRestrictionRange.stop - powerRestrictionRange.start;
+          currentRestrictionSegment.position_middle += powerRestrictionRangeLength / 2;
+          currentRestrictionSegment.position_end += powerRestrictionRangeLength;
         } else {
-          const segment = createPowerRestrictionSegment(
-            dataSimulation.electrificationConditions,
-            elem
+          restrictionSegments.push(currentRestrictionSegment);
+          currentRestrictionSegment = createPowerRestrictionSegment(
+            electrificationRanges,
+            powerRestrictionRange
           );
-          newSimulation = [...newSimulation, segment];
         }
-        prevRestriction = elem.used_restriction;
       });
+      restrictionSegments.push(currentRestrictionSegment);
 
-      newSimulation.forEach((source, index) => {
+      restrictionSegments.forEach((source, index) => {
         drawPowerRestriction(
           chartLocal,
           `powerRestrictions_${index}`,

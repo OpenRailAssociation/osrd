@@ -62,7 +62,8 @@ export const getGridMarginBefore = (state: RootState) => getSection(state).gridM
 export const getGridMarginAfter = (state: RootState) => getSection(state).gridMarginAfter;
 export const getStandardStdcmAllowance = (state: RootState) =>
   state.osrdconf.stdcmConf.standardStdcmAllowance;
-export const getPowerRestriction = (state: RootState) => getSection(state).powerRestriction;
+export const getPowerRestrictionRanges = (state: RootState) =>
+  getSection(state).powerRestrictionRanges;
 export const getTrainScheduleIDsToModify = (state: RootState) =>
   getSection(state).trainScheduleIDsToModify;
 export const getMaximumRunTime = (state: RootState) => state.osrdconf.stdcmConf.maximumRunTime;
