@@ -5,7 +5,6 @@ import requests
 
 from .services import API_URL, EDITOAST_URL
 
-
 def _update_simulation_with_mareco_allowances(base_url, train_Schedule_id):
     response = requests.get(base_url + f"train_schedule/{train_Schedule_id}/")
     assert response.status_code == 200
@@ -29,7 +28,7 @@ def _update_simulation_with_mareco_allowances(base_url, train_Schedule_id):
 
 def test_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[int]):
     schedule_id = west_to_south_east_simulation[0]
-    response = requests.get(f"{API_URL}train_schedule/{schedule_id}/result/")
+    response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/result/")
     if response.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {response.status_code}: {response.content}, id={schedule_id}")
     simulation_report = response.json()
@@ -37,7 +36,7 @@ def test_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[
     assert "eco" not in simulation_report
 
     response = _update_simulation_with_mareco_allowances(API_URL, schedule_id)
-    response = requests.get(f"{API_URL}train_schedule/{schedule_id}/result/")
+    response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/result/")
     if response.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {response.status_code}: {response.content}, id={schedule_id}")
     simulation_report = response.json()
