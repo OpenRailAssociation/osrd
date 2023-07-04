@@ -4,8 +4,11 @@
     "averagespeed": "Mean",
     "averagespeed-short": "Mean",
     "composition": "Composition",
-    "dcmdetails": "Train path details",
+    "dcmdetails": "Train n°",
     "destination": "Destination",
+    "energyconsumed-basic": "base",
+    "energyconsumed-eco": "eco",
+    "energydetails": "Energy consumption at the rim",
     "mass": "Mass",
     "numberoflines": "Number of lines",
     "origin": "Origin",
@@ -14,13 +17,11 @@
     "placeholderline": "No.",
     "rollingstock": "Rolling stock",
     "speed": "Speed",
-    "speedLimitByTag": "Composition code",
     "speedlimit": "Limit",
     "speedlimit-short": "Lim.",
+    "speedLimitByTag": "Composition code",
     "time": "Time",
     "timetable": "Timetable",
     "trackname": "Track",
-    "energyconsumed-basic": "Base train schedule",
-    "energyconsumed-eco": "Typical train schedule",
-    "energydetails": "Energy consumption at the rim"
+    "unknownStop": "Unknown"
 }
