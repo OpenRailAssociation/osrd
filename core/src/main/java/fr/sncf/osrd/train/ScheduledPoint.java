@@ -4,12 +4,12 @@ import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Objects;
 
 public class ScheduledPoint {
-    public double position;
+    public double pathOffset;
     public double time;
 
 
-    public ScheduledPoint(double position, double time) {
-        this.position = position;
+    public ScheduledPoint(double pathOffset, double time) {
+        this.pathOffset = pathOffset;
         this.time = time;
     }
 
@@ -19,12 +19,12 @@ public class ScheduledPoint {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ScheduledPoint trainStop = (ScheduledPoint) o;
-        return Double.compare(trainStop.position, position) == 0
+        return Double.compare(trainStop.pathOffset, pathOffset) == 0
                 && Double.compare(trainStop.time, time) == 0;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(position, time);
+        return Objects.hash(pathOffset, time);
     }
 }
