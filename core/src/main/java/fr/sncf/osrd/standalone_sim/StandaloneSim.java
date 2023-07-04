@@ -174,12 +174,12 @@ public class StandaloneSim {
             EnvelopeStopWrapper maxEffortEnvelope,
             ArrayList<ScheduledPoint> scheduledPoints
     ) {
-        scheduledPoints.sort(Comparator.comparingDouble(sp -> sp.position));
+        scheduledPoints.sort(Comparator.comparingDouble(sp -> sp.pathOffset));
         var ranges = new ArrayList<AllowanceRange>();
         double rangeBeginPos = 0.;
         double lostTime = 0.;
         for (var schedulePoint : scheduledPoints) {
-            var rangeEndPos = schedulePoint.position;
+            var rangeEndPos = schedulePoint.pathOffset;
             double excessTime = schedulePoint.time - maxEffortEnvelope.interpolateTotalTime(rangeEndPos) - lostTime;
             if (excessTime < 0) {
                 // TODO: Raise a warning

@@ -3737,12 +3737,12 @@ components:
           type: array
           items:
             type: object
-            required: [position, time]
+            required: [path_offset, time]
             properties:
-              position:
+              path_offset:
                 type: number
                 format: float
-                description: Position in meters from the start of the path at which the train must be.
+                description: Offset in meters from the start of the path at which the train must be.
               time:
                 type: number
                 format: float

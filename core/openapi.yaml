@@ -479,7 +479,7 @@ components:
               - position
               - time
             properties:
-              position:
+              path_offset:
                 type: number
                 format: double
                 description: Position in meters from the start of the path at which the train must be.
