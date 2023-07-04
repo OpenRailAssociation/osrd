@@ -96,6 +96,14 @@ public class DetectionSectionBuilderTests {
         );
     }
 
+    @Test
+    public void testCirculatInfraWithoutDetectors() throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("circle_infra/infra.json");
+        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra, new DiagnosticRecorderImpl(true));
+        var res = DetectionSectionBuilder.build(diInfra);
+        assertEquals(0, res.size());
+    }
+
     /** Converts a list of section into a set of (set of (direction, detector id)) for easier equality testing.
      * Each inner set corresponds to a detection section */
     private Set<Set<DirIDPair>> convertSections(ArrayList<DetectionSection> sections) {

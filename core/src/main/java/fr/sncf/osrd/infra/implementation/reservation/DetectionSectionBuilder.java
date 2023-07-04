@@ -124,7 +124,10 @@ public class DetectionSectionBuilder {
             // take any branch of the switch, as they all most be within the same detection section
             var switchBranch = switchVal.getGraph().edges().iterator().next();
             var switchDetectSectionIndex = uf.findRoot(getEndpointIndex(switchBranch, EdgeEndpoint.BEGIN));
-            var detSection = detectionSectionsMap.get(switchDetectSectionIndex);
+            // detection sections were previously created for all sections which are bounded by detectors.
+            // if an isolated part of the infrastructure has no detector at all, it has to be created at this point.
+            var detSection = detectionSectionsMap.computeIfAbsent(switchDetectSectionIndex,
+                    (x) -> new SectionBuilder());
             detSection.switches.add(switchVal);
         }
 
