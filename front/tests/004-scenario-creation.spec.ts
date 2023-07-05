@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
+import project from './assets/operationStudies/project.json';
+import study from './assets/operationStudies/study.json';
 import scenario from './assets/operationStudies/scenario.json';
+
 import { ProjectPage } from './pages/project-page-model';
 import { StudyPage } from './pages/study-page-model';
 import ScenarioPage from './pages/scenario-page-model';
@@ -17,8 +20,8 @@ test.describe('Test is operationnal study : scenario creation workflow is workin
 
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
-    await projectPage.openProjectByTestId('Test e2e projet');
-    await studyPage.openStudyByTestId('Test e2e étude');
+    await projectPage.openProjectByTestId(project.name);
+    await studyPage.openStudyByTestId(study.name);
 
     expect(scenarioPage.getAddScenarioBtn).toBeVisible();
     await scenarioPage.openScenarioCreationModal();

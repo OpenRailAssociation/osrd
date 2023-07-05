@@ -15,7 +15,7 @@ test.describe('Test is operationnal study: study creation workflow is working pr
 
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
-    await projectPage.openProjectByTestId('Test e2e projet');
+    await projectPage.openProjectByTestId(project.name);
 
     expect(studyPage.getAddStudyBtn).toBeVisible();
     await studyPage.openStudyCreationModal();
