@@ -21,18 +21,33 @@ export class StudyPage {
 
   readonly getStudyTags: Locator;
 
-  // Locator for all links
   readonly getBackToProject: Locator;
-
-  // Locator for the "back to home" logo
-  readonly getBackHomeLogo: Locator;
-
-  // Locator for the body
-  readonly getBody: Locator;
 
   readonly translation: typeof study;
 
-  readonly getViteOverlay: Locator;
+  readonly getAddStudyBtn: Locator;
+
+  readonly getStudyInputName: Locator;
+
+  readonly getStudyTypeSelect: Locator;
+
+  readonly getStudyStatusSelect: Locator;
+
+  readonly getStudyInputDescription: Locator;
+
+  readonly getStudyStartDateInput: Locator;
+
+  readonly getStudyEstimatedEndDateInput: Locator;
+
+  readonly getStudyEndDateInput: Locator;
+
+  readonly getStudyServiceCodeInput: Locator;
+
+  readonly getStudyBusinessCodeInput: Locator;
+
+  readonly getStudyBudgetInput: Locator;
+
+  readonly getStudyTagInput: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -46,29 +61,22 @@ export class StudyPage {
     this.getStudyFinancialsAmount = page.locator('.study-details-financials-amount');
     this.getStudyFinancialsInfos = page.locator('.study-details-financials-infos-item .code');
     this.getStudyTags = page.locator('.study-details-tags');
-    this.getBackHomeLogo = page.locator('.mastheader-logo');
     this.getBackToProject = page.getByRole('heading', { name: 'Test e2e projet' });
-    this.getBody = page.locator('body');
     this.translation = study;
-    this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
-  }
-
-  // Completly remove VITE button & panel
-  async removeViteOverlay() {
-    if ((await this.getViteOverlay.count()) > 0) {
-      await this.getViteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
-    }
-  }
-
-  // Navigate to the Home page
-  async goToHomePage() {
-    await this.page.goto('/');
-    await this.removeViteOverlay();
-  }
-
-  // Click on the logo to navigate back to the home page
-  async backToHomePage() {
-    await this.getBackHomeLogo.click();
+    this.getAddStudyBtn = page.getByRole('button', { name: 'Créer une étude' });
+    this.getStudyInputName = page.locator('#studyInputName');
+    this.getStudyTypeSelect = page.locator('.input-group').first();
+    this.getStudyStatusSelect = page.locator(
+      '.study-edition-modal-state > div > .select-improved > .select-control > .input-group'
+    );
+    this.getStudyInputDescription = page.locator('#studyDescription');
+    this.getStudyStartDateInput = page.getByLabel("Début de l'étude");
+    this.getStudyEstimatedEndDateInput = page.getByLabel('Fin estimée');
+    this.getStudyEndDateInput = page.getByLabel('Fin réalisée');
+    this.getStudyServiceCodeInput = page.getByLabel('Code service');
+    this.getStudyBusinessCodeInput = page.getByLabel('Code business');
+    this.getStudyBudgetInput = page.getByLabel('Budget');
+    this.getStudyTagInput = page.getByTestId('chips-input');
   }
 
   // Assert that the breadcrumb project link is displayed on the page
@@ -86,5 +94,56 @@ export class StudyPage {
       .getByRole('button', { name: 'Ouvrir' })
       .first()
       .click();
+  }
+
+  async openStudyCreationModal() {
+    await this.getAddStudyBtn.click();
+  }
+
+  async setStudyName(name: string) {
+    await this.getStudyInputName.fill(name);
+  }
+
+  async setStudyTypeByText(type: string) {
+    await this.getStudyTypeSelect.click();
+    await this.page.locator('#modal-body').getByText(type).click();
+  }
+
+  async setStudyStatusByText(status: string) {
+    await this.getStudyStatusSelect.click();
+    await this.page.getByText(status).click();
+  }
+
+  async setStudyDescription(description: string) {
+    await this.getStudyInputDescription.fill(description);
+  }
+
+  async setStudyStartDate(date: string) {
+    await this.getStudyStartDateInput.fill(date);
+  }
+
+  async setStudyEstimatedEndDate(date: string) {
+    await this.getStudyEstimatedEndDateInput.fill(date);
+  }
+
+  async setStudyEndDate(date: string) {
+    await this.getStudyEndDateInput.fill(date);
+  }
+
+  async setStudyServiceCode(code: string) {
+    await this.getStudyServiceCodeInput.fill(code);
+  }
+
+  async setStudyBusinessCode(code: string) {
+    await this.getStudyBusinessCodeInput.fill(code);
+  }
+
+  async setStudyBudget(code: string) {
+    await this.getStudyBudgetInput.fill(code);
+  }
+
+  async setStudyTag(tag: string) {
+    await this.getStudyTagInput.fill(tag);
+    await this.getStudyTagInput.press('Enter');
   }
 }
