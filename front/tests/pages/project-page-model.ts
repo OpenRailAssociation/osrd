@@ -44,6 +44,10 @@ export class ProjectPage {
 
   readonly getProjectBudgetInput: Locator;
 
+  readonly getProjectDeleteBtn: Locator;
+
+  readonly getProjectDeleteConfirmBtn: Locator;
+
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -64,6 +68,10 @@ export class ProjectPage {
     this.getProjectObjectiveInput = page.locator('#projectObjectives');
     this.getProjectFunderInput = page.locator('#projectInputFunders');
     this.getProjectBudgetInput = page.locator('#projectInputBudget');
+    this.getProjectDeleteBtn = page.getByRole('button', { name: 'Supprimer' });
+    this.getProjectDeleteConfirmBtn = page
+      .locator('#modal-content')
+      .getByText('Supprimer', { exact: true });
   }
 
   // Completly remove VITE button & panel
@@ -123,5 +131,27 @@ export class ProjectPage {
 
   async setProjectBudget(budget: string) {
     await this.getProjectBudgetInput.fill(budget);
+  }
+
+  getProjectByName(name: string) {
+    return this.page.locator(`text=${name}`);
+  }
+
+  async clickProjectByName(name: string) {
+    await this.getProjectByName(name).first().click();
+  }
+
+  async clickProjectDeleteBtn() {
+    await this.getProjectDeleteBtn.click();
+  }
+
+  async checkLabelProjectSelected(label: string) {
+    expect(
+      await this.page.locator('.projects-selection-toolbar').locator('span').first().textContent()
+    ).toContain(label);
+  }
+
+  async clickProjectDeleteConfirmBtn() {
+    await this.getProjectDeleteConfirmBtn.click();
   }
 }

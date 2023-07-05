@@ -68,6 +68,14 @@ class PlaywrightScenarioPage {
     await this.page.locator('span', { hasText: text }).click();
   }
 
+  async openScenarioByTestId(scenarioTestId: string) {
+    await this.page
+      .getByTestId(scenarioTestId)
+      .getByRole('button', { name: 'Ouvrir' })
+      .first()
+      .click();
+  }
+
   async openScenarioCreationModal() {
     await this.getAddScenarioBtn.click();
   }

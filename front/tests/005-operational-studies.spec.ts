@@ -3,34 +3,33 @@ import { PlaywrightHomePage } from './home-page-model';
 import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
 import VARIABLES from './assets/operationStudies/test_variables';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
+import { ProjectPage } from './pages/project-page-model';
+import { StudyPage } from './pages/study-page-model';
+import project from './assets/operationStudies/project.json';
+import study from './assets/operationStudies/study.json';
+import scenario from './assets/operationStudies/scenario.json';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   let playwrightHomePage: PlaywrightHomePage;
   let playwrightScenarioPage: PlaywrightScenarioPage;
+  let projectPage: ProjectPage;
+  let studyPage: StudyPage;
 
   test.beforeEach(async ({ page }) => {
     playwrightHomePage = new PlaywrightHomePage(page);
     playwrightScenarioPage = new PlaywrightScenarioPage(page);
+    projectPage = new ProjectPage(page);
+    studyPage = new StudyPage(page);
 
     await playwrightHomePage.goToHomePage();
 
     // Real click on project, study, scenario
     await playwrightHomePage.goToOperationalStudiesPage();
-    await playwrightHomePage.page
-      .getByTestId('_@Test integration project')
-      .locator('div')
-      .getByRole('button')
-      .click();
+    await projectPage.openProjectByTestId(project.name);
 
-    await playwrightHomePage.page
-      .getByTestId('_@Test integration study')
-      .getByRole('button')
-      .click();
+    await studyPage.openStudyByTestId(study.name);
 
-    await playwrightHomePage.page
-      .getByTestId('_@Test integration scenario')
-      .getByRole('button')
-      .click();
+    await playwrightScenarioPage.openScenarioByTestId(scenario.name);
 
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
   });
