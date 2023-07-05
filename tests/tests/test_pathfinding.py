@@ -56,8 +56,8 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "duration": 0.0,
                 "path_offset": 0.0,
                 "suggestion": False,
-                "geo": {"coordinates": [-0.4, 49.49979999999999], "type": "Point"},
-                "sch": {"coordinates": [-0.4, 49.49979999999999], "type": "Point"},
+                "geo": {"coordinates": [-0.387122554630656, 49.49979999999999], "type": "Point"},
+                "sch": {"coordinates": [-0.387122554630656, 49.49979999999999], "type": "Point"},
             },
             {
                 "id": "Mid_West_station",
@@ -66,8 +66,8 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "duration": 0.0,
                 "path_offset": 11612.966050992638,
                 "suggestion": True,
-                "geo": {"coordinates": [-0.296, 49.4999], "type": "Point"},
-                "sch": {"coordinates": [-0.296, 49.4999], "type": "Point"},
+                "geo": {"coordinates": [-0.30369999999999997, 49.4999], "type": "Point"},
+                "sch": {"coordinates": [-0.30369999999999997, 49.4999], "type": "Point"},
             },
             {
                 "id": "Mid_East_station",
@@ -76,8 +76,8 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "duration": 0.0,
                 "path_offset": 26162.96605099264,
                 "suggestion": True,
-                "geo": {"coordinates": [-0.172, 49.4999], "type": "Point"},
-                "sch": {"coordinates": [-0.172, 49.4999], "type": "Point"},
+                "geo": {"coordinates": [-0.22656, 49.4999], "type": "Point"},
+                "sch": {"coordinates": [-0.22656, 49.4999], "type": "Point"},
             },
             {
                 "id": None,
@@ -86,8 +86,8 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
                 "duration": 1.0,
                 "path_offset": 45549.5653000392,
                 "suggestion": False,
-                "geo": {"coordinates": [-0.09, 49.484], "type": "Point"},
-                "sch": {"coordinates": [-0.09, 49.484], "type": "Point"},
+                "geo": {"coordinates": [-0.095104854807785, 49.484], "type": "Point"},
+                "sch": {"coordinates": [-0.095104854807785, 49.484], "type": "Point"},
             },
         ],
         "geographic": {
