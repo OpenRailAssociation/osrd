@@ -33,7 +33,7 @@ export class StudyPage {
 
   readonly getStudyStatusSelect: Locator;
 
-  readonly getStudyInputDescription: Locator;
+  readonly getStudyDescriptionInput: Locator;
 
   readonly getStudyStartDateInput: Locator;
 
@@ -46,8 +46,6 @@ export class StudyPage {
   readonly getStudyBusinessCodeInput: Locator;
 
   readonly getStudyBudgetInput: Locator;
-
-  readonly getStudyTagInput: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -69,14 +67,13 @@ export class StudyPage {
     this.getStudyStatusSelect = page.locator(
       '.study-edition-modal-state > div > .select-improved > .select-control > .input-group'
     );
-    this.getStudyInputDescription = page.locator('#studyDescription');
+    this.getStudyDescriptionInput = page.locator('#studyDescription');
     this.getStudyStartDateInput = page.getByLabel("Début de l'étude");
     this.getStudyEstimatedEndDateInput = page.getByLabel('Fin estimée');
     this.getStudyEndDateInput = page.getByLabel('Fin réalisée');
     this.getStudyServiceCodeInput = page.getByLabel('Code service');
     this.getStudyBusinessCodeInput = page.getByLabel('Code business');
     this.getStudyBudgetInput = page.getByLabel('Budget');
-    this.getStudyTagInput = page.getByTestId('chips-input');
   }
 
   // Assert that the breadcrumb project link is displayed on the page
@@ -115,7 +112,7 @@ export class StudyPage {
   }
 
   async setStudyDescription(description: string) {
-    await this.getStudyInputDescription.fill(description);
+    await this.getStudyDescriptionInput.fill(description);
   }
 
   async setStudyStartDate(date: string) {
@@ -140,10 +137,5 @@ export class StudyPage {
 
   async setStudyBudget(code: string) {
     await this.getStudyBudgetInput.fill(code);
-  }
-
-  async setStudyTag(tag: string) {
-    await this.getStudyTagInput.fill(tag);
-    await this.getStudyTagInput.press('Enter');
   }
 }

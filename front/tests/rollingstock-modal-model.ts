@@ -1,5 +1,5 @@
 import { Locator, Page, expect } from '@playwright/test';
-import PlaywrightCommonPage from './common-page-model';
+import PlaywrightCommonPage from './pages/common-page-model';
 
 class PlaywrightRollingstockModalPage {
   readonly page: Page;
@@ -24,7 +24,7 @@ class PlaywrightRollingstockModalPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.playwrightCommonPage = new PlaywrightCommonPage();
+    this.playwrightCommonPage = new PlaywrightCommonPage(page);
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
     this.getRollingstockModal = page.locator('.modal-dialog');
     this.getResultsFound = page.locator('.modal-dialog').locator('small').first();

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 import PlaywrightRollingstockModalPage from './rollingstock-modal-model';
 import VARIABLES from './assets/operationStudies/test_variables';
-import PlaywrightScenarioPage from './scenario-page-model';
+import PlaywrightScenarioPage from './pages/scenario-page-model';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   let playwrightHomePage: PlaywrightHomePage;

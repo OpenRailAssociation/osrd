@@ -44,8 +44,6 @@ export class ProjectPage {
 
   readonly getProjectBudgetInput: Locator;
 
-  readonly getProjectTagInput: Locator;
-
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -66,7 +64,6 @@ export class ProjectPage {
     this.getProjectObjectiveInput = page.locator('#projectObjectives');
     this.getProjectFunderInput = page.locator('#projectInputFunders');
     this.getProjectBudgetInput = page.locator('#projectInputBudget');
-    this.getProjectTagInput = page.getByTestId('chips-input');
   }
 
   // Completly remove VITE button & panel
@@ -126,10 +123,5 @@ export class ProjectPage {
 
   async setProjectBudget(budget: string) {
     await this.getProjectBudgetInput.fill(budget);
-  }
-
-  async setProjectTag(tag: string) {
-    await this.getProjectTagInput.fill(tag);
-    await this.getProjectTagInput.press('Enter');
   }
 }
