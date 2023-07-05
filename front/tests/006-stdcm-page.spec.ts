@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 import { PlaywrightSTDCMPage } from './stdcm-page-model';
-
+import project from './assets/operationStudies/project.json';
+import study from './assets/operationStudies/study.json';
+import scenario from './assets/operationStudies/scenario.json';
 // Describe the test suite for the STDCM page
 test.describe('STDCM page', () => {
   // Declare the necessary variables for the test suite
@@ -25,9 +27,9 @@ test.describe('STDCM page', () => {
     // Opens the scenario explorator and selects project, study and scenario
     await playwrightSTDCMPage.openScenarioExplorator();
     await playwrightSTDCMPage.getScenarioExploratorModalOpen();
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration study');
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration scenario');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName(project.name);
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName(study.name);
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName(scenario.name);
 
     const rollingStockTranslation =
       playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');

@@ -12,7 +12,7 @@ test.describe('Test is operationnal study  : project workflow is working properl
 
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
-    expect(projectPage.getAddProjectBtn).toBeVisible();
+    await expect(projectPage.getAddProjectBtn).toBeVisible();
     await projectPage.openProjectModalCreation();
     await projectPage.setProjectName(project.name);
     await projectPage.setProjectDescription(project.description);
