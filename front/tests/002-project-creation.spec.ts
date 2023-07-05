@@ -2,11 +2,14 @@ import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 import project from './assets/operationStudies/project.json';
 import { ProjectPage } from './pages/project-page-model';
+import PlaywrightCommonPage from './pages/common-page-model';
 
 test.describe('Test is operationnal study  : project workflow is working properly', () => {
   test('Create a new project', async ({ page }) => {
     const playwrightHomePage = new PlaywrightHomePage(page);
     const projectPage = new ProjectPage(page);
+    const commonPage = new PlaywrightCommonPage(page);
+
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
     expect(projectPage.getAddProjectBtn).toBeVisible();
@@ -20,9 +23,10 @@ test.describe('Test is operationnal study  : project workflow is working properl
 
     await projectPage.setProjectBudget(project.budget);
 
-    await projectPage.setProjectTag(project.tags[0]);
-    await projectPage.setProjectTag(project.tags[1]);
-    await projectPage.setProjectTag(project.tags[2]);
+    await commonPage.setTag(project.tags[0]);
+    await commonPage.setTag(project.tags[1]);
+    await commonPage.setTag(project.tags[2]);
+
     const createButton = playwrightHomePage.page.getByText('Créer le projet');
     await createButton.click();
     await playwrightHomePage.page.waitForURL('**/project');
