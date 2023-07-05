@@ -1,13 +1,9 @@
 .rollingstock-editor {
-  padding-top: 9%;
-  @media screen and (min-width: 1024px) {
-    padding-top: 100px;
-  }
+  padding-top: 6rem;
+  max-height: 100vh;
   &-list {
     height: 100%;
     overflow-y: scroll;
-  }
-  &-list {
     .rollingstock-body-container-img {
       min-height: 2.4rem;
     }

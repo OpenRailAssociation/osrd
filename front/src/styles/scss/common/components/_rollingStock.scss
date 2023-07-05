@@ -95,6 +95,7 @@
           display: inline-block;
           position: relative;
           vertical-align: baseline;
+          max-height: 4rem;
         }
       }
     }
@@ -230,6 +231,7 @@
   .rollingstock-body-img {
     overflow: hidden;
     img {
+      max-width: 100%;
       height: 2rem;
       display: inline-block;
       padding-top: 0.75rem;
@@ -276,6 +278,7 @@
       ); // Have to scale whole <img> because electric trains with pantograph have taller pictures
       transform-origin: left;
       img {
+        max-height: 4rem;
         display: inline-block;
         position: relative;
         vertical-align: baseline;
