@@ -4,12 +4,15 @@ import project from './assets/operationStudies/project.json';
 import study from './assets/operationStudies/study.json';
 import { StudyPage } from './pages/study-page-model';
 import { ProjectPage } from './pages/project-page-model';
+import PlaywrightCommonPage from './pages/common-page-model';
 
 test.describe('Test is operationnal study: study creation workflow is working properly', () => {
   test('Create a new study', async ({ page }) => {
     const playwrightHomePage = new PlaywrightHomePage(page);
     const studyPage = new StudyPage(page);
     const projectPage = new ProjectPage(page);
+    const commonPage = new PlaywrightCommonPage(page);
+
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
     await projectPage.openProjectByTestId('Test e2e projet');
@@ -32,9 +35,9 @@ test.describe('Test is operationnal study: study creation workflow is working pr
 
     await studyPage.setStudyBudget(study.budget);
 
-    await studyPage.setStudyTag(project.tags[0]);
-    await studyPage.setStudyTag(project.tags[1]);
-    await studyPage.setStudyTag(project.tags[2]);
+    await commonPage.setTag(project.tags[0]);
+    await commonPage.setTag(project.tags[1]);
+    await commonPage.setTag(project.tags[2]);
 
     const createButton = playwrightHomePage.page.getByText("Créer l'étude");
     await createButton.click();
