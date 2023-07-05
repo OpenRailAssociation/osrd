@@ -1048,9 +1048,9 @@ dependencies = [
 
 [[package]]
 name = "diesel_json"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0cecc06aa653220c690379a47b3eed7b8c30c70becdd5a627c060239c98867d"
+checksum = "0fc50de1d729b55dfbb03e2d2db846684e3ab585f4ee9cfc3c675d236f951888"
 dependencies = [
  "diesel",
  "serde",
