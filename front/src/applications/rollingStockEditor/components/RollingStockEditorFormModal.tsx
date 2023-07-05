@@ -63,8 +63,10 @@ const RollingStockEditorFormModal = ({
             type="button"
             className="btn btn-sm btn-primary ml-3"
             onClick={() => {
-              if (setAddOrEditState) setAddOrEditState(false);
               if (request) request(data as FieldValues);
+              if (!request && setAddOrEditState) {
+                setAddOrEditState(false);
+              }
               closeModal();
             }}
           >

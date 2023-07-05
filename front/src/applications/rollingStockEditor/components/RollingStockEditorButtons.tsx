@@ -77,13 +77,22 @@ function RollingStockEditorButtons({
           })
         );
       })
-      .catch(() => {
-        dispatch(
-          setFailure({
-            name: t('messages.failure'),
-            message: t('messages.rollingStockDuplicateName'),
-          })
-        );
+      .catch((error) => {
+        if (error.data?.message.includes('duplicate')) {
+          dispatch(
+            setFailure({
+              name: t('messages.failure'),
+              message: t('messages.rollingStockDuplicateName'),
+            })
+          );
+        } else {
+          dispatch(
+            setFailure({
+              name: t('messages.failure'),
+              message: t('messages.rollingStockNotAdded'),
+            })
+          );
+        }
       });
   };
 

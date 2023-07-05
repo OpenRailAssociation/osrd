@@ -341,6 +341,7 @@ const RollingStockEditorForm = ({
             text: t('messages.rollingStockAdded'),
           })
         );
+        setAddOrEditState(false);
       })
       .catch((error) => {
         if (error.data?.message.includes('duplicate')) {
@@ -375,14 +376,24 @@ const RollingStockEditorForm = ({
               text: t('messages.rollingStockAdded'),
             })
           );
+          setAddOrEditState(false);
         })
-        .catch(() => {
-          dispatch(
-            setFailure({
-              name: t('messages.failure'),
-              message: t('messages.rollingStockNotAdded'),
-            })
-          );
+        .catch((error) => {
+          if (error.data?.message.includes('used')) {
+            dispatch(
+              setFailure({
+                name: t('messages.failure'),
+                message: t('messages.rollingStockDuplicateName'),
+              })
+            );
+          } else {
+            dispatch(
+              setFailure({
+                name: t('messages.failure'),
+                message: t('messages.rollingStockNotUpdated'),
+              })
+            );
+          }
         });
     }
   };

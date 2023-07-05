@@ -79,9 +79,9 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
                 {(selectedRollingStock || isEditing) &&
                   ((selectedRollingStock && !isEditing && (
                     <RollingStockEditorCard
+                      id={openedRollingStockCardId}
                       isEditing={isEditing}
                       rollingStock={selectedRollingStock}
-                      setIsEditing={setIsEditing}
                     />
                   )) ||
                     (isEditing && (
