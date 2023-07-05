@@ -17,7 +17,10 @@ const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStoc
     if (!rollingStock || !Array.isArray(liveries)) return;
 
     const defaultLivery = liveries.find((livery) => livery.name === 'default');
-    if (!defaultLivery?.compound_image_id) return;
+    if (!defaultLivery?.compound_image_id) {
+      setImageUrl(blueTrain);
+      return;
+    }
 
     try {
       const image = await getDocument(defaultLivery.compound_image_id);
@@ -32,14 +35,7 @@ const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStoc
     getRollingStockImage();
   }, [rollingStock]);
 
-  return imageUrl ? (
-    <LazyLoadImage src={imageUrl} alt={rollingStock?.name} />
-  ) : (
-    // TODO : replace with null when images RTK query is ready in RollingStockEditor
-    <div className="defaultImageRSEditor">
-      <img src={blueTrain} alt="defaultImage" title="tchou tchou" />
-    </div>
-  );
+  return <LazyLoadImage src={imageUrl || ''} alt={rollingStock?.name || 'defaultImg'} />;
 };
 
 const MemoRollingStock2Img = React.memo(RollingStock2Img);
