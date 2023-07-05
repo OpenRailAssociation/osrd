@@ -32,6 +32,7 @@ test.describe('Test is operationnal study : scenario creation workflow is workin
         .getByText(`${scenario.electric_profile_set}`)
         .click();
     }
+
     const tagsInput = playwrightHomePage.page.getByTestId('chips-input');
     await tagsInput.fill(scenario.tags[0]);
     await tagsInput.press('Enter');

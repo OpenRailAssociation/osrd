@@ -32,6 +32,20 @@ export class ProjectPage {
 
   readonly getViteOverlay: Locator;
 
+  readonly getAddProjectBtn: Locator;
+
+  readonly getProjectInputName: Locator;
+
+  readonly getProjectInputDescription: Locator;
+
+  readonly getProjectInputObjective: Locator;
+
+  readonly getProjectInputFunder: Locator;
+
+  readonly getProjectInputBudget: Locator;
+
+  readonly getProjectInputTags: Locator;
+
   constructor(page: Page) {
     this.page = page;
     // Initialize locators using roles and text content
@@ -46,6 +60,13 @@ export class ProjectPage {
     this.getBody = page.locator('body');
     this.translation = project;
     this.getViteOverlay = page.locator('vite-plugin-checker-error-overlay');
+    this.getAddProjectBtn = page.getByRole('button', { name: 'Créer un projet' });
+    this.getProjectInputName = page.locator('#projectInputName');
+    this.getProjectInputDescription = page.locator('#projectDescription');
+    this.getProjectInputObjective = page.locator('#projectObjectives');
+    this.getProjectInputFunder = page.locator('#projectInputFunders');
+    this.getProjectInputBudget = page.locator('#projectInputBudget');
+    this.getProjectInputTags = page.getByTestId('chips-input');
   }
 
   // Completly remove VITE button & panel
@@ -75,11 +96,40 @@ export class ProjectPage {
     return this.translation[key];
   }
 
+  async openModalCreateProject() {
+    await this.getAddProjectBtn.click();
+  }
+
   async openProjectByTestId(projectTestId: string | RegExp) {
     await this.page
       .getByTestId(projectTestId)
       .getByRole('button', { name: 'Ouvrir' })
       .first()
       .click();
+  }
+
+  async setProjectName(name: string) {
+    await this.getProjectInputName.fill(name);
+  }
+
+  async setProjectDescription(description: string) {
+    await this.getProjectInputDescription.fill(description);
+  }
+
+  async setProjectObjectives(objectives: string) {
+    await this.getProjectInputObjective.fill(objectives);
+  }
+
+  async setProjectFunder(funder: string) {
+    await this.getProjectInputFunder.fill(funder);
+  }
+
+  async setProjectBudget(budget: string) {
+    await this.getProjectInputBudget.fill(budget);
+  }
+
+  async setProjectTag(tag: string) {
+    await this.getProjectInputTags.fill(tag);
+    await this.getProjectInputTags.press('Enter');
   }
 }

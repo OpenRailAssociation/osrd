@@ -9,27 +9,20 @@ test.describe('Test is operationnal study  : project workflow is working properl
     const projectPage = new ProjectPage(page);
     await playwrightHomePage.goToHomePage();
     await playwrightHomePage.goToOperationalStudiesPage();
+    expect(projectPage.getAddProjectBtn).toBeVisible();
+    await projectPage.openModalCreateProject();
+    await projectPage.setProjectName(project.name);
+    await projectPage.setProjectDescription(project.description);
 
-    const addProject = playwrightHomePage.page.getByRole('button', { name: 'Créer un projet' });
-    expect(addProject).not.toEqual(null);
-    await addProject.click();
-    const projectNameInput = playwrightHomePage.page.locator('#projectInputName');
-    await projectNameInput.fill(project.name);
-    const projectDescriptionInput = playwrightHomePage.page.locator('#projectDescription');
-    await projectDescriptionInput.fill(project.description);
-    const projectObjectiveInput = playwrightHomePage.page.locator('#projectObjectives');
-    await projectObjectiveInput.fill(project.objectives);
-    const projectFunders = playwrightHomePage.page.locator('#projectInputFunders');
-    await projectFunders.fill(project.funders);
-    const projectBudget = playwrightHomePage.page.locator('#projectInputBudget');
-    await projectBudget.fill(project.budget);
-    const tagsInput = playwrightHomePage.page.getByTestId('chips-input');
-    await tagsInput.fill(project.tags[0]);
-    await tagsInput.press('Enter');
-    await tagsInput.fill(project.tags[1]);
-    await tagsInput.press('Enter');
-    await tagsInput.fill(project.tags[2]);
-    await tagsInput.press('Enter');
+    await projectPage.setProjectObjectives(project.objectives);
+
+    await projectPage.setProjectFunder(project.funders);
+
+    await projectPage.setProjectBudget(project.budget);
+
+    await projectPage.setProjectTag(project.tags[0]);
+    await projectPage.setProjectTag(project.tags[1]);
+    await projectPage.setProjectTag(project.tags[2]);
     const createButton = playwrightHomePage.page.getByText('Créer le projet');
     await createButton.click();
     await playwrightHomePage.page.waitForURL('**/project');
@@ -46,8 +39,6 @@ test.describe('Test is operationnal study  : project workflow is working properl
     expect(budget).not.toEqual(null);
     if (budget !== null) expect(budget.replace(/[^0-9]/g, '')).toContain(project.budget);
     const tags = await projectPage.getProjectTags.textContent();
-    expect(tags).toContain(project.tags[0]);
-    expect(tags).toContain(project.tags[1]);
-    expect(tags).toContain(project.tags[2]);
+    expect(tags).toContain(project.tags.join(''));
   });
 });
