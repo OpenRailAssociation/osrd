@@ -64,5 +64,5 @@ itertools = "0.10.5"
 
 [dev-dependencies]
 async-std = { version = "1.5", features = ["attributes", "tokio1"] }
-rstest = "0.17.0"
+rstest = "0.18.1"
 tempfile = "3.6.0"
