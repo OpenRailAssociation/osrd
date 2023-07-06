@@ -1,4 +1,4 @@
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import EditorContext from 'applications/editor/context';
 import { SpeedSectionEntity } from 'types';
@@ -7,7 +7,19 @@ import { cloneDeep, isEmpty, map, mapKeys, omit } from 'lodash';
 import { ExtendedEditorContextType } from '../../editorContextTypes';
 import { RangeEditionState } from '../types';
 import SpeedInput from './SpeedInput';
-import { kmhToMs } from '../utils';
+
+const getNewSpeedLimitTag = (
+  speedLimitsByTag: Record<string, number | undefined>,
+  defaultTag: string
+) => {
+  let newSpeedLimitTag = defaultTag;
+  let i = 1;
+  if (speedLimitsByTag[newSpeedLimitTag]) {
+    while (speedLimitsByTag[`${newSpeedLimitTag} ${i}`]) i += 1;
+    newSpeedLimitTag += ` ${i}`;
+  }
+  return newSpeedLimitTag;
+};
 
 const SpeedSectionMetadataForm: FC = () => {
   const { t } = useTranslation();
@@ -15,6 +27,18 @@ const SpeedSectionMetadataForm: FC = () => {
     state: { entity },
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<RangeEditionState<SpeedSectionEntity>>;
+
+  const addSpeedSectionButtonIsDisabled = useMemo(() => {
+    const { speed_limit_by_tag } = entity.properties;
+    if (speed_limit_by_tag) {
+      const speed_limits = Object.values(speed_limit_by_tag);
+      const has_undefined_speed_limit = speed_limits.some(
+        (speed_limit) => speed_limit === undefined || speed_limit === 0
+      );
+      return has_undefined_speed_limit;
+    }
+    return false;
+  }, [entity]);
 
   return (
     <div>
@@ -51,7 +75,7 @@ const SpeedSectionMetadataForm: FC = () => {
           <div className="form-group field field-string">
             <div className="d-flex flex-row align-items-center">
               <input
-                className="form-control flex-grow-2 flex-shrink-1 mr-2"
+                className="form-control flex-grow-2 flex-shrink-1 mr-2 px-2"
                 placeholder=""
                 type="text"
                 value={key}
@@ -105,15 +129,14 @@ const SpeedSectionMetadataForm: FC = () => {
           onClick={async () => {
             const newEntity = cloneDeep(entity);
             newEntity.properties.speed_limit_by_tag = newEntity.properties.speed_limit_by_tag || {};
-            let key = t('Editor.tools.speed-edition.new-tag');
-            let i = 1;
-            if (newEntity.properties.speed_limit_by_tag[key]) {
-              while (newEntity.properties.speed_limit_by_tag[`${key} ${i}`]) i += 1;
-              key += ` ${i}`;
-            }
-            newEntity.properties.speed_limit_by_tag[key] = kmhToMs(80);
+            const newSpeedLimitTag = getNewSpeedLimitTag(
+              newEntity.properties.speed_limit_by_tag,
+              t('Editor.tools.speed-edition.new-tag')
+            );
+            newEntity.properties.speed_limit_by_tag[newSpeedLimitTag] = undefined;
             setState({ entity: newEntity });
           }}
+          disabled={addSpeedSectionButtonIsDisabled}
         >
           <AiOutlinePlusCircle className="mr-2" />
           {t('Editor.tools.speed-edition.add-new-speed-limit')}
