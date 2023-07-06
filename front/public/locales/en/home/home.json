@@ -3,6 +3,6 @@
   "editor": "Infrastructure editor",
   "map": "Map viewer",
   "operationalStudies": "Operational studies",
-  "rollingStockEditor": "Rolling stock editor (work in progress)",
+  "rollingStockEditor": "Rolling stock editor (Beta)",
   "stdcm": "Short term path request"
 }
