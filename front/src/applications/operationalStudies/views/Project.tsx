@@ -154,7 +154,7 @@ export default function Project() {
         }
       } else {
         try {
-          const { data } = await getStudies({ projectId, ordering: sortOption });
+          const { data } = await getStudies({ projectId, ordering: sortOption, pageSize: 1000 });
           if (data?.results) setStudiesList(data.results);
         } catch (error) {
           console.error(error);
