@@ -124,8 +124,14 @@ public class DetectionSectionBuilder {
             // take any branch of the switch, as they all most be within the same detection section
             var switchBranch = switchVal.getGraph().edges().iterator().next();
             var switchDetectSectionIndex = uf.findRoot(getEndpointIndex(switchBranch, EdgeEndpoint.BEGIN));
+
             var detSection = detectionSectionsMap.get(switchDetectSectionIndex);
-            detSection.switches.add(switchVal);
+            // If a small isolated network (e.g. a test loop) we might not have any switch or signal
+            // This will result in no detection section and in a nullPointerException
+            // TODO: we can’t create a section as it breaks the assertion in buildResult()
+            if (detSection != null) {
+                detSection.switches.add(switchVal);
+            }
         }
 
         for (var builder : detectionSectionsMap.values()) {
