@@ -18,8 +18,8 @@
     "ru": "Русский",
     "uk": "Українська"
   },
-  "safeWord": "Safe word",
-  "safeWordHelp": "The \"safe word\" is used to filter project list with this word used as a transparent tag. Choose a complex word to ensure it's not already used by someone else. Use it as a tag when creating or updating a project; it will be automatically added as a tag on project creation if already entered here.",
+  "safeWord": "Safety keyword",
+  "safeWordHelp": "The \"security keyword\" allows you to transparently filter the list of projects with the word you enter, used as a label. Choose a complicated word so that no-one uses it inadvertently. Add it as a label to a project; it will be automatically added when the project is created if the word is entered here.",
   "userSettings": "User settings",
-  "yourSafeWord": "Enter your safe word"
+  "yourSafeWord": "Type in your word"
 }
