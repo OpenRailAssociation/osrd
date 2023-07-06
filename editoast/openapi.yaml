@@ -3925,7 +3925,6 @@ components:
           default_value,
           ranges,
           distribution,
-          capacity_speed_limit,
         ]
 
     EngineeringAllowance:
@@ -3941,7 +3940,7 @@ components:
             capacity_speed_limit:
               type: number
               format: double
-          required: [allowance_type, distribution, capacity_speed_limit]
+          required: [allowance_type, distribution]
         - $ref: "#/components/schemas/RangeAllowance"
 
     RangeAllowance:
