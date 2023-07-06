@@ -1,53 +1,48 @@
-.container-drivertrainschedule {
-  max-height: 30rem;
-}
-
-.modal-drivertrainschedule {
-  height: 50%;
-}
-
 .simulation-drivertrainschedule {
-  max-height: 15rem;
+  max-height: 50vh;
   overflow: auto;
 }
 
-.table-drivertrainschedule,
-.table-drivertrainschedule th,
-.table-drivertrainschedule td {
-  border: none !important;
-  padding-right: 10px;
-
-  .drivertrainschedule-pk {
-    text-align: right;
-    width: 2rem;
-  }
-
-  .stoptime-container {
-    .box {
-      width: 100%;
-      display: table;
-      .box-row {
-        z-index: 0;
-        display: table-row;
-      }
-      .box-cell {
-        display: table-cell;
-        width: calc(100% / 3);
-        text-align: left;
-        position: relative;
-        .box-cell::after {
-          content: '+';
-          position: absolute;
-        }
-      }
-    }
-  }
-
+.table-drivertrainschedule {
+  position: relative;
   .drivertrainschedule-stop {
     font-weight: bold;
     small {
       font-weight: bold;
     }
+  }
+  th, td {
+    position: relative;
+    border: none !important;
+    padding-right: 10px;
+
+    .drivertrainschedule-pk {
+      text-align: right;
+      font-size: 0.9rem;
+      width: 2rem;
+    }
+
+    &.stoptime-container {
+      .box {
+        width: 100%;
+        display: table;
+        .box-row {
+          display: table-row;
+        }
+        .box-cell {
+          display: table-cell;
+          width: calc(100% / 3);
+          text-align: left;
+          position: relative;
+          .box-cell::after {
+            content: '+';
+            position: absolute;
+          }
+        }
+      }
+    }
+
+    
   }
 }
 
