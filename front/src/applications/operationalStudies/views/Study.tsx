@@ -215,7 +215,12 @@ export default function Study() {
         }
       } else {
         try {
-          const { data } = await getScenarios({ projectId, studyId, ordering: sortOption });
+          const { data } = await getScenarios({
+            projectId,
+            studyId,
+            ordering: sortOption,
+            pageSize: 1000,
+          });
           if (data?.results) setScenariosList(data.results);
         } catch (error) {
           console.error(error);

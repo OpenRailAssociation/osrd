@@ -92,7 +92,7 @@ export default function Home() {
       }
     } else {
       try {
-        const projects = await getProjects({ ordering: sortOption });
+        const projects = await getProjects({ ordering: sortOption, pageSize: 1000 });
         if (projects.data?.results) {
           setProjectsList(projects.data.results);
         }
