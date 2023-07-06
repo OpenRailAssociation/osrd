@@ -224,39 +224,37 @@ export default function SimulationResults({ isDisplayed, collapsedTimetable, inf
       )}
 
       {/* SIMULATION : MAP */}
-      <div className="row" ref={timeTableRef}>
-        <div className="col-12">
-          <div className="osrd-simulation-container mb-2">
-            <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
-              {/* <Rnd
-                    className="map-resizer"
-                    default={{
-                      x: 0,
-                      y: 0,
-                      height: `${heightOfSimulationMap}px`,
-                      width: 'auto',
-                    }}
-                    minHeight={MAP_MIN_HEIGHT}
-                    maxHeight={mapMaxHeight}
-                    style={{
-                      paddingBottom: '12px',
-                    }}
-                    disableDragging
-                    enableResizing={{
-                      bottom: true,
-                    }}
-                    onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
-                    onResize={(_e, _dir, _refToElement, delta) => {
-                      setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
-                    }}
-                    onResizeStop={() => {
-                      dispatch(updateMustRedraw(true));
-                    }}
-                  >
-                    <Map setExtViewport={setExtViewport} />
-                  </Rnd> */}
-              <SimulationResultsMap setExtViewport={setExtViewport} />
-            </div>
+      <div ref={timeTableRef}>
+        <div className="osrd-simulation-container mb-2">
+          <div className="osrd-simulation-map" style={{ height: `${heightOfSimulationMap}px` }}>
+            {/* <Rnd
+                  className="map-resizer"
+                  default={{
+                    x: 0,
+                    y: 0,
+                    height: `${heightOfSimulationMap}px`,
+                    width: 'auto',
+                  }}
+                  minHeight={MAP_MIN_HEIGHT}
+                  maxHeight={mapMaxHeight}
+                  style={{
+                    paddingBottom: '12px',
+                  }}
+                  disableDragging
+                  enableResizing={{
+                    bottom: true,
+                  }}
+                  onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
+                  onResize={(_e, _dir, _refToElement, delta) => {
+                    setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
+                  }}
+                  onResizeStop={() => {
+                    dispatch(updateMustRedraw(true));
+                  }}
+                >
+                  <Map setExtViewport={setExtViewport} />
+                </Rnd> */}
+            <SimulationResultsMap setExtViewport={setExtViewport} />
           </div>
         </div>
       </div>

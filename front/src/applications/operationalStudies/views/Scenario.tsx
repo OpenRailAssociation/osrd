@@ -136,7 +136,7 @@ export default function Scenario() {
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
-          <div className="row">
+          <div className="row scenario-container">
             <div className={collapsedTimetable ? 'd-none' : 'col-hdp-3 col-xl-4 col-lg-5 col-md-6'}>
               <div className="scenario-sidemenu">
                 {scenario && (
