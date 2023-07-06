@@ -1705,14 +1705,14 @@ export type RangeAllowance = {
 export type EngineeringAllowance = {
   allowance_type: 'engineering';
   distribution: 'MARECO' | 'LINEAR';
-  capacity_speed_limit: number;
+  capacity_speed_limit?: number;
 } & RangeAllowance;
 export type StandardAllowance = {
   allowance_type: 'standard';
   default_value: AllowanceValue;
   ranges: RangeAllowance[];
   distribution: 'MARECO' | 'LINEAR';
-  capacity_speed_limit: number;
+  capacity_speed_limit?: number;
 };
 export type Allowance =
   | ({
