@@ -26,7 +26,6 @@ export const initialStandardAllowance: StandardAllowance = {
   },
   ranges: [],
   distribution: 'MARECO',
-  capacity_speed_limit: 30,
 };
 
 export const unitsList = Object.keys(unitsLabels).map((unit) => ({
