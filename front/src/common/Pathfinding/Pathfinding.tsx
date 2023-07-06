@@ -201,25 +201,26 @@ export function getOpenApiSteps({
     destination.coordinates
   ) {
     const intermediateSteps = compact(
-      vias.map((via) =>
-        via.location?.track_section && via.location?.offset && via.coordinates
+      vias.map(({ location, coordinates, duration: viaDuration }) =>
+        location && location.track_section && (location.offset || coordinates)
           ? {
-              duration: Math.round(via.duration || 0),
+              duration: Math.round(viaDuration || 0),
               waypoints: [
-                via.location.offset !== undefined
+                location.offset !== undefined
                   ? {
-                      track_section: via.location.track_section,
-                      offset: via.location.offset,
+                      track_section: location.track_section,
+                      offset: location.offset,
                     }
                   : {
-                      track_section: via.location.track_section,
-                      geo_coordinate: via.coordinates,
+                      track_section: location.track_section,
+                      geo_coordinate: coordinates,
                     },
               ],
             }
           : null
       )
     );
+
     return {
       infra: infraID,
       steps: [
