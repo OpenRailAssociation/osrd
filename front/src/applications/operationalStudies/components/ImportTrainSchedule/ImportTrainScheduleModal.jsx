@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import Map from 'applications/operationalStudies/components/ImportTrainSchedule/Map';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
 import generatePathfindingPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'applications/operationalStudies/components/ImportTrainSchedule/generateTrainSchedulesPayload';
@@ -15,6 +15,7 @@ import {
 import { refactorUniquePaths } from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleHelpers';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { updateReloadTimetable } from 'reducers/osrdsimulation/actions';
 import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
 
 /* METHOD
@@ -30,6 +31,7 @@ import ImportTrainScheduleModalFooter from './ImportTrainScheduleModalFooter';
 export default function ImportTrainScheduleModal(props) {
   const { rollingStockDB, trains } = props;
   const { t } = useTranslation('translation', 'operationalStudies/importTrainSchedule');
+  const dispatch = useDispatch();
   const infraID = useSelector(getInfraID);
   const rollingStockID = useSelector(getRollingStockID);
   const timetableID = useSelector(getTimetableID);
@@ -37,6 +39,7 @@ export default function ImportTrainScheduleModal(props) {
   const [postPathFindingOp] = osrdMiddlewareApi.usePostPathfindingOpMutation();
   const [postPathFinding] = osrdEditoastApi.usePostPathfindingMutation();
   const [postTrainSchedule] = osrdMiddlewareApi.usePostTrainScheduleStandaloneSimulationMutation();
+  const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
 
   const [trainsWithPathRef, setTrainsWithPathRef] = useState([]);
 
@@ -206,15 +209,24 @@ export default function ImportTrainScheduleModal(props) {
   async function launchTrainSchedules(params) {
     try {
       await postTrainSchedule({ standaloneSimulationParameters: params }).unwrap();
-      getTimetable(timetableID);
-      return `${t(
-        'operationalStudies/importTrainSchedule:status.calculatingTrainScheduleComplete'
-      )} (${params.path})`;
     } catch (error) {
       return `${t(
         'operationalStudies/importTrainSchedule:errorMessages.unableToRetrieveTrainSchedule'
       )} (${params.path})`;
     }
+
+    try {
+      const timetable = await getTimetableWithTrainSchedulesDetails({
+        id: timetableID,
+      }).unwrap();
+      await Promise.resolve(dispatch(updateReloadTimetable(false)));
+      getTimetable(timetable);
+    } catch (error) {
+      console.error(error);
+    }
+    return `${t(
+      'operationalStudies/importTrainSchedule:status.calculatingTrainScheduleComplete'
+    )} (${params.path})`;
   }
   async function generateTrainSchedules() {
     const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
