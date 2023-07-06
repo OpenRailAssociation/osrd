@@ -26,6 +26,7 @@ import { valueToInterval } from 'utils/numbers';
 import { GetTimetableByIdApiResponse, Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { durationInSeconds } from 'utils/timeManipulation';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
+import { isEmpty } from 'lodash';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
@@ -206,14 +207,15 @@ export default function Timetable({
     if (infraState === 'CACHED' && timetableID) {
       getTimetableWithTrainSchedulesDetails({ id: timetableID })
         .unwrap()
-        .then((result) => {
-          setTimetable(result);
-          if (result.train_schedule_summaries) {
-            setTrainsDurationsIntervals(
-              findTrainsDurationsIntervals(result.train_schedule_summaries)
-            );
+        .then((timetableWithTrainSchedules) => {
+          setTimetable(timetableWithTrainSchedules);
+          setTrainsDurationsIntervals(
+            findTrainsDurationsIntervals(timetableWithTrainSchedules.train_schedule_summaries)
+          );
+          if (!isEmpty(timetableWithTrainSchedules.train_schedule_summaries)) {
+            // TODO: rename getTimetable by getSimulationResults
+            getTimetable(timetableWithTrainSchedules);
           }
-          getTimetable(result);
         });
     }
   }, [infraState]);
