@@ -34,7 +34,7 @@ import { Spinner } from 'common/Loader';
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector(getConf);
-  const { safeWord } = useSelector((state) => state.main);
+  const { safeWord, motriceRelated } = useSelector((state) => state.main);
   const dispatch = useDispatch();
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
@@ -152,7 +152,7 @@ export default function StdcmRequestModal(props) {
             <div className="d-flex flex-column text-center">
               {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
                 <>
-                  {!safeWord && (
+                  {!safeWord && motriceRelated && (
                     <div className="w-100">
                       <img src={rabbit} alt="runnning stdcm" />
                     </div>
