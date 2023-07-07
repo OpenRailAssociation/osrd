@@ -3,7 +3,6 @@ use crate::error::Result;
 use crate::models::train_schedule::{
     LightTrainSchedule, MechanicalEnergyConsumedBaseEco, TrainSchedule, TrainScheduleSummary,
 };
-use crate::models::ResultStops;
 use crate::tables::osrd_infra_timetable;
 use crate::views::train_schedule::simulation_report::fetch_simulation_output;
 use crate::DbPool;
@@ -92,19 +91,18 @@ impl Timetable {
                         base: result_train.mechanical_energy_consumed,
                         eco,
                     };
-                    let filtered_stops: Vec<ResultStops> = result_train
+                    let path_length = result_train.stops.last().unwrap().position;
+                    let stops_count = result_train
                         .stops
-                        .into_iter()
+                        .iter()
                         .filter(|stop| stop.duration > 0.)
-                        .collect();
-                    let path_length = filtered_stops.last().unwrap().position;
-                    let stops = filtered_stops.len() - 1;
+                        .count() as i64;
 
                     TrainScheduleSummary {
                         train_schedule,
                         arrival_time,
                         mechanical_energy_consumed,
-                        stops_count: stops as i64,
+                        stops_count,
                         path_length,
                     }
                 })
