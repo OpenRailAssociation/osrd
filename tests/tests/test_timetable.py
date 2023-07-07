@@ -134,7 +134,7 @@ def test_get_timetable(
             options=None,
             power_restriction_ranges=None,
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
-            stops_count=0,
+            stops_count=1,
             path_length=45549.5653000392,
         ),
         _TrainScheduleSummary(
@@ -154,7 +154,7 @@ def test_get_timetable(
             options=None,
             power_restriction_ranges=None,
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
-            stops_count=0,
+            stops_count=1,
             path_length=45549.5653000392,
         ),
     ]
