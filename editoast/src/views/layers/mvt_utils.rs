@@ -131,7 +131,7 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
         ), matches AS (
              SELECT
                  ST_AsGeoJson(ST_AsMVTGeom({on_field}, bbox.geom)) AS geo_json,
-             layer.obj_id AS obj_id
+             layer.id AS id
              FROM {table_name} layer
              CROSS JOIN bbox
              WHERE layer.infra_id = $4
@@ -142,7 +142,7 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
             matches.geo_json as geo_json,
             {data_expr} {exclude_fields} AS data
         FROM matches
-        INNER JOIN {table_name} layer on matches.obj_id = layer.obj_id and layer.infra_id = $4
+        INNER JOIN {table_name} layer on matches.id = layer.id
         {joins}
         WHERE geo_json is not NULL {where_condition}
         ",
@@ -182,7 +182,7 @@ mod tests {
         ), matches AS (
              SELECT
                  ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
-             layer.obj_id AS obj_id
+             layer.id AS id
              FROM osrd_infra_tracksectionlayer layer
              CROSS JOIN bbox
              WHERE layer.infra_id = $4
@@ -193,7 +193,7 @@ mod tests {
             matches.geo_json as geo_json,
             track_section.data - 'geo' - 'sch' AS data
         FROM matches
-        INNER JOIN osrd_infra_tracksectionlayer layer on matches.obj_id = layer.obj_id and layer.infra_id = $4
+        INNER JOIN osrd_infra_tracksectionlayer layer on matches.id = layer.id
         inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
         WHERE geo_json is not NULL
         ",
@@ -203,7 +203,7 @@ mod tests {
         ), matches AS (
              SELECT
                  ST_AsGeoJson(ST_AsMVTGeom(schematic, bbox.geom)) AS geo_json,
-             layer.obj_id AS obj_id
+             layer.id AS id
              FROM osrd_infra_speedsectionlayer layer
              CROSS JOIN bbox
              WHERE layer.infra_id = $4
@@ -214,7 +214,7 @@ mod tests {
             matches.geo_json as geo_json,
             speed_section.data  AS data
         FROM matches
-        INNER JOIN osrd_infra_speedsectionlayer layer on matches.obj_id = layer.obj_id and layer.infra_id = $4
+        INNER JOIN osrd_infra_speedsectionlayer layer on matches.id = layer.id
         inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
         WHERE geo_json is not NULL AND (not (speed_section.data @? '$.extensions.lpv_sncf.z'))
         "
