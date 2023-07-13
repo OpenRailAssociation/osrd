@@ -64,13 +64,21 @@ function TimetableTrainCard({
     }
   }, [train.id]);
 
+  const isInvalid = true;
+
   return (
-    <div className="scenario-timetable-train-with-right-bar">
+    <div
+      className={cx(
+        'scenario-timetable-train-with-right-bar',
+        idx % 2 === 0 && isInvalid && 'invalid'
+      )}
+    >
       <div
         className={cx(
           'scenario-timetable-train with-colored-border',
           isSelected && 'selected',
           isModified && 'modified',
+          train.invalid_reasons && train.invalid_reasons.length > 0 && 'invalid',
           `colored-border-${intervalPosition}`
         )}
       >

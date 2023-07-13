@@ -163,6 +163,21 @@
         .scenario-timetable-train-with-right-bar {
           position: relative;
           display: flex;
+          &.invalid {
+            .scenario-timetable-train-header {
+              background-image: linear-gradient(
+                135deg,
+                #ed3d21 8.33%,
+                transparent 8.33%,
+                transparent 50%,
+                #ed3d21 50%,
+                #ed3d21 58.33%,
+                transparent 58.33%,
+                transparent 100%
+              );
+              background-size: 8.49px 8.49px;
+            }
+          }
           .scenario-timetable-train {
             position: relative;
             display: flex;
