@@ -52,6 +52,8 @@
   "gare": "Station, post",
   "importTrainSchedule": "Import",
   "infraLoading": "Infrastructure is loading…",
+  "inputOPTrigrams": "Enter the trigrams of operational points you want to the path to go through, separated by a space.",
+  "inputOPTrigramsExample": "Ex: LSN CIG CCS",
   "inverseOD": "Reverse origin/destination",
   "launchSimulation": "Start",
   "manageVias": "Steps management",

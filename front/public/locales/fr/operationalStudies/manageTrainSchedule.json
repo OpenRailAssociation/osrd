@@ -52,6 +52,8 @@
   "gare": "Gare, poste",
   "importTrainSchedule": "Importation",
   "infraLoading": "Infra en cours de chargement…",
+  "inputOPTrigrams": "Entrez les trigrammes des points remarquables par lesquels vous voulez que l'itinéraire se fasse, séparés par un espace.",
+  "inputOPTrigramsExample": "Ex : LSN CIG CCS",
   "inverseOD": "Inverser origine/destination",
   "launchSimulation": "Démarrer",
   "manageVias": "Gestion des étapes",
