@@ -23,7 +23,7 @@ diesel = { version = "2.1", features = [
     "chrono",
     "uuid",
 ] }
-diesel_json = "0.2.0"
+diesel_json = "0.2.1"
 image = "0.24"
 json-patch = "1.0"
 pathfinding = "4.3"
