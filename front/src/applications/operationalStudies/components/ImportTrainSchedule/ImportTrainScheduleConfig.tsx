@@ -1,11 +1,12 @@
-import get from 'axios';
+import { isEmpty } from 'lodash';
 import React, { useState, useContext } from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+
 import RollingStockSelector from 'common/RollingStockSelector/WithRollingStockSelector';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import MemoStationSelector from 'applications/operationalStudies/components/ImportTrainSchedule/ImportTrainScheduleStationSelector';
 import { setFailure } from 'reducers/main';
-import { useDispatch } from 'react-redux';
 import StationCard from 'common/StationCard';
 import { formatIsoDate } from 'utils/date';
 import UploadFileModal from 'applications/customget/components/uploadFileModal';
@@ -22,8 +23,7 @@ import {
   osrdEditoastApi,
   TrackLocation,
 } from 'common/api/osrdEditoastApi';
-import { some } from 'lodash';
-import { GRAOU_URL } from './consts';
+import { getGraouTrainSchedules } from 'common/api/graouApi';
 
 interface ImportTrainScheduleConfigProps {
   infraId: number;
@@ -81,31 +81,28 @@ export default function ImportTrainScheduleConfig({
   function validateImportedTrainSchedules(
     importedTrainSchedules: Record<string, unknown>[]
   ): ImportedTrainSchedule[] | null {
-    const isInvalidTrainSchedules = some(importedTrainSchedules, (trainSchedule) => {
+    const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
       if (
-        !trainSchedule.trainNumber ||
-        !trainSchedule.rollingStock ||
-        !trainSchedule.departureTime ||
-        !trainSchedule.arrivalTime ||
-        !trainSchedule.departure ||
-        !trainSchedule.steps ||
+        ['trainNumber', 'rollingStock', 'departureTime', 'arrivalTime', 'departure', 'steps'].some(
+          (key) => !(key in trainSchedule)
+        ) ||
         !Array.isArray(trainSchedule.steps)
       ) {
         return true;
       }
-      const hasInvalidateSteps = some(
-        trainSchedule.steps,
-        (step) =>
-          !('arrivalTime' in step) ||
-          !('departureTime' in step) ||
-          !('uic' in step) ||
-          // !('yard' in step) ||
-          !('name' in step) ||
-          !('trigram' in step) ||
-          !('latitude' in step) ||
-          !('longitude' in step)
+      const hasInvalidteps = trainSchedule.steps.some((step) =>
+        [
+          'arrivalTime',
+          'departureTime',
+          'uic',
+          'yard',
+          'name',
+          'trigram',
+          'latitude',
+          'longitude',
+        ].some((key) => !(key in step))
       );
-      return hasInvalidateSteps;
+      return hasInvalidteps;
     });
     if (isInvalidTrainSchedules) {
       dispatch(
@@ -155,19 +152,13 @@ export default function ImportTrainScheduleConfig({
   async function getTrainsFromOpenData(config: TrainScheduleImportConfig) {
     setTrainsList([]);
     setIsLoading(true);
-    try {
-      const params = {
-        q: 'trains',
-        config,
-      };
-      const result = await get(`${GRAOU_URL}/api/trainschedules.php`, { params });
-      const importedTrainSchedules = validateImportedTrainSchedules(result.data);
-      if (importedTrainSchedules) {
-        await updateTrainSchedules(importedTrainSchedules);
-      }
-    } catch (error) {
-      console.error(error);
+
+    const result = await getGraouTrainSchedules(config);
+    const importedTrainSchedules = validateImportedTrainSchedules(result);
+    if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
+      await updateTrainSchedules(importedTrainSchedules);
     }
+
     setIsLoading(false);
   }
 
@@ -208,13 +199,13 @@ export default function ImportTrainScheduleConfig({
 
   const importFile = async (file: File) => {
     closeModal();
-    if (file) {
-      const text = await file.text();
-      const importedTrainSchedules = validateImportedTrainSchedules(JSON.parse(text));
+    setTrainsList([]);
 
-      if (importedTrainSchedules) {
-        await updateTrainSchedules(importedTrainSchedules);
-      }
+    const text = await file.text();
+    const importedTrainSchedules = validateImportedTrainSchedules(JSON.parse(text));
+
+    if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
+      await updateTrainSchedules(importedTrainSchedules);
     }
   };
 

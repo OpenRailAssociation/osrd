@@ -1,6 +1,3 @@
-export const GRAOU_URL = 'https://graou.info';
-// export const GRAOU_URL = 'http://localhost/graou';
-
 export const initialViewport = {
   latitude: 48.86521728735368,
   longitude: 2.341549498045856,
