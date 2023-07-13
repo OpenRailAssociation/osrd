@@ -73,7 +73,7 @@ export default function DisplayVias({ zoomToFeaturePoint }: DisplayViasProps) {
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {osrdconf.vias.map((place, index) => (
               <Draggable
-                key={`drag-key-${place.id}-${place.position}`}
+                key={`drag-key-${place.id}-${place.path_offset}`}
                 draggableId={`drag-vias-${index}`}
                 index={index}
               >

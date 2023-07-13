@@ -72,7 +72,9 @@ const RenderItineraryMarkers: FC = () => {
                   via.duration === 0 ? '' : 'via-with-stop'
                 }`}
               >
-                {via.name || (via.track && via.track.split('-')[0])}
+                {via.name ||
+                  (via?.path_offset && `KM ${Math.round(via.path_offset) / 1000}`) ||
+                  'N/A'}
               </div>
             </Marker>
           );

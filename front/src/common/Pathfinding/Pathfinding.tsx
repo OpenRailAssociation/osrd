@@ -468,6 +468,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
         params: {
           origin,
           destination,
+          vias,
           rollingStockID,
         },
       });
@@ -519,7 +520,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   useEffect(() => setIsPathfindingInitialized(true), []);
 
   return (
-    <div className="pathfinding-state-main-container">
+    <div className="pathfinding-state-main-container flex-grow-1">
       {infra && infra.state !== 'CACHED' && (
         <div className="content infra-loading">
           <img src={infraLogo} alt="Infra logo" className="mr-2" />

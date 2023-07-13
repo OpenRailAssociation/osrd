@@ -24,6 +24,7 @@ import allowancesPic from 'assets/pictures/components/allowances.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { isElectric } from 'modules/rollingStock/helpers/utils';
+import { formatKmValue } from 'utils/strings';
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
@@ -91,8 +92,7 @@ export default function ManageTrainSchedule() {
           {t('tabs.pathFinding')}
           {pathFinding?.length && !Number.isNaN(pathFinding.length) && (
             <small className="ml-auto pl-1">
-              {Math.round(pathFinding.length) / 1000}
-              km
+              {pathFinding.length && formatKmValue(pathFinding.length / 1000, 3)}
             </small>
           )}
         </span>

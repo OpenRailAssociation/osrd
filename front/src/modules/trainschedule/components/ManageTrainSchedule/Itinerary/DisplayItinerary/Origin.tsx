@@ -95,7 +95,7 @@ function Origin(props: OriginProps) {
     <div className="mb-2 place" data-testid="itinerary-origin">
       {origin !== undefined ? (
         <>
-          <div className="hover origin-name-and-time-container">
+          <div className="pl-1 hover w-100 d-flex align-items-center">
             <span className="text-success mr-2">
               <RiMapPin2Fill />
             </span>

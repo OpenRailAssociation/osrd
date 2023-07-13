@@ -11,12 +11,15 @@ import ModalSugerredVias from 'modules/trainschedule/components/ManageTrainSched
 import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
 import { getMap } from 'reducers/map/selectors';
 import Pathfinding from 'common/Pathfinding/Pathfinding';
+import TypeAndPath from 'common/Pathfinding/TypeAndPath';
+import { GoRocket } from 'react-icons/go';
 
 function Itinerary() {
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
   const vias = useSelector(getVias);
   const [extViewport, setExtViewport] = useState<Viewport>();
+  const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useDispatch();
   const map = useSelector(getMap);
 
@@ -88,10 +91,22 @@ function Itinerary() {
   }, [extViewport]);
 
   return (
-    <div className="itinerary mb-2">
-      <div className="mb-2">
+    <div className="osrd-config-item">
+      <div className="mb-2 d-flex">
         <Pathfinding zoomToFeature={zoomToFeature} />
+        <button
+          type="button"
+          className="btn btn-sm btn-only-icon btn-white px-3 ml-2"
+          onClick={() => setDisplayTypeAndPath(!displayTypeAndPath)}
+        >
+          <GoRocket />
+        </button>
       </div>
+      {displayTypeAndPath && (
+        <div className="mb-2">
+          <TypeAndPath zoomToFeature={zoomToFeature} />
+        </div>
+      )}
       <div className="osrd-config-item-container pathfinding-details" data-testid="itinerary">
         <DisplayItinerary
           zoomToFeaturePoint={zoomToFeaturePoint}
