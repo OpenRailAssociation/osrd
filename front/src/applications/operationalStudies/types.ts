@@ -2,7 +2,7 @@ import { TrackLocation } from 'common/api/osrdEditoastApi';
 
 export interface Destination {
   uic: number;
-  yard: string;
+  yard?: string;
   name: string;
   trigram: string;
   latitude: number;
@@ -26,18 +26,16 @@ export type TrainSchedule = {
   transilienName?: string;
 };
 
-interface JsonImportTrainScheduleStep extends Destination {
-  arrivalTime: string;
-  departureTime: string;
-}
-
-export type JsonImportTrainSchedule = {
+export type ImportedTrainSchedule = {
   trainNumber: string;
   rollingStock: string;
   departureTime: string;
   arrivalTime: string;
-  departure: Destination;
-  steps: JsonImportTrainScheduleStep[];
+  departure: string;
+  steps: (Destination & {
+    arrivalTime: string;
+    departureTime: string;
+  })[];
   transilienName?: string;
 };
 
@@ -47,30 +45,4 @@ export type TrainScheduleImportConfig = {
   date: string;
   startTime: string;
   endTime: string;
-};
-
-export type GraouTrainScheduleStep = {
-  arrivalTime: string;
-  city: string;
-  department: string;
-  departureTime: string;
-  duration: number;
-  latitude: string;
-  line: number;
-  longitude: string;
-  name: string;
-  region: string;
-  stepNumber: number;
-  trigram: string;
-  uic: string;
-};
-
-export type GraouTrainSchedule = {
-  arrivalTime: string;
-  departure: string;
-  departureTime: string;
-  numTransilien?: string;
-  rollingStock: string;
-  steps: GraouTrainScheduleStep[];
-  trainNumber: string;
 };

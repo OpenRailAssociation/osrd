@@ -3108,18 +3108,6 @@ components:
           type: string
         ch:
           type: string
-        track_sections:
-          type: array
-          items:
-            type: object
-            required:
-              - track
-              - position
-            properties:
-              track:
-                type: string
-              position:
-                type: integer
         geographic:
           $ref: "#/components/schemas/MultiPoint"
         schematic:

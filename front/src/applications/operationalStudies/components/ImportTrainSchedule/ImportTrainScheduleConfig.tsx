@@ -11,9 +11,7 @@ import { formatIsoDate } from 'utils/date';
 import UploadFileModal from 'applications/customget/components/uploadFileModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import {
-  GraouTrainSchedule,
-  GraouTrainScheduleStep,
-  JsonImportTrainSchedule,
+  ImportedTrainSchedule,
   Step,
   TrainSchedule,
   TrainScheduleImportConfig,
@@ -24,7 +22,7 @@ import {
   osrdEditoastApi,
   TrackLocation,
 } from 'common/api/osrdEditoastApi';
-import { compact } from 'lodash';
+import { some } from 'lodash';
 import { GRAOU_URL } from './consts';
 
 interface ImportTrainScheduleConfigProps {
@@ -80,31 +78,81 @@ export default function ImportTrainScheduleConfig({
     );
   }
 
-  function formatGraouSteps(
-    steps: GraouTrainScheduleStep[],
-    trackSectionsByOp: Record<number, TrackLocation[]>
-  ) {
-    return compact(
-      steps.map((step) => {
-        const uicFormatted = Number(step.uic);
-        const latitudeFormatted = Number(step.latitude);
-        const longitudeFormatted = Number(step.longitude);
-        if (!uicFormatted || !latitudeFormatted || !longitudeFormatted) {
-          return null;
-        }
-        return {
-          ...step,
-          yard: '',
-          uic: uicFormatted,
-          latitude: latitudeFormatted,
-          longitude: longitudeFormatted,
-          tracks: trackSectionsByOp[Number(step.uic)] || [],
-        } as Step;
-      })
-    );
+  function validateImportedTrainSchedules(
+    importedTrainSchedules: Record<string, unknown>[]
+  ): ImportedTrainSchedule[] | null {
+    const isInvalidTrainSchedules = some(importedTrainSchedules, (trainSchedule) => {
+      if (
+        !trainSchedule.trainNumber ||
+        !trainSchedule.rollingStock ||
+        !trainSchedule.departureTime ||
+        !trainSchedule.arrivalTime ||
+        !trainSchedule.departure ||
+        !trainSchedule.steps ||
+        !Array.isArray(trainSchedule.steps)
+      ) {
+        return true;
+      }
+      const hasInvalidateSteps = some(
+        trainSchedule.steps,
+        (step) =>
+          !('arrivalTime' in step) ||
+          !('departureTime' in step) ||
+          !('uic' in step) ||
+          // !('yard' in step) ||
+          !('name' in step) ||
+          !('trigram' in step) ||
+          !('latitude' in step) ||
+          !('longitude' in step)
+      );
+      return hasInvalidateSteps;
+    });
+    if (isInvalidTrainSchedules) {
+      dispatch(
+        setFailure({
+          name: t('errorMessages.error'),
+          message: 'Impossible de convertir les données en TrainSchedule',
+        })
+      );
+      console.error(
+        'Invalid response format: can not convert response into TrainSchedules. Expected response : { { trainNumber: string; rollingStock: string; departureTime: string; arrivalTime: string; departure: string; steps: ({uic: number; yard: string; name: string; trigram: string; latitude: number; longitude: number; arrivalTime: string; departureTime: string; })[]; transilienName?: string; }}'
+      );
+      return null;
+    }
+    return importedTrainSchedules as ImportedTrainSchedule[];
   }
 
-  async function getTrainsFromGraou(config: TrainScheduleImportConfig) {
+  async function updateTrainSchedules(importedTrainSchedules: ImportedTrainSchedule[]) {
+    const opIds = importedTrainSchedules.flatMap((trainSchedule) =>
+      trainSchedule.steps.map((step) => step.uic)
+    );
+    const trackSectionsByOp = await importTrackSections(opIds);
+
+    // For each train schedule, we add the duration and tracks of each step
+    const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
+      const stepsWithDuration = trainSchedule.steps.map((step) => {
+        // calcul duration in seconds between step arrival and departure
+        // in case of arrival and departure are the same, we set duration to 0
+        // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
+        const duration = Math.round(
+          (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
+        );
+        return {
+          ...step,
+          duration,
+          tracks: trackSectionsByOp[Number(step.uic)] || [],
+        } as Step;
+      });
+      return {
+        ...trainSchedule,
+        steps: stepsWithDuration,
+      } as TrainSchedule;
+    });
+
+    setTrainsList(trainsSchedules);
+  }
+
+  async function getTrainsFromOpenData(config: TrainScheduleImportConfig) {
     setTrainsList([]);
     setIsLoading(true);
     try {
@@ -113,28 +161,14 @@ export default function ImportTrainScheduleConfig({
         config,
       };
       const result = await get(`${GRAOU_URL}/api/trainschedules.php`, { params });
-      const graouTrainSchedules = result.data as GraouTrainSchedule[];
-
-      const opIds = graouTrainSchedules.flatMap((trainSchedule) =>
-        trainSchedule.steps.map((step) => Number(step.uic))
-      );
-      const trackSectionsByOp = await importTrackSections(opIds);
-
-      // For each train schedule, we add the trackSections of each step
-      const trainSchedules = graouTrainSchedules.map((trainSchedule) => {
-        const steps = formatGraouSteps(trainSchedule.steps, trackSectionsByOp);
-        return {
-          ...trainSchedule,
-          steps,
-        } as TrainSchedule;
-      });
-
-      setTrainsList(trainSchedules);
-      setIsLoading(false);
+      const importedTrainSchedules = validateImportedTrainSchedules(result.data);
+      if (importedTrainSchedules) {
+        await updateTrainSchedules(importedTrainSchedules);
+      }
     } catch (error) {
       console.error(error);
-      setIsLoading(false);
     }
+    setIsLoading(false);
   }
 
   function defineConfig() {
@@ -162,7 +196,7 @@ export default function ImportTrainScheduleConfig({
     }
 
     if (from && to && date && !error) {
-      getTrainsFromGraou({
+      getTrainsFromOpenData({
         from,
         to,
         date,
@@ -176,36 +210,11 @@ export default function ImportTrainScheduleConfig({
     closeModal();
     if (file) {
       const text = await file.text();
-      const trainsSchedulesTemp: JsonImportTrainSchedule[] = JSON.parse(text);
+      const importedTrainSchedules = validateImportedTrainSchedules(JSON.parse(text));
 
-      const opIds = trainsSchedulesTemp.flatMap((trainSchedule) =>
-        trainSchedule.steps.map((step) => step.uic)
-      );
-      const trackSectionsByOp = await importTrackSections(opIds);
-
-      // For each train schedule, we add the duration and tracks of each step
-      const trainsSchedules = trainsSchedulesTemp.map((trainSchedule) => {
-        const stepsWithDuration = trainSchedule.steps.map((step) => {
-          // calcul duration in seconds between step arrival and departure
-          // in case of arrival and departure are the same, we set duration to 0
-          // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
-          const duration = Math.round(
-            (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
-          );
-          return {
-            ...step,
-            duration,
-            tracks: trackSectionsByOp[Number(step.uic)] || [],
-          } as Step;
-        });
-        return {
-          ...trainSchedule,
-          steps: stepsWithDuration,
-          departure: trainSchedule.departure.name,
-        } as TrainSchedule;
-      });
-
-      setTrainsList(trainsSchedules);
+      if (importedTrainSchedules) {
+        await updateTrainSchedules(importedTrainSchedules);
+      }
     }
   };
 

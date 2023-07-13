@@ -1,4 +1,4 @@
-import { compact } from 'lodash';
+import { compact, isEmpty } from 'lodash';
 import rollingstockOpenData2OSRD from 'applications/operationalStudies/components/ImportTrainSchedule/rollingstock_opendata2osrd.json';
 
 const getTrainAndRollingStockFromPath = (
@@ -66,17 +66,17 @@ const createAutocompletePathFindingPayload = (train, rollingStockId, infraId) =>
   const invalidSteps = [];
   const steps = compact(
     train.steps.map((step, idx) => {
-      const isFirstOrLastStep = idx === 0 || idx === train.steps.length - 1;
-      const opFirstTrackSection = step.tracks[0];
-      if (!opFirstTrackSection) {
+      if (isEmpty(step.tracks)) {
         invalidSteps.push(step);
         return null;
       }
+      const isFirstOrLastStep = idx === 0 || idx === train.steps.length - 1;
       return {
         duration: isFirstOrLastStep ? 0 : step.duration,
-        waypoints: [
-          { track_section: opFirstTrackSection.track, offset: opFirstTrackSection.position },
-        ],
+        waypoints: step.tracks.map((trackPosition) => ({
+          track_section: trackPosition.track,
+          offset: trackPosition.position,
+        })),
       };
     })
   );
