@@ -13,3 +13,6 @@ darling = "0.20"
 
 [lib]
 proc-macro = true
+
+[dev-dependencies]
+pretty_assertions = "1.4.0"

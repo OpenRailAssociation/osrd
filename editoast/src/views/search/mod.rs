@@ -193,20 +193,23 @@
 //! The resulting table of the request will then be converted to a JSON array of
 //! mappings that constitutes the payload of the HTTP response.
 
-pub mod config;
 pub mod context;
 pub mod dsl;
+mod objects;
 pub mod process;
+mod search_object;
 pub mod searchast;
 pub mod sqlquery;
 pub mod typing;
 
+pub use search_object::{SearchConfigStore, SearchObject};
+
 use crate::error::Result;
 use crate::views::pagination::PaginationQueryParam;
+use crate::views::search::objects::SearchConfigFinder;
 use crate::DbPool;
 use actix_web::web::{block, Data, Json, Query};
 use actix_web::{post, HttpResponse, Responder};
-use config::{Config as SearchConfig, SearchEntry};
 use diesel::pg::Pg;
 use diesel::query_builder::BoxedSqlQuery;
 use diesel::sql_types::{Jsonb, Text};
@@ -218,6 +221,7 @@ use thiserror::Error;
 
 use self::context::{QueryContext, TypedAst};
 use self::process::create_processing_context;
+use self::search_object::{Criteria, Property, SearchConfig};
 use self::searchast::SearchAst;
 use self::typing::{AstType, TypeSpec};
 
@@ -230,31 +234,23 @@ enum SearchError {
     QueryAst(TypeSpec),
 }
 
-impl config::Config {
-    fn entry(&self, object: &String) -> Result<&config::SearchEntry> {
-        self.entries
-            .get(object)
-            .ok_or_else(|| SearchError::ObjectType(object.to_owned()).into())
-    }
-}
-
-impl config::SearchEntry {
+impl SearchConfig {
     fn result_columns(&self) -> String {
-        self.result
-            .columns
+        self.properties
             .iter()
-            .map(|(col, sql)| format!("({sql}) AS \"{col}\""))
+            .map(|Property { name, sql, .. }| format!("({sql}) AS \"{name}\""))
             .collect::<Vec<_>>()
             .join(", ")
     }
+
     fn create_context(&self) -> QueryContext {
         let mut context = create_processing_context();
-        context.search_table_name = Some(self.table.clone());
+        context.search_table_name = Some(self.table.to_owned());
         // Register known columns with their expected type
-        for (column, col_type) in self.columns.iter() {
+        for Criteria { name, data_type } in self.criterias.iter() {
             context
                 .columns_type
-                .insert(column.clone(), col_type.clone().into());
+                .insert(name.to_string(), data_type.clone());
         }
         context
     }
@@ -270,25 +266,20 @@ pub struct SearchPayload {
 
 fn create_sql_query(
     query: JsonValue,
-    search_entry: &SearchEntry,
+    search_config: &SearchConfig,
     limit: i64,
     offset: i64,
 ) -> Result<BoxedSqlQuery<'static, Pg, diesel::query_builder::SqlQuery>> {
     let ast = SearchAst::build_ast(query)?;
-    let context = search_entry.create_context();
+    let context = search_config.create_context();
     let search_ast_expression_type = context.typecheck_search_query(&ast)?;
     if !AstType::Boolean.is_supertype_spec(&search_ast_expression_type) {
         return Err(SearchError::QueryAst(search_ast_expression_type).into());
     }
     let where_expression = context.search_ast_to_sql(&ast)?;
-    let table = &search_entry.table;
-    let joins = search_entry
-        .result
-        .joins
-        .as_ref()
-        .cloned()
-        .unwrap_or_default();
-    let result_columns = search_entry.result_columns();
+    let table = &search_config.table;
+    let joins = search_config.joins.as_ref().cloned().unwrap_or_default();
+    let result_columns = search_config.result_columns();
     let mut bindings = Default::default();
     let constraints = where_expression.to_sql(&mut bindings);
     let sql_code = format!(
@@ -361,14 +352,14 @@ pub async fn search(
     query_params: Query<PaginationQueryParam>,
     payload: Json<SearchPayload>,
     db_pool: Data<DbPool>,
-    config: Data<SearchConfig>,
 ) -> Result<impl Responder> {
     let Json(SearchPayload { object, query, dry }) = payload;
     let page = query_params.page;
     let per_page = query_params.page_size.unwrap_or(25).max(10);
-    let search = config.entry(&object)?;
+    let search_config = SearchConfigFinder::find(&object)
+        .ok_or_else(|| SearchError::ObjectType(object.to_owned()))?;
     let offset = (page - 1) * per_page;
-    let sql = create_sql_query(query, search, per_page, offset)?;
+    let sql = create_sql_query(query, &search_config, per_page, offset)?;
 
     if dry {
         let query = diesel::debug_query::<Pg, _>(&sql).to_string();
