@@ -48,7 +48,6 @@ use std::fs::File;
 use std::io::BufReader;
 use std::process::exit;
 use views::infra::InfraApiError;
-use views::search::config::Config as SearchConfig;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
@@ -170,7 +169,6 @@ async fn runserver(
             .app_data(infra_caches.clone())
             .app_data(Data::new(MapLayers::parse()))
             .app_data(Data::new(args.map_layers_config.clone()))
-            .app_data(Data::new(SearchConfig::parse()))
             .app_data(Data::new(core_client))
             .service(
                 scope(&args.root_path)
