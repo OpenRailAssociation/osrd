@@ -84,12 +84,14 @@ const LpvPanelCard = ({
             id="lpv-position-from-the-beginning"
             label={t('Editor.tools.speed-edition.panel-position')}
             value={roundedPosition}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newPosition = Number(e.target.value);
+              const updatedPosition = newPosition >= 0 ? newPosition : 0;
               updatePanel(panelInfo, {
                 ...panel,
-                position: Number(e.target.value),
-              })
-            }
+                position: updatedPosition,
+              });
+            }}
             sm
           />
         </div>
