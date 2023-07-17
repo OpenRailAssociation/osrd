@@ -26,6 +26,8 @@ pub enum Commands {
     ImportRailjson(ImportRailjsonArgs),
     ImportProfileSet(ImportProfileSetArgs),
     OsmToRailjson(OsmToRailjsonArgs),
+    #[command(about, long_about = "Prints the OpenApi of the service")]
+    Openapi,
 }
 
 #[derive(Args, Debug, Derivative, Clone)]
