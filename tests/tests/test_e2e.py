@@ -13,6 +13,15 @@ class TestRollingStock:
     base_path: Path
 
 
+# Mark the class as not a test class
+TestRollingStock.__test__ = False
+
+FAST_ROLLING_STOCK_JSON_PATH = Path(__file__).parents[2] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json"
+ROLLING_STOCK_1500_JSON_PATH = (
+    Path(__file__).parents[2] / "front" / "tests" / "assets" / "example_rolling_stock_1500.json"
+)
+
+
 @pytest.mark.e2e
 @pytest.mark.names_and_metadata(
     [
@@ -29,7 +38,7 @@ class TestRollingStock:
                 "reference": "7200",
                 "subseries": "GV",
             },
-            Path(__file__).parents[2] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json",
+            FAST_ROLLING_STOCK_JSON_PATH,
         ),
         TestRollingStock(
             "_@Test Locomotives électriques",
@@ -44,7 +53,7 @@ class TestRollingStock:
                 "reference": "15000",
                 "subseries": "BB 15000",
             },
-            Path(__file__).parents[2] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json",
+            FAST_ROLLING_STOCK_JSON_PATH,
         ),
         TestRollingStock(
             "_@Test BB 22200",
@@ -59,7 +68,7 @@ class TestRollingStock:
                 "reference": "22200",
                 "subseries": "V160",
             },
-            Path(__file__).parents[2] / "front" / "tests" / "assets" / "example_rolling_stock_1500.json",
+            ROLLING_STOCK_1500_JSON_PATH,
         ),
     ]
 )

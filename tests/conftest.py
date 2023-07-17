@@ -10,7 +10,7 @@ from tests.infra import Infra
 from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import API_URL, EDITOAST_URL
-from tests.test_e2e import TestRollingStock
+from tests.test_e2e import FAST_ROLLING_STOCK_JSON_PATH, TestRollingStock
 from tests.utils.timetable import create_scenario
 
 
@@ -81,6 +81,9 @@ def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -
 
 
 def _create_fast_rolling_stocks(test_rolling_stocks: List[TestRollingStock] = None):
+    if test_rolling_stocks is None:
+        payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
+        return [requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"]]
     ids = []
     for rs in test_rolling_stocks:
         payload = json.loads(rs.base_path.read_text())
