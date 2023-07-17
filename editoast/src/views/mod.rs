@@ -3,6 +3,7 @@ pub mod electrical_profiles;
 pub mod infra;
 mod layers;
 pub mod light_rolling_stocks;
+mod openapi;
 pub mod pagination;
 pub mod params;
 pub mod pathfinding;
@@ -14,6 +15,7 @@ pub mod study;
 pub mod timetable;
 pub mod train_schedule;
 
+use self::openapi::OpenApiMerger;
 use crate::client::get_app_version;
 use crate::error::Result;
 use crate::DbPool;
@@ -23,6 +25,7 @@ use actix_web::{get, services};
 use diesel::{sql_query, RunQueryDsl};
 use redis::{cmd, Client};
 use serde_json::{json, Value as JsonValue};
+use utoipa::OpenApi;
 
 pub fn routes() -> impl HttpServiceFactory {
     services![
@@ -47,6 +50,41 @@ pub fn study_routes() -> impl HttpServiceFactory {
         scenario::routes(),
         documents::routes(),
     ]
+}
+
+#[derive(OpenApi)]
+#[openapi(
+    info(description = "My Api description"),
+    tags(),
+    paths(),
+    components(schemas(), responses())
+)]
+pub struct OpenApiRoot;
+
+impl OpenApiRoot {
+    pub fn build_openapi() -> serde_json::Value {
+        let manual = include_str!("../../openapi_legacy.yaml").to_owned();
+        let mut openapi = OpenApiRoot::openapi();
+        // Remove the operation_id that defaults to the endpoint function name
+        // so that it doesn't override the RTK methods names.
+        for (_, endpoint) in openapi.paths.paths.iter_mut() {
+            for (_, operation) in endpoint.operations.iter_mut() {
+                operation.operation_id = None;
+                // By default utoipa adds a tag "crate" to operations that don't have
+                // any. That causes problems with RTK tag management.
+                match &operation.tags {
+                    Some(tags) if tags.len() == 1 && tags.get(0).unwrap() == "crate" => {
+                        operation.tags = None;
+                    }
+                    _ => (),
+                }
+            }
+        }
+        let generated = openapi
+            .to_json()
+            .expect("the openapi should generate properly");
+        OpenApiMerger::new(manual, generated).finish()
+    }
 }
 
 #[get("/health")]
@@ -78,7 +116,7 @@ mod tests {
     use crate::infra_cache::InfraCache;
     use crate::map::MapLayers;
 
-    use super::{routes, study_routes};
+    use super::{routes, study_routes, OpenApiRoot};
     use actix_http::body::BoxBody;
     use actix_http::Request;
     use actix_web::dev::{Service, ServiceResponse};
@@ -179,5 +217,10 @@ mod tests {
         let response: HashMap<String, Option<String>> =
             call_and_read_body_json(&service, request).await;
         assert!(response.contains_key("git_describe"));
+    }
+
+    #[test]
+    fn openapi_merge_goes_well() {
+        let _ = OpenApiRoot::build_openapi(); // panics if something is wrong
     }
 }

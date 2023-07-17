@@ -67,6 +67,9 @@ jobs:
           command: test
           args: --release --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
 
+      - name: Check openapi.yaml sync
+        run: diff <(cargo run --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
+
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
 
