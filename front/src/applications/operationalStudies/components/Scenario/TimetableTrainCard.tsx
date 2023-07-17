@@ -64,15 +64,8 @@ function TimetableTrainCard({
     }
   }, [train.id]);
 
-  const isInvalid = true;
-
   return (
-    <div
-      className={cx(
-        'scenario-timetable-train-with-right-bar',
-        idx % 2 === 0 && isInvalid && 'invalid'
-      )}
-    >
+    <div className="scenario-timetable-train-with-right-bar">
       <div
         className={cx(
           'scenario-timetable-train with-colored-border',
@@ -150,30 +143,34 @@ function TimetableTrainCard({
         </div>
 
         <div className="scenario-timetable-train-buttons">
-          <button
-            className="scenario-timetable-train-buttons-selectprojection"
-            type="button"
-            title={t('timetable.choosePath')}
-            onClick={() => selectPathProjection(train)}
-          >
-            <GiPathDistance />
-          </button>
-          <button
-            className="scenario-timetable-train-buttons-duplicate"
-            type="button"
-            title={t('timetable.duplicate')}
-            onClick={() => duplicateTrain(train)}
-          >
-            <MdContentCopy />
-          </button>
-          <button
-            className="scenario-timetable-train-buttons-update"
-            type="button"
-            title={t('timetable.update')}
-            onClick={editTrainSchedule}
-          >
-            <FaPencilAlt />
-          </button>
+          {train.invalid_reasons && train.invalid_reasons.length === 0 && (
+            <>
+              <button
+                className="scenario-timetable-train-buttons-selectprojection"
+                type="button"
+                title={t('timetable.choosePath')}
+                onClick={() => selectPathProjection(train)}
+              >
+                <GiPathDistance />
+              </button>
+              <button
+                className="scenario-timetable-train-buttons-duplicate"
+                type="button"
+                title={t('timetable.duplicate')}
+                onClick={() => duplicateTrain(train)}
+              >
+                <MdContentCopy />
+              </button>
+              <button
+                className="scenario-timetable-train-buttons-update"
+                type="button"
+                title={t('timetable.update')}
+                onClick={editTrainSchedule}
+              >
+                <FaPencilAlt />
+              </button>
+            </>
+          )}
           <button
             className="scenario-timetable-train-buttons-delete"
             type="button"
