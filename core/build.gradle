@@ -1,5 +1,3 @@
-import static org.apache.tools.ant.taskdefs.condition.Os.*
-
 plugins {
     id 'java'
     alias(libs.plugins.kotlin.jvm)
@@ -78,6 +76,8 @@ dependencies {
     testImplementation libs.junit.jupiter.params
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
+    // Use AssertJ for testing
+    testImplementation libs.assertj
     // jqwik for property based testing
     testImplementation libs.jqwik
     // mockito for mocking

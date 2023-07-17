@@ -88,4 +88,13 @@ public class Helpers {
         var signalingSimulator = makeSignalingSimulator();
         return FullInfra.fromRJSInfra(rjs, diagnosticRecorder, signalingSimulator);
     }
+
+    /** Loads small infra as a RawSignalingInfra */
+    public static FullInfra getSmallInfra() {
+        try {
+            return Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

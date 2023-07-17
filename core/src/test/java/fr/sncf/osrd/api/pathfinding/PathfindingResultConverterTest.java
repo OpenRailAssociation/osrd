@@ -1,23 +1,32 @@
 package fr.sncf.osrd.api.pathfinding;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.*;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.getBlockLength;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePath;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePathWaypoint;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makeRoutePath;
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.sim_infra.api.*;
+import fr.sncf.osrd.sim_infra.api.LoadedSignalingInfraKt;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.sim_infra.api.Route;
+import fr.sncf.osrd.sim_infra.api.SignalingSystem;
 import fr.sncf.osrd.sim_infra.impl.PathImpl;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList;
 import fr.sncf.osrd.utils.indexing.StaticIdxList;
 import org.junit.jupiter.api.Test;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +36,7 @@ public class PathfindingResultConverterTest {
     /** Convert block ranges into a path, with the chunks going forward */
     @Test
     public void testMakePathForward() {
-        var infra = getSmallInfra();
+        var infra = Helpers.getSmallInfra();
         var blocks = getBlocksOnRoutes(infra, List.of(
                 "rt.DA2->DA6_1",
                 "rt.DA6_1->DA6_2"
@@ -57,7 +66,7 @@ public class PathfindingResultConverterTest {
     /** Convert block ranges into a path, with the chunks going backward and partial ranges */
     @Test
     public void testMakePathBackward() {
-        var infra = getSmallInfra();
+        var infra = Helpers.getSmallInfra();
         var blocks = getBlocksOnRoutes(infra, List.of(
                 "rt.DD0_11->DD0_8",
                 "rt.DD0_8->DD0_5"
@@ -88,7 +97,7 @@ public class PathfindingResultConverterTest {
     /** Tests the waypoint result on a path that has one user-defined waypoint and one operational point */
     @Test
     public void testPathWaypoint() {
-        var infra = getSmallInfra();
+        var infra = Helpers.getSmallInfra();
         var blocks = getBlocksOnRoutes(infra, List.of(
                 "rt.DD1_8->DD1_11"
         ));
@@ -118,7 +127,7 @@ public class PathfindingResultConverterTest {
 
     @Test
     public void testRoutePath() {
-        var infra = getSmallInfra();
+        var infra = Helpers.getSmallInfra();
         var blocks = getBlocksOnRoutes(infra, List.of(
                 "rt.DA2->DA6_1",
                 "rt.DA6_1->DA6_2"
@@ -154,7 +163,7 @@ public class PathfindingResultConverterTest {
     /** Tests the whole conversion process. This is more of a smoke test, the values have been checked in other tests */
     @Test
     public void testConvert() {
-        var infra = getSmallInfra();
+        var infra = Helpers.getSmallInfra();
         var blocks = getBlocksOnRoutes(infra, List.of(
                 "rt.DD0_11->DD0_8",
                 "rt.DD0_8->DD0_5"
@@ -221,14 +230,5 @@ public class PathfindingResultConverterTest {
         for (int i = 0; i < infra.signalingSimulator().getSigModuleManager().getSignalingSystems(); i++)
             res.add(i);
         return res;
-    }
-
-    /** Loads small infra as a RawSignalingInfra */
-    private static FullInfra getSmallInfra() {
-        try {
-            return Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
-        } catch (IOException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
