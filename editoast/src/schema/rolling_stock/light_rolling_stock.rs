@@ -15,7 +15,7 @@ pub struct LightRollingStock {
     #[diesel(sql_type = Text)]
     pub name: String,
     #[diesel(sql_type = Text)]
-    pub version: String,
+    pub railjson_version: String,
     #[diesel(sql_type = Bool)]
     pub locked: bool,
     #[diesel(sql_type = Jsonb)]
@@ -50,6 +50,8 @@ pub struct LightRollingStock {
     pub power_restrictions: Option<JsonValue>,
     #[diesel(sql_type = Jsonb)]
     pub energy_sources: DieselJson<Vec<EnergySource>>,
+    #[diesel(sql_type = BigInt)]
+    pub rollingstock_version: i64,
 }
 
 #[derive(Debug, QueryableByName, Serialize)]

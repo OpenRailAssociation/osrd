@@ -47,7 +47,7 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
-    pub version: Option<String>,
+    pub railjson_version: Option<String>,
     #[diesel(deserialize_as = bool)]
     pub locked: Option<bool>,
     #[diesel(deserialize_as = DieselJson<EffortCurves>)]
@@ -86,6 +86,8 @@ pub struct RollingStockModel {
     pub electrical_power_startup_time: Option<Option<f64>>,
     #[diesel(deserialize_as = Option<f64>)]
     pub raise_pantograph_time: Option<Option<f64>>,
+    #[diesel(deserialize_as = i64)]
+    pub rollingstock_version: Option<i64>,
 }
 
 impl Identifiable for RollingStockModel {
@@ -145,7 +147,7 @@ impl From<RollingStockModel> for RollingStockCommon {
     fn from(rolling_stock_model: RollingStockModel) -> Self {
         RollingStockCommon {
             name: rolling_stock_model.name.unwrap(),
-            version: rolling_stock_model.version.unwrap(),
+            railjson_version: rolling_stock_model.railjson_version.unwrap(),
             effort_curves: rolling_stock_model.effort_curves.unwrap().0,
             base_power_class: rolling_stock_model.base_power_class.unwrap(),
             length: rolling_stock_model.length.unwrap(),
@@ -176,6 +178,7 @@ impl From<RollingStockModel> for RollingStock {
             id: rolling_stock_model.id.unwrap(),
             common: rolling_stock_common,
             locked: rolling_stock_model.locked.unwrap(),
+            rollingstock_version: rolling_stock_model.rollingstock_version.unwrap(),
             metadata: rolling_stock_model.metadata.unwrap().0,
         }
     }

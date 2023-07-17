@@ -10,7 +10,7 @@ use crate::models::rolling_stock::rolling_stock_livery::RollingStockLiveryMetada
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct RollingStockCommon {
     pub name: String,
-    pub version: String,
+    pub railjson_version: String,
     pub effort_curves: EffortCurves,
     pub base_power_class: String,
     pub length: f64,
@@ -37,6 +37,7 @@ pub struct RollingStock {
     #[serde(flatten)]
     pub common: RollingStockCommon,
     pub locked: bool,
+    pub rollingstock_version: i64,
     pub metadata: RollingStockMetadata,
 }
 
