@@ -2,6 +2,7 @@ package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
+import fr.sncf.osrd.utils.units.Distance
 
 
 /** Detectors detect when trains arrive and leave a given point location */
@@ -18,6 +19,7 @@ interface TrackInfra {
     @JvmName("getTrackSectionName")
     fun getTrackSectionName(trackSection: TrackSectionId): String
     fun getTrackSectionFromName(name: String): TrackSectionId?
+    @JvmName("getTrackSectionChunks")
     fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
 }
 
@@ -40,4 +42,9 @@ fun <T> StaticIdxList<T>.dirIter(direction: Direction): Iterable<DirStaticIdx<T>
     for (element in list)
         res.add(DirStaticIdx(element, direction))
     return res
+}
+
+/** Get existing track section from name, throw if not found **/
+fun getTrackSectionFromNameOrThrow(name: String, trackInfra: TrackInfra): TrackSectionId {
+    return trackInfra.getTrackSectionFromName(name) ?: throw RuntimeException("Track section $name not found.")
 }

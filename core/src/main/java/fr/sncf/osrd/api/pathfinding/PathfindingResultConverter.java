@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.pathfinding;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
 import static fr.sncf.osrd.sim_infra.api.PathKt.buildPathFrom;
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
 
@@ -16,15 +17,19 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.sim_infra.api.*;
+import fr.sncf.osrd.sim_infra.api.BlockInfra;
+import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.sim_infra.api.TrackChunk;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.DistanceRangeMap;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList;
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
-import fr.sncf.osrd.utils.indexing.StaticIdxList;
 import fr.sncf.osrd.utils.units.Distance;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -408,24 +413,5 @@ public class PathfindingResultConverter {
             routeChunkIndex++;
             chunkIndex++;
         }
-    }
-
-    /** Iterating over an iterable of value class doesn't automatically convert it to the underlying type,
-     * this prevents typing errors caused by java inability to handle them */
-    static <T> List<Integer> toIntList(StaticIdxList<T> list) {
-        var res = new ArrayList<Integer>();
-        for (int i = 0; i < list.getSize(); i++)
-            res.add(list.get(i));
-        return res;
-    }
-
-    /** Iterating over an iterable of value class doesn't automatically convert it to the underlying type,
-     * this prevents typing errors caused by java inability to handle them
-     * TODO: find a better way to handle this */
-    static <T> List<Integer> toIntList(DirStaticIdxList<T> list) {
-        var res = new ArrayList<Integer>();
-        for (int i = 0; i < list.getSize(); i++)
-            res.add(list.get(i));
-        return res;
     }
 }

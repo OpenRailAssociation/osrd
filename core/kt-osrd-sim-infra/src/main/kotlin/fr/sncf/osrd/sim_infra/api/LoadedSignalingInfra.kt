@@ -1,5 +1,6 @@
 package fr.sncf.osrd.sim_infra.api
 
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 
@@ -68,6 +69,10 @@ interface BlockInfra {
     fun getBlocksAtDetector(detector: DirDetectorId): StaticIdxList<Block>
     fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block>
     fun getSignalsPositions(block: BlockId): DistanceList
+    @JvmName("getBlocksFromTrackChunk")
+    fun getBlocksFromTrackChunk(trackChunk: TrackChunkId, direction: Direction): MutableStaticIdxArraySet<Block>
+    @JvmName("getTrackChunksFromBlock")
+    fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk>
 }
 
 data class BlockPathElement(

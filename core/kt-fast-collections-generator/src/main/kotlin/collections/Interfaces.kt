@@ -51,8 +51,10 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
             }
 
             /** GENERATED CODE */
+            @Suppress("INAPPLICABLE_JVM_NAME")
             interface ${simpleName}SortedSet${paramsDecl} : ${simpleName}Collection${paramsUse} {
                 operator fun contains(value: ${type}): Boolean
+                @JvmName("getAtIndex")
                 fun getAtIndex(index: Int): $type
             }
 

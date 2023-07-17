@@ -25,6 +25,9 @@ dependencies {
     api project(":osrd-reporting")
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation libs.junit.jupiter.api
 }
 
 // to get KSP generated-stuff to be recognised
