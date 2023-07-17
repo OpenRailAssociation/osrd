@@ -5,7 +5,7 @@ import PlaywrightMap from './pages/map-model';
 import VARIABLES from './assets/operationStudies/test_variables';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 
-test.describe('Testing pathfinding in a local environment', () => {
+test.describe('Testing pathfinding', () => {
   test('Test pathfinding: no electrified rolling stock for this path throws error', async ({
     page,
   }) => {
@@ -30,7 +30,7 @@ test.describe('Testing pathfinding in a local environment', () => {
     // Create scenario with infra France
     await scenarioPage.openScenarioCreationModal();
     await scenarioPage.setScenarioName('_@Test integration scenario created local');
-    await scenarioPage.setSenarioInfraByName('France');
+    await scenarioPage.setSenarioInfraByName(VARIABLES.infraName);
     const createButton = playwrightHomePage.page.getByText('Créer le scénario');
     await createButton.click();
 
@@ -63,18 +63,12 @@ test.describe('Testing pathfinding in a local environment', () => {
     await scenarioPage.openTabByText('Itinéraire');
 
     // Search and select origin
-    await playwrightMap.selectOrigin({
-      stationName: 'quimper',
-      stationItemName: 'QR Quimper SP 87474098',
-      positionClick: { x: 410, y: 215 },
-    });
+    await playwrightMap.selectOrigin(VARIABLES.originSearchQuimper || VARIABLES.originSearch);
 
     // Search and select destination
-    await playwrightMap.selectDestination({
-      stationName: 'brest',
-      stationItemName: 'BT Brest 87474007',
-      positionClick: { x: 415, y: 215 },
-    });
+    await playwrightMap.selectDestination(
+      VARIABLES.destinationSearchBrest || VARIABLES.destinationSearch
+    );
 
     await scenarioPage.checkPathfingingStateText(
       'Erreur dans la recherche d’itinéraire : Aucun itinéraire trouvé pour un matériel avec ce type d’électrification.'
