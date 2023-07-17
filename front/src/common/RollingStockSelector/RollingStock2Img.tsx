@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { LightRollingStock, RollingStock } from 'common/api/osrdEditoastApi';
 import { getDocument } from 'common/api/documentApi';
-import blueTrain from 'assets/pictures/blue_train.svg';
+import placeholderRollingStock from 'assets/pictures/placeholder_rolling_stock.svg';
 
 const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStock }> = ({
   rollingStock,
@@ -18,7 +18,7 @@ const RollingStock2Img: React.FC<{ rollingStock: RollingStock | LightRollingStoc
 
     const defaultLivery = liveries.find((livery) => livery.name === 'default');
     if (!defaultLivery?.compound_image_id) {
-      setImageUrl(blueTrain);
+      setImageUrl(placeholderRollingStock);
       return;
     }
 
