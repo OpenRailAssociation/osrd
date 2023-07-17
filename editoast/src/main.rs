@@ -20,6 +20,7 @@ use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
 use crate::views::infra::InfraForm;
+use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
 use actix_web::web::{block, Data, JsonConfig, PayloadConfig};
@@ -77,6 +78,10 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::ImportProfileSet(args) => add_electrical_profile_set(args, pg_config).await,
         Commands::OsmToRailjson(args) => {
             converters::osm_to_railjson(args.osm_pbf_in, args.railjson_out)
+        }
+        Commands::Openapi => {
+            generate_openapi();
+            Ok(())
         }
     }
 }
@@ -376,6 +381,12 @@ async fn clear(
         );
     }
     Ok(())
+}
+
+/// Prints the OpenApi to stdout
+fn generate_openapi() {
+    let openapi = OpenApiRoot::build_openapi();
+    println!("{}", serde_json::to_string_pretty(&openapi).unwrap());
 }
 
 #[cfg(test)]
