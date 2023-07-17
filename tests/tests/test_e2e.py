@@ -1,24 +1,37 @@
 import subprocess
 from pathlib import Path
-
+from typing import Mapping
+from dataclasses import dataclass
 import pytest
 
+@dataclass
+class TestRollingStock:
+    name: str
+    metadata: Mapping
+    base_path: Path
 
 @pytest.mark.e2e
 @pytest.mark.names_and_metadata(
-    {
-        "_@Test BB 7200GVLOCOMOTIVES": {
-            "type": "Locomotives électriques",
-            "unit": "US",
-            "detail": "BB 7200",
-            "family": "LOCOMOTIVES",
-            "number": "1",
-            "series": "BB 7200",
-            "grouping": "Locomotives électriques courant continu",
-            "reference": "7200",
-            "subseries": "GV",
+        [
+            TestRollingStock(
+                "_@Test BB 7200GVLOCOMOTIVES",
+            {
+                "type": "Locomotives électriques",
+                "unit": "US",
+                "detail": "BB 7200",
+                "family": "LOCOMOTIVES",
+                "number": "1",
+                "series": "BB 7200",
+                "grouping": "Locomotives électriques courant continu",
+                "reference": "7200",
+                "subseries": "GV",
         },
-        "_@Test Locomotives électriques": {
+Path(__file__).parents[2] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json"
+                             ),
+
+            TestRollingStock(
+        "_@Test Locomotives électriques",
+{
             "type": "Locomotives électriques",
             "unit": "US",
             "detail": "BB15000 US",
@@ -29,7 +42,11 @@ import pytest
             "reference": "15000",
             "subseries": "BB 15000",
         },
-        "_@Test BB 22200": {
+Path(__file__).parents[2] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json"
+                ),
+            TestRollingStock(
+        "_@Test BB 22200",
+{
             "type": "Locomotives électriques",
             "unit": "US",
             "detail": "BB 22200",
@@ -40,8 +57,11 @@ import pytest
             "reference": "22200",
             "subseries": "V160",
         },
-    },
+        Path(__file__).parents[2] / "editoast" / "src" / "tests" / "example_rolling_stock_1.json"
+                )
+            ]
 )
+
 @pytest.mark.usefixtures("small_scenario", "fast_rolling_stocks")
 def test_e2e():
     result = subprocess.run(

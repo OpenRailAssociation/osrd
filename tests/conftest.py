@@ -6,7 +6,7 @@ import pytest
 import requests
 from railjson_generator.scripts.generate import main
 
-from tests import FAST_ROLLING_STOCK_JSON_PATH
+from tests import TestRollingStock
 from tests.infra import Infra
 from tests.path import Path as TrainPath
 from tests.scenario import Scenario
@@ -80,16 +80,13 @@ def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
-def _create_fast_rolling_stocks(names_and_metadata: Optional[Mapping[str, Mapping[str, str]]] = None):
-    payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
+def _create_fast_rolling_stocks(test_rolling_stocks: List[TestRollingStock] = None):
     ids = []
-    if names_and_metadata is None:
+    for rs in test_rolling_stocks:
+        payload = json.loads(rs.base_path.read_text())
+        payload["name"] = rs.name
+        payload["metadata"] = rs.metadata
         ids.append(requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"])
-    else:
-        for name, metadata in names_and_metadata.items():
-            payload["name"] = name
-            payload["metadata"] = metadata
-            ids.append(requests.post(f"{EDITOAST_URL}rolling_stock/", json=payload).json()["id"])
     return ids
 
 
