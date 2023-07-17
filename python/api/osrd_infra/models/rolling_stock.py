@@ -21,7 +21,7 @@ from osrd_infra.utils import PydanticValidator
 
 
 class RollingStock(models.Model):
-    version = models.CharField(editable=False, max_length=16, default=RAILJSON_ROLLING_STOCK_VERSION)
+    railjson_version = models.CharField(editable=False, max_length=16, default=RAILJSON_ROLLING_STOCK_VERSION)
     name = models.CharField(
         max_length=255,
         unique=True,
@@ -108,6 +108,7 @@ class RollingStock(models.Model):
         null=True,
         default=None,
     )
+    rollingstock_version = models.BigIntegerField(help_text=_("Rolling stock version"), default=0)
 
     def __str__(self):
         return self.name

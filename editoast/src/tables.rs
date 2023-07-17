@@ -291,7 +291,7 @@ table! {
     osrd_infra_rollingstock {
         id -> BigInt,
         name -> Text,
-        version -> Text,
+        railjson_version -> Text,
         locked -> Bool,
         effort_curves -> Jsonb,
         base_power_class -> Text,
@@ -311,6 +311,7 @@ table! {
         energy_sources -> Jsonb,
         electrical_power_startup_time -> Nullable<Double>,
         raise_pantograph_time -> Nullable<Double>,
+        rollingstock_version -> BigInt
     }
 }
 

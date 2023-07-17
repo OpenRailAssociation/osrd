@@ -84,7 +84,7 @@ impl From<RollingStockForm> for RollingStockModel {
     fn from(rolling_stock: RollingStockForm) -> Self {
         RollingStockModel {
             name: Some(rolling_stock.common.name),
-            version: Some(rolling_stock.common.version),
+            railjson_version: Some(rolling_stock.common.railjson_version),
             locked: rolling_stock.locked,
             effort_curves: Some(DieselJson(rolling_stock.common.effort_curves)),
             base_power_class: Some(rolling_stock.common.base_power_class),
@@ -114,7 +114,7 @@ impl RollingStockForm {
         RollingStockModel {
             id: Some(rolling_stock_id),
             name: Some(self.common.name),
-            version: Some(self.common.version),
+            railjson_version: Some(self.common.railjson_version),
             locked: self.locked,
             effort_curves: Some(DieselJson(self.common.effort_curves)),
             base_power_class: Some(self.common.base_power_class),
@@ -134,6 +134,7 @@ impl RollingStockForm {
             energy_sources: Some(DieselJson(self.common.energy_sources)),
             electrical_power_startup_time: Some(self.common.electrical_power_startup_time),
             raise_pantograph_time: Some(self.common.raise_pantograph_time),
+            ..Default::default()
         }
     }
 }

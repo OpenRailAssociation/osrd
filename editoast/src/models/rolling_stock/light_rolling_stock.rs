@@ -25,7 +25,7 @@ use serde_json::Value as JsonValue;
 pub struct LightRollingStockModel {
     pub id: i64,
     name: String,
-    version: String,
+    railjson_version: String,
     locked: bool,
     effort_curves: DieselJson<LightEffortCurves>,
     base_power_class: String,
@@ -45,6 +45,7 @@ pub struct LightRollingStockModel {
     energy_sources: DieselJson<Vec<EnergySource>>,
     electrical_power_startup_time: Option<f64>,
     raise_pantograph_time: Option<f64>,
+    rollingstock_version: i64,
 }
 
 impl LightRollingStockModel {
@@ -95,7 +96,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
         LightRollingStock {
             id: rolling_stock_model.id,
             name: rolling_stock_model.name,
-            version: rolling_stock_model.version,
+            railjson_version: rolling_stock_model.railjson_version,
             locked: rolling_stock_model.locked,
             effort_curves: rolling_stock_model.effort_curves,
             base_power_class: rolling_stock_model.base_power_class,
@@ -113,6 +114,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
             metadata: rolling_stock_model.metadata,
             power_restrictions: rolling_stock_model.power_restrictions,
             energy_sources: rolling_stock_model.energy_sources,
+            rollingstock_version: rolling_stock_model.rollingstock_version,
         }
     }
 }
