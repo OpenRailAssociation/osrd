@@ -163,28 +163,7 @@
         .scenario-timetable-train-with-right-bar {
           position: relative;
           display: flex;
-          // &.invalid {
-          //   .scenario-timetable-train-header {
-          //     // background-image: linear-gradient(
-          //     //   135deg,
-          //     //   #ed3d21 8.33%,
-          //     //   transparent 8.33%,
-          //     //   transparent 50%,
-          //     //   #ed3d21 50%,
-          //     //   #ed3d21 58.33%,
-          //     //   transparent 58.33%,
-          //     //   transparent 100%
-          //     // );
-          //     // background-size: 8.49px 8.49px;
-          //     background: repeating-linear-gradient(
-          //       135deg,
-          //       transparent,
-          //       transparent 2px,
-          //       #ed3d21 3px,
-          //       #ed3d21 4px
-          //     );
-          //   }
-          // }
+
           .scenario-timetable-train {
             position: relative;
             display: flex;
@@ -278,6 +257,16 @@
                   font-size: 1rem;
                   width: 80%;
                 }
+                .scenario-timetable-train-invalid-icons {
+                  display: flex;
+                  align-items: center;
+                  background-color: var(--white);
+                  border-radius: 4px;
+                  padding: 0.15rem;
+                  img {
+                    height: 1.1rem;
+                  }
+                }
                 .scenario-timetable-train-times {
                   min-width: 20%;
                   text-align: right;
@@ -340,17 +329,26 @@
               }
             }
             &.invalid {
-              .scenario-timetable-train-header {
-                background: repeating-linear-gradient(
-                  135deg,
-                  transparent,
-                  transparent 2px,
-                  #ed3d21 3px,
-                  #ed3d21 4px
-                );
+              .scenario-timetable-train-container {
+                border: 1px solid rgba(237, 60, 33, 0.5);
+                .scenario-timetable-train-header {
+                  background: repeating-linear-gradient(
+                    135deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(237, 60, 33, 0.5) 3px,
+                    rgba(237, 60, 33, 0.5) 4px
+                  );
+                }
               }
             }
             &:hover:not(.modified) {
+              .scenario-timetable-train-buttons {
+                display: flex;
+              }
+            }
+
+            &:hover:not(.modified, .invalid) {
               .scenario-timetable-train-container {
                 border-radius: 4px 0 0 4px;
                 border-color: var(--secondary);
@@ -358,9 +356,6 @@
                   background-color: var(--secondary);
                   color: var(--white);
                 }
-              }
-              .scenario-timetable-train-buttons {
-                display: flex;
               }
             }
 
@@ -404,9 +399,9 @@
           font-size: 0.9rem;
           font-weight: 500;
           border-radius: 4px;
-          border: 2px solid var(--orange);
+          border: 2px solid var(--red);
           margin-block: 1rem;
-          color: var(--orange);
+          color: var(--red);
         }
         .conflicts-list {
           border: 2px solid var(--orange);

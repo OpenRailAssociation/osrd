@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
+import missingInfra from 'assets/pictures/components/missing_tracks.svg';
 import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
@@ -95,6 +96,11 @@ function TimetableTrainCard({
                 </span>
               )}
             </div>
+            {idx % 2 === 0 && (
+              <div className="ml-1 scenario-timetable-train-invalid-icons">
+                <img src={missingInfra} alt="Infra logo" />
+              </div>
+            )}
             <div className="scenario-timetable-train-times">
               <div className="scenario-timetable-train-departure">
                 {sec2time(train.departure_time)}
