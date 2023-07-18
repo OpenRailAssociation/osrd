@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="rollingstock",
-            name="rollingstock_version",
+            name="version",
             field=models.BigIntegerField(default=0, help_text="Rolling stock version"),
         ),
     ]

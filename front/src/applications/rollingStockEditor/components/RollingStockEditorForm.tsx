@@ -189,7 +189,7 @@ const RollingStockEditorForm = ({
     resolver: resolver as Resolver<RollingStockParametersValues, unknown>,
     defaultValues: {
       name: rollingStockData?.name || '',
-      version: rollingStockData?.version || '',
+      railjson_version: rollingStockData?.railjson_version || '',
       detail: rollingStockData?.metadata.detail || '',
       family: rollingStockData?.metadata.family || '',
       grouping: rollingStockData?.metadata.grouping || '',
@@ -277,7 +277,7 @@ const RollingStockEditorForm = ({
       ));
 
   const queryArg = (data: FieldValues): RollingStockUpsertPayload => ({
-    version: data.version,
+    railjson_version: data.railjson_version,
     name: data.name,
     length: data.length,
     max_speed: data.max_speed / 3.6, // The user enters a value in km/h, which is then interpreted in m/s by the server.

@@ -3,7 +3,8 @@ import { ConditionalEffortCurve, EffortCurve } from 'common/api/osrdEditoastApi'
 export type RollingStockParametersValues = {
   [key: number | string]: {
     name: string;
-    version: string;
+    railjson_version: string;
+    version: number;
     detail: string;
     family: string;
     grouping: string;

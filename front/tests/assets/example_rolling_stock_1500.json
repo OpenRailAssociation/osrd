@@ -1,5 +1,6 @@
 {
-  "version": "3.2",
+  "railjson_version": "3.2",
+  "Version": 0,
   "locked": false,
   "length": 400.0,
   "max_speed": 80.0,

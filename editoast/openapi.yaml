@@ -2803,7 +2803,7 @@ components:
 
     RollingStockBase:
       properties:
-        version:
+        railjson_version:
           type: string
           example: "3.0"
         name:
@@ -2943,7 +2943,7 @@ components:
               unit,
             ]
       required:
-        - version
+        - railjson_version
         - name
         - length
         - max_speed
@@ -3919,13 +3919,7 @@ components:
         capacity_speed_limit:
           type: number
           format: double
-      required:
-        [
-          allowance_type,
-          default_value,
-          ranges,
-          distribution,
-        ]
+      required: [allowance_type, default_value, ranges, distribution]
 
     EngineeringAllowance:
       allOf:
@@ -4249,24 +4243,24 @@ components:
           type: boolean
         object_type:
           type: string
-          enum: ['Electrified']
+          enum: ["Electrified"]
         profile:
           type: string
           nullable: true
         profile_handled:
           type: boolean
-      required: [mode, mode_handled, object_type,  profile_handled]
+      required: [mode, mode_handled, object_type, profile_handled]
     Neutral:
       properties:
         is_lower_pantograph:
           type: boolean
         object_type:
           type: string
-          enum: ['Neutral']
+          enum: ["Neutral"]
       required: [is_lower_pantograph, object_type]
     NonElectrified:
       properties:
         object_type:
           type: string
-          enum: ['NonElectrified']
+          enum: ["NonElectrified"]
       required: [object_type]

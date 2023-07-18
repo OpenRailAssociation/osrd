@@ -37,7 +37,6 @@ pub struct RollingStock {
     #[serde(flatten)]
     pub common: RollingStockCommon,
     pub locked: bool,
-    pub rollingstock_version: i64,
     pub metadata: RollingStockMetadata,
 }
 
