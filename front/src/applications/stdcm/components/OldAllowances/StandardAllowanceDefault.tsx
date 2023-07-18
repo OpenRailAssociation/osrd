@@ -292,7 +292,7 @@ const StandardAllowanceDefault = (props: StandardAllowanceDefaultProps) => {
           htmlFor={`standardAllowanceType-${title}`}
           className={`${options?.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}
         >
-          {title || (t && t('sandardAllowancesWholePath'))}
+          {title || (t && t('standardAllowancesWholePath'))}
         </label>
       )}
 

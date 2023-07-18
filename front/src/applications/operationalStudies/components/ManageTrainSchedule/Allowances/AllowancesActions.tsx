@@ -297,7 +297,7 @@ export default function AllowancesActions({
             />
           </div>
         )}
-        <div className="allowances-value">
+        <div className="allowances-value" data-testid="engineering-allowance-group">
           <InputGroupSNCF
             id={`allowances-${type}-value`}
             orientation="right"

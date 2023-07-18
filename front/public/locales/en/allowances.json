@@ -11,7 +11,7 @@
   "from": "From",
   "begin_position": "Started",
   "marecoWholePath": "Theoretical running profile to save energy (full path)",
-  "sandardAllowancesWholePath": "Recovery margin",
+  "standardAllowancesWholePath": "Recovery margin",
   "engineeringAllowances": "Time allowance",
   "margedTrainSchedule": "With margins",
   "allowanceByInterval": "Margins by intervals",

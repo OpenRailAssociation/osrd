@@ -8,11 +8,17 @@ import { ProjectPage } from './pages/project-page-model';
 import { StudyPage } from './pages/study-page-model';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
-  test('Testing pathfinding with rollingstock an composition code', async ({ page }) => {
-    const playwrightHomePage = new PlaywrightHomePage(page);
-    const scenarioPage = new PlaywrightScenarioPage(page);
-    const projectPage = new ProjectPage(page);
-    const studyPage = new StudyPage(page);
+  let playwrightHomePage;
+  let scenarioPage;
+  let projectPage;
+  let studyPage;
+
+  test.beforeEach(async ({ page }) => {
+    test.setTimeout(120000);
+    playwrightHomePage = new PlaywrightHomePage(page);
+    scenarioPage = new PlaywrightScenarioPage(page);
+    projectPage = new ProjectPage(page);
+    studyPage = new StudyPage(page);
 
     await playwrightHomePage.goToHomePage();
 
@@ -30,60 +36,22 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await scenarioPage.checkInfraLoaded();
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
 
-    await scenarioPage.setTrainScheduleName('TrainSchedule 1');
+    await scenarioPage.setTrainScheduleName('Train Schedule 1');
 
-    // ***************** Test Rolling Stock *****************
+    // ***************** Select Rolling Stock *****************
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
       playwrightHomePage.page
     );
-    await expect(scenarioPage.getRollingStockSelector).toBeVisible();
     await playwrightRollingstockModalPage.openRollingstockModal();
-    const rollingstockModal = playwrightRollingstockModalPage.getRollingstockModal;
-    await expect(rollingstockModal).toBeVisible();
-
-    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
-      VARIABLES.numberOfRollingstock
-    );
-
-    await playwrightRollingstockModalPage.getElectricalCheckbox.click();
-    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
-      VARIABLES.numberOfRollingstockWithElectrical
-    );
-
-    await playwrightRollingstockModalPage.searchRollingstock(VARIABLES.searchRollingstock);
-    await playwrightRollingstockModalPage.checkNumberOfRollingstockFound(
-      VARIABLES.numberOfRollingstockWithSearch
-    );
 
     const rollingstockCard = playwrightRollingstockModalPage.getRollingstockCardByTestID(
       VARIABLES.rollingstockTestID
     );
-    await expect(rollingstockCard).toHaveClass(/inactive/);
     await rollingstockCard.click();
-    await expect(rollingstockCard).not.toHaveClass(/inactive/);
 
     await rollingstockCard.locator('button').click();
 
-    expect(
-      await playwrightRollingstockModalPage.getRollingStockMiniCardInfo().first().textContent()
-    ).toMatch(VARIABLES.rollingStockInfo);
-    expect(
-      await playwrightRollingstockModalPage.getRollingStockInfoComfort().textContent()
-    ).toMatch(/ConfortSStandard/i);
-
-    // ***************** Test Composition Code *****************
-    await scenarioPage.openTabByText('Paramètres de simulation');
-    await expect(scenarioPage.getSpeedLimitSelector).toBeVisible();
-    await scenarioPage.getSpeedLimitSelector.click();
-    await scenarioPage.getSpeedLimitSelector.locator('input').fill('32');
-    await scenarioPage.getSpeedLimitSelector
-      .getByRole('button', { name: 'Voyageurs - Automoteurs - E32C' })
-      .click();
-    expect(await scenarioPage.getSpeedLimitSelector.textContent()).toMatch(
-      /Voyageurs - Automoteurs - E32C/i
-    );
-
-    // ***************** Test choice Origin/Destination *****************
+    // ***************** Select Origin/Destination *****************
     const playwrightMap = new PlaywrightMap(playwrightHomePage.page);
     await scenarioPage.openTabByText('Itinéraire');
     await playwrightMap.page.waitForTimeout(2000);
@@ -99,12 +67,58 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     await scenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
 
-    // ***************** Test Add Train Schedule *****************
+    // ***************** Create train and edit it *****************
+
     await scenarioPage.addTrainSchedule();
-    await scenarioPage.checkToastSNCFTitle('Train ajouté');
     await scenarioPage.returnSimulationResult();
-    await scenarioPage.checkNumberOfTrains(1);
-    await scenarioPage.getBtnByName(/TrainSchedule 1/).hover();
+    await playwrightMap.page.waitForTimeout(2000);
+  });
+
+  // ***************** Test apply allowances *****************
+
+  test('Testing allowances', async ({ page }) => {
+    playwrightHomePage = new PlaywrightHomePage(page);
+    scenarioPage = new PlaywrightScenarioPage(page);
+    projectPage = new ProjectPage(page);
+    studyPage = new StudyPage(page);
+
+    await expect(scenarioPage.getTimetableList).toBeVisible();
+
+    await scenarioPage.clickBtnByName('Afficher/masquer le détail des trains');
+
+    await scenarioPage.getBtnByName(/Train Schedule 1/).hover();
+
+    await scenarioPage.clickBtnByName('Modifier');
+
+    await scenarioPage.openAllowancesModule();
+    await expect(scenarioPage.getAllowancesModule).toBeVisible();
+
+    // Add and check standard allowance
+    await scenarioPage.setStandardAllowance();
+    await scenarioPage.clickBtnByName('Modifier le train');
+
+    expect(await scenarioPage.isAllowanceWorking()).toEqual(true);
+
+    await scenarioPage.getBtnByName(/Train Schedule 1/).hover();
+    await scenarioPage.clickBtnByName('Modifier');
+    await scenarioPage.openAllowancesModule();
+    await expect(scenarioPage.getAllowancesModule).toBeVisible();
+
+    // Add and check engineering allowance
+    await scenarioPage.setEngineeringAllowance();
+    await scenarioPage.clickSuccessBtn();
+    expect(scenarioPage.checkAllowanceEngineeringBtn());
+    await scenarioPage.clickBtnByName('Modifier le train');
+    await scenarioPage.page.waitForSelector('.scenario-details-name');
+
+    expect(await scenarioPage.isAllowanceWorking()).toEqual(true);
+  });
+
+  // ***************** Deleting train *****************
+
+  test.afterEach(async ({ page }) => {
+    scenarioPage = new PlaywrightScenarioPage(page);
+    await scenarioPage.getBtnByName(/Train Schedule 1/).hover();
     await scenarioPage.page.getByRole('button', { name: 'Supprimer' }).click();
   });
 });

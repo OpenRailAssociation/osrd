@@ -53,6 +53,26 @@ class PlaywrightScenarioPage {
 
   readonly getPathfindingState: Locator;
 
+  readonly getTimetableList: Locator;
+
+  readonly getTrainEditBtn: Locator;
+
+  readonly getAllowancesSelector: Locator;
+
+  readonly getAllowancesModule: Locator;
+
+  readonly getAllowancesStandardSettings: Locator;
+
+  readonly getAllowancesEnergyConsumed: Locator;
+
+  readonly getAverageEnergyConsumed: Locator;
+
+  readonly getAllowancesEngineeringSettings: Locator;
+
+  readonly getAllowancesEngineeringBtn: Locator;
+
+  readonly getSuccessBtn: Locator;
+
   constructor(readonly page: Page) {
     this.getRollingStockSelector = page.getByTestId('rollingstock-selector');
     this.getSpeedLimitSelector = page.getByTestId('speed-limit-by-tag-selector');
@@ -88,6 +108,24 @@ class PlaywrightScenarioPage {
     this.getToastSNCF = page.getByTestId('toast-SNCF');
     this.getToastSNCFTitle = this.getToastSNCF.getByTestId('toast-SNCF-title');
     this.getPathfindingState = page.locator('.pathfinding-state-main-container');
+    this.getTimetableList = page.locator('.scenario-timetable-train-with-right-bar');
+    this.getTrainEditBtn = page.locator('.scenario-timetable-train-buttons-update');
+    this.getAllowancesSelector = page.getByTestId('allowances');
+    this.getAllowancesModule = page.locator('.operational-studies-allowances');
+    this.getAllowancesStandardSettings = page
+      .getByTestId('standard-allowance-group')
+      .getByTestId('input-group-first-field');
+    this.getAllowancesEnergyConsumed = page.getByTestId('allowance-energy-consumed');
+    this.getAverageEnergyConsumed = page.getByTestId('average-energy-consumed');
+    this.getAllowancesEngineeringSettings = page
+      .getByTestId('engineering-allowance-group')
+      .getByTestId('input-group-first-field');
+    this.getAllowancesEngineeringBtn = page.getByTestId('engineering-allowance');
+    this.getSuccessBtn = page
+      .locator('div')
+      .filter({ hasText: /^●Linéaire●Mareco s%min\/100kms$/ })
+      .getByRole('button')
+      .nth(1);
   }
 
   async openTabByText(text: string) {
@@ -114,16 +152,17 @@ class PlaywrightScenarioPage {
     await this.getScenarioDescriptionInput.fill(description);
   }
 
-  async setSenarioInfraByName(infraName: string) {
+  async setScenarioInfraByName(infraName: string) {
     await this.getScenarioInfraList.getByText(infraName).first().click();
   }
 
-  async setSenarioElectricProfileByName(electricProfileName: string) {
+  async setScenarioElectricProfileByName(electricProfileName: string) {
     await this.getScenarioElectricProfileSelect.click();
     await this.page.locator('[id="-selecttoggle"]').getByText(electricProfileName).click();
   }
 
   async checkPathfindingDistance(distance: string | RegExp) {
+    await this.page.waitForSelector('[data-testid="result-pathfinding-distance"]');
     await expect(this.getResultPathfindingDistance).toHaveText(distance);
   }
 
@@ -157,12 +196,60 @@ class PlaywrightScenarioPage {
     await expect(this.getToastSNCF.locator('.toast-body')).toHaveText(text);
   }
 
-  getTrainTimetableByName(name: string | RegExp) {
+  getBtnByName(name: string | RegExp) {
     return this.page.getByRole('button', { name });
   }
 
   async checkPathfingingStateText(text: string | RegExp) {
     await expect(this.getPathfindingState).toHaveText(text);
+  }
+
+  async clickBtnByName(name: string) {
+    await this.getBtnByName(name).click();
+  }
+
+  async openAllowancesModule() {
+    await this.getAllowancesSelector.click();
+  }
+
+  async setStandardAllowance() {
+    await this.getAllowancesStandardSettings.focus();
+    await this.page.keyboard.press('Digit5');
+  }
+
+  async checkAllowanceEnergyConsumed() {
+    const content = await this.getAllowancesEnergyConsumed.textContent();
+    const allowancesEnergyNumber = Number((content as string).slice(4, -3));
+    return allowancesEnergyNumber;
+  }
+
+  async checkAverageEnergyConsumed() {
+    const content = await this.getAverageEnergyConsumed.textContent();
+    const averageEnergyNumber = Number((content as string).slice(0, -3));
+    return averageEnergyNumber;
+  }
+
+  async isAllowanceWorking() {
+    const allowancesEnergyConsumed = await this.checkAllowanceEnergyConsumed();
+    const averageEnergyConsumed = await this.checkAverageEnergyConsumed();
+
+    const isCurrentAllowanceWorking = allowancesEnergyConsumed < averageEnergyConsumed;
+    return isCurrentAllowanceWorking;
+  }
+
+  async setEngineeringAllowance() {
+    await this.getAllowancesEngineeringSettings.focus();
+    await this.page.keyboard.press('Digit1');
+    await this.page.keyboard.press('Digit8');
+    await this.page.keyboard.press('Digit0');
+  }
+
+  async checkAllowanceEngineeringBtn() {
+    await expect(this.getAllowancesEngineeringBtn).toBeVisible();
+  }
+
+  async clickSuccessBtn() {
+    await this.getSuccessBtn.click();
   }
 }
 

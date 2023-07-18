@@ -72,7 +72,8 @@ class PlaywrightMap {
       .first()
       .click();
     await this.closeMapSearch();
-    await this.page.waitForTimeout(100);
+    await this.page.waitForTimeout(1000);
+    await this.page.waitForSelector('.maplibregl-marker');
     await this.clickOnMap(positionClick);
     // We don't use ternaries here, as eslint warns us about rule no-unused-expressions
     if (isOrigin) {

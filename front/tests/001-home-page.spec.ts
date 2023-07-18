@@ -1,23 +1,23 @@
 import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './pages/home-page-model';
 
-// Describe the test suite for the home page of OSDR
+// Describe the test suite for the home page of OSRD
 test.describe('Home page OSRD', () => {
   let playwrightHomePage: PlaywrightHomePage;
 
   test.beforeEach(async ({ page }) => {
     // Create an instance of the PlaywrightHomePage class
     playwrightHomePage = new PlaywrightHomePage(page);
-    // Go to the home page of OSDR
+    // Go to the home page of OSRD
     await playwrightHomePage.goToHomePage();
   });
 
   test.afterEach(async () => {
-    // Navigate back to the home page of OSDR
+    // Navigate back to the home page of OSRD
     await playwrightHomePage.backToHomePage();
   });
 
-  // Test that the home page of OSDR displays links to other pages
+  // Test that the home page of OSRD displays links to other pages
   test('should display links in the home page', async () => {
     await playwrightHomePage.getDisplayLinks();
   });

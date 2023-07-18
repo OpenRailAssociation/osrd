@@ -35,7 +35,7 @@ test.describe('Testing pathfinding', () => {
       await scenarioPage.setScenarioName(
         '_@Test integration scenario created for test pathfinding'
       );
-      await scenarioPage.setSenarioInfraByName(VARIABLES.infraName);
+      await scenarioPage.setScenarioInfraByName(VARIABLES.infraName);
       const createButton = playwrightHomePage.page.getByText('Créer le scénario');
       await createButton.click();
 
