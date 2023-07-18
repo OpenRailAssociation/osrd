@@ -61,7 +61,7 @@ export default function AllowancesStandardSettings({
             options={distributionsList}
           />
         </div>
-        <div className="allowances-value">
+        <div className="allowances-value" data-testid="standard-allowance-group">
           <InputGroupSNCF
             id="allowances-standard-settings-value"
             orientation="right"

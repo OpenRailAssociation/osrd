@@ -109,12 +109,15 @@ function TimetableTrainCard({
               </span>
             )}
             {train.mechanical_energy_consumed?.eco && (
-              <small className="mx-xl-2 mr-lg-1 text-orange font-weight-bold">
+              <small
+                className="mx-xl-2 mr-lg-1 text-orange font-weight-bold"
+                data-testid="allowance-energy-consumed"
+              >
                 ECO {+jouleToKwh(train.mechanical_energy_consumed.eco, true)}&nbsp;kWh
               </small>
             )}
             {train.mechanical_energy_consumed?.base && (
-              <span className="mr-xl-3 mr-lg-2">
+              <span className="mr-xl-3 mr-lg-2" data-testid="average-energy-consumed">
                 {jouleToKwh(train.mechanical_energy_consumed.base, true)}
                 <span className="small ml-1">kWh</span>
               </span>
@@ -124,7 +127,7 @@ function TimetableTrainCard({
             )}
             <div className="text-nowrap text-right">
               <MdAvTimer />
-              <span className="ml-1">
+              <span className="ml-1" data-testid="train-duration">
                 {sec2time(durationInSeconds(train.departure_time, train.arrival_time))}
               </span>
             </div>

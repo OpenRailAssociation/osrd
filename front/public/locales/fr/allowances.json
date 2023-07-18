@@ -11,7 +11,7 @@
   "from": "De",
   "begin_position": "Début",
   "marecoWholePath": "Marche économique (trajet complet)",
-  "sandardAllowancesWholePath": "Marges de régularité",
+  "standardAllowancesWholePath": "Marges de régularité",
   "engineeringAllowances": "Marges de construction",
   "margedTrainSchedule": "Avec marges",
   "allowanceByInterval": "Marges par intervalles",

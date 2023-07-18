@@ -30,7 +30,7 @@ test.describe('Testing pathfinding', () => {
     // Create scenario with infra France
     await scenarioPage.openScenarioCreationModal();
     await scenarioPage.setScenarioName('_@Test integration scenario created local');
-    await scenarioPage.setSenarioInfraByName(VARIABLES.infraName);
+    await scenarioPage.setScenarioInfraByName(VARIABLES.infraName);
     const createButton = playwrightHomePage.page.getByText('Créer le scénario');
     await createButton.click();
 

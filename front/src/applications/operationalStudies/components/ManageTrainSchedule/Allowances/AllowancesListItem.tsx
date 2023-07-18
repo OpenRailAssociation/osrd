@@ -28,6 +28,7 @@ export default function AllowancesListItem({
       className={cx('allowance', isSelected && 'selected', isOverlapped && 'overlapped')}
       type="button"
       onClick={() => setAllowanceSelectedIndex(idx)}
+      data-testid="engineering-allowance"
     >
       <div className="positions">
         <span className="index">{idx + 1}</span>

@@ -30,14 +30,14 @@ test.describe('Test is operationnal study : scenario creation workflow is workin
 
     // Infra created by CI has no electrical profile
     if (!process.env.CI) {
-      await scenarioPage.setSenarioElectricProfileByName(VARIABLES.infraName);
+      await scenarioPage.setScenarioElectricProfileByName(VARIABLES.infraName);
     }
 
     await commonPage.setTag(scenario.tags[0]);
     await commonPage.setTag(scenario.tags[1]);
     await commonPage.setTag(scenario.tags[2]);
 
-    await scenarioPage.setSenarioInfraByName(VARIABLES.infraName);
+    await scenarioPage.setScenarioInfraByName(VARIABLES.infraName);
     const createButton = playwrightHomePage.page.getByText('Créer le scénario');
     await createButton.click();
     await playwrightHomePage.page.waitForURL('**/scenario');
