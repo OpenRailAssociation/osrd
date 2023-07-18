@@ -33,35 +33,31 @@ WITH panels AS (
 collect AS (
     SELECT panels.sc_id,
         panels.data,
-        ST_Transform(
-            ST_LineInterpolatePoint(
-                ST_GeomFromGeoJSON(tracks.data->'geo'),
-                LEAST(
-                    GREATEST(
-                        panels.position / (tracks.data->'length')::float,
-                        0.
-                    ),
-                    1.
-                )
-            ),
-            3857
+        ST_LineInterpolatePoint(
+            tracks_layer.geographic,
+            LEAST(
+                GREATEST(
+                    panels.position / (tracks.data->'length')::float,
+                    0.
+                ),
+                1.
+            )
         ) AS geo,
-        ST_Transform(
-            ST_LineInterpolatePoint(
-                ST_GeomFromGeoJSON(tracks.data->'sch'),
-                LEAST(
-                    GREATEST(
-                        panels.position / (tracks.data->'length')::float,
-                        0.
-                    ),
-                    1.
-                )
-            ),
-            3857
+        ST_LineInterpolatePoint(
+            tracks_layer.schematic,
+            LEAST(
+                GREATEST(
+                    panels.position / (tracks.data->'length')::float,
+                    0.
+                ),
+                1.
+            )
         ) AS sch
     FROM panels
         INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = panels.track_id
         AND tracks.infra_id = $1
+        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        AND tracks.infra_id = tracks_layer.infra_id
 )
 INSERT INTO osrd_infra_lpvpanellayer (obj_id, infra_id, geographic, schematic, data)
 SELECT sc_id,
