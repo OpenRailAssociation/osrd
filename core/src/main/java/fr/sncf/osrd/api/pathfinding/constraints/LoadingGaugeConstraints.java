@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
-import static fr.sncf.osrd.api.pathfinding.constraints.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
 
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.Path;

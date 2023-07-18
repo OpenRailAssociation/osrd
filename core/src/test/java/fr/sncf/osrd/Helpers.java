@@ -1,6 +1,7 @@
 package fr.sncf.osrd;
 
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 
 import com.squareup.moshi.JsonAdapter;
 import fr.sncf.osrd.api.FullInfra;
@@ -12,6 +13,12 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
+import fr.sncf.osrd.sim_infra.api.LoadedSignalingInfraKt;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.sim_infra.api.Route;
+import fr.sncf.osrd.sim_infra.api.SignalingSystem;
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList;
+import fr.sncf.osrd.utils.indexing.StaticIdxList;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.io.File;
 import java.io.IOException;
@@ -96,5 +103,39 @@ public class Helpers {
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /** returns the blocks on the given routes */
+    public static List<Integer> getBlocksOnRoutes(FullInfra infra, List<String> names) {
+        var res = new ArrayList<Integer>();
+        var routes = new MutableStaticIdxArrayList<Route>();
+        for (var name: names)
+            routes.add(getRouteFromName(infra.rawInfra(), name));
+        var routeBlocks = LoadedSignalingInfraKt.getRouteBlocks(
+                infra.rawInfra(),
+                infra.blockInfra(),
+                routes,
+                getSignalingSystem(infra)
+        );
+        for (var blockList : routeBlocks)
+            res.addAll(toIntList(blockList));
+        return res;
+    }
+
+    /** Finds the id of the route with the given name */
+    private static int getRouteFromName(RawSignalingInfra infra, String name) {
+        for (int i = 0; i < infra.getRoutes(); i++) {
+            if (name.equals(infra.getRouteName(i)))
+                return i;
+        }
+        throw new RuntimeException("Can't find the given route");
+    }
+
+    /** Returns the idx list of signaling systems */
+    private static StaticIdxList<SignalingSystem> getSignalingSystem(FullInfra infra) {
+        var res = new MutableStaticIdxArrayList<SignalingSystem>();
+        for (int i = 0; i < infra.signalingSimulator().getSigModuleManager().getSignalingSystems(); i++)
+            res.add(i);
+        return res;
     }
 }
