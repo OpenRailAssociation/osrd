@@ -1,16 +1,16 @@
 import json
 from pathlib import Path
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List
 
 import pytest
 import requests
 from railjson_generator.scripts.generate import main
 
-from tests import TestRollingStock
 from tests.infra import Infra
 from tests.path import Path as TrainPath
 from tests.scenario import Scenario
 from tests.services import API_URL, EDITOAST_URL
+from tests.test_e2e import TestRollingStock
 from tests.utils.timetable import create_scenario
 
 
