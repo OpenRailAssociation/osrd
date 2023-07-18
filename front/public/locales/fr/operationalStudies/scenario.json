@@ -35,6 +35,7 @@
     "delete": "Supprimer",
     "duplicate": "Dupliquer",
     "importTrainSchedule": "Importer",
+    "invalidTrains": "La grille horaires comporte des trains invalides.",
     "stopsCount_one": "1 arrêt",
     "stopsCount_other": "{{count}} arrêts",
     "trainAdded": "Train ajouté",
