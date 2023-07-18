@@ -52,6 +52,7 @@ dependencies {
     // JSON parsing
     implementation libs.moshi
     implementation libs.moshi.adapters
+    implementation libs.moshi.kotlin
 
     // HTTP server framework
     implementation libs.takes

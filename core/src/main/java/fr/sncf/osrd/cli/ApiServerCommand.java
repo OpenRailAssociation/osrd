@@ -69,6 +69,7 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/standalone_simulation",
                             new StandaloneSimulationEndpoint(infraManager, electricalProfileSetManager)),
                     new FkRegex("/project_signals", new SignalProjectionEndpoint(infraManager)),
+                    new FkRegex("/detect_conflicts", new ConflictDetectionEndpoint()),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
                     new FkRegex("/version", new VersionEndpoint()),
                     new FkRegex("/stdcm", new STDCMEndpoint(infraManager)),
