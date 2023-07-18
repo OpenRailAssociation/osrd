@@ -1,67 +1,103 @@
-import { FieldProps } from '@rjsf/core';
-import { LinearMetadataItem } from 'common/IntervalsDataViz/data';
-import { IntervalsEditor } from 'common/IntervalsEditor/IntervalsEditor';
 import React, { useState } from 'react';
 import 'stories/storybook.css';
 
+import { LinearMetadataItem, fixLinearMetadataItems } from 'common/IntervalsDataViz/data';
+import { notEmpty } from 'common/IntervalsDataViz/utils';
+import { IntervalsEditor } from 'common/IntervalsEditor/IntervalsEditor';
+import {
+  INTERVAL_TYPES,
+  IntervalItem,
+  IntervalsEditorToolsConfig,
+} from 'common/IntervalsEditor/types';
+
 const formDataBase = [
   { begin: 0, end: 6000 },
-  { begin: 6000, end: 7000, gradient: 3 },
-  { begin: 7000, end: 8000, gradient: 6 },
-  { begin: 8000, end: 9000, gradient: 3 },
+  { begin: 6000, end: 7000, value: 3 },
+  { begin: 7000, end: 8000, value: 6 },
+  { begin: 8000, end: 9000, value: 3 },
   { begin: 9000, end: 14000 },
-  { begin: 14000, end: 15000, gradient: -3 },
-  { begin: 15000, end: 16000, gradient: -6 },
-  { begin: 16000, end: 17000, gradient: -3 },
+  { begin: 14000, end: 15000, value: -3 },
+  { begin: 15000, end: 16000, value: -6 },
+  { begin: 16000, end: 17000, value: -3 },
   { begin: 17000, end: 25000 },
 ];
 
 const formDataBaseCategories = [
   { begin: 0, end: 6000 },
-  { begin: 6000, end: 7000, power: 'U3' },
-  { begin: 7000, end: 8000, power: 'U5' },
-  { begin: 8000, end: 9000, power: 'U4' },
+  { begin: 6000, end: 7000, value: 'U3' },
+  { begin: 7000, end: 8000, value: 'U5' },
+  { begin: 8000, end: 9000, value: 'U4' },
   { begin: 9000, end: 14000 },
-  { begin: 14000, end: 15000, power: 'U1' },
-  { begin: 15000, end: 16000, power: 'U3' },
-  { begin: 16000, end: 17000, power: 'U3' },
+  { begin: 14000, end: 15000, value: 'U1' },
+  { begin: 15000, end: 16000, value: 'U3' },
+  { begin: 16000, end: 17000, value: 'U3' },
   { begin: 17000, end: 25000 },
 ];
 
-const formContextSample = {
-  geometry: {
-    coordinates: [
-      [-0.296, 49.5],
-      [-0.172, 49.5],
-    ],
-    type: 'LineString',
-  },
-  length: 25000,
-  isCreation: false,
+type IntervalsEditorProps = {
+  defaultValue: number | string;
+  defaultUnit?: string;
+  exampleData: IntervalItem[];
+  fieldLabel: string;
+  intervalType: INTERVAL_TYPES.NUMBER_WITH_UNIT | INTERVAL_TYPES.SELECT;
+  toolsConfig?: IntervalsEditorToolsConfig;
+  title?: string;
+  totalLength: number;
+  selectOptions?: string[];
+  units: string[];
 };
 
-const IntervalsEditorWrapper: React.FC<FieldProps> = (props) => {
-  const { formContext, params, valueField, defaultValue, dataBase, values } = props;
-  const [mockedData, setMockedData] = useState<LinearMetadataItem[] | null>(dataBase);
-  const onChange = (newData: LinearMetadataItem[]) => {
-    setMockedData(newData);
-  };
+const IntervalsEditorWrapper: React.FC<IntervalsEditorProps> = (props) => {
+  const {
+    defaultValue,
+    exampleData,
+    fieldLabel,
+    intervalType,
+    selectOptions,
+    title,
+    toolsConfig,
+    totalLength,
+    units = [],
+  } = props;
+  const [data, setData] = useState<IntervalItem[]>(
+    fixLinearMetadataItems(exampleData.filter(notEmpty), totalLength)
+  );
+
+  if (intervalType === INTERVAL_TYPES.NUMBER_WITH_UNIT) {
+    return (
+      <IntervalsEditor
+        {...props}
+        data={data as LinearMetadataItem<{ value: number | string; unit: string }>[]}
+        defaultValue={defaultValue}
+        fieldLabel={fieldLabel}
+        intervalType={intervalType}
+        setData={setData}
+        showValues
+        title={title}
+        totalLength={totalLength}
+        toolsConfig={toolsConfig}
+        units={units}
+      />
+    );
+  }
   return (
     <IntervalsEditor
       {...props}
-      formContext={formContext}
-      formData={mockedData}
-      params={params}
-      valueField={valueField}
-      onChange={onChange}
-      defaultValue={defaultValue as number}
-      values={values}
+      data={data as LinearMetadataItem<{ value: number | string }>[]}
+      defaultValue={defaultValue}
+      intervalType={intervalType}
+      setData={setData}
+      showValues
+      title={title}
+      totalLength={totalLength}
+      toolsConfig={toolsConfig}
+      selectOptions={selectOptions || []}
     />
   );
 };
 
 export default {
-  title: 'IntervalsDemonstrator',
+  title: 'Common/IntervalsDemonstrator',
   component: IntervalsEditorWrapper,
   argTypes: {
     onChange: { description: 'Value sent back to wrapper', action: 'onChange' },
@@ -70,37 +106,36 @@ export default {
 
 export const ByContinousValues = {
   args: {
-    formContext: formContextSample,
-    valueField: 'gradient',
-    params: {
+    defaultValue: 5,
+    exampleData: formDataBase,
+    fieldLabel: 'gradient',
+    intervalType: INTERVAL_TYPES.NUMBER_WITH_UNIT,
+    title: 'Gradient on path',
+    toolsConfig: {
       deleteTool: true,
       translateTool: false,
       cutTool: true,
       addTool: true,
-      showValues: true,
     },
+    totalLength: 25000,
     units: ['s', 'm'],
-    name: 'linearMetaData',
-    defaultValue: null,
-    dataBase: formDataBase,
-  },
+  } as IntervalsEditorProps,
 };
 
 export const ByCategories = {
   args: {
-    formContext: formContextSample,
-    valueField: 'power',
-    params: {
+    defaultValue: 'U1',
+    exampleData: formDataBaseCategories,
+    fieldLabel: 'value',
+    intervalType: INTERVAL_TYPES.SELECT,
+    selectOptions: ['U1', 'U2', 'U3', 'U4', 'U5'],
+    title: 'Power restrictions on path',
+    toolsConfig: {
       deleteTool: true,
       translateTool: false,
       cutTool: true,
       addTool: true,
-      showValues: true,
     },
-    units: null,
-    name: 'linearMetaData',
-    defaultValue: null,
-    dataBase: formDataBaseCategories,
-    values: ['U1', 'U2', 'U3', 'U4', 'U5'],
-  },
+    totalLength: 25000,
+  } as IntervalsEditorProps,
 };

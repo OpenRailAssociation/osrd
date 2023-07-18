@@ -1,0 +1,13 @@
+{
+  "actions": {
+    "add": "Add",
+    "delete": "Remove",
+    "reset": "Reset",
+    "split": "Split",
+    "translate": "Translate",
+    "zoom-in": "Zoom in",
+    "zoom-out": "Zoom out"
+  },
+  "begin": "Start",
+  "end": "End"
+}
