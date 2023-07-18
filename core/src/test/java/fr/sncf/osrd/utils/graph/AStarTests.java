@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
+import fr.sncf.osrd.api.pathfinding.LegacyRemainingDistanceEstimator;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
@@ -30,7 +30,7 @@ public class AStarTests {
         var lastRoute = infra.findSignalingRoute("rt.DH1_2->buffer_stop.7", "BAL3");
         var origin = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0));
         var destination = Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0));
-        var remainingDistanceEstimator = new RemainingDistanceEstimator(destination, 0.);
+        var remainingDistanceEstimator = new LegacyRemainingDistanceEstimator(destination, 0.);
         var seen = new HashSet<SignalingRoute>();
         new Pathfinding<>(new GraphAdapter<>(graph))
                 .setEdgeToLength(x -> x.getInfraRoute().getLength())

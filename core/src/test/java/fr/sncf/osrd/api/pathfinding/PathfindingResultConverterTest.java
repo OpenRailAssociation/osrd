@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api.pathfinding;
 
+import static fr.sncf.osrd.Helpers.getBlocksOnRoutes;
 import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.getBlockLength;
 import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePath;
 import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePathWaypoint;
@@ -196,39 +197,5 @@ public class PathfindingResultConverterTest {
             totalLength += infra.rawInfra().getTrackChunkLength(toValue(dirChunk));
         }
         assertEquals(length, totalLength);
-    }
-
-    /** returns the blocks on the given routes */
-    private static List<Integer> getBlocksOnRoutes(FullInfra infra, List<String> names) {
-        var res = new ArrayList<Integer>();
-        var routes = new MutableStaticIdxArrayList<Route>();
-        for (var name: names)
-            routes.add(getRouteFromName(infra.rawInfra(), name));
-        var routeBlocks = LoadedSignalingInfraKt.getRouteBlocks(
-                infra.rawInfra(),
-                infra.blockInfra(),
-                routes,
-                getSignalingSystem(infra)
-        );
-        for (var blockList : routeBlocks)
-            res.addAll(toIntList(blockList));
-        return res;
-    }
-
-    /** Finds the id of the route with the given name */
-    private static int getRouteFromName(RawSignalingInfra infra, String name) {
-        for (int i = 0; i < infra.getRoutes(); i++) {
-            if (name.equals(infra.getRouteName(i)))
-                return i;
-        }
-        throw new RuntimeException("Can't find the given route");
-    }
-
-    /** Returns the idx list of signaling systems */
-    private static StaticIdxList<SignalingSystem> getSignalingSystem(FullInfra infra) {
-        var res = new MutableStaticIdxArrayList<SignalingSystem>();
-        for (int i = 0; i < infra.signalingSimulator().getSigModuleManager().getSignalingSystems(); i++)
-            res.add(i);
-        return res;
     }
 }

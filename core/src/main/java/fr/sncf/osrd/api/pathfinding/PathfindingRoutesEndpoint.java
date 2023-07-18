@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api.pathfinding;
 
-import static fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator.minDistanceBetweenSteps;
+import static fr.sncf.osrd.api.pathfinding.LegacyRemainingDistanceEstimator.minDistanceBetweenSteps;
 
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
@@ -132,7 +132,8 @@ public class PathfindingRoutesEndpoint implements Take {
         // Setup estimators foreach intermediate steps
         var remainingDistanceEstimators = new ArrayList<AStarHeuristic<SignalingRoute>>();
         for (int i = 0; i < waypoints.size() - 1; i++) {
-            remainingDistanceEstimators.add(new RemainingDistanceEstimator(waypoints.get(i + 1), stepMinDistance[i]));
+            remainingDistanceEstimators.add(new LegacyRemainingDistanceEstimator(waypoints.get(i + 1),
+                    stepMinDistance[i]));
         }
         return remainingDistanceEstimators;
     }
