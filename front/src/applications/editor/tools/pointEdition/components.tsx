@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Popup } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
-import { merge, isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import along from '@turf/along';
 import { BiArrowFromLeft, BiArrowToRight } from 'react-icons/bi';
 import { BsBoxArrowInRight } from 'react-icons/bs';
@@ -397,15 +397,7 @@ export const SignalEditionLayers: FC<{ map: mapboxgl.Map }> = ({ map }) => (
     mergeEntityWithNearestPoint={(entity, nearestPoint) => ({
       ...entity,
       geometry: nearestPoint.feature.geometry,
-      properties: {
-        ...merge(entity.properties, {
-          extensions: {
-            sncf: {
-              angle_geo: nearestPoint.angle,
-            },
-          },
-        }),
-      },
+      properties: entity.properties,
     })}
   />
 );

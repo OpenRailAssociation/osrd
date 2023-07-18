@@ -103,7 +103,6 @@ export interface SignalEntity
           is_lightable?: boolean;
           is_operational?: boolean;
           installation_type?: string;
-          angle_geo?: number;
         };
       };
     }
