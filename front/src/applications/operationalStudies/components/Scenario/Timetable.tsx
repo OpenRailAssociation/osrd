@@ -27,6 +27,7 @@ import { GetTimetableByIdApiResponse, Infra, osrdEditoastApi } from 'common/api/
 import { durationInSeconds } from 'utils/timeManipulation';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { isEmpty } from 'lodash';
+import { BsFillExclamationTriangleFill } from 'react-icons/bs';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
@@ -190,6 +191,9 @@ export default function Timetable({
     return false;
   };
 
+  const timeTableHasInvalidTrain = (trains: ScheduledTrain[]) =>
+    trains.some((train) => train.invalid_reasons && train.invalid_reasons.length > 0);
+
   useEffect(() => {
     if (timetable && timetable.train_schedule_summaries) {
       const scheduledTrains = timetable.train_schedule_summaries;
@@ -334,11 +338,19 @@ export default function Timetable({
                 )
             )}
       </div>
-      <ConflictsList
-        conflicts={conflicts}
-        expanded={conflictsListExpanded}
-        toggleConflictsList={toggleConflictsListExpanded}
-      />
+      <div className="scenario-timetable-warnings">
+        {trainsList && timeTableHasInvalidTrain(trainsList) && (
+          <div className="invalid-trains">
+            <BsFillExclamationTriangleFill size="1.5em" />
+            <span className="flex-grow-1">{t('timetable.invalidTrains')}</span>
+          </div>
+        )}
+        <ConflictsList
+          conflicts={conflicts}
+          expanded={conflictsListExpanded}
+          toggleConflictsList={toggleConflictsListExpanded}
+        />
+      </div>
     </div>
   );
 }
