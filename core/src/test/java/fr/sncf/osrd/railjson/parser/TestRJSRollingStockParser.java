@@ -19,7 +19,7 @@ public class TestRJSRollingStockParser {
     @Test
     public void testWrongMajorVersion() throws IOException {
         RJSRollingStock rjsRollingStock = Helpers.getExampleRollingStock("fast_rolling_stock.json");
-        rjsRollingStock.version = "0.0.0";
+        rjsRollingStock.railjsonVersion = "0.0.0";
         var thrown = assertThrows(OSRDError.class, () -> RJSRollingStockParser.parse(rjsRollingStock));
         assertEquals(thrown.osrdErrorType, ErrorType.InvalidRollingStockMajorVersionMismatch);
     }
@@ -27,7 +27,7 @@ public class TestRJSRollingStockParser {
     @Test
     public void testWrongMinorVersion() throws IOException {
         RJSRollingStock rjsRollingStock = Helpers.getExampleRollingStock("fast_rolling_stock.json");
-        rjsRollingStock.version = RJSRollingStock.CURRENT_VERSION.split("\\.")[0] + ".a";
+        rjsRollingStock.railjsonVersion = RJSRollingStock.CURRENT_VERSION.split("\\.")[0] + ".a";
         RJSRollingStockParser.parse(rjsRollingStock);
     }
 }

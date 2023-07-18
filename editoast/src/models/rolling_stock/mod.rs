@@ -86,8 +86,9 @@ pub struct RollingStockModel {
     pub electrical_power_startup_time: Option<Option<f64>>,
     #[diesel(deserialize_as = Option<f64>)]
     pub raise_pantograph_time: Option<Option<f64>>,
+    #[derivative(Default(value = "None"))]
     #[diesel(deserialize_as = i64)]
-    pub rollingstock_version: Option<i64>,
+    pub version: Option<i64>,
 }
 
 impl Identifiable for RollingStockModel {
@@ -178,7 +179,6 @@ impl From<RollingStockModel> for RollingStock {
             id: rolling_stock_model.id.unwrap(),
             common: rolling_stock_common,
             locked: rolling_stock_model.locked.unwrap(),
-            rollingstock_version: rolling_stock_model.rollingstock_version.unwrap(),
             metadata: rolling_stock_model.metadata.unwrap().0,
         }
     }

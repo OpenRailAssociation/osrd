@@ -18,7 +18,8 @@ public class RJSRollingStock implements Identified {
     public static final transient String CURRENT_VERSION = "3.2";
 
     /** The version of the rolling stock format used */
-    public String version = null;
+    @Json(name = "railjson_version")
+    public String railjsonVersion = null;
 
     /** A unique train identifier */
     public String name = null;

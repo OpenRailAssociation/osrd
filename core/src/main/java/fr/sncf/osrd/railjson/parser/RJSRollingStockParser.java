@@ -28,17 +28,17 @@ public class RJSRollingStockParser {
     /** Parse the RailJSON rolling stock into something the backend can work with */
     public static RollingStock parse(RJSRollingStock rjsRollingStock) throws OSRDError {
         // Check major version
-        var inputMajor = rjsRollingStock.version.split("\\.")[0];
+        var inputMajor = rjsRollingStock.railjsonVersion.split("\\.")[0];
         var currentMajor = RJSRollingStock.CURRENT_VERSION.split("\\.")[0];
         if (!Objects.equals(inputMajor, currentMajor))
             throw OSRDError.newInvalidRollingStockError(
                 ErrorType.InvalidRollingStockMajorVersionMismatch,
                 RJSRollingStock.CURRENT_VERSION,
-                rjsRollingStock.version
+                rjsRollingStock.railjsonVersion
             );
-        else if (!rjsRollingStock.version.equals(RJSRollingStock.CURRENT_VERSION))
+        else if (!rjsRollingStock.railjsonVersion.equals(RJSRollingStock.CURRENT_VERSION))
             logger.warn("Rolling stock version mismatch, expected {}, got {}", RJSRollingStock.CURRENT_VERSION,
-                    rjsRollingStock.version);
+                    rjsRollingStock.railjsonVersion);
 
         // Parse effort_curves
         if (rjsRollingStock.effortCurves == null)

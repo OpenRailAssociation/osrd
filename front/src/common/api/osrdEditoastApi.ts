@@ -1492,7 +1492,7 @@ export type EnergySource =
       energy_source_type: 'Battery';
     } & Battery);
 export type RollingStockBase = {
-  version: string;
+  railjson_version: string;
   name: string;
   locked?: boolean;
   length: number;

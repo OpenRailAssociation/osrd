@@ -153,7 +153,7 @@ async fn create(
 ) -> Result<Json<RollingStock>> {
     let mut rolling_stock: RollingStockModel = data.into_inner().into();
     rolling_stock.locked = Some(query_params.locked);
-
+    rolling_stock.version = Some(0);
     let rolling_stock: RollingStock = rolling_stock.create(db_pool).await?.into();
 
     Ok(Json(rolling_stock))
@@ -522,7 +522,7 @@ pub mod tests {
 
         //Check rolling_stock creation
         let response_body: RollingStock = assert_status_and_read!(post_response, StatusCode::OK);
-        let rolling_stock_id = response_body.id;
+        let rolling_stock_id: i64 = response_body.id;
         rolling_stock.id = Some(response_body.id);
         let expected_body = RollingStock::from(rolling_stock.clone());
         assert_eq!(response_body, expected_body);

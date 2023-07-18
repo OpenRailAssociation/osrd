@@ -45,7 +45,7 @@ pub struct LightRollingStockModel {
     energy_sources: DieselJson<Vec<EnergySource>>,
     electrical_power_startup_time: Option<f64>,
     raise_pantograph_time: Option<f64>,
-    rollingstock_version: i64,
+    version: i64,
 }
 
 impl LightRollingStockModel {
@@ -114,7 +114,7 @@ impl From<LightRollingStockModel> for LightRollingStock {
             metadata: rolling_stock_model.metadata,
             power_restrictions: rolling_stock_model.power_restrictions,
             energy_sources: rolling_stock_model.energy_sources,
-            rollingstock_version: rolling_stock_model.rollingstock_version,
+            version: rolling_stock_model.version,
         }
     }
 }
@@ -136,7 +136,6 @@ pub mod tests {
     ) {
         let rolling_stock = fast_rolling_stock.await;
         let rolling_stock_id = rolling_stock.id();
-
         assert!(
             LightRollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
                 .await

@@ -108,7 +108,7 @@ class RollingStock(models.Model):
         null=True,
         default=None,
     )
-    rollingstock_version = models.BigIntegerField(help_text=_("Rolling stock version"), default=0)
+    version = models.BigIntegerField(help_text=_("Rolling stock version"), default=0)
 
     def __str__(self):
         return self.name

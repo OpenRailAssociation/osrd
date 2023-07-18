@@ -194,7 +194,8 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     Thus power restrictions affect the effort curves, and change the power class of the rolling stock.
     """
 
-    version: RAILJSON_ROLLING_STOCK_VERSION_TYPE = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
+    railjson_version: RAILJSON_ROLLING_STOCK_VERSION_TYPE = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
+    version: int = Field(default=0, description="Rolling stock version")
     name: constr(max_length=255)
     locked: bool = Field(default=False, description="Whether the rolling stock can be edited/deleted or not")
     effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
