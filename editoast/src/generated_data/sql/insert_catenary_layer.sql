@@ -13,53 +13,49 @@ WITH track_ranges AS (
 ),
 sliced_tracks AS (
     SELECT track_ranges.catenary_id,
-        ST_Transform(
-            ST_LineSubstring(
-                ST_GeomFromGeoJSON(tracks.data->'geo'),
+        ST_LineSubstring(
+            tracks_layer.geographic,
+            GREATEST(
+                LEAST(
+                    track_ranges.slice_end / (tracks.data->'length')::float,
+                    track_ranges.slice_begin / (tracks.data->'length')::float,
+                    1.
+                ),
+                0.
+            ),
+            LEAST(
                 GREATEST(
-                    LEAST(
-                        track_ranges.slice_end / (tracks.data->'length')::float,
-                        track_ranges.slice_begin / (tracks.data->'length')::float,
-                        1.
-                    ),
+                    track_ranges.slice_begin / (tracks.data->'length')::float,
+                    track_ranges.slice_end / (tracks.data->'length')::float,
                     0.
                 ),
-                LEAST(
-                    GREATEST(
-                        track_ranges.slice_begin / (tracks.data->'length')::float,
-                        track_ranges.slice_end / (tracks.data->'length')::float,
-                        0.
-                    ),
-                    1.
-                )
-            ),
-            3857
+                1.
+            )
         ) AS geo,
-        ST_Transform(
-            ST_LineSubstring(
-                ST_GeomFromGeoJSON(tracks.data->'sch'),
+        ST_LineSubstring(
+            tracks_layer.schematic,
+            GREATEST(
+                LEAST(
+                    track_ranges.slice_end / (tracks.data->'length')::float,
+                    track_ranges.slice_begin / (tracks.data->'length')::float,
+                    1.
+                ),
+                0.
+            ),
+            LEAST(
                 GREATEST(
-                    LEAST(
-                        track_ranges.slice_end / (tracks.data->'length')::float,
-                        track_ranges.slice_begin / (tracks.data->'length')::float,
-                        1.
-                    ),
+                    track_ranges.slice_begin / (tracks.data->'length')::float,
+                    track_ranges.slice_end / (tracks.data->'length')::float,
                     0.
                 ),
-                LEAST(
-                    GREATEST(
-                        track_ranges.slice_begin / (tracks.data->'length')::float,
-                        track_ranges.slice_end / (tracks.data->'length')::float,
-                        0.
-                    ),
-                    1.
-                )
-            ),
-            3857
+                1.
+            )
         ) AS sch
     FROM track_ranges
         INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = track_ranges.track_id
         AND tracks.infra_id = $1
+        INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
+        AND tracks.infra_id = tracks_layer.infra_id
 )
 INSERT INTO osrd_infra_catenarylayer (obj_id, infra_id, geographic, schematic)
 SELECT catenary_id,
