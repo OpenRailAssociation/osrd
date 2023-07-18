@@ -84,6 +84,7 @@ export default function InputGroupSNCF({
         value={value}
         min={min}
         max={max}
+        data-testid="input-group-first-field"
       />
       <span className="form-control-state" />
       {selected.unit && (

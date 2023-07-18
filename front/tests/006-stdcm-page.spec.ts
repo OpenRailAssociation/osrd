@@ -17,7 +17,7 @@ test.describe('STDCM page', () => {
     // Create an instance of the PlaywrightSTDCMPage class
     playwrightSTDCMPage = new PlaywrightSTDCMPage(page);
 
-    // Go to the home page of OSDR
+    // Go to the home page of OSRD
     await playwrightHomePage.goToHomePage();
 
     await playwrightHomePage.goToSTDCMPage();

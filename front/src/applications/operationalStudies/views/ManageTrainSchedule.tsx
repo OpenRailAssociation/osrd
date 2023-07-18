@@ -112,7 +112,7 @@ export default function ManageTrainSchedule() {
 
   const tabAllowances = {
     title: (
-      <div className="managetrainschedule-tab">
+      <div className="managetrainschedule-tab" data-testid="allowances">
         <img src={allowancesPic} alt="allowances" />
         <span className="ml-2">{t('tabs.allowances')}</span>
       </div>
