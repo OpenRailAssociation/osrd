@@ -127,6 +127,11 @@ const Scale: React.FC<{
 
 export interface LinearMetadataDatavizProps<T> {
   /**
+   * Boolean indicating if we are going to create a new item
+   */
+  creating?: boolean;
+
+  /**
    * List of data to display (must be ordered by begin/end)
    */
   data: Array<LinearMetadataItem<T>>;
@@ -142,7 +147,7 @@ export interface LinearMetadataDatavizProps<T> {
   highlighted: Array<number>;
 
   /**
-   * Wich part of the data are visible ?
+   * Part of the data which is visible
    */
   viewBox: [number, number] | null;
 
@@ -222,9 +227,9 @@ export interface LinearMetadataDatavizProps<T> {
   onResize?: (index: number, gap: number, finalized: boolean) => void;
 
   /**
-   * Event when the user is resizing an item
+   * Event when the user is creating an item
    */
-  onCreate?: (finalized: boolean) => number | null;
+  onCreate?: (point: number) => void;
 
   /**
    * Params on dataviz behavior
@@ -239,8 +244,9 @@ export interface LinearMetadataDatavizProps<T> {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
+  creating = false,
   data = [],
-  field,
+  field = 'value',
   viewBox,
   highlighted = [],
   onClick,
@@ -263,8 +269,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   const [draginStartAt, setDraginStartAt] = useState<number | null>(null);
   // Store the data for the resizing:
   const [resizing, setResizing] = useState<{ index: number | null; startAt: number } | null>(null);
-  // Store the data for the creation:
-  const [creating, setCreating] = useState<{ startAt: number; endAt: number } | null>(null);
   // min & max of the data value
   const [min, setMin] = useState<number>(0);
   const [max, setMax] = useState<number>(0);
@@ -389,31 +393,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
     };
   }, [resizing, onResize, wrapper, fullLength]);
 
-  /**
-   * When creating
-   * => register event on document for the mouseUp
-   */
-  useEffect(() => {
-    let fnMove: ((e: MouseEvent) => void) | undefined;
-
-    if (onCreate && wrapper.current && creating) {
-      // function for move, only the first move trigger a creating context. Thereafter, we are resizing the newly created segment
-      fnMove = (e) => {
-        const createdIntervalIndex = onCreate(true);
-        setCreating(null);
-        setResizing({ index: createdIntervalIndex, startAt: e.clientX });
-      };
-
-      document.addEventListener('mousemove', fnMove, true);
-    }
-    // cleanup
-    return () => {
-      if (fnMove) {
-        document.removeEventListener('mousemove', fnMove, true);
-      }
-    };
-  }, [creating, onCreate, wrapper, fullLength]);
-
   return (
     <div className={cx('linear-metadata-visualisation')}>
       <div
@@ -422,10 +401,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         onMouseLeave={(e) => {
           setHoverAtx(null);
           if (onMouseLeave) onMouseLeave(e);
-        }}
-        onMouseDown={(e) => {
-          // TODO use the frag tool context here
-          setCreating({ startAt: e.clientX, endAt: e.clientX });
         }}
         className={cx(
           'data',
@@ -457,7 +432,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
               position: 'absolute',
               height: '100%',
               left: `${hoverAtx}px`,
-              borderLeft: '1px dotted',
+              borderLeft: '2px dotted',
             }}
           />
         )}
@@ -528,13 +503,15 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
               }
             }}
             onMouseDown={(e) => {
-              // TODO use the frag tool context here
-              setDraginStartAt(e.clientX);
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-            onMouseUp={(e) => {
-              // TODO use the frag tool context here
+              if (onCreate && creating) {
+                const item = data[segment.index];
+                const point = getPositionFromMouseEvent(e, item);
+                onCreate(point);
+                setResizing({ index: segment.index + 1, startAt: e.clientX });
+              } else {
+                // TODO use the frag tool context here
+                setDraginStartAt(e.clientX);
+              }
               e.stopPropagation();
               e.preventDefault();
             }}

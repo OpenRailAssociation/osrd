@@ -1,0 +1,13 @@
+{
+  "actions": {
+    "add": "Ajouter",
+    "delete": "Supprimer",
+    "reset": "Réinitialiser",
+    "split": "Couper en deux",
+    "translate": "Translater",
+    "zoom-in": "Agrandir",
+    "Zoom-out": "Réduire"
+  },
+  "begin": "Début",
+  "end": "Fin"
+}
