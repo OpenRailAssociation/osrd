@@ -35,6 +35,7 @@
     "delete": "Delete",
     "duplicate": "Clone",
     "importTrainSchedule": "Import",
+    "invalidTrains": "The timetable contains invalid trains.",
     "stopsCount_one": "1 stop",
     "stopsCount_other": "{{ count }} stops",
     "trainAdded": "Train added",

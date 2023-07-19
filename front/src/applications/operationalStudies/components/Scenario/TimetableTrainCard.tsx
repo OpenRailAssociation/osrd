@@ -3,19 +3,27 @@ import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdAvTimer, MdContentCopy } from 'react-icons/md';
-import missingInfra from 'assets/pictures/components/missing_tracks.svg';
+import invalidInfra from 'assets/pictures/components/missing_tracks.svg';
+import invalidRollingStock from 'assets/pictures/components/missing_train.svg';
 import { durationInSeconds, sec2time } from 'utils/timeManipulation';
 import nextId from 'react-id-generator';
 import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import cx from 'classnames';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { InvalidTrainValues, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 import { ScheduledTrain } from 'reducers/osrdsimulation/types';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import { updateTrainScheduleIDsToModify } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import { jouleToKwh, mToKmOneDecimal } from 'utils/physics';
+
+const invalidTrainValues: {
+  [key in InvalidTrainValues]: InvalidTrainValues;
+} = {
+  NewerInfra: 'NewerInfra',
+  NewerRollingStock: 'NewerRollingStock',
+};
 
 type Props = {
   train: ScheduledTrain;
@@ -89,6 +97,22 @@ function TimetableTrainCard({
               >
                 {idx + 1}
               </div>
+              {train.invalid_reasons && train.invalid_reasons.includes('NewerInfra') && (
+                <div
+                  className="mr-1 scenario-timetable-train-invalid-icons"
+                  title={invalidTrainValues.NewerInfra}
+                >
+                  <img src={invalidInfra} alt="Invalid infra logo" />
+                </div>
+              )}
+              {train.invalid_reasons && train.invalid_reasons.includes('NewerRollingStock') && (
+                <div
+                  className="mr-1 scenario-timetable-train-invalid-icons"
+                  title={invalidTrainValues.NewerRollingStock}
+                >
+                  <img src={invalidRollingStock} alt="Invalid rollingstock logo" />
+                </div>
+              )}
               {train.train_name}
               {rollingStock && (
                 <span className="img-container">
@@ -96,11 +120,6 @@ function TimetableTrainCard({
                 </span>
               )}
             </div>
-            {idx % 2 === 0 && (
-              <div className="ml-1 scenario-timetable-train-invalid-icons">
-                <img src={missingInfra} alt="Infra logo" />
-              </div>
-            )}
             <div className="scenario-timetable-train-times">
               <div className="scenario-timetable-train-departure">
                 {sec2time(train.departure_time)}
