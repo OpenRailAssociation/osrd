@@ -185,10 +185,12 @@ private fun spacingRequirements(
         if (lastConstrainingZone == null)
             continue;
 
-        val zone = zoneMap[lastConstrainingZone]
-        val zoneName = rawInfra.getZoneName(zone)
-        val releaseTime = zoneReleases[zone]?: envelope.totalTime;
-        res.add(SpacingRequirement(zoneName, sightTime, releaseTime))
+        for (zoneIndex in signalZoneOffset until lastConstrainingZone) {
+            val zone = zoneMap[zoneIndex]
+            val zoneName = rawInfra.getZoneName(zone)
+            val releaseTime = zoneReleases[zone] ?: envelope.totalTime;
+            res.add(SpacingRequirement(zoneName, sightTime, releaseTime))
+        }
     }
     return res
 }
