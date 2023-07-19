@@ -27,9 +27,9 @@ test.describe('STDCM page', () => {
     // Opens the scenario explorator and selects project, study and scenario
     await playwrightSTDCMPage.openScenarioExplorator();
     await playwrightSTDCMPage.getScenarioExploratorModalOpen();
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(project.name);
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(study.name);
-    await playwrightSTDCMPage.clickItemScenarioExploratorByName(scenario.name);
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration project');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration study');
+    await playwrightSTDCMPage.clickItemScenarioExploratorByName('_@Test integration scenario');
 
     const rollingStockTranslation =
       playwrightSTDCMPage.getmanageTrainScheduleTranslations('rollingstock');
