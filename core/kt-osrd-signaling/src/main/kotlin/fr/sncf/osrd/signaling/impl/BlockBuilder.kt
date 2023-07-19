@@ -87,48 +87,56 @@ internal fun internalBuildBlocks(
     }
 }
 
+data class AssociatedDetector(val detector: DirDetectorId, val distance: Distance)
+
 private fun findSignalDelimiters(
     rawSignalingInfra: RawSignalingInfra,
     loadedSignalInfra: LoadedSignalInfra
-): IdxMap<LogicalSignalId, DirDetectorId> {
-    val res = IdxMap<LogicalSignalId, DirDetectorId>()
+): IdxMap<LogicalSignalId, AssociatedDetector> {
+    val res = IdxMap<LogicalSignalId, AssociatedDetector>()
     for (zonePath in rawSignalingInfra.zonePaths) {
         val endDetector = rawSignalingInfra.getZonePathExit(zonePath)
         val signals = rawSignalingInfra.getSignals(zonePath)
         val signalsPositions = rawSignalingInfra.getSignalPositions(zonePath)
         val switchesPositions = rawSignalingInfra.getZonePathMovableElementsDistances(zonePath)
+        val zonePathLen = rawSignalingInfra.getZonePathLength(zonePath)
 
+        // we only take into account signals after the last switch of the zone path
         val cutoffDistance = if (switchesPositions.size == 0)
             Distance.ZERO
         else
             switchesPositions[switchesPositions.size - 1]
 
         for (physicalSignalIndex in 0 until signals.size) {
-            if (signalsPositions[physicalSignalIndex] < cutoffDistance) {
+            val signalPos = signalsPositions[physicalSignalIndex]
+            if (signalPos < cutoffDistance) {
                 // TODO: add a warning if the physical signal has logical signals which are delimiters
                 continue
             }
+            val detectorDistance = zonePathLen - signalPos
             val physicalSignal = signals[physicalSignalIndex]
             for (logicalSignal in rawSignalingInfra.getLogicalSignals(physicalSignal))
                 if (loadedSignalInfra.isBlockDelimiter(logicalSignal))
-                    res[logicalSignal] = endDetector
+                    res[logicalSignal] = AssociatedDetector(endDetector, detectorDistance)
         }
     }
     return res
 }
 
+data class AssociatedSignal(val signal: LogicalSignalId, val distance: Distance)
+
 private fun makeDetectorEntrySignals(
     loadedSignalInfra: LoadedSignalInfra,
-    signalDelimiters: IdxMap<LogicalSignalId, DirDetectorId>,
-): IdxMap<DirDetectorId, IdxMap<SignalingSystemId, LogicalSignalId>> {
-    val res = IdxMap<DirDetectorId, IdxMap<SignalingSystemId, LogicalSignalId>>()
+    signalDelimiters: IdxMap<LogicalSignalId, AssociatedDetector>,
+): IdxMap<DirDetectorId, IdxMap<SignalingSystemId, AssociatedSignal>> {
+    val res = IdxMap<DirDetectorId, IdxMap<SignalingSystemId, AssociatedSignal>>()
     for (logicalSignal in loadedSignalInfra.logicalSignals) {
         val delim = signalDelimiters[logicalSignal] ?: continue
-        val delimSignals = res.getOrPut(delim) { IdxMap() }
+        val delimSignals = res.getOrPut(delim.detector) { IdxMap() }
         val signalingSystem = loadedSignalInfra.getSignalingSystem(logicalSignal)
         if (delimSignals[signalingSystem] != null)
             logger.debug { "duplicate signals at detector" }
-        delimSignals[signalingSystem] = logicalSignal
+        delimSignals[signalingSystem] = AssociatedSignal(logicalSignal, delim.distance)
     }
     return res
 }
@@ -185,7 +193,7 @@ private fun getInitPartialBlocks(
     sigModuleManager: InfraSigSystemManager,
     rawSignalingInfra: RawSignalingInfra,
     loadedSignalInfra: LoadedSignalInfra,
-    entrySignals: IdxMap<SignalingSystemId, LogicalSignalId>?,
+    entrySignals: IdxMap<SignalingSystemId, AssociatedSignal>?,
     entryDet: DirDetectorId,
 ): MutableList<PartialBlock> {
     val initialBlocks = mutableListOf<PartialBlock>()
@@ -206,16 +214,18 @@ private fun getInitPartialBlocks(
     } else {
         if (isBufferStop)
             logger.debug { "signal at buffer stop" }
-        for (entrySignal in entrySignals.values()) {
-            val drivers = loadedSignalInfra.getDrivers(entrySignal)
+        for (entry in entrySignals.values()) {
+            val drivers = loadedSignalInfra.getDrivers(entry.signal)
             if (drivers.size == 0) {
-                initialBlocks.add(PartialBlock(false).addSignal(entrySignal, 0.meters))
+                initialBlocks.add(PartialBlock(false)
+                    .addSignal(entry.signal, -entry.distance))
                 continue
             }
 
             for (driver in drivers) {
                 val inputSigSystem = sigModuleManager.getInputSignalingSystem(driver)
-                initialBlocks.add(PartialBlock(false, inputSigSystem).addSignal(entrySignal, 0.meters))
+                initialBlocks.add(PartialBlock(false, inputSigSystem)
+                    .addSignal(entry.signal, -entry.distance))
             }
         }
     }
@@ -276,13 +286,13 @@ private fun BlockInfraBuilder.updatePartialBlocks(
                 block(curBlock.startAtBufferStop, false, curBlock.zonePaths, curBlock.signals, curBlock.signalPositions)
                 val drivers = loadedSignalInfra.getDrivers(signal)
                 if (drivers.size == 0) {
-                    val newBlock = PartialBlock(false).addSignal(signal, 0.meters)
+                    val newBlock = PartialBlock(false).addSignal(signal, -distanceToZonePathEnd)
                     nextBlocks.add(newBlock)
                 } else {
                     for (driver in drivers) {
                         val inputSigSystem = sigModuleManager.getInputSignalingSystem(driver)
                         val newBlock = PartialBlock(false, inputSigSystem)
-                            .addSignal(signal, 0.meters)
+                            .addSignal(signal, -distanceToZonePathEnd)
                         nextBlocks.add(newBlock)
                     }
                 }
