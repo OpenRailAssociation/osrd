@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
             model_name="project",
             name="tags",
             field=django.contrib.postgres.fields.ArrayField(
-                base_field=models.CharField(max_length=255), blank=True, default=[], size=None
+                base_field=models.CharField(max_length=255), blank=True, default=list, size=None
             ),
         ),
     ]
