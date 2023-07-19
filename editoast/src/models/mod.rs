@@ -30,7 +30,8 @@ pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules, TimetableWithSchedulesDetails};
 pub use train_schedule::{
     ResultPosition, ResultSpeed, ResultStops, ResultTrain, SignalSighting, SimulationOutput,
-    SimulationOutputChangeset, TrainSchedule, TrainScheduleChangeset, ZoneUpdate,
+    SimulationOutputChangeset, SpacingRequirement, TrainSchedule, TrainScheduleChangeset,
+    ZoneUpdate,
 };
 
 pub trait Identifiable {

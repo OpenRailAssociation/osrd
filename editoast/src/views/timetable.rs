@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
+use crate::core::conflicts::{ConflicDetectionRequest, TrainRequirement};
+use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::models::{
-    Retrieve, SimulationOutput, Timetable, TimetableWithSchedulesDetails, TrainSchedule,
+    Retrieve, SimulationOutput, SpacingRequirement, Timetable, TimetableWithSchedulesDetails,
+    TrainSchedule,
 };
 use crate::views::train_schedule::TrainScheduleError;
 use crate::DbPool;
@@ -10,7 +13,6 @@ use actix_web::dev::HttpServiceFactory;
 use actix_web::get;
 use actix_web::web::{self, block, Data, Json, Path};
 use editoast_derive::EditoastError;
-use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -44,7 +46,7 @@ async fn get(
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-enum ConflictType {
+pub enum ConflictType {
     Spacing,
 }
 
@@ -62,6 +64,7 @@ struct Conflict {
 async fn get_conflicts(
     db_pool: Data<DbPool>,
     timetable_id: Path<i64>,
+    core_client: Data<CoreClient>,
 ) -> Result<Json<Vec<Conflict>>> {
     let timetable_id = timetable_id.into_inner();
 
@@ -101,72 +104,63 @@ async fn get_conflicts(
         .await
         .unwrap()?; // FIXME: maybe this should be converted to an editoast error?
 
-    #[derive(Debug, Clone)]
-    struct TrainRequirement<'a> {
-        train_id: i64,
-        train_name: &'a str,
-        begin: f64,
-        end: f64,
-    }
-    let mut zone_requirements: HashMap<String, Vec<TrainRequirement>> = HashMap::new();
+    let mut id_to_name = HashMap::new();
+    let mut trains_requirements = Vec::new();
+    for (schedule, simulation) in schedules.into_iter().zip(simulations.into_iter()) {
+        id_to_name.insert(
+            schedule.id.expect("TrainSchedule should have an id"),
+            schedule.train_name,
+        );
 
-    for (train_schedule, simulation) in schedules.iter().zip(simulations) {
         let result_train = simulation
             .eco_simulation
-            .unwrap_or(simulation.base_simulation);
-        for requirement in result_train.0.spacing_requirements {
-            zone_requirements
-                .entry(requirement.zone)
-                .or_insert(vec![])
-                .push(TrainRequirement {
-                    train_id: train_schedule.id.expect("TrainSchedule should have an id"),
-                    train_name: &train_schedule.train_name,
-                    begin: requirement.begin_time + train_schedule.departure_time,
-                    end: requirement.end_time + train_schedule.departure_time,
-                })
-        }
+            .unwrap_or(simulation.base_simulation)
+            .0;
+
+        let spacing_requirements = result_train
+            .spacing_requirements
+            .into_iter()
+            .map(|sr| SpacingRequirement {
+                zone: sr.zone,
+                begin_time: sr.begin_time + schedule.departure_time,
+                end_time: sr.end_time + schedule.departure_time,
+            })
+            .collect();
+
+        trains_requirements.push(TrainRequirement {
+            train_id: schedule.id.expect("TrainSchedule should have an id"),
+            spacing_requirements,
+        })
     }
 
-    let mut conflicts = vec![];
+    let request = ConflicDetectionRequest {
+        trains_requirements,
+    };
+    let response = request.fetch(&core_client).await?;
 
-    for (_, mut requirements) in zone_requirements {
-        if requirements.len() < 2 {
-            continue;
-        }
-        requirements.sort_by(|a, b| {
-            a.begin
-                .partial_cmp(&b.begin)
-                .expect("Requirements should not contain NaN")
-        });
-
-        for (last_requirement, requirement) in requirements.iter().tuple_windows() {
-            if requirement.begin < last_requirement.end {
-                conflicts.push((last_requirement.clone(), requirement.clone()));
-            }
-        }
-    }
-
-    let conflicts = conflicts
+    let conflicts = response
+        .conflicts
         .into_iter()
         .map(|conflict| {
-            let start_time = conflict.1.begin.round() as u64;
-            let end_time = conflict.0.end.round() as u64;
-
-            let train_ids = vec![conflict.0.train_id, conflict.1.train_id];
-            let train_names = vec![
-                conflict.0.train_name.to_owned(),
-                conflict.1.train_name.to_owned(),
-            ];
-
+            let train_names = conflict
+                .train_ids
+                .iter()
+                .map(|id| {
+                    id_to_name
+                        .get(id)
+                        .expect("Train id should be in id_to_name")
+                })
+                .cloned()
+                .collect();
             Conflict {
-                train_ids,
+                train_ids: conflict.train_ids,
                 train_names,
-                start_time,
-                end_time,
-                conflict_type: ConflictType::Spacing,
+                start_time: conflict.start_time.round() as u64,
+                end_time: conflict.end_time.round() as u64,
+                conflict_type: conflict.conflict_type,
             }
         })
-        .collect::<Vec<_>>();
+        .collect();
 
     Ok(Json(conflicts))
 }

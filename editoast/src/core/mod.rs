@@ -1,3 +1,4 @@
+pub mod conflicts;
 mod http_client;
 pub mod infra_loading;
 pub mod infra_state;
