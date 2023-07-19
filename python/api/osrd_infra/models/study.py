@@ -17,7 +17,7 @@ class Project(models.Model):
     image = models.OneToOneField(Document, related_name="project", null=True, on_delete=models.PROTECT)
     creation_date = models.DateTimeField(editable=False, auto_now_add=True)
     last_modification = models.DateTimeField(auto_now=True)
-    tags = ArrayField(models.CharField(max_length=255), blank=True, default=[])
+    tags = ArrayField(models.CharField(max_length=255), blank=True, default=list)
 
 
 class Study(models.Model):
