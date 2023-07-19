@@ -90,7 +90,7 @@ export class PlaywrightSTDCMPage {
   }
 
   async clickItemScenarioExploratorByName(itemName: string) {
-    await this.getItemScenarioExploratorByName(itemName).click();
+    await this.getItemScenarioExploratorByName(itemName).first().click();
   }
 
   // Rollingstock
