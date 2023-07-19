@@ -1244,9 +1244,7 @@ export type GetTrainScheduleByIdResultApiArg = {
   /** Path id used to project the train path */
   pathId: number;
 };
-export type GetVersionApiResponse = /** status 200 Return the service version */ {
-  git_describe: string | null;
-};
+export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
 export type TrackRange = {
   begin?: number;
@@ -2116,4 +2114,7 @@ export type TrainSchedule = {
   speed_limit_tags?: string;
   timetable?: number;
   train_name?: string;
+};
+export type Version = {
+  git_describe: string | null;
 };

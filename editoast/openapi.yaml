@@ -2594,6 +2594,14 @@ components:
       - operation_type
       - obj_type
       - railjson_patch
+    Version:
+      properties:
+        git_describe:
+          nullable: true
+          type: string
+      required:
+      - git_describe
+      type: object
     ViewMetadata:
       properties:
         attribution:
@@ -4696,13 +4704,7 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  git_describe:
-                    nullable: true
-                    type: string
-                required:
-                - git_describe
-                type: object
+                $ref: '#/components/schemas/Version'
           description: Return the service version
 tags:
 - description: Infra

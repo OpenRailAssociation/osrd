@@ -26,8 +26,8 @@ use actix_web::web::{block, Data, Json};
 use actix_web::{get, services};
 use diesel::{sql_query, RunQueryDsl};
 use redis::cmd;
-use serde_json::{json, Value as JsonValue};
-use utoipa::OpenApi;
+use serde_derive::Serialize;
+use utoipa::{OpenApi, ToSchema};
 
 pub fn routes() -> impl HttpServiceFactory {
     services![
@@ -59,8 +59,8 @@ pub fn study_routes() -> impl HttpServiceFactory {
 #[openapi(
     info(description = "My Api description"),
     tags(),
-    paths(health),
-    components(schemas(), responses())
+    paths(health, version),
+    components(schemas(Version), responses())
 )]
 pub struct OpenApiRoot;
 
@@ -88,6 +88,8 @@ impl OpenApiRoot {
             .expect("the openapi should generate properly");
         OpenApiMerger::new(manual, generated)
             .replace("paths/health/")
+            .replace("paths/version")
+            .replace("components/schemas/Version")
             .finish()
     }
 }
@@ -112,9 +114,22 @@ async fn health(db_pool: Data<DbPool>, redis_client: Data<RedisClient>) -> Resul
     Ok("ok")
 }
 
+#[derive(ToSchema, Serialize)]
+struct Version {
+    #[schema(required)] // Options are by default not required, but this one is
+    git_describe: Option<String>,
+}
+
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Return the service version", body = Version),
+    ),
+)]
 #[get("/version")]
-async fn version() -> Json<JsonValue> {
-    Json(json!({ "git_describe": get_app_version() }))
+async fn version() -> Json<Version> {
+    Json(Version {
+        git_describe: get_app_version(),
+    })
 }
 
 #[cfg(test)]
