@@ -236,7 +236,7 @@
                     color: var(--secondary);
                     background-color: var(--coolgray1);
                     font-size: 0.7rem;
-                    margin: 0.25rem 0.5rem 0.25rem 0;
+                    margin: 0.25rem 0.25rem 0.25rem 0;
                     height: 1.25rem;
                     min-width: 1.5rem;
                     text-align: center;
@@ -330,14 +330,14 @@
             }
             &.invalid {
               .scenario-timetable-train-container {
-                border: 1px solid rgba(237, 60, 33, 0.5);
+                border: 1px solid rgba(var((--red-rgb)), 0.25);
                 .scenario-timetable-train-header {
                   background: repeating-linear-gradient(
                     135deg,
                     transparent,
                     transparent 2px,
-                    rgba(237, 60, 33, 0.5) 3px,
-                    rgba(237, 60, 33, 0.5) 4px
+                    rgba(var((--red-rgb)), 0.25) 3px,
+                    rgba(var((--red-rgb)), 0.25) 4px
                   );
                 }
               }
