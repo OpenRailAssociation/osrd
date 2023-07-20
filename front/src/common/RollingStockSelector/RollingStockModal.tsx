@@ -34,6 +34,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
 
   const {
     data: { results: rollingStocks } = { results: [] },
+    isSuccess,
     isError,
     error,
   } = enhancedEditoastApi.useGetLightRollingStockQuery({
@@ -108,6 +109,7 @@ function RollingStockModal({ ref2scroll }: RollingStockModal) {
             setOpenedRollingStockCardId={setOpenRollingStockCardId}
             setFilteredRollingStockList={setFilteredRollingStockList}
             filteredRollingStockList={filteredRollingStockList}
+            isSuccess={isSuccess}
             setIsLoading={setIsLoading}
           />
         </div>

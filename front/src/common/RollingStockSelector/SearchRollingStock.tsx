@@ -70,6 +70,7 @@ type SearchRollingStockProps = {
   setFilteredRollingStockList: (rollingStocks: LightRollingStock[]) => void;
   filteredRollingStockList: LightRollingStock[];
   setIsLoading?: (isLoading: boolean) => void;
+  isSuccess?: boolean;
 };
 
 const SearchRollingStock = ({
@@ -79,6 +80,7 @@ const SearchRollingStock = ({
   setFilteredRollingStockList,
   filteredRollingStockList,
   setIsLoading,
+  isSuccess,
 }: SearchRollingStockProps) => {
   const { t } = useTranslation('rollingStockEditor');
 
@@ -117,7 +119,7 @@ const SearchRollingStock = ({
 
   useEffect(() => {
     handleRollingStockLoaded();
-  }, [rollingStocks]);
+  }, [isSuccess]);
 
   useEffect(() => {
     if (rollingStocks && rollingStocks.length !== 0) {
