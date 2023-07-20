@@ -80,6 +80,60 @@ public class ResultTrain {
     @Json(name = "spacing_requirements")
     public final List<SpacingRequirement> spacingRequirements;
 
+    public static class RoutingZoneRequirement {
+        public String zone;
+
+        @Json(name = "entry_detector")
+        public String entryDetector;
+
+        @Json(name = "exit_detector")
+        public String exitDetector;
+
+        public Map<String, String> switches;
+
+        @Json(name = "end_time")
+        public double endTime;
+
+        public RoutingZoneRequirement(
+                String zone,
+                String entryDetector,
+                String exitDetector,
+                Map<String, String> switches,
+                double endTime
+        ) {
+            this.zone = zone;
+            this.entryDetector = entryDetector;
+            this.exitDetector = exitDetector;
+            this.switches = switches;
+            this.endTime = endTime;
+        }
+    }
+
+    /** A routing represents a requirement for a zone to be in the compatible configuration between
+     * the given times in order for the train to process unimpeded.
+     * The tuple (entry_detector, exit_detector, switches) is the zone configuration.
+     */
+    public static class RoutingRequirement {
+        public String route;
+        @Json(name = "begin_time")
+        public double beginTime;
+
+        public List<RoutingZoneRequirement> zones;
+
+        public RoutingRequirement(
+                String route,
+                double beginTime,
+                List<RoutingZoneRequirement> zones
+        ) {
+            this.route = route;
+            this.beginTime = beginTime;
+            this.zones = zones;
+        }
+    }
+
+    @Json(name = "routing_requirements")
+    public final List<RoutingRequirement> routingRequirements;
+
     @Json(name = "mechanical_energy_consumed")
     public final double mechanicalEnergyConsumed;
 
@@ -92,7 +146,8 @@ public class ResultTrain {
             double mechanicalEnergyConsumed,
             List<SignalSighting> signalSightings,
             List<ZoneUpdate> zoneUpdates,
-            List<SpacingRequirement> spacingRequirements) {
+            List<SpacingRequirement> spacingRequirements,
+            List<RoutingRequirement> routingRequirements) {
         this.speeds = speeds;
         this.headPositions = headPositions;
         this.stops = stops;
@@ -101,10 +156,13 @@ public class ResultTrain {
         this.signalSightings = signalSightings;
         this.zoneUpdates = zoneUpdates;
         this.spacingRequirements = spacingRequirements;
+        this.routingRequirements = routingRequirements;
     }
 
+    /** Shift the position curve by a given departure time */
     public ResultTrain withDepartureTime(Double departureTime) {
         return new ResultTrain(speeds, headPositions.stream().map(pos -> pos.withAddedTime(departureTime)).toList(),
-                stops, routeOccupancies, mechanicalEnergyConsumed, signalSightings, zoneUpdates, spacingRequirements);
+                stops, routeOccupancies, mechanicalEnergyConsumed, signalSightings, zoneUpdates,
+                spacingRequirements, routingRequirements);
     }
 }

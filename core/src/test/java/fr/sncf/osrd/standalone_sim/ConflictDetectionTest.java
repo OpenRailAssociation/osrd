@@ -8,6 +8,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.envelope_sim.SimpleContextBuilder;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TestTrains;
@@ -58,5 +59,25 @@ public class ConflictDetectionTest {
         }
         var lastSpacingRequirement = spacingRequirements.get(spacingRequirements.size() - 1);
         Assertions.assertEquals(lastSpacingRequirement.endTime, envelope.getTotalTime(), 0.001);
+
+        // ensure routing requirements span the entire trip duration
+        var routingRequirements = result.routingRequirements;
+        var firstRoutingRequirement = routingRequirements.get(0);
+        Assertions.assertEquals(firstRoutingRequirement.beginTime, 0.0);
+        // ensure route requirement times overlap
+        for (int i = 0; i < routingRequirements.size() - 1; i++) {
+            var curReq = routingRequirements.get(i);
+            var nextReq = routingRequirements.get(i + 1);
+            var lastZoneReleaseTime = getLastZoneReleaseTime(curReq);
+            Assertions.assertTrue(lastZoneReleaseTime > nextReq.beginTime,
+                    "Route reservations do not overlap at index %d: [.., %f] has no overlap with [%f, ...]".formatted(
+                            i, lastZoneReleaseTime, nextReq.beginTime));
+        }
+        var lastRoutingRequirement = routingRequirements.get(routingRequirements.size() - 1);
+        Assertions.assertEquals(getLastZoneReleaseTime(lastRoutingRequirement), envelope.getTotalTime(), 0.001);
+    }
+
+    static double getLastZoneReleaseTime(ResultTrain.RoutingRequirement requirement) {
+        return requirement.zones.stream().map(e -> e.endTime).reduce(Double::max).get();
     }
 }
