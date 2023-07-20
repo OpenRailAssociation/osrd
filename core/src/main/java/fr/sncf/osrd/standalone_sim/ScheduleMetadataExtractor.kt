@@ -94,7 +94,7 @@ fun run(
 
     // Compute signal updates
     val startOffset = trainPathBlockOffset(trainPath)
-    val pathSignals = pathSignals(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra)
+    val pathSignals = pathSignalsInEnvelope(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(startOffset, blockPath, blockInfra, envelopeWithStops, rawInfra, trainLength)
 
@@ -299,40 +299,49 @@ private fun zoneOccupationChangeEvents(
 
 data class PathSignal(val signal: LogicalSignalId, val offset: Distance, val blockIndexInPath: Int)
 
-// This doesn't generate path signals outside the envelope
-// The reason being that even if a train see a red signal, it won't
-// matter since the train was going to stop before it anyway
-private fun pathSignals(
+
+// Returns all the signals on the path
+fun pathSignals(
     startOffset: Distance,
     blockPath: StaticIdxList<Block>,
     blockInfra: BlockInfra,
-    envelope: EnvelopeTimeInterpolate,
     rawInfra: SimInfraAdapter
-): MutableList<PathSignal> {
+): List<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
     var currentOffset = startOffset
     for ((blockIdx, block) in blockPath.withIndex()) {
+        var blockSize = Distance.ZERO
+        for (zonePath in blockInfra.getBlockPath(block)) {
+            blockSize += rawInfra.getZonePathLength(zonePath)
+        }
+
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
         val numExclusiveSignalInBlock =
             if (blockIdx == blockPath.size - 1) blockSignals.size else blockSignals.size - 1
         for ((signal, position) in blockSignals.zip(blockSignalPositions).take(numExclusiveSignalInBlock)) {
-            val signalOffset = currentOffset + position
-            if (0.meters < signalOffset && signalOffset < envelope.endPos.meters)
-                pathSignals.add(PathSignal(signal, signalOffset, blockIdx))
+            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx))
         }
-
-        for (zonePath in blockInfra.getBlockPath(block)) {
-            if (currentOffset > envelope.endPos.meters) break
-
-            currentOffset += rawInfra.getZonePathLength(zonePath)
-            if (currentOffset > envelope.endPos.meters) {
-                break
-            }
-        }
+        currentOffset += blockSize
     }
 
     return pathSignals
+}
+
+
+// This doesn't generate path signals outside the envelope
+// The reason being that even if a train see a red signal, it won't
+// matter since the train was going to stop before it anyway
+private fun pathSignalsInEnvelope(
+    startOffset: Distance,
+    blockPath: StaticIdxList<Block>,
+    blockInfra: BlockInfra,
+    envelope: EnvelopeTimeInterpolate,
+    rawInfra: SimInfraAdapter
+): List<PathSignal> {
+    return pathSignals(startOffset, blockPath, blockInfra, rawInfra).filter { signal ->
+        signal.offset >= 0.meters && signal.offset <= envelope.endPos.meters
+    }
 }
 
 /**
