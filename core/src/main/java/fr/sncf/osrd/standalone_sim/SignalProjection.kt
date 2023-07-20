@@ -1,14 +1,14 @@
 package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.SignalProjectionEndpoint
 import fr.sncf.osrd.api.SignalProjectionEndpoint.SignalProjectionResult
-import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.utils.recoverBlocks
+import fr.sncf.osrd.sim_infra.utils.toBlockList
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.ZoneUpdate
@@ -46,11 +46,11 @@ fun project(
         routes.add(route)
     }
 
-    val blockPaths = getRouteBlocks(
+    val blockPaths = recoverBlocks(
         rawInfra, blockInfra, routes, mutableStaticIdxArrayListOf(bal, bapr, tvm)
     )
     assert(blockPaths.isNotEmpty())
-    val blockPath = blockPaths[0] // TODO: have a better way to choose the block path
+    val blockPath = blockPaths[0].toBlockList() // TODO: have a better way to choose the block path
 
     val zoneMap = mutableMapOf<String, Int>()
     var zoneCount = 0
