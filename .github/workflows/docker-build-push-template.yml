@@ -25,7 +25,7 @@ on:
         required: true
 
 jobs:
-  docker:
+  docker_build_push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

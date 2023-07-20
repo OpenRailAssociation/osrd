@@ -12,6 +12,7 @@ on:
 
 jobs:
   integration_tests:
+    name: Integration tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

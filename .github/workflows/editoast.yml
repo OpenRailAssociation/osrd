@@ -17,8 +17,8 @@ on:
       - prod
 
 jobs:
-  test:
-    name: Run tests
+  editoast_tests:
+    name: Tests editoast
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

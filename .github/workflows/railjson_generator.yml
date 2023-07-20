@@ -17,7 +17,8 @@ on:
       - prod
 
 jobs:
-  linter:
+  generator_linter:
+    name: Linter railjson generator
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
