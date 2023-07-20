@@ -17,7 +17,7 @@ public class StandaloneTrainSchedule {
 
     public final List<TrainStop> stops;
 
-    public final ArrayList<ScheduledPoint> scheduledPoints;
+    public final List<ScheduledPoint> scheduledPoints;
 
     public final List<? extends Allowance> allowances;
 
@@ -33,7 +33,7 @@ public class StandaloneTrainSchedule {
     public StandaloneTrainSchedule(
             RollingStock rollingStock,
             double initialSpeed,
-            ArrayList<ScheduledPoint> scheduledPoints,
+            List<ScheduledPoint> scheduledPoints,
             List<TrainStop> stops,
             List<? extends Allowance> allowances,
             String tag,

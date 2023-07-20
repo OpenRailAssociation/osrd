@@ -25,6 +25,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
 
 // TODO: run pathfinding on blocks
@@ -173,6 +174,9 @@ private fun spacingRequirements(
         }
     }
 
+
+    val zoneRequirementTimes = DoubleArray(zoneCount) { Double.POSITIVE_INFINITY }
+
     for (pathSignal in pathSignals) {
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
         val sightOffset = max(0.0, (pathSignal.offset - rawInfra.getSignalSightDistance(physicalSignal)).meters)
@@ -194,18 +198,60 @@ private fun spacingRequirements(
             )
             zoneStates[i] = ZoneStatus.CLEAR
             val signalState = simulatedSignalStates[pathSignal.signal]!!
-            if (signalState.getEnum("aspect") != "VL") { // FIXME: Have a better way to check if the signal is constraining
-                lastConstrainingZone = i;
-            } else
-                break;
+
+            // FIXME: Have a better way to check if the signal is constraining
+            if (signalState.getEnum("aspect") == "VL")
+                break
+            lastConstrainingZone = i
         }
         if (lastConstrainingZone == null)
-            continue;
+            continue
 
-        val zone = zoneMap[lastConstrainingZone]
+        for (zoneIndex in signalZoneOffset until lastConstrainingZone) {
+            val prevRequiredTime = zoneRequirementTimes[zoneIndex]
+            zoneRequirementTimes[zoneIndex] = min(sightTime, prevRequiredTime)
+        }
+    }
+
+    /*
+    For all zones which either occupied by the train or required at some point, emit a zone requirement.
+    Some zones do not have requirements: those before the train's starting position, and those far enough from
+    the end of the train path.
+
+                  zone occupied                   Y           Y
+      explicit zone requirement                               Y         Y
+         zone needs requirement                   Y           Y         Y
+                        signals           ┎o         ┎o         ┎o         ┎o         ┎o         ┎o
+                          zones   +----------|----------|----------|----------|----------|----------|
+                     train path                   =============
+    */
+    for (zoneIndex in 0 until zoneCount) {
+        val zoneRequirementTime = zoneRequirementTimes[zoneIndex]
+        val zone = zoneMap[zoneIndex]
+        val zoneReleaseTime = zoneReleases[zone]
+
+        val explicitRequirement = zoneRequirementTime.isFinite()
+        val occupied = zoneReleaseTime != null
+
+        if (!occupied && !explicitRequirement)
+            continue
+
+        var beginTime: Double
+        var endTime: Double
+
+        if (occupied && !explicitRequirement) {
+            beginTime = 0.0
+            endTime = zoneReleaseTime!!
+        } else if (occupied/* && explicitRequirement*/) {
+            beginTime = zoneRequirementTime
+            endTime = zoneReleaseTime!!
+        } else /* !occupied && explicitRequirement */ {
+            beginTime = zoneRequirementTime
+            endTime = envelope.totalTime
+        }
+
         val zoneName = rawInfra.getZoneName(zone)
-        val releaseTime = zoneReleases[zone]?: envelope.totalTime;
-        res.add(SpacingRequirement(zoneName, sightTime, releaseTime))
+        res.add(SpacingRequirement(zoneName, beginTime, endTime))
     }
     return res
 }
