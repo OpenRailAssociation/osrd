@@ -136,9 +136,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   return (
     <div className="linear-metadata">
       <div className="header">
-        <div>
-          <h4 className="control-label m-0">{title}</h4>
-        </div>
+        <h4 className="control-label m-0">{title}</h4>
         <ZoomButtons data={data} setViewBox={setViewBox} viewBox={viewBox} />
       </div>
       <div className="content">
@@ -249,6 +247,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
                 interval={data[selected]}
                 selectedIntervalIndex={selected}
                 setData={setData}
+                setSelectedIntervalIndex={setSelected}
                 totalLength={totalLength}
               />
               {formContent}
