@@ -40,7 +40,7 @@ value class Distance(val millimeters: Long) : Comparable<Distance> {
     /** This is just used for clearer display in debugging windows */
     override fun toString(): String {
         val meters = millimeters / 1000
-        val decimal = millimeters % 1000
+        val decimal = (millimeters % 1000).absoluteValue
         if (decimal == 0L)
             return String.format("%sm", meters)
         else
