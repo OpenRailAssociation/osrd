@@ -379,7 +379,7 @@ private fun zoneOccupationChangeEvents(
     trainLength: Double
 ): MutableList<ZoneOccupationChangeEvent> {
     var zoneCount = 0
-    var currentOffset = startOffset
+    var currentOffset = -startOffset
     val zoneOccupationChangeEvents = mutableListOf<ZoneOccupationChangeEvent>()
     for ((blockIdx, block) in blockPath.withIndex()) {
         for (zonePath in blockInfra.getBlockPath(block)) {
@@ -439,7 +439,7 @@ fun pathSignals(
     rawInfra: SimInfraAdapter
 ): List<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
-    var currentOffset = startOffset
+    var currentOffset = -startOffset
     for ((blockIdx, block) in blockPath.withIndex()) {
         var blockSize = Distance.ZERO
         for (zonePath in blockInfra.getBlockPath(block)) {
@@ -486,7 +486,9 @@ private fun pathSignalsInEnvelope(
  * thus of the envelope
  */
 fun trainPathBlockOffset(trainPath: TrainPath): Distance {
-    return trainPath.routePath.first().pathOffset.meters
+    val dist = -trainPath.routePath.first().pathOffset.meters
+    assert(dist >= 0.meters)
+    return dist
 }
 
 private fun simplifyPositions(
