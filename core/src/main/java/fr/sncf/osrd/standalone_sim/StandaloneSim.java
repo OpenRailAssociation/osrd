@@ -178,7 +178,7 @@ public class StandaloneSim {
      *   - if we cannot respect any scheduled points. */
     public static Optional<MarecoAllowance> generateAllowanceFromScheduledPoints(
             EnvelopeStopWrapper maxEffortEnvelope,
-            ArrayList<ScheduledPoint> scheduledPoints
+            List<ScheduledPoint> scheduledPoints
     ) {
         scheduledPoints.sort(Comparator.comparingDouble(sp -> sp.pathOffset));
         var ranges = new ArrayList<AllowanceRange>();
@@ -210,7 +210,7 @@ public class StandaloneSim {
             EnvelopeSimContext context,
             Envelope maxEffortEnvelope,
             List<TrainStop> stops,
-            ArrayList<ScheduledPoint> scheduledPoints
+            List<ScheduledPoint> scheduledPoints
     ) {
         var envelopeStopWrapper = new EnvelopeStopWrapper(maxEffortEnvelope, stops);
         var allowance = generateAllowanceFromScheduledPoints(envelopeStopWrapper, scheduledPoints);
