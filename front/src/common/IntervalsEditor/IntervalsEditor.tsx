@@ -81,7 +81,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   const [mode, setMode] = useState<'dragging' | 'resizing' | null>(null);
 
   // Data to display
-  const [resizingData, setResizingData] = useState<Array<LinearMetadataItem>>(data);
+  const [resizingData, setResizingData] = useState<IntervalItem[]>(data);
   useEffect(() => setResizingData(data), [data]);
 
   // Which segment is selected

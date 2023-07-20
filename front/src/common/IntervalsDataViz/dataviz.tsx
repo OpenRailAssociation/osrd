@@ -371,13 +371,13 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       const wrapperWidth = wrapper.current.offsetWidth;
       // function for key up
       fnUp = (e) => {
-        const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
+        const delta = Math.round(((e.clientX - resizing.startAt) / wrapperWidth) * fullLength);
         setResizing(null);
         if (resizing.index !== null) onResize(resizing.index, delta, true);
       };
       // function for move
       fnMove = (e) => {
-        const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
+        const delta = Math.round(((e.clientX - resizing.startAt) / wrapperWidth) * fullLength);
         if (resizing.index !== null) onResize(resizing.index, delta, false);
       };
 
