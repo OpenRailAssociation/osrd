@@ -12,6 +12,9 @@ public interface EnvelopeTimeInterpolate {
      * clamping the position to [0, envelope length] first */
     double interpolateTotalTimeClamp(double position);
 
+    /** Returns the start position of the envelope */
+    double getBeginPos();
+
     /** Returns the end position of the envelope */
     double getEndPos();
 

@@ -37,6 +37,11 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
     }
 
     @Override
+    public double getBeginPos() {
+        return envelope.getBeginPos();
+    }
+
+    @Override
     public double getEndPos() {
         return envelope.getEndPos();
     }
