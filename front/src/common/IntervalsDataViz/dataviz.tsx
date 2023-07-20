@@ -1,220 +1,19 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { head, last, maxBy, minBy } from 'lodash';
 import cx from 'classnames';
 
-import { roundNumber, preventDefault, isNilObject, shortNumber } from './utils';
+import { preventDefault, computeStyleForDataValue } from './utils';
 import { LinearMetadataItem, cropForDatavizViewbox } from './data';
+import { ScaleTicked, SimpleScale } from './Scales';
+import IntervalItem from './IntervalItem';
+import { IntervalItemBaseProps } from './types';
 import './style.scss';
 
-/**
- * Function that compute the div style attribut for a data value.
- */
-function computeStyleForDataValue(
-  value: number,
-  min: number,
-  max: number,
-  stringValues?: boolean
-): CSSProperties {
-  if (stringValues)
-    return {
-      height: `100%`,
-      opacity: 0.8,
-      zIndex: 2,
-    };
-  if (min < 0) {
-    const negativeAreaHeightRatio = Math.abs(min / (max - min));
-    const dataHeight = Math.abs(value / (max - min));
-    return {
-      height: `${dataHeight * 100}%`,
-      bottom: `${
-        (value >= 0 ? negativeAreaHeightRatio : negativeAreaHeightRatio - dataHeight) * 100
-      }%`,
-      position: 'relative',
-      opacity: 0.8,
-      zIndex: 2,
-    };
-  }
-  return {
-    height: `${((value - min) / (max - min)) * 100}%`,
-    opacity: 0.8,
-    zIndex: 2,
-  };
-}
-
-/**
- * Get the linear metadata mouse position from a react event.
- */
-function getPositionFromMouseEvent(
-  event: React.MouseEvent<HTMLDivElement>,
-  segment: LinearMetadataItem
-): number {
-  const target = event.target as HTMLDivElement;
-  if (target.className.includes('resize')) return segment.end;
-  const pxOffset = event.nativeEvent.offsetX;
-  const pxSize = target.offsetWidth;
-  return Math.round(segment.begin + (pxOffset / pxSize) * (segment.end - segment.begin));
-}
-
-const ScaleTicked: React.FC<{
-  className?: string;
-  begin: number;
-  end: number;
-  steps: number;
-}> = ({ className, begin, end, steps }) => {
-  const [inf, setInf] = useState<number>(0);
-  const [sup, setSup] = useState<number>(0);
-  const [inc, setInc] = useState<number>(0);
-
-  useEffect(() => {
-    setInf(roundNumber(begin, true));
-    setSup(roundNumber(end, false));
-    setInc(roundNumber((end - begin) / steps / 2, true));
-  }, [begin, end, steps]);
-
-  return (
-    <div className={`scale ${className}`}>
-      <div className="axis-values">
-        {[...Array(steps)].map((_, i) => (
-          <div key={i}>
-            {i === 0 && <span className="bottom-axis-value">{shortNumber(inf)}</span>}
-            <span>{shortNumber(((sup - inf) / steps) * i + inc + inf)}</span>
-            {i === steps - 1 && <span className="top-axis-value">{shortNumber(sup)}</span>}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const Scale: React.FC<{
-  className?: string;
-  begin: number;
-  end: number;
-  min?: number;
-  max?: number;
-}> = ({ className, begin, end, min, max }) => {
-  const [inf, setInf] = useState<number>(0);
-  const [sup, setSup] = useState<number>(0);
-
-  useEffect(() => {
-    setInf(roundNumber(begin, true));
-    setSup(roundNumber(end, false));
-  }, [begin, end]);
-
-  return (
-    <div className={`scale ${className}`}>
-      <span
-        className={cx(
-          min !== undefined && min === begin && 'font-weight-bold',
-          min === undefined && 'font-weight-bold'
-        )}
-        title={`${inf}`}
-      >
-        {shortNumber(inf)}
-      </span>
-      <span
-        className={cx(
-          max !== undefined && max === end && 'font-weight-bold',
-          max === undefined && 'font-weight-bold'
-        )}
-        title={`${sup}`}
-      >
-        {shortNumber(sup)}
-      </span>
-    </div>
-  );
-};
-
-export interface LinearMetadataDatavizProps<T> {
-  /**
-   * Boolean indicating if we are going to create a new item
-   */
-  creating?: boolean;
-
-  /**
-   * List of data to display (must be ordered by begin/end)
-   */
-  data: Array<LinearMetadataItem<T>>;
-
-  /**
-   * Name of the field on which we need to do the viz
-   */
-  field?: string;
-
-  /**
-   * List of elements (by begin value) that should be highlighted
-   */
-  highlighted: Array<number>;
-
+export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {
   /**
    * Part of the data which is visible
    */
   viewBox: [number, number] | null;
-
-  /**
-   * Event when the mouse move on a data item
-   */
-  onMouseMove?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
-
-  /**
-   * Event on click on a data item
-   */
-  onClick?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
-
-  /**
-   * Event on click on a data item
-   */
-  onDoubleClick?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
-
-  /**
-   * Event when mouse over a data item
-   */
-  onMouseOver?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
-
-  /**
-   * Event when mouse enter into data item
-   */
-  onMouseEnter?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
-
-  /**
-   * Event when mouse leave into data item
-   */
-  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-
-  /**
-   * Event when mouse wheel on a data item
-   */
-  onWheel?: (
-    e: React.WheelEvent<HTMLDivElement>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
 
   /**
    * Event when the user is dragging
@@ -222,25 +21,18 @@ export interface LinearMetadataDatavizProps<T> {
   onDragX?: (gap: number, finalized: boolean) => void;
 
   /**
+   * Event when mouse leaves data item
+   */
+  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+
+  /**
    * Event when the user is resizing an item
    */
   onResize?: (index: number, gap: number, finalized: boolean) => void;
-
-  /**
-   * Event when the user is creating an item
-   */
-  onCreate?: (point: number) => void;
-
-  /**
-   * Params on dataviz behavior
-   * ticks: should scale be ticked ?
-   * stringValues: each interval has just a category ref, not a continuous value
-   */
-  params?: { ticks?: boolean; stringValues?: boolean; showValues?: boolean };
 }
 
 /**
- * Component that display a linear metadata of a line.
+ * Component that displays a linear metadata of a line.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
@@ -259,7 +51,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   onDragX,
   onResize,
   onCreate,
-  params,
+  params = { ticks: false, stringValues: false, showValues: false },
 }: LinearMetadataDatavizProps<T>) => {
   // Html ref of the div wrapper
   const wrapper = useRef<HTMLDivElement | null>(null);
@@ -282,7 +74,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    */
   useEffect(() => {
     if (field) {
-      if (params?.stringValues) {
+      if (params.stringValues) {
         // we just need an arbitrary space for scaleY in that case
         setMin(0);
         setMax(1);
@@ -418,11 +210,11 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
         {/* Display the Y axis if there is one */}
         {field &&
           min !== max &&
-          !params?.stringValues &&
-          (params?.ticks ? (
+          !params.stringValues &&
+          (params.ticks ? (
             <ScaleTicked className="scale-y" steps={4} begin={min} end={max} />
           ) : (
-            <Scale className="scale-y" begin={min} end={max} />
+            <SimpleScale className="scale-y" begin={min} end={max} />
           ))}
 
         {hoverAtx && !draginStartAt && (
@@ -439,135 +231,36 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
 
         {/* Create one div per item for the X axis */}
         {data4viz.map((segment) => (
-          <div
+          <IntervalItem
+            creating={creating}
+            data={data}
+            dragingStartAt={draginStartAt}
+            field={field}
+            fullLength={fullLength}
+            highlighted={highlighted}
             key={`${segment.index}-${segment.begin}-${segment.end}-${fullLength}`}
-            className={cx(
-              'item',
-              highlighted.includes(segment.index) && 'highlighted',
-              field &&
-                data[segment.index] !== undefined &&
-                data[segment.index][field] !== undefined &&
-                'with-data',
-              field &&
-                (data[segment.index] === undefined || data[segment.index][field] === undefined) &&
-                'no-data',
-              !field && isNilObject(data[segment.index], ['begin', 'end', 'index']) && 'no-data'
-            )}
-            style={{
-              width: `${((segment.end - segment.begin) / fullLength) * 100}%`,
-            }}
-            onClick={(e) => {
-              if (!draginStartAt && onClick && data[segment.index]) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onClick(e, item, segment.index, point);
-              }
-            }}
-            onDoubleClick={(e) => {
-              if (!draginStartAt && onDoubleClick && data[segment.index]) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onDoubleClick(e, item, segment.index, point);
-              }
-            }}
-            onMouseOver={(e) => {
-              if (!draginStartAt) {
-                // handle mouse over
-                if (onMouseOver && data[segment.index]) {
-                  const item = data[segment.index];
-                  const point = getPositionFromMouseEvent(e, item);
-                  onMouseOver(e, item, segment.index, point);
-                }
-              }
-            }}
-            onFocus={() => undefined}
-            role="button"
-            tabIndex={0}
-            onMouseMove={(e) => {
-              // display vertical bar when hover element
-              setHoverAtx(
-                e.clientX - (wrapper.current ? wrapper.current.getBoundingClientRect().x : 0)
-              );
-
-              if (!draginStartAt && onMouseMove && data[segment.index]) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onMouseMove(e, item, segment.index, point);
-              }
-            }}
-            onMouseEnter={(e) => {
-              if (!draginStartAt && onMouseEnter && data[segment.index]) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onMouseEnter(e, item, segment.index, point);
-              }
-            }}
-            onMouseDown={(e) => {
-              if (onCreate && creating) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onCreate(point);
-                setResizing({ index: segment.index + 1, startAt: e.clientX });
-              } else {
-                // TODO use the frag tool context here
-                setDraginStartAt(e.clientX);
-              }
-              e.stopPropagation();
-              e.preventDefault();
-            }}
-            onWheel={(e) => {
-              if (!draginStartAt && onWheel && data[segment.index]) {
-                const item = data[segment.index];
-                const point = getPositionFromMouseEvent(e, item);
-                onWheel(e, item, segment.index, point);
-              }
-            }}
-          >
-            {/* Create an inner div for the Y axis */}
-            {field &&
-              data[segment.index] !== undefined &&
-              data[segment.index][field] !== undefined && (
-                <div
-                  className="value"
-                  style={computeStyleForDataValue(
-                    data[segment.index][field],
-                    min,
-                    max,
-                    params?.stringValues
-                  )}
-                >
-                  {params?.showValues && <span>{data[segment.index][field]}</span>}
-                </div>
-              )}
-            {!field && !isNilObject(data[segment.index], ['begin', 'end', 'index']) && (
-              <span className="value" style={{ height: '100%' }} />
-            )}
-
-            {/* Create a div for the resize */}
-            {segment.index < data.length - 1 && segment.end === data[segment.index].end && (
-              <div
-                title="Resize"
-                aria-label="Resize"
-                className={cx('resize', resizing && resizing.index === segment.index && 'selected')}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                }}
-                onMouseDown={(e) => {
-                  setResizing({ index: segment.index, startAt: e.clientX });
-                  e.stopPropagation();
-                  e.preventDefault();
-                }}
-                role="button"
-                tabIndex={-1}
-              />
-            )}
-          </div>
+            min={min}
+            max={max}
+            onClick={onClick}
+            onCreate={onCreate}
+            onDoubleClick={onDoubleClick}
+            onMouseMove={onMouseMove}
+            onMouseOver={onMouseOver}
+            onMouseEnter={onMouseEnter}
+            onWheel={onWheel}
+            params={params}
+            resizing={resizing}
+            segment={segment}
+            setDraginStartAt={setDraginStartAt}
+            setHoverAtx={setHoverAtx}
+            setResizing={setResizing}
+            wrapper={wrapper}
+          />
         ))}
       </div>
 
       {/* Display the X axis */}
-      {params?.ticks ? (
+      {params.ticks ? (
         <ScaleTicked
           className="scale-x"
           begin={head(data4viz)?.begin || 0}
@@ -575,7 +268,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           steps={10}
         />
       ) : (
-        <Scale
+        <SimpleScale
           className="scale-x"
           begin={head(data4viz)?.begin || 0}
           end={last(data4viz)?.end || 0}
