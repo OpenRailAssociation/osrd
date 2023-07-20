@@ -17,7 +17,8 @@ on:
       - prod
 
 jobs:
-  build:
+  front_tests:
+    name: Tests front
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

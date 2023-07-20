@@ -19,7 +19,8 @@ on:
       - prod
 
 jobs:
-  linter:
+  schema_linter:
+    name: Linter railjson schema
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -52,7 +53,7 @@ jobs:
           cd python/osrd_schemas
           poetry run isort . --check
 
-  infra_schema-sync:
+  schema_infra_sync:
     name: Check infra_schema.json
     runs-on: ubuntu-latest
     steps:

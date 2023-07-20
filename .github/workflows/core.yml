@@ -16,7 +16,8 @@ on:
       - staging
       - prod
 jobs:
-  build:
+  core_tests:
+    name: Tests Core
     runs-on: ubuntu-latest
 
     steps:

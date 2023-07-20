@@ -17,7 +17,8 @@ on:
       - prod
 
 jobs:
-  test:
+  api_tests:
+    name: Tests API
     runs-on: ubuntu-latest
 
     services:
@@ -71,7 +72,8 @@ jobs:
           cd python/api
           poetry run python manage.py test
 
-  linter-formatter:
+  api_linter_formatter:
+    name: Linter and formatter API
     runs-on: ubuntu-latest
 
     steps:
