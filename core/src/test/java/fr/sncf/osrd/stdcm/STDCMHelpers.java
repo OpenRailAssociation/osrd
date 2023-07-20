@@ -16,7 +16,7 @@ import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.stdcm.graph.LegacySTDCMSimulations;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.LegacyUnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
@@ -28,7 +28,7 @@ import java.util.Set;
 
 public class STDCMHelpers {
     /** Make the occupancy multimap of a train going from point A to B starting at departureTime */
-    public static Multimap<SignalingRoute, OccupancyBlock> makeOccupancyFromPath(
+    public static Multimap<SignalingRoute, LegacyOccupancyBlock> makeOccupancyFromPath(
             FullInfra infra,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
@@ -62,7 +62,7 @@ public class STDCMHelpers {
                     departureTime + entry.getValue().timeTailFree
             ));
         }
-        return UnavailableSpaceBuilder.computeUnavailableSpace(
+        return LegacyUnavailableSpaceBuilder.computeUnavailableSpace(
                 infra.java(),
                 occupancies,
                 REALISTIC_FAST_TRAIN,
@@ -99,7 +99,7 @@ public class STDCMHelpers {
 
     /** Returns how long the longest occupancy block lasts, which is the minimum delay we need to add
      * between two identical trains */
-    public static double getMaxOccupancyLength(Multimap<SignalingRoute, OccupancyBlock> occupancies) {
+    public static double getMaxOccupancyLength(Multimap<SignalingRoute, LegacyOccupancyBlock> occupancies) {
         double maxOccupancyLength = 0;
         for (var route : occupancies.keySet()) {
             var endTime = 0.;
@@ -129,14 +129,14 @@ public class STDCMHelpers {
     }
 
     /** Checks that the result don't cross in an occupied section */
-    static void occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
+    static void occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, LegacyOccupancyBlock> occupancyGraph) {
         occupancyTest(res, occupancyGraph, 0);
     }
 
     /** Checks that the result don't cross in an occupied section, with a certain tolerance for float inaccuracies */
     static void occupancyTest(
             STDCMResult res,
-            ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph,
+            ImmutableMultimap<SignalingRoute, LegacyOccupancyBlock> occupancyGraph,
             double tolerance
     ) {
         var envelopeWrapper = new EnvelopeStopWrapper(res.envelope(), res.stopResults());

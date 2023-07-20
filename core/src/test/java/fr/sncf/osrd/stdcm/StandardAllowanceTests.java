@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -119,7 +118,7 @@ public class StandardAllowanceTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(0, 3600, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(0, 3600, 0, 100)
         );
         var allowance = new AllowanceValue.Percentage(20);
 
@@ -151,7 +150,7 @@ public class StandardAllowanceTests {
         var route = infraBuilder.addRoute("a", "b", 10_000);
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                route, new OccupancyBlock(0, 3600, 5_000, 10_000)
+                route, new LegacyOccupancyBlock(0, 3600, 5_000, 10_000)
         );
         var allowance = new AllowanceValue.Percentage(20);
 
@@ -197,8 +196,8 @@ public class StandardAllowanceTests {
         );
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(120, POSITIVE_INFINITY, 0, 1_000),
-                routes.get(2), new OccupancyBlock(0, 1000, 0, 1_000)
+                routes.get(0), new LegacyOccupancyBlock(120, POSITIVE_INFINITY, 0, 1_000),
+                routes.get(2), new LegacyOccupancyBlock(0, 1000, 0, 1_000)
         );
         var allowance = new AllowanceValue.Percentage(20);
 
@@ -241,8 +240,8 @@ public class StandardAllowanceTests {
         );
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(60, POSITIVE_INFINITY, 0, 1),
-                routes.get(2), new OccupancyBlock(0, 1000, 0, 1)
+                routes.get(0), new LegacyOccupancyBlock(60, POSITIVE_INFINITY, 0, 1),
+                routes.get(2), new LegacyOccupancyBlock(0, 1000, 0, 1)
         );
         var allowance = new AllowanceValue.Percentage(20);
 
@@ -320,10 +319,10 @@ public class StandardAllowanceTests {
         var infra = infraBuilder.build();
         var allowance = new AllowanceValue.Percentage(100);
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(0, 200, 0, 100),
-                secondRoute, new OccupancyBlock(0, 600, 0, 100),
-                thirdRoute, new OccupancyBlock(0, 1200, 0, 100),
-                forthRoute, new OccupancyBlock(0, 2000, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(0, 200, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(0, 600, 0, 100),
+                thirdRoute, new LegacyOccupancyBlock(0, 1200, 0, 100),
+                forthRoute, new LegacyOccupancyBlock(0, 2000, 0, 100)
         );
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -364,8 +363,8 @@ public class StandardAllowanceTests {
         );
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(120, POSITIVE_INFINITY, 0, 1_000),
-                routes.get(2), new OccupancyBlock(0, 1000, 0, 1_000)
+                routes.get(0), new LegacyOccupancyBlock(120, POSITIVE_INFINITY, 0, 1_000),
+                routes.get(2), new LegacyOccupancyBlock(0, 1000, 0, 1_000)
         );
         var allowance = new AllowanceValue.TimePerDistance(60);
 
@@ -462,10 +461,10 @@ public class StandardAllowanceTests {
         var infra = infraBuilder.build();
         var allowance = new AllowanceValue.TimePerDistance(15);
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(0, 200, 0, 100),
-                secondRoute, new OccupancyBlock(0, 600, 0, 100),
-                thirdRoute, new OccupancyBlock(0, 1200, 0, 100),
-                forthRoute, new OccupancyBlock(0, 2000, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(0, 200, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(0, 600, 0, 100),
+                thirdRoute, new LegacyOccupancyBlock(0, 1200, 0, 100),
+                forthRoute, new LegacyOccupancyBlock(0, 2000, 0, 100)
         );
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -509,8 +508,8 @@ public class StandardAllowanceTests {
         if (isTimePerDistance)
             allowance = new AllowanceValue.TimePerDistance(120);
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(2_000 + timeStep, POSITIVE_INFINITY, 0, 1_000),
-                secondRoute, new OccupancyBlock(0, 2_000 - timeStep, 0, 1_000)
+                firstRoute, new LegacyOccupancyBlock(2_000 + timeStep, POSITIVE_INFINITY, 0, 1_000),
+                secondRoute, new LegacyOccupancyBlock(0, 2_000 - timeStep, 0, 1_000)
         );
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
                 .setInfra(infra)

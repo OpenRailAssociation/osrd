@@ -44,8 +44,9 @@ public class EngineeringAllowanceTests {
         var timeThirdRouteFree = firstRouteEnvelope.getTotalTime() + secondRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(firstRouteEnvelope.getTotalTime() + 10, POSITIVE_INFINITY, 0, 1_000),
-                thirdRoute, new OccupancyBlock(0, timeThirdRouteFree + 30, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(firstRouteEnvelope.getTotalTime() + 10, POSITIVE_INFINITY,
+                        0, 1_000),
+                thirdRoute, new LegacyOccupancyBlock(0, timeThirdRouteFree + 30, 0, 100)
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
@@ -97,9 +98,9 @@ public class EngineeringAllowanceTests {
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(firstRouteEnvelope.getTotalTime() + timeStep,
+                firstRoute, new LegacyOccupancyBlock(firstRouteEnvelope.getTotalTime() + timeStep,
                         POSITIVE_INFINITY, 0, 1_000),
-                lastRoute, new OccupancyBlock(0, timeLastRouteFree, 0, 1_000)
+                lastRoute, new LegacyOccupancyBlock(0, timeLastRouteFree, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -157,10 +158,10 @@ public class EngineeringAllowanceTests {
         var timeThirdRouteOccupied = firstRouteEnvelope.getTotalTime() + 5 + secondRouteEnvelope.getTotalTime() * 2;
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(firstRouteEnvelope.getTotalTime() + timeStep,
+                firstRoute, new LegacyOccupancyBlock(firstRouteEnvelope.getTotalTime() + timeStep,
                         POSITIVE_INFINITY, 0, 1_000),
-                lastRoute, new OccupancyBlock(0, timeLastRouteFree, 0, 1_000),
-                thirdRoute, new OccupancyBlock(timeThirdRouteOccupied, POSITIVE_INFINITY, 0, 1_000)
+                lastRoute, new LegacyOccupancyBlock(0, timeLastRouteFree, 0, 1_000),
+                thirdRoute, new LegacyOccupancyBlock(timeThirdRouteOccupied, POSITIVE_INFINITY, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -203,7 +204,7 @@ public class EngineeringAllowanceTests {
         var timeThirdRouteFree = lastRouteEntryTime + 3600 * 2 + 60;
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                thirdRoute, new OccupancyBlock(0, timeThirdRouteFree, 0, 1)
+                thirdRoute, new LegacyOccupancyBlock(0, timeThirdRouteFree, 0, 1)
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
@@ -246,11 +247,11 @@ public class EngineeringAllowanceTests {
         var forthRoute = infraBuilder.addRoute("d", "e", 2_000, 20);
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(0, 600, 0, 100),
-                firstRoute, new OccupancyBlock(2_000, POSITIVE_INFINITY, 0, 100),
-                secondRoute, new OccupancyBlock(0, 1200, 0, 100),
-                thirdRoute, new OccupancyBlock(0, 1800, 0, 100),
-                forthRoute, new OccupancyBlock(0, 4_000, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(0, 600, 0, 100),
+                firstRoute, new LegacyOccupancyBlock(2_000, POSITIVE_INFINITY, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(0, 1200, 0, 100),
+                thirdRoute, new LegacyOccupancyBlock(0, 1800, 0, 100),
+                forthRoute, new LegacyOccupancyBlock(0, 4_000, 0, 100)
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()
@@ -291,8 +292,8 @@ public class EngineeringAllowanceTests {
         );
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(300, POSITIVE_INFINITY, 0, 1_000),
-                routes.get(2), new OccupancyBlock(0, 3600, 0, 1_000)
+                routes.get(0), new LegacyOccupancyBlock(300, POSITIVE_INFINITY, 0, 1_000),
+                routes.get(2), new LegacyOccupancyBlock(0, 3600, 0, 1_000)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -329,8 +330,8 @@ public class EngineeringAllowanceTests {
         );
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(300, 3600, 0, 1),
-                routes.get(2), new OccupancyBlock(0, 3600, 0, 1)
+                routes.get(0), new LegacyOccupancyBlock(300, 3600, 0, 1),
+                routes.get(2), new LegacyOccupancyBlock(0, 3600, 0, 1)
         );
         double timeStep = 2;
         var res = new STDCMPathfindingBuilder()

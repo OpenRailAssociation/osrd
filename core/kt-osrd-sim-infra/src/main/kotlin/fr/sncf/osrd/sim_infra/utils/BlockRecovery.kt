@@ -42,7 +42,7 @@ fun BlockPathElement.toBlockList() : StaticIdxList<Block> {
 
 
 private fun filterBlocks(
-    allowedSignalingSystems: StaticIdxList<SignalingSystem>,
+    allowedSignalingSystems: StaticIdxList<SignalingSystem>?,
     blockInfra: BlockInfra,
     blocks: StaticIdxList<Block>,
     routePath: StaticIdxList<ZonePath>,
@@ -51,7 +51,8 @@ private fun filterBlocks(
     val remainingZonePaths = routePath.size - routeOffset
     val res = mutableStaticIdxArrayListOf<Block>()
     blockLoop@ for (block in blocks) {
-        if (!allowedSignalingSystems.contains(blockInfra.getBlockSignalingSystem(block)))
+        if (allowedSignalingSystems != null
+            && !allowedSignalingSystems.contains(blockInfra.getBlockSignalingSystem(block)))
             continue
         val blockPath = blockInfra.getBlockPath(block)
         if (blockPath.size > remainingZonePaths)
@@ -68,7 +69,7 @@ private fun filterBlocks(
 private fun findRouteBlocks(
     signalingInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    allowedSignalingSystems: StaticIdxList<SignalingSystem>,
+    allowedSignalingSystems: StaticIdxList<SignalingSystem>?,
     previousPaths: List<BlockPathElement>?,
     route: RouteId,
     routeIndex: Int,
@@ -138,7 +139,7 @@ fun recoverBlocks(
     sigInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     routes: StaticIdxList<Route>,
-    allowedSigSystems: StaticIdxList<SignalingSystem>
+    allowedSigSystems: StaticIdxList<SignalingSystem>?
 ): List<BlockPathElement> {
     var candidates: List<BlockPathElement>? = null
 

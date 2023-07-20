@@ -43,10 +43,10 @@ public class STDCMPathfindingTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(0, 50, 0, 100),
-                firstRoute, new OccupancyBlock(10000, POSITIVE_INFINITY, 0, 100),
-                secondRoute, new OccupancyBlock(0, 50, 0, 100),
-                secondRoute, new OccupancyBlock(10000, POSITIVE_INFINITY, 0, 100));
+                firstRoute, new LegacyOccupancyBlock(0, 50, 0, 100),
+                firstRoute, new LegacyOccupancyBlock(10000, POSITIVE_INFINITY, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(0, 50, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(10000, POSITIVE_INFINITY, 0, 100));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(100)
@@ -90,10 +90,10 @@ public class STDCMPathfindingTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(0, 99, 0, 100),
-                firstRoute, new OccupancyBlock(101, POSITIVE_INFINITY, 0, 100),
-                secondRoute, new OccupancyBlock(0, 50, 0, 100),
-                secondRoute, new OccupancyBlock(1000, POSITIVE_INFINITY, 0, 100));
+                firstRoute, new LegacyOccupancyBlock(0, 99, 0, 100),
+                firstRoute, new LegacyOccupancyBlock(101, POSITIVE_INFINITY, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(0, 50, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(1000, POSITIVE_INFINITY, 0, 100));
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
                 .setStartTime(100)
@@ -116,7 +116,7 @@ public class STDCMPathfindingTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(0, 10, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(0, 10, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -151,10 +151,10 @@ public class STDCMPathfindingTests {
         infraBuilder.addRoute("d", "e");
         var infra = infraBuilder.build();
         var occupancyGraph1 = ImmutableMultimap.of(
-                routeTop, new OccupancyBlock(0, POSITIVE_INFINITY, 0, 100)
+                routeTop, new LegacyOccupancyBlock(0, POSITIVE_INFINITY, 0, 100)
         );
         var occupancyGraph2 = ImmutableMultimap.of(
-                routeBottom, new OccupancyBlock(0, POSITIVE_INFINITY, 0, 100)
+                routeBottom, new LegacyOccupancyBlock(0, POSITIVE_INFINITY, 0, 100)
         );
 
         var firstRoute = infra.findSignalingRoute("a->b", "BAL3");
@@ -317,7 +317,7 @@ public class STDCMPathfindingTests {
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 100)))
                 .setUnavailableTimes(ImmutableMultimap.of(
-                        route, new OccupancyBlock(0, 1000, 0, 100)
+                        route, new LegacyOccupancyBlock(0, 1000, 0, 100)
                 ))
                 .setMaxDepartureDelay(1000 + timeStep)
                 .setMaxRunTime(100)
@@ -342,7 +342,7 @@ public class STDCMPathfindingTests {
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 10)))
                 .setUnavailableTimes(ImmutableMultimap.of(
-                        route, new OccupancyBlock(0, POSITIVE_INFINITY, 99_000, 100_000)
+                        route, new LegacyOccupancyBlock(0, POSITIVE_INFINITY, 99_000, 100_000)
                 ))
                 .run();
         assertNotNull(res);
@@ -364,7 +364,7 @@ public class STDCMPathfindingTests {
                 .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 0)))
                 .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(route, 10)))
                 .setUnavailableTimes(ImmutableMultimap.of(
-                        route, new OccupancyBlock(300, POSITIVE_INFINITY, 0, 100_000)
+                        route, new LegacyOccupancyBlock(300, POSITIVE_INFINITY, 0, 100_000)
                 ))
                 .run();
         assertNotNull(res);
@@ -398,8 +398,8 @@ public class STDCMPathfindingTests {
         var infra = infraBuilder.build();
         var runTime = STDCMHelpers.getRoutesRunTime(routes);
         var occupancyGraph = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(300, 3600, 0, 1),
-                routes.get(2), new OccupancyBlock(0, 3600, 0, 1)
+                routes.get(0), new LegacyOccupancyBlock(300, 3600, 0, 1),
+                routes.get(2), new LegacyOccupancyBlock(0, 3600, 0, 1)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -430,7 +430,7 @@ public class STDCMPathfindingTests {
         var routes = List.of(infraBuilder.addRoute("a", "b"));
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(300, 3600, 0, 1)
+                routes.get(0), new LegacyOccupancyBlock(300, 3600, 0, 1)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)

@@ -44,4 +44,14 @@ fun RawSignalingInfra.getLogicalSignalName(signal: LogicalSignalId): String? {
     return getPhysicalSignalName(getPhysicalSignal(signal))
 }
 
+/** Returns the length of a route  */
+@JvmName("getRouteLength")
+fun RawSignalingInfra.getRouteLength(route: RouteId): Distance {
+    var res = 0.meters
+    for (zonePath in getRoutePath(route)) {
+        res += getZonePathLength(zonePath)
+    }
+    return res
+}
+
 typealias RawInfra = RawSignalingInfra

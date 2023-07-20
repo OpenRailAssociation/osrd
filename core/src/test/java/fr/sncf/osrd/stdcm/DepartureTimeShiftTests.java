@@ -26,7 +26,7 @@ public class DepartureTimeShiftTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(0, 3600, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(0, 3600, 0, 100)
         );
 
         var res = new STDCMPathfindingBuilder()
@@ -54,9 +54,9 @@ public class DepartureTimeShiftTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(0, 1200, 0, 100),
-                secondRoute, new OccupancyBlock(1200, 2400, 0, 100),
-                secondRoute, new OccupancyBlock(2400, 3600, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(0, 1200, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(1200, 2400, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(2400, 3600, 0, 100)
         );
 
         var res = new STDCMPathfindingBuilder()
@@ -144,7 +144,7 @@ public class DepartureTimeShiftTests {
         var lastRoute = infraBuilder.addRoute("d", "e", 1000);
         var infra = infraBuilder.build();
 
-        var occupancyGraph = ImmutableMultimap.of(delayedRoute, new OccupancyBlock(
+        var occupancyGraph = ImmutableMultimap.of(delayedRoute, new LegacyOccupancyBlock(
                 0,
                 10000,
                 0,
@@ -182,11 +182,11 @@ public class DepartureTimeShiftTests {
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2, null, null);
         assert firstRouteEnvelope != null;
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(
+                firstRoute, new LegacyOccupancyBlock(
                         firstRouteEnvelope.getTotalTime() + 10,
                         POSITIVE_INFINITY,
                         0, 100),
-                secondRoute, new OccupancyBlock(0, 3600, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(0, 3600, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -222,8 +222,8 @@ public class DepartureTimeShiftTests {
         var thirdRoute = infraBuilder.addRoute("c", "d");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(300, 500, 0, 100),
-                thirdRoute, new OccupancyBlock(0, 500, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(300, 500, 0, 100),
+                thirdRoute, new LegacyOccupancyBlock(0, 500, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -257,8 +257,8 @@ public class DepartureTimeShiftTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(300, 500, 0, 100),
-                secondRoute, new OccupancyBlock(0, 500, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(300, 500, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(0, 500, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -292,7 +292,7 @@ public class DepartureTimeShiftTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(300, 500, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(300, 500, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -332,9 +332,9 @@ public class DepartureTimeShiftTests {
         var forthRoute = infraBuilder.addRoute("d", "e");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(1200, POSITIVE_INFINITY, 0, 100),
-                secondRoute, new OccupancyBlock(600, POSITIVE_INFINITY, 0, 100),
-                forthRoute, new OccupancyBlock(0, 1000, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(1200, POSITIVE_INFINITY, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(600, POSITIVE_INFINITY, 0, 100),
+                forthRoute, new LegacyOccupancyBlock(0, 1000, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -373,11 +373,11 @@ public class DepartureTimeShiftTests {
         var forthRoute = infraBuilder.addRoute("d", "e");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(0, 200, 0, 100),
-                firstRoute, new OccupancyBlock(500, POSITIVE_INFINITY, 0, 100),
-                secondRoute, new OccupancyBlock(0, 400, 0, 100),
-                thirdRoute, new OccupancyBlock(0, 600, 0, 100),
-                forthRoute, new OccupancyBlock(0, 800, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(0, 200, 0, 100),
+                firstRoute, new LegacyOccupancyBlock(500, POSITIVE_INFINITY, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(0, 400, 0, 100),
+                thirdRoute, new LegacyOccupancyBlock(0, 600, 0, 100),
+                forthRoute, new LegacyOccupancyBlock(0, 800, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -412,11 +412,11 @@ public class DepartureTimeShiftTests {
         var thirdRoute = infraBuilder.addRoute("c", "d");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(300, 600, 0, 100),
-                secondRoute, new OccupancyBlock(900, 1200, 0, 100),
-                secondRoute, new OccupancyBlock(1500, 1800, 0, 100),
-                thirdRoute, new OccupancyBlock(0, 1200, 0, 100),
-                thirdRoute, new OccupancyBlock(1500, POSITIVE_INFINITY, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(300, 600, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(900, 1200, 0, 100),
+                secondRoute, new LegacyOccupancyBlock(1500, 1800, 0, 100),
+                thirdRoute, new LegacyOccupancyBlock(0, 1200, 0, 100),
+                thirdRoute, new LegacyOccupancyBlock(1500, POSITIVE_INFINITY, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -441,7 +441,7 @@ public class DepartureTimeShiftTests {
         var lastRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
-                firstRoute, new OccupancyBlock(0, 1000, 0, 100)
+                firstRoute, new LegacyOccupancyBlock(0, 1000, 0, 100)
         );
         double timeStep = 2;
         var res1 = new STDCMPathfindingBuilder()

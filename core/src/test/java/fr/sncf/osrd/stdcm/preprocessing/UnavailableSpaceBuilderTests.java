@@ -1,12 +1,14 @@
-package fr.sncf.osrd.stdcm;
+package fr.sncf.osrd.stdcm.preprocessing;
 
-import static fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder.computeUnavailableSpace;
+import static fr.sncf.osrd.stdcm.preprocessing.implementation.LegacyUnavailableSpaceBuilder.computeUnavailableSpace;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
+import fr.sncf.osrd.stdcm.DummyRouteGraphBuilder;
+import fr.sncf.osrd.stdcm.LegacyOccupancyBlock;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
 
@@ -33,14 +35,14 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        new OccupancyBlock(0, 100, 0, 1000) // base occupancy
+                        new LegacyOccupancyBlock(0, 100, 0, 1000) // base occupancy
                 ),
                 res.get(firstRoute)
         );
         assertEquals(
                 Set.of(
                         // If the train is in this area, the previous route would be "yellow", causing a conflict
-                        new OccupancyBlock(0, 100, 0, 1000)
+                        new LegacyOccupancyBlock(0, 100, 0, 1000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
@@ -66,13 +68,13 @@ public class UnavailableSpaceBuilderTests {
         assertEquals(
                 Set.of(
                         // Entering this area would cause the train to see a signal that isn't green
-                        new OccupancyBlock(0, 100, 1000 - 400, 1000)
+                        new LegacyOccupancyBlock(0, 100, 1000 - 400, 1000)
                 ),
                 res.get(firstRoute)
         );
         assertEquals(
                 Set.of(
-                        new OccupancyBlock(0, 100, 0, 1000) // base occupancy
+                        new LegacyOccupancyBlock(0, 100, 0, 1000) // base occupancy
                 ),
                 res.get(secondRoute)
         );
@@ -104,7 +106,7 @@ public class UnavailableSpaceBuilderTests {
         );
         assertEquals(
                 Set.of(
-                        new OccupancyBlock(0, 100, 0, 1000) // base occupancy
+                        new LegacyOccupancyBlock(0, 100, 0, 1000) // base occupancy
                 ),
                 res.get(a1)
         );
@@ -115,7 +117,7 @@ public class UnavailableSpaceBuilderTests {
         assertEquals(
                 Set.of(
                         // If the train is in this area, the previous route would be "yellow", causing a conflict
-                        new OccupancyBlock(0, 100, 0, 1000)
+                        new LegacyOccupancyBlock(0, 100, 0, 1000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
@@ -145,7 +147,7 @@ public class UnavailableSpaceBuilderTests {
                         // The second route can't be occupied in that time because it would cause a "yellow" state
                         // in the first one (conflict), and this accounts for the extra margin needed in the third
                         // route caused by the train length
-                        new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                        new LegacyOccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
                 res.get(thirdRoute)
         );
@@ -168,13 +170,13 @@ public class UnavailableSpaceBuilderTests {
         // (20s before and 60s after)
         assertEquals(
                 Set.of(
-                        new OccupancyBlock(80, 260, 0, 1000)
+                        new LegacyOccupancyBlock(80, 260, 0, 1000)
                 ),
                 res.get(firstRoute)
         );
         assertEquals(
                 Set.of(
-                        new OccupancyBlock(80, 260, 0, 1000)
+                        new LegacyOccupancyBlock(80, 260, 0, 1000)
                 ),
                 res.get(secondRoute)
         );

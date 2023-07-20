@@ -33,7 +33,7 @@ public class STDCMPathfindingBuilder {
     private RollingStock rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
     private double startTime = 0;
     private RollingStock.Comfort comfort = RollingStock.Comfort.STANDARD;
-    Multimap<SignalingRoute, OccupancyBlock> unavailableTimes = ImmutableMultimap.of();
+    Multimap<SignalingRoute, LegacyOccupancyBlock> unavailableTimes = ImmutableMultimap.of();
     double timeStep = 2.;
     double maxDepartureDelay = 3600 * 2;
     double maxRunTime = Double.POSITIVE_INFINITY;
@@ -86,7 +86,7 @@ public class STDCMPathfindingBuilder {
 
     /** Sets at which times each section of routes are unavailable. By default, everything is available */
     public STDCMPathfindingBuilder setUnavailableTimes(
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
+            Multimap<SignalingRoute, LegacyOccupancyBlock> unavailableTimes
     ) {
         this.unavailableTimes = unavailableTimes;
         return this;

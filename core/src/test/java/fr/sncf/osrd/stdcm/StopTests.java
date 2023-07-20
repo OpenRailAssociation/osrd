@@ -151,7 +151,7 @@ public class StopTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var unavailableTimes = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(100_000, POSITIVE_INFINITY, 0, 100)
+                secondRoute, new LegacyOccupancyBlock(100_000, POSITIVE_INFINITY, 0, 100)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -177,8 +177,8 @@ public class StopTests {
         );
         var infra = infraBuilder.build();
         var occupancy = ImmutableMultimap.of(
-                routes.get(2), new OccupancyBlock(0, 12_000, 0, 1),
-                routes.get(2), new OccupancyBlock(12_010, POSITIVE_INFINITY, 0, 1)
+                routes.get(2), new LegacyOccupancyBlock(0, 12_000, 0, 1),
+                routes.get(2), new LegacyOccupancyBlock(12_010, POSITIVE_INFINITY, 0, 1)
         );
         var res = new STDCMPathfindingBuilder()
                 .setInfra(infra)
@@ -224,9 +224,9 @@ public class StopTests {
                 infraBuilder.addRoute("d", "e", 1, 20)
         );
         var occupancy = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(10, POSITIVE_INFINITY, 0, 1),
-                routes.get(3), new OccupancyBlock(0, 1_200, 0, 1),
-                routes.get(3), new OccupancyBlock(1_220, POSITIVE_INFINITY, 0, 1)
+                routes.get(0), new LegacyOccupancyBlock(10, POSITIVE_INFINITY, 0, 1),
+                routes.get(3), new LegacyOccupancyBlock(0, 1_200, 0, 1),
+                routes.get(3), new LegacyOccupancyBlock(1_220, POSITIVE_INFINITY, 0, 1)
         );
         double timeStep = 2;
         var infra = infraBuilder.build();
@@ -273,8 +273,8 @@ public class StopTests {
                 infraBuilder.addRoute("d", "e", 1, 20)
         );
         var occupancy = ImmutableMultimap.of(
-                routes.get(3), new OccupancyBlock(0, 1_200, 0, 1),
-                routes.get(3), new OccupancyBlock(1_220, POSITIVE_INFINITY, 0, 1)
+                routes.get(3), new LegacyOccupancyBlock(0, 1_200, 0, 1),
+                routes.get(3), new LegacyOccupancyBlock(1_220, POSITIVE_INFINITY, 0, 1)
         );
         double timeStep = 2;
         var infra = infraBuilder.build();
@@ -329,9 +329,9 @@ public class StopTests {
                 infraBuilder.addRoute("d", "e", 1, 20)
         );
         var occupancy = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(10, POSITIVE_INFINITY, 0, 1),
-                routes.get(3), new OccupancyBlock(0, 1_200, 0, 1),
-                routes.get(3), new OccupancyBlock(1_300, POSITIVE_INFINITY, 0, 1)
+                routes.get(0), new LegacyOccupancyBlock(10, POSITIVE_INFINITY, 0, 1),
+                routes.get(3), new LegacyOccupancyBlock(0, 1_200, 0, 1),
+                routes.get(3), new LegacyOccupancyBlock(1_300, POSITIVE_INFINITY, 0, 1)
         );
         double timeStep = 2;
         var infra = infraBuilder.build();

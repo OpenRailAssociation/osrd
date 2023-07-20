@@ -18,10 +18,7 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
-import fr.sncf.osrd.sim_infra.api.BlockInfra;
-import fr.sncf.osrd.sim_infra.api.Path;
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.sim_infra.api.TrackChunk;
+import fr.sncf.osrd.sim_infra.api.*;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.DistanceRangeMap;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -252,7 +249,7 @@ public class PathfindingResultConverter {
         if (startOffset == null)
             startOffset = 0L;
         if (endOffset == null)
-            endOffset = getRouteLength(infra, route);
+            endOffset = RawSignalingInfraKt.getRouteLength(infra, route);
         return new RJSRoutePath(
                 infra.getRouteName(route),
                 makeRJSTrackRanges(infra, route, startOffset, endOffset),
@@ -312,13 +309,6 @@ public class PathfindingResultConverter {
             }
         }
         return res;
-    }
-
-    /** Returns the route length */
-    private static long getRouteLength(RawSignalingInfra infra, int route) {
-        return toIntList(infra.getRoutePath(route)).stream()
-                .mapToLong(infra::getZonePathLength)
-                .sum();
     }
 
     /** Returns the offset of the range start on the given route */
