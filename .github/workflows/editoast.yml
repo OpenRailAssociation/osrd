@@ -3,13 +3,7 @@ name: Test Editoast
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - editoast/**
-      - .github/workflows/editoast.yml
   merge_group:
-    paths:
-      - editoast/**
-      - .github/workflows/editoast.yml
   push:
     branches:
       - dev

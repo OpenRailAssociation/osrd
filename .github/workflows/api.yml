@@ -3,13 +3,7 @@ name: Test API
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - python/api/**
-      - .github/workflows/api.yml
   merge_group:
-    paths:
-      - python/api/**
-      - .github/workflows/api.yml
   push:
     branches:
       - dev

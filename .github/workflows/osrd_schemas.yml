@@ -3,15 +3,7 @@ name: Test osrd_schemas
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - python/osrd_schemas/**
-      - .github/workflows/osrd_schemas.yml
-      - front/src/reducers/osrdconf/infra_schema.json
   merge_group:
-    paths:
-      - python/osrd_schemas/**
-      - .github/workflows/osrd_schemas.yml
-      - front/src/reducers/osrdconf/infra_schema.json
   push:
     branches:
       - dev

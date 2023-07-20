@@ -3,13 +3,7 @@ name: Test Core
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - core/**
-      - .github/workflows/core.yml
   merge_group:
-    paths:
-      - core/**
-      - .github/workflows/core.yml
   push:
     branches:
       - dev
