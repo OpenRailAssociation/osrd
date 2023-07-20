@@ -74,34 +74,6 @@ fun project(
     return SignalProjectionResult(signalUpdates)
 }
 
-// Returns all the signals on the path
-private fun pathSignals(
-    startOffset: Distance,
-    blockPath: StaticIdxList<Block>,
-    blockInfra: BlockInfra,
-    rawInfra: SimInfraAdapter
-): MutableList<PathSignal> {
-    val pathSignals = mutableListOf<PathSignal>()
-    var currentOffset = startOffset
-    for ((blockIdx, block) in blockPath.withIndex()) {
-        var blockSize = Distance.ZERO
-        for (zonePath in blockInfra.getBlockPath(block)) {
-            blockSize += rawInfra.getZonePathLength(zonePath)
-        }
-
-        val blockSignals = blockInfra.getBlockSignals(block)
-        val blockSignalPositions = blockInfra.getSignalsPositions(block)
-        val numExclusiveSignalInBlock =
-            if (blockIdx == blockPath.size - 1) blockSignals.size else blockSignals.size - 1
-        for ((signal, position) in blockSignals.zip(blockSignalPositions).take(numExclusiveSignalInBlock)) {
-            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx))
-        }
-        currentOffset += blockSize
-    }
-
-    return pathSignals
-}
-
 
 private fun computeSignalAspectChangeEvents(
     blockPath: StaticIdxList<Block>,
