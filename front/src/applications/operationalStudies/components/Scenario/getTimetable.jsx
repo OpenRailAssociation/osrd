@@ -19,11 +19,10 @@ export default async function getTimetable(timetable) {
   const { selectedProjection, allowancesSettings } = store.getState().osrdsimulation;
   try {
     store.dispatch(updateIsUpdating(true));
-    store.dispatch(updateSelectedTrainId(timetable.train_schedule_summaries[0].id));
-
     const trainSchedulesIDs = timetable.train_schedule_summaries.map((train) => train.id);
 
     if (trainSchedulesIDs && trainSchedulesIDs.length > 0) {
+      store.dispatch(updateSelectedTrainId(timetable.train_schedule_summaries[0].id));
       let selectedProjectionPath;
       if (!selectedProjection) {
         const tempSelectedProjection = {
@@ -61,6 +60,7 @@ export default async function getTimetable(timetable) {
     } else {
       store.dispatch(updateSimulation({ trains: [] }));
       store.dispatch(updateIsUpdating(false));
+      store.dispatch(updateSelectedTrainId(undefined));
       store.dispatch(updateSelectedProjection(undefined));
     }
   } catch (e) {
