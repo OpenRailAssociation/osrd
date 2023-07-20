@@ -1,4 +1,6 @@
 import { isNil, isNaN, omit, values } from 'lodash';
+import { CSSProperties } from 'react';
+import { LinearMetadataItem } from './data';
 
 /**
  * Simple function that take an input and try to convert it as a number.
@@ -140,4 +142,53 @@ export function tooltipPosition(coordinates: [number, number], element: HTMLElem
  */
 export function preventDefault(e: Event): void {
   e.preventDefault();
+}
+
+/**
+ * Function that compute the div style attribut for a data value.
+ */
+export function computeStyleForDataValue(
+  value: number,
+  min: number,
+  max: number,
+  stringValues?: boolean
+): CSSProperties {
+  if (stringValues)
+    return {
+      height: `100%`,
+      opacity: 0.8,
+      zIndex: 2,
+    };
+  if (min < 0) {
+    const negativeAreaHeightRatio = Math.abs(min / (max - min));
+    const dataHeight = Math.abs(value / (max - min));
+    return {
+      height: `${dataHeight * 100}%`,
+      bottom: `${
+        (value >= 0 ? negativeAreaHeightRatio : negativeAreaHeightRatio - dataHeight) * 100
+      }%`,
+      position: 'relative',
+      opacity: 0.8,
+      zIndex: 2,
+    };
+  }
+  return {
+    height: `${((value - min) / (max - min)) * 100}%`,
+    opacity: 0.8,
+    zIndex: 2,
+  };
+}
+
+/**
+ * Get the linear metadata mouse position from a react event.
+ */
+export function getPositionFromMouseEvent(
+  event: React.MouseEvent<HTMLDivElement>,
+  segment: LinearMetadataItem
+): number {
+  const target = event.target as HTMLDivElement;
+  if (target.className.includes('resize')) return segment.end;
+  const pxOffset = event.nativeEvent.offsetX;
+  const pxSize = target.offsetWidth;
+  return Math.round(segment.begin + (pxOffset / pxSize) * (segment.end - segment.begin));
 }
