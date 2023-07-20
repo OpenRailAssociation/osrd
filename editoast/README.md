@@ -56,3 +56,13 @@ To install them simply run:
 $ rustup component add rustfmt clippy
 $ cargo install cargo-tarpaulin
 ```
+
+## OpenApi generation
+
+We have to keep the OpenApi of the service statically in the repository.
+To make sure it is always valid a CI check has been set up. To update the
+OpenApi when a change has been made to an endpoint, run the following command:
+
+```sh
+cargo run openapi > openapi.json
+```
