@@ -80,8 +80,8 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-  linter:
-    name: Check format and run linter
+  editoast_linter:
+    name: Linter editoast
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
