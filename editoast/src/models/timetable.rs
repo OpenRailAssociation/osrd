@@ -1,5 +1,7 @@
 use crate::diesel::QueryDsl;
 use crate::error::Result;
+use crate::models::LightRollingStockModel;
+use crate::models::Retrieve;
 use crate::models::{
     train_schedule::{
         LightTrainSchedule, MechanicalEnergyConsumedBaseEco, TrainSchedule, TrainScheduleSummary,
@@ -15,6 +17,8 @@ use diesel::result::Error as DieselError;
 use diesel::ExpressionMethods;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
+
+use super::train_schedule::TrainScheduleValidation;
 
 #[derive(
     Debug,
@@ -39,7 +43,7 @@ pub struct Timetable {
     pub name: Option<String>,
 }
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct TimetableWithSchedulesDetails {
     #[serde(flatten)]
     pub timetable: Timetable,
@@ -65,9 +69,26 @@ impl Timetable {
         self,
         db_pool: Data<DbPool>,
     ) -> Result<TimetableWithSchedulesDetails> {
+        use crate::tables::osrd_infra_infra::dsl as infra_dsl;
+        use crate::tables::osrd_infra_scenario::dsl as scenario_dsl;
+        let pool = db_pool.clone();
+        let infra_version = block(move || {
+            let mut conn = pool.get().unwrap();
+            scenario_dsl::osrd_infra_scenario
+                .filter(scenario_dsl::timetable_id.eq(self.id.unwrap()))
+                .inner_join(infra_dsl::osrd_infra_infra)
+                .select(infra_dsl::version)
+                .first::<String>(&mut conn)
+                .unwrap()
+        })
+        .await
+        .unwrap();
         let train_schedule_summaries =
             get_timetable_train_schedules_with_simulations(self.id.unwrap(), db_pool.clone())
-                .await?
+                .await?;
+        block::<_, Result<_>>(move || {
+            let mut conn = db_pool.clone().get()?;
+            let train_schedule_summaries = train_schedule_summaries
                 .iter()
                 .map(|(train_schedule, simulation_output)| {
                     let result_train = &simulation_output.base_simulation.0;
@@ -92,19 +113,36 @@ impl Timetable {
                         .filter(|stop| stop.duration > 0.)
                         .count() as i64;
 
+                    let rolling_stock = LightRollingStockModel::retrieve_conn(
+                        &mut conn,
+                        train_schedule.rolling_stock_id,
+                    )
+                    .unwrap();
+                    let rolling_stock_version = rolling_stock.unwrap().version;
+                    let invalid_reasons = check_train_validity(
+                        &train_schedule.infra_version.clone().unwrap(),
+                        train_schedule.rollingstock_version.unwrap(),
+                        &infra_version,
+                        rolling_stock_version,
+                    );
+
                     TrainScheduleSummary {
                         train_schedule: train_schedule.clone(),
                         arrival_time,
                         mechanical_energy_consumed,
                         stops_count,
                         path_length,
+                        invalid_reasons,
                     }
                 })
-                .collect::<Vec<TrainScheduleSummary>>();
-        Ok(TimetableWithSchedulesDetails {
-            timetable: self,
-            train_schedule_summaries,
+                .collect::<Vec<_>>();
+            Ok(TimetableWithSchedulesDetails {
+                timetable: self,
+                train_schedule_summaries,
+            })
         })
+        .await
+        .unwrap()
     }
 
     /// Retrieves the associated train schedules
@@ -149,4 +187,22 @@ pub async fn get_timetable_train_schedules_with_simulations(
     })
     .await
     .unwrap()
+}
+
+/// Return a list of reasons the train is invalid.
+/// An empty list means the train is valid.
+pub fn check_train_validity(
+    infra_version: &str,
+    rollingstock_version: i64,
+    current_infra_version: &str,
+    current_rolling_stock_version: i64,
+) -> Vec<TrainScheduleValidation> {
+    let mut invalid_reasons = vec![];
+    if infra_version != current_infra_version {
+        invalid_reasons.push(TrainScheduleValidation::NewerInfra)
+    };
+    if rollingstock_version != current_rolling_stock_version {
+        invalid_reasons.push(TrainScheduleValidation::NewerRollingStock)
+    };
+    invalid_reasons
 }

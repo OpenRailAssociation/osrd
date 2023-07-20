@@ -488,6 +488,11 @@ components:
       - unknown_port_name
       - unused_port
       type: string
+    InvalidTrainValues:
+      enum:
+      - NewerRollingStock
+      - NewerInfra
+      type: string
     LightRollingStock:
       allOf:
       - $ref: '#/components/schemas/RollingStockBase'
@@ -2523,6 +2528,10 @@ components:
         initial_speed:
           format: float
           type: number
+        invalid_reasons:
+          items:
+            $ref: '#/components/schemas/InvalidTrainValues'
+          type: array
         labels:
           items:
             type: string

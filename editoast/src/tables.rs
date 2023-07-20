@@ -12,6 +12,9 @@ table! {
     }
 }
 
+joinable!(osrd_infra_scenario -> osrd_infra_infra (infra_id));
+allow_tables_to_appear_in_same_query!(osrd_infra_infra, osrd_infra_scenario,);
+
 table! {
     osrd_infra_tracksectionlayer {
         id -> BigInt,
@@ -356,6 +359,8 @@ table! {
         path_id -> BigInt,
         rolling_stock_id -> BigInt,
         timetable_id -> BigInt,
+        infra_version -> Text,
+        rollingstock_version -> BigInt,
     }
 }
 

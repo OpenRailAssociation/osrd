@@ -45,7 +45,7 @@ pub struct LightRollingStockModel {
     energy_sources: DieselJson<Vec<EnergySource>>,
     electrical_power_startup_time: Option<f64>,
     raise_pantograph_time: Option<f64>,
-    version: i64,
+    pub version: i64,
 }
 
 impl LightRollingStockModel {
