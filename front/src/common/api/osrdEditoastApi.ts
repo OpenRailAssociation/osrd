@@ -1997,6 +1997,7 @@ export type Allowance =
   | ({
       allowance_type: 'standard';
     } & StandardAllowance);
+export type InvalidTrainValues = 'NewerRollingStock' | 'NewerInfra';
 export type TrainScheduleOptions = {
   ignore_electrical_profiles?: boolean | null;
 };
@@ -2012,6 +2013,7 @@ export type TrainScheduleSummary = {
   departure_time: number;
   id: number;
   initial_speed?: number;
+  invalid_reasons?: InvalidTrainValues[];
   labels: string[];
   mechanical_energy_consumed: {
     base?: number;

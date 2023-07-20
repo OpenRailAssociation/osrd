@@ -4,8 +4,8 @@ use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
 use crate::models::train_schedule::{Allowance, ScheduledPoint};
 use crate::models::{
-    Create, Delete, Pathfinding, Retrieve, RollingStockModel, Scenario, SimulationOutput,
-    SimulationOutputChangeset, TrainScheduleChangeset, Update,
+    Create, Delete, Infra, LightRollingStockModel, Pathfinding, Retrieve, RollingStockModel,
+    Scenario, SimulationOutput, SimulationOutputChangeset, TrainScheduleChangeset, Update,
 };
 use crate::models::{Timetable, TrainSchedule};
 
@@ -341,6 +341,8 @@ struct TrainScheduleBatchItem {
     pub power_restriction_ranges: Option<JsonValue>,
     pub options: Option<JsonValue>,
     pub rolling_stock_id: i64,
+    pub infra_version: Option<String>,
+    pub rollingstock_version: Option<i64>,
 }
 
 impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
@@ -362,6 +364,8 @@ impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
                 power_restriction_ranges: item.power_restriction_ranges,
                 options: item.options,
                 rolling_stock_id: item.rolling_stock_id,
+                infra_version: item.infra_version,
+                rollingstock_version: item.rollingstock_version,
             });
         }
         res
@@ -391,7 +395,8 @@ async fn standalone_simulation(
         })?;
 
     let scenario = scenario_from_timetable(&timetable, db_pool.clone())?;
-
+    let infra_id = scenario.infra_id.unwrap();
+    let infra = Infra::retrieve(db_pool.clone(), infra_id).await?.unwrap();
     let request_payload =
         create_backend_request_payload(&train_schedules, &scenario, db_pool.clone()).await?;
     let response_payload = request_payload.fetch(core.as_ref()).await?;
@@ -404,7 +409,13 @@ async fn standalone_simulation(
     // Start a transaction
     conn.transaction::<_, InternalError, _>(|conn| {
         // Save inputs
-        for train_schedule in train_schedules {
+        for mut train_schedule in train_schedules {
+            train_schedule.infra_version = infra.version.clone();
+            train_schedule.rollingstock_version = Some(
+                LightRollingStockModel::retrieve_conn(conn, train_schedule.rolling_stock_id)?
+                    .unwrap()
+                    .version,
+            );
             let id = train_schedule
                 .create_conn(conn)?
                 .id

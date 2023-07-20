@@ -34,3 +34,5 @@ class TrainSchedule(models.Model):
         null=True, blank=True, validators=[PydanticValidator(PowerRestrictionRanges)]
     )
     options = models.JSONField(null=True, blank=True, validators=[PydanticValidator(TrainScheduleOptions)])
+    infra_version = models.CharField(editable=False, max_length=40, default="1")
+    rollingstock_version = models.BigIntegerField(editable=False, default=0)

@@ -3892,6 +3892,10 @@ components:
           type: integer
         path_length:
           type: integer
+        invalid_reasons:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvalidTrainValues"
       required:
         [
           id,
@@ -3902,6 +3906,12 @@ components:
           arrival_time,
           mechanical_energy_consumed,
         ]
+
+    InvalidTrainValues:
+      type: string
+      enum:
+        - NewerRollingStock
+        - NewerInfra
 
     TrainScheduleOptions:
       description: Options for the standalone simulation

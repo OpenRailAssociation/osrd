@@ -53,6 +53,12 @@ pub struct TrainSchedule {
     pub path_id: i64,
     pub rolling_stock_id: i64,
     pub timetable_id: i64,
+    #[serde(skip_serializing)]
+    #[diesel(deserialize_as = String)]
+    pub infra_version: Option<String>,
+    #[serde(skip_serializing)]
+    #[diesel(deserialize_as = i64)]
+    pub rollingstock_version: Option<i64>,
 }
 
 impl Identifiable for TrainSchedule {
@@ -95,6 +101,10 @@ pub struct TrainScheduleChangeset {
     pub rolling_stock_id: Option<i64>,
     #[diesel(deserialize_as = i64)]
     pub timetable_id: Option<i64>,
+    #[diesel(deserialize_as = String)]
+    pub infra_version: Option<String>,
+    #[diesel(deserialize_as = i64)]
+    pub rollingstock_version: Option<i64>,
 }
 
 impl From<TrainScheduleChangeset> for TrainSchedule {
@@ -122,6 +132,8 @@ impl From<TrainScheduleChangeset> for TrainSchedule {
                 .rolling_stock_id
                 .expect("invalid changeset result"),
             timetable_id: changeset.timetable_id.expect("invalid changeset result"),
+            infra_version: changeset.infra_version,
+            rollingstock_version: changeset.rollingstock_version,
         }
     }
 }
@@ -134,14 +146,20 @@ pub struct LightTrainSchedule {
     pub train_path: i64,
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Default)]
+#[derive(Serialize, Debug, PartialEq, Clone, Default, Deserialize)]
 pub struct MechanicalEnergyConsumedBaseEco {
     pub base: f64,
     pub eco: Option<f64>,
 }
 
+#[derive(Serialize, Debug, PartialEq, Clone, Deserialize)]
+pub enum TrainScheduleValidation {
+    NewerRollingStock,
+    NewerInfra,
+}
+
 /// Returns the timetable with the train's important route information (distance travelled, arrival time, etc.)
-#[derive(Serialize, Debug, PartialEq, Clone, Queryable)]
+#[derive(Serialize, Debug, PartialEq, Clone, Queryable, Deserialize)]
 pub struct TrainScheduleSummary {
     #[serde(flatten)]
     pub train_schedule: TrainSchedule,
@@ -149,6 +167,7 @@ pub struct TrainScheduleSummary {
     pub mechanical_energy_consumed: MechanicalEnergyConsumedBaseEco,
     pub stops_count: i64,
     pub path_length: f64,
+    pub invalid_reasons: Vec<TrainScheduleValidation>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

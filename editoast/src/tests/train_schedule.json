@@ -22,6 +22,7 @@
   },
   "path_id": 40,
   "rolling_stock_id": 9,
-  "timetable_id": 19,
-  "scheduled_points":  []
+  "rollingstock_version": -1,
+  "infra_version": "-1",
+  "scheduled_points": []
 }

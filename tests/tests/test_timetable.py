@@ -29,6 +29,7 @@ class _TrainScheduleSummary:
     mechanical_energy_consumed: dict
     stops_count: int
     path_length: float
+    invalid_reasons: List[str]
 
 
 @dataclass(frozen=True)
@@ -136,6 +137,7 @@ def test_get_timetable(
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
             stops_count=1,
             path_length=45549.5653000392,
+            invalid_reasons=[],
         ),
         _TrainScheduleSummary(
             id=simulation.ids[1],
@@ -156,6 +158,7 @@ def test_get_timetable(
             mechanical_energy_consumed={"base": 6041639237.0, "eco": None},
             stops_count=1,
             path_length=45549.5653000392,
+            invalid_reasons=[],
         ),
     ]
     assert expected_schedules == [
