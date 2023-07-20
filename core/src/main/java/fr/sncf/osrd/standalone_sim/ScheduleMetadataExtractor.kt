@@ -11,9 +11,12 @@ import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.utils.BlockPathElement
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.*
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
+import fr.sncf.osrd.sim_infra.utils.recoverBlocks
+import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
 import fr.sncf.osrd.utils.indexing.*
@@ -22,6 +25,26 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import kotlin.math.abs
 import kotlin.math.max
+
+
+// TODO: run pathfinding on blocks
+private fun recoverBlockPath(
+    simulator: SignalingSimulator,
+    fullInfra: FullInfra,
+    routePath: StaticIdxList<Route>,
+): List<BlockPathElement> {
+    // TODO: the allowed signaling systems should depend on the type of train
+    val sigSystemManager = simulator.sigModuleManager
+    val bal = sigSystemManager.findSignalingSystem("BAL")
+    val bapr = sigSystemManager.findSignalingSystem("BAPR")
+    val tvm = sigSystemManager.findSignalingSystem("TVM")
+
+    val blockPaths = recoverBlocks(
+        fullInfra.rawInfra, fullInfra.blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm)
+    )
+    assert(blockPaths.isNotEmpty())
+    return blockPaths[0].toList() // TODO: have a better way to choose the block path
+}
 
 
 /** Use an already computed envelope to extract various metadata about a trip.  */
@@ -35,24 +58,18 @@ fun run(
     val blockInfra = fullInfra.blockInfra;
     val simulator = fullInfra.signalingSimulator;
 
-    // TODO: the allowed signaling systems should be dependant on the type of train
-    val sigSystemManager = simulator.sigModuleManager
-    val bal = sigSystemManager.findSignalingSystem("BAL")
-    val bapr = sigSystemManager.findSignalingSystem("BAPR")
-    val tvm = sigSystemManager.findSignalingSystem("TVM")
-
-    // Get the route path
-    // TODO: do it in the pathfinding
-    val routes = MutableStaticIdxArrayList<Route>()
+    // get a new generation route path
+    val routePath = MutableStaticIdxArrayList<Route>()
     for (javaRoute in trainPath.routePath) {
-        val route = rawInfra.routeMap[javaRoute.element.infraRoute]!!
-        routes.add(route)
+        val route = fullInfra.rawInfra.routeMap[javaRoute.element.infraRoute]!!
+        routePath.add(route)
     }
-    val blockPaths = getRouteBlocks(
-        rawInfra, blockInfra, routes, mutableStaticIdxArrayListOf(bal, bapr, tvm)
-    )
-    assert(blockPaths.isNotEmpty())
-    val blockPath = blockPaths[0] // TODO: have a better way to choose the block path
+
+    // recover blocks from the route paths
+    val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)
+    val blockPath = mutableStaticIdxArrayListOf<Block>()
+    for (block in detailedBlockPath)
+        blockPath.add(block.block)
 
     // Compute speeds, head and tail positions
     val envelopeWithStops = EnvelopeStopWrapper(envelope, schedule.stops)
