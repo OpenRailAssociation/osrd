@@ -3,32 +3,47 @@ import cx from 'classnames';
 
 import { roundNumber, shortNumber } from './utils';
 
-export const ScaleTicked: React.FC<{
-  className?: string;
+export const ResizingScale: React.FC<{
   begin: number;
   end: number;
-  steps: number;
-}> = ({ className, begin, end, steps }) => {
-  const [inf, setInf] = useState<number>(0);
-  const [sup, setSup] = useState<number>(0);
-  const [inc, setInc] = useState<number>(0);
+  className?: string;
+}> = ({ begin, end, className }) => {
+  const [ticksCount, setTicksCount] = useState<number>(10);
 
+  const inf = roundNumber(begin, true);
+  const sup = roundNumber(end, false);
+  const step = roundNumber((end - begin) / ticksCount / 2, true);
+
+  /** redraw the scale when window resized horizontally */
   useEffect(() => {
-    setInf(roundNumber(begin, true));
-    setSup(roundNumber(end, false));
-    setInc(roundNumber((end - begin) / steps / 2, true));
-  }, [begin, end, steps]);
+    const debounceResize = () => {
+      let debounceTimeoutId;
+      clearTimeout(debounceTimeoutId);
+      debounceTimeoutId = setTimeout(() => {
+        const graphWidth = document.getElementById('linear-metadata-dataviz-content')?.offsetWidth;
+        if (graphWidth) {
+          setTicksCount(Math.round(graphWidth / 100));
+        }
+      }, 15);
+    };
+    window.addEventListener('resize', debounceResize);
+    return () => {
+      window.removeEventListener('resize', debounceResize);
+    };
+  }, []);
 
   return (
     <div className={`scale ${className}`}>
       <div className="axis-values">
-        {[...Array(steps)].map((_, i) => (
-          <div key={i}>
-            {i === 0 && <span className="bottom-axis-value">{shortNumber(inf)}</span>}
-            <span>{shortNumber(((sup - inf) / steps) * i + inc + inf)}</span>
-            {i === steps - 1 && <span className="top-axis-value">{shortNumber(sup)}</span>}
-          </div>
-        ))}
+        {Array(ticksCount)
+          .fill(0)
+          .map((_, i) => (
+            <div key={i}>
+              {i === 0 && <span className="bottom-axis-value">{shortNumber(inf)}</span>}
+              <span>{shortNumber(((sup - inf) / ticksCount) * i + step + inf)}</span>
+              {i === ticksCount - 1 && <span className="top-axis-value">{shortNumber(sup)}</span>}
+            </div>
+          ))}
       </div>
     </div>
   );
@@ -51,24 +66,24 @@ export const SimpleScale: React.FC<{
 
   return (
     <div className={`scale ${className}`}>
-      <span
-        className={cx(
-          min !== undefined && min === begin && 'font-weight-bold',
-          min === undefined && 'font-weight-bold'
-        )}
-        title={`${inf}`}
-      >
-        {shortNumber(inf)}
-      </span>
-      <span
-        className={cx(
-          max !== undefined && max === end && 'font-weight-bold',
-          max === undefined && 'font-weight-bold'
-        )}
-        title={`${sup}`}
-      >
-        {shortNumber(sup)}
-      </span>
+      <div className="axis-values">
+        <p
+          className={cx(
+            (min === undefined || (min !== undefined && min === begin)) && 'font-weight-bold'
+          )}
+          title={`${inf}`}
+        >
+          {shortNumber(inf)}
+        </p>
+        <p
+          className={cx(
+            (max === undefined || (max !== undefined && max === end)) && 'font-weight-bold'
+          )}
+          title={`${sup}`}
+        >
+          {shortNumber(sup)}
+        </p>
+      </div>
     </div>
   );
 };
