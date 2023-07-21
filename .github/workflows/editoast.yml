@@ -27,10 +27,10 @@ jobs:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Install lib posgresql & geos
+      - name: Install lib posgresql & geos & mold
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpq-dev libgeos-dev
+          sudo apt-get install -y libpq-dev libgeos-dev mold
 
       - name: Setup toolchain
         uses: actions-rs/toolchain@v1
@@ -47,6 +47,8 @@ jobs:
 
       - name: Check openapi.yaml sync
         run: diff <(cargo run --release --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
+        env:
+          RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
 
   editoast_tests:
     name: Tests editoast and check coverage
@@ -57,10 +59,10 @@ jobs:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Install lib posgresql & geos
+      - name: Install lib posgresql & geos & mold
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpq-dev libgeos-dev
+          sudo apt-get install -y libpq-dev libgeos-dev mold
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -99,6 +101,8 @@ jobs:
 
       - name: Test and coverage
         run: cargo tarpaulin -r ./editoast -p editoast -p editoast_derive --out Xml -- --test-threads 1
+        env:
+          RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

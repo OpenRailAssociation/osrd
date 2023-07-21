@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:latest AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-bookworm AS chef
 WORKDIR /app
 
 FROM chef as planner
@@ -8,17 +8,17 @@ RUN cargo chef prepare --recipe-path recipe.json
 FROM chef as builder
 
 # geos crate requirement
-RUN apt update -yqq &&  apt install -yqq --no-install-recommends libgeos-dev
+RUN apt update -yqq &&  apt install -yqq --no-install-recommends libgeos-dev mold
 
 COPY --from=planner /app/recipe.json recipe.json
 COPY --from=planner /app/editoast_derive/ editoast_derive
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
-    cargo chef cook --release --recipe-path recipe.json
+    RUSTFLAGS="-C link-arg=-fuse-ld=mold" cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
-    cargo install --locked --path .
+    RUSTFLAGS="-C link-arg=-fuse-ld=mold" cargo install --locked --path .
 
 FROM debian:bookworm-slim as runner
 
