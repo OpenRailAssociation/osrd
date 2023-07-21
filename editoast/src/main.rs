@@ -24,7 +24,7 @@ use crate::views::infra::InfraForm;
 use crate::views::OpenApiRoot;
 use actix_cors::Cors;
 use actix_web::middleware::{Condition, Logger, NormalizePath};
-use actix_web::web::{block, Data, JsonConfig, PayloadConfig};
+use actix_web::web::{block, scope, Data, JsonConfig, PayloadConfig};
 use actix_web::{App, HttpServer};
 use chashmap::CHashMap;
 use clap::Parser;
@@ -172,7 +172,11 @@ async fn runserver(
             .app_data(Data::new(args.map_layers_config.clone()))
             .app_data(Data::new(SearchConfig::parse()))
             .app_data(Data::new(core_client))
-            .service((views::routes(), views::study_routes()))
+            .service(
+                scope(&args.root_path)
+                    .service(views::routes())
+                    .service(views::study_routes()),
+            )
     });
 
     // Run server
