@@ -106,7 +106,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
   );
 
   let formContent;
-  if (selected && data[selected]) {
+  if (selected !== null && data[selected]) {
     if (intervalType === INTERVAL_TYPES.NUMBER_WITH_UNIT) {
       const { fieldLabel, units } = props;
       formContent = (
@@ -159,16 +159,13 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
             }}
             onClick={(_e, _item, index, point) => {
-              const item = _item as IntervalItem;
-              if (mode === null && !isNil(item.value)) {
+              if (mode === null) {
                 const timer = window.setTimeout(() => {
                   if (!clickPrevent) {
                     // case when you click on the already selected item => reset
                     // you can't select a blank interval
-                    if (!isNil(item.value)) {
-                      setSelected((old) => ((old ?? -1) === index ? null : index));
-                      setHovered(null);
-                    }
+                    setSelected((old) => ((old ?? -1) === index ? null : index));
+                    setHovered(null);
                   }
                   setClickPrevent(false);
                 }, 50) as number;
