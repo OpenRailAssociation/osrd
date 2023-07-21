@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0008_move_electrical_profile_set"),
     ]

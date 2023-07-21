@@ -6,7 +6,6 @@ from osrd_infra.migrations import run_sql_create_infra_search_table
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0035_trainschedule_scheduled_points"),
     ]

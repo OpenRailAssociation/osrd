@@ -10,7 +10,6 @@ from osrd_infra.migrations import run_sql_add_foreign_key, run_sql_add_one_to_on
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0012_power_restrictions"),
     ]

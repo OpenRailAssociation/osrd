@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0010_rename_speed_limit_composition_trainschedulemodel_speed_limit_tags"),
     ]

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0014_remove_project_image_project_image_id"),
     ]

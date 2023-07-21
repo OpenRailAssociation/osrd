@@ -7,7 +7,6 @@ import osrd_infra.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0003_rollingstockimages"),
     ]

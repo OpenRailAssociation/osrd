@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0039_rename_version_rollingstock_railjson_version_and_more"),
     ]

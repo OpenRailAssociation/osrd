@@ -7,7 +7,6 @@ from osrd_infra.migrations import run_sql_complex_add_foreign_key
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0002_add_electrical_profiles_to_schedules"),
     ]

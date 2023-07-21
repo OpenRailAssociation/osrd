@@ -14,7 +14,6 @@ def bump_rjs_rollingstock_version_reverse(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0033_rollingstock_locked"),
     ]

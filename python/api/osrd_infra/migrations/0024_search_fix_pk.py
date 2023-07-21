@@ -6,7 +6,6 @@ from osrd_infra.migrations import run_sql_create_infra_search_table
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0023_alter_rollingstocklivery_compound_image_and_more"),
     ]

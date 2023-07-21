@@ -6,7 +6,6 @@ def alter_field_to_int8(model_name: str, column_name: str) -> str:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0016_osrd_search_track"),
     ]

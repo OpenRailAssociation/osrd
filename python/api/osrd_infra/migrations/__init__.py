@@ -17,7 +17,6 @@ def run_sql_complex_add_foreign_key(
     nullable: bool = False,
     related_name: Optional[str] = None,
 ):
-
     field = models.ForeignKey(
         on_delete=django.db.models.deletion.CASCADE,
         to=f"osrd_infra.{link_model}",

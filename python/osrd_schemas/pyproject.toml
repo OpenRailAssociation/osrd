@@ -6,11 +6,11 @@ authors = ["OSRD <contact@osrd.fr>"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-pydantic = "1.10.4"
-geojson-pydantic = "0.5.0"
+pydantic = "1.10.10"
+geojson-pydantic = "0.6.3"
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.12.0"
+black = "^23"
 isort = "^5.12.0"
 pyproject-flake8 = "^6.0.0.post1"
 

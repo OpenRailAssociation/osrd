@@ -294,6 +294,55 @@
         "LineString": {
             "description": "LineString Model",
             "properties": {
+                "bbox": {
+                    "anyOf": [
+                        {
+                            "items": [
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ],
+                            "maxItems": 4,
+                            "minItems": 4,
+                            "type": "array"
+                        },
+                        {
+                            "items": [
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "number"
+                                }
+                            ],
+                            "maxItems": 6,
+                            "minItems": 6,
+                            "type": "array"
+                        }
+                    ],
+                    "title": "Bbox"
+                },
                 "coordinates": {
                     "items": {
                         "anyOf": [
@@ -333,13 +382,15 @@
                     "type": "array"
                 },
                 "type": {
-                    "const": "LineString",
-                    "default": "LineString",
+                    "enum": [
+                        "LineString"
+                    ],
                     "title": "Type",
                     "type": "string"
                 }
             },
             "required": [
+                "type",
                 "coordinates"
             ],
             "title": "LineString",

@@ -7,7 +7,6 @@ import osrd_infra.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0027_railjson_3_2_1"),
     ]

@@ -61,7 +61,6 @@ class Benchmarker:
 
 
 def make_exception_from_error(response, user_error_type, internal_error_type):
-
     # Most formatted errors are in json format, but other (asserts) are plain strings
     if "json" in response.headers.get("Content-Type", ""):
         content = response.json()

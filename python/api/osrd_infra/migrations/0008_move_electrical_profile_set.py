@@ -6,7 +6,6 @@ from osrd_infra.migrations import run_sql_add_foreign_key
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0007_infra_search_fix_unaccent"),
     ]

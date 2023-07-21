@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0044_rename_is_pantograph_drop_zone_to_lower_pantograph"),
     ]
