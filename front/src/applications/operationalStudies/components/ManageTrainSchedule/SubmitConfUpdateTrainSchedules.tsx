@@ -38,30 +38,32 @@ export default function SubmitConfUpdateTrainSchedules({
     if (simulationConf && trainScheduleIDsToModify) {
       setIsWorking(true);
       try {
-        await Promise.resolve(dispatch(updateReloadTimetable(true)));
-        trainScheduleIDsToModify.forEach(async (trainScheduleID) => {
-          await patchTrainSchedules({
-            id: trainScheduleID,
-            writableTrainSchedule: {
-              ...simulationConf,
-              timetable: osrdconf.simulationConf.timetableID,
-              path: osrdconf.simulationConf.pathfindingID,
-            },
-          }).unwrap();
-          dispatch(
-            setSuccess({
-              title: t('trainUpdated'),
-              text: `${osrdconf.simulationConf.name}: ${osrdconf.simulationConf.departureTime}`,
-            })
-          );
-        });
+        await Promise.all(
+          trainScheduleIDsToModify.map(async (trainScheduleID) => {
+            await patchTrainSchedules({
+              id: trainScheduleID,
+              writableTrainSchedule: {
+                ...simulationConf,
+                timetable: osrdconf.simulationConf.timetableID,
+                path: osrdconf.simulationConf.pathfindingID,
+              },
+            }).unwrap();
+          })
+        );
+        dispatch(updateReloadTimetable(true));
+        dispatch(
+          setSuccess({
+            title: t('trainUpdated'),
+            text: `${osrdconf.simulationConf.name}: ${osrdconf.simulationConf.departureTime}`,
+          })
+        );
         setIsWorking(false);
         setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
         dispatch(updateTrainScheduleIDsToModify(undefined));
         const timetable = await getTimetableWithTrainSchedulesDetails({
           id: osrdconf.simulationConf.timetableID as number,
         }).unwrap();
-        await Promise.resolve(dispatch(updateReloadTimetable(false)));
+        dispatch(updateReloadTimetable(false));
         getTimetable(timetable);
       } catch (e: unknown) {
         setIsWorking(false);
