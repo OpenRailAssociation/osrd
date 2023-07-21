@@ -37,17 +37,19 @@ use serde_json::Value as JsonValue;
     Queryable,
     Serialize,
 )]
-#[derivative(Default)]
+#[derivative(Default, PartialEq)]
 #[model(table = "osrd_infra_rollingstock")]
 #[model(create, retrieve, delete)]
 #[diesel(table_name = osrd_infra_rollingstock)]
 pub struct RollingStockModel {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
+    #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = String)]
     pub name: Option<String>,
     #[diesel(deserialize_as = String)]
     pub railjson_version: Option<String>,
+    #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = bool)]
     pub locked: Option<bool>,
     #[diesel(deserialize_as = DieselJson<EffortCurves>)]
@@ -76,6 +78,7 @@ pub struct RollingStockModel {
     pub rolling_resistance: Option<DieselJson<RollingResistance>>,
     #[diesel(deserialize_as = String)]
     pub loading_gauge: Option<String>,
+    #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = DieselJson<RollingStockMetadata>)]
     pub metadata: Option<DieselJson<RollingStockMetadata>>,
     #[diesel(deserialize_as = Option<JsonValue>)]
@@ -87,6 +90,7 @@ pub struct RollingStockModel {
     #[diesel(deserialize_as = Option<f64>)]
     pub raise_pantograph_time: Option<Option<f64>>,
     #[derivative(Default(value = "None"))]
+    #[derivative(PartialEq = "ignore")]
     #[diesel(deserialize_as = i64)]
     pub version: Option<i64>,
 }
