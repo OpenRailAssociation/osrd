@@ -145,6 +145,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
           <LinearMetadataDataviz
             creating={selectedTool === INTERVALS_EDITOR_TOOLS.ADD_TOOL}
             data={resizingData}
+            emptyValue={defaultValue}
             viewBox={viewBox}
             highlighted={[hovered ? hovered.index : -1, selected ?? -1].filter((e) => e > -1)}
             onMouseEnter={(_e, _item, index, point) => {
@@ -222,7 +223,10 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
             }}
             onCreate={(point) => {
-              const newData = createEmptySegmentAt(data, point, 'value', defaultValue);
+              const newData = createEmptySegmentAt(data, point, {
+                valueField: 'value',
+                defaultValue,
+              });
               setData(newData);
             }}
             params={dataVizParams}

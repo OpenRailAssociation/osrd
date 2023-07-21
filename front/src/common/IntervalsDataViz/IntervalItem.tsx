@@ -23,6 +23,7 @@ const IntervalItem = <T extends { [key: string]: any }>({
   creating,
   data,
   dragingStartAt,
+  emptyValue,
   field,
   fullLength,
   highlighted,
@@ -50,9 +51,12 @@ const IntervalItem = <T extends { [key: string]: any }>({
       field &&
         data[segment.index] !== undefined &&
         data[segment.index][field] !== undefined &&
+        data[segment.index][field] !== emptyValue &&
         'with-data',
       field &&
-        (data[segment.index] === undefined || data[segment.index][field] === undefined) &&
+        (data[segment.index] === undefined ||
+          data[segment.index][field] === undefined ||
+          data[segment.index][field] === emptyValue) &&
         'no-data',
       !field && isNilObject(data[segment.index], ['begin', 'end', 'index']) && 'no-data'
     )}
@@ -125,14 +129,22 @@ const IntervalItem = <T extends { [key: string]: any }>({
     }}
   >
     {/* Create an inner div for the Y axis */}
-    {field && data[segment.index] !== undefined && data[segment.index][field] !== undefined && (
-      <div
-        className="value"
-        style={computeStyleForDataValue(data[segment.index][field], min, max, params?.stringValues)}
-      >
-        {params?.showValues && <span>{data[segment.index][field]}</span>}
-      </div>
-    )}
+    {field &&
+      data[segment.index] !== undefined &&
+      data[segment.index][field] !== undefined &&
+      data[segment.index][field] !== emptyValue && (
+        <div
+          className="value"
+          style={computeStyleForDataValue(
+            data[segment.index][field],
+            min,
+            max,
+            params?.stringValues
+          )}
+        >
+          {params?.showValues && <span>{data[segment.index][field]}</span>}
+        </div>
+      )}
     {!field && !isNilObject(data[segment.index], ['begin', 'end', 'index']) && (
       <span className="value" style={{ height: '100%' }} />
     )}

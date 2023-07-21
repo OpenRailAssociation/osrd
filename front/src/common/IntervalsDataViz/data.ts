@@ -474,8 +474,10 @@ export function splitAt<T>(
 export function createEmptySegmentAt<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
   distance: number,
-  valueField: string,
-  defaultValue: unknown
+  opts: {
+    valueField: string;
+    defaultValue: unknown;
+  }
 ): Array<LinearMetadataItem<T>> {
   if (linearMetadata.length < 1) throw new Error('linear metadata is empty');
   if (distance >= (last(linearMetadata)?.end || 0) || distance <= 0)
@@ -486,7 +488,12 @@ export function createEmptySegmentAt<T>(
       if (item.begin <= distance && distance <= item.end) {
         return [
           { ...item, begin: item.begin, end: distance },
-          { ...item, begin: distance, end: distance + 1, [valueField]: defaultValue },
+          {
+            ...item,
+            begin: distance,
+            end: distance + 1,
+            ...(opts ? { [opts.valueField]: opts.defaultValue } : {}),
+          },
           { ...item, begin: distance + 1, end: item.end },
         ];
       }

@@ -30,7 +30,7 @@ const IntervalsEditorSelectForm = ({
         }
       }}
       sm
-      selectedValue={(interval.value as string) || selectOptions[0]}
+      selectedValue={(interval.value as string) || ''}
     />
   </div>
 );
