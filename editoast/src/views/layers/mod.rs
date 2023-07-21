@@ -2,6 +2,7 @@ mod mvt_utils;
 
 use crate::client::{get_root_url, MapLayersConfig};
 use crate::error::Result;
+use crate::map::redis_utils::RedisClient;
 use crate::map::{get, get_cache_tile_key, get_view_cache_prefix, set, Layer, MapLayers, Tile};
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
@@ -11,7 +12,6 @@ use diesel::sql_types::Integer;
 use diesel::{sql_query, RunQueryDsl};
 use editoast_derive::EditoastError;
 use mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
-use redis::Client;
 use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 use thiserror::Error;
@@ -103,7 +103,7 @@ async fn cache_and_get_mvt_tile(
     params: Query<InfraQueryParam>,
     map_layers: Data<MapLayers>,
     db_pool: Data<DbPool>,
-    redis_client: Data<Client>,
+    redis_client: Data<RedisClient>,
 ) -> Result<HttpResponse> {
     let (layer_slug, view_slug, z, x, y) = path.into_inner();
     let infra = params.infra;
@@ -120,8 +120,8 @@ async fn cache_and_get_mvt_tile(
         &Tile { x, y, z },
     );
 
-    let mut redis_conn = redis_client.get_tokio_connection_manager().await.unwrap();
-    let cached_value = get::<Vec<u8>>(&mut redis_conn, &cache_key).await;
+    let mut redis_conn = redis_client.get_connection().await?;
+    let cached_value = get::<_, Vec<u8>>(&mut redis_conn, &cache_key).await;
 
     if let Some(value) = cached_value {
         return Ok(HttpResponse::Ok()

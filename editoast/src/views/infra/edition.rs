@@ -1,10 +1,10 @@
 use crate::error::Result;
+use crate::map::redis_utils::RedisClient;
 use crate::views::infra::InfraApiError;
 use actix_web::post;
 use actix_web::web::{block, Data, Json, Path};
 use chashmap::CHashMap;
 use diesel::PgConnection;
-use redis::Client;
 use thiserror::Error;
 
 use crate::client::MapLayersConfig;
@@ -22,7 +22,7 @@ pub async fn edit<'a>(
     operations: Json<Vec<Operation>>,
     db_pool: Data<DbPool>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
-    redis_client: Data<Client>,
+    redis_client: Data<RedisClient>,
     map_layers: Data<MapLayers>,
     map_layers_config: Data<MapLayersConfig>,
 ) -> Result<Json<Vec<OperationResult>>> {
@@ -39,7 +39,7 @@ pub async fn edit<'a>(
     })
     .await
     .unwrap()?;
-    let mut conn = redis_client.get_tokio_connection_manager().await.unwrap();
+    let mut conn = redis_client.get_connection().await?;
     map::invalidate_zone(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
