@@ -138,7 +138,7 @@ const IntervalItem = <T extends { [key: string]: any }>({
     )}
 
     {/* Create a div for the resize */}
-    {segment.index < data.length - 1 && segment.end === data[segment.index].end && (
+    {data[segment.index] && segment.end === data[segment.index].end && (
       <div
         title="Resize"
         aria-label="Resize"
