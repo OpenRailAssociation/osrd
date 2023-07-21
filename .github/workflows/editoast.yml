@@ -27,7 +27,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install lib posgresql & geos
-        run: sudo apt-get install -y libpq-dev libgeos-dev
+        run: sudo apt-get install -y libpq-dev libgeos-dev mold
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -61,20 +61,18 @@ jobs:
           path: editoast/target/
           key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
 
-      - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
-
-      - name: Check openapi.yaml sync
-        run: diff <(cargo run --release --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
-
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
 
       - name: Coverage
         run: cargo tarpaulin --release -r ./editoast --out Xml -- --test-threads 1
+        env: 
+          RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
+
+      - name: Check openapi.yaml sync
+        run: diff <(cargo run --release --manifest-path editoast/Cargo.toml -- openapi) editoast/openapi.yaml
+        env:
+          RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
