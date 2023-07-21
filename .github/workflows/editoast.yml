@@ -39,8 +39,8 @@ jobs:
           files: "docker-compose.yml"
           targets: "api"
           set: |
-            *.cache-from=type=gha
-            *.cache-to=type=gha,mode=max
+            api.cache-from=type=gha,scope=api
+            api.cache-to=type=gha,mode=max,scope=api
 
       - name: Startup the postgres, redis and api
         run: "docker-compose up --no-build -d postgres redis api"

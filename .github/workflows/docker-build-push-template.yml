@@ -63,5 +63,5 @@ jobs:
           tags: |
             ${{ inputs.image_name }}
             ${{ steps.docker_meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ inputs.image_name }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}
