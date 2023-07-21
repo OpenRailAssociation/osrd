@@ -17,6 +17,7 @@ jobs:
     with:
       context: core
       image_name: osrd/core
+      cache_scope: core
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -28,6 +29,7 @@ jobs:
       context: python
       dockerfile: api/Dockerfile
       image_name: osrd/api
+      cache_scope: api
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -38,6 +40,7 @@ jobs:
     with:
       context: front
       image_name: osrd/front
+      cache_scope: front
       build_args: |
         NGINX_CONFIG=nginx-dev.conf
         REACT_APP_LOCAL_BACKEND=True
@@ -52,6 +55,7 @@ jobs:
     with:
       context: editoast
       image_name: osrd/editoast
+      cache_scope: editoast
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
