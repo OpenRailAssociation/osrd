@@ -110,7 +110,11 @@ impl From<RollingStockForm> for RollingStockModel {
 }
 
 impl RollingStockForm {
-    fn into_rolling_stock_model(self, rolling_stock_id: i64) -> RollingStockModel {
+    fn into_rolling_stock_model(
+        self,
+        rolling_stock_id: i64,
+        rollingstock_version: Option<i64>,
+    ) -> RollingStockModel {
         RollingStockModel {
             id: Some(rolling_stock_id),
             name: Some(self.common.name),
@@ -134,7 +138,7 @@ impl RollingStockForm {
             energy_sources: Some(DieselJson(self.common.energy_sources)),
             electrical_power_startup_time: Some(self.common.electrical_power_startup_time),
             raise_pantograph_time: Some(self.common.raise_pantograph_time),
-            ..Default::default()
+            version: rollingstock_version,
         }
     }
 }
@@ -167,11 +171,15 @@ async fn update(
 ) -> Result<Json<RollingStockWithLiveries>> {
     let data = data.into_inner();
     let rolling_stock_id = path.into_inner();
-    assert_rolling_stock_unlocked(
-        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?,
-    )?;
+    let existing_rolling_stock =
+        retrieve_existing_rolling_stock(&db_pool, rolling_stock_id).await?;
+    assert_rolling_stock_unlocked(existing_rolling_stock.clone())?;
+    let version = existing_rolling_stock.version;
 
-    let rolling_stock = data.into_rolling_stock_model(rolling_stock_id);
+    let mut rolling_stock = data.into_rolling_stock_model(rolling_stock_id, version);
+    if existing_rolling_stock != rolling_stock {
+        rolling_stock.version = version.map(|v| v + 1);
+    };
 
     let rolling_stock = rolling_stock
         .update(db_pool.clone(), rolling_stock_id)
@@ -638,6 +646,7 @@ pub mod tests {
     #[rstest]
     async fn update_unlocked_rolling_stock(
         #[future] fast_rolling_stock: TestFixture<RollingStockModel>,
+        db_pool: Data<Pool<ConnectionManager<diesel::PgConnection>>>,
     ) {
         let app = create_test_service().await;
         let fast_rolling_stock = fast_rolling_stock.await;
@@ -656,6 +665,14 @@ pub mod tests {
         .await;
 
         let response_body: RollingStock = assert_status_and_read!(response, StatusCode::OK);
+
+        let rolling_stock = retrieve_existing_rolling_stock(&db_pool, rolling_stock_id)
+            .await
+            .unwrap();
+
+        //Assert rolling_stock version is 1
+        assert_eq!(rolling_stock.version.unwrap(), 1);
+
         let expected_body = RollingStock::from(rolling_stock.clone());
         assert_eq!(response_body, expected_body);
     }
