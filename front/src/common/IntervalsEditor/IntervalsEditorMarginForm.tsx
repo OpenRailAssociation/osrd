@@ -36,7 +36,7 @@ const IntervalsEditorMarginForm = ({
           setData(result as IntervalItem[]);
         }
       }}
-      value={interval.value as number}
+      value={(interval.value as number) || 0}
       noMargin
       sm
       isFlex
