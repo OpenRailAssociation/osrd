@@ -4,6 +4,7 @@ import { isNil, max } from 'lodash';
 import {
   LinearMetadataItem,
   createEmptySegmentAt,
+  fixLinearMetadataItems,
   getZoomedViewBox,
   removeSegment,
   resizeSegment,
@@ -11,7 +12,7 @@ import {
   transalteViewBox,
 } from 'common/IntervalsDataViz/data';
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
-import { tooltipPosition } from 'common/IntervalsDataViz/utils';
+import { notEmpty, tooltipPosition } from 'common/IntervalsDataViz/utils';
 
 import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import IntervalsEditorCommonForm from './IntervalsEditorCommonForm';
@@ -196,11 +197,16 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
             onResize={(index, gap, finalized) => {
               setMode(!finalized ? 'resizing' : null);
               try {
-                const { result, newIndexMapping } = resizeSegment(data, index, gap, 'end');
+                const { result, newIndexMapping } = resizeSegment(data, index, gap, 'end', false);
+                const fixedResults = fixLinearMetadataItems(result?.filter(notEmpty), totalLength, {
+                  fieldName: 'value',
+                  defaultValue,
+                });
+
                 if (finalized) {
-                  setData(result);
+                  setData(fixedResults);
                 } else {
-                  setResizingData(result);
+                  setResizingData(fixedResults);
 
                   // if index has changed, we need to impact the index modification
                   if (hovered && newIndexMapping[hovered.index] === null) {
