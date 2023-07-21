@@ -7,7 +7,6 @@ from osrd_infra.migrations import run_sql_add_one_to_one_key
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0022_alter_study_actual_end_date_and_more"),
     ]

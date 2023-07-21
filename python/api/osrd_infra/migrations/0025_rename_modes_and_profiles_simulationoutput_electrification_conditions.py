@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0024_search_fix_pk"),
     ]

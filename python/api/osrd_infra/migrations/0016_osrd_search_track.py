@@ -6,7 +6,6 @@ from osrd_infra.migrations import run_sql_create_infra_search_table
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0015_alter_project_budget_alter_project_funders_and_more"),
     ]

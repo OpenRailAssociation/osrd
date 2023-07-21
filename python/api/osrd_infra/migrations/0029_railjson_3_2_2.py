@@ -8,7 +8,6 @@ import osrd_infra.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0028_rollingstock_energy_sources"),
     ]

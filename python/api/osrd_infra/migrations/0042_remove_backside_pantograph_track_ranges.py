@@ -18,7 +18,6 @@ def add_backside_panto_field(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0041_dead_section_cascade"),
     ]

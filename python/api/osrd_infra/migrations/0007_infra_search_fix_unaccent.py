@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0006_operationalstudy_project_remove_timetable_infra_and_more"),
     ]

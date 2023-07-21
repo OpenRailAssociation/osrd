@@ -9,7 +9,6 @@ from osrd_infra.migrations import change_railjson_version
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0011_document"),
     ]

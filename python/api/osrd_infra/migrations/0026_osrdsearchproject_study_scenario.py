@@ -6,7 +6,6 @@ from osrd_infra.migrations import run_sql_create_infra_search_table
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0025_rename_modes_and_profiles_simulationoutput_electrification_conditions"),
     ]

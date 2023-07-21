@@ -18,7 +18,6 @@ def rename_lower_to_drop(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("osrd_infra", "0043_rename_dead_section_to_neutral_section"),
     ]
