@@ -106,7 +106,7 @@ export default {
 
 export const ByContinousValues = {
   args: {
-    defaultValue: 5,
+    defaultValue: 0,
     exampleData: formDataBase,
     fieldLabel: 'gradient',
     intervalType: INTERVAL_TYPES.NUMBER_WITH_UNIT,
@@ -124,7 +124,7 @@ export const ByContinousValues = {
 
 export const ByCategories = {
   args: {
-    defaultValue: 'U1',
+    defaultValue: '',
     exampleData: formDataBaseCategories,
     fieldLabel: 'value',
     intervalType: INTERVAL_TYPES.SELECT,

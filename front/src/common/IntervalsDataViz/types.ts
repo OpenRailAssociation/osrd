@@ -12,6 +12,11 @@ export interface IntervalItemBaseProps<T> {
   data: Array<LinearMetadataItem<T>>;
 
   /**
+   * Value considered as empty/null (0, '' for example)
+   */
+  emptyValue?: unknown;
+
+  /**
    * Name of the field on which we need to do the viz
    */
   field?: string;

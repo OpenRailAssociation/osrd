@@ -38,6 +38,7 @@ export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> 
 export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   creating = false,
   data = [],
+  emptyValue = undefined,
   field = 'value',
   viewBox,
   highlighted = [],
@@ -231,6 +232,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             creating={creating}
             data={data}
             dragingStartAt={draginStartAt}
+            emptyValue={emptyValue}
             field={field}
             fullLength={fullLength}
             highlighted={highlighted}
