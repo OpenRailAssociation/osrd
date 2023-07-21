@@ -4,7 +4,7 @@ import cx from 'classnames';
 
 import { preventDefault, computeStyleForDataValue } from './utils';
 import { LinearMetadataItem, cropForDatavizViewbox } from './data';
-import { ScaleTicked, SimpleScale } from './Scales';
+import { ResizingScale, SimpleScale } from './Scales';
 import IntervalItem from './IntervalItem';
 import { IntervalItemBaseProps } from './types';
 import './style.scss';
@@ -188,6 +188,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   return (
     <div className={cx('linear-metadata-visualisation')}>
       <div
+        id="linear-metadata-dataviz-content"
         ref={wrapper}
         role="presentation"
         onMouseLeave={(e) => {
@@ -208,14 +209,9 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <div className="axis-zero" style={computeStyleForDataValue(0, min, max)} />
         )}
         {/* Display the Y axis if there is one */}
-        {field &&
-          min !== max &&
-          !params.stringValues &&
-          (params.ticks ? (
-            <ScaleTicked className="scale-y" steps={4} begin={min} end={max} />
-          ) : (
-            <SimpleScale className="scale-y" begin={min} end={max} />
-          ))}
+        {field && min !== max && !params.stringValues && (
+          <SimpleScale className="scale-y" begin={min} end={max} />
+        )}
 
         {hoverAtx && !draginStartAt && (
           <div
@@ -261,11 +257,10 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
 
       {/* Display the X axis */}
       {params.ticks ? (
-        <ScaleTicked
-          className="scale-x"
+        <ResizingScale
           begin={head(data4viz)?.begin || 0}
           end={last(data4viz)?.end || 0}
-          steps={10}
+          className="scale-x"
         />
       ) : (
         <SimpleScale
