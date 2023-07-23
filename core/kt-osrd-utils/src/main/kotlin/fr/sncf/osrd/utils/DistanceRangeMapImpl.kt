@@ -48,15 +48,18 @@ data class DistanceRangeMapImpl<T>(
     }
 
     override fun truncate(beginOffset: Distance, endOffset: Distance) {
-        putOptional(lowerBound(), beginOffset, null)
-        putOptional(endOffset, upperBound(), null)
-        if (values.isNotEmpty() && values[0] == null) {
-            bounds.remove(0)
-            values.removeAt(0)
-        }
-        if (values.isNotEmpty() && values[values.size - 1] == null) {
-            bounds.remove(bounds.size - 1)
-            values.removeAt(values.size - 1)
+        if (bounds.size != 0) {
+            validate()
+            putOptional(lowerBound(), beginOffset, null)
+            putOptional(endOffset, upperBound(), null)
+            if (values.isNotEmpty() && values[0] == null) {
+                bounds.remove(0)
+                values.removeAt(0)
+            }
+            if (values.isNotEmpty() && values[values.size - 1] == null) {
+                bounds.remove(bounds.size - 1)
+                values.removeAt(values.size - 1)
+            }
         }
     }
 

@@ -1,42 +1,39 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
-import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import static fr.sncf.osrd.api.pathfinding.constraints.PathfindingUtils.makePath;
+
+import fr.sncf.osrd.sim_infra.api.BlockInfra;
+import fr.sncf.osrd.sim_infra.api.Path;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 public record LoadingGaugeConstraints(
+        RawSignalingInfra infra,
+        BlockInfra blockInfra,
         Collection<RollingStock> rollingStocks
-) implements EdgeToRanges<SignalingRoute> {
+) implements EdgeToRanges<Integer> {
 
     @Override
-    public Collection<Pathfinding.Range> apply(SignalingRoute reservationRoute) {
+    public Collection<Pathfinding.Range> apply(Integer blockIdx) {
         var res = new HashSet<Pathfinding.Range>();
+        var path = makePath(blockInfra, infra, blockIdx);
         for (var stock : rollingStocks)
-            res.addAll(getBlockedRanges(stock, reservationRoute.getInfraRoute()));
+            res.addAll(getBlockedRanges(stock, path));
         return res;
     }
 
     /**
-     * Returns the sections of the given route that can't be used by the given rolling stock
+     * Returns the sections of the given block that can't be used by the given rolling stock
      */
-    private static Set<Pathfinding.Range> getBlockedRanges(RollingStock stock, ReservationRoute route) {
-        double offset = 0;
-        var res = new HashSet<Pathfinding.Range>();
-        for (var trackRange : route.getTrackRanges()) {
-            for (var entry : trackRange.getBlockedGaugeTypes().asMapOfRanges().entrySet()) {
-                if (!entry.getValue().isCompatibleWith(stock.loadingGaugeType.ordinal()))
-                    res.add(new Pathfinding.Range(
-                            offset + entry.getKey().lowerEndpoint(),
-                            offset + entry.getKey().upperEndpoint()
-                    ));
-            }
-            offset += trackRange.getLength();
-        }
-        return res;
+    private Collection<Pathfinding.Range> getBlockedRanges(RollingStock stock, Path path) {
+        return path.getLoadingGauge().asList().stream()
+                .filter(entry -> !entry.getValue().isCompatibleWith(stock.loadingGaugeType.ordinal()))
+                .map(entry -> new Pathfinding.Range(entry.getLower(), entry.getUpper()))
+                .collect(Collectors.toSet());
     }
 }

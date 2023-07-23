@@ -34,6 +34,7 @@ interface TrackProperties {
     fun getTrackChunkGradient(trackChunk: DirTrackChunkId): DistanceRangeMap<Double>
     fun getTrackChunkLoadingGaugeConstraints(trackChunk: TrackChunkId): DistanceRangeMap<LoadingGaugeConstraint>
     fun getTrackChunkCatenaryVoltage(trackChunk: TrackChunkId): DistanceRangeMap<String>
+    @JvmName("getTrackChunkDeadSection")
     fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeMap<DeadSection>
     fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString

@@ -1,77 +1,55 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static fr.sncf.osrd.Helpers.getSmallInfra;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.google.common.collect.Range;
-import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
-import fr.sncf.osrd.stdcm.DummyRouteGraphBuilder;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ElectrificationConstraintsTest {
-    static Stream<Arguments> testDeadSectionArgs() {
-        var fullCatenaryRanges = List.of(Range.closed(0., 1000.));
-        var partialCatenaryRanges = List.of(Range.closed(0., 100.), Range.closed(900., 1000.));
-        var noCatenaryRanges = List.of();
-        return Stream.of(
-                // Catenary ranges, with dead section, dead section direction
-                Arguments.of(fullCatenaryRanges, true, Direction.FORWARD),
-                Arguments.of(fullCatenaryRanges, true, Direction.BACKWARD),
-                Arguments.of(fullCatenaryRanges, false, null),
-                Arguments.of(partialCatenaryRanges, true, Direction.FORWARD),
-                Arguments.of(partialCatenaryRanges, true, Direction.BACKWARD),
-                Arguments.of(partialCatenaryRanges, false, null),
-                Arguments.of(noCatenaryRanges, true, Direction.FORWARD),
-                Arguments.of(noCatenaryRanges, false, null)
-        );
+
+    private ElectrificationConstraints electrificationConstraints;
+    private double chunk0Length;
+    private double chunk1Length;
+
+    @BeforeAll
+    public void setUp() {
+        var infra = getSmallInfra();
+        electrificationConstraints = new ElectrificationConstraints(infra.rawInfra(), infra.blockInfra(),
+                List.of(TestTrains.FAST_ELECTRIC_TRAIN));
+
+        chunk0Length = infra.rawInfra().getTrackChunkLength(0);
+        chunk1Length = infra.rawInfra().getTrackChunkLength(1);
     }
 
     @ParameterizedTest
     @MethodSource("testDeadSectionArgs")
-    public void testDeadSectionAndCatenaryBlockingRanges(List<Range<Double>> catenaryRanges, boolean withDeadSection,
-                                                         Direction deadSectionDirection) {
+    public void testDeadSectionAndCatenaryBlockedRanges(int blockId,
+                                                        Collection<Pathfinding.Range> expectedBlockedRanges) {
+        var blockedRanges = electrificationConstraints.apply(blockId);
+        assertThat(blockedRanges).isEqualTo(expectedBlockedRanges);
+    }
 
-        var route = new DummyRouteGraphBuilder.DummyRoute("route", 1000, null, null, null);
-
-        assert TestTrains.FAST_ELECTRIC_TRAIN.getModeNames().contains("25000");
-        var catenaryLength = 0.;
-        for (var catenaryRange : catenaryRanges) {
-            route.getTrackRanges().get(0).track.getEdge().getVoltages().put(catenaryRange, "25000");
-            catenaryLength += catenaryRange.upperEndpoint() - catenaryRange.lowerEndpoint();
-        }
-
-        if (withDeadSection) {
-            var deadSections = route.getTrackRanges().get(0).track.getEdge().getDeadSections(deadSectionDirection);
-            deadSections.put(Range.closedOpen(100., 950.), new DeadSection(false));
-        }
-
-        var blockedRanges = new ElectrificationConstraints(List.of(TestTrains.FAST_ELECTRIC_TRAIN)).apply(route);
-
-        if (catenaryLength > 900) {
-            assertEquals(0, blockedRanges.size());
-        } else if (catenaryLength > 100) {
-            if (withDeadSection && deadSectionDirection == Direction.FORWARD) {
-                assertEquals(0, blockedRanges.size());
-            } else {
-                assertEquals(1, blockedRanges.size());
-                assertTrue(blockedRanges.contains(new Pathfinding.Range(100., 900.)));
-            }
-        } else {
-            if (withDeadSection && deadSectionDirection == Direction.FORWARD) {
-                assertEquals(2, blockedRanges.size());
-                assertTrue(blockedRanges.contains(new Pathfinding.Range(0., 100.)));
-                assertTrue(blockedRanges.contains(new Pathfinding.Range(950., 1000.)));
-            } else {
-                assertEquals(1, blockedRanges.size());
-                assertTrue(blockedRanges.contains(new Pathfinding.Range(0., 1000.)));
-            }
-        }
+    Stream<Arguments> testDeadSectionArgs() {
+        return Stream.of(
+                // Partially corresponding catenary ranges with dead section
+                Arguments.of(0,
+                        Set.of(new Pathfinding.Range(0., 80000.), new Pathfinding.Range(130000., chunk1Length))),
+                // No corresponding catenary ranges without dead sections
+                Arguments.of(1, Set.of(new Pathfinding.Range(0., chunk0Length))),
+                // Fully corresponding catenary ranges without dead sections
+                Arguments.of(2, new HashSet<>())
+        );
     }
 }
