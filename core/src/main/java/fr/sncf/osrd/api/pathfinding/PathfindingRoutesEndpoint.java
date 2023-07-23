@@ -4,8 +4,8 @@ import static fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator.minDistanc
 
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
-import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
-import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
+import fr.sncf.osrd.api.pathfinding.constraints.LegacyElectrificationConstraints;
+import fr.sncf.osrd.api.pathfinding.constraints.LegacyLoadingGaugeConstraints;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
@@ -41,8 +41,8 @@ public class PathfindingRoutesEndpoint implements Take {
     private static final HashMap<Class<?>, ErrorType> constraints = new HashMap<>();
 
     static {
-        constraints.put(LoadingGaugeConstraints.class, ErrorType.PathfindingGaugeError);
-        constraints.put(ElectrificationConstraints.class, ErrorType.PathfindingElectrificationError);
+        constraints.put(LegacyLoadingGaugeConstraints.class, ErrorType.PathfindingGaugeError);
+        constraints.put(LegacyElectrificationConstraints.class, ErrorType.PathfindingElectrificationError);
     }
 
     /**
@@ -104,8 +104,8 @@ public class PathfindingRoutesEndpoint implements Take {
         }
 
         // Initializes the constraints
-        var loadingGaugeConstraints = new LoadingGaugeConstraints(rollingStocks);
-        var electrificationConstraints = new ElectrificationConstraints(rollingStocks);
+        var loadingGaugeConstraints = new LegacyLoadingGaugeConstraints(rollingStocks);
+        var electrificationConstraints = new LegacyElectrificationConstraints(rollingStocks);
         final List<EdgeToRanges<SignalingRoute>> constraintsList =
                 List.of(loadingGaugeConstraints, electrificationConstraints);
         var remainingDistanceEstimators = makeHeuristics(waypoints);

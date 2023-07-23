@@ -12,10 +12,10 @@ public class ConstraintCombiner<EdgeT> implements EdgeToRanges<EdgeT> {
     public final List<EdgeToRanges<EdgeT>> functions = new ArrayList<>();
 
     @Override
-    public Collection<Pathfinding.Range> apply(EdgeT signalingRoute) {
+    public Collection<Pathfinding.Range> apply(EdgeT edge) {
         var res = new HashSet<Pathfinding.Range>();
         for (var f : functions)
-            res.addAll(f.apply(signalingRoute));
+            res.addAll(f.apply(edge));
         return res;
     }
 }

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.sim_infra.impl.DeadSection
 import fr.sncf.osrd.sim_infra.impl.PathImpl
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
@@ -31,7 +32,10 @@ interface Path {
     fun getCurves(): DistanceRangeMap<Double>
     fun getGeo(): LineString
     fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint>
+    @JvmName("getCatenary")
     fun getCatenary(): DistanceRangeMap<String>
+    @JvmName("getDeadSections")
+    fun getDeadSections(): DistanceRangeMap<DeadSection>
     @JvmName("getLength")
     fun getLength(): Distance
 

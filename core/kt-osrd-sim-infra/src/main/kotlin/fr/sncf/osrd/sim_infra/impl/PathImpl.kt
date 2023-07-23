@@ -49,6 +49,10 @@ data class PathImpl(
         return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkCatenaryVoltage(chunkId) }
     }
 
+    override fun getDeadSections(): DistanceRangeMap<DeadSection> {
+        return getRangeMap { dirChunkId -> infra.getTrackChunkDeadSection(dirChunkId) }
+    }
+
     override fun getLength(): Distance {
         return endOffset - beginOffset
     }

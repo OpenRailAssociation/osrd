@@ -2,8 +2,8 @@ package fr.sncf.osrd.stdcm.graph;
 
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.stdcm.STDCMResult;
-import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
-import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
+import fr.sncf.osrd.api.pathfinding.constraints.LegacyElectrificationConstraints;
+import fr.sncf.osrd.api.pathfinding.constraints.LegacyLoadingGaugeConstraints;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -52,8 +52,8 @@ public class STDCMPathfinding {
         );
 
         // Initializes the constraints
-        var loadingGaugeConstraints = new LoadingGaugeConstraints(List.of(rollingStock));
-        var electrificationConstraints = new ElectrificationConstraints(List.of(rollingStock));
+        var loadingGaugeConstraints = new LegacyLoadingGaugeConstraints(List.of(rollingStock));
+        var electrificationConstraints = new LegacyElectrificationConstraints(List.of(rollingStock));
 
         // Initialize the A* heuristic
         var locations = steps.stream()
