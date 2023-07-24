@@ -66,5 +66,5 @@ utoipa = { version = "3.3.0", features = ["actix_extras"] }
 [dev-dependencies]
 async-std = { version = "1.5", features = ["attributes", "tokio1"] }
 rstest = "0.18"
-tempfile = "3.6.0"
+tempfile = "3.7.0"
 pretty_assertions = "1.4.0"
