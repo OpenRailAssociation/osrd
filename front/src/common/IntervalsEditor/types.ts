@@ -1,6 +1,7 @@
 import { LinearMetadataItem } from 'common/IntervalsDataViz/data';
 
 export enum INTERVAL_TYPES {
+  NUMBER = 'number',
   NUMBER_WITH_UNIT = 'number-with-unit',
   SELECT = 'select',
 }

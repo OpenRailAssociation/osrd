@@ -37,6 +37,11 @@ type IntervalsEditorProps = {
   totalLength: number;
 } & (
   | {
+      intervalType: INTERVAL_TYPES.NUMBER;
+      data: LinearMetadataItem<{ value: number | string }>[];
+      fieldLabel: string;
+    }
+  | {
       intervalType: INTERVAL_TYPES.NUMBER_WITH_UNIT;
       data: LinearMetadataItem<{ value: number | string; unit: string }>[];
       defaultUnit?: string;
@@ -97,40 +102,48 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     setSelectedTool(selectedTool === tool ? null : tool);
   };
 
-  const dataVizParams = useMemo(
+  const options = useMemo(
     () => ({
-      ticks: true,
-      stringValues: intervalType !== INTERVAL_TYPES.NUMBER_WITH_UNIT,
+      resizingScale: true,
+      fullHeightItem: intervalType !== INTERVAL_TYPES.NUMBER,
       showValues,
     }),
-    [showValues]
+    [showValues, intervalType]
   );
 
   let formContent;
   if (selected !== null && data[selected]) {
-    if (intervalType === INTERVAL_TYPES.NUMBER_WITH_UNIT) {
-      const { fieldLabel, units } = props;
-      formContent = (
-        <IntervalsEditorMarginForm
-          data={data}
-          fieldLabel={fieldLabel}
-          interval={data[selected]}
-          selectedIntervalIndex={selected}
-          setData={setData}
-          units={units}
-        />
-      );
-    } else {
-      const { selectOptions } = props;
-      formContent = (
-        <IntervalsEditorSelectForm
-          data={data}
-          interval={data[selected]}
-          selectedIntervalIndex={selected}
-          setData={setData}
-          selectOptions={selectOptions}
-        />
-      );
+    switch (intervalType) {
+      case INTERVAL_TYPES.NUMBER_WITH_UNIT: {
+        const { fieldLabel, units } = props;
+        formContent = (
+          <IntervalsEditorMarginForm
+            data={data}
+            fieldLabel={fieldLabel}
+            interval={data[selected]}
+            selectedIntervalIndex={selected}
+            setData={setData}
+            units={units}
+          />
+        );
+        break;
+      }
+      case INTERVAL_TYPES.SELECT: {
+        const { selectOptions } = props;
+        formContent = (
+          <IntervalsEditorSelectForm
+            data={data}
+            interval={data[selected]}
+            selectedIntervalIndex={selected}
+            setData={setData}
+            selectOptions={selectOptions}
+          />
+        );
+        break;
+      }
+      default: {
+        /* empty */
+      }
     }
   }
 
@@ -148,6 +161,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
             emptyValue={defaultValue}
             viewBox={viewBox}
             highlighted={[hovered ? hovered.index : -1, selected ?? -1].filter((e) => e > -1)}
+            intervalType={intervalType}
             onMouseEnter={(_e, _item, index, point) => {
               if (mode === null) setHovered({ index, point });
             }}
@@ -229,7 +243,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               });
               setData(newData);
             }}
-            params={dataVizParams}
+            options={options}
           />
           <ToolButtons
             selectedTool={selectedTool}
