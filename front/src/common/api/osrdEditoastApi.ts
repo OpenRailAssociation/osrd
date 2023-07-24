@@ -527,7 +527,12 @@ const injectedRtkApi = api
         invalidatesTags: ['rolling_stock'],
       }),
       postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
-        query: (queryArg) => ({ url: `/search/`, method: 'POST', body: queryArg.body }),
+        query: (queryArg) => ({
+          url: `/search/`,
+          method: 'POST',
+          body: queryArg.body,
+          params: { page_size: queryArg.pageSize },
+        }),
       }),
       getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
         query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
@@ -1133,6 +1138,8 @@ export type PostSearchApiResponse =
     | SearchScenarioResult
   )[];
 export type PostSearchApiArg = {
+  /** number of results */
+  pageSize?: number;
   /** Search query */
   body: {
     object?: string;
