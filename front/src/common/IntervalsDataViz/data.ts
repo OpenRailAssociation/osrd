@@ -629,7 +629,7 @@ export function cropForDatavizViewbox(
     [...data]
       // we add the index so events are able to send the index
       .map((segment, index) => ({ ...segment, index }))
-      // we filter elements that croos or are inside the viewbox
+      // we filter elements that cross or are inside the viewbox
       .filter((e) => {
         if (!currentViewBox) return true;
         // if one extrimity is in (ie. overlaps or full in)
@@ -644,7 +644,7 @@ export function cropForDatavizViewbox(
       .map((e) => {
         if (!currentViewBox) return e;
         return {
-          index: e.index,
+          ...e,
           begin: e.begin < currentViewBox[0] ? currentViewBox[0] : e.begin,
           end: e.end > currentViewBox[1] ? currentViewBox[1] : e.end,
         };
