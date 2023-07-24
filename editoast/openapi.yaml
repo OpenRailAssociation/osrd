@@ -4074,6 +4074,12 @@ paths:
       - rolling_stock
   /search/:
     post:
+      parameters:
+      - description: number of results
+        in: query
+        name: page_size
+        schema:
+          type: integer
       requestBody:
         content:
           application/json:
