@@ -40,6 +40,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   data = [],
   emptyValue = undefined,
   field = 'value',
+  intervalType,
   viewBox,
   highlighted = [],
   onClick,
@@ -52,7 +53,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   onDragX,
   onResize,
   onCreate,
-  params = { ticks: false, stringValues: false, showValues: false },
+  options = { resizingScale: false, fullHeightItem: false, showValues: false },
 }: LinearMetadataDatavizProps<T>) => {
   // Html ref of the div wrapper
   const wrapper = useRef<HTMLDivElement | null>(null);
@@ -75,7 +76,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
    */
   useEffect(() => {
     if (field) {
-      if (params.stringValues) {
+      if (options.fullHeightItem) {
         // we just need an arbitrary space for scaleY in that case
         setMin(0);
         setMax(1);
@@ -210,7 +211,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           <div className="axis-zero" style={computeStyleForDataValue(0, min, max)} />
         )}
         {/* Display the Y axis if there is one */}
-        {field && min !== max && !params.stringValues && (
+        {field && min !== max && !options.fullHeightItem && (
           <SimpleScale className="scale-y" begin={min} end={max} />
         )}
 
@@ -236,6 +237,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             field={field}
             fullLength={fullLength}
             highlighted={highlighted}
+            intervalType={intervalType}
             key={`${segment.index}-${segment.begin}-${segment.end}-${fullLength}`}
             min={min}
             max={max}
@@ -246,7 +248,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             onMouseOver={onMouseOver}
             onMouseEnter={onMouseEnter}
             onWheel={onWheel}
-            params={params}
+            options={options}
             resizing={resizing}
             segment={segment}
             setDraginStartAt={setDraginStartAt}
@@ -258,7 +260,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
       </div>
 
       {/* Display the X axis */}
-      {params.ticks ? (
+      {options.resizingScale ? (
         <ResizingScale
           begin={head(data4viz)?.begin || 0}
           end={last(data4viz)?.end || 0}

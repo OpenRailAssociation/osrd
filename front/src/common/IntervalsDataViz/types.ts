@@ -26,6 +26,8 @@ export interface IntervalItemBaseProps<T> {
    */
   highlighted: Array<number>;
 
+  intervalType?: string;
+
   /**
    * Event on click on a data item
    */
@@ -96,5 +98,5 @@ export interface IntervalItemBaseProps<T> {
    * ticks: should scale be ticked ?
    * stringValues: each interval has just a category ref, not a continuous value
    */
-  params?: { ticks?: boolean; stringValues?: boolean; showValues?: boolean };
+  options?: { resizingScale?: boolean; fullHeightItem?: boolean; showValues?: boolean };
 }

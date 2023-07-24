@@ -148,12 +148,12 @@ export function preventDefault(e: Event): void {
  * Function that compute the div style attribut for a data value.
  */
 export function computeStyleForDataValue(
-  value: number,
+  value: unknown,
   min: number,
   max: number,
-  stringValues?: boolean
+  fullHeightItem?: boolean
 ): CSSProperties {
-  if (stringValues)
+  if (typeof value !== 'number' || fullHeightItem)
     return {
       height: `100%`,
       opacity: 0.8,
