@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
@@ -18,7 +18,9 @@ use editoast_derive::EditoastError;
 use itertools::izip;
 use serde_derive::Deserialize;
 
-use crate::core::simulation::{SimulationRequest, SimulationResponse};
+use crate::core::simulation::{
+    CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop,
+};
 
 use simulation_report::SimulationReport;
 use thiserror::Error;
@@ -374,18 +376,25 @@ async fn create_backend_request_payload(
         .map(|ts| ts.rolling_stock_id)
         .collect::<HashSet<_>>();
     let mut rolling_stocks = Vec::new();
+    let mut rolling_id_to_name = HashMap::new();
     for rolling_stock_id in rolling_stocks_ids {
         let rolling_stock = RollingStockModel::retrieve(db_pool.clone(), rolling_stock_id)
             .await?
             .ok_or(TrainScheduleError::RollingStockNotFound { rolling_stock_id })?;
+        rolling_id_to_name.insert(
+            rolling_stock_id,
+            rolling_stock
+                .name
+                .clone()
+                .expect("Rolling stock shoud have a name"),
+        );
         rolling_stocks.push(rolling_stock.into());
     }
     let path = Pathfinding::retrieve(db_pool.clone(), train_schedules[0].path_id)
         .await?
         .ok_or_else(|| TrainScheduleError::PathNotFound {
             path_id: train_schedules[0].path_id,
-        })?
-        .into();
+        })?;
 
     let electrical_profile_set = match scenario.electrical_profile_set_id {
         Some(Some(id)) => {
@@ -396,12 +405,42 @@ async fn create_backend_request_payload(
         _ => None,
     };
 
+    let mut stops = Vec::new();
+    for waypoint in path.payload.path_waypoints.iter() {
+        let stop = TrainStop {
+            position: None,
+            duration: waypoint.duration,
+            location: waypoint.location.clone(),
+        };
+        stops.push(stop);
+    }
+
+    let train_schedules = train_schedules
+        .iter()
+        .map(|ts| CoreTrainSchedule {
+            train_name: ts.train_name.clone(),
+            rolling_stock: rolling_id_to_name
+                .get(&ts.rolling_stock_id)
+                .unwrap()
+                .to_owned(),
+            initial_speed: ts.initial_speed,
+            departure_time: ts.departure_time,
+            scheduled_points: ts.scheduled_points.0.to_owned(),
+            allowances: ts.allowances.0.to_owned(),
+            stops: stops.clone(),
+            tag: ts.speed_limit_tags.clone(),
+            comfort: ts.comfort.clone(),
+            power_restriction_ranges: ts.power_restriction_ranges.to_owned(),
+            options: ts.options.to_owned(),
+        })
+        .collect::<Vec<_>>();
+
     Ok(SimulationRequest {
         infra,
         rolling_stocks,
-        train_schedules: train_schedules.to_owned(),
+        train_schedules,
         electrical_profile_set,
-        trains_path: path,
+        trains_path: path.into(),
     })
 }
 

@@ -122,7 +122,6 @@ impl From<TrainScheduleChangeset> for TrainSchedule {
         }
     }
 }
-
 /// Returns the timetable with the main information about a train
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Queryable)]
 pub struct LightTrainSchedule {

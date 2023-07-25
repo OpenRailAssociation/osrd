@@ -1,9 +1,10 @@
 use super::{AsCoreRequest, Json};
 use crate::models::{
-    Pathfinding, PathfindingPayload, ResultTrain, RoutePath, SignalSighting, TrainSchedule,
-    ZoneUpdate,
+    Allowance, Pathfinding, PathfindingPayload, ResultTrain, RoutePath, ScheduledPoint,
+    SignalSighting, ZoneUpdate,
 };
 use crate::schema::rolling_stock::RollingStock;
+use crate::schema::TrackLocation;
 use geos::geojson::JsonValue;
 use serde_derive::{Deserialize, Serialize};
 
@@ -29,10 +30,33 @@ impl From<&PathfindingPayload> for TrainPath {
 }
 
 #[derive(Debug, Serialize)]
+pub struct CoreTrainSchedule {
+    #[serde(rename = "id")]
+    pub train_name: String,
+    pub rolling_stock: String,
+    pub initial_speed: f64,
+    pub departure_time: f64,
+    pub scheduled_points: Vec<ScheduledPoint>,
+    pub allowances: Vec<Allowance>,
+    pub stops: Vec<TrainStop>,
+    pub tag: Option<String>,
+    pub comfort: String,
+    pub power_restriction_ranges: Option<JsonValue>,
+    pub options: Option<JsonValue>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TrainStop {
+    pub position: Option<f64>,
+    pub location: TrackLocation,
+    pub duration: f64,
+}
+
+#[derive(Debug, Serialize)]
 pub struct SimulationRequest {
     pub infra: i64,
     pub rolling_stocks: Vec<RollingStock>,
-    pub train_schedules: Vec<TrainSchedule>,
+    pub train_schedules: Vec<CoreTrainSchedule>,
     pub electrical_profile_set: Option<String>,
     pub trains_path: TrainPath,
 }
