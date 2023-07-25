@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { post, get, put } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
-import { Infra } from 'common/api/osrdEditoastApi';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { INFRA_URL } from './Consts';
 
 type ActionBarProps = {
@@ -24,6 +24,8 @@ export default function ActionsBar({
 }: ActionBarProps) {
   const { t } = useTranslation('infraManagement');
   const [isWaiting, setIsWaiting] = useState(false);
+
+  const [cloneInfra] = osrdEditoastApi.usePostInfraByIdCloneMutation();
 
   async function handleLockedState(action: string) {
     if (!isWaiting) {
@@ -55,12 +57,14 @@ export default function ActionsBar({
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        // await duplicate infra
-        getInfrasList();
+        await cloneInfra({ id: infra.id, name: `${infra.name}_copy` }).unwrap();
         setIsWaiting(false);
       } catch (e) {
         setIsWaiting(false);
       }
+      setTimeout(() => {
+        getInfrasList();
+      }, 1000);
     }
   }
 
