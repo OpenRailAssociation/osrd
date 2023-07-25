@@ -29,9 +29,9 @@ pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules, TimetableWithSchedulesDetails};
 pub use train_schedule::{
-    ResultPosition, ResultSpeed, ResultStops, ResultTrain, SignalSighting, SimulationOutput,
-    SimulationOutputChangeset, SpacingRequirement, TrainSchedule, TrainScheduleChangeset,
-    ZoneUpdate,
+    Allowance, ResultPosition, ResultSpeed, ResultStops, ResultTrain, ScheduledPoint,
+    SignalSighting, SimulationOutput, SimulationOutputChangeset, SpacingRequirement, TrainSchedule,
+    TrainScheduleChangeset, ZoneUpdate,
 };
 
 pub trait Identifiable {
