@@ -15,5 +15,5 @@ echo "Generate layers"
 docker exec osrd-editoast editoast generate
 
 echo "Loading example rolling stock"
-docker cp python/api/static/example_rolling_stock_1.json osrd-api:/tmp/stock.json
+docker cp python/api/static/example_rolling_stock.json osrd-api:/tmp/stock.json
 docker exec osrd-api python manage.py import_rolling_stock -f /tmp/stock.json
