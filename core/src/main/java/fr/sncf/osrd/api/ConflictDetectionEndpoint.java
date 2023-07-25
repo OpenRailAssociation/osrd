@@ -87,6 +87,8 @@ public class ConflictDetectionEndpoint implements Take {
             public enum ConflictType {
                 @Json(name = "Spacing")
                 SPACING,
+                @Json(name = "Routing")
+                ROUTING,
             }
 
             @Json(name = "conflict_type")
