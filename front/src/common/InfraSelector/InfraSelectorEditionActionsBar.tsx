@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { FaCopy, FaDownload, FaLock, FaLockOpen, FaPencilAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import { post, get, put } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
+import { Infra } from 'common/api/osrdEditoastApi';
 import { INFRA_URL } from './Consts';
 
-export default function ActionsBar(props) {
-  const { infra, isFocused, setIsFocused, getInfrasList, inputValue } = props;
+type ActionBarProps = {
+  infra: Infra;
+  isFocused?: number;
+  setIsFocused: (focus?: number) => void;
+  getInfrasList: () => void;
+  inputValue: string;
+};
+
+export default function ActionsBar({
+  infra,
+  isFocused,
+  setIsFocused,
+  getInfrasList,
+  inputValue,
+}: ActionBarProps) {
   const { t } = useTranslation('infraManagement');
   const [isWaiting, setIsWaiting] = useState(false);
 
-  async function handleLockedState(action) {
+  async function handleLockedState(action: string) {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
@@ -146,15 +159,3 @@ export default function ActionsBar(props) {
     </>
   );
 }
-
-ActionsBar.defaultProps = {
-  isFocused: undefined,
-};
-
-ActionsBar.propTypes = {
-  infra: PropTypes.object.isRequired,
-  isFocused: PropTypes.number,
-  setIsFocused: PropTypes.func.isRequired,
-  getInfrasList: PropTypes.func.isRequired,
-  inputValue: PropTypes.string.isRequired,
-};
