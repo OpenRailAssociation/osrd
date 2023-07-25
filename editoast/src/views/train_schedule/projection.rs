@@ -125,7 +125,8 @@ impl Projection {
                 continue;
             }
             let (b_begin, b_end, _) = self.tracks.get(track_id).unwrap();
-            if a_begin.min(a_end) >= *b_end || a_begin.max(a_end) <= *b_begin {
+            let (b_begin, b_end) = (b_begin.min(*b_end), b_begin.max(*b_end));
+            if a_begin.min(a_end) >= b_end || a_begin.max(a_end) <= b_begin {
                 assert!(range_begin.is_none());
                 continue;
             }
@@ -137,11 +138,11 @@ impl Projection {
                     offset: a_begin,
                     path_offset,
                 };
-                if a_begin < *b_begin {
-                    new_range_begin.offset = *b_begin;
+                if a_begin < b_begin {
+                    new_range_begin.offset = b_begin;
                     new_range_begin.path_offset += b_begin - a_begin;
-                } else if a_begin > *b_end {
-                    new_range_begin.offset = *b_end;
+                } else if a_begin > b_end {
+                    new_range_begin.offset = b_end;
                     new_range_begin.path_offset += a_begin - b_end;
                 }
                 range_begin = Some(new_range_begin)
@@ -156,11 +157,11 @@ impl Projection {
                     offset: a_end,
                     path_offset: next_path_offset,
                 };
-                if a_end < *b_begin {
-                    range_end.offset = *b_begin;
+                if a_end < b_begin {
+                    range_end.offset = b_begin;
                     range_end.path_offset -= b_begin - a_end;
-                } else if a_end > *b_end {
-                    range_end.offset = *b_end;
+                } else if a_end > b_end {
+                    range_end.offset = b_end;
                     range_end.path_offset -= a_end - b_end;
                 }
                 intersections.push(PathRange {

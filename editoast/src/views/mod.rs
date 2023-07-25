@@ -11,6 +11,7 @@ pub mod projects;
 pub mod rolling_stocks;
 pub mod scenario;
 pub mod search;
+pub mod stdcm;
 pub mod study;
 pub mod timetable;
 pub mod train_schedule;
@@ -41,6 +42,7 @@ pub fn routes() -> impl HttpServiceFactory {
         light_rolling_stocks::routes(),
         pathfinding::routes(),
         train_schedule::routes(),
+        stdcm::routes()
     ]
 }
 

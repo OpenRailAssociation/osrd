@@ -1385,6 +1385,61 @@ components:
       required:
       - type
       type: object
+    STDCMRequest:
+      properties:
+        comfort:
+          $ref: '#/components/schemas/Comfort'
+        end_time:
+          format: double
+          type: number
+        infra_id:
+          type: integer
+        margin_after:
+          description: |
+            Margin of y seconds after the train passage, which means that the path used by the train should
+            be free and available at least y seconds after its passage.
+          format: double
+          type: number
+        margin_before:
+          description: |
+            Margin of x seconds before the train passage, which means that the path used by the train should
+            be free and available at least x seconds before its passage.
+          format: double
+          type: number
+        maximum_departure_delay:
+          description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
+          format: double
+          type: number
+        maximum_run_time:
+          description: |
+            Specifies how long the total run time can be in seconds.
+            Defaults to 43200s if unspecified, meaning that the result can't exceed 12h.
+          format: double
+          type: number
+        rolling_stock_id:
+          type: integer
+        speed_limit_tags:
+          description: Train category for speed limits
+          type: string
+        standard_allowance:
+          $ref: '#/components/schemas/AllowanceValue'
+        start_time:
+          format: double
+          type: number
+        steps:
+          items:
+            properties:
+              duration:
+                format: float
+                type: number
+              waypoints:
+                $ref: '#/components/schemas/Waypoint'
+            type: object
+          minItems: 2
+          type: array
+        timetable_id:
+          description: timetable ID
+          type: integer
     ScenarioListResult:
       properties:
         creation_date:
@@ -2221,6 +2276,235 @@ components:
           nullable: true
           type: boolean
       type: object
+    TrainScheduleResult:
+      properties:
+        base:
+          $ref: '#/components/schemas/TrainScheduleResultData'
+        curves:
+          items:
+            properties:
+              position:
+                type: number
+              radius:
+                type: number
+            type: object
+          minItems: 2
+          type: array
+        eco:
+          oneOf:
+          - $ref: '#/components/schemas/TrainScheduleResultData'
+          - properties:
+              error:
+                type: string
+            type: object
+        electrification_ranges:
+          description: A list of ranges which should be contiguous and which describe the electrificationUsage on the path and if it is handled by the train
+          items:
+            $ref: '#/components/schemas/ElectrificationRange'
+          minItems: 1
+          type: array
+        id:
+          type: integer
+        labels:
+          items:
+            type: string
+          type: array
+        name:
+          type: string
+        path:
+          description: id of the path used for projection
+          type: integer
+        power_restriction_ranges:
+          description: The list of ranges where power restrictions are applied
+          items:
+            properties:
+              code:
+                type: string
+              handled:
+                type: boolean
+              start:
+                format: double
+                type: number
+              stop:
+                format: double
+                type: number
+            required:
+            - start
+            - stop
+            - code
+            - handled
+          type: array
+        slopes:
+          items:
+            properties:
+              gradient:
+                type: number
+              position:
+                type: number
+            type: object
+          minItems: 2
+          type: array
+        vmax:
+          items:
+            properties:
+              position:
+                type: number
+              speed:
+                type: number
+            type: object
+          minItems: 2
+          type: array
+      required:
+      - id
+      - name
+      - labels
+      - path
+      - vmax
+      - slopes
+      - curves
+      - base
+      - electrification_ranges
+      - power_restriction_ranges
+    TrainScheduleResultData:
+      properties:
+        head_positions:
+          items:
+            items:
+              properties:
+                position:
+                  format: float
+                  type: number
+                time:
+                  format: float
+                  type: number
+              type: object
+            minItems: 1
+            type: array
+          minItems: 1
+          type: array
+        mechanical_energy_consumed:
+          format: float
+          type: number
+        route_aspects:
+          items:
+            properties:
+              aspect_label:
+                description: label of the new signal aspect
+                type: string
+              blinking:
+                description: true if the signal is blinking
+                type: boolean
+              color:
+                description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+                format: float
+                type: number
+              position_end:
+                description: the route ends at this position on the train path
+                format: float
+                type: number
+              position_start:
+                description: the route starts at this position on the train path
+                format: float
+                type: number
+              route_id:
+                description: id of the affected route on the train path
+                type: string
+              signal_id:
+                description: id of the updated signal
+                type: string
+              time_end:
+                description: the aspect stops being displayed at this time
+                format: float
+                type: number
+              time_start:
+                description: the aspect starts being displayed at this time
+                format: float
+                type: number
+            type: object
+          type: array
+        signals:
+          items:
+            properties:
+              aspects:
+                items:
+                  type: string
+                type: array
+              geo_position:
+                items:
+                  format: float
+                  type: number
+                maxItems: 2
+                minItems: 2
+                type: array
+              schema_position:
+                items:
+                  format: float
+                  type: number
+                maxItems: 2
+                minItems: 2
+                type: array
+              signal_id:
+                type: integer
+            type: object
+          type: array
+        speeds:
+          items:
+            properties:
+              position:
+                format: float
+                type: number
+              speed:
+                format: float
+                type: number
+              time:
+                format: float
+                type: number
+            type: object
+          minItems: 1
+          type: array
+        stops:
+          items:
+            properties:
+              duration:
+                format: float
+                type: number
+              id:
+                description: Can be null if it's not an operational point
+                type: number
+              line_code:
+                type: number
+              line_name:
+                type: string
+              name:
+                description: Can be 'Unknown' if it's not an operational point
+                type: string
+              position:
+                format: float
+                type: number
+              time:
+                format: float
+                type: number
+              track_name:
+                type: string
+              track_number:
+                type: number
+            type: object
+          type: array
+        tail_positions:
+          items:
+            items:
+              properties:
+                position:
+                  format: float
+                  type: number
+                time:
+                  format: float
+                  type: number
+              type: object
+            minItems: 1
+            type: array
+          minItems: 1
+          type: array
     TrainScheduleSummary:
       properties:
         allowances:
@@ -2328,6 +2612,20 @@ components:
         type:
           example: vector
           type: string
+    Waypoint:
+      items:
+        properties:
+          geo_coordinate:
+            items:
+              format: float
+              type: number
+            maxItems: 2
+            minItems: 2
+            type: array
+          track_section:
+            type: string
+        type: object
+      type: array
     Zone:
       properties:
         geo:
@@ -4131,6 +4429,36 @@ paths:
                 type: array
           description: Search results, the structure of the returned objects depend on their type
       summary: Generic search endpoint
+  /stdcm/:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/STDCMRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - properties:
+                    path:
+                      $ref: '#/components/schemas/Path'
+                    simulation:
+                      $ref: '#/components/schemas/TrainScheduleResult'
+                - properties:
+                    error:
+                      description: Error message
+                      example: No path could be found
+                      type: string
+                  type: object
+          description: Simulation result
+        '400':
+          description: The request body is invalid
+      summary: Find a stdcm and return a simulation result
+      tags:
+      - stdcm
   /timetable/{id}/:
     get:
       parameters:

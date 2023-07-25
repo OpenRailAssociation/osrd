@@ -8,8 +8,10 @@ use crate::models::{
 };
 use crate::models::{Timetable, TrainSchedule};
 
-use crate::DbPool;
+use crate::views::train_schedule::simulation_report::fetch_simulation_output;
 use crate::DieselJson;
+
+use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{self, scope, Data, Json, Path, Query};
 use actix_web::{delete, get, patch, post, HttpResponse};
@@ -28,7 +30,7 @@ use thiserror::Error;
 use crate::models::electrical_profile::ElectricalProfileSet;
 use futures::executor;
 
-mod projection;
+pub mod projection;
 pub mod simulation_report;
 use self::projection::Projection;
 
@@ -62,6 +64,9 @@ pub enum TrainScheduleError {
     #[error("Batch should have the same timetable")]
     #[editoast_error(status = 400)]
     BatchShouldHaveSameTimetable,
+    #[error("No simulation given")]
+    #[editoast_error(status = 500)]
+    NoSimulation,
 }
 
 pub fn routes() -> impl HttpServiceFactory {
@@ -117,17 +122,17 @@ pub async fn delete_multiple(
 #[patch("")]
 async fn patch(
     db_pool: Data<DbPool>,
-    train_schedules_changeset: Json<Vec<TrainScheduleChangeset>>,
+    train_schedules_changesets: Json<Vec<TrainScheduleChangeset>>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
-    let train_schedules_changeset = train_schedules_changeset.into_inner();
-    if train_schedules_changeset.is_empty() {
+    let train_schedules_changesets = train_schedules_changesets.into_inner();
+    if train_schedules_changesets.is_empty() {
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
     let mut conn = db_pool.get()?;
     conn.transaction::<_, InternalError, _>(|conn| {
         let mut train_schedules = Vec::new();
-        for changeset in train_schedules_changeset {
+        for changeset in train_schedules_changesets {
             let id = changeset.id.ok_or(TrainScheduleError::NoPatchId)?;
             let train_schedule: TrainSchedule = match changeset.update_conn(conn, id)? {
                 Some(ts) => ts,
@@ -182,7 +187,7 @@ async fn patch(
             db_pool.clone(),
         ))?;
         let response_payload = executor::block_on(request_payload.fetch(core.as_ref()))?;
-        let simulation_outputs = process_simulation_response(response_payload);
+        let simulation_outputs = process_simulation_response(response_payload)?;
 
         for simulation_output in simulation_outputs {
             simulation_output.create_conn(conn)?;
@@ -238,11 +243,14 @@ async fn get_result(
 
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
 
+    let simulation_output = fetch_simulation_output(&train_schedule, db_pool.clone()).await?;
+    let simulation_output_cs = SimulationOutputChangeset::from(simulation_output);
     let res = simulation_report::create_simulation_report(
         infra,
         train_schedule,
         &projection,
         &projection_path_payload,
+        simulation_output_cs,
         db_pool.clone(),
         core.as_ref(),
     )
@@ -293,11 +301,14 @@ async fn get_results(
     let infra = scenario.infra_id.expect("Scenario should have an infra id");
     let mut res = Vec::new();
     for schedule in schedules {
+        let simulation_output = fetch_simulation_output(&schedule, db_pool.clone()).await?;
+        let simulation_output_content = SimulationOutputChangeset::from(simulation_output);
         let sim_report = simulation_report::create_simulation_report(
             infra,
             schedule,
             &projection,
             &projection_path_payload,
+            simulation_output_content,
             db_pool.clone(),
             core.as_ref(),
         )
@@ -339,7 +350,7 @@ async fn standalone_simulation(
     let request_payload =
         create_backend_request_payload(&train_schedules, &scenario, db_pool.clone()).await?;
     let response_payload = request_payload.fetch(core.as_ref()).await?;
-    let simulation_outputs = process_simulation_response(response_payload);
+    let simulation_outputs = process_simulation_response(response_payload)?;
 
     assert_eq!(train_schedules.len(), simulation_outputs.len());
 
@@ -444,10 +455,37 @@ async fn create_backend_request_payload(
     })
 }
 
-fn process_simulation_response(
-    response_payload: SimulationResponse,
-) -> Vec<SimulationOutputChangeset> {
+pub fn process_simulation_response(
+    simulation_response: SimulationResponse,
+) -> Result<Vec<SimulationOutputChangeset>> {
+    let SimulationResponse {
+        base_simulations,
+        eco_simulations,
+        speed_limits,
+        electrification_ranges,
+        power_restriction_ranges,
+        ..
+    } = simulation_response;
     let mut simulation_outputs = Vec::new();
+    if base_simulations.is_empty() {
+        return Err(TrainScheduleError::NoSimulation.into());
+    }
+    let electrification_ranges_vec = if electrification_ranges.is_empty() {
+        vec![None; base_simulations.len()]
+    } else {
+        electrification_ranges
+            .iter()
+            .map(|er| Some(er.clone()))
+            .collect()
+    };
+    let power_restriction_ranges_vec = if power_restriction_ranges.is_empty() {
+        vec![None; base_simulations.len()]
+    } else {
+        power_restriction_ranges
+            .iter()
+            .map(|prr| Some(prr.clone()))
+            .collect()
+    };
     for (
         base_simulation,
         eco_simulation,
@@ -455,24 +493,28 @@ fn process_simulation_response(
         electrification_ranges,
         power_restriction_ranges,
     ) in izip!(
-        response_payload.base_simulations,
-        response_payload.eco_simulations,
-        response_payload.speed_limits,
-        response_payload.electrification_ranges,
-        response_payload.power_restriction_ranges
+        base_simulations,
+        eco_simulations,
+        speed_limits,
+        electrification_ranges_vec,
+        power_restriction_ranges_vec
     ) {
+        let eco_simulation = match eco_simulation {
+            Some(eco) => Some(Some(DieselJson(eco))),
+            None => Some(None),
+        };
         let simulation_output = SimulationOutputChangeset {
             id: None,
             mrsp: Some(speed_limits),
             base_simulation: Some(DieselJson(base_simulation)),
-            eco_simulation: Some(Some(DieselJson(eco_simulation))),
-            electrification_ranges: Some(electrification_ranges),
-            power_restriction_ranges: Some(power_restriction_ranges),
-            train_schedule_id: None, // To be filled once the train schedule is inserted
+            eco_simulation,
+            electrification_ranges,
+            power_restriction_ranges,
+            train_schedule_id: Some(None), // To be filled once the train schedule is inserted
         };
         simulation_outputs.push(simulation_output);
     }
-    simulation_outputs
+    Ok(simulation_outputs)
 }
 
 fn scenario_from_timetable(timetable: &Timetable, db_pool: Data<DbPool>) -> Result<Scenario> {

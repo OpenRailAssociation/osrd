@@ -12,6 +12,7 @@ export const addTagTypes = [
   'studies',
   'scenarios',
   'rolling_stock_livery',
+  'stdcm',
   'timetable',
   'train_schedule',
 ] as const;
@@ -536,6 +537,10 @@ const injectedRtkApi = api
           body: queryArg.body,
           params: { page_size: queryArg.pageSize },
         }),
+      }),
+      postStdcm: build.mutation<PostStdcmApiResponse, PostStdcmApiArg>({
+        query: (queryArg) => ({ url: `/stdcm/`, method: 'POST', body: queryArg.stdcmRequest }),
+        invalidatesTags: ['stdcm'],
       }),
       getTimetableById: build.query<GetTimetableByIdApiResponse, GetTimetableByIdApiArg>({
         query: (queryArg) => ({ url: `/timetable/${queryArg.id}/` }),
@@ -1166,6 +1171,18 @@ export type PostSearchApiArg = {
     page_size?: number;
     query?: SearchQuery;
   };
+};
+export type PostStdcmApiResponse =
+  /** status 200 Simulation result */
+  | {
+      path?: Path;
+      simulation?: TrainScheduleResult;
+    }
+  | {
+      error?: string;
+    };
+export type PostStdcmApiArg = {
+  stdcmRequest: StdcmRequest;
 };
 export type GetTimetableByIdApiResponse =
   /** status 200 The timetable content */ TimetableWithSchedulesDetails;
@@ -1809,6 +1826,109 @@ export type SearchScenarioResult = {
   trains_count?: number;
 };
 export type SearchQuery = (boolean | number | number | string | SearchQuery)[] | null;
+export type TrainScheduleResultData = {
+  head_positions?: {
+    position?: number;
+    time?: number;
+  }[][];
+  mechanical_energy_consumed?: number;
+  route_aspects?: {
+    aspect_label?: string;
+    blinking?: boolean;
+    color?: number;
+    position_end?: number;
+    position_start?: number;
+    route_id?: string;
+    signal_id?: string;
+    time_end?: number;
+    time_start?: number;
+  }[];
+  signals?: {
+    aspects?: string[];
+    geo_position?: number[];
+    schema_position?: number[];
+    signal_id?: number;
+  }[];
+  speeds?: {
+    position?: number;
+    speed?: number;
+    time?: number;
+  }[];
+  stops?: {
+    duration?: number;
+    id?: number;
+    line_code?: number;
+    line_name?: string;
+    name?: string;
+    position?: number;
+    time?: number;
+    track_name?: string;
+    track_number?: number;
+  }[];
+  tail_positions?: {
+    position?: number;
+    time?: number;
+  }[][];
+};
+export type Electrified = {
+  mode: string;
+  mode_handled: boolean;
+  object_type: 'Electrified';
+  profile?: string | null;
+  profile_handled: boolean;
+};
+export type Neutral = {
+  is_lower_pantograph: boolean;
+  object_type: 'Neutral';
+};
+export type NonElectrified = {
+  object_type: 'NonElectrified';
+};
+export type ElectrificationRange = {
+  electrificationUsage:
+    | ({
+        object_type: 'Electrified';
+      } & Electrified)
+    | ({
+        object_type: 'Neutral';
+      } & Neutral)
+    | ({
+        object_type: 'NonElectrified';
+      } & NonElectrified);
+  start: number;
+  stop: number;
+};
+export type TrainScheduleResult = {
+  base: TrainScheduleResultData;
+  curves: {
+    position?: number;
+    radius?: number;
+  }[];
+  eco?:
+    | TrainScheduleResultData
+    | {
+        error?: string;
+      };
+  electrification_ranges: ElectrificationRange[];
+  id: number;
+  labels: string[];
+  name: string;
+  path: number;
+  power_restriction_ranges: {
+    code: string;
+    handled: boolean;
+    start: number;
+    stop: number;
+  }[];
+  slopes: {
+    gradient?: number;
+    position?: number;
+  }[];
+  vmax: {
+    position?: number;
+    speed?: number;
+  }[];
+};
 export type AllowanceTimePerDistanceValue = {
   minutes: number;
   value_type: 'time_per_distance';
@@ -1831,6 +1951,28 @@ export type AllowanceValue =
   | ({
       value_type: 'percentage';
     } & AllowancePercentValue);
+export type Waypoint = {
+  geo_coordinate?: number[];
+  track_section?: string;
+}[];
+export type StdcmRequest = {
+  comfort?: Comfort;
+  end_time?: number;
+  infra_id?: number;
+  margin_after?: number;
+  margin_before?: number;
+  maximum_departure_delay?: number;
+  maximum_run_time?: number;
+  rolling_stock_id?: number;
+  speed_limit_tags?: string;
+  standard_allowance?: AllowanceValue;
+  start_time?: number;
+  steps?: {
+    duration?: number;
+    waypoints?: Waypoint;
+  }[];
+  timetable_id?: number;
+};
 export type RangeAllowance = {
   begin_position: number;
   end_position: number;
@@ -1929,34 +2071,6 @@ export type SimulationReportByTrain = {
     track_number: number;
   }[];
   tail_positions: SpaceTimePosition[][];
-};
-export type Electrified = {
-  mode: string;
-  mode_handled: boolean;
-  object_type: 'Electrified';
-  profile?: string | null;
-  profile_handled: boolean;
-};
-export type Neutral = {
-  is_lower_pantograph: boolean;
-  object_type: 'Neutral';
-};
-export type NonElectrified = {
-  object_type: 'NonElectrified';
-};
-export type ElectrificationRange = {
-  electrificationUsage:
-    | ({
-        object_type: 'Electrified';
-      } & Electrified)
-    | ({
-        object_type: 'Neutral';
-      } & Neutral)
-    | ({
-        object_type: 'NonElectrified';
-      } & NonElectrified);
-  start: number;
-  stop: number;
 };
 export type PowerRestrictionRangeItem = {
   code: string;

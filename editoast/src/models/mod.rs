@@ -6,9 +6,10 @@ pub mod pathfinding;
 mod projects;
 pub mod rolling_stock;
 mod scenario;
+pub mod simulation_output;
 mod study;
 mod timetable;
-mod train_schedule;
+pub mod train_schedule;
 
 use crate::DbPool;
 use crate::{error::Result, views::pagination::PaginatedResponse};
@@ -29,9 +30,9 @@ pub use scenario::{Scenario, ScenarioWithCountTrains, ScenarioWithDetails};
 pub use study::{Study, StudyWithScenarios};
 pub use timetable::{Timetable, TimetableWithSchedules, TimetableWithSchedulesDetails};
 pub use train_schedule::{
-    Allowance, ResultPosition, ResultSpeed, ResultStops, ResultTrain, ScheduledPoint,
-    SignalSighting, SimulationOutput, SimulationOutputChangeset, SpacingRequirement, TrainSchedule,
-    TrainScheduleChangeset, ZoneUpdate,
+    Allowance, FullResultStops, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
+    ScheduledPoint, SignalSighting, SimulationOutput, SimulationOutputChangeset,
+    SpacingRequirement, TrainSchedule, TrainScheduleChangeset, ZoneUpdate,
 };
 
 pub trait Identifiable {

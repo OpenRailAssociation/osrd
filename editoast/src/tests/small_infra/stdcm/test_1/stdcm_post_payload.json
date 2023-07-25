@@ -1,0 +1,44 @@
+{
+  "infra_id": 4,
+  "steps": [
+    {
+      "duration": 0,
+      "waypoints": [
+        {
+          "track_section": "TA2",
+          "geo_coordinate": [
+            -0.3734953520520819,
+            49.49979970805293
+          ]
+        }
+      ]
+    },
+    {
+      "duration": 1,
+      "waypoints": [
+        {
+          "track_section": "TA5",
+          "geo_coordinate": [
+            -0.36905635925648467,
+            49.499818777438925
+          ]
+        }
+      ]
+    }
+  ],
+  "rolling_stocks": [
+    899
+  ],
+  "rolling_stock_id": 899,
+  "comfort": "STANDARD",
+  "timetable_id": 20,
+  "start_time": 25200,
+  "end_time": null,
+  "maximum_departure_delay": 7200,
+  "margin_before": 0,
+  "margin_after": 0,
+  "standard_allowance": {
+    "percentage": 0,
+    "value_type": "percentage"
+  }
+}

@@ -115,27 +115,27 @@ impl From<Pathfinding> for Response {
 }
 
 #[derive(Debug, Default, Deserialize)]
-struct Payload {
+struct PathfindingRequestPayload {
     infra: i64,
     steps: Vec<StepPayload>,
     #[serde(default)]
     rolling_stocks: Vec<i64>,
 }
 
-#[derive(Debug, Default, Deserialize)]
-struct StepPayload {
-    duration: f64,
-    waypoints: Vec<WaypointPayload>,
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Clone)]
+pub struct StepPayload {
+    pub duration: f64,
+    pub waypoints: Vec<WaypointPayload>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize)]
-struct WaypointPayload {
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct WaypointPayload {
     track_section: String,
     #[serde(flatten)]
     location: TrackSectionLocation,
 }
 
-#[derive(Debug, Clone, Derivative, Deserialize)]
+#[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq)]
 #[derivative(Default)]
 #[serde(rename_all = "snake_case")]
 enum TrackSectionLocation {
@@ -169,13 +169,13 @@ impl WaypointPayload {
     }
 }
 
-type TrackMap = HashMap<String, TrackSection>;
+pub type TrackMap = HashMap<String, TrackSection>;
 type OpMap = HashMap<String, OperationalPoint>;
 
 /// Computes a hash map (obj_id => TrackSection) for each obj_id in an iterator
-fn track_map<I: Iterator<Item = String>>(
+fn make_track_map<I: Iterator<Item = String>>(
     conn: &mut diesel::PgConnection,
-    infra: i64,
+    infra_id: i64,
     it: I,
 ) -> Result<TrackMap> {
     use diesel::prelude::*;
@@ -184,7 +184,7 @@ fn track_map<I: Iterator<Item = String>>(
     let ids = it.collect::<HashSet<_>>().into_iter().collect::<Vec<_>>();
     let expected_count = ids.len();
     let tracksections: Vec<_> = match dsl::osrd_infra_tracksectionmodel
-        .filter(dsl::infra_id.eq(infra))
+        .filter(dsl::infra_id.eq(infra_id))
         .filter(dsl::obj_id.eq_any(&ids))
         .get_results::<TrackSectionModel>(conn)
     {
@@ -204,7 +204,7 @@ fn track_map<I: Iterator<Item = String>>(
     ))
 }
 
-fn op_map<I: Iterator<Item = String>>(
+fn make_op_map<I: Iterator<Item = String>>(
     conn: &mut diesel::PgConnection,
     infra: i64,
     it: I,
@@ -235,28 +235,15 @@ fn op_map<I: Iterator<Item = String>>(
     ))
 }
 
-impl Payload {
+impl PathfindingRequestPayload {
     /// Queries all track sections of the payload and builds a track hash map
     fn fetch_track_map(&self, conn: &mut diesel::PgConnection) -> Result<TrackMap> {
-        track_map(
-            conn,
-            self.infra,
-            self.steps
-                .iter()
-                .flat_map(|step| step.waypoints.iter())
-                .map(|waypoint| waypoint.track_section.clone()),
-        )
+        fetch_pathfinding_payload_track_map(conn, self.infra, &self.steps)
     }
 
     /// Parses all payload waypoints into Core pathfinding request waypoints
     fn parse_waypoints(&self, track_map: &TrackMap) -> Result<PathfindingWaypoints> {
-        let waypoints = self
-            .steps
-            .iter()
-            .flat_map(|step| &step.waypoints)
-            .map(|wp| wp.compute_waypoints(track_map))
-            .collect();
-        Ok(waypoints)
+        parse_pathfinding_payload_waypoints(&self.steps, track_map)
     }
 
     /// Fetches all payload's rolling stocks
@@ -274,9 +261,36 @@ impl Payload {
     }
 }
 
+pub fn fetch_pathfinding_payload_track_map(
+    conn: &mut diesel::PgConnection,
+    infra: i64,
+    steps: &[StepPayload],
+) -> Result<TrackMap> {
+    make_track_map(
+        conn,
+        infra,
+        steps
+            .iter()
+            .flat_map(|step| step.waypoints.iter())
+            .map(|waypoint| waypoint.track_section.clone()),
+    )
+}
+
+pub fn parse_pathfinding_payload_waypoints(
+    steps: &[StepPayload],
+    track_map: &TrackMap,
+) -> Result<PathfindingWaypoints> {
+    let waypoints = steps
+        .iter()
+        .flat_map(|step| &step.waypoints)
+        .map(|wp| wp.compute_waypoints(track_map))
+        .collect();
+    Ok(waypoints)
+}
+
 impl PathfindingResponse {
-    fn fetch_track_map(&self, infra: i64, conn: &mut PgConnection) -> Result<TrackMap> {
-        track_map(
+    pub fn fetch_track_map(&self, infra: i64, conn: &mut PgConnection) -> Result<TrackMap> {
+        make_track_map(
             conn,
             infra,
             self.path_waypoints
@@ -285,8 +299,8 @@ impl PathfindingResponse {
         )
     }
 
-    fn fetch_op_map(&self, infra: i64, conn: &mut diesel::PgConnection) -> Result<OpMap> {
-        op_map(
+    pub fn fetch_op_map(&self, infra: i64, conn: &mut diesel::PgConnection) -> Result<OpMap> {
+        make_op_map(
             conn,
             infra,
             self.path_waypoints.iter().filter_map(|wp| wp.id.clone()),
@@ -296,8 +310,8 @@ impl PathfindingResponse {
 
 impl Pathfinding {
     /// Post-processes the Core pathfinding reponse and build a [Pathfinding] model
-    fn from_core_response(
-        payload: Payload,
+    pub fn from_core_response(
+        steps: Vec<StepPayload>,
         response: PathfindingResponse,
         track_map: &TrackMap,
         op_map: &OpMap,
@@ -312,14 +326,13 @@ impl Pathfinding {
             curves,
             ..
         } = response;
-        let mut steps_duration = payload
-            .steps
+        let mut steps_duration = steps
             .iter()
             .map(|step| step.duration)
             .collect::<Vec<_>>()
             .into_iter();
         let path_waypoints = path_waypoints
-            .into_iter()
+            .iter()
             .map(|waypoint| {
                 let duration = if waypoint.suggestion {
                     0.0
@@ -347,9 +360,9 @@ impl Pathfinding {
                 let geo = geos::geojson::Geometry::try_from(geo).unwrap();
                 let sch = geos::geojson::Geometry::try_from(sch).unwrap();
                 PathWaypoint {
-                    id: waypoint.id,
+                    id: waypoint.id.clone(),
                     name: op_name,
-                    location: waypoint.location,
+                    location: waypoint.location.clone(),
                     duration,
                     path_offset: waypoint.path_offset,
                     suggestion: waypoint.suggestion,
@@ -361,11 +374,11 @@ impl Pathfinding {
         Ok(Pathfinding {
             length,
             payload: diesel_json::Json(PathfindingPayload {
-                route_paths,
+                route_paths: route_paths.to_vec(),
                 path_waypoints,
             }),
-            slopes: diesel_json::Json(slopes),
-            curves: diesel_json::Json(curves),
+            slopes: diesel_json::Json(slopes.to_vec()),
+            curves: diesel_json::Json(curves.to_vec()),
             geographic: geojson_to_diesel_linestring(&geographic),
             schematic: geojson_to_diesel_linestring(&schematic),
             ..Default::default() // creation date, uuid, id, infra_id
@@ -375,7 +388,7 @@ impl Pathfinding {
 
 /// Builds a Core pathfinding request, runs it, post-processes the response and stores it in the DB
 async fn call_core_pf_and_save_result(
-    payload: Json<Payload>,
+    payload: Json<PathfindingRequestPayload>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
     update_id: Option<i64>,
@@ -408,7 +421,7 @@ async fn call_core_pf_and_save_result(
                 let response_track_map = response.fetch_track_map(infra_id, conn)?;
                 let response_op_map = response.fetch_op_map(infra_id, conn)?;
                 Pathfinding::from_core_response(
-                    payload,
+                    payload.steps,
                     response,
                     &response_track_map,
                     &response_op_map,
@@ -439,7 +452,7 @@ async fn call_core_pf_and_save_result(
 
 #[post("")]
 async fn create_pf(
-    payload: Json<Payload>,
+    payload: Json<PathfindingRequestPayload>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<Response>> {
@@ -450,7 +463,7 @@ async fn create_pf(
 #[put("{id}")]
 async fn update_pf(
     path: Path<i64>,
-    payload: Json<Payload>,
+    payload: Json<PathfindingRequestPayload>,
     db_pool: Data<DbPool>,
     core: Data<CoreClient>,
 ) -> Result<Json<Response>> {
@@ -553,6 +566,7 @@ mod test {
         .unwrap();
         *payload.get_mut("infra").unwrap() = json!(infra_id);
         *payload.get_mut("rolling_stocks").unwrap() = json!([rs_id]);
+
         let mut core = MockingClient::new();
         core.stub("/pathfinding/routes")
             .method(reqwest::Method::POST)
