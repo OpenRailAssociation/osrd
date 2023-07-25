@@ -2790,6 +2790,10 @@ paths:
     get:
       responses:
         '200':
+          content:
+            text/plain:
+              schema:
+                type: string
           description: Check if Editoast is running correctly
   /infra/:
     get:
