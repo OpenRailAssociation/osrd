@@ -6,6 +6,7 @@ pub mod infra_state;
 pub mod mocking;
 pub mod pathfinding;
 pub mod simulation;
+pub mod stdcm;
 
 use std::marker::PhantomData;
 

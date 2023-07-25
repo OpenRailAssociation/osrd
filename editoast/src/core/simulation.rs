@@ -66,10 +66,10 @@ impl AsCoreRequest<Json<SimulationResponse>> for SimulationRequest {
     const URL_PATH: &'static str = "/standalone_simulation";
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct SimulationResponse {
     pub base_simulations: Vec<ResultTrain>,
-    pub eco_simulations: Vec<ResultTrain>,
+    pub eco_simulations: Vec<Option<ResultTrain>>,
     pub speed_limits: Vec<JsonValue>,
     pub warnings: Vec<String>, // TODO
     pub electrification_ranges: Vec<JsonValue>,
@@ -94,7 +94,7 @@ pub struct SignalProjectionResponse {
     pub signal_updates: Vec<SignalUpdate>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct SignalUpdate {
     pub signal_id: String,
     pub time_start: f64,

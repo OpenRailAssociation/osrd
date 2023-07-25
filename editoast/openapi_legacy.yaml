@@ -2049,6 +2049,37 @@ paths:
                   type: number
                   format: integer
 
+  /stdcm/:
+    post:
+      tags:
+        - stdcm
+      summary: Find a stdcm and return a simulation result
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/STDCMRequest"
+      responses:
+        200:
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - properties:
+                      simulation:
+                        $ref: "#/components/schemas/TrainScheduleResult"
+                      path:
+                        $ref: "#/components/schemas/Path"
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        description: Error message
+                        example: No path could be found
+        400:
+          description: The request body is invalid
+
 components:
   schemas:
     Battery:
@@ -4291,3 +4322,263 @@ components:
           type: string
           enum: ["NonElectrified"]
       required: [object_type]
+
+    STDCMRequest:
+      properties:
+        infra_id:
+          type: integer
+        rolling_stock_id:
+          type: integer
+        comfort:
+          $ref: "#/components/schemas/Comfort"
+        timetable_id:
+          type: integer
+          description: timetable ID
+        start_time:
+          type: number
+          format: double
+        end_time:
+          type: number
+          format: double
+        steps:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              duration:
+                type: number
+                format: float
+              waypoints:
+                $ref: "#/components/schemas/Waypoint"
+        maximum_departure_delay:
+          type: number
+          format: double
+          description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
+        maximum_run_time:
+          type: number
+          format: double
+          description: |
+            Specifies how long the total run time can be in seconds.
+            Defaults to 43200s if unspecified, meaning that the result can't exceed 12h.
+        speed_limit_tags:
+          type: string
+          description: Train category for speed limits
+        margin_before:
+          type: number
+          format: double
+          description: |
+            Margin of x seconds before the train passage, which means that the path used by the train should
+            be free and available at least x seconds before its passage.
+        margin_after:
+          type: number
+          format: double
+          description: |
+            Margin of y seconds after the train passage, which means that the path used by the train should
+            be free and available at least y seconds after its passage.
+        standard_allowance:
+          $ref: "#/components/schemas/AllowanceValue"
+
+    TrainScheduleResultData:
+      properties:
+        speeds:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            properties:
+              time: { type: number, format: float }
+              position: { type: number, format: float }
+              speed: { type: number, format: float }
+        head_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              type: object
+              properties:
+                time: { type: number, format: float }
+                position: { type: number, format: float }
+        tail_positions:
+          type: array
+          minItems: 1
+          items:
+            type: array
+            minItems: 1
+            items:
+              type: object
+              properties:
+                time: { type: number, format: float }
+                position: { type: number, format: float }
+        stops:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                description: Can be null if it's not an operational point
+              name:
+                type: string
+                description: Can be 'Unknown' if it's not an operational point
+              time: { type: number, format: float }
+              position: { type: number, format: float }
+              duration: { type: number, format: float }
+              line_code: { type: number }
+              track_number: { type: number }
+              line_name: { type: string }
+              track_name: { type: string }
+        route_aspects:
+          type: array
+          items:
+            type: object
+            properties:
+              signal_id:
+                type: string
+                description: id of the updated signal
+              route_id:
+                type: string
+                description: id of the affected route on the train path
+              time_start:
+                type: number
+                format: float
+                description: the aspect starts being displayed at this time
+              time_end:
+                type: number
+                format: float
+                description: the aspect stops being displayed at this time
+              position_start:
+                type: number
+                format: float
+                description: the route starts at this position on the train path
+              position_end:
+                type: number
+                format: float
+                description: the route ends at this position on the train path
+              color:
+                type: number
+                format: float
+                description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+              blinking:
+                type: boolean
+                description: true if the signal is blinking
+              aspect_label:
+                type: string
+                description: label of the new signal aspect
+        signals:
+          type: array
+          items:
+            type: object
+            properties:
+              signal_id: { type: integer }
+              aspects:
+                type: array
+                items:
+                  type: string
+              geo_position:
+                type: array
+                items: { type: number, format: float }
+                minItems: 2
+                maxItems: 2
+              schema_position:
+                type: array
+                items: { type: number, format: float }
+                minItems: 2
+                maxItems: 2
+        mechanical_energy_consumed:
+          type: number
+          format: float
+
+    TrainScheduleResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+        path:
+          type: integer
+          description: id of the path used for projection
+        vmax:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              speed: { type: number }
+        slopes:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              gradient: { type: number }
+        curves:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              position: { type: number }
+              radius: { type: number }
+        base:
+          $ref: "#/components/schemas/TrainScheduleResultData"
+        eco:
+          oneOf:
+            - $ref: "#/components/schemas/TrainScheduleResultData"
+            - type: object
+              properties:
+                error: { type: string }
+        electrification_ranges:
+          description: A list of ranges which should be contiguous and which describe the electrificationUsage on the path and if it is handled by the train
+          type: array
+          items:
+            $ref: "#/components/schemas/ElectrificationRange"
+          minItems: 1
+        power_restriction_ranges:
+          description: The list of ranges where power restrictions are applied
+          type: array
+          items:
+            properties:
+              start:
+                type: number
+                format: double
+              stop:
+                type: number
+                format: double
+              code:
+                type: string
+              handled:
+                type: boolean
+            required: [start, stop, code, handled]
+      required:
+        - id
+        - name
+        - labels
+        - path
+        - vmax
+        - slopes
+        - curves
+        - base
+        - electrification_ranges
+        - power_restriction_ranges
+
+    Waypoint:
+      type: array
+      items:
+        type: object
+        properties:
+          track_section:
+            type: string
+          geo_coordinate:
+            type: array
+            items: { type: number, format: float }
+            minItems: 2
+            maxItems: 2

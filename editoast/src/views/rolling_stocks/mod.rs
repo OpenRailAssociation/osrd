@@ -370,7 +370,7 @@ async fn create_livery(
     Ok(Json(rolling_stock_livery))
 }
 
-async fn retrieve_existing_rolling_stock(
+pub async fn retrieve_existing_rolling_stock(
     db_pool: &Data<DbPool>,
     rolling_stock_id: i64,
 ) -> Result<RollingStockModel> {

@@ -20,11 +20,11 @@ pub struct PathfindingRequest {
     rolling_stocks: Vec<RollingStock>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Waypoint {
     track_section: String,
-    direction: Direction,
     offset: f64,
+    direction: Direction,
 }
 
 /// The response of a Core pathfinding request, see also [PathfindingRequest]

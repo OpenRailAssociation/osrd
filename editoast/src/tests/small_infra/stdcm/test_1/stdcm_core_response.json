@@ -1,0 +1,299 @@
+{
+    "departure_time": 25200.0,
+    "path": {
+        "curves": [
+            {
+                "position": 0.0,
+                "radius": 0.0
+            },
+            {
+                "position": 236.63427175291585,
+                "radius": 0.0
+            }
+        ],
+        "geographic": {
+            "coordinates": [
+                [
+                    -0.3734953520520819,
+                    49.49979999999999
+                ],
+                [
+                    -0.37,
+                    49.49979999999999
+                ],
+                [
+                    -0.36905636116324075,
+                    49.49981887277673
+                ]
+            ],
+            "type": "LineString"
+        },
+        "length": 236.63427175291585,
+        "path_waypoints": [
+            {
+                "location": {
+                    "offset": 1722.8021166146766,
+                    "track_section": "TA2"
+                },
+                "path_offset": 0.0,
+                "suggestion": false
+            },
+            {
+                "location": {
+                    "offset": 9.436388367592457,
+                    "track_section": "TA5"
+                },
+                "path_offset": 236.63427175291585,
+                "suggestion": false
+            }
+        ],
+        "route_paths": [
+            {
+                "route": "rt.buffer_stop.2->DA1",
+                "signaling_type": "BAL3",
+                "track_sections": [
+                    {
+                        "begin": 1722.8021166146766,
+                        "direction": "START_TO_STOP",
+                        "end": 1770.0,
+                        "track": "TA2"
+                    }
+                ]
+            },
+            {
+                "route": "rt.DA1->DA7_2",
+                "signaling_type": "BAL3",
+                "track_sections": [
+                    {
+                        "begin": 1770.0,
+                        "direction": "START_TO_STOP",
+                        "end": 1950.0,
+                        "track": "TA2"
+                    },
+                    {
+                        "begin": 0.0,
+                        "direction": "START_TO_STOP",
+                        "end": 9.436388367592457,
+                        "track": "TA5"
+                    }
+                ]
+            }
+        ],
+        "schematic": {
+            "coordinates": [
+                [
+                    -0.3734953520520819,
+                    49.49979999999999
+                ],
+                [
+                    -0.37,
+                    49.49979999999999
+                ],
+                [
+                    -0.36905636116324075,
+                    49.49981887277673
+                ]
+            ],
+            "type": "LineString"
+        },
+        "slopes": [
+            {
+                "gradient": 0.0,
+                "position": 0.0
+            },
+            {
+                "gradient": 0.0,
+                "position": 236.63427175291585
+            }
+        ],
+        "warnings": []
+    },
+    "simulation": {
+        "base_simulations": [
+            {
+                "head_positions": [
+                    {
+                        "offset": 1722.8021166146766,
+                        "path_offset": 0.0,
+                        "time": 0.0,
+                        "track_section": "TA2"
+                    },
+                    {
+                        "offset": 1731.4445599678288,
+                        "path_offset": 8.642443353152208,
+                        "time": 4.0,
+                        "track_section": "TA2"
+                    },
+                    {
+                        "offset": 1770.0,
+                        "path_offset": 47.197883385323394,
+                        "time": 11.020925428604647,
+                        "track_section": "TA2"
+                    },
+                    {
+                        "offset": 1923.4363883675924,
+                        "path_offset": 200.63427175291585,
+                        "time": 29.976101287533616,
+                        "track_section": "TA2"
+                    },
+                    {
+                        "offset": 0.4363883675924569,
+                        "path_offset": 227.63427175291585,
+                        "time": 35.976101287533616,
+                        "track_section": "TA5"
+                    },
+                    {
+                        "offset": 9.436388367592457,
+                        "path_offset": 236.63427175291585,
+                        "time": 42.07610128753362,
+                        "track_section": "TA5"
+                    }
+                ],
+                "mechanical_energy_consumed": 7515805.711036574,
+                "route_occupancies": {
+                    "rt.DA4->buffer_stop.2": {
+                        "time_head_occupy": 0.0,
+                        "time_tail_free": 14.593
+                    },
+                    "rt.buffer_stop.2->DA1": {
+                        "time_head_occupy": 0.0,
+                        "time_tail_free": 14.593
+                    },
+                    "rt.DA1->DA7_2": {
+                        "time_head_occupy": 11.02,
+                        "time_tail_free": 42.075
+                    },
+                    "rt.DA4->buffer_stop.3": {
+                        "time_head_occupy": 11.02,
+                        "time_tail_free": 42.075
+                    },
+                    "rt.DB0->DA7_2": {
+                        "time_head_occupy": 11.02,
+                        "time_tail_free": 42.075
+                    }
+                },
+                "signal_sightings": [
+                    {
+                        "offset": 0.0,
+                        "signal": "SA1",
+                        "state": "VL",
+                        "time": 0.0
+                    }
+                ],
+                "spacing_requirements": [],
+                "speeds": [
+                    {
+                        "position": 0.0,
+                        "speed": 0.0,
+                        "time": 0.0
+                    },
+                    {
+                        "position": 2.3865087169349954,
+                        "speed": 2.3865087169349954,
+                        "time": 2.0
+                    },
+                    {
+                        "position": 8.642443353152208,
+                        "speed": 3.8694259192822176,
+                        "time": 4.0
+                    },
+                    {
+                        "position": 17.449192319396772,
+                        "speed": 4.937323046962346,
+                        "time": 6.0
+                    },
+                    {
+                        "position": 28.163380230766485,
+                        "speed": 5.776864864407366,
+                        "time": 8.0
+                    },
+                    {
+                        "position": 76.60836472607174,
+                        "speed": 7.885727712041953,
+                        "time": 15.020925428604647
+                    },
+                    {
+                        "position": 145.24022237114093,
+                        "speed": 9.560023503202014,
+                        "time": 22.856054281129587
+                    },
+                    {
+                        "position": 187.63427175291585,
+                        "speed": 7.0,
+                        "time": 27.976101287533616
+                    },
+                    {
+                        "position": 211.63427175291585,
+                        "speed": 5.0,
+                        "time": 31.976101287533616
+                    },
+                    {
+                        "position": 227.63427175291585,
+                        "speed": 3.0,
+                        "time": 35.976101287533616
+                    },
+                    {
+                        "position": 232.63427175291585,
+                        "speed": 2.0,
+                        "time": 37.976101287533616
+                    },
+                    {
+                        "position": 235.63427175291585,
+                        "speed": 1.0,
+                        "time": 39.976101287533616
+                    },
+                    {
+                        "position": 236.63427175291585,
+                        "speed": 0.0,
+                        "time": 42.07610128753362
+                    }
+                ],
+                "stops": [
+                    {
+                        "duration": 0.1,
+                        "position": 236.63427175291585,
+                        "time": 42.07610128753362
+                    }
+                ],
+                "zone_updates": [
+                    {
+                        "isEntry": true,
+                        "offset": 0.0,
+                        "time": 0.0,
+                        "zone": "zone.DA1:DECREASING"
+                    },
+                    {
+                        "isEntry": true,
+                        "offset": 47.198,
+                        "time": 11.02,
+                        "zone": "zone.DA1:INCREASING"
+                    },
+                    {
+                        "isEntry": false,
+                        "offset": 73.268,
+                        "time": 14.593,
+                        "zone": "zone.DA1:DECREASING"
+                    }
+                ]
+            }
+        ],
+        "eco_simulations": [
+            null
+        ],
+        "electrification_ranges": [],
+        "power_restriction_ranges": [],
+        "speed_limits": [
+            [
+                {
+                    "position": 0.0,
+                    "speed": 22.22222222222222
+                },
+                {
+                    "position": 236.63427175291585,
+                    "speed": 22.22222222222222
+                }
+            ]
+        ],
+        "warnings": []
+    }
+}

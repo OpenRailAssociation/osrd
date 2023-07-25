@@ -1,0 +1,40 @@
+{
+  "signal_updates": [
+      {
+          "signal_id": "SA1",
+          "time_start": 0.0,
+          "time_end": 11.02,
+          "position_start": 47.198,
+          "position_end": 3657.198,
+          "color": -16711936,
+          "blinking": false,
+          "aspect_label": "VL",
+          "track": "TA2",
+          "track_offset": 1750.0
+      },
+      {
+          "signal_id": "SA1",
+          "time_start": 11.02,
+          "time_end": null,
+          "position_start": 47.198,
+          "position_end": 3657.198,
+          "color": -65536,
+          "blinking": false,
+          "aspect_label": "S",
+          "track": "TA2",
+          "track_offset": 1750.0
+      },
+      {
+          "signal_id": "SA7_2r",
+          "time_start": 0.0,
+          "time_end": null,
+          "position_start": 3657.198,
+          "position_end": null,
+          "color": -256,
+          "blinking": false,
+          "aspect_label": "A",
+          "track": "TA7",
+          "track_offset": 3380.0
+      }
+  ]
+}

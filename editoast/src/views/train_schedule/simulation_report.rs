@@ -1,59 +1,68 @@
+use std::collections::HashMap;
+
 use crate::core::simulation::{SignalProjectionRequest, SignalUpdate};
 use crate::core::{AsCoreRequest, CoreClient};
+use crate::models::infra_objects::track_section::TrackSectionModel;
 use crate::models::{
-    Curve, Pathfinding, PathfindingPayload, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
-    Retrieve, RollingStockModel, SimulationOutput, Slope, TrainSchedule,
+    Curve, FullResultStops, PathWaypoint, Pathfinding, PathfindingPayload, ResultPosition,
+    ResultSpeed, ResultStops, ResultTrain, Retrieve, RollingStockModel, SimulationOutput,
+    SimulationOutputChangeset, Slope, TrainSchedule,
 };
 use crate::schema::utils::Identifier;
 use crate::{error, DbPool};
-use actix_web::web::Data;
+use actix_web::web::{block, Data};
+use diesel::sql_types::{Array as SqlArray, BigInt, Text};
+use diesel::{sql_query, RunQueryDsl};
+use futures::future::OptionFuture;
 use geos::geojson::JsonValue;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::views::train_schedule::projection::Projection;
+use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
+use diesel::prelude::*;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct SimulationReport {
-    id: i64,
+    // TODO: check if there is better way to do that than using Option
+    id: Option<i64>,
     labels: JsonValue,
     path: i64,
     name: String,
     vmax: JsonValue,
     slopes: Vec<Slope>,
     curves: Vec<Curve>,
-    base: ReportTrain,
+    pub base: ReportTrain,
     eco: Option<ReportTrain>,
     speed_limit_tags: Option<String>,
-    electrification_ranges: JsonValue,
-    power_restriction_ranges: JsonValue,
+    electrification_ranges: Option<JsonValue>,
+    power_restriction_ranges: Option<JsonValue>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct ReportTrain {
     pub head_positions: Vec<Vec<GetCurvePoint>>,
     pub tail_positions: Vec<Vec<GetCurvePoint>>,
     pub speeds: Vec<ResultSpeed>,
-    pub stops: Vec<ResultStops>,
+    pub stops: Vec<FullResultStops>,
     pub route_aspects: Vec<SignalUpdate>,
     pub mechanical_energy_consumed: f64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct GetCurvePoint {
     time: f64,
     position: f64,
 }
 
 pub async fn create_simulation_report(
-    infra: i64,
+    infra_id: i64,
     train_schedule: TrainSchedule,
     projection: &Projection,
     projection_path_payload: &PathfindingPayload,
+    simulation_output_cs: SimulationOutputChangeset,
     db_pool: Data<DbPool>,
     core: &CoreClient,
 ) -> error::Result<SimulationReport> {
-    let mut conn = db_pool.get()?;
-    let simulation_output = fetch_simulation_output(&train_schedule, &mut conn)?;
     let train_path = Pathfinding::retrieve(db_pool.clone(), train_schedule.path_id)
         .await?
         .expect("Train Schedule should have a path");
@@ -68,21 +77,23 @@ pub async fn create_simulation_report(
     let departure_time = train_schedule.departure_time;
 
     let base = project_simulation_results(
-        infra,
-        simulation_output.base_simulation.0,
+        infra_id,
+        simulation_output_cs.base_simulation.unwrap().0,
         &train_path_payload,
         projection,
         projection_path_payload,
         departure_time,
         train_length,
         core,
+        db_pool.clone(),
     )
     .await?;
-
-    let eco = if let Some(eco) = simulation_output.eco_simulation {
-        Some(
+    let eco: OptionFuture<_> = simulation_output_cs
+        .eco_simulation
+        .flatten()
+        .map(|eco| async {
             project_simulation_results(
-                infra,
+                infra_id,
                 eco.0,
                 &train_path_payload,
                 projection,
@@ -90,52 +101,56 @@ pub async fn create_simulation_report(
                 departure_time,
                 train_length,
                 core,
+                db_pool.clone(),
             )
-            .await?,
-        )
-    } else {
-        None
-    };
+            .await
+        })
+        .into();
+    let eco = eco.await.transpose()?;
 
     Ok(SimulationReport {
-        id: train_schedule.id.unwrap(),
+        id: train_schedule.id,
         labels: train_schedule.labels,
         path: train_schedule.path_id,
         name: train_schedule.train_name,
-        vmax: simulation_output.mrsp,
+        vmax: simulation_output_cs.mrsp.unwrap(),
         slopes: (*train_path.slopes).clone(), // diesel_json does not support into inner
         curves: (*train_path.curves).clone(),
         base,
         eco,
         speed_limit_tags: train_schedule.speed_limit_tags,
-        electrification_ranges: simulation_output.electrification_ranges,
-        power_restriction_ranges: simulation_output.power_restriction_ranges,
+        electrification_ranges: simulation_output_cs.electrification_ranges,
+        power_restriction_ranges: simulation_output_cs.power_restriction_ranges,
     })
 }
 
-pub fn fetch_simulation_output(
+pub async fn fetch_simulation_output(
     train_schedule: &TrainSchedule,
-    conn: &mut diesel::PgConnection,
+    db_pool: Data<DbPool>,
 ) -> error::Result<SimulationOutput> {
     use crate::tables::osrd_infra_simulationoutput::dsl::*;
-    use crate::views::train_schedule::TrainScheduleError::UnsimulatedTrainSchedule;
-    use diesel::prelude::*;
-    match osrd_infra_simulationoutput
-        .filter(train_schedule_id.eq(train_schedule.id.unwrap()))
-        .get_result(conn)
-    {
-        Ok(scenario) => Ok(scenario),
-        Err(diesel::result::Error::NotFound) => Err(UnsimulatedTrainSchedule {
-            train_schedule_id: train_schedule.id.unwrap(),
+    let ts_id = train_schedule.id.unwrap();
+    block(move || {
+        let mut conn = db_pool.get()?;
+        match osrd_infra_simulationoutput
+            .filter(train_schedule_id.eq(ts_id))
+            .get_result(&mut conn)
+        {
+            Ok(scenario) => Ok(scenario),
+            Err(diesel::result::Error::NotFound) => Err(UnsimulatedTrainSchedule {
+                train_schedule_id: ts_id,
+            }
+            .into()),
+            Err(err) => Err(err.into()),
         }
-        .into()),
-        Err(err) => Err(err.into()),
-    }
+    })
+    .await
+    .unwrap()
 }
 
 #[allow(clippy::too_many_arguments)]
 async fn project_simulation_results(
-    infra: i64,
+    infra_id: i64,
     simulation_result: ResultTrain,
     train_path_payload: &PathfindingPayload,
     projection: &Projection,
@@ -143,12 +158,14 @@ async fn project_simulation_results(
     departure_time: f64,
     train_length: f64,
     core: &CoreClient,
+    db_pool: Data<DbPool>,
 ) -> error::Result<ReportTrain> {
     let arrival_time = simulation_result
         .head_positions
         .last()
         .expect("Train should have at least one position")
-        .time;
+        .time
+        + departure_time;
     let head_positions = project_head_positions(
         simulation_result.head_positions,
         projection,
@@ -159,7 +176,7 @@ async fn project_simulation_results(
     let signal_sightings = simulation_result.signal_sightings;
     let zone_updates = simulation_result.zone_updates;
     let signal_projection_request = SignalProjectionRequest {
-        infra: infra.to_string(),
+        infra: infra_id.to_string(),
         train_path: projection_path_payload.into(),
         signal_sightings,
         zone_updates,
@@ -172,6 +189,13 @@ async fn project_simulation_results(
     );
     let speeds = project_speeds(simulation_result.speeds, departure_time);
     let stops = project_stops(simulation_result.stops, departure_time);
+    let stops = add_stops_additional_information(
+        stops,
+        infra_id,
+        train_path_payload.path_waypoints.clone(),
+        db_pool,
+    )
+    .await?;
     Ok(ReportTrain {
         head_positions,
         tail_positions,
@@ -180,6 +204,70 @@ async fn project_simulation_results(
         route_aspects: signal_updates,
         mechanical_energy_consumed: simulation_result.mechanical_energy_consumed,
     })
+}
+
+async fn add_stops_additional_information(
+    stops: Vec<ResultStops>,
+    infra_id: i64,
+    path_waypoints: Vec<PathWaypoint>,
+    db_pool: Data<DbPool>,
+) -> error::Result<Vec<FullResultStops>> {
+    block(move || {
+        let mut conn = db_pool.get()?;
+        let track_ids: Vec<String> = path_waypoints
+            .iter()
+            .map(|pw| pw.location.track_section.0.clone())
+            .collect();
+        let track_sections: Vec<TrackSectionModel> = sql_query(
+            "SELECT * FROM osrd_infra_tracksectionmodel WHERE infra_id = $1 AND obj_id = ANY($2);",
+        )
+        .bind::<BigInt, _>(infra_id)
+        .bind::<SqlArray<Text>, _>(&track_ids)
+        .load(&mut conn)?;
+        let track_sections_map: HashMap<String, TrackSectionModel> = HashMap::from_iter(
+            track_sections
+                .iter()
+                .map(|ts| (ts.obj_id.clone(), ts.clone())),
+        );
+        let stops = stops
+            .iter()
+            .zip(path_waypoints.iter())
+            .map(|(s, pw)| {
+                match &track_sections_map
+                    .get(&pw.location.track_section.0)
+                    .unwrap()
+                    .data
+                    .extensions
+                    .sncf
+                {
+                    Some(ext) => FullResultStops {
+                        result_stops: ResultStops {
+                            time: s.time,
+                            position: s.position,
+                            duration: s.duration,
+                        },
+                        id: pw.id.clone(),
+                        name: pw.name.clone(),
+                        line_code: Some(ext.line_code),
+                        track_number: Some(ext.track_number),
+                        line_name: Some(ext.line_name.to_string()),
+                        track_name: Some(ext.track_name.to_string()),
+                    },
+                    None => FullResultStops {
+                        result_stops: ResultStops {
+                            time: s.time,
+                            position: s.position,
+                            duration: s.duration,
+                        },
+                        ..Default::default()
+                    },
+                }
+            })
+            .collect();
+        Ok(stops)
+    })
+    .await
+    .unwrap()
 }
 
 fn project_speeds(mut speeds: Vec<ResultSpeed>, departure_time: f64) -> Vec<ResultSpeed> {

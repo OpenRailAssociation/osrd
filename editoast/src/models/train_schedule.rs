@@ -7,13 +7,13 @@ use crate::{
     tables::osrd_infra_simulationoutput,
 };
 use derivative::Derivative;
-
 use diesel::result::Error as DieselError;
+use diesel::RunQueryDsl;
+use serde_json::Value as JsonValue;
 
 use diesel::prelude::*;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 
 #[derive(
     Associations,
@@ -33,6 +33,7 @@ use serde_json::Value as JsonValue;
 #[model(create, delete, retrieve)]
 #[diesel(belongs_to(Timetable))]
 #[diesel(table_name = osrd_infra_trainschedule)]
+#[derivative(Default)]
 pub struct TrainSchedule {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
@@ -40,9 +41,11 @@ pub struct TrainSchedule {
     pub labels: JsonValue,
     pub departure_time: f64,
     pub initial_speed: f64,
+    #[derivative(Default(value = "DieselJson(Default::default())"))]
     pub allowances: DieselJson<Vec<Allowance>>,
-    #[serde(default)]
+    #[derivative(Default(value = "DieselJson(Default::default())"))]
     pub scheduled_points: DieselJson<Vec<ScheduledPoint>>,
+    #[diesel(deserialize_as = String)]
     pub comfort: String,
     pub speed_limit_tags: Option<String>,
     pub power_restriction_ranges: Option<JsonValue>,
@@ -163,17 +166,29 @@ pub struct ResultPosition {
     pub path_offset: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct ResultStops {
     pub time: f64,
     pub position: f64,
     pub duration: f64,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct FullResultStops {
+    #[serde(flatten)]
+    pub result_stops: ResultStops,
+    pub id: Option<String>,
+    pub name: Option<String>,
+    pub line_code: Option<i32>,
+    pub track_number: Option<i32>,
+    pub line_name: Option<String>,
+    pub track_name: Option<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ResultOccupancyTiming {
-    time_head_occupy: f64,
-    time_tail_free: f64,
+    pub time_head_occupy: f64,
+    pub time_tail_free: f64,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -225,6 +240,7 @@ pub struct ResultTrain {
     Queryable,
     Selectable,
     Serialize,
+    QueryableByName,
 )]
 #[model(table = "osrd_infra_simulationoutput")]
 #[model(delete, retrieve)]
@@ -260,6 +276,20 @@ pub struct SimulationOutputChangeset {
     pub power_restriction_ranges: Option<JsonValue>,
     #[diesel(deserialize_as = Option<i64>)]
     pub train_schedule_id: Option<Option<i64>>,
+}
+
+impl From<SimulationOutput> for SimulationOutputChangeset {
+    fn from(simulation_output: SimulationOutput) -> Self {
+        Self {
+            id: Some(simulation_output.id),
+            mrsp: Some(simulation_output.mrsp),
+            base_simulation: Some(simulation_output.base_simulation),
+            eco_simulation: Some(simulation_output.eco_simulation),
+            electrification_ranges: Some(simulation_output.electrification_ranges),
+            power_restriction_ranges: Some(simulation_output.power_restriction_ranges),
+            train_schedule_id: Some(simulation_output.train_schedule_id),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -310,7 +340,8 @@ pub enum Allowance {
     Standard(StandardAllowance),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Derivative, Serialize, Deserialize, PartialEq)]
+#[derivative(Default)]
 pub struct ScheduledPoint {
     path_offset: f64,
     time: f64,

@@ -1,0 +1,331 @@
+{
+    "path": {
+        "id": 156,
+        "owner": "00000000-0000-0000-0000-000000000000",
+        "created": "2023-07-18T19:16:24.718520Z",
+        "length": 236.63427175291585,
+        "slopes": [
+            {
+                "gradient": 0.0,
+                "position": 0.0
+            },
+            {
+                "gradient": 0.0,
+                "position": 236.63427175291585
+            }
+        ],
+        "curves": [
+            {
+                "radius": 0.0,
+                "position": 0.0
+            },
+            {
+                "radius": 0.0,
+                "position": 236.63427175291585
+            }
+        ],
+        "geographic": {
+            "coordinates": [
+                [
+                    -0.3734953520520819,
+                    49.49979999999999
+                ],
+                [
+                    -0.37,
+                    49.49979999999999
+                ],
+                [
+                    -0.3690563611632407,
+                    49.49981887277673
+                ]
+            ],
+            "type": "LineString"
+        },
+        "schematic": {
+            "coordinates": [
+                [
+                    -0.3734953520520819,
+                    49.49979999999999
+                ],
+                [
+                    -0.37,
+                    49.49979999999999
+                ],
+                [
+                    -0.3690563611632407,
+                    49.49981887277673
+                ]
+            ],
+            "type": "LineString"
+        },
+        "steps": [
+            {
+                "id": null,
+                "name": null,
+                "location": {
+                    "track_section": "TA2",
+                    "offset": 1722.8021166146766
+                },
+                "duration": 0.0,
+                "path_offset": 0.0,
+                "suggestion": false,
+                "geo": {
+                    "coordinates": [
+                        -0.3734953520520819,
+                        49.49979999999999
+                    ],
+                    "type": "Point"
+                },
+                "sch": {
+                    "coordinates": [
+                        -0.3734953520520819,
+                        49.49979999999999
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "id": null,
+                "name": null,
+                "location": {
+                    "track_section": "TA5",
+                    "offset": 9.436388367592455
+                },
+                "duration": 1.0,
+                "path_offset": 236.63427175291585,
+                "suggestion": false,
+                "geo": {
+                    "coordinates": [
+                        -0.3690563611632407,
+                        49.49981887277673
+                    ],
+                    "type": "Point"
+                },
+                "sch": {
+                    "coordinates": [
+                        -0.3690563611632407,
+                        49.49981887277673
+                    ],
+                    "type": "Point"
+                }
+            }
+        ]
+    },
+    "simulation": {
+        "id": null,
+        "labels": null,
+        "path": 156,
+        "name": "",
+        "vmax": [
+            {
+                "position": 0.0,
+                "speed": 22.22222222222222
+            },
+            {
+                "position": 236.63427175291585,
+                "speed": 22.22222222222222
+            }
+        ],
+        "slopes": [
+            {
+                "gradient": 0.0,
+                "position": 0.0
+            },
+            {
+                "gradient": 0.0,
+                "position": 236.63427175291585
+            }
+        ],
+        "curves": [
+            {
+                "radius": 0.0,
+                "position": 0.0
+            },
+            {
+                "radius": 0.0,
+                "position": 236.63427175291585
+            }
+        ],
+        "base": {
+            "head_positions": [
+                [
+                    {
+                        "time": 25200.0,
+                        "position": 0.0
+                    },
+                    {
+                        "time": 25204.0,
+                        "position": 8.642443353152203
+                    },
+                    {
+                        "time": 25211.020925428606,
+                        "position": 47.197883385323394
+                    },
+                    {
+                        "time": 25229.976101287535,
+                        "position": 200.63427175291577
+                    },
+                    {
+                        "time": 25235.976101287535,
+                        "position": 227.63427175291585
+                    },
+                    {
+                        "time": 25242.076101287534,
+                        "position": 236.63427175291585
+                    }
+                ]
+            ],
+            "tail_positions": [
+                [
+                    {
+                        "time": 25200.0,
+                        "position": 0.0
+                    },
+                    {
+                        "time": 25204.0,
+                        "position": 0.0
+                    },
+                    {
+                        "time": 25211.020925428606,
+                        "position": 0.0
+                    },
+                    {
+                        "time": 25229.976101287535,
+                        "position": 0.0
+                    },
+                    {
+                        "time": 25235.976101287535,
+                        "position": 0.0
+                    },
+                    {
+                        "time": 25242.076101287534,
+                        "position": 0.0
+                    }
+                ]
+            ],
+            "speeds": [
+                {
+                    "time": 25200.0,
+                    "position": 0.0,
+                    "speed": 0.0
+                },
+                {
+                    "time": 25202.0,
+                    "position": 2.386508716934995,
+                    "speed": 2.386508716934995
+                },
+                {
+                    "time": 25204.0,
+                    "position": 8.642443353152208,
+                    "speed": 3.8694259192822176
+                },
+                {
+                    "time": 25206.0,
+                    "position": 17.449192319396772,
+                    "speed": 4.937323046962346
+                },
+                {
+                    "time": 25208.0,
+                    "position": 28.163380230766485,
+                    "speed": 5.776864864407366
+                },
+                {
+                    "time": 25215.020925428606,
+                    "position": 76.60836472607174,
+                    "speed": 7.885727712041953
+                },
+                {
+                    "time": 25222.85605428113,
+                    "position": 145.24022237114093,
+                    "speed": 9.560023503202014
+                },
+                {
+                    "time": 25227.976101287535,
+                    "position": 187.63427175291585,
+                    "speed": 7.0
+                },
+                {
+                    "time": 25231.976101287535,
+                    "position": 211.63427175291585,
+                    "speed": 5.0
+                },
+                {
+                    "time": 25235.976101287535,
+                    "position": 227.63427175291585,
+                    "speed": 3.0
+                },
+                {
+                    "time": 25237.976101287535,
+                    "position": 232.63427175291585,
+                    "speed": 2.0
+                },
+                {
+                    "time": 25239.976101287535,
+                    "position": 235.63427175291585,
+                    "speed": 1.0
+                },
+                {
+                    "time": 25242.076101287534,
+                    "position": 236.63427175291585,
+                    "speed": 0.0
+                }
+            ],
+            "stops": [
+                {
+                    "time": 25242.076101287534,
+                    "position": 236.63427175291585,
+                    "duration": 0.1,
+                    "id": null,
+                    "name": null,
+                    "line_code": 424242,
+                    "track_number": 3,
+                    "line_name": "West_parking",
+                    "track_name": "A"
+                }
+            ],
+            "route_aspects": [
+                {
+                    "signal_id": "SA1",
+                    "time_start": 25200.0,
+                    "time_end": 25211.02,
+                    "position_start": 47.198,
+                    "position_end": 3657.198,
+                    "color": -16711936,
+                    "blinking": false,
+                    "aspect_label": "VL",
+                    "track": "TA2",
+                    "track_offset": 1750.0
+                },
+                {
+                    "signal_id": "SA1",
+                    "time_start": 25211.02,
+                    "time_end": 25242.076101287534,
+                    "position_start": 47.198,
+                    "position_end": 3657.198,
+                    "color": -65536,
+                    "blinking": false,
+                    "aspect_label": "S",
+                    "track": "TA2",
+                    "track_offset": 1750.0
+                },
+                {
+                    "signal_id": "SA7_2r",
+                    "time_start": 25200.0,
+                    "time_end": 25242.076101287534,
+                    "position_start": 3657.198,
+                    "position_end": null,
+                    "color": -256,
+                    "blinking": false,
+                    "aspect_label": "A",
+                    "track": "TA7",
+                    "track_offset": 3380.0
+                }
+            ],
+            "mechanical_energy_consumed": 7515805.711036574
+        },
+        "eco": null,
+        "speed_limit_tags": null,
+        "electrification_ranges": null,
+        "power_restriction_ranges": null
+    }
+}

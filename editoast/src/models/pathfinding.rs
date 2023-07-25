@@ -121,8 +121,8 @@ pub type CurveGraph = Vec<Curve>;
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Slope {
-    gradient: f64,
-    position: f64,
+    pub gradient: f64,
+    pub position: f64,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
