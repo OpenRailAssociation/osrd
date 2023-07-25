@@ -59,7 +59,7 @@ pub fn study_routes() -> impl HttpServiceFactory {
 #[openapi(
     info(description = "My Api description"),
     tags(),
-    paths(),
+    paths(health),
     components(schemas(), responses())
 )]
 pub struct OpenApiRoot;
@@ -86,10 +86,17 @@ impl OpenApiRoot {
         let generated = openapi
             .to_json()
             .expect("the openapi should generate properly");
-        OpenApiMerger::new(manual, generated).finish()
+        OpenApiMerger::new(manual, generated)
+            .replace("paths/health/")
+            .finish()
     }
 }
 
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Check if Editoast is running correctly", body = String)
+    )
+)]
 #[get("/health")]
 async fn health(db_pool: Data<DbPool>, redis_client: Data<RedisClient>) -> Result<&'static str> {
     block::<_, Result<_>>(move || {
