@@ -18,12 +18,13 @@ pub mod train_schedule;
 use self::openapi::OpenApiMerger;
 use crate::client::get_app_version;
 use crate::error::Result;
+use crate::map::redis_utils::RedisClient;
 use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, Data, Json};
 use actix_web::{get, services};
 use diesel::{sql_query, RunQueryDsl};
-use redis::{cmd, Client};
+use redis::cmd;
 use serde_json::{json, Value as JsonValue};
 use utoipa::OpenApi;
 
@@ -88,7 +89,7 @@ impl OpenApiRoot {
 }
 
 #[get("/health")]
-async fn health(db_pool: Data<DbPool>, redis_client: Data<Client>) -> Result<&'static str> {
+async fn health(db_pool: Data<DbPool>, redis_client: Data<RedisClient>) -> Result<&'static str> {
     block::<_, Result<_>>(move || {
         let mut conn = db_pool.get()?;
         sql_query("SELECT 1").execute(&mut conn)?;
@@ -97,7 +98,7 @@ async fn health(db_pool: Data<DbPool>, redis_client: Data<Client>) -> Result<&'s
     .await
     .unwrap()?;
 
-    let mut conn = redis_client.get_tokio_connection_manager().await?;
+    let mut conn = redis_client.get_connection().await?;
     cmd("PING").query_async::<_, ()>(&mut conn).await.unwrap();
     Ok("ok")
 }
@@ -114,6 +115,7 @@ mod tests {
     use crate::client::{MapLayersConfig, PostgresConfig, RedisConfig};
     use crate::core::CoreClient;
     use crate::infra_cache::InfraCache;
+    use crate::map::redis_utils::RedisClient;
     use crate::map::MapLayers;
 
     use super::{routes, study_routes, OpenApiRoot};
@@ -174,7 +176,7 @@ mod tests {
             .max_size(1)
             .build(manager)
             .expect("Failed to create pool.");
-        let redis = redis::Client::open(RedisConfig::default().redis_url).unwrap();
+        let redis = RedisClient::new(RedisConfig::default());
 
         // Custom Json extractor configuration
         let json_cfg = JsonConfig::default()

@@ -16,6 +16,7 @@ mod views;
 
 use crate::core::CoreClient;
 use crate::error::InternalError;
+use crate::map::redis_utils::RedisClient;
 use crate::models::Infra;
 use crate::schema::electrical_profiles::ElectricalProfileSetData;
 use crate::schema::RailJson;
@@ -124,7 +125,7 @@ async fn runserver(
         .max_size(pg_config.pool_size)
         .build(manager)
         .expect("Failed to create pool.");
-    let redis = redis::Client::open(redis_config.redis_url.clone()).unwrap();
+    let redis = RedisClient::new(redis_config);
 
     // Custom Json extractor configuration
     let json_cfg = JsonConfig::default()
@@ -187,9 +188,9 @@ async fn runserver(
     Ok(())
 }
 
-async fn build_redis_pool_and_invalidate_all_cache(redis_url: &str, infra_id: i64) {
-    let redis = redis::Client::open(redis_url).unwrap();
-    let mut conn = redis.get_tokio_connection_manager().await.unwrap();
+async fn build_redis_pool_and_invalidate_all_cache(redis_config: RedisConfig, infra_id: i64) {
+    let redis = RedisClient::new(redis_config);
+    let mut conn = redis.get_connection().await.unwrap();
     map::invalidate_all(
         &mut conn,
         &MapLayers::parse().layers.keys().cloned().collect(),
@@ -244,7 +245,7 @@ async fn generate(
         );
         let infra_cache = InfraCache::load(&mut conn, &infra)?;
         if infra.refresh(&mut conn, args.force, &infra_cache)? {
-            build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap())
+            build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap())
                 .await;
             info!(
                 "✅ Infra {}[{}] generated!",
@@ -376,7 +377,7 @@ async fn clear(
             infra.name.clone().unwrap().bold(),
             infra.id.unwrap()
         );
-        build_redis_pool_and_invalidate_all_cache(&redis_config.redis_url, infra.id.unwrap()).await;
+        build_redis_pool_and_invalidate_all_cache(redis_config.clone(), infra.id.unwrap()).await;
         infra.clear(&mut conn)?;
         info!(
             "✅ Infra {}[{}] cleared!",

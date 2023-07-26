@@ -17,6 +17,7 @@ use crate::core::infra_state::{InfraStateRequest, InfraStateResponse};
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::map::redis_utils::RedisClient;
 use crate::map::{self, MapLayers};
 use crate::models::infra::INFRA_VERSION;
 use crate::models::{
@@ -35,7 +36,6 @@ use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use editoast_derive::EditoastError;
 use futures::future::join_all;
 use futures::Future;
-use redis::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 use std::result::Result as StdResult;
@@ -127,7 +127,7 @@ struct RefreshQueryParams {
 #[post("/refresh")]
 async fn refresh(
     db_pool: Data<DbPool>,
-    redis_client: Data<Client>,
+    redis_client: Data<RedisClient>,
     query_params: Query<RefreshQueryParams>,
     infra_caches: Data<CHashMap<i64, InfraCache>>,
     map_layers: Data<MapLayers>,
@@ -167,7 +167,7 @@ async fn refresh(
     })
     .await
     .unwrap()?;
-    let mut conn = redis_client.get_tokio_connection_manager().await.unwrap();
+    let mut conn = redis_client.get_connection().await?;
     for infra_id in refreshed_infra.iter() {
         map::invalidate_all(
             &mut conn,

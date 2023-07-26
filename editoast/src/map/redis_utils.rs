@@ -1,11 +1,83 @@
+use crate::client::RedisConfig;
 use crate::error::Result;
-use redis::aio::ConnectionManager;
-use redis::{cmd, FromRedisValue, ToRedisArgs};
+use redis::aio::{ConnectionLike, ConnectionManager};
+use redis::cluster::ClusterClient;
+use redis::cluster_async::ClusterConnection;
+use redis::Client;
+use redis::{cmd, FromRedisValue, RedisResult, ToRedisArgs};
+
+pub enum RedisConnection {
+    Cluster(ClusterConnection),
+    Tokio(ConnectionManager),
+}
+
+impl ConnectionLike for RedisConnection {
+    fn req_packed_command<'a>(
+        &'a mut self,
+        cmd: &'a redis::Cmd,
+    ) -> redis::RedisFuture<'a, redis::Value> {
+        match self {
+            RedisConnection::Cluster(connection) => connection.req_packed_command(cmd),
+            RedisConnection::Tokio(connection) => connection.req_packed_command(cmd),
+        }
+    }
+
+    fn req_packed_commands<'a>(
+        &'a mut self,
+        cmd: &'a redis::Pipeline,
+        offset: usize,
+        count: usize,
+    ) -> redis::RedisFuture<'a, Vec<redis::Value>> {
+        match self {
+            RedisConnection::Cluster(connection) => {
+                connection.req_packed_commands(cmd, offset, count)
+            }
+            RedisConnection::Tokio(connection) => {
+                connection.req_packed_commands(cmd, offset, count)
+            }
+        }
+    }
+
+    fn get_db(&self) -> i64 {
+        match self {
+            RedisConnection::Cluster(connection) => connection.get_db(),
+            RedisConnection::Tokio(connection) => connection.get_db(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub enum RedisClient {
+    Cluster(ClusterClient),
+    Tokio(Client),
+}
+
+impl RedisClient {
+    pub fn new(redis_config: RedisConfig) -> RedisClient {
+        if redis_config.is_cluster_client {
+            return RedisClient::Cluster(
+                redis::cluster::ClusterClient::new(vec![redis_config.redis_url.as_str()]).unwrap(),
+            );
+        }
+        RedisClient::Tokio(redis::Client::open(redis_config.redis_url.as_str()).unwrap())
+    }
+
+    pub async fn get_connection(&self) -> RedisResult<RedisConnection> {
+        match self {
+            RedisClient::Cluster(client) => Ok(RedisConnection::Cluster(
+                client.get_async_connection().await?,
+            )),
+            RedisClient::Tokio(client) => Ok(RedisConnection::Tokio(
+                client.get_tokio_connection_manager().await?,
+            )),
+        }
+    }
+}
 
 /// Retrieve all keys matching the given `key_pattern`.
 ///
 /// Check redis pattern documentation [here](https://redis.io/commands/keys).
-pub async fn keys(redis: &mut ConnectionManager, key_pattern: &str) -> Result<Vec<String>> {
+pub async fn keys<C: ConnectionLike>(redis: &mut C, key_pattern: &str) -> Result<Vec<String>> {
     Ok(cmd("KEYS")
         .arg(key_pattern)
         .query_async::<_, Vec<String>>(redis)
@@ -13,7 +85,7 @@ pub async fn keys(redis: &mut ConnectionManager, key_pattern: &str) -> Result<Ve
 }
 
 /// Delete redis values associated to the given keys.
-pub async fn delete(redis: &mut ConnectionManager, keys_to_delete: Vec<String>) -> Result<u64> {
+pub async fn delete<C: ConnectionLike>(redis: &mut C, keys_to_delete: Vec<String>) -> Result<u64> {
     if keys_to_delete.is_empty() {
         return Ok(0);
     }
@@ -26,8 +98,8 @@ pub async fn delete(redis: &mut ConnectionManager, keys_to_delete: Vec<String>) 
 
 /// Sets redis value associated to a specific key
 /// The key will expire after cache_duration (in seconds)
-pub async fn set<T: ToRedisArgs>(
-    redis: &mut ConnectionManager,
+pub async fn set<C: ConnectionLike, T: ToRedisArgs>(
+    redis: &mut C,
     key: &str,
     value: T,
     cache_duration: u32,
@@ -47,7 +119,10 @@ pub async fn set<T: ToRedisArgs>(
 
 /// Gets redis value associated to a specific key
 /// Returns None if key does not exists.
-pub async fn get<T: FromRedisValue>(redis: &mut ConnectionManager, cache_key: &str) -> Option<T> {
+pub async fn get<C: ConnectionLike, T: ToRedisArgs + FromRedisValue>(
+    redis: &mut C,
+    cache_key: &str,
+) -> Option<T> {
     cmd("GET")
         .arg(cache_key)
         .query_async::<_, Option<T>>(redis)
@@ -89,17 +164,17 @@ mod tests {
         test_keys.sort();
         assert_eq!(test_keys, vec!["test_1", "test_2"]);
         // Get value 1
-        let value_1 = get::<String>(&mut redis_pool, "test_1").await.unwrap();
+        let value_1 = get::<_, String>(&mut redis_pool, "test_1").await.unwrap();
         assert_eq!("value_1", value_1);
         // Get nonexisting key
-        let does_not_exist = get::<Vec<u8>>(&mut redis_pool, "does_not_exist").await;
+        let does_not_exist = get::<_, Vec<u8>>(&mut redis_pool, "does_not_exist").await;
         assert!(does_not_exist.is_none());
         // Set and get empty vec
         let empty_vec: Vec<u8> = vec![];
         set(&mut redis_pool, "test_empty", empty_vec.clone(), 600)
             .await
             .unwrap();
-        let test_empty = get::<Vec<u8>>(&mut redis_pool, "test_empty").await;
+        let test_empty = get::<_, Vec<u8>>(&mut redis_pool, "test_empty").await;
         assert!(test_empty.is_some());
         assert_eq!(test_empty.unwrap(), empty_vec);
         // Delete two keys and check absence

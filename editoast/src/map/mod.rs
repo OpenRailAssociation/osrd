@@ -1,7 +1,7 @@
 mod bounding_box;
 mod layer_cache;
 mod layers;
-mod redis_utils;
+pub mod redis_utils;
 
 use std::collections::HashMap;
 
@@ -9,7 +9,7 @@ use crate::client::MapLayersConfig;
 use crate::error::Result;
 pub use bounding_box::{BoundingBox, Zone};
 pub use layers::{Layer, MapLayers, View};
-use redis::aio::ConnectionManager;
+use redis::aio::ConnectionLike;
 
 pub use self::layer_cache::{
     count_tiles, get_cache_tile_key, get_layer_cache_prefix, get_tiles_to_invalidate,
@@ -27,8 +27,8 @@ pub use self::redis_utils::{delete, get, keys, set};
 /// * `view_name` - Specific view to invalidate, if not provided all layer's views are invalidated
 ///
 /// Returns the number of deleted keys
-async fn invalidate_full_layer_cache(
-    redis: &mut ConnectionManager,
+async fn invalidate_full_layer_cache<C: ConnectionLike>(
+    redis: &mut C,
     infra_id: i64,
     layer_name: &str,
     view_name: Option<&str>,
@@ -47,8 +47,8 @@ async fn invalidate_full_layer_cache(
 ///
 /// * `redis_pool` - Pool to use to connect to the redis
 /// * `tiles_to_invalidate` - View cache prefix to tiles
-async fn invalidate_cache_tiles(
-    redis: &mut ConnectionManager,
+async fn invalidate_cache_tiles<C: ConnectionLike>(
+    redis: &mut C,
     tiles_to_invalidate: HashMap<String, Vec<Tile>>,
 ) -> Result<u64> {
     let mut keys_to_delete: Vec<String> = Vec::new();
@@ -69,8 +69,8 @@ async fn invalidate_cache_tiles(
 /// * `infra_id` - Infra to on which the layer must be invalidated
 /// * `layer_name` - Layer on which invalidation must be done
 /// * `zone` - Zone to invalidate
-async fn invalidate_layer_zone(
-    redis: &mut ConnectionManager,
+async fn invalidate_layer_zone<C: ConnectionLike>(
+    redis: &mut C,
     infra_id: i64,
     layer_name: &str,
     zone: &Zone,
@@ -106,8 +106,8 @@ async fn invalidate_layer_zone(
 /// * `zone` - Zone to invalidate
 ///
 /// Panics if fail
-pub async fn invalidate_zone(
-    redis: &mut ConnectionManager,
+pub async fn invalidate_zone<C: ConnectionLike>(
+    redis: &mut C,
     layers: &Vec<String>,
     infra_id: i64,
     zone: &Zone,
@@ -130,7 +130,7 @@ pub async fn invalidate_zone(
 /// * `infra_id` - Infra to on which layers must be invalidated
 ///
 /// Panics if fail
-pub async fn invalidate_all(redis: &mut ConnectionManager, layers: &Vec<String>, infra_id: i64) {
+pub async fn invalidate_all<C: ConnectionLike>(redis: &mut C, layers: &Vec<String>, infra_id: i64) {
     for layer_name in layers {
         let result = invalidate_full_layer_cache(redis, infra_id, layer_name, None).await;
         if result.is_err() {

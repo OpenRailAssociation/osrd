@@ -37,6 +37,7 @@ r2d2 = "~0.8.2"
 redis = { version = "0.23", features = [
     "tokio-comp",
     "connection-manager",
+    "cluster-async",
     "tokio-native-tls-comp",
 ] }
 sentry = "0.31"
