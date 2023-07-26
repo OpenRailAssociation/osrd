@@ -26,6 +26,8 @@ use thiserror::Error;
 use crate::models::electrical_profile::ElectricalProfileSet;
 use futures::executor;
 
+use utoipa::ToSchema;
+
 mod projection;
 pub mod simulation_report;
 use self::projection::Projection;
@@ -91,12 +93,13 @@ async fn delete(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<H
 
     Ok(HttpResponse::NoContent().finish())
 }
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct BatchDeletionRequest {
     #[schema(required)]
     ids: Vec<i64>,
 }
 //Delete multiple train schedule
+#[utoipa::path(delete, path = "/train_schedule/delete", request_body = BatchDeletionRequest, responses((status = 204, description = "No content")))]
 #[delete("/delete")]
 pub async fn delete_multiple(
     db_pool: Data<DbPool>,

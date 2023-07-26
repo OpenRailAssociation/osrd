@@ -56,8 +56,8 @@ pub fn study_routes() -> impl HttpServiceFactory {
 #[openapi(
     info(description = "My Api description"),
     tags(),
-    paths(),
-    components(schemas(), responses())
+    paths(train_schedule::delete_multiple),
+    components(schemas(train_schedule::BatchDeletionRequest), responses())
 )]
 pub struct OpenApiRoot;
 
@@ -83,7 +83,7 @@ impl OpenApiRoot {
         let generated = openapi
             .to_json()
             .expect("the openapi should generate properly");
-        OpenApiMerger::new(manual, generated).finish()
+        OpenApiMerger::new(manual, generated).replace("paths/train_schedule/delete").replace("components/schemas/BatchDeletionRequest").finish()
     }
 }
 
