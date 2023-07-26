@@ -4176,6 +4176,27 @@ paths:
       summary: Retrieve all conflicts for a specific timetable
       tags:
       - timetable
+  /train_schedule/delete/:
+    delete:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                ids:
+                  items:
+                    type: integer
+                  type: array
+              required:
+              - ids
+              type: object
+        required: true
+      responses:
+        '204':
+          description: No content
+      summary: Delete multiple train schedule
+      tags:
+      - train_schedule
   /train_schedule/results/:
     get:
       parameters:
