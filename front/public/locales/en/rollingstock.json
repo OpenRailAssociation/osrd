@@ -3,7 +3,7 @@
   "cancelAction": "Would you like to cancel this action?",
   "chooseRollingStock": "Select a rolling stock to display informations",
   "comfort": "Comfort",
-  "comfortAcceleration": "Acceleration for comfort (m/s²)",
+  "comfortAcceleration": "Comfort acceleration (m/s²)",
   "comfortTypes": {
     "AC": "Air conditioning",
     "HEATING": "Heating",
