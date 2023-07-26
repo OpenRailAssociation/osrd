@@ -34,7 +34,7 @@ export type InputSNCFProps = {
   noMargin?: boolean;
   focus?: boolean;
   selectAllOnFocus?: boolean;
-  step?: number;
+  step?: number | string;
   isFlex?: boolean;
   condensed?: boolean;
 };
