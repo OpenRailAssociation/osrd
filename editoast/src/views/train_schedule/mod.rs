@@ -64,7 +64,7 @@ pub enum TrainScheduleError {
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/train_schedule")
-        .service((get_results, standalone_simulation))
+        .service((get_results, standalone_simulation, delete_multiple))
         .service(scope("/{id}").service((delete, get, patch, get_result)))
 }
 
@@ -88,6 +88,25 @@ async fn delete(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<H
     if !TrainSchedule::delete(db_pool.clone(), train_schedule_id).await? {
         return Err(TrainScheduleError::NotFound { train_schedule_id }.into());
     }
+
+    Ok(HttpResponse::NoContent().finish())
+}
+#[derive(Debug, Deserialize)]
+pub struct BatchDeletionRequest {
+    ids: Vec<i64>,
+}
+//Delete multiple train schedule
+#[delete("/delete")]
+pub async fn delete_multiple(
+    db_pool: Data<DbPool>,
+    request: Json<BatchDeletionRequest>,
+) -> Result<HttpResponse> {
+    use crate::tables::osrd_infra_trainschedule::dsl::*;
+    use diesel::prelude::*;
+
+    let train_schedule_ids = request.into_inner().ids;
+    diesel::delete(osrd_infra_trainschedule.filter(id.eq_any(train_schedule_ids)))
+        .execute(&mut db_pool.get()?)?;
 
     Ok(HttpResponse::NoContent().finish())
 }

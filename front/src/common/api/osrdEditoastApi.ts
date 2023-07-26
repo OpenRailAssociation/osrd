@@ -545,6 +545,17 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/timetable/${queryArg.id}/conflicts/` }),
         providesTags: ['timetable'],
       }),
+      deleteTrainScheduleDelete: build.mutation<
+        DeleteTrainScheduleDeleteApiResponse,
+        DeleteTrainScheduleDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule/delete/`,
+          method: 'DELETE',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['train_schedule'],
+      }),
       getTrainScheduleResults: build.query<
         GetTrainScheduleResultsApiResponse,
         GetTrainScheduleResultsApiArg
@@ -1165,6 +1176,12 @@ export type GetTimetableByIdConflictsApiResponse =
 export type GetTimetableByIdConflictsApiArg = {
   /** Timetable ID */
   id: number;
+};
+export type DeleteTrainScheduleDeleteApiResponse = unknown;
+export type DeleteTrainScheduleDeleteApiArg = {
+  body: {
+    ids: number[];
+  };
 };
 export type GetTrainScheduleResultsApiResponse =
   /** status 200 The train schedules results */ SimulationReport[];
