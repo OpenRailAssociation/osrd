@@ -28,6 +28,7 @@ type Props = {
   errorMsg?: string;
   min?: number;
   max?: number;
+  step?: number | string;
 };
 
 export default function InputGroupSNCF({
@@ -47,6 +48,7 @@ export default function InputGroupSNCF({
   errorMsg,
   min,
   max,
+  step,
 }: Props) {
   const [isDropdownShown, setIsDropdownShown] = useState(false);
   const [selected, setSelected] = useState(
@@ -77,7 +79,7 @@ export default function InputGroupSNCF({
     >
       <input
         type={typeValue}
-        className={cx('form-control', condensed && 'px-2')}
+        className={cx('form-control h-100', condensed && 'px-2')}
         title={placeholder}
         placeholder={placeholder}
         onChange={(e) => handleType({ type: selected.id, value: e.target.value })}
@@ -85,6 +87,7 @@ export default function InputGroupSNCF({
         min={min}
         max={max}
         data-testid="input-group-first-field"
+        step={step}
       />
       <span className="form-control-state" />
       {selected.unit && (
@@ -97,7 +100,11 @@ export default function InputGroupSNCF({
 
   return (
     <>
-      {label && <label htmlFor={id}>{label}</label>}
+      {label && (
+        <label htmlFor={id} className="my-0 mr-2">
+          {label}
+        </label>
+      )}
       <div className={cx('input-group', sm && 'input-group-sm')}>
         {orientation === 'right' && inputField}
         <div className={`input-group-${orientation === 'left' ? 'prepend' : 'append'}`}>

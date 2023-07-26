@@ -1,14 +1,15 @@
 import React from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
-import { FieldValues } from 'react-hook-form';
+// import { FieldValues } from 'react-hook-form';
 import { RollingStockUsage } from 'common/api/osrdEditoastApi';
 import { groupBy } from 'lodash';
+import { RollingStockParametersValues } from '../consts';
 
 type RollingStockEditorFormModalProps = {
   setAddOrEditState?: React.Dispatch<React.SetStateAction<boolean>>;
-  data?: FieldValues;
-  request?: (data: FieldValues) => void;
+  data?: RollingStockParametersValues;
+  request?: (data: RollingStockParametersValues) => void;
   mainText: string;
   errorObject?: RollingStockUsage['usage'][];
   buttonText?: string;
@@ -63,7 +64,7 @@ const RollingStockEditorFormModal = ({
             type="button"
             className="btn btn-sm btn-primary ml-3"
             onClick={() => {
-              if (request) request(data as FieldValues);
+              if (request) request(data as RollingStockParametersValues);
               if (!request && setAddOrEditState) {
                 setAddOrEditState(false);
               }

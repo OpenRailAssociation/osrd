@@ -1,0 +1,139 @@
+{
+  "name": {
+    "title": "name",
+    "type": "string",
+    "side": "left"
+  },
+  "detail": {
+    "title": "detail",
+    "type": "string",
+    "side": "left"
+  },
+  "family": {
+    "title": "family",
+    "type": "string",
+    "side": "left"
+  },
+  "grouping": {
+    "title": "grouping",
+    "type": "string",
+    "side": "left"
+  },
+  "number": {
+    "title": "number",
+    "type": "string",
+    "side": "middle"
+  },
+  "reference": {
+    "title": "reference",
+    "type": "string",
+    "side": "middle"
+  },
+  "series": {
+    "title": "series",
+    "type": "string",
+    "side": "middle"
+  },
+  "subseries": {
+    "title": "subseries",
+    "type": "string",
+    "side": "right"
+  },
+  "type": {
+    "title": "type",
+    "type": "string",
+    "side": "right"
+  },
+  "unit": {
+    "title": "unit",
+    "type": "string",
+    "side": "right"
+  },
+  "length": {
+    "title": "length",
+    "type": "number",
+    "min": 0,
+    "max": 2000,
+    "unit": "m",
+    "side": "left"
+  },
+  "mass": {
+    "title": "mass",
+    "type": "number",
+    "min": 0,
+    "max": 100000000,
+    "units": ["kg", "t"],
+    "side": "left"
+  },
+  "max_speed": {
+    "title": "maxSpeed",
+    "type": "number",
+    "min": 0,
+    "max": 600,
+    "unit": "km/h",
+    "side": "left"
+  },
+  "startup_time": {
+    "title": "startupTime",
+    "type": "number",
+    "min": 0,
+    "unit": "s",
+    "side": "left"
+  },
+  "startup_acceleration": {
+    "title": "startupAcceleration",
+    "type": "number",
+    "min": 0,
+    "unit": "m/s²",
+    "side": "left"
+  },
+  "comfort_acceleration": {
+    "title": "comfortAcceleration",
+    "type": "number",
+    "min": 0.01,
+    "unit": "m/s²",
+    "side": "middle"
+  },
+  "inertia_coefficient": {
+    "title": "inertiaCoefficient",
+    "type": "number",
+    "min": 1,
+    "max": 2,
+    "side": "middle"
+  },
+  "gamma_value": {
+    "title": "gammaValue",
+    "type": "number",
+    "min": 0.01,
+    "max": 2,
+    "unit": "m/s²",
+    "side": "middle"
+  },
+  "loading_gauge": {
+    "title": "loadingGauge",
+    "type": "string",
+    "enum": ["G1", "G2", "GA", "GB", "GB1", "GC", "FR3.3", "FR3.3/GB/G2", "GLOTT"],
+    "side": "middle"
+  },
+  "rolling_resistance_A": {
+    "title": "rollingResistanceA",
+    "type": "number",
+    "min": 0,
+    "units": ["N", "daN", "daN/t"],
+    "side": "right"
+  },
+  "rolling_resistance_B": {
+    "title": "rollingResistanceB",
+    "type": "number",
+    "min": 0,
+    "units": ["N/(m/s)", "daN/(km/h)", "daN/(km/h)/t"],
+    "side": "right"
+  },
+  "rolling_resistance_C": {
+    "title": "rollingResistanceC",
+    "type": "number",
+    "min": 0,
+    "units": ["N/(m/s)²", "daN/(km/h)²", "daN/(km/h)²/t"],
+    "side": "right"
+  }
+}

@@ -10,7 +10,7 @@
   }
   &-form {
     overflow-y: scroll;
-    max-height: 80vh;
+    max-height: 88vh;
     > .rollingstock-header {
       @media screen and (min-width: 1024px) {
         height: 3rem;
@@ -132,44 +132,32 @@
       display: block;
     }
   }
-  &-input {
-    @media screen and (min-width: 1024px) {
-      flex-direction: row-reverse;
 
-      &-label {
-        margin-right: 0.5rem;
-      }
-      .right-side {
-        margin-left: auto;
+  &-input-container {
+    > div {
+      > div {
+        justify-content: space-between;
       }
     }
-    &-content {
-      width: 94%;
-    }
-  }
-
-  &-unselected {
-    margin: 0 auto;
-    display: none;
-    @media screen and (min-width: 767px) {
+    .invalid-feedback {
       display: block;
+      font-size: 0.7rem;
     }
   }
 
-  &-input {
-    span {
-      white-space: normal !important;
-      text-align: end;
-      line-height: 1rem;
+  &-select {
+    > label {
+      margin-bottom: 0;
+      margin-right: 0.5rem;
     }
-    @media screen and (min-width: 1024px) {
-      flex-direction: row-reverse;
-      &-label {
-        margin-right: 0.5rem;
-      }
-      .right-side {
-        margin-left: auto;
-      }
+  }
+
+  &-submit {
+    @media screen and (min-width: 767px) {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 100;
     }
   }
 
