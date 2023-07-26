@@ -30,7 +30,9 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await scenarioPage.checkInfraLoaded();
     await playwrightHomePage.page.getByTestId('scenarios-add-train-schedule-button').click();
 
-    await scenarioPage.setTrainScheduleName('TrainSchedule 1');
+    await scenarioPage.setTrainScheduleName('TrainSchedule');
+    const trainCount = '7';
+    await scenarioPage.setNumberOfTrains(trainCount);
 
     // ***************** Test Rolling Stock *****************
     const playwrightRollingstockModalPage = new PlaywrightRollingstockModalPage(
@@ -101,10 +103,11 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
 
     // ***************** Test Add Train Schedule *****************
     await scenarioPage.addTrainSchedule();
+    await scenarioPage.page.waitForSelector('.dots-loader', { state: 'hidden' });
     await scenarioPage.checkToastSNCFTitle('Train ajouté');
     await scenarioPage.returnSimulationResult();
-    await scenarioPage.checkNumberOfTrains(1);
-    await scenarioPage.getBtnByName(/TrainSchedule 1/).hover();
-    await scenarioPage.page.getByRole('button', { name: 'Supprimer' }).click();
+    await scenarioPage.checkNumberOfTrains(Number(trainCount));
+
+    // Delete all trains when the selection of multiple trains has been added
   });
 });
