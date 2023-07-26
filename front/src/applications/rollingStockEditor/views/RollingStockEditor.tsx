@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import RollingStockCard from 'common/RollingStockSelector/RollingStockCard';
 import { useSelector } from 'react-redux';
@@ -20,8 +20,7 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
   const { t } = useTranslation('rollingstock');
   const ref2scroll: React.RefObject<HTMLInputElement> = useRef<HTMLInputElement>(null);
   const rollingStockID = useSelector(getRollingStockID);
-  const [filteredRollingStockList, setFilteredRollingStockList] =
-    useState<LightRollingStock[]>(rollingStocks);
+  const [filteredRollingStockList, setFilteredRollingStockList] = useState(rollingStocks);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -37,6 +36,8 @@ export default function RollingStockEditor({ rollingStocks }: RollingStockEditor
       skip: !openedRollingStockCardId,
     }
   );
+
+  useEffect(() => setFilteredRollingStockList(rollingStocks), [rollingStocks]);
 
   const listOfRollingStocks = (
     <div className="rollingstock-editor-list pr-1">

@@ -1,21 +1,19 @@
 import React from 'react';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useTranslation } from 'react-i18next';
-import { FieldValues } from 'react-hook-form';
 import { RollingStockUsage } from 'common/api/osrdEditoastApi';
 import { groupBy } from 'lodash';
 
 type RollingStockEditorFormModalProps = {
   setAddOrEditState?: React.Dispatch<React.SetStateAction<boolean>>;
-  data?: FieldValues;
-  request?: (data: FieldValues) => void;
+  // request can be a POST, PUT, PATCH or DELETE request
+  request?: () => void;
   mainText: string;
   errorObject?: RollingStockUsage['usage'][];
   buttonText?: string;
 };
 
 const RollingStockEditorFormModal = ({
-  data,
   request,
   setAddOrEditState,
   mainText,
@@ -63,7 +61,7 @@ const RollingStockEditorFormModal = ({
             type="button"
             className="btn btn-sm btn-primary ml-3"
             onClick={() => {
-              if (request) request(data as FieldValues);
+              if (request) request();
               if (!request && setAddOrEditState) {
                 setAddOrEditState(false);
               }
