@@ -167,3 +167,42 @@ def west_to_south_east_simulation(
         },
     )
     yield response.json()["ids"]
+
+
+@pytest.fixture
+def west_to_south_east_simulations(
+    small_scenario: Scenario,
+    west_to_south_east_path: TrainPath,
+    fast_rolling_stock: int,
+) -> List[int]:
+    base = {
+        "train_name": "foo",
+        "labels": [],
+        "allowances": [],
+        "departure_time": 0,
+        "initial_speed": 0,
+        "rolling_stock": fast_rolling_stock,
+        "speed_limit_category": "foo",
+    }
+    response = requests.post(
+        f"{API_URL}train_schedule/standalone_simulation/",
+        json={
+            "timetable": small_scenario.timetable,
+            "path": west_to_south_east_path.id,
+            "schedules": [
+                {
+                    **base,
+                    "departure_time": 0,
+                },
+                {
+                    **base,
+                    "departure_time": 3600,
+                },
+                {
+                    **base,
+                    "departure_time": 5200,
+                },
+            ],
+        },
+    )
+    yield response.json()["ids"]

@@ -43,3 +43,14 @@ def test_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[
     simulation_report = response.json()
     assert "base" in simulation_report
     assert "eco" in simulation_report
+
+
+def test_api_bulk_delete(small_scenario, west_to_south_east_simulations: Iterable[int]):
+    ids = west_to_south_east_simulations[0:2]
+    schedules = requests.get(f"{API_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
+    old_len = len(schedules)
+    r = requests.delete(f"{API_URL}train_schedule/delete/", json={"ids": ids})
+    if r.status_code // 100 != 2:
+        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(ids)}")
+    schedules = requests.get(f"{API_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
+    assert len(schedules) == old_len - 2
