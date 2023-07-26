@@ -4176,6 +4176,28 @@ paths:
       summary: Retrieve all conflicts for a specific timetable
       tags:
       - timetable
+  /train_schedule/delete/:
+    delete:
+      tags:
+        - train_schedule
+      summary: Delete multiple train schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        204:
+          description: No content
+
   /train_schedule/results/:
     get:
       parameters:
@@ -4341,4 +4363,3 @@ tags:
   name: electrical_profiles
 - description: Train Schedule
   name: train_schedule
-
