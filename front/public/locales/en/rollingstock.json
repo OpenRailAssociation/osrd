@@ -76,7 +76,7 @@
   "series": "Series",
   "source": "Source",
   "speed": "Velocity (km/h)",
-  "startTime": "Starting time",
+  "startTime": "Startup time",
   "startupAcceleration": "Startup acceleration (m/s²)",
   "startupTime": "Startup duration (s)",
   "subseries": "Subseries",
