@@ -586,6 +586,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TrainSchedule"
+  /train_schedule/delete/:
+    delete:
+      tags:
+        - train_schedule
+      summary: Delete multiple train schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ids
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        204:
+          description: No content
   /train_schedule/{id}/result/:
     get:
       tags:
