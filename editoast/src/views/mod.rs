@@ -83,7 +83,7 @@ impl OpenApiRoot {
         let generated = openapi
             .to_json()
             .expect("the openapi should generate properly");
-        OpenApiMerger::new(manual, generated).replace("paths/train_schedule/delete").replace("components/schemas/BatchDeletionRequest").finish()
+        OpenApiMerger::new(manual, generated).replace("paths/train_schedule/delete").create_path("components/schemas/BatchDeletionRequest").finish()
     }
 }
 

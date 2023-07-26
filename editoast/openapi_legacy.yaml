@@ -1945,6 +1945,7 @@ paths:
       responses:
         200:
           description: The train schedule was updated successfully
+  /train_schedule/delete/: {}
 
   /train_schedule/{id}/result/:
     get:
