@@ -122,6 +122,7 @@ class RollingStock(models.Model):
         data.pop("_state")
         data.pop("image")
         data.pop("id")
+        data.pop("version")
         return RollingStockSchema(**data)
 
     @staticmethod
