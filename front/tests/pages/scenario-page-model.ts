@@ -39,6 +39,8 @@ class PlaywrightScenarioPage {
 
   readonly getInfraLoadState: Locator;
 
+  readonly getTrainCountInput: Locator;
+
   readonly getAddTrainScheduleBtn: Locator;
 
   readonly getTrainScheduleNameInput: Locator;
@@ -99,6 +101,7 @@ class PlaywrightScenarioPage {
     this.getScenarioInfraName = page.locator('.scenario-infra-name');
     this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.getInfraLoadState = page.locator('.infra-loading-state');
+    this.getTrainCountInput = page.locator('#osrdconf-traincount');
     this.getAddTrainScheduleBtn = page.getByTestId('add-train-schedules');
     this.getTrainScheduleNameInput = page.locator('#trainSchedule-name');
     this.getTrainTimetable = page
@@ -169,6 +172,15 @@ class PlaywrightScenarioPage {
   async checkInfraLoaded() {
     await this.page.waitForSelector('.cached');
     await expect(this.getInfraLoadState).toHaveClass(/cached/);
+  }
+
+  async setNumberOfTrains(digits: string) {
+    const splittedDigit = digits.split('');
+    await this.getTrainCountInput.focus();
+    await this.page.keyboard.press('Backspace');
+    splittedDigit.forEach(async (digit) => {
+      await this.page.keyboard.press(digit);
+    });
   }
 
   async addTrainSchedule() {

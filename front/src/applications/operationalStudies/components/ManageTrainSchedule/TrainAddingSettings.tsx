@@ -43,7 +43,7 @@ export default function TrainAddingSettings() {
               <small className="text-nowrap">{t('trainScheduleStep')}</small>
             </>
           }
-          id="osrdconf-traincount"
+          id="osrdconf-trainstep"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrainStep(+e.target.value)}
           value={trainStep}
           noMargin
