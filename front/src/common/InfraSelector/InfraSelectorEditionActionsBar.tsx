@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaCopy, FaDownload, FaLock, FaLockOpen, FaPencilAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { post, get, put } from 'common/requests';
+import { post, get } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -28,6 +28,7 @@ export default function ActionsBar2({
   const dispatch = useDispatch();
 
   const [cloneInfra] = osrdEditoastApi.usePostInfraByIdCloneMutation();
+  const [updateInfra] = osrdEditoastApi.usePutInfraByIdMutation();
 
   async function handleLockedState(action: string) {
     if (!isWaiting) {
@@ -79,11 +80,18 @@ export default function ActionsBar2({
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await put(`${INFRA_URL}${infra.id}/`, { name: inputValue });
-        // getInfrasList();
+        await updateInfra({ id: infra.id, body: { name: inputValue } });
         setIsFocused(undefined);
-        setIsWaiting(false);
       } catch (e) {
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: e.message,
+            })
+          );
+        }
+      } finally {
         setIsWaiting(false);
       }
     }
