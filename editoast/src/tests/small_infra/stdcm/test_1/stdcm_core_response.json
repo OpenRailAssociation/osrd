@@ -181,6 +181,7 @@
                     }
                 ],
                 "spacing_requirements": [],
+                "routing_requirements": [],
                 "speeds": [
                     {
                         "position": 0.0,

@@ -4,8 +4,7 @@ use crate::core::conflicts::{ConflicDetectionRequest, TrainRequirement};
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::Result;
 use crate::models::{
-    Retrieve, SimulationOutput, SpacingRequirement, Timetable, TimetableWithSchedulesDetails,
-    TrainSchedule,
+    Retrieve, SimulationOutput, Timetable, TimetableWithSchedulesDetails, TrainSchedule,
 };
 use crate::views::train_schedule::TrainScheduleError;
 use crate::DbPool;
@@ -49,6 +48,7 @@ async fn get(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ConflictType {
     Spacing,
+    Routing,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -121,16 +121,29 @@ async fn get_conflicts(
         let spacing_requirements = result_train
             .spacing_requirements
             .into_iter()
-            .map(|sr| SpacingRequirement {
-                zone: sr.zone,
-                begin_time: sr.begin_time + schedule.departure_time,
-                end_time: sr.end_time + schedule.departure_time,
+            .map(|mut sr| {
+                sr.begin_time += schedule.departure_time;
+                sr.end_time += schedule.departure_time;
+                sr
+            })
+            .collect();
+
+        let routing_requirements = result_train
+            .routing_requirements
+            .into_iter()
+            .map(|mut rr| {
+                rr.begin_time += schedule.departure_time;
+                for zone in rr.zones.iter_mut() {
+                    zone.end_time += schedule.departure_time;
+                }
+                rr
             })
             .collect();
 
         trains_requirements.push(TrainRequirement {
             train_id: schedule.id.expect("TrainSchedule should have an id"),
             spacing_requirements,
+            routing_requirements,
         })
     }
 
