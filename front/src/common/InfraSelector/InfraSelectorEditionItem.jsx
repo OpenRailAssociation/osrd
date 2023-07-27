@@ -27,7 +27,7 @@ export default function InfraSelectorEditionItem(props) {
         <InfraSelectorEditionActionsBarDelete
           setRunningDelete={setRunningDelete}
           infra={infra}
-          getInfrasList={getInfrasList}
+          // getInfrasList={getInfrasList}
         />
       ) : null}
       {isFocused === infra.id ? null : (
@@ -81,7 +81,7 @@ export default function InfraSelectorEditionItem(props) {
           infra={infra}
           isFocused={isFocused}
           setIsFocused={setIsFocused}
-          getInfrasList={getInfrasList}
+          // getInfrasList={getInfrasList}
           inputValue={value}
         />
       </div>
@@ -100,5 +100,5 @@ InfraSelectorEditionItem.propTypes = {
   setIsFocused: PropTypes.func.isRequired,
   runningDelete: PropTypes.number,
   setRunningDelete: PropTypes.func.isRequired,
-  getInfrasList: PropTypes.func.isRequired,
+  // getInfrasList: PropTypes.func.isRequired,
 };
