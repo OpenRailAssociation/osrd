@@ -1,43 +1,51 @@
 import React, { useState } from 'react';
 import { FaCopy, FaDownload, FaLock, FaLockOpen, FaPencilAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { post, get } from 'common/requests';
+import { get } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import { INFRA_URL } from './Consts';
+import { INFRA_URL, InfraLockState } from './consts';
 
 type ActionBarProps = {
   infra: Infra;
   isFocused?: number;
   setIsFocused: (focus?: number) => void;
-  //   getInfrasList: () => void;
   inputValue: string;
 };
 
-export default function ActionsBar2({
-  infra,
-  isFocused,
-  setIsFocused,
-  inputValue,
-}: ActionBarProps) {
+export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue }: ActionBarProps) {
   const { t } = useTranslation('infraManagement');
   const [isWaiting, setIsWaiting] = useState(false);
   const dispatch = useDispatch();
 
+  const [lockInfra] = osrdEditoastApi.usePostInfraByIdLockMutation();
+  const [unlockInfra] = osrdEditoastApi.usePostInfraByIdUnlockMutation();
   const [cloneInfra] = osrdEditoastApi.usePostInfraByIdCloneMutation();
   const [updateInfra] = osrdEditoastApi.usePutInfraByIdMutation();
 
-  async function handleLockedState(action: string) {
+  async function handleLockedState(action: InfraLockState) {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await post(`${INFRA_URL}${infra.id}/${action}/`, {});
-        // getInfrasList();
-        setIsWaiting(false);
+        if (action === InfraLockState.LOCK) {
+          await lockInfra({ id: infra.id });
+        }
+        if (action === InfraLockState.UNLOCK) {
+          await unlockInfra({ id: infra.id });
+        }
       } catch (e) {
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: e.message,
+            })
+          );
+        }
+      } finally {
         setIsWaiting(false);
       }
     }
@@ -137,7 +145,7 @@ export default function ActionsBar2({
           className="infraslist-item-action unlock"
           type="button"
           title={t('infraManagement:actions.unlock')}
-          onClick={() => handleLockedState('unlock')}
+          onClick={() => handleLockedState(InfraLockState.UNLOCK)}
         >
           <FaLockOpen />
         </button>
@@ -146,7 +154,7 @@ export default function ActionsBar2({
           className="infraslist-item-action lock"
           type="button"
           title={t('infraManagement:actions.lock')}
-          onClick={() => handleLockedState('lock')}
+          onClick={() => handleLockedState(InfraLockState.LOCK)}
         >
           <FaLock />
         </button>
