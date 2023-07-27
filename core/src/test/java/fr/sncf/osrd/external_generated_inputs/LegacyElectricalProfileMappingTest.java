@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class ElectricalProfileMappingTest {
+public class LegacyElectricalProfileMappingTest {
 
     /**
      * Check that a profile map is coherent
      */
-    public static void verifyProfileMap(ElectricalProfileMapping profileMap) {
+    public static void verifyProfileMap(LegacyElectricalProfileMapping profileMap) {
         assertNotEquals(0, profileMap.mapping.size());
         for (var byTrack : profileMap.mapping.entrySet()) {
             assertNotEquals(0, byTrack.getValue().size());
@@ -44,7 +44,7 @@ public class ElectricalProfileMappingTest {
         var profileSet = Helpers.getExampleElectricalProfiles("small_infra/external_generated_inputs.json");
         assert profileSet.levels.size() > 0;
 
-        var profileMap = new ElectricalProfileMapping();
+        var profileMap = new LegacyElectricalProfileMapping();
         profileMap.parseRJS(profileSet);
 
         verifyProfileMap(profileMap);
@@ -55,7 +55,7 @@ public class ElectricalProfileMappingTest {
     public void testGetProfileByPathSingleTrackInfra() {
         var rjsElectricalProfiles = getRjsElectricalProfileSet();
 
-        var profileMap = new ElectricalProfileMapping();
+        var profileMap = new LegacyElectricalProfileMapping();
         profileMap.parseRJS(rjsElectricalProfiles);
 
         var rjsInfra = makeSingleTrackRJSInfra();
@@ -81,7 +81,7 @@ public class ElectricalProfileMappingTest {
     public void testGetProfileByPathSmallInfra() throws IOException, URISyntaxException {
         var rjsElectricalProfiles = getExampleElectricalProfiles("small_infra/external_generated_inputs.json");
 
-        var profileMap = new ElectricalProfileMapping();
+        var profileMap = new LegacyElectricalProfileMapping();
         profileMap.parseRJS(rjsElectricalProfiles);
 
         var rjsInfra = getExampleInfra("small_infra/infra.json");

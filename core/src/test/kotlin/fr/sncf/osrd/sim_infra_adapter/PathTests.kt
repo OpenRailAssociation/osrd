@@ -9,13 +9,11 @@ import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
-import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.train.TestTrains.MAX_SPEED
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.pathFromTracks
 import fr.sncf.osrd.utils.units.Speed.Companion.fromMetersPerSecond
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.Assertions.assertThat
@@ -349,17 +347,5 @@ class PathTests {
             ys.add(p.y)
         }
         return LineString.make(xs.toDoubleArray(), ys.toDoubleArray())
-    }
-
-    /** Build a path from track ids */
-    private fun pathFromTracks(infra: LocationInfra, trackIds: List<String>,
-                               dir: Direction, start: Distance, end: Distance
-    ): Path {
-        val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
-        trackIds
-            .map { id ->  infra.getTrackSectionFromName(id)!! }
-            .flatMap { track -> infra.getTrackSectionChunks(track).dirIter(dir) }
-            .forEach { dirChunk -> chunkList.add(dirChunk) }
-        return buildPathFrom(infra, chunkList, start, end)
     }
 }

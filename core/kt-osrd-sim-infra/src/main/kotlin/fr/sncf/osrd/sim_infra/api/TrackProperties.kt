@@ -2,11 +2,10 @@ package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.impl.DeadSection
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Speed
 
 
@@ -38,6 +37,9 @@ interface TrackProperties {
     fun getTrackChunkDeadSection(trackChunk: DirTrackChunkId): DistanceRangeMap<DeadSection>
     fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
+    fun getTrackChunkElectricalProfile(
+        trackChunk: TrackChunkId, mapping: HashMap<String, DistanceRangeMap<String>>
+    ): DistanceRangeMap<String>
 
     // Operational points
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>

@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api;
 
 import com.squareup.moshi.JsonDataException;
-import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
+import fr.sncf.osrd.external_generated_inputs.LegacyElectricalProfileMapping;
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class ElectricalProfileSetManager extends APIClient {
     /**
      * Return the electrical profile set corresponding to the given id, in a ready-to-use format.
      */
-    public ElectricalProfileMapping getProfileMap(String profileSetId) {
+    public LegacyElectricalProfileMapping getProfileMap(String profileSetId) {
         if (profileSetId == null) {
             return null;
         }
@@ -50,7 +50,7 @@ public class ElectricalProfileSetManager extends APIClient {
                     if (rjsProfileSet == null)
                         throw new JsonDataException("Empty electrical profile set JSON");
                     logger.info("Electrical profile set {} fetched, parsing it", profileSetId);
-                    var mapping = new ElectricalProfileMapping();
+                    var mapping = new LegacyElectricalProfileMapping();
                     mapping.parseRJS(rjsProfileSet);
                     logger.info("Electrical profile set {} parsed", profileSetId);
                     cacheEntry.mapping = mapping;
@@ -75,9 +75,9 @@ public class ElectricalProfileSetManager extends APIClient {
 
     private static class CacheEntry {
         private CacheEntryStatus status;
-        private ElectricalProfileMapping mapping;
+        private LegacyElectricalProfileMapping mapping;
 
-        public CacheEntry(ElectricalProfileMapping mapping) {
+        public CacheEntry(LegacyElectricalProfileMapping mapping) {
             this.mapping = mapping;
             this.status = CacheEntryStatus.INITIALIZING;
         }

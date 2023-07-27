@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArrayList
+import java.util.function.BiFunction
 import kotlin.math.min
 
 data class DistanceRangeMapImpl<T>(
@@ -75,6 +76,32 @@ data class DistanceRangeMapImpl<T>(
                 return entry.value
         }
         return null
+    }
+
+    override fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T> {
+        assert(lower < upper)
+        val res = DistanceRangeMapImpl<T>()
+        for (entry in this) {
+            res.put(entry.lower, entry.upper, entry.value)
+        }
+        res.truncate(lower, upper)
+        return res
+    }
+
+    override fun <U> updateMap(update: DistanceRangeMap<U>, updateFunction: BiFunction<T, U, T>): DistanceRangeMap<T> {
+        val res = DistanceRangeMapImpl<T>()
+        for (entry in this) {
+            res.put(entry.lower, entry.upper, entry.value)
+        }
+        for ((updateLower, updateUpper, updateValue) in update) {
+            for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
+                res.put(
+                    subMapLower, subMapUpper,
+                    updateFunction.apply(subMapValue, updateValue)
+                )
+            }
+        }
+        return res
     }
 
     /** Merges adjacent values, removes 0-length ranges */

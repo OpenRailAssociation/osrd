@@ -14,7 +14,7 @@ import java.util.List;
  * The electrical profiles model the power loss along catenaries depending on the position and the power class of
  * the rolling stock used
  */
-public class ElectricalProfileMapping {
+public class LegacyElectricalProfileMapping {
     /**
      * Internal representation: {"power class": {"track section": {"range": "electrical profile value"}}}
      */
@@ -25,7 +25,6 @@ public class ElectricalProfileMapping {
      */
     public void parseRJS(RJSElectricalProfileSet rjsProfileSet) {
         assert mapping.isEmpty();
-
         for (var rjsProfile : rjsProfileSet.levels) {
             var trackMapping = mapping.computeIfAbsent(rjsProfile.powerClass, k -> new HashMap<>());
             for (var trackRange : rjsProfile.trackRanges) {

@@ -6,7 +6,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
+import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath
 import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -100,7 +100,7 @@ fun run(
     val routeOccupancies = routeOccupancies(zoneOccupationChangeEvents, rawInfra, envelopeWithStops)
 
     // Compute energy consumed
-    val envelopePath = EnvelopeTrainPath.from(trainPath)
+    val envelopePath = LegacyEnvelopeTrainPath.from(trainPath)
     val mechanicalEnergyConsumed =
         EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock)
 

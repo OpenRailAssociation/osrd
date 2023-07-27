@@ -19,7 +19,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
@@ -47,7 +47,7 @@ public class STDCMSimulations {
             tracks.addAll(route.getInfraRoute().getTrackRanges(offsetFirstRoute, routeLength));
             offsetFirstRoute = 0;
         }
-        var envelopePath = EnvelopeTrainPath.from(tracks);
+        var envelopePath = LegacyEnvelopeTrainPath.from(tracks);
         return EnvelopeSimContextBuilder.build(rollingStock, envelopePath, timeStep, comfort);
     }
 
