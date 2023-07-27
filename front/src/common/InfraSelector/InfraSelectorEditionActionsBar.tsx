@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { FaCopy, FaDownload, FaLock, FaLockOpen, FaPencilAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { get } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import { INFRA_URL, InfraLockState } from './consts';
+import { InfraLockState } from './consts';
 
 type ActionBarProps = {
   infra: Infra;
@@ -23,6 +22,7 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
 
   const [lockInfra] = osrdEditoastApi.usePostInfraByIdLockMutation();
   const [unlockInfra] = osrdEditoastApi.usePostInfraByIdUnlockMutation();
+  const [getRailjson] = osrdEditoastApi.useLazyGetInfraByIdRailjsonQuery();
   const [cloneInfra] = osrdEditoastApi.usePostInfraByIdCloneMutation();
   const [updateInfra] = osrdEditoastApi.usePutInfraByIdMutation();
 
@@ -55,10 +55,18 @@ export default function ActionsBar({ infra, isFocused, setIsFocused, inputValue 
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        const railjson = await get(`${INFRA_URL}${infra.id}/railjson/`);
+        const railjson = await getRailjson({ id: infra.id });
         fileDownload(JSON.stringify(railjson), `${infra.name}.id${infra.id}.railjson.json`);
-        setIsWaiting(false);
       } catch (e) {
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: e.message,
+            })
+          );
+        }
+      } finally {
         setIsWaiting(false);
       }
     }
