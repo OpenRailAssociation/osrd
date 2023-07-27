@@ -241,6 +241,22 @@ pub struct SpacingRequirement {
     pub end_time: f64,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RoutingZoneRequirement {
+    pub zone: String,
+    pub entry_detector: String,
+    pub exit_detector: String,
+    pub switches: HashMap<String, String>,
+    pub end_time: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RoutingRequirement {
+    pub route: String,
+    pub begin_time: f64,
+    pub zones: Vec<RoutingZoneRequirement>,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Derivative)]
 #[derivative(Default)]
 pub struct ResultTrain {
@@ -252,6 +268,7 @@ pub struct ResultTrain {
     pub signal_sightings: Vec<SignalSighting>,
     pub zone_updates: Vec<ZoneUpdate>,
     pub spacing_requirements: Vec<SpacingRequirement>,
+    pub routing_requirements: Vec<RoutingRequirement>,
 }
 
 #[derive(

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{AsCoreRequest, Json};
-use crate::models::SpacingRequirement;
+use crate::models::{RoutingRequirement, SpacingRequirement};
 use crate::views::timetable::ConflictType;
 
 #[derive(Debug, Serialize)]
@@ -13,6 +13,7 @@ pub struct ConflicDetectionRequest {
 pub struct TrainRequirement {
     pub train_id: i64,
     pub spacing_requirements: Vec<SpacingRequirement>,
+    pub routing_requirements: Vec<RoutingRequirement>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -33,8 +33,9 @@ pub use timetable::{
 };
 pub use train_schedule::{
     Allowance, FullResultStops, ResultPosition, ResultSpeed, ResultStops, ResultTrain,
-    ScheduledPoint, SignalSighting, SimulationOutput, SimulationOutputChangeset,
-    SpacingRequirement, TrainSchedule, TrainScheduleChangeset, ZoneUpdate,
+    RoutingRequirement, ScheduledPoint, SignalSighting, SimulationOutput,
+    SimulationOutputChangeset, SpacingRequirement, TrainSchedule, TrainScheduleChangeset,
+    ZoneUpdate,
 };
 
 pub trait Identifiable {
