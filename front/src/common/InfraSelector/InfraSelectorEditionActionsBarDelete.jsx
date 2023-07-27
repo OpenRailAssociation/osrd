@@ -13,7 +13,7 @@ export default function InfraSelectorEditionActionsBarDelete(props) {
     try {
       await deleteRequest(`${INFRA_URL}${infra.id}/`);
       setRunningDelete(undefined);
-      getInfrasList();
+      // getInfrasList();
     } catch (e) {
       /* empty */
     }
@@ -61,7 +61,7 @@ export default function InfraSelectorEditionActionsBarDelete(props) {
 }
 
 InfraSelectorEditionActionsBarDelete.propTypes = {
-  getInfrasList: PropTypes.func.isRequired,
+  // getInfrasList: PropTypes.func.isRequired,
   infra: PropTypes.object.isRequired,
   setRunningDelete: PropTypes.func.isRequired,
 };

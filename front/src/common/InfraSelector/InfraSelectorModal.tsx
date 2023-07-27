@@ -20,52 +20,37 @@ const InfraSelectorModal = ({
   onInfraChange,
   onlySelectionMode = false,
 }: InfraSelectorModalProps) => {
-  const [infrasList, setInfrasList] = useState<Infra[]>([]);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState<Infra[]>([]);
   const [editionMode, setEditionMode] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
-  const [getInfra] = osrdEditoastApi.endpoints.getInfra.useLazyQuery();
+  const { data: infrasList, isSuccess, isLoading } = osrdEditoastApi.useGetInfraQuery();
 
   const debouncedFilter = useDebounce(filter, 250);
 
   function filterInfras(infrasListLocal: Infra[]) {
     if (debouncedFilter && debouncedFilter !== '') {
-      infrasListLocal = infrasList.filter((infra) =>
+      infrasListLocal = infrasListLocal.filter((infra) =>
         infra.name.toLowerCase().includes(debouncedFilter.toLowerCase())
       );
     }
     const filteredInfrasListLocal = infrasListLocal
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name));
-
     setFilteredInfrasList(filteredInfrasListLocal);
   }
 
-  const getInfrasList = () => {
-    setIsFetching(true);
-    getInfra()
-      .unwrap()
-      .then(({ results }) => {
-        setInfrasList(results as Infra[]);
-        filterInfras(results as Infra[]);
-        setIsFetching(false);
-      })
-      .catch(() => setIsFetching(false));
-  };
-
   useEffect(() => {
-    if (infrasList) {
-      filterInfras(infrasList);
+    if (infrasList?.results) {
+      filterInfras(infrasList.results);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedFilter]);
 
   useEffect(() => {
-    getInfrasList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (isSuccess && infrasList?.results && infrasList.results.length > 0) {
+      filterInfras(infrasList.results);
+    }
+  }, [isSuccess, infrasList]);
 
   return (
     <>
@@ -101,7 +86,7 @@ const InfraSelectorModal = ({
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        {isFetching && (
+        {isLoading && (
           <div className="infra-loader-absolute">
             <Loader position="center" />
           </div>
@@ -111,7 +96,7 @@ const InfraSelectorModal = ({
             infrasList={filteredInfrasList}
             setFilter={setFilter}
             filter={filter}
-            getInfrasList={getInfrasList}
+            // getInfrasList={getInfrasList}
           />
         ) : (
           <InfraSelectorModalBodyStandard

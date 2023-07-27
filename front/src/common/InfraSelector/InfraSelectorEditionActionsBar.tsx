@@ -5,25 +5,27 @@ import { post, get, put } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useDispatch } from 'react-redux';
+import { setFailure } from 'reducers/main';
 import { INFRA_URL } from './Consts';
 
 type ActionBarProps = {
   infra: Infra;
   isFocused?: number;
   setIsFocused: (focus?: number) => void;
-  getInfrasList: () => void;
+  //   getInfrasList: () => void;
   inputValue: string;
 };
 
-export default function ActionsBar({
+export default function ActionsBar2({
   infra,
   isFocused,
   setIsFocused,
-  getInfrasList,
   inputValue,
 }: ActionBarProps) {
   const { t } = useTranslation('infraManagement');
   const [isWaiting, setIsWaiting] = useState(false);
+  const dispatch = useDispatch();
 
   const [cloneInfra] = osrdEditoastApi.usePostInfraByIdCloneMutation();
 
@@ -32,7 +34,7 @@ export default function ActionsBar({
       setIsWaiting(true);
       try {
         await post(`${INFRA_URL}${infra.id}/${action}/`, {});
-        getInfrasList();
+        // getInfrasList();
         setIsWaiting(false);
       } catch (e) {
         setIsWaiting(false);
@@ -57,14 +59,19 @@ export default function ActionsBar({
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await cloneInfra({ id: infra.id, name: `${infra.name}_copy` }).unwrap();
-        setIsWaiting(false);
+        await cloneInfra({ id: infra.id, name: `${infra.name}_copy` });
       } catch (e) {
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: e.message,
+            })
+          );
+        }
+      } finally {
         setIsWaiting(false);
       }
-      setTimeout(() => {
-        getInfrasList();
-      }, 1000);
     }
   }
 
@@ -73,7 +80,7 @@ export default function ActionsBar({
       setIsWaiting(true);
       try {
         await put(`${INFRA_URL}${infra.id}/`, { name: inputValue });
-        getInfrasList();
+        // getInfrasList();
         setIsFocused(undefined);
         setIsWaiting(false);
       } catch (e) {
