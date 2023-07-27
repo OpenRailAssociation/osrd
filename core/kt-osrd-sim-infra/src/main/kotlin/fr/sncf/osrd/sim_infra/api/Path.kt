@@ -41,9 +41,9 @@ interface Path {
     fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
     @JvmName("getLength")
     fun getLength(): Distance
-
     @JvmName("getTrackLocationAtOffset")
     fun getTrackLocationAtOffset(pathOffset: Distance): TrackLocation
+    fun getElectricalProfiles(mapping: HashMap<String, DistanceRangeMap<String>>): DistanceRangeMap<String>
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */

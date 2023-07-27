@@ -18,6 +18,7 @@ dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     implementation project(':kt-fast-collections')
     implementation project(path: ':osrd-geom')
+    implementation project(path: ':envelope-sim')
     ksp project(':kt-fast-collections-generator')
 
     api project(":kt-osrd-utils")

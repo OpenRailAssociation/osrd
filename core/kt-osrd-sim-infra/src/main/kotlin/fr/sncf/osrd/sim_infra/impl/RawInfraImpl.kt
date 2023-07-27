@@ -224,6 +224,23 @@ class RawInfraImpl(
         return res
     }
 
+    override fun getTrackChunkElectricalProfile(
+        trackChunk: TrackChunkId, mapping: HashMap<String, DistanceRangeMap<String>>
+    ): DistanceRangeMap<String> {
+        val chunkOffset = getTrackChunkOffset(trackChunk)
+        val trackId = getTrackFromChunk(trackChunk)
+        val trackName = getTrackSectionName(trackId)
+        var profilesOnChunk = distanceRangeMapOf<String>()
+        if (mapping.containsKey(trackName)) {
+            val trackProfiles = mapping[trackName]!!
+            profilesOnChunk = trackProfiles.subMap(
+                chunkOffset, chunkOffset + getTrackChunkLength(trackChunk)
+            )
+            profilesOnChunk.shiftPositions(-chunkOffset)
+        }
+        return profilesOnChunk
+    }
+
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {
         return trackChunkPool[trackChunk.value].routes.get(trackChunk.direction)
     }

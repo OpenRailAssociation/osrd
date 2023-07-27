@@ -20,7 +20,6 @@ import fr.sncf.osrd.utils.units.Speed.Companion.fromMetersPerSecond
 import fr.sncf.osrd.utils.units.meters
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.util.Map
 import kotlin.math.absoluteValue
 import kotlin.test.assertEquals
 
@@ -308,7 +307,7 @@ class PathTests {
     @Test
     fun testSmallInfraSpeedLimits() {
         val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
-        val speedSection = RJSSpeedSection("speedSection", 30.0, Map.of("trainTag", 42.42),
+        val speedSection = RJSSpeedSection("speedSection", 30.0, mapOf(Pair("trainTag", 42.42)),
             listOf(RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0)))
         rjsInfra.speedSections.add(speedSection)
         val infra = Helpers.fullInfraFromRJS(rjsInfra)

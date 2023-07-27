@@ -134,7 +134,7 @@ public class STDCMEdgeBuilder {
     /** Creates all edges that can be accessed on the given route, using all the parameters specified. */
     public Collection<STDCMEdge> makeAllEdges() {
         if (envelope == null)
-            envelope = STDCMSimulations.simulateRoute(
+            envelope = LegacySTDCMSimulations.simulateRoute(
                     route,
                     startSpeed,
                     startOffset,

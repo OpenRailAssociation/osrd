@@ -1,10 +1,33 @@
 package fr.sncf.osrd.sim_infra.impl
 
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
+import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra
+import fr.sncf.osrd.sim_infra.api.LogicalSignal
+import fr.sncf.osrd.sim_infra.api.LogicalSignalId
+import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.sim_infra.api.SignalingSystemId
+import fr.sncf.osrd.sim_infra.api.TrackChunk
+import fr.sncf.osrd.sim_infra.api.TrackChunkId
+import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.*
-import java.lang.AssertionError
+import fr.sncf.osrd.utils.indexing.DirStaticIdx
+import fr.sncf.osrd.utils.indexing.DirStaticIdxList
+import fr.sncf.osrd.utils.indexing.IdxMap
+import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxList
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxArraySet
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdxSpace
+import fr.sncf.osrd.utils.indexing.StaticPool
+import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArraySetOf
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.DistanceList
 
 class BlockDescriptor(
     val startAtBufferStop: Boolean,

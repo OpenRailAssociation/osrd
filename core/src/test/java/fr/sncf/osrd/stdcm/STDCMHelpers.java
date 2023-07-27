@@ -8,14 +8,14 @@ import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.DriverBehaviour;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
-import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
+import fr.sncf.osrd.stdcm.graph.LegacySTDCMSimulations;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
@@ -38,7 +38,7 @@ public class STDCMHelpers {
         var result = StandaloneSim.run(
                 infra,
                 trainPath,
-                EnvelopeTrainPath.from(trainPath),
+                LegacyEnvelopeTrainPath.from(trainPath),
                 List.of(new StandaloneTrainSchedule(
                         REALISTIC_FAST_TRAIN,
                         0,
@@ -119,7 +119,7 @@ public class STDCMHelpers {
         double time = 0;
         double speed = 0;
         for (var route : routes) {
-            var envelope = STDCMSimulations.simulateRoute(route, speed, 0,
+            var envelope = LegacySTDCMSimulations.simulateRoute(route, speed, 0,
                     REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
             assert envelope != null;
             time += envelope.getTotalTime();

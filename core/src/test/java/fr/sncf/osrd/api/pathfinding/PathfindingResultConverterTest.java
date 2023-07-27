@@ -1,18 +1,16 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.Helpers.getBlocksOnRoutes;
-import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePath;
-import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePathWaypoint;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.*;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.sim_infra.impl.PathImpl;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -33,7 +31,8 @@ public class PathfindingResultConverterTest {
         ));
         var ranges = new ArrayList<Pathfinding.EdgeRange<Integer>>();
         for (var block : blocks) {
-            ranges.add(new Pathfinding.EdgeRange<>(block, 0, infra.blockInfra().getBlockLength(block)));
+            ranges.add(new Pathfinding.EdgeRange<>(block, 0,
+                    infra.blockInfra().getBlockLength(block)));
         }
         var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
         var pathImpl = (PathImpl) path;

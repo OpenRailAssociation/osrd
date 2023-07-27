@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -171,7 +171,7 @@ public class TrainPathTests {
                 new TrackLocation(track, 10),
                 new TrackLocation(track, 100)
         );
-        var envelopePath = EnvelopeTrainPath.from(TrainPath.removeLocation(path.trackRangePath()));
+        var envelopePath = LegacyEnvelopeTrainPath.from(TrainPath.removeLocation(path.trackRangePath()));
         assertEquals(30, envelopePath.getAverageGrade(0, 20));
         assertEquals(0, envelopePath.getAverageGrade(20, 50));
         assertEquals(-10, envelopePath.getAverageGrade(50, 70));

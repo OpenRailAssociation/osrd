@@ -77,6 +77,10 @@ data class PathImpl(
         throw RuntimeException("The given path offset is larger than the path length")
     }
 
+    override fun getElectricalProfiles(mapping: HashMap<String, DistanceRangeMap<String>>): DistanceRangeMap<String> {
+        return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkElectricalProfile(chunkId, mapping) }
+    }
+
     private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {
         fun getDirData(dirChunkId: DirTrackChunkId): LineString {
             val data = getData(dirChunkId.value)

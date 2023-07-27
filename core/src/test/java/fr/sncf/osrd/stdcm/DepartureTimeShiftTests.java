@@ -6,7 +6,7 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
+import fr.sncf.osrd.stdcm.graph.LegacySTDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
@@ -178,7 +178,7 @@ public class DepartureTimeShiftTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
-        var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = LegacySTDCMSimulations.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2, null, null);
         assert firstRouteEnvelope != null;
         var occupancyGraph = ImmutableMultimap.of(

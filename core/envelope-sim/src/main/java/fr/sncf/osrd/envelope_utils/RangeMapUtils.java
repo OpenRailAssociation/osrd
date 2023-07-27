@@ -34,7 +34,7 @@ public class RangeMapUtils {
     }
 
     /**
-     * Return the first map updated with another, using a merge function to fuse the values of intersecting ranges
+     * Returns the first map updated with another, using a merge function to fuse the values of intersecting ranges
      */
     public static <T, U> TreeRangeMap<Double, T> updateRangeMap(RangeMap<Double, T> map, RangeMap<Double, U> update,
                                              BiFunction<T, U, T> mergeFunction) {
