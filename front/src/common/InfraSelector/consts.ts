@@ -1,0 +1,4 @@
+enum InfraLockState {
+  LOCK,
+  UNLOCK,
+}

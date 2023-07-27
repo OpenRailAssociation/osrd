@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { deleteRequest } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import Countdown from 'react-countdown';
-import { INFRA_URL } from './Consts';
+import { INFRA_URL } from './consts';
 
 export default function InfraSelectorEditionActionsBarDelete(props) {
   const { getInfrasList, setRunningDelete, infra } = props;
