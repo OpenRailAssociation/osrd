@@ -293,23 +293,28 @@ async fn clone(
             .execute(&mut conn).map_err(|err| err.into())
         });
         futures.push(Box::pin(model));
-
         if let Some(layer_table) = object.get_geometry_layer_table() {
             let layer_table = layer_table.to_string();
+            let sql = if layer_table != ObjectType::Signal.get_geometry_layer_table().unwrap() {
+                format!(
+                    "INSERT INTO {layer_table}(id, obj_id,geographic,schematic,infra_id) SELECT nextval('{layer_table}_id_seq'), obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2")
+            } else {
+                format!(
+                    "INSERT INTO {layer_table}(id, obj_id,geographic,schematic,infra_id, angle_geo, angle_sch) SELECT nextval('{layer_table}_id_seq'), obj_id,geographic,schematic,$1,angle_geo,angle_sch FROM {layer_table} WHERE infra_id=$2"
+                )
+            };
             let db_pool_ref = db_pool.clone();
             let layer = block::<_, Result<_>>(move || {
                 let mut conn = db_pool_ref.get()?;
-                sql_query(format!(
-                    "INSERT INTO {layer_table}(id, obj_id,geographic,schematic,infra_id) SELECT nextval('{layer_table}_id_seq'), obj_id,geographic,schematic,$1 FROM {layer_table} WHERE infra_id=$2"
-                ))
-                .bind::<BigInt, _>(cloned_infra.id.unwrap())
-                .bind::<BigInt, _>(infra)
-                .execute(&mut conn).map_err(|err| err.into())
+                sql_query(sql)
+                    .bind::<BigInt, _>(cloned_infra.id.unwrap())
+                    .bind::<BigInt, _>(infra)
+                    .execute(&mut conn)
+                    .map_err(|err| err.into())
             });
             futures.push(Box::pin(layer));
         }
     }
-
     let res = join_all(futures).await;
     let res: Vec<_> = res.into_iter().collect::<StdResult<_, _>>().unwrap();
     res.into_iter().collect::<Result<Vec<usize>>>()?;
