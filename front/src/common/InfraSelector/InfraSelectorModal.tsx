@@ -96,7 +96,6 @@ const InfraSelectorModal = ({
             infrasList={filteredInfrasList}
             setFilter={setFilter}
             filter={filter}
-            // getInfrasList={getInfrasList}
           />
         ) : (
           <InfraSelectorModalBodyStandard
