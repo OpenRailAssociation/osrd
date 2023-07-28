@@ -2,6 +2,7 @@
   "actions": {
     "add": "Add",
     "delete": "Remove",
+    "merge": "Merge into the next segment",
     "reset": "Reset",
     "split": "Split",
     "translate": "Translate",

@@ -3,6 +3,7 @@ import { ReactI18NextChild, useTranslation } from 'react-i18next';
 import { IoIosAdd } from 'react-icons/io';
 import { TbArrowsHorizontal, TbScissors } from 'react-icons/tb';
 import { BsFillTrashFill } from 'react-icons/bs';
+import { BiArrowFromLeft } from 'react-icons/bi';
 import { INTERVALS_EDITOR_TOOLS, IntervalsEditorTool, IntervalsEditorToolsConfig } from './types';
 
 const ToolButton = ({
@@ -69,6 +70,13 @@ const ToolButtons = ({ selectedTool, toolsConfig, toggleSelectedTool }: ToolButt
             toggleSelectedTool={toggleSelectedTool}
           />
         )}
+        <ToolButton
+          selectedTool={selectedTool}
+          tool={INTERVALS_EDITOR_TOOLS.MERGE_TOOL}
+          title={t('actions.merge')}
+          icon={<BiArrowFromLeft />}
+          toggleSelectedTool={toggleSelectedTool}
+        />
         {toolsConfig.deleteTool && (
           <ToolButton
             selectedTool={selectedTool}

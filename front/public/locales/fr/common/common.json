@@ -2,8 +2,9 @@
   "actions": {
     "add": "Ajouter",
     "delete": "Supprimer",
+    "merge": "Fusionner avec le segment suivant",
     "reset": "Réinitialiser",
-    "split": "Couper en deux",
+    "split": "Diviser",
     "translate": "Translater",
     "zoom-in": "Agrandir",
     "Zoom-out": "Réduire"
