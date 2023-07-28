@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import List
 
 from railjson_generator.schema.simulation.train_schedule import TrainScheduleGroup
-from railjson_generator.schema.simulation.train_succession_table import TST
 
 ROLLING_STOCKS = {}
 for path in Path(__file__).parents[2].joinpath("examples/rolling_stocks").iterdir():
@@ -16,14 +15,12 @@ for path in Path(__file__).parents[2].joinpath("examples/rolling_stocks").iterdi
 @dataclass
 class Simulation:
     train_schedule_groups: List[TrainScheduleGroup] = field(default_factory=list)
-    train_succession_tables: List[TST] = field(default_factory=list)
     time_step: float = field(default=2.0)
 
     def format(self):
         rs_names = {sched.rolling_stock for group in self.train_schedule_groups for sched in group.schedules}
         return {
             "train_schedule_groups": [group.format() for group in self.train_schedule_groups],
-            "train_succession_tables": [tst.format() for tst in self.train_succession_tables],
             "rolling_stocks": [ROLLING_STOCKS[name] for name in rs_names],
             "time_step": self.time_step,
         }

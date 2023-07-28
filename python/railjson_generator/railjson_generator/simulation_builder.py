@@ -2,14 +2,12 @@ from dataclasses import dataclass, field
 from typing import List, Union
 
 from railjson_generator.schema.infra.direction import Direction
-from railjson_generator.schema.infra.switch import Switch
 from railjson_generator.schema.location import DirectedLocation, Location
 from railjson_generator.schema.simulation.simulation import Simulation
 from railjson_generator.schema.simulation.train_schedule import (
     TrainSchedule,
     TrainScheduleGroup,
 )
-from railjson_generator.schema.simulation.train_succession_table import TST
 
 
 @dataclass
@@ -36,11 +34,6 @@ class SimulationBuilder:
         train_schedule_group = TrainScheduleGroup(train_schedules, locations)
         self.simulation.train_schedule_groups.append(train_schedule_group)
         return train_schedule_group
-
-    def add_tst(self, switch: Switch, *train_order):
-        tst = TST(switch, train_order)
-        self.simulation.train_succession_tables.append(tst)
-        return tst
 
     def build(self) -> Simulation:
         return self.simulation

@@ -40,7 +40,6 @@
 
 - `__init__(self, infra) -> SimulationBuilder`: Instantiates a simulation builder.
 - `add_train_schedule(self, *locations, label="train.X", rolling_stock="fast_rolling_stock", departure_time=0, initial_speed=0, stops=[]) -> TrainSchedule`: Add a new train schedule, generate path given positions.
-- `add_tst(self, switch, *train_order) -> TST`: Set a train order for the given switch.
 - `build(self) -> Simulation`: Build the simulation configuration.
 
 ### Train Schedule

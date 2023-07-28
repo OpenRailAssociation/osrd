@@ -643,12 +643,6 @@ train_2 = builder.add_train_schedule(
     stops=[Stop(location=loc, duration=60) for loc in stop_locations],
 )
 
-# Add train succession tables
-builder.add_tst(pa2, train_0, train_2)
-builder.add_tst(pc0, train_0, train_2)
-builder.add_tst(pc2, train_0, train_2)
-builder.add_tst(ph0, train_1, train_2)
-
 # Build simulation
 sim = builder.build()
 

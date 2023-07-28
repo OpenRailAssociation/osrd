@@ -78,10 +78,6 @@ second_train = builder.add_train_schedule(
     label="Second",
 )
 
-# Add train succession tables
-for switch in infra.switches:
-    builder.add_tst(switch, first_train, second_train)
-
 # Build simulation
 sim = builder.build()
 
