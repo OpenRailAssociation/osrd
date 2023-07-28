@@ -10,15 +10,15 @@ import {
 } from 'reducers/osrdsimulation/types';
 import { ElectrificationRange, PowerRestrictionRangeItem } from 'common/api/osrdEditoastApi';
 
-interface IAreaBlock {
+export interface AreaBlock {
   position: number;
   value0: number;
   value1: number[];
 }
 
 export interface GevPreparedata {
-  areaBlock: IAreaBlock[];
-  areaSlopesHistogram: IAreaBlock[];
+  areaBlock: AreaBlock[];
+  areaSlopesHistogram: AreaBlock[];
   curvesHistogram: RadiusPosition[];
   eco_speed: PositionSpeedTime[];
   electrificationRanges: ElectrificationRange[];
@@ -30,7 +30,7 @@ export interface GevPreparedata {
   vmax: SpeedPosition[];
 }
 
-function buildAreaBlocks(speeds: PositionSpeedTime[]): IAreaBlock[] {
+function buildAreaBlocks(speeds: PositionSpeedTime[]): AreaBlock[] {
   return speeds.map((step) => ({
     position: step.position,
     value0: step.speed,
@@ -41,7 +41,7 @@ function buildAreaBlocks(speeds: PositionSpeedTime[]): IAreaBlock[] {
 function buildAreaSlopesHistograms(
   slopesHistogram: GradientPosition[],
   zeroLineSlope: number
-): IAreaBlock[] {
+): AreaBlock[] {
   return slopesHistogram.map((step) => ({
     position: step.position,
     value0: step.gradient,

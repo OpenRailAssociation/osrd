@@ -1,4 +1,6 @@
-const drawGuideLines = (chart) => {
+import { Chart } from 'reducers/osrdsimulation/types';
+
+const drawGuideLines = (chart: Chart) => {
   chart.svg.selectAll('.guideLines').remove();
 
   // dashed lineguides
