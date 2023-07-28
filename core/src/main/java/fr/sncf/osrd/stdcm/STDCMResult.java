@@ -2,8 +2,7 @@ package fr.sncf.osrd.stdcm;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.List;
@@ -12,9 +11,9 @@ import java.util.List;
  * It is made of a physical path part and envelope, as well as different representations
  * of the same data that can be reused in later steps. */
 public record STDCMResult(
-        Pathfinding.Result<SignalingRoute> routes,
+        Pathfinding.Result<Integer> blocks,
         Envelope envelope,
-        TrainPath trainPath,
+        PathProperties trainPath,
         PhysicsPath physicsPath,
         double departureTime,
         List<TrainStop> stopResults

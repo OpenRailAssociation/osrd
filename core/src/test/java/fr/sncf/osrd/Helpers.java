@@ -3,6 +3,7 @@ package fr.sncf.osrd;
 import static fr.sncf.osrd.api.SignalingSimulatorKt.makeSignalingSimulator;
 import static fr.sncf.osrd.sim_infra.utils.BlockRecoveryKt.recoverBlocks;
 import static fr.sncf.osrd.sim_infra.utils.BlockRecoveryKt.toList;
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 
 import com.squareup.moshi.JsonAdapter;
 import fr.sncf.osrd.api.FullInfra;
@@ -14,9 +15,17 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
+import fr.sncf.osrd.sim_infra.api.PathPropertiesKt;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.sim_infra.api.Route;
 import fr.sncf.osrd.sim_infra.api.SignalingSystem;
+import fr.sncf.osrd.sim_infra.api.TrackChunk;
+import fr.sncf.osrd.sim_infra.api.TrackLocation;
+import fr.sncf.osrd.sim_infra.impl.PathPropertiesImplKt;
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement;
+import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList;
 import fr.sncf.osrd.utils.indexing.StaticIdxList;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
@@ -140,5 +149,39 @@ public class Helpers {
         for (int i = 0; i < infra.signalingSimulator().getSigModuleManager().getSignalingSystems(); i++)
             res.add(i);
         return res;
+    }
+
+    /** Converts a route + offset into a block location. */
+    public static Pathfinding.EdgeLocation<Integer> convertRouteLocation(
+            FullInfra infra,
+            String routeName,
+            long offset
+    ) {
+        var blocks = getBlocksOnRoutes(infra, List.of(routeName));
+        for (var block : blocks) {
+            var blockLength = infra.blockInfra().getBlockLength(block);
+            if (offset <= blockLength)
+                return new Pathfinding.EdgeLocation<>(block, offset);
+            offset -= blockLength;
+        }
+        throw new RuntimeException("Couldn't find route location");
+    }
+
+    /** Creates a path from a list of route names and start/end locations */
+    public static PathProperties pathFromRoutes(
+            RawSignalingInfra infra,
+            List<String> routeNames,
+            TrackLocation start,
+            TrackLocation end
+    ) {
+        var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
+        for (var name : routeNames) {
+            var routeId = infra.getRouteFromName(name);
+            for (var chunk : toIntList(infra.getChunksOnRoute(routeId)))
+                chunks.add(chunk);
+        }
+        long startOffset = PathPropertiesImplKt.getOffsetOfTrackLocationOnChunksOrThrow(infra, start, chunks);
+        long endOffset = PathPropertiesImplKt.getOffsetOfTrackLocationOnChunksOrThrow(infra, end, chunks);
+        return PathPropertiesKt.buildPathPropertiesFrom(infra, chunks, startOffset, endOffset);
     }
 }

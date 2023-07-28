@@ -1,19 +1,16 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.Helpers.getBlocksOnRoutes;
-import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePath;
-import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.makePathWaypoint;
+import static fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.*;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.sim_infra.impl.PathPropertiesImpl;
+import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
@@ -33,9 +30,10 @@ public class PathfindingResultConverterTest {
         ));
         var ranges = new ArrayList<Pathfinding.EdgeRange<Integer>>();
         for (var block : blocks) {
-            ranges.add(new Pathfinding.EdgeRange<>(block, 0, infra.blockInfra().getBlockLength(block)));
+            ranges.add(new Pathfinding.EdgeRange<>(block, 0,
+                    infra.blockInfra().getBlockLength(block)));
         }
-        var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
+        var path = PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), ranges);
         var pathImpl = (PathPropertiesImpl) path;
 
         var expectedLength = 10_000_000 + 1_000_000; // length of route 1 + 2
@@ -63,7 +61,7 @@ public class PathfindingResultConverterTest {
                 new Pathfinding.EdgeRange<>(blocks.get(3), 0,
                         infra.blockInfra().getBlockLength(blocks.get(3)) - 10_000)
         );
-        var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
+        var path = PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), ranges);
         var pathImpl = (PathPropertiesImpl) path;
 
         var expectedBlockLength = 1_050_000 + 10_000_000; // length of route 1 + 2
@@ -81,7 +79,7 @@ public class PathfindingResultConverterTest {
         ));
         assert blocks.size() == 1;
         var ranges = List.of(new Pathfinding.EdgeRange<>(blocks.get(0), 600_000, 800_000));
-        var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
+        var path = PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), ranges);
         var rawResult = new Pathfinding.Result<>(ranges, List.of(
                 new Pathfinding.EdgeLocation<>(ranges.get(0).edge(), 650_000)
         ));
@@ -121,7 +119,7 @@ public class PathfindingResultConverterTest {
                 new Pathfinding.EdgeLocation<>(ranges.get(0).edge(), 600_000),
                 new Pathfinding.EdgeLocation<>(ranges.get(0).edge(), 200_000)
         ));
-        var path = makePath(infra.rawInfra(), infra.blockInfra(), ranges);
+        var path = PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), ranges);
         var waypoints = makePathWaypoint(
                 path, rawResult, infra.rawInfra(), infra.blockInfra()
         );

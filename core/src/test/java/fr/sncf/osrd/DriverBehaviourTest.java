@@ -1,68 +1,31 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
-import fr.sncf.osrd.infra.InfraHelpers;
-import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
-import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
+import static fr.sncf.osrd.envelope_sim_infra.MRSP.computeMRSP;
+
+import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.train.TestTrains;
-import org.jetbrains.annotations.NotNull;
+import fr.sncf.osrd.utils.DummyInfra;
+import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import java.util.HashMap;
 import java.util.List;
 
 public class DriverBehaviourTest {
     @Test
     public void mrspWithDriverBehaviour() {
-        List<TrackRangeView> path = pathSenarioForTest();
+        var infra = DummyInfra.make();
+        var blocks = List.of(
+                infra.addBlock("a", "b", Distance.fromMeters(100), 20),
+                infra.addBlock("b", "c", Distance.fromMeters(100), 10),
+                infra.addBlock("c", "d", Distance.fromMeters(100), 20)
+        );
+        var path = PathPropUtils.makePathProps(infra, infra, blocks, 0);
         var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
-        var driverBehaviour = new DriverBehaviour(16, 17);
-        var mrsp = MRSP.from(path, testRollingStock, true, null);
+        var driverBehaviour = new DriverBehaviour(2, 3);
+        var mrsp = computeMRSP(path, testRollingStock, true, null);
         mrsp = driverBehaviour.applyToMRSP(mrsp);
-        Assertions.assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
-        Assertions.assertEquals(42, mrsp.interpolateSpeedRightDir(12, 1));
-        Assertions.assertEquals(21, mrsp.interpolateSpeedRightDir(13, 1));
-        Assertions.assertEquals(21, mrsp.interpolateSpeedRightDir(66, 1));
-        Assertions.assertEquals(testRollingStock.maxSpeed, mrsp.interpolateSpeedRightDir(75, 1));
-    }
-
-    @NotNull
-    private static List<TrackRangeView> pathSenarioForTest() {
-        var rjsInfra = InfraHelpers.makeSingleTrackRJSInfra();
-        rjsInfra.speedSections = List.of(
-                new RJSSpeedSection("foo1", 42, new HashMap<>(), List.of(
-                        new RJSApplicableDirectionsTrackRange(
-                                "track",
-                                ApplicableDirection.BOTH,
-                                0, 30
-                        )
-                )),
-                new RJSSpeedSection("foo2", 21, new HashMap<>(), List.of(
-                        new RJSApplicableDirectionsTrackRange(
-                                "track",
-                                ApplicableDirection.START_TO_STOP,
-                                30, 50
-                        )
-                )),
-                new RJSSpeedSection("foo3", 30, new HashMap<>(), List.of(
-                        new RJSApplicableDirectionsTrackRange(
-                                "track",
-                                ApplicableDirection.STOP_TO_START,
-                                70, 100
-                        )
-                ))
-        );
-        var infra = DirectedInfraBuilder.fromRJS(rjsInfra, new DiagnosticRecorderImpl(true));
-        var path = List.of(
-                new TrackRangeView(0, 20, infra.getEdge("track", Direction.FORWARD)),
-                new TrackRangeView(20, 50, infra.getEdge("track", Direction.FORWARD)),
-                new TrackRangeView(50, 80, infra.getEdge("track", Direction.FORWARD))
-        );
-        return path;
+        Assertions.assertEquals(20, mrsp.interpolateSpeedRightDir(0, 1));
+        Assertions.assertEquals(10, mrsp.interpolateSpeedRightDir(100 - 3, 1));
+        Assertions.assertEquals(20, mrsp.interpolateSpeedRightDir(200 + 2 + testRollingStock.length, 1));
     }
 }

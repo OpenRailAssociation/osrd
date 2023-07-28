@@ -5,31 +5,39 @@ import static fr.sncf.osrd.railjson.parser.RJSRollingStockParser.parseComfort;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.railjson.schema.schedule.*;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceRange;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
+import fr.sncf.osrd.railjson.schema.schedule.RJSPowerRestrictionRange;
+import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.ScheduledPoint;
+import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainScheduleOptions;
-import java.util.*;
+import fr.sncf.osrd.utils.units.Distance;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 
 public class RJSStandaloneTrainScheduleParser {
     /** Parses a RailJSON standalone train schedule */
     public static StandaloneTrainSchedule parse(
-            SignalingInfra infra,
+            FullInfra infra,
             Function<String, RollingStock> rollingStockGetter,
             RJSStandaloneTrainSchedule rjsTrainSchedule,
-            TrainPath trainPath,
+            PathProperties trainPath,
             EnvelopeSimPath envelopeSimPath
     ) throws OSRDError {
         var rollingStockID = rjsTrainSchedule.rollingStock;
@@ -63,8 +71,9 @@ public class RJSStandaloneTrainScheduleParser {
         if (rjsTrainSchedule.scheduledPoints != null) {
             for (var rjsSchedulePoints : rjsTrainSchedule.scheduledPoints) {
                 if (rjsSchedulePoints.pathOffset < 0)
-                    scheduledPoints.add(new ScheduledPoint(trainPath.length(), rjsSchedulePoints.time));
-                else if (rjsSchedulePoints.pathOffset > trainPath.length())
+                    scheduledPoints.add(new ScheduledPoint(Distance.toMeters(trainPath.getLength()),
+                            rjsSchedulePoints.time));
+                else if (rjsSchedulePoints.pathOffset > Distance.toMeters(trainPath.getLength()))
                     throw new OSRDError(ErrorType.InvalidSchedulePoint);
                 else
                     scheduledPoints.add(new ScheduledPoint(rjsSchedulePoints.pathOffset, rjsSchedulePoints.time));
@@ -72,7 +81,7 @@ public class RJSStandaloneTrainScheduleParser {
         }
 
         var tag = rjsTrainSchedule.tag;
-        var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
+        var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra.rawInfra(), trainPath);
         return new StandaloneTrainSchedule(rollingStock, initialSpeed, scheduledPoints, stops, allowances, tag, comfort,
                 powerRestrictionMap, options);
     }

@@ -1,7 +1,13 @@
 package fr.sncf.osrd.sim_infra.api
 
-import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.indexing.DirStaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
+import fr.sncf.osrd.utils.indexing.StaticIdxSpace
+import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.OffsetList
 
 
 /* /!\ All these sealed interfaces are not meant to be implemented:
@@ -76,6 +82,8 @@ interface RoutingInfra : ReservationInfra {
     fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
     @JvmName("getRouteName")
     fun getRouteName(route: RouteId): String?
+    @JvmName("getRouteLength")
+    fun getRouteLength(route: RouteId): Length<Route>
     @JvmName("getRouteFromName")
     fun getRouteFromName(name: String): RouteId
 
@@ -85,16 +93,22 @@ interface RoutingInfra : ReservationInfra {
     fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
     @JvmName("getRoutesOnTrackChunk")
     fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route>
+    @JvmName("getRoutesStartingAtDet")
+    fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
+    @JvmName("getRoutesEndingAtDet")
+    fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
 }
 
 fun ReservationInfra.findZonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePathId? {
     return findZonePath(entry, exit, mutableStaticIdxArrayListOf(), mutableStaticIdxArrayListOf())
 }
 
+@JvmName("getRouteEntry")
 fun RoutingInfra.getRouteEntry(route: RouteId): DirDetectorId {
     return getZonePathEntry(getRoutePath(route).first())
 }
 
+@JvmName("getRouteExit")
 fun RoutingInfra.getRouteExit(route: RouteId): DirDetectorId {
     return getZonePathExit(getRoutePath(route).last())
 }

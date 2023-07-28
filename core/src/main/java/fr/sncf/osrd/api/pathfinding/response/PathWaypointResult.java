@@ -2,9 +2,6 @@ package fr.sncf.osrd.api.pathfinding.response;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import java.util.Objects;
 
 /**
@@ -43,23 +40,6 @@ public class PathWaypointResult {
         this.suggestion = suggestion;
         this.id = opID;
     }
-
-    /**
-     * Creates a suggested waypoint from an OP
-     */
-    public static PathWaypointResult suggestion(OperationalPoint op, TrackSection trackSection, double pathPosition) {
-        var location = new PathWaypointLocation(trackSection.getID(), op.offset());
-        return new PathWaypointResult(location, pathPosition, true, op.id());
-    }
-
-    /**
-     * Creates a user defined waypoint
-     */
-    public static PathWaypointResult userDefined(TrackLocation location, double pathPosition) {
-        var loc = new PathWaypointLocation(location.track().getID(), location.offset());
-        return new PathWaypointResult(loc, pathPosition, false, null);
-    }
-
 
     /**
      * Check if two steps result are at the same location

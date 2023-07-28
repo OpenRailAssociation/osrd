@@ -1,11 +1,16 @@
 package fr.sncf.osrd.stdcm.preprocessing.interfaces;
 
-import fr.sncf.osrd.envelope.Envelope;
+import com.google.common.base.Objects;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
-import fr.sncf.osrd.infra_state.api.TrainPath;
+import java.util.List;
 
 /** Abstract interface used to request the availability of path sections */
-public interface RouteAvailabilityInterface {
+@SuppressFBWarnings(
+        value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
+        justification = "The classes aren't used yet. This should be removed by the end of the migration."
+)
+public interface BlockAvailabilityInterface {
 
     /** Request availability information about a section of the path.
      * <br/>
@@ -18,10 +23,10 @@ public interface RouteAvailabilityInterface {
      * More details are given in the instances.
      * <br/>
      * Note: every position refers to the position of the head of the train.
-     * The implementation of RouteAvailabilityInterface must account for train length, sight distance,
+     * The implementation of BlockAvailabilityInterface must account for train length, sight distance,
      * and similar factors.
      *
-     * @param path Path taken by the train
+     * @param blocks List of block IDs taken by the train
      * @param startOffset Start of the section to check for availability, as an offset from the start of the path
      * @param endOffset End of the section to check for availability, as an offset from the start of the path
      * @param envelope Envelope describing the position of the train at any moment.
@@ -30,9 +35,9 @@ public interface RouteAvailabilityInterface {
      * @return An Availability instance.
      */
     Availability getAvailability(
-            TrainPath path,
-            double startOffset,
-            double endOffset,
+            List<Integer> blocks,
+            long startOffset,
+            long endOffset,
             EnvelopeTimeInterpolate envelope,
             double startTime
     );
@@ -58,7 +63,20 @@ public interface RouteAvailabilityInterface {
         /** Earliest time any resource used by the train is reused by another one */
         public final double timeOfNextConflict;
 
-        /** Constructor */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Available available = (Available) o;
+            return Double.compare(available.maximumDelay, maximumDelay) == 0
+                    && Double.compare(available.timeOfNextConflict, timeOfNextConflict) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(maximumDelay, timeOfNextConflict);
+        }
+
         public Available(double maximumDelay, double timeOfNextConflict) {
             this.maximumDelay = maximumDelay;
             this.timeOfNextConflict = timeOfNextConflict;
@@ -75,10 +93,23 @@ public interface RouteAvailabilityInterface {
          * <br/>
          * It's either the offset where we start using a ressource before it's available,
          * or the offset where the train would have released a ressource it has kept for too long. */
-        public final double firstConflictOffset;
+        public final long firstConflictOffset;
 
-        /** Constructor */
-        public Unavailable(double duration, double firstConflictOffset) {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Unavailable that = (Unavailable) o;
+            return Double.compare(that.duration, duration) == 0
+                    && Double.compare(that.firstConflictOffset, firstConflictOffset) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(duration, firstConflictOffset);
+        }
+
+        public Unavailable(double duration, long firstConflictOffset) {
             this.duration = duration;
             this.firstConflictOffset = firstConflictOffset;
         }
@@ -86,6 +117,6 @@ public interface RouteAvailabilityInterface {
 
     /** The availability of the requested section can't be determined,
      * the path needs to extend further. The availability depends
-     * on the next routes taken by the train. */
+     * on the block taken by the train after the end of the given path. */
     final class NotEnoughLookahead extends Availability {}
 }

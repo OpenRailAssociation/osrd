@@ -1,8 +1,11 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
+
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.utils.units.Distance;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +21,13 @@ public class AllowanceManager {
         this.graph = graph;
     }
 
-    /** Try to run an engineering allowance on the routes leading to the given edge. Returns null if it failed. */
+    /** Try to run an engineering allowance on the blocks leading to the given edge. Returns null if it failed. */
     public STDCMEdge tryEngineeringAllowance(
             STDCMEdge oldEdge
     ) {
         var neededDelay = getNeededDelay(oldEdge);
         if (oldEdge.previousNode() == null)
-            return null; // The conflict happens on the first route, we can't add delay here
+            return null; // The conflict happens on the first block, we can't add delay here
         var affectedEdges = findAffectedEdges(
                 oldEdge.previousNode().previousEdge(),
                 oldEdge.addedDelay()
@@ -32,7 +35,7 @@ public class AllowanceManager {
         if (affectedEdges.isEmpty())
             return null; // No space to try the allowance
         var context = makeAllowanceContext(affectedEdges);
-        var oldEnvelope = STDCMUtils.mergeEnvelopes(affectedEdges);
+        var oldEnvelope = STDCMUtils.mergeEnvelopes(graph, affectedEdges);
         var newEnvelope = STDCMSimulations.findEngineeringAllowance(context, oldEnvelope, neededDelay);
         if (newEnvelope == null)
             return null; // We couldn't find an envelope
@@ -40,7 +43,7 @@ public class AllowanceManager {
         if (newPreviousEdge == null)
             return null; // The new edges are invalid, conflicts shouldn't happen here but it can be too slow
         var newPreviousNode = newPreviousEdge.getEdgeEnd(graph);
-        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.route())
+        return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.block())
                 .findEdgeSameNextOccupancy(oldEdge.timeNextOccupancy());
     }
 
@@ -58,24 +61,24 @@ public class AllowanceManager {
 
     /** Re-create the edges in order, following the given envelope. */
     private STDCMEdge makeNewEdges(List<STDCMEdge> edges, Envelope totalEnvelope) {
-        double previousEnd = 0;
+        long previousEnd = 0;
         STDCMEdge prevEdge = null;
         if (edges.get(0).previousNode() != null)
             prevEdge = edges.get(0).previousNode().previousEdge();
         for (var edge : edges) {
-            var end = previousEnd + edge.envelope().getEndPos();
+            var end = previousEnd + Distance.fromMeters(edge.envelope().getEndPos());
             var node = prevEdge == null ? null : prevEdge.getEdgeEnd(graph);
             var maxAddedDelayAfter = edge.maximumAddedDelayAfter() + edge.addedDelay();
             if (node != null)
                 maxAddedDelayAfter = node.maximumAddedDelay();
-            prevEdge = new STDCMEdgeBuilder(edge.route(), graph)
+            prevEdge = new STDCMEdgeBuilder(edge.block(), graph)
                     .setStartTime(node == null ? edge.timeStart() : node.time())
                     .setStartSpeed(edge.envelope().getBeginSpeed())
                     .setStartOffset(edge.envelopeStartOffset())
                     .setPrevMaximumAddedDelay(maxAddedDelayAfter)
                     .setPrevAddedDelay(node == null ? 0 : node.totalPrevAddedDelay())
                     .setPrevNode(node)
-                    .setEnvelope(extractEnvelopeSection(totalEnvelope, previousEnd, end))
+                    .setEnvelope(extractEnvelopeSection(totalEnvelope, toMeters(previousEnd), toMeters(end)))
                     .setForceMaxDelay(true)
                     .setWaypointIndex(edge.waypointIndex())
                     .findEdgeSameNextOccupancy(edge.timeNextOccupancy());
@@ -83,7 +86,7 @@ public class AllowanceManager {
                 return null;
             previousEnd = end;
         }
-        assert Math.abs(previousEnd - totalEnvelope.getEndPos()) < 1e-5;
+        assert Math.abs(toMeters(previousEnd) - totalEnvelope.getEndPos()) < POSITION_EPSILON;
         return prevEdge;
     }
 
@@ -97,11 +100,14 @@ public class AllowanceManager {
 
     /** Creates the EnvelopeSimContext to run an allowance on the given edges */
     private EnvelopeSimContext makeAllowanceContext(List<STDCMEdge> edges) {
-        var routes = new ArrayList<SignalingRoute>();
-        var firstOffset = edges.get(0).route().getInfraRoute().getLength() - edges.get(0).envelope().getEndPos();
+        var blocks = new ArrayList<Integer>();
+        var firstOffset = graph.blockInfra.getBlockLength(edges.get(0).block())
+                - Distance.fromMeters(edges.get(0).envelope().getEndPos());
         for (var edge : edges)
-            routes.add(edge.route());
-        return STDCMSimulations.makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
+            blocks.add(edge.block());
+        return STDCMSimulations.makeSimContext(
+                graph.rawInfra, graph.blockInfra, blocks, firstOffset,
+                graph.rollingStock, graph.comfort, graph.timeStep);
     }
 
     /** Find on which edges to run the allowance */
@@ -115,7 +121,7 @@ public class AllowanceManager {
             var endTime = edge.timeStart() + edge.getTotalTime();
             var maxDelayAddedOnEdge = edge.timeNextOccupancy() - endTime;
             if (delayNeeded > maxDelayAddedOnEdge) {
-                // We can't add delay in this route, the allowance range ends here (excluded)
+                // We can't add delay in this block, the allowance range ends here (excluded)
                 return new ArrayList<>(res);
             }
             res.addFirst(edge);

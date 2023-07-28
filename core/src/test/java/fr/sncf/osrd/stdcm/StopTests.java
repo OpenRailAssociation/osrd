@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.SPEED_EPSILON;
+import static fr.sncf.osrd.stdcm.STDCMHelpers.meters;
 import static fr.sncf.osrd.stdcm.STDCMHelpers.occupancyTest;
 import static fr.sncf.osrd.stdcm.StandardAllowanceTests.checkAllowanceResult;
 import static fr.sncf.osrd.stdcm.StandardAllowanceTests.runWithAndWithoutAllowance;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.utils.DummyInfra;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,21 +20,20 @@ import java.util.List;
 import java.util.Set;
 
 public class StopTests {
-    /** Look for a path in an empty timetable, with a stop in the middle of a route */
+    /** Look for a path in an empty timetable, with a stop in the middle of a block */
     @Test
     public void emptyTimetableWithStop() {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b");
-        var secondRoute = infraBuilder.addRoute("b", "c");
-        var infra = infraBuilder.build();
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .setInfra(infra.fullInfra())
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(50))), 10_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(100))), 0, true))
                 .run();
         assertNotNull(res);
         double expectedOffset = 150;
@@ -49,21 +50,20 @@ public class StopTests {
         );
     }
 
-    /** Look for a path in an empty timetable, with a stop at the start of a route */
+    /** Look for a path in an empty timetable, with a stop at the start of a block */
     @Test
-    public void emptyTimetableWithStopRouteStart() {
+    public void emptyTimetableWithStopBlockStart() {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b");
-        var secondRoute = infraBuilder.addRoute("b", "c");
-        var infra = infraBuilder.build();
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 0)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .setInfra(infra.fullInfra())
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, 0)), 10_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(100))), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
@@ -71,21 +71,20 @@ public class StopTests {
         ));
     }
 
-    /** Look for a path in an empty timetable, with a stop at the end of a route */
+    /** Look for a path in an empty timetable, with a stop at the end of a block */
     @Test
-    public void emptyTimetableWithStopRouteEnd() {
+    public void emptyTimetableWithStopBlockEnd() {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b");
-        var secondRoute = infraBuilder.addRoute("b", "c");
-        var infra = infraBuilder.build();
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .setInfra(infra.fullInfra())
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, meters(100))), 10_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(100))), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
@@ -106,35 +105,35 @@ public class StopTests {
                    v /
                     x
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var routesDirectPath = List.of(
-                infraBuilder.addRoute("a", "b"),
-                infraBuilder.addRoute("b", "c"),
-                infraBuilder.addRoute("c", "d"),
-                infraBuilder.addRoute("d", "e")
+        var infra = DummyInfra.make();
+        var blocksDirectPath = List.of(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d"),
+                infra.addBlock("d", "e")
         );
         var detour = List.of(
-                infraBuilder.addRoute("b", "x", 100_000),
-                infraBuilder.addRoute("x", "d", 100_000)
+                infra.addBlock("b", "x", meters(100_000)),
+                infra.addBlock("x", "d", meters(100_000))
         );
-        var infra = infraBuilder.build();
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
+                .setInfra(infra.fullInfra())
                 .setStartTime(100)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routesDirectPath.get(0), 0)), 0, false))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(detour.get(1), 1_000)), 0, stop))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routesDirectPath.get(3), 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocksDirectPath.get(0), 0)), 0, false))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(detour.get(1), meters(1_000))), 0, stop))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocksDirectPath.get(3), 0)), 0, true))
                 .run();
         assertNotNull(res);
-        var routes = res.routes().ranges().stream()
-                .map(route -> route.edge().getInfraRoute().getID()).toList();
+        var blocks = res.blocks().ranges().stream()
+                .map(edgeRange -> infra.getBlockPool().get(edgeRange.edge()).getName())
+                .toList();
         assertEquals(
                 List.of(
                         "a->b",
                         "b->x",
                         "x->d",
                         "d->e"
-                ), routes
+                ), blocks
         );
         assertNotEquals(stop, res.stopResults().isEmpty());
         assertEquals(stop, res.envelope().interpolateSpeed(101_100) == 0);
@@ -146,18 +145,17 @@ public class StopTests {
         /*
         a --> b --> c
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b");
-        var secondRoute = infraBuilder.addRoute("b", "c");
-        var infra = infraBuilder.build();
+        var infra = DummyInfra.make();
+        var firstBlock = infra.addBlock("a", "b");
+        var secondBlock = infra.addBlock("b", "c");
         var unavailableTimes = ImmutableMultimap.of(
-                secondRoute, new OccupancyBlock(100_000, POSITIVE_INFINITY, 0, 100)
+                secondBlock, new OccupancySegment(100_000, POSITIVE_INFINITY, 0, meters(100))
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 10)), 100_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)), 0, true))
+                .setInfra(infra.fullInfra())
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(firstBlock, meters(10))), 100_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(secondBlock, meters(100))), 0, true))
                 .setUnavailableTimes(unavailableTimes)
                 .run();
         assertNull(res);
@@ -169,22 +167,21 @@ public class StopTests {
         /*
         a --> b --> c -> d
          */
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var routes = List.of(
-                infraBuilder.addRoute("a", "b"),
-                infraBuilder.addRoute("b", "c"),
-                infraBuilder.addRoute("c", "d", 1)
+        var infra = DummyInfra.make();
+        var blocks = List.of(
+                infra.addBlock("a", "b"),
+                infra.addBlock("b", "c"),
+                infra.addBlock("c", "d", meters(1))
         );
-        var infra = infraBuilder.build();
         var occupancy = ImmutableMultimap.of(
-                routes.get(2), new OccupancyBlock(0, 12_000, 0, 1),
-                routes.get(2), new OccupancyBlock(12_010, POSITIVE_INFINITY, 0, 1)
+                blocks.get(2), new OccupancySegment(0, 12_000, 0, meters(1)),
+                blocks.get(2), new OccupancySegment(12_010, POSITIVE_INFINITY, 0, meters(1))
         );
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 50)), 10_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(2), 1)), 0, true))
+                .setInfra(infra.fullInfra())
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), meters(50))), 10_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(2), meters(1))), 0, true))
                 .setUnavailableTimes(occupancy)
                 .run();
         assertNotNull(res);
@@ -216,27 +213,26 @@ public class StopTests {
 
         // Note: this test will need to be updated once we can add delay by making stops longer
 
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var routes = List.of(
-                infraBuilder.addRoute("a", "b", 1, 20),
-                infraBuilder.addRoute("b", "c", 1_000, 20),
-                infraBuilder.addRoute("c", "d", 100, 20),
-                infraBuilder.addRoute("d", "e", 1, 20)
+        var infra = DummyInfra.make();
+        var blocks = List.of(
+                infra.addBlock("a", "b", meters(1), 20),
+                infra.addBlock("b", "c", meters(1_000), 20),
+                infra.addBlock("c", "d", meters(100), 20),
+                infra.addBlock("d", "e", meters(1), 20)
         );
         var occupancy = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(10, POSITIVE_INFINITY, 0, 1),
-                routes.get(3), new OccupancyBlock(0, 1_200, 0, 1),
-                routes.get(3), new OccupancyBlock(1_220, POSITIVE_INFINITY, 0, 1)
+                blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, meters(1)),
+                blocks.get(3), new OccupancySegment(0, 1_200, 0, meters(1)),
+                blocks.get(3), new OccupancySegment(1_220, POSITIVE_INFINITY, 0, meters(1))
         );
         double timeStep = 2;
-        var infra = infraBuilder.build();
         var res = new STDCMPathfindingBuilder()
-                .setInfra(infra)
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), meters(50))), 1_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), meters(1))), 0, true))
                 .run();
         assertNotNull(res);
         checkStop(res, List.of(
@@ -265,28 +261,27 @@ public class StopTests {
 
          */
 
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var routes = List.of(
-                infraBuilder.addRoute("a", "b", 1, 20),
-                infraBuilder.addRoute("b", "c", 1_000, 20),
-                infraBuilder.addRoute("c", "d", 100, 20),
-                infraBuilder.addRoute("d", "e", 1, 20)
+        var infra = DummyInfra.make();
+        var blocks = List.of(
+                infra.addBlock("a", "b", meters(1), 20),
+                infra.addBlock("b", "c", meters(1_000), 20),
+                infra.addBlock("c", "d", meters(100), 20),
+                infra.addBlock("d", "e", meters(1), 20)
         );
         var occupancy = ImmutableMultimap.of(
-                routes.get(3), new OccupancyBlock(0, 1_200, 0, 1),
-                routes.get(3), new OccupancyBlock(1_220, POSITIVE_INFINITY, 0, 1)
+                blocks.get(3), new OccupancySegment(0, 1_200, 0, meters(1)),
+                blocks.get(3), new OccupancySegment(1_220, POSITIVE_INFINITY, 0, meters(1))
         );
         double timeStep = 2;
-        var infra = infraBuilder.build();
         var allowance = new AllowanceValue.Percentage(20);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infra)
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), meters(50))), 1_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), meters(1))), 0, true))
         );
         assertNotNull(res);
         var expectedStops = List.of(
@@ -321,29 +316,28 @@ public class StopTests {
 
         // Note: this test will need to be updated once we can add delay by making stops longer
 
-        var infraBuilder = new DummyRouteGraphBuilder();
-        var routes = List.of(
-                infraBuilder.addRoute("a", "b", 1, 20),
-                infraBuilder.addRoute("b", "c", 1_000, 20),
-                infraBuilder.addRoute("c", "d", 100, 20),
-                infraBuilder.addRoute("d", "e", 1, 20)
+        var infra = DummyInfra.make();
+        var blocks = List.of(
+                infra.addBlock("a", "b", meters(1), 20),
+                infra.addBlock("b", "c", meters(1_000), 20),
+                infra.addBlock("c", "d", meters(100), 20),
+                infra.addBlock("d", "e", meters(1), 20)
         );
         var occupancy = ImmutableMultimap.of(
-                routes.get(0), new OccupancyBlock(10, POSITIVE_INFINITY, 0, 1),
-                routes.get(3), new OccupancyBlock(0, 1_200, 0, 1),
-                routes.get(3), new OccupancyBlock(1_300, POSITIVE_INFINITY, 0, 1)
+                blocks.get(0), new OccupancySegment(10, POSITIVE_INFINITY, 0, meters(1)),
+                blocks.get(3), new OccupancySegment(0, 1_200, 0, meters(1)),
+                blocks.get(3), new OccupancySegment(1_300, POSITIVE_INFINITY, 0, meters(1))
         );
         double timeStep = 2;
-        var infra = infraBuilder.build();
         var allowance = new AllowanceValue.Percentage(20);
         var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
-                .setInfra(infra)
+                .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancy)
                 .setTimeStep(timeStep)
                 .setStandardAllowance(allowance)
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)), 0, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(1), 50)), 1_000, true))
-                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(routes.get(3), 1)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(0), 0)), 0, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(1), meters(50))), 1_000, true))
+                .addStep(new STDCMStep(Set.of(new Pathfinding.EdgeLocation<>(blocks.get(3), meters(1))), 0, true))
         );
         assertNotNull(res);
         var expectedStops = List.of(

@@ -2,6 +2,7 @@ package fr.sncf.osrd.standalone_sim;
 
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.api.FullInfra;
+import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPath;
@@ -14,13 +15,12 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
-import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.standalone_sim.result.ElectrificationRange;
 import fr.sncf.osrd.standalone_sim.result.PowerRestrictionRange;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
@@ -43,7 +43,7 @@ public class StandaloneSim {
      */
     public static StandaloneSimResult run(
             FullInfra infra,
-            TrainPath trainPath,
+            PathProperties trainPath,
             EnvelopeSimPath envelopeSimPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep,
@@ -61,8 +61,8 @@ public class StandaloneSim {
                 var rollingStock = trainSchedule.rollingStock;
 
                 // MRSP & SpeedLimits
-                var mrsp = MRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
-                var speedLimits = MRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
+                var mrsp = MRSP.computeMRSP(trainPath, rollingStock, true, trainSchedule.tag);
+                var speedLimits = MRSP.computeMRSP(trainPath, rollingStock, false, trainSchedule.tag);
                 mrsp = driverBehaviour.applyToMRSP(mrsp);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
@@ -132,14 +132,14 @@ public class StandaloneSim {
             double timeStep
     ) {
         // Parse trainPath
-        var trainPath = TrainPathBuilder.from(infra.java(), rjsTrainPath);
-        var envelopePath = EnvelopeTrainPath.from(trainPath, electricalProfileMap);
+        var trainPath = PathPropUtils.makePathProps(infra.rawInfra(), rjsTrainPath);
+        var envelopePath = EnvelopeTrainPath.from(infra.rawInfra(), trainPath, electricalProfileMap);
 
         // Parse train schedules
         var trainSchedules = new ArrayList<StandaloneTrainSchedule>();
         for (var rjsTrainSchedule : rjsSchedules)
             trainSchedules.add(RJSStandaloneTrainScheduleParser.parse(
-                    infra.java(), rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
+                    infra, rollingStocks::get, rjsTrainSchedule, trainPath, envelopePath));
 
         // Compute envelopes and extract metadata
         return StandaloneSim.run(

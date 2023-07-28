@@ -1,16 +1,12 @@
 package fr.sncf.osrd.stdcm.graph;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.utils.units.Distance.toMeters;
 
-import com.google.common.collect.Iterables;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
-import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -22,9 +18,16 @@ import java.util.List;
  * This includes creating the final envelope (merging the parts + applying the allowances) */
 public class STDCMPostProcessing {
 
+    private final STDCMGraph graph;
+
+    public STDCMPostProcessing(STDCMGraph graph) {
+        this.graph = graph;
+    }
+
     /** Builds the STDCM result object from the raw pathfinding result.
      * This is the only non-private method of this class, the rest is implementation detail. */
-    static STDCMResult makeResult(
+    STDCMResult makeResult(
+            RawSignalingInfra infra,
             Pathfinding.Result<STDCMEdge> path,
             double startTime,
             AllowanceValue standardAllowance,
@@ -32,16 +35,18 @@ public class STDCMPostProcessing {
             double timeStep,
             RollingStock.Comfort comfort,
             double maxRunTime,
-            RouteAvailabilityInterface routeAvailability
+            BlockAvailabilityInterface blockAvailability
     ) {
         var ranges = makeEdgeRange(path);
-        var routeRanges = makeRouteRanges(ranges);
-        var routeWaypoints = makeRouteWaypoints(path);
-        var physicsPath = EnvelopeTrainPath.from(makeTrackRanges(ranges));
+        var blockRanges = makeBlockRanges(ranges);
+        var blockWaypoints = makeBlockWaypoints(path);
+        var trainPath = STDCMUtils.makePathFromRanges(graph, ranges);
+        var physicsPath = EnvelopeTrainPath.from(infra, trainPath);
         var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
         var departureTime = computeDepartureTime(ranges, startTime);
         var stops = makeStops(ranges);
         var withAllowance = STDCMStandardAllowance.applyAllowance(
+                graph,
                 mergedEnvelopes,
                 ranges,
                 standardAllowance,
@@ -49,14 +54,14 @@ public class STDCMPostProcessing {
                 rollingStock,
                 timeStep,
                 comfort,
-                routeAvailability,
+                blockAvailability,
                 departureTime,
                 stops
         );
         var res = new STDCMResult(
-                new Pathfinding.Result<>(routeRanges, routeWaypoints),
+                new Pathfinding.Result<>(blockRanges, blockWaypoints),
                 withAllowance,
-                makeTrainPath(ranges),
+                trainPath,
                 physicsPath,
                 departureTime,
                 stops
@@ -70,39 +75,36 @@ public class STDCMPostProcessing {
     }
 
     /** Creates the list of waypoints on the path */
-    private static List<Pathfinding.EdgeLocation<SignalingRoute>> makeRouteWaypoints(
+    private static List<Pathfinding.EdgeLocation<Integer>> makeBlockWaypoints(
             Pathfinding.Result<STDCMEdge> path
     ) {
-        var res = new ArrayList<Pathfinding.EdgeLocation<SignalingRoute>>();
+        var res = new ArrayList<Pathfinding.EdgeLocation<Integer>>();
         for (var waypoint : path.waypoints()) {
-            var routeOffset = waypoint.offset() + waypoint.edge().envelopeStartOffset();
-            res.add(new Pathfinding.EdgeLocation<>(waypoint.edge().route(), routeOffset));
+            var blockOffset = waypoint.offset() + waypoint.edge().envelopeStartOffset();
+            res.add(new Pathfinding.EdgeLocation<>(waypoint.edge().block(), blockOffset));
         }
         return res;
     }
 
-    /** Builds the list of route ranges, merging the ranges on the same route */
-    private static List<Pathfinding.EdgeRange<SignalingRoute>> makeRouteRanges(
+    /** Builds the list of block ranges, merging the ranges on the same block */
+    private List<Pathfinding.EdgeRange<Integer>> makeBlockRanges(
             List<Pathfinding.EdgeRange<STDCMEdge>> ranges
     ) {
-        var res = new ArrayList<Pathfinding.EdgeRange<SignalingRoute>>();
+        var res = new ArrayList<Pathfinding.EdgeRange<Integer>>();
         int i = 0;
         while (i < ranges.size()) {
             var range = ranges.get(i);
-            double start = range.start() + range.edge().envelopeStartOffset();
-            double length = range.end() - range.start();
+            long start = range.start() + range.edge().envelopeStartOffset();
+            long length = range.end() - range.start();
             while (i + 1 < ranges.size()) {
                 var nextRange = ranges.get(i + 1);
-                if (!range.edge().route().equals(nextRange.edge().route()))
+                if (range.edge().block() != nextRange.edge().block())
                     break;
                 length += nextRange.end() - nextRange.start();
                 i++;
             }
             var end = start + length;
-            var routeLength = range.edge().route().getInfraRoute().getLength();
-            if (Math.abs(end - routeLength) < POSITION_EPSILON)
-                end = routeLength;
-            res.add(new Pathfinding.EdgeRange<>(range.edge().route(), start, end));
+            res.add(new Pathfinding.EdgeRange<>(range.edge().block(), start, end));
             i++;
         }
         return res;
@@ -136,40 +138,6 @@ public class STDCMPostProcessing {
         return res;
     }
 
-    /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */
-    private static List<TrackRangeView> makeTrackRanges(
-            List<Pathfinding.EdgeRange<STDCMEdge>> edges
-    ) {
-        var trackRanges = new ArrayList<TrackRangeView>();
-        for (var routeRange : edges) {
-            var infraRoute = routeRange.edge().route().getInfraRoute();
-            var startOffset = routeRange.edge().envelopeStartOffset();
-            trackRanges.addAll(infraRoute.getTrackRanges(
-                    startOffset + routeRange.start(),
-                    startOffset + routeRange.end())
-            );
-        }
-        return trackRanges;
-    }
-
-    /** Creates a TrainPath instance from the list of pathfinding edges */
-    static TrainPath makeTrainPath(
-            List<Pathfinding.EdgeRange<STDCMEdge>> ranges
-    ) {
-        var routeList = new ArrayList<SignalingRoute>();
-        for (var range : ranges) {
-            if (routeList.isEmpty() || !Iterables.getLast(routeList).equals(range.edge().route()))
-                routeList.add(range.edge().route());
-        }
-        var trackRanges = makeTrackRanges(ranges);
-        var lastRange = trackRanges.get(trackRanges.size() - 1);
-        return TrainPathBuilder.from(
-                routeList,
-                trackRanges.get(0).offsetLocation(0),
-                lastRange.offsetLocation(lastRange.getLength())
-        );
-    }
-
     /** Computes the departure time, made of the sum of all delays added over the path */
     static double computeDepartureTime(List<Pathfinding.EdgeRange<STDCMEdge>> ranges, double startTime) {
         for (var range : ranges)
@@ -180,11 +148,11 @@ public class STDCMPostProcessing {
     /** Builds the list of stops from the ranges */
     private static List<TrainStop> makeStops(List<Pathfinding.EdgeRange<STDCMEdge>> ranges) {
         var res = new ArrayList<TrainStop>();
-        double offset = 0;
+        long offset = 0;
         for (var range : ranges) {
             var prevNode = range.edge().previousNode();
             if (prevNode != null && prevNode.stopDuration() >= 0 && range.start() == 0)
-                res.add(new TrainStop(offset, prevNode.stopDuration()));
+                res.add(new TrainStop(toMeters(offset), prevNode.stopDuration()));
             offset += range.end() - range.start();
         }
         return res;

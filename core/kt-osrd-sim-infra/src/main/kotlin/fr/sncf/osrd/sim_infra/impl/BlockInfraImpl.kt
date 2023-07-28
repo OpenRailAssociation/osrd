@@ -3,7 +3,8 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.OffsetList
 
 class BlockDescriptor(
     val length: Length<Block>,
@@ -120,4 +121,22 @@ class BlockInfraImpl(
     override fun getBlockLength(block: BlockId): Length<Block> {
         return blockPool[block].length
     }
+}
+
+@JvmName("getBlockEntry")
+fun BlockInfra.getBlockEntry(rawInfra: RawInfra, block: BlockId): DirDetectorId {
+    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
+    val firstZone: ZonePathId = blockPath[0]
+    return rawInfra.getZonePathEntry(firstZone)
+}
+
+@JvmName("getBlockExit")
+fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
+    val blockPath: StaticIdxList<ZonePath> = getBlockPath(block)
+    val lastZonePath: ZonePathId = blockPath[blockPath.size - 1]
+    return rawInfra.getZonePathExit(lastZonePath)
+}
+
+fun BlockInfra.getTrackChunksFromBlocks(blocks: List<BlockId>): List<DirStaticIdx<TrackChunk>> {
+    return blocks.flatMap { getTrackChunksFromBlock(it) }
 }

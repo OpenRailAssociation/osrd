@@ -64,15 +64,6 @@ public class TrackRangeView {
                 .collect(Collectors.toList());
     }
 
-    /** Returns a list of operational points on the range (sorted) */
-    public List<ElementView<OperationalPoint>> getOperationalPoints() {
-        return track.getEdge().getOperationalPoints().stream()
-                .map(o -> new ElementView<>(convertPosition(o.offset()), o))
-                .filter(this::isInRange)
-                .sorted(comparator)
-                .collect(Collectors.toList());
-    }
-
     /** Returns the speed sections with positions referring to the track range (0 = directed start of the range) */
     public RangeMap<Double, SpeedLimits> getSpeedSections() {
         var originalSpeedSections = track.getEdge().getSpeedSections().get(track.getDirection());
@@ -125,21 +116,6 @@ public class TrackRangeView {
     /** Returns true if the track offset is included in the range */
     public boolean containsOffset(double offset) {
         return offset >= begin && offset <= end;
-    }
-
-    /** Returns the distance between the start of the range and the given location */
-    public double offsetOf(TrackLocation location) {
-        assert contains(location) : "can't determine the offset of an element not in the range";
-        return offsetOf(location.offset());
-    }
-
-    /** Returns the distance between the start of the range and the given location */
-    public double offsetOf(double trackLocation) {
-        assert containsOffset(trackLocation) : "can't determine the offset of an element not in the range";
-        if (track.getDirection().equals(Direction.FORWARD))
-            return trackLocation - begin;
-        else
-            return end - trackLocation;
     }
 
     /** Returns the location of the given offset on the range */

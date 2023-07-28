@@ -1,8 +1,12 @@
 package fr.sncf.osrd.standalone_sim.result;
 
+import static fr.sncf.osrd.utils.units.Distance.fromMeters;
+
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
+import fr.sncf.osrd.utils.units.Distance;
 import java.util.ArrayList;
 
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -21,9 +25,15 @@ public class ResultPosition {
         this.offset = offset;
     }
 
-    public static ResultPosition from(double time, double pathOffset, TrainPath path) {
-        var location = path.findLocation(pathOffset);
-        return new ResultPosition(time, pathOffset, location.track().getID(), location.offset());
+    /** Create a ResultPosition */
+    public static ResultPosition from(double time, double pathOffset, PathProperties path, RawSignalingInfra rawInfra) {
+        var location = path.getTrackLocationAtOffset(fromMeters(pathOffset));
+        return new ResultPosition(
+                time,
+                pathOffset,
+                rawInfra.getTrackSectionName(location.getTrackId()),
+                Distance.toMeters(location.getOffset())
+        );
     }
 
     /** Interpolate in a list of positions the time associated to a given position.
@@ -50,6 +60,7 @@ public class ResultPosition {
         return a.time + (position - a.pathOffset) * (b.time - a.time) / (b.pathOffset - a.pathOffset);
     }
 
+    /** Returns a new instance of ResultPosition with the given added time */
     public ResultPosition withAddedTime(double timeToAdd) {
         return new ResultPosition(time + timeToAdd, pathOffset, trackSection, offset);
     }

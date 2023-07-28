@@ -4,6 +4,7 @@ from typing import Any, Iterable
 import pytest
 
 from .path import Path
+from .utils.approximations import recursive_approx
 
 _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
     **{
@@ -221,23 +222,6 @@ def assert_steps_are_equals(steps: Iterable[Any], expected_steps: Iterable[Any])
         assert_points_are_equals(steps[i].pop("sch"), expected_steps[i].pop("sch"))
         assert_points_are_equals(steps[i].pop("geo"), expected_steps[i].pop("geo"))
         recursive_approx(expected_steps[i], steps[i])
-
-
-def recursive_approx(expected: Any, actual: Any, rel=1e-3):
-    """
-    Calls `pytest.approx` recursively on elements of list and keys of dicts.
-    Dict keys are not approximated, it's assumed that keys are strings.
-    """
-    if type(expected) == list:
-        for a, b in zip(expected, actual):
-            recursive_approx(a, b)
-        return
-    if type(expected) == dict:
-        assert expected.keys() == actual.keys()
-        for key in expected:
-            recursive_approx(expected[key], actual[key])
-        return
-    assert actual == pytest.approx(expected, rel=rel)
 
 
 def test_west_to_south_east_path(west_to_south_east_path: Path):

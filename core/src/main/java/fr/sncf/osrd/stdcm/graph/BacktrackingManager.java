@@ -19,7 +19,7 @@ public class BacktrackingManager {
     }
 
     /** Given an edge that needs an envelope change in previous edges to avoid a discontinuity,
-     * returns an edge that has no discontinuity, going over the same route using the same opening.
+     * returns an edge that has no discontinuity, going over the same block using the same opening.
      * The given edge does not change but the previous ones are new instances with a different envelope.
      * If no backtracking is needed, nothing is done and the edge is returned as it is.
      * If the new edge is invalid (for example if it would cause conflicts), returns null. */
@@ -42,7 +42,7 @@ public class BacktrackingManager {
 
         // Create the new edge
         var newNode = newPreviousEdge.getEdgeEnd(graph);
-        return STDCMEdgeBuilder.fromNode(graph, newNode, e.route())
+        return STDCMEdgeBuilder.fromNode(graph, newNode, e.block())
                 .setStartOffset(e.envelopeStartOffset())
                 .setEnvelope(e.envelope())
                 .findEdgeSameNextOccupancy(e.timeNextOccupancy());
@@ -57,14 +57,16 @@ public class BacktrackingManager {
      * */
     private STDCMEdge rebuildEdgeBackward(STDCMEdge old, double endSpeed) {
         var newEnvelope = STDCMSimulations.simulateBackwards(
-                old.route(),
+                graph.rawInfra,
+                graph.blockInfra,
+                old.block(),
                 endSpeed,
                 old.envelopeStartOffset(),
                 old.envelope(),
                 graph
         );
         var prevNode = old.previousNode();
-        return new STDCMEdgeBuilder(old.route(), graph)
+        return new STDCMEdgeBuilder(old.block(), graph)
                 .setStartTime(old.timeStart() - old.addedDelay())
                 .setStartOffset(old.envelopeStartOffset())
                 .setPrevMaximumAddedDelay(old.maximumAddedDelayAfter() + old.addedDelay())

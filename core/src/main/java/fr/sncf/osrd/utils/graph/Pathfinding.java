@@ -40,18 +40,18 @@ public class Pathfinding<NodeT, EdgeT> {
     /** A location on a range, made of edge + offset. Used for the input of the pathfinding */
     public record EdgeLocation<EdgeT>(
             EdgeT edge,
-            double offset
+            long offset
     ) {}
 
     /** A range, made of edge + start and end offsets on the edge. Used for the output of the pathfinding */
     public record EdgeRange<EdgeT>(
             EdgeT edge,
-            double start,
-            double end
+            long start,
+            long end
     ) {}
 
     /** A simple range with no edge attached */
-    public record Range(double start, double end){}
+    public record Range(long start, long end){}
 
     /** Step priority queue */
     private final PriorityQueue<Step<EdgeT>> queue = new PriorityQueue<>();

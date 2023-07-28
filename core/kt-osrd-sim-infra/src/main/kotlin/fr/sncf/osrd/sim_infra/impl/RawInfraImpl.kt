@@ -3,10 +3,58 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.*
-import fr.sncf.osrd.utils.indexing.*
-import fr.sncf.osrd.utils.units.*
+import fr.sncf.osrd.sim_infra.api.Detector
+import fr.sncf.osrd.sim_infra.api.DetectorId
+import fr.sncf.osrd.sim_infra.api.DirDetectorId
+import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
+import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
+import fr.sncf.osrd.sim_infra.api.EndpointTrackSectionId
+import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint
+import fr.sncf.osrd.sim_infra.api.LogicalSignal
+import fr.sncf.osrd.sim_infra.api.LogicalSignalId
+import fr.sncf.osrd.sim_infra.api.OperationalPointPart
+import fr.sncf.osrd.sim_infra.api.OperationalPointPartId
+import fr.sncf.osrd.sim_infra.api.OptDirTrackSectionId
+import fr.sncf.osrd.sim_infra.api.PhysicalSignal
+import fr.sncf.osrd.sim_infra.api.PhysicalSignalId
+import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.sim_infra.api.RouteId
+import fr.sncf.osrd.sim_infra.api.SpeedLimit
+import fr.sncf.osrd.sim_infra.api.TrackChunk
+import fr.sncf.osrd.sim_infra.api.TrackChunkId
+import fr.sncf.osrd.sim_infra.api.TrackNode
+import fr.sncf.osrd.sim_infra.api.TrackNodeConfig
+import fr.sncf.osrd.sim_infra.api.TrackNodeConfigId
+import fr.sncf.osrd.sim_infra.api.TrackNodeId
+import fr.sncf.osrd.sim_infra.api.TrackNodePort
+import fr.sncf.osrd.sim_infra.api.TrackNodePortId
+import fr.sncf.osrd.sim_infra.api.TrackSection
+import fr.sncf.osrd.sim_infra.api.TrackSectionId
+import fr.sncf.osrd.sim_infra.api.Zone
+import fr.sncf.osrd.sim_infra.api.ZoneId
+import fr.sncf.osrd.sim_infra.api.ZonePath
+import fr.sncf.osrd.sim_infra.api.ZonePathId
+import fr.sncf.osrd.sim_infra.api.decreasing
+import fr.sncf.osrd.sim_infra.api.increasing
+import fr.sncf.osrd.sim_infra.api.toEndpoint
+import fr.sncf.osrd.utils.DirectionalMap
+import fr.sncf.osrd.utils.DistanceRangeMap
+import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.indexing.DirStaticIdxList
+import fr.sncf.osrd.utils.indexing.IdxMap
+import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
+import fr.sncf.osrd.utils.indexing.OptStaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.indexing.StaticIdxSortedSet
+import fr.sncf.osrd.utils.indexing.StaticIdxSpace
+import fr.sncf.osrd.utils.indexing.StaticPool
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetList
+import fr.sncf.osrd.utils.units.Speed
 import kotlin.time.Duration
 
 
@@ -48,6 +96,7 @@ value class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>)
 
 interface RouteDescriptor {
     val name: String?
+    var length: Length<Route>
     val path: StaticIdxList<ZonePath>
     val releaseZones: IntArray
     val speedLimits: StaticIdxList<SpeedLimit>
@@ -116,6 +165,7 @@ class SpeedSection(
 
 class NeutralSection(
     val lowerPantograph: Boolean,
+    val isAnnouncement: Boolean,
 )
 
 
@@ -135,6 +185,8 @@ class RawInfraImpl(
     val operationalPointPartPool: StaticPool<OperationalPointPart, OperationalPointPartDescriptor>,
     val trackSectionNameMap: Map<String, TrackSectionId>,
     val routeNameMap: Map<String, RouteId>,
+    val dirDetEntryToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>,
+    val dirDetExitToRouteMap: Map<DirDetectorId, StaticIdxList<Route>>
 ) : RawInfra {
     override val trackNodes: StaticIdxSpace<TrackNode>
         get() = trackNodePool.space()
@@ -229,6 +281,14 @@ class RawInfraImpl(
 
     override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {
         return trackChunkPool[trackChunk.value].routes.get(trackChunk.direction)
+    }
+
+    override fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
+        return dirDetEntryToRouteMap.getOrDefault(dirDetector, MutableStaticIdxArrayList())
+    }
+
+    override fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
+        return dirDetExitToRouteMap.getOrDefault(dirDetector, MutableStaticIdxArrayList())
     }
 
     private val zoneDetectors: IdxMap<ZoneId, MutableList<DirDetectorId>> = IdxMap()
@@ -457,6 +517,10 @@ class RawInfraImpl(
 
     override fun getRouteName(route: RouteId): String? {
         return routeDescriptors[route].name
+    }
+
+    override fun getRouteLength(route: RouteId): Length<Route> {
+        return routeDescriptors[route].length
     }
 
     override fun getRouteFromName(name: String): RouteId {

@@ -178,52 +178,6 @@ public class InfraHelpers {
         );
     }
 
-    /** Make a single track infra.
-     * The track has two detectors, d1 at 50 and d2 at 75.
-     * It has two routes going from bs to bs either way, and two going to and from d1 */
-    public static RJSInfra makeSingleTrackRJSInfra() {
-        return new RJSInfra(
-                List.of(new RJSTrackSection("track", 100)),
-                List.of(
-                        new RJSRoute(
-                                "route_forward",
-                                new RJSWaypointRef<>("bs_start", RJSWaypointRef.RJSWaypointType.BUFFER_STOP),
-                                EdgeDirection.START_TO_STOP,
-                                new RJSWaypointRef<>("bs_end", RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
-                        ),
-                        new RJSRoute(
-                                "route_backward",
-                                new RJSWaypointRef<>("bs_end", RJSWaypointRef.RJSWaypointType.BUFFER_STOP),
-                                EdgeDirection.STOP_TO_START,
-                                new RJSWaypointRef<>("bs_start", RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
-                        ),
-                        new RJSRoute(
-                                "route_forward_first_half",
-                                new RJSWaypointRef<>("bs_start", RJSWaypointRef.RJSWaypointType.BUFFER_STOP),
-                                EdgeDirection.START_TO_STOP,
-                                new RJSWaypointRef<>("d1", RJSWaypointRef.RJSWaypointType.DETECTOR)
-                        ),
-                        new RJSRoute(
-                                "route_forward_second_half",
-                                new RJSWaypointRef<>("d1", RJSWaypointRef.RJSWaypointType.DETECTOR),
-                                EdgeDirection.START_TO_STOP,
-                                new RJSWaypointRef<>("bs_end", RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
-                        )
-                ),
-                List.of(
-                        new RJSSignal("track", 30, "signal", EdgeDirection.START_TO_STOP, 400, "d1")
-                ),
-                List.of(
-                        new RJSBufferStop("bs_start", 0, "track"),
-                        new RJSBufferStop("bs_end", 100, "track")
-                ),
-                List.of(
-                        new RJSTrainDetector("d1", 50, "track"),
-                        new RJSTrainDetector("d2", 75, "track")
-                )
-        );
-    }
-
     /** Sets the detectors on the track, bypassing visibility */
     public static void setDetectors(TrackSection track, List<Detector> detectors) {
         setPrivateField(track, "detectors", ImmutableList.copyOf(detectors));

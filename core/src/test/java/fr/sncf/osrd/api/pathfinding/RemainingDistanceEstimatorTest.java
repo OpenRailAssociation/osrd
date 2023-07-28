@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.Helpers.getBlocksOnRoutes;
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathPropUtils.makePathProps;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Iterables;
@@ -10,6 +10,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,7 +33,7 @@ public class RemainingDistanceEstimatorTest {
         block = getBlocksOnRoutes(smallInfra, List.of(
                 "rt.DA2->DA5"
         )).get(0);
-        path = makePath(smallInfra.blockInfra(), smallInfra.rawInfra(), block);
+        path = makePathProps(smallInfra.blockInfra(), smallInfra.rawInfra(), block);
     }
 
     @ParameterizedTest
@@ -41,7 +42,7 @@ public class RemainingDistanceEstimatorTest {
             Collection<Pathfinding.EdgeLocation<Integer>> edgeLocations,
             double remainingDistance,
             double expectedDistance,
-            double blockOffset
+            long blockOffset
     ) {
         var estimator = new RemainingDistanceEstimator(smallInfra.blockInfra(), smallInfra.rawInfra(), edgeLocations,
                 remainingDistance);
@@ -70,7 +71,7 @@ public class RemainingDistanceEstimatorTest {
                 Arguments.of(
                         List.of(new Pathfinding.EdgeLocation<>(block, path.getLength())),
                         0,
-                        points.get(0).distanceAsMeters(Iterables.getLast(points)),
+                        Distance.fromMeters(points.get(0).distanceAsMeters(Iterables.getLast(points))),
                         0
                 ),
                 // Test multiple targets
