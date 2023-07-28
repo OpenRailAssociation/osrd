@@ -10,15 +10,13 @@ type InfraSelectorModalBodyEditionProps = {
   infrasList: Infra[];
   setFilter: React.Dispatch<React.SetStateAction<string>>;
   filter: string;
-  // getInfrasList: () => void;
 };
 
 const InfraSelectorModalBodyEdition = ({
   infrasList,
   setFilter,
   filter = '',
-}: // getInfrasList,
-InfraSelectorModalBodyEditionProps) => {
+}: InfraSelectorModalBodyEditionProps) => {
   const [isFocused, setIsFocused] = useState<number | undefined>(undefined);
   const [runningDelete, setRunningDelete] = useState<number | undefined>(undefined);
   const [nameNewInfra, setNameNewInfra] = useState<string | undefined>('');
@@ -71,14 +69,12 @@ InfraSelectorModalBodyEditionProps) => {
         .unwrap()
         .then(() => {
           setSelectedFile(undefined);
-          // getInfrasList();
           setErrorMessage(undefined);
         });
     } else {
       postInfra({ body: { name: nameNewInfra } })
         .unwrap()
         .then(() => {
-          // getInfrasList();
           setErrorMessage(undefined);
         });
     }
@@ -110,7 +106,6 @@ InfraSelectorModalBodyEditionProps) => {
               runningDelete={runningDelete}
               setRunningDelete={setRunningDelete}
               setIsFocused={setIsFocused}
-              // getInfrasList={getInfrasList}
             />
           ))}
         </div>

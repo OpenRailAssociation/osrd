@@ -6,7 +6,7 @@ import fileDownload from 'js-file-download';
 import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import { InfraLockState } from './consts';
+import InfraLockState from './consts';
 
 type ActionBarProps = {
   infra: Infra;

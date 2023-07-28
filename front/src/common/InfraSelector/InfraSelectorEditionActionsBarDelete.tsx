@@ -1,31 +1,53 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { deleteRequest } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import Countdown from 'react-countdown';
-import { INFRA_URL } from './consts';
+import { Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useDispatch } from 'react-redux';
+import { setFailure, setSuccess } from 'reducers/main';
 
-export default function InfraSelectorEditionActionsBarDelete(props) {
-  const { getInfrasList, setRunningDelete, infra } = props;
+type InfraSelectorEditionActionsBarDeleteProps = {
+  infra: Infra;
+  setRunningDelete: (infraId?: number) => void;
+};
+
+export default function InfraSelectorEditionActionsBarDelete({
+  infra,
+  setRunningDelete,
+}: InfraSelectorEditionActionsBarDeleteProps) {
   const { t } = useTranslation('infraManagement');
+  const dispatch = useDispatch();
 
-  async function deleteInfra() {
+  const [deleteInfra] = osrdEditoastApi.useDeleteInfraByIdMutation();
+
+  async function handleDeleteInfra() {
     try {
-      await deleteRequest(`${INFRA_URL}${infra.id}/`);
+      await deleteInfra({ id: infra.id });
       setRunningDelete(undefined);
-      // getInfrasList();
+      dispatch(
+        setSuccess({
+          title: t('infraDeleted', { name: infra.name }),
+          text: '',
+        })
+      );
     } catch (e) {
-      /* empty */
+      if (e instanceof Error) {
+        dispatch(
+          setFailure({
+            name: e.name,
+            message: e.message,
+          })
+        );
+      }
     }
   }
 
-  const countDownDelete = ({ seconds, completed }) => {
+  const countDownDelete = ({ seconds, completed }: { seconds: number; completed: boolean }) => {
     if (completed) {
       return (
         <button
           type="button"
           className="infraslist-item-edition-delete-buttons yes"
-          onClick={deleteInfra}
+          onClick={handleDeleteInfra}
         >
           {t('yes')}
         </button>
@@ -59,9 +81,3 @@ export default function InfraSelectorEditionActionsBarDelete(props) {
     </div>
   );
 }
-
-InfraSelectorEditionActionsBarDelete.propTypes = {
-  // getInfrasList: PropTypes.func.isRequired,
-  infra: PropTypes.object.isRequired,
-  setRunningDelete: PropTypes.func.isRequired,
-};
