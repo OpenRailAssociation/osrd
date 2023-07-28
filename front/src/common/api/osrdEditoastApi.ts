@@ -72,7 +72,10 @@ const injectedRtkApi = api
         query: () => ({ url: `/health/` }),
       }),
       getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
-        query: () => ({ url: `/infra/` }),
+        query: (queryArg) => ({
+          url: `/infra/`,
+          params: { page: queryArg.page, page_size: queryArg.pageSize },
+        }),
         providesTags: ['infra'],
       }),
       postInfra: build.mutation<PostInfraApiResponse, PostInfraApiArg>({
@@ -660,13 +663,18 @@ export type GetElectricalProfileSetByIdLevelOrderApiArg = {
 };
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
-export type GetInfraApiResponse = /** status 200 The infra list */ {
+export type GetInfraApiResponse = /** status 200 The infras list */ {
   count: number;
   next: any;
   previous: any;
   results?: Infra[];
 };
-export type GetInfraApiArg = void;
+export type GetInfraApiArg = {
+  /** Page number */
+  page?: number;
+  /** Number of elements by page */
+  pageSize?: number;
+};
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
 export type PostInfraApiArg = {
   /** Name of the infra to create */

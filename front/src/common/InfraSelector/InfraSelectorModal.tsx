@@ -24,7 +24,11 @@ const InfraSelectorModal = ({
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState<Infra[]>([]);
   const [editionMode, setEditionMode] = useState(false);
-  const { data: infrasList, isSuccess, isLoading } = osrdEditoastApi.useGetInfraQuery();
+  const {
+    data: infrasList,
+    isSuccess,
+    isLoading,
+  } = osrdEditoastApi.useGetInfraQuery({ pageSize: 1000 });
 
   const debouncedFilter = useDebounce(filter, 250);
 
