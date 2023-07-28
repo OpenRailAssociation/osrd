@@ -2486,6 +2486,22 @@ paths:
           description: Check if Editoast is running correctly
   /infra/:
     get:
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+      - description: Number of elements by page
+        in: query
+        name: page_size
+        schema:
+          default: 25
+          maximum: 10000
+          minimum: 1
+          type: integer
       responses:
         '200':
           content:
@@ -2505,8 +2521,8 @@ paths:
                 - next
                 - previous
                 type: object
-          description: The infra list
-      summary: List all available infra
+          description: The infras list
+      summary: Paginated list of all available infras
       tags:
       - infra
     post:

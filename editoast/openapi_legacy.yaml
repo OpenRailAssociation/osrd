@@ -173,10 +173,26 @@ paths:
     get:
       tags:
         - infra
-      summary: List all available infra
+      summary: Paginated list of all available infras
+      parameters:
+        - description: Page number
+          in: query
+          name: page
+          schema:
+            default: 1
+            minimum: 1
+            type: integer
+        - description: Number of elements by page
+          in: query
+          name: page_size
+          schema:
+            default: 25
+            maximum: 10000
+            minimum: 1
+            type: integer
       responses:
         200:
-          description: The infra list
+          description: The infras list
           content:
             application/json:
               schema:
