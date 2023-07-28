@@ -1,16 +1,26 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { FaLock, FaTrash } from 'react-icons/fa';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
-import { editoastUpToDateIndicator } from './InfraSelectorModalBodyStandard';
+import { Infra } from 'common/api/osrdEditoastApi';
 import ActionsBar from './InfraSelectorEditionActionsBar';
+import { editoastUpToDateIndicator } from './InfraSelectorModalBodyStandard';
 import InfraSelectorEditionActionsBarDelete from './InfraSelectorEditionActionsBarDelete';
 
-export default function InfraSelectorEditionItem(props) {
-  const { infra, isFocused, setIsFocused, runningDelete, setRunningDelete } = props;
+type InfraSelectorEditionItemProps = {
+  infra: Infra;
+  isFocused?: number;
+  setIsFocused: (infraId?: number) => void;
+};
+
+export default function InfraSelectorEditionItem({
+  infra,
+  isFocused,
+  setIsFocused,
+}: InfraSelectorEditionItemProps) {
   const [value, setValue] = useState(infra.name);
+  const [runningDelete, setRunningDelete] = useState<number | undefined>(undefined);
   const { t } = useTranslation('infraManagement');
 
   const handleRunningDelete = () => {
@@ -83,16 +93,3 @@ export default function InfraSelectorEditionItem(props) {
     </div>
   );
 }
-
-InfraSelectorEditionItem.defaultProps = {
-  isFocused: undefined,
-  runningDelete: undefined,
-};
-
-InfraSelectorEditionItem.propTypes = {
-  infra: PropTypes.object.isRequired,
-  isFocused: PropTypes.number,
-  setIsFocused: PropTypes.func.isRequired,
-  runningDelete: PropTypes.number,
-  setRunningDelete: PropTypes.func.isRequired,
-};

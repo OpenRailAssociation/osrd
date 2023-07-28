@@ -18,7 +18,6 @@ const InfraSelectorModalBodyEdition = ({
   filter = '',
 }: InfraSelectorModalBodyEditionProps) => {
   const [isFocused, setIsFocused] = useState<number | undefined>(undefined);
-  const [runningDelete, setRunningDelete] = useState<number | undefined>(undefined);
   const [nameNewInfra, setNameNewInfra] = useState<string | undefined>('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>('');
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
@@ -103,8 +102,6 @@ const InfraSelectorModalBodyEdition = ({
               infra={infra}
               key={nextId()}
               isFocused={isFocused}
-              runningDelete={runningDelete}
-              setRunningDelete={setRunningDelete}
               setIsFocused={setIsFocused}
             />
           ))}
