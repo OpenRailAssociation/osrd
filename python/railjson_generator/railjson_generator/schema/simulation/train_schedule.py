@@ -1,6 +1,16 @@
 from dataclasses import dataclass, field
 from typing import List
 
+from osrd_schemas.train_schedule import (
+    Allowance,
+    AllowanceDistribution,
+    AllowancePercentValue,
+    AllowanceTimePerDistanceValue,
+    AllowanceTimeValue,
+    EngineeringAllowance,
+    StandardAllowance,
+)
+
 from railjson_generator.schema.location import DirectedLocation
 from railjson_generator.schema.simulation.stop import Stop
 
@@ -18,6 +28,7 @@ class TrainSchedule:
     departure_time: float = field(default=0.0)
     initial_speed: float = field(default=0.0)
     stops: List[Stop] = field(default_factory=list)
+    allowances: List[Allowance] = field(default_factory=list)
 
     _INDEX = 0
 
@@ -25,6 +36,31 @@ class TrainSchedule:
         stop = Stop(*args, **kwargs)
         self.stops.append(stop)
         return stop
+
+    def add_allowance(self, *args, engineering: bool = False, **kwargs):
+        """Add an allowance to the train schedule. For more information on allowances, see
+        the documentation of the Allowance class in osrd_schemas."""
+        if engineering:
+            allowance = EngineeringAllowance(*args, **kwargs)
+        else:
+            allowance = StandardAllowance(*args, **kwargs)
+        self.allowances.append(allowance)
+
+    def add_standard_single_value_allowance(self, value_kind: str, value: float, distribution: str = "LINEAR"):
+        """Add a standard allowance with a single value. For more information on allowances, see
+        the documentation of the Allowance class in osrd_schemas."""
+        if value_kind == "time":
+            value = AllowanceTimeValue(seconds=value)
+        elif value_kind == "time_per_distance":
+            value = AllowanceTimePerDistanceValue(minutes=value)
+        elif value_kind == "percent":
+            value = AllowancePercentValue(percentage=value)
+        else:
+            raise ValueError(f"Unknown value kind {value_kind}")
+
+        distribution = AllowanceDistribution(distribution)
+
+        self.add_allowance(default_value=value, distribution=distribution, ranges=[], capacity_speed_limit=-1)
 
     def format(self):
         stops = list(self.stops)
@@ -35,6 +71,7 @@ class TrainSchedule:
             "initial_speed": self.initial_speed,
             "rolling_stock": self.rolling_stock,
             "stops": [s.format() for s in stops],
+            "allowances": [a.dict() for a in self.allowances],
         }
 
 
