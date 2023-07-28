@@ -8,6 +8,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.meters
 
 data class IdxWithOffset<T>(
@@ -36,6 +37,8 @@ interface Path {
     fun getCatenary(): DistanceRangeMap<String>
     @JvmName("getDeadSections")
     fun getDeadSections(): DistanceRangeMap<DeadSection>
+    @JvmName("getSpeedLimits")
+    fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
     @JvmName("getLength")
     fun getLength(): Distance
 

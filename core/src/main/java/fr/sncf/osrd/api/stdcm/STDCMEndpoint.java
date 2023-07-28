@@ -8,7 +8,7 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.stdcm.STDCMStep;
 import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
+import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
@@ -124,7 +124,7 @@ public class STDCMEndpoint implements Take {
             // Build the response
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
-                    MRSP.from(res.trainPath(), rollingStock, false, tag)
+                    LegacyMRSP.from(res.trainPath(), rollingStock, false, tag)
             ));
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.sim_infra_adapter
 
 import fr.sncf.osrd.Helpers
+import fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
@@ -9,13 +10,17 @@ import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint
 import fr.sncf.osrd.railjson.schema.infra.trackranges.*
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.train.TestTrains.MAX_SPEED
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Speed.Companion.fromMetersPerSecond
 import fr.sncf.osrd.utils.units.meters
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.util.Map
 import kotlin.math.absoluteValue
 import kotlin.test.assertEquals
 
@@ -298,6 +303,22 @@ class PathTests {
         val loadingGauge = pathBackward.getLoadingGauge()
         assert(loadingGauge.get(0.meters)!!.isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt())))
         assert(!loadingGauge.get(1_000.meters)!!.isCompatibleWith(StaticIdx(RJSLoadingGaugeType.GC.ordinal.toUInt())))
+    }
+
+    @Test
+    fun testSmallInfraSpeedLimits() {
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")!!
+        val speedSection = RJSSpeedSection("speedSection", 30.0, Map.of("trainTag", 42.42),
+            listOf(RJSApplicableDirectionsTrackRange("TA0", ApplicableDirection.BOTH, 0.0, 400.0)))
+        rjsInfra.speedSections.add(speedSection)
+        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val path = makePath(infra.blockInfra, infra.rawInfra, 1);
+        val speedLimits = path.getSpeedLimits("trainTag")
+        assertThat(speedLimits.asList()).containsExactlyElementsOf(
+            listOf(
+                DistanceRangeMap.RangeMapEntry(0.meters, 400.meters, fromMetersPerSecond(42.42)),
+                DistanceRangeMap.RangeMapEntry(400.meters, 1_820.meters, fromMetersPerSecond(MAX_SPEED)))
+        )
     }
 
     /** Assert that line strings are equal, with a certain tolerance for double values */
