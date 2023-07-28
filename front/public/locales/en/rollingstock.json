@@ -22,11 +22,9 @@
   "electricOnly": "Electric only",
   "equipement": "Equipment",
   "errorMessages": {
-    "missingInformation": "missing informations",
-    "must be number": "must be a number",
-    "minMaxRangeError": "the value must be between {{min}} and {{max}}",
-    "minRangeError": "the value must be greater than {{min}}",
-    "must be equal to one of the allowed values": "must be equal to one of the allowed values",
+    "missingInformation": "Missing informations",
+    "minMaxRangeError": "The value must be between {{min}} and {{max}}",
+    "minRangeError": "The value must be greater than {{min}}",
     "unableToRetrieveRollingStock": "Cannot fetch rolling stock",
     "unableToRetrieveRollingStockMessage": "An error has occurred",
     "ressourcesNotFound": "Resources not found"

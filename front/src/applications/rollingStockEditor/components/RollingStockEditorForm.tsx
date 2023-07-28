@@ -1,21 +1,25 @@
-import React, { SetStateAction, useEffect, useState } from 'react';
+import React, { SetStateAction, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  RollingStock,
-  osrdEditoastApi,
-  RollingStockUpsertPayload,
-  EffortCurve,
-} from 'common/api/osrdEditoastApi';
+import { RollingStock, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useDispatch } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import InputGroupSNCF, { InputGroupSNCFValue } from 'common/BootstrapSNCF/InputGroupSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import schema from '../json/rollingStockEditorData.json';
 import RollingStockEditorFormModal from './RollingStockEditorFormModal';
-import { Metadata, Parameter, RollingStockParametersValues, SchemaProperty } from '../consts';
+import {
+  RollingStockEditorMetadata,
+  RollingStockEditorParameter,
+  RollingStockParametersValues,
+  RollingStockschemaProperties,
+  SchemaProperty,
+} from '../consts';
 import RollingStockEditorCurves from './RollingStockEditorCurves';
+import getRollingStockEditorDefaultValues, {
+  getDefaultRollingStockMode,
+  rollingStockEditorQueryArg,
+} from '../utils';
 
 type RollingStockParametersProps = {
   rollingStockData?: RollingStock;
@@ -34,90 +38,36 @@ const RollingStockEditorForm = ({
   const [postRollingstock] = osrdEditoastApi.usePostRollingStockMutation();
   const [patchRollingStock] = osrdEditoastApi.usePatchRollingStockByIdMutation();
 
-  const RollingStockschemaProperties = Object.values(schema) as SchemaProperty[];
-
-  const [optionValue, setOptionValue] = useState<string>('');
-
   const [isCurrentEffortCurveDefault, setIsCurrentEffortCurveDefault] = useState<boolean>(true);
   const [isValid, setIsValid] = useState<boolean>(true);
+  const [optionValue, setOptionValue] = useState<string>('');
 
   const selectedMode = rollingStockData
     ? Object.keys(rollingStockData.effort_curves.modes)[0]
     : 'thermal';
 
-  const defaultRollingstockMode: RollingStock['effort_curves'] = {
-    default_mode: selectedMode,
-    modes: {
-      [`${selectedMode}`]: {
-        curves: [
-          {
-            cond: {
-              comfort: 'STANDARD',
-              electrical_profile_level: null,
-              power_restriction_code: null,
-            },
-            curve: {
-              max_efforts: [0],
-              speeds: [0],
-            },
-          },
-        ],
-        default_curve: {
-          max_efforts: [],
-          speeds: [],
-        },
-        is_electric: false,
-      },
-    },
-  };
+  const defaultRollingStockMode = useMemo(
+    () => getDefaultRollingStockMode(selectedMode),
+    [selectedMode]
+  );
 
   const [currentRsEffortCurve, setCurrentRsEffortCurve] =
-    useState<RollingStock['effort_curves']>(defaultRollingstockMode);
+    useState<RollingStock['effort_curves']>(defaultRollingStockMode);
 
-  const defaultValues: RollingStockParametersValues = {
-    railjsonVersion: rollingStockData?.railjson_version || '',
-    name: rollingStockData?.name || '',
-    detail: rollingStockData?.metadata.detail || '',
-    family: rollingStockData?.metadata.family || '',
-    grouping: rollingStockData?.metadata.grouping || '',
-    number: rollingStockData?.metadata.number || '',
-    reference: rollingStockData?.metadata.reference || '',
-    series: rollingStockData?.metadata.series || '',
-    subseries: rollingStockData?.metadata.subseries || '',
-    type: rollingStockData?.metadata.type || '',
-    unit: rollingStockData?.metadata.unit || '',
-    length: rollingStockData?.length || 0,
-    mass: rollingStockData ? rollingStockData.mass / 1000 : 0, // The mass received is in kg and should appear in tons.
-    maxSpeed: rollingStockData ? rollingStockData.max_speed * 3.6 : 0, // The speed received is in m/s and should appear in km/h.
-    startupTime: rollingStockData?.startup_time || 0,
-    startupAcceleration: rollingStockData?.startup_acceleration || 0,
-    comfortAcceleration: rollingStockData?.comfort_acceleration || 0.01,
-    gammaValue: rollingStockData?.gamma.value || 0.01,
-    inertiaCoefficient: rollingStockData?.inertia_coefficient || 1,
-    loadingGauge: rollingStockData?.loading_gauge || 'G1',
-    rollingResistanceA: rollingStockData?.rolling_resistance.A || 0,
-    rollingResistanceB: rollingStockData?.rolling_resistance.B || 0,
-    rollingResistanceC: rollingStockData?.rolling_resistance.C || 0,
-    electricalPowerStartupTime: rollingStockData?.electrical_power_startup_time || null,
-    raisePantographTime: rollingStockData?.raise_pantograph_time || null,
-    defaultMode: rollingStockData?.effort_curves.default_mode || selectedMode,
-    effortCurves: {
-      modes: {
-        [`${selectedMode}`]: {
-          curves: defaultRollingstockMode.modes[`${selectedMode}`].curves,
-          isElectric: defaultRollingstockMode.modes[`${selectedMode}`].is_electric,
-          defaultCurve: defaultRollingstockMode.modes[`${selectedMode}`].default_curve,
-        },
-      },
-    },
-  };
+  const defaultValues: RollingStockParametersValues = useMemo(
+    () => getRollingStockEditorDefaultValues(selectedMode, rollingStockData),
+    [rollingStockData, selectedMode, defaultRollingStockMode]
+  );
 
-  const [rollingStockValues, setRollingStockValues] =
-    useState<RollingStockParametersValues>(defaultValues);
+  const [rollingStockValues, setRollingStockValues] = useState(defaultValues);
 
   const metadataForm = (data: SchemaProperty[]) =>
     data
-      .filter((property) => property.title === Metadata[property.title as Metadata])
+      .filter(
+        (property) =>
+          property.title ===
+          RollingStockEditorMetadata[property.title as RollingStockEditorMetadata]
+      )
       .map((property) => (
         <InputSNCF
           id={property.title}
@@ -136,7 +86,11 @@ const RollingStockEditorForm = ({
 
   const parameterForm = (data: SchemaProperty[]) =>
     data
-      .filter((property) => property.title === Parameter[property.title as Parameter])
+      .filter(
+        (property) =>
+          property.title ===
+          RollingStockEditorParameter[property.title as RollingStockEditorParameter]
+      )
       .map((property) => {
         if (property.enum) {
           return (
@@ -161,6 +115,7 @@ const RollingStockEditorForm = ({
                   });
                 }}
                 sm
+                key={property.title}
               />
             </div>
           );
@@ -197,8 +152,13 @@ const RollingStockEditorForm = ({
               }
               errorMsg={
                 property.max
-                  ? t('errorMessages.minMaxRangeError', { min: property.min, max: property.max })
-                  : t('errorMessages.minRangeError', { min: property.min })
+                  ? t('errorMessages.minMaxRangeError', {
+                      min: property.min?.toString().replace('.', ','),
+                      max: property.max?.toString().replace('.', ','),
+                    })
+                  : t('errorMessages.minRangeError', {
+                      min: property.min?.toString().replace('.', ','),
+                    })
               }
               step="any"
               sm
@@ -222,8 +182,13 @@ const RollingStockEditorForm = ({
             }
             errorMsg={
               property.max
-                ? t('errorMessages.minMaxRangeError', { min: property.min, max: property.max })
-                : t('errorMessages.minRangeError', { min: property.min })
+                ? t('errorMessages.minMaxRangeError', {
+                    min: property.min?.toString().replace('.', ','),
+                    max: property.max?.toString().replace('.', ','),
+                  })
+                : t('errorMessages.minRangeError', {
+                    min: property.min?.toString().replace('.', ','),
+                  })
             }
             unit={property.unit}
             value={rollingStockValues[property.title] as number}
@@ -240,62 +205,11 @@ const RollingStockEditorForm = ({
         );
       });
 
-  const queryArg = (data: RollingStockParametersValues): RollingStockUpsertPayload => ({
-    railjson_version: data.railjsonVersion,
-    name: data.name,
-    length: data.length,
-    max_speed: data.maxSpeed / 3.6, // The user enters a value in km/h, which is then interpreted in m/s by the server.
-    startup_time: data.startupTime,
-    startup_acceleration: data.startupAcceleration,
-    comfort_acceleration: data.comfortAcceleration,
-    gamma: {
-      type: 'CONST',
-      value: data.gammaValue,
-    },
-    inertia_coefficient: data.inertiaCoefficient,
-    features: [],
-    mass: data.mass * 1000, // Here we receive a value in ton which will be interpreted in kg by the server.
-    rolling_resistance: {
-      A: data.rollingResistanceA,
-      B: data.rollingResistanceB,
-      C: data.rollingResistanceC,
-      type: 'davis',
-    },
-    loading_gauge: data.loadingGauge,
-    base_power_class: '',
-    power_restrictions: {},
-    energy_sources: [],
-    electrical_power_startup_time: data.electricalPowerStartupTime,
-    raise_pantograph_time: data.raisePantographTime,
-    metadata: {
-      detail: data.detail || data.name,
-      family: data.family,
-      grouping: data.grouping,
-      number: data.number,
-      reference: data.reference || data.name,
-      series: data.series,
-      subseries: data.subseries,
-      type: data.type,
-      unit: data.unit,
-    },
-    effort_curves: {
-      default_mode: selectedMode,
-      modes: {
-        [`${selectedMode}`]: {
-          curves: currentRsEffortCurve.modes[`${selectedMode}`].curves,
-          is_electric: currentRsEffortCurve.modes[`${selectedMode}`].is_electric,
-          default_curve: isAdding
-            ? (currentRsEffortCurve.modes[`${selectedMode}`].curves[0].curve as EffortCurve)
-            : currentRsEffortCurve.modes[`${selectedMode}`].default_curve,
-        },
-      },
-    },
-  });
-
-  const addNewRollingstock = (data: RollingStockParametersValues) => {
+  const addNewRollingstock = (data: RollingStockParametersValues) => () => {
+    const queryArg = rollingStockEditorQueryArg(data, selectedMode, currentRsEffortCurve, isAdding);
     postRollingstock({
       locked: false,
-      rollingStockUpsertPayload: queryArg(data),
+      rollingStockUpsertPayload: queryArg,
     })
       .unwrap()
       .then(() => {
@@ -326,11 +240,12 @@ const RollingStockEditorForm = ({
       });
   };
 
-  const updateRollingStock = (data: RollingStockParametersValues) => {
+  const updateRollingStock = (data: RollingStockParametersValues) => () => {
+    const queryArg = rollingStockEditorQueryArg(data, selectedMode, currentRsEffortCurve);
     if (rollingStockData) {
       patchRollingStock({
         id: rollingStockData?.id as number,
-        rollingStockUpsertPayload: queryArg(data),
+        rollingStockUpsertPayload: queryArg,
       })
         .unwrap()
         .then(() => {
@@ -367,8 +282,7 @@ const RollingStockEditorForm = ({
     openModal(
       <RollingStockEditorFormModal
         setAddOrEditState={setAddOrEditState}
-        data={data}
-        request={isAdding ? addNewRollingstock : updateRollingStock}
+        request={isAdding ? addNewRollingstock(data) : updateRollingStock(data)}
         mainText={t('confirmAction')}
         buttonText={t('translation:common.confirm')}
       />
@@ -389,7 +303,8 @@ const RollingStockEditorForm = ({
     setIsValid(true);
     RollingStockschemaProperties.forEach((property) => {
       if (
-        (property.title === Parameter[property.title as Parameter] &&
+        (property.title ===
+          RollingStockEditorParameter[property.title as RollingStockEditorParameter] &&
           Number.isNaN(rollingStockValues[property.title])) ||
         (rollingStockValues[property.title] as number) < (property.min as number) ||
         (rollingStockValues[property.title] as number) > (property.max as number)

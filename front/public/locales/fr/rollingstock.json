@@ -23,10 +23,8 @@
   "equipement": "Équipement",
   "errorMessages": {
     "missingInformation": "Informations manquantes",
-    "must be number": "Nombre requis",
-    "minMaxRangeError": "la valeur doit être comprise entre {{min}} et {{max}}",
-    "minRangeError": "la valeur doit être supérieure ou égale à {{min}}",
-    "must be equal to one of the allowed values": "Valeur autorisée requise",
+    "minMaxRangeError": "La valeur doit être comprise entre {{min}} et {{max}}",
+    "minRangeError": "La valeur doit être supérieure ou égale à {{min}}",
     "rollingStockUsed": "Le Matériel roulant est utilisé dans les scénarios suivants:",
     "unableToRetrieveRollingStock": "Récupération matériel impossible",
     "unableToRetrieveRollingStockMessage": "Une erreur est survenue",
