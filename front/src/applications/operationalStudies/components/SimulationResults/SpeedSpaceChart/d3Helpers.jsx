@@ -90,7 +90,6 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
       dataSimulation.areaBlock,
       'speedSpaceChart',
       'curveLinear',
-      SPEED_SPACE_CHART_KEY_VALUES,
       rotate
     );
 
@@ -169,7 +168,6 @@ function drawTrain(dataSimulation, rotate, speedSpaceSettings, chart) {
         dataSimulation.areaSlopesHistogram,
         'speedSpaceChart',
         'curveMonotoneX',
-        ['position', 'gradient'],
         rotate
       );
     }

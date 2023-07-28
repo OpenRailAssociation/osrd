@@ -142,7 +142,6 @@ export default function SpaceCurvesSlopes(props) {
           dataSimulation.areaSlopesHistogram,
           'curvesSlopesChart',
           'curveMonotoneX',
-          ['position', 'gradient'],
           rotate
         );
       }

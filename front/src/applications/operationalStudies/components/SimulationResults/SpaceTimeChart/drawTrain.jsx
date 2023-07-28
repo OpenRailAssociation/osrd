@@ -102,11 +102,7 @@ export default function drawTrain(
           `${isSelected && 'selected'} route-aspect`,
           ecoRouteAspect,
           groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeEndOccupancy',
-          rotate,
-          isSelected
+          rotate
         );
       });
     } else {
@@ -117,11 +113,7 @@ export default function drawTrain(
           `${isSelected && 'selected'} route-aspect`,
           routeAspect,
           groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeEndOccupancy',
           rotate,
-          isSelected,
           `${groupID}${routeAspect.route_id}${routeAspect.color}`
         );
       });
