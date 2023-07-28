@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Union
 
 from pydantic import BaseModel, Field, constr
 
@@ -94,12 +94,10 @@ class EngineeringAllowance(RangeAllowance):
 
     allowance_type: Literal["engineering"] = Field(default="engineering")
     distribution: AllowanceDistribution = Field(description="The considered distribution of an allowance")
-    capacity_speed_limit: Optional[float] = Field(
-        description="Maximum speed measured in meters per second that cannot be exceeded", gt=0
+    capacity_speed_limit: float = Field(
+        description="Speed (m/s) that cannot be exceeded (defaults to -1 for no maximum)",
+        default=-1,
     )
-
-    def dict(self, exclude_none=True, **kwargs):
-        return super.dict(exclude_none=exclude_none, **kwargs)
 
 
 class StandardAllowance(BaseModel):
@@ -113,12 +111,10 @@ class StandardAllowance(BaseModel):
     default_value: AllowanceValue = Field(description="Type of value of the allowance")
     ranges: List[RangeAllowance] = Field(description="List of the different application ranges of the allowances")
     distribution: AllowanceDistribution = Field(description="The considered distribution of an allowance")
-    capacity_speed_limit: Optional[float] = Field(
-        description="Maximum speed measured in meters per second that cannot be exceeded", gt=0
+    capacity_speed_limit: float = Field(
+        description="Speed (m/s) that cannot be exceeded (defaults to -1 for no maximum)",
+        default=-1,
     )
-
-    def dict(self, exclude_none=True, **kwargs):
-        return super.dict(exclude_none=exclude_none, **kwargs)
 
 
 class Allowance(BaseModel):
