@@ -1,9 +1,10 @@
 package fr.sncf.osrd.sim_infra.api
 
-import fr.sncf.osrd.utils.units.*
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.OffsetList
 
 /** A fixed size signaling block */
 sealed interface Block

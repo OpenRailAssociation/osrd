@@ -1,9 +1,11 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.external_generated_inputs.ElectricalProfileMappingTest.verifyProfileMap;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import org.junit.jupiter.api.Test;
@@ -18,22 +20,23 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
         var profileMap =
                 electricalProfileSetManager.getProfileMap("small_infra/external_generated_inputs.json");
 
-        assert profileMap != null;
         verifyProfileMap(profileMap);
     }
 
     @Test
     public void testSoftError() {
-        var error = assertThrows(OSRDError.class,
-                () -> electricalProfileSetManager.getProfileMap("small_infra/invalid.json"));
-        assert error.osrdErrorType == ErrorType.EPSetSoftLoadingError;
+        assertThatThrownBy(() -> electricalProfileSetManager.getProfileMap("small_infra/invalid.json"))
+                .isExactlyInstanceOf(OSRDError.class)
+                .satisfies(exception ->
+                        assertThat(((OSRDError) exception).osrdErrorType).isEqualTo(ErrorType.EPSetSoftLoadingError));
     }
 
     @Test
     public void testHardError() {
-        var error = assertThrows(OSRDError.class,
-                () -> electricalProfileSetManager.getProfileMap("small_infra/infra.json"));
-        assert error.osrdErrorType == ErrorType.EPSetHardLoadingError;
+        assertThatThrownBy(() -> electricalProfileSetManager.getProfileMap("small_infra/infra.json"))
+                .isExactlyInstanceOf(OSRDError.class)
+                .satisfies(exception ->
+                        assertThat(((OSRDError) exception).osrdErrorType).isEqualTo(ErrorType.EPSetHardLoadingError));
     }
 
     @Test
@@ -42,13 +45,29 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
         var newPath = path.resolveSibling("external_generated_inputs.json.tmp");
         var testID = "small_infra/external_generated_inputs.json.tmp";
 
-        var error = assertThrows(OSRDError.class, () -> electricalProfileSetManager.getProfileMap(testID));
-        assert error.osrdErrorType == ErrorType.EPSetSoftLoadingError;
+        assertThatThrownBy(() -> electricalProfileSetManager.getProfileMap(testID))
+                .isExactlyInstanceOf(OSRDError.class)
+                .satisfies(exception ->
+                        assertThat(((OSRDError) exception).osrdErrorType).isEqualTo(ErrorType.EPSetSoftLoadingError));
         assert electricalProfileSetManager.cache.get(testID).status
                 == ElectricalProfileSetManager.CacheStatus.TRANSIENT_ERROR;
 
         Files.copy(path, newPath, StandardCopyOption.REPLACE_EXISTING).toFile().deleteOnExit();
         var profileMap = electricalProfileSetManager.getProfileMap(testID);
+        verifyProfileMap(profileMap);
+    }
+
+    /**
+     * Check that a profile map is coherent
+     */
+    public static void verifyProfileMap(ElectricalProfileMapping profileMap) {
         assert profileMap != null;
+        assertNotEquals(0, profileMap.getMapping().size());
+        for (var byTrack : profileMap.getMapping().entrySet()) {
+            assertNotEquals(0, byTrack.getValue().size());
+            for (var byRange : byTrack.getValue().entrySet()) {
+                assertNotEquals(0, byRange.getValue().asList().size());
+            }
+        }
     }
 }

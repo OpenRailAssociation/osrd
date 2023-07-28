@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PathfindingBlocksEndpoint implements Take {
     private final InfraManager infraManager;
@@ -155,7 +156,7 @@ public class PathfindingBlocksEndpoint implements Take {
         for (int i = 0; i < waypoints.size() - 1; i++) {
             remainingDistanceEstimators.add(new RemainingDistanceEstimator(
                     infra.blockInfra(),
-                    infra.rawInfra().getSimInfra(),
+                    infra.rawInfra(),
                     waypoints.get(i + 1),
                     stepMinDistance[i]
             ));
@@ -203,6 +204,19 @@ public class PathfindingBlocksEndpoint implements Take {
     }
 
     /**
+     * Returns all the EdgeLocations of a waypoint list.
+     * @param infra full infra.
+     * @param waypoints corresponding waypoints.
+     * @return corresponding edge locations.
+     */
+    public static Set<Pathfinding.EdgeLocation<Integer>> findWaypointBlocks(FullInfra infra,
+                                                                            Collection<PathfindingWaypoint> waypoints) {
+        return waypoints.stream()
+                .flatMap(waypoint -> findWaypointBlocks(infra, waypoint).stream())
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * Returns all the EdgeLocations of a waypoint.
      * @param infra full infra.
      * @param waypoint corresponding waypoint.
@@ -242,7 +256,7 @@ public class PathfindingBlocksEndpoint implements Take {
 
     }
 
-    private static double getBlockOffset(int blockId, int trackChunkId, int trackSectionId, double waypointOffsetMeters,
+    private static long getBlockOffset(int blockId, int trackChunkId, int trackSectionId, double waypointOffsetMeters,
                                          EdgeDirection direction, FullInfra infra) {
         var waypointOffset = fromMeters(waypointOffsetMeters);
         var trackSectionLength = infra.rawInfra().getTrackSectionLength(trackSectionId);

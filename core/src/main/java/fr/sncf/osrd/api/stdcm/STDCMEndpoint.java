@@ -1,32 +1,31 @@
 package fr.sncf.osrd.api.stdcm;
 
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
+
 import fr.sncf.osrd.api.ExceptionHandler;
+import fr.sncf.osrd.api.FullInfra;
 import fr.sncf.osrd.api.InfraManager;
-import fr.sncf.osrd.api.pathfinding.LegacyPathfindingResultConverter;
-import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
-import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.stdcm.STDCMStep;
-import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
+import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
+import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
+import fr.sncf.osrd.sim_infra.api.InterlockingInfraKt;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
-import fr.sncf.osrd.stdcm.preprocessing.implementation.RouteAvailabilityLegacyAdapter;
+import fr.sncf.osrd.stdcm.STDCMStep;
+import fr.sncf.osrd.stdcm.graph.STDCMPathfinding;
+import fr.sncf.osrd.stdcm.preprocessing.implementation.BlockAvailabilityLegacyAdapter;
 import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
-import fr.sncf.osrd.utils.graph.Pathfinding.EdgeLocation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -35,26 +34,17 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 
 public class STDCMEndpoint implements Take {
-    static final Logger logger = LoggerFactory.getLogger(STDCMEndpoint.class);
 
     private final InfraManager infraManager;
 
     public STDCMEndpoint(InfraManager infraManager) {
         this.infraManager = infraManager;
-    }
-
-    private static Set<EdgeLocation<SignalingRoute>> findRoutes(
-            SignalingInfra infra,
-            Collection<PathfindingWaypoint> waypoints
-    ) {
-        var res = new HashSet<EdgeLocation<SignalingRoute>>();
-        for (var waypoint : waypoints)
-            res.addAll(PathfindingRoutesEndpoint.findRoutes(infra, waypoint));
-        return res;
     }
 
     @Override
@@ -75,8 +65,7 @@ public class STDCMEndpoint implements Take {
             if (Double.isNaN(startTime))
                 throw new OSRDError(ErrorType.InvalidSTDCMUnspecifiedStartTime);
             // TODO : change with get infra when the front is ready
-            final var fullInfra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
-            final var infra = fullInfra.java();
+            final var infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder);
             final var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             final var comfort = RJSRollingStockParser.parseComfort(request.comfort);
             final var steps = parseSteps(infra, request.steps);
@@ -92,9 +81,10 @@ public class STDCMEndpoint implements Take {
 
             // Build the unavailable space
             // temporary workaround, to remove with new signaling
-            occupancies = addWarningOccupancies(infra, occupancies);
+            occupancies = addWarningOccupancies(infra.rawInfra(), occupancies);
             var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
-                    infra,
+                    infra.rawInfra(),
+                    infra.blockInfra(),
                     occupancies,
                     rollingStock,
                     request.gridMarginAfterSTDCM,
@@ -109,7 +99,7 @@ public class STDCMEndpoint implements Take {
                     startTime,
                     endTime,
                     steps,
-                    new RouteAvailabilityLegacyAdapter(unavailableSpace),
+                    new BlockAvailabilityLegacyAdapter(infra.blockInfra(), unavailableSpace),
                     request.timeStep,
                     request.maximumDepartureDelay,
                     request.maximumRunTime,
@@ -124,16 +114,17 @@ public class STDCMEndpoint implements Take {
             // Build the response
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
-                    MRSP.from(res.trainPath(), rollingStock, false, tag)
+                    MRSP.computeMRSP(res.trainPath(), rollingStock, false, tag)
             ));
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
                     makeTrainSchedule(res.envelope().getEndPos(), rollingStock, comfort, res.stopResults()),
-                    fullInfra
+                    infra
             ));
             simResult.ecoSimulations.add(null);
-            var pathfindingRes = LegacyPathfindingResultConverter.convert(res.routes(), infra, recorder);
+            var pathfindingRes = PathfindingResultConverter.convert(infra.blockInfra(), infra.rawInfra(),
+                    res.blocks(), recorder);
             var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {
@@ -141,36 +132,29 @@ public class STDCMEndpoint implements Take {
         }
     }
 
-    private List<STDCMStep> parseSteps(
-            SignalingInfra infra,
-            List<STDCMRequest.STDCMStep> steps
-    ) {
+    private static List<STDCMStep> parseSteps(FullInfra infra, List<STDCMRequest.STDCMStep> steps) {
         return steps.stream()
-                .map(step -> new STDCMStep(findRoutes(infra, step.waypoints), step.stopDuration, step.stop))
+                .map(step -> new STDCMStep(PathfindingBlocksEndpoint.findWaypointBlocks(infra, step.waypoints),
+                        step.stopDuration, step.stop))
                 .toList();
     }
 
     /** The inputs only contains occupied blocks, we need to add the warning in the previous one (assuming BAL).
      * To be removed with new signaling. */
     private static Collection<STDCMRequest.RouteOccupancy> addWarningOccupancies(
-            SignalingInfra infra,
+            RawSignalingInfra rawInfra,
             Collection<STDCMRequest.RouteOccupancy> occupancies
     ) {
-        var result = new HashSet<>(occupancies);
-        var routeGraph = infra.getSignalingRouteGraph();
+        var warningOccupancies = new HashSet<>(occupancies);
         for (var occupancy : occupancies) {
-            var route = infra.findSignalingRoute(occupancy.id, "BAL3");
-            assert route != null;
-            var startRouteNode = routeGraph.incidentNodes(route).nodeU();
-            var predecessorRoutes = routeGraph.inEdges(startRouteNode);
-            for (var predecessor : predecessorRoutes)
-                result.add(new STDCMRequest.RouteOccupancy(
-                        predecessor.getInfraRoute().getID(),
-                        occupancy.startOccupancyTime,
-                        occupancy.endOccupancyTime
-                ));
+            var route = rawInfra.getRouteFromName(occupancy.id);
+            var previousRoutes = toIntList(rawInfra.getRoutesEndingAtDet(
+                    InterlockingInfraKt.getRouteEntry(rawInfra, route)));
+            for (var previousRoute : previousRoutes)
+                warningOccupancies.add(new STDCMRequest.RouteOccupancy(rawInfra.getRouteName(previousRoute),
+                        occupancy.startOccupancyTime, occupancy.endOccupancyTime));
         }
-        return result;
+        return warningOccupancies;
     }
 
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
@@ -185,4 +169,3 @@ public class STDCMEndpoint implements Take {
                 List.of(), null, comfort, null, null);
     }
 }
-

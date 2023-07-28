@@ -4,5 +4,5 @@ package fr.sncf.osrd.utils.graph.functional_interfaces;
  * It takes an edge and an offset on this edge as inputs, and returns an estimation of the remaining distance. */
 @FunctionalInterface
 public interface AStarHeuristic<EdgeT> {
-    double apply(EdgeT edge, double offset);
+    double apply(EdgeT edge, long offset);
 }

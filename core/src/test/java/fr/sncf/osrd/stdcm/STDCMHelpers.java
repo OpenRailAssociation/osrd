@@ -6,13 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.FullInfra;
+import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
@@ -20,30 +18,31 @@ import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
-import fr.sncf.osrd.utils.graph.LegacyGraphAdapter;
+import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.units.Distance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class STDCMHelpers {
     /** Make the occupancy multimap of a train going from point A to B starting at departureTime */
-    public static Multimap<SignalingRoute, OccupancyBlock> makeOccupancyFromPath(
+    public static Multimap<Integer, OccupancySegment> makeOccupancyFromPath(
             FullInfra infra,
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            Set<Pathfinding.EdgeLocation<Integer>> startLocations,
+            Set<Pathfinding.EdgeLocation<Integer>> endLocations,
             double departureTime
     ) {
-        var trainPath = makeTrainPath(infra.java(), startLocations, endLocations);
+        var trainPath = makeTrainPath(infra, startLocations, endLocations);
         var result = StandaloneSim.run(
                 infra,
                 trainPath,
-                EnvelopeTrainPath.from(trainPath),
+                EnvelopeTrainPath.from(infra.rawInfra(), trainPath),
                 List.of(new StandaloneTrainSchedule(
                         REALISTIC_FAST_TRAIN,
                         0,
                         new ArrayList<>(),
-                        List.of(new TrainStop(trainPath.length(), 1)),
+                        List.of(new TrainStop(Distance.toMeters(trainPath.getLength()), 1)),
                         List.of(),
                         null,
                         RollingStock.Comfort.STANDARD,
@@ -63,7 +62,8 @@ public class STDCMHelpers {
             ));
         }
         return UnavailableSpaceBuilder.computeUnavailableSpace(
-                infra.java(),
+                infra.rawInfra(),
+                infra.blockInfra(),
                 occupancies,
                 REALISTIC_FAST_TRAIN,
                 0,
@@ -72,39 +72,25 @@ public class STDCMHelpers {
     }
 
     /** Creates a train path object from start and end locations */
-    private static TrainPath makeTrainPath(
-            SignalingInfra infra,
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations
+    private static PathProperties makeTrainPath(
+            FullInfra infra,
+            Set<Pathfinding.EdgeLocation<Integer>> startLocations,
+            Set<Pathfinding.EdgeLocation<Integer>> endLocations
     ) {
-        var path = new Pathfinding<>(new LegacyGraphAdapter<>(infra.getSignalingRouteGraph()))
-                .setEdgeToLength(route -> route.getInfraRoute().getLength())
+        var path = new Pathfinding<>(new GraphAdapter(infra.blockInfra(), infra.rawInfra()))
+                .setEdgeToLength(block -> infra.blockInfra().getBlockLength(block))
                 .runPathfinding(List.of(startLocations, endLocations));
-        var routeList = path.ranges().stream()
-                .map(Pathfinding.EdgeRange::edge)
-                .toList();
-        var firstRouteRange = path.ranges().get(0);
-        var lastRouteRange = path.ranges().get(path.ranges().size() - 1);
-        var firstTracks = firstRouteRange.edge().getInfraRoute()
-                .getTrackRanges(firstRouteRange.start(), firstRouteRange.end());
-        var lastTracks = lastRouteRange.edge().getInfraRoute()
-                .getTrackRanges(lastRouteRange.start(), lastRouteRange.end());
-        var lastTrackRange = lastTracks.get(lastTracks.size() - 1);
-        return TrainPathBuilder.from(
-                routeList,
-                firstTracks.get(0).offsetLocation(0),
-                lastTrackRange.offsetLocation(lastTrackRange.getLength())
-        );
+        return PathPropUtils.makePathProps(infra.rawInfra(), infra.blockInfra(), path.ranges());
     }
 
-    /** Returns how long the longest occupancy block lasts, which is the minimum delay we need to add
+    /** Returns how long the longest occupancy segment lasts, which is the minimum delay we need to add
      * between two identical trains */
-    public static double getMaxOccupancyLength(Multimap<SignalingRoute, OccupancyBlock> occupancies) {
+    public static double getMaxOccupancyLength(Multimap<Integer, OccupancySegment> occupancies) {
         double maxOccupancyLength = 0;
-        for (var route : occupancies.keySet()) {
+        for (var block : occupancies.keySet()) {
             var endTime = 0.;
             var startTime = Double.POSITIVE_INFINITY;
-            for (var occupancy : occupancies.get(route)) {
+            for (var occupancy : occupancies.get(block)) {
                 endTime = Math.max(endTime, occupancy.timeEnd());
                 startTime = Math.min(startTime, occupancy.timeStart());
             }
@@ -113,13 +99,13 @@ public class STDCMHelpers {
         return maxOccupancyLength;
     }
 
-    /** Returns the time it takes to reach the end of the last routes,
-     * starting at speed 0 at the start of the first route*/
-    static double getRoutesRunTime(List<SignalingRoute> routes) {
+    /** Returns the time it takes to reach the end of the last block,
+     * starting at speed 0 at the start of the first block*/
+    static double getBlocksRunTime(FullInfra infra, List<Integer> blocks) {
         double time = 0;
         double speed = 0;
-        for (var route : routes) {
-            var envelope = STDCMSimulations.simulateRoute(route, speed, 0,
+        for (var block : blocks) {
+            var envelope = STDCMSimulations.simulateBlock(infra.rawInfra(), infra.blockInfra(), block, speed, 0,
                     REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., null, null);
             assert envelope != null;
             time += envelope.getTotalTime();
@@ -129,32 +115,41 @@ public class STDCMHelpers {
     }
 
     /** Checks that the result don't cross in an occupied section */
-    static void occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
+    static void occupancyTest(STDCMResult res,
+                              ImmutableMultimap<Integer, OccupancySegment> occupancyGraph) {
         occupancyTest(res, occupancyGraph, 0);
     }
 
     /** Checks that the result don't cross in an occupied section, with a certain tolerance for float inaccuracies */
     static void occupancyTest(
             STDCMResult res,
-            ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph,
+            ImmutableMultimap<Integer, OccupancySegment> occupancyGraph,
             double tolerance
     ) {
         var envelopeWrapper = new EnvelopeStopWrapper(res.envelope(), res.stopResults());
-        var routes = res.trainPath().routePath();
-        for (var index = 0; index < routes.size(); index++) {
-            var startRoutePosition = routes.get(index).pathOffset();
-            var routeOccupancies = occupancyGraph.get(routes.get(index).element());
-            for (var occupancy : routeOccupancies) {
+        var blocks = res.blocks().ranges();
+        long currentBlockOffset = 0;
+        for (var blockRange : blocks) {
+            var block = blockRange.edge();
+            var startBlockPosition = currentBlockOffset;
+            currentBlockOffset += blockRange.end() - blockRange.start();
+            var blockOccupancies = occupancyGraph.get(block);
+            for (var occupancy : blockOccupancies) {
                 var enterTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
-                        startRoutePosition + occupancy.distanceStart()
+                        Distance.toMeters(startBlockPosition + occupancy.distanceStart())
                 );
                 var exitTime = res.departureTime() + envelopeWrapper.interpolateTotalTimeClamp(
-                        startRoutePosition + occupancy.distanceEnd()
+                        Distance.toMeters(startBlockPosition + occupancy.distanceEnd())
                 );
                 assertTrue(
                         enterTime + tolerance >= occupancy.timeEnd() || exitTime - tolerance <= occupancy.timeStart()
                 );
             }
         }
+    }
+
+    /** This is just a short alias so that tests can be written in meters without being too verbose */
+    public static long meters(double meters) {
+        return Distance.fromMeters(meters);
     }
 }

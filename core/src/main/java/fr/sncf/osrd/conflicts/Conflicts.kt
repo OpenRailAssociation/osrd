@@ -4,8 +4,8 @@ import com.carrotsearch.hppc.IntArrayList
 import com.squareup.moshi.Json
 import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict
 import fr.sncf.osrd.api.ConflictDetectionEndpoint.ConflictDetectionResult.Conflict.ConflictType
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
+import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
 
 
 interface SpacingTrainRequirement {

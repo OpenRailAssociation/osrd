@@ -4,9 +4,9 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.utils.Direction
+import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -15,6 +15,7 @@ import fr.sncf.osrd.utils.units.Offset
  * when using a debugger. They can be used to create watches containing the object properties. */
 
 data class DirectedViewer<T>(
+    val rawId: UInt,
     val direction: Direction,
     val value: T,
 )
@@ -34,6 +35,9 @@ data class ZonePathViewer(
 data class BlockViewer(
     val zones: List<ZonePathViewer>,
     val id: BlockId,
+    val entry: DirectedViewer<String>,
+    val exit: DirectedViewer<String>,
+    val length: Length<Block>,
 )
 
 data class RouteViewer(
@@ -41,6 +45,10 @@ data class RouteViewer(
     val blocks: List<BlockViewer>,
     val id: RouteId,
 )
+
+fun <T, U> makeDirViewer(id: DirStaticIdx<T>, value: U): DirectedViewer<U> {
+    return DirectedViewer(id.data, id.direction, value)
+}
 
 @JvmName("makeChunk")
 fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
@@ -52,21 +60,31 @@ fun makeChunk(infra: RawInfra, id: StaticIdx<TrackChunk>): ChunkViewer {
     )
 }
 
+@JvmName("makeDirChunk")
+fun makeDirChunk(infra: RawInfra, id: DirStaticIdx<TrackChunk>): DirectedViewer<ChunkViewer> {
+    return makeDirViewer(id, makeChunk(infra, id.value))
+}
+
 @JvmName("makeZonePath")
 fun makeZonePath(infra: RawInfra, id: StaticIdx<ZonePath>): ZonePathViewer {
     return ZonePathViewer(
         infra.getZonePathChunks(id)
-            .map { dirChunk -> DirectedViewer(dirChunk.direction, makeChunk(infra, dirChunk.value)) },
+            .map { dirChunk -> makeDirViewer(dirChunk, makeChunk(infra, dirChunk.value)) },
         id,
     )
 }
 
 @JvmName("makeBlock")
 fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>): BlockViewer {
+    val entry = rawInfra.getZonePathEntry(blockInfra.getBlockPath(id)[0])
+    val exit = rawInfra.getZonePathExit(blockInfra.getBlockPath(id).last())
     return BlockViewer(
         blockInfra.getBlockPath(id)
             .map { path -> makeZonePath(rawInfra, path) },
         id,
+        makeDirViewer(entry, rawInfra.getDetectorName(entry.value)!!),
+        makeDirViewer(exit, rawInfra.getDetectorName(exit.value)!!),
+        blockInfra.getBlockLength(id),
     )
 }
 
@@ -74,14 +92,13 @@ fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>):
 fun makeRoute(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    signalingSystems: StaticIdxList<SignalingSystem>,
     id: StaticIdx<Route>,
 ): RouteViewer {
     val ids = MutableStaticIdxArrayList<Route>()
     ids.add(id)
     return RouteViewer(
         rawInfra.getRouteName(id)!!,
-        recoverBlocks(rawInfra, blockInfra, ids, signalingSystems)[0]
+        recoverBlocks(rawInfra, blockInfra, ids, null)[0]
             .toList()
             .map { blockPathElement -> blockPathElement.block }
             .map { block -> makeBlock(rawInfra, blockInfra, block) },

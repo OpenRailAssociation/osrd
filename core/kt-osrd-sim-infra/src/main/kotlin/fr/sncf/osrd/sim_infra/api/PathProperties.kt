@@ -1,13 +1,17 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.geom.LineString
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.impl.NeutralSection
 import fr.sncf.osrd.sim_infra.impl.PathPropertiesImpl
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
+import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.meters
 
 data class IdxWithOffset<T>(
@@ -21,7 +25,7 @@ data class TrackLocation(
     @get:JvmName("getTrackId")
     val trackId: TrackSectionId,
     @get:JvmName("getOffset")
-    val offset: Distance
+    val offset: Offset<TrackSection>
 )
 
 @Suppress("INAPPLICABLE_JVM_NAME")
@@ -36,11 +40,19 @@ interface PathProperties {
     fun getCatenary(): DistanceRangeMap<String>
     @JvmName("getNeutralSections")
     fun getNeutralSections(): DistanceRangeMap<NeutralSection>
+    @JvmName("getSpeedLimits")
+    fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed>
     @JvmName("getLength")
     fun getLength(): Distance
-
     @JvmName("getTrackLocationAtOffset")
     fun getTrackLocationAtOffset(pathOffset: Distance): TrackLocation
+    @JvmName("getTrackLocationOffset")
+    fun getTrackLocationOffset(location: TrackLocation): Distance?
+    fun <T> getRangeMapFromUndirected(getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>): DistanceRangeMap<T>
+
+    val chunks: DirStaticIdxList<TrackChunk>
+    /** Returns the offset where the train starts (must be located on the first chunk) */
+    val beginOffset: Distance
 }
 
 /** Build a Path from chunks and offsets, filtering the chunks outside the offsets */
@@ -72,4 +84,10 @@ fun buildPathPropertiesFrom(
         totalLength += length.distance
     }
     return PathPropertiesImpl(infra, filteredChunks, mutBeginOffset, mutEndOffset)
+}
+
+/** For java interoperability purpose */
+@JvmName("makeTrackLocation")
+fun makeTrackLocation(track: TrackSectionId, offset: Offset<TrackSection>): TrackLocation {
+    return TrackLocation(track, offset)
 }

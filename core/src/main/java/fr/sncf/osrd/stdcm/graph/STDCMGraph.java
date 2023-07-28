@@ -1,11 +1,14 @@
 package fr.sncf.osrd.stdcm.graph;
 
+import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.sim_infra.api.BlockInfra;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import fr.sncf.osrd.stdcm.STDCMStep;
-import fr.sncf.osrd.stdcm.preprocessing.interfaces.RouteAvailabilityInterface;
+import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Graph;
 import java.util.ArrayList;
@@ -21,7 +24,8 @@ import java.util.List;
 @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
 public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
-    public final SignalingInfra infra;
+    public final RawSignalingInfra rawInfra;
+    public final BlockInfra blockInfra;
     public final RollingStock rollingStock;
     public final RollingStock.Comfort comfort;
     public final double timeStep;
@@ -34,23 +38,25 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
     /** Constructor */
     public STDCMGraph(
-            SignalingInfra infra,
+            RawSignalingInfra rawInfra,
+            BlockInfra blockInfra,
             RollingStock rollingStock,
             RollingStock.Comfort comfort,
             double timeStep,
-            RouteAvailabilityInterface routeAvailability,
+            BlockAvailabilityInterface blockAvailability,
             double maxRunTime,
             double minScheduleTimeStart,
             List<STDCMStep> steps,
             String tag,
             AllowanceValue standardAllowance
     ) {
-        this.infra = infra;
+        this.rawInfra = rawInfra;
+        this.blockInfra = blockInfra;
         this.rollingStock = rollingStock;
         this.comfort = comfort;
         this.timeStep = timeStep;
         this.steps = steps;
-        this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, routeAvailability, this);
+        this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this);
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
         this.tag = tag;
@@ -80,13 +86,13 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
     @Override
     public Collection<STDCMEdge> getAdjacentEdges(STDCMNode node) {
-        if (node.detector() == null)
-            return STDCMEdgeBuilder.fromNode(this, node, node.locationOnRoute().edge())
+        if (node.detector() == -1)
+            return STDCMEdgeBuilder.fromNode(this, node, node.locationOnBlock().edge())
                     .makeAllEdges();
         else {
             var res = new ArrayList<STDCMEdge>();
-            var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector());
-            for (var neighbor : neighbors) {
+            var neighbors = blockInfra.getBlocksAtDetector(node.detector());
+            for (var neighbor : toIntList(neighbors)) {
                 res.addAll(
                         STDCMEdgeBuilder.fromNode(this, node, neighbor)
                                 .makeAllEdges()

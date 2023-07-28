@@ -18,6 +18,7 @@ public class EnvelopeSimContext {
         this.rollingStock = rollingStock;
         this.path = path;
         this.timeStep = timeStep;
+        assert tractiveEffortCurveMap != null;
         this.tractiveEffortCurveMap = tractiveEffortCurveMap;
     }
 

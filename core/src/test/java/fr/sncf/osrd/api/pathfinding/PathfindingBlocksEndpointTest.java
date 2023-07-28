@@ -47,11 +47,11 @@ public class PathfindingBlocksEndpointTest {
         return Stream.of(
                 Arguments.of(
                         new PathfindingWaypoint("TA3", 10, EdgeDirection.START_TO_STOP),
-                        Set.of(new Pathfinding.EdgeLocation<>(8, 190000.0))),
+                        Set.of(new Pathfinding.EdgeLocation<>(8, 190000))),
                 Arguments.of(
                         new PathfindingWaypoint("TA5", 20, EdgeDirection.STOP_TO_START),
-                        Set.of(new Pathfinding.EdgeLocation<>(19, 210000.0),
-                                new Pathfinding.EdgeLocation<>(18, 210000.0)))
+                        Set.of(new Pathfinding.EdgeLocation<>(19, 210000),
+                                new Pathfinding.EdgeLocation<>(18, 210000)))
         );
     }
 }

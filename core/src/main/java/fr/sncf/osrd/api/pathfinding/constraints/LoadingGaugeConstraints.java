@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathPropUtils.makePathProps;
 
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
@@ -21,7 +21,7 @@ public record LoadingGaugeConstraints(
     @Override
     public Collection<Pathfinding.Range> apply(Integer blockIdx) {
         var res = new HashSet<Pathfinding.Range>();
-        var path = makePath(blockInfra, infra, blockIdx);
+        var path = makePathProps(blockInfra, infra, blockIdx);
         for (var stock : rollingStocks)
             res.addAll(getBlockedRanges(stock, path));
         return res;

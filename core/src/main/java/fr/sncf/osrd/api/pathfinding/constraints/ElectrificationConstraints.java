@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
-import static fr.sncf.osrd.api.pathfinding.PathfindingUtils.makePath;
+import static fr.sncf.osrd.api.utils.PathPropUtils.makePathProps;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
@@ -26,7 +26,7 @@ public record ElectrificationConstraints(
     @Override
     public Collection<Pathfinding.Range> apply(Integer blockId) {
         var res = new HashSet<Pathfinding.Range>();
-        var path = makePath(blockInfra, rawInfra, blockId);
+        var path = makePathProps(blockInfra, rawInfra, blockId);
         for (var stock : rollingStocks)
             res.addAll(getBlockedRanges(stock, path));
         return res;
@@ -51,7 +51,8 @@ public record ElectrificationConstraints(
                 var blockingRanges = neutralSections.complement().subRangeSet(voltageInterval).asRanges();
 
                 for (var blockingRange : blockingRanges)
-                    res.add(new Pathfinding.Range(blockingRange.lowerEndpoint(), blockingRange.upperEndpoint()));
+                    if (blockingRange.lowerEndpoint() < blockingRange.upperEndpoint())
+                        res.add(new Pathfinding.Range(blockingRange.lowerEndpoint(), blockingRange.upperEndpoint()));
             }
         }
         return res;

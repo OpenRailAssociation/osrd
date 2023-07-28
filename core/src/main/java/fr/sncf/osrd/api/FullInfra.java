@@ -2,7 +2,6 @@ package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.sim_infra_adapter.RawInfraAdapterKt.adaptRawInfra;
 
-import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
@@ -10,13 +9,12 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra;
-import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Set;
 
-public record FullInfra(SignalingInfra java,
-                        SimInfraAdapter rawInfra,
+public record FullInfra(RawSignalingInfra rawInfra,
                         LoadedSignalInfra loadedSignalInfra,
                         BlockInfra blockInfra,
                         SignalingSimulator signalingSimulator) {
@@ -43,6 +41,6 @@ public record FullInfra(SignalingInfra java,
         logger.info("building blocks");
         var blockInfra = signalingSimulator.buildBlocks(rawInfra, loadedSignalInfra);
 
-        return new FullInfra(infra, rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
+        return new FullInfra(rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
     }
 }

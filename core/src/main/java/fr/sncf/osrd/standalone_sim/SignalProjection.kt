@@ -2,34 +2,38 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.SignalProjectionEndpoint.SignalProjectionResult
-import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
-import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.LoadedSignalInfra
+import fr.sncf.osrd.sim_infra.api.LogicalSignalId
+import fr.sncf.osrd.sim_infra.api.PathProperties
+import fr.sncf.osrd.sim_infra.api.getZoneName
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra.utils.toBlockList
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.ZoneUpdate
 import fr.sncf.osrd.standalone_sim.result.SignalUpdate
-import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
+import fr.sncf.osrd.utils.toRouteIdList
 import java.awt.Color
 
 data class SignalAspectChangeEvent(val newAspect: String, val time: Long)
 
 fun project(
     fullInfra: FullInfra,
-    trainPath: TrainPath,
+    trainPath: PathProperties,
+    routePathIds: List<Int>,
     signalSightings: List<SignalSighting>,
     zoneUpdates: List<ZoneUpdate>
 ): SignalProjectionResult {
-    val rawInfra = fullInfra.rawInfra;
-    val loadedSignalInfra = fullInfra.loadedSignalInfra;
-    val blockInfra = fullInfra.blockInfra;
-    val simulator = fullInfra.signalingSimulator;
+    val rawInfra = fullInfra.rawInfra as SimInfraAdapter
+    val loadedSignalInfra = fullInfra.loadedSignalInfra
+    val blockInfra = fullInfra.blockInfra
+    val simulator = fullInfra.signalingSimulator
 
     // TODO: allowed signaling systems should depend on the type of train
     val sigSystemManager = simulator.sigModuleManager
@@ -37,19 +41,17 @@ fun project(
     val bapr = sigSystemManager.findSignalingSystem("BAPR")
     val tvm = sigSystemManager.findSignalingSystem("TVM")
 
-    // Get the route path
-    // TODO: do it in the pathfinding
-    val routes = MutableStaticIdxArrayList<Route>()
-    for (javaRoute in trainPath.routePath) {
-        val route = rawInfra.routeMap[javaRoute.element.infraRoute]!!
-        routes.add(route)
-    }
+    // Recover blocks from the route path
+    val routePath = toRouteIdList(routePathIds)
+    val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)
+    val blockPath = mutableStaticIdxArrayListOf<Block>()
+    for (block in detailedBlockPath)
+        blockPath.add(block.block)
 
     val blockPaths = recoverBlocks(
-        rawInfra, blockInfra, routes, mutableStaticIdxArrayListOf(bal, bapr, tvm)
+        rawInfra, blockInfra, routePath, mutableStaticIdxArrayListOf(bal, bapr, tvm)
     )
     assert(blockPaths.isNotEmpty())
-    val blockPath = blockPaths[0].toBlockList() // TODO: have a better way to choose the block path
 
     val zoneMap = mutableMapOf<String, Int>()
     var zoneCount = 0
@@ -62,8 +64,8 @@ fun project(
         }
     }
 
-    // compute signal updates
-    val startOffset = trainPathBlockOffset(trainPath)
+    // Compute signal updates
+    val startOffset = trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, trainPath)
     val pathSignals = pathSignals(startOffset, blockPath, blockInfra)
 
     val signalAspectChangeEvents = computeSignalAspectChangeEvents(

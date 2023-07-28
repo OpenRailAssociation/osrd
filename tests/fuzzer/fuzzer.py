@@ -199,15 +199,20 @@ def make_stdcm_payload(scenario: Scenario, path: List[Tuple[str, float]], rollin
     Creates a payload for an STDCM request
     """
     res = {
-        "infra": scenario.infra,
-        "rolling_stock": rolling_stock,
-        "timetable": scenario.timetable,
+        "infra_id": scenario.infra,
+        "rolling_stock_id": rolling_stock,
+        "timetable_id": scenario.timetable,
         "start_time": random.randint(0, 3600 * 24),
         "maximum_departure_delay": random.randint(0, 3600 * 4),
         "maximum_run_time": random.randint(3600 * 5, 3600 * 10),
         "margin_before": random.randint(0, 600),
         "margin_after": random.randint(0, 600),
         "steps": [convert_stop(stop) for stop in path],
+        "comfort": "STANDARD",
+        "standard_allowance": {
+            "value_type": "percentage",
+            "percentage": 0,
+        },
     }
     allowance_value = make_random_allowance_value(0)
     if allowance_value["value_type"] != "time" and random.randint(0, 2) == 0:

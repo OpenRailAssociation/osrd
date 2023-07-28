@@ -5,33 +5,34 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.*
+import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter.chunksToRoutes
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath
-import fr.sncf.osrd.infra_state.api.TrainPath
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.BlockPathElement
+import fr.sncf.osrd.sim_infra.utils.recoverBlocks
+import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.sim_infra_adapter.SimInfraAdapter
 import fr.sncf.osrd.standalone_sim.result.*
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingRequirement
-import fr.sncf.osrd.standalone_sim.result.ResultTrain.SpacingRequirement
-import fr.sncf.osrd.sim_infra.utils.recoverBlocks
-import fr.sncf.osrd.sim_infra.utils.toList
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.RoutingZoneRequirement
 import fr.sncf.osrd.standalone_sim.result.ResultTrain.SignalSighting
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.StandaloneTrainSchedule
 import fr.sncf.osrd.utils.CurveSimplification
+import fr.sncf.osrd.utils.KtToJavaConverter.toIntList
 import fr.sncf.osrd.utils.indexing.*
-import kotlin.collections.*
+import fr.sncf.osrd.utils.toRouteIdList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.MutableDistanceArray
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import mu.KotlinLogging
+import java.lang.RuntimeException
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.max
@@ -41,8 +42,7 @@ import kotlin.math.min
 private val logger = KotlinLogging.logger {}
 
 
-// TODO: run pathfinding on blocks
-private fun recoverBlockPath(
+fun recoverBlockPath(
     simulator: SignalingSimulator,
     fullInfra: FullInfra,
     routePath: StaticIdxList<Route>,
@@ -62,22 +62,17 @@ private fun recoverBlockPath(
 
 
 /** Use an already computed envelope to extract various metadata about a trip.  */
-fun run(
-    envelope: Envelope, trainPath: TrainPath, schedule: StandaloneTrainSchedule, fullInfra: FullInfra
-): ResultTrain {
+fun run(envelope: Envelope, trainPath: PathProperties, schedule: StandaloneTrainSchedule,
+        fullInfra: FullInfra): ResultTrain {
     assert(envelope.continuous)
 
-    val rawInfra = fullInfra.rawInfra;
+    val rawInfra = fullInfra.rawInfra as SimInfraAdapter;
     val loadedSignalInfra = fullInfra.loadedSignalInfra;
     val blockInfra = fullInfra.blockInfra;
     val simulator = fullInfra.signalingSimulator;
 
     // get a new generation route path
-    val routePath = MutableStaticIdxArrayList<Route>()
-    for (javaRoute in trainPath.routePath) {
-        val route = fullInfra.rawInfra.routeMap[javaRoute.element.infraRoute]!!
-        routePath.add(route)
-    }
+    val routePath = toRouteIdList(chunksToRoutes(rawInfra, toIntList(trainPath.chunks)))
 
     // recover blocks from the route paths
     val detailedBlockPath = recoverBlockPath(simulator, fullInfra, routePath)
@@ -92,7 +87,7 @@ fun run(
     var headPositions = ArrayList<ResultPosition>()
     for (point in envelopeWithStops.iterateCurve()) {
         speeds.add(ResultSpeed(point.time, point.speed, point.position))
-        headPositions.add(ResultPosition.from(point.time, point.position, trainPath))
+        headPositions.add(ResultPosition.from(point.time, point.position, trainPath, rawInfra))
     }
 
     // Simplify data
@@ -107,7 +102,7 @@ fun run(
     }
 
     // Compute signal updates
-    val startOffset = trainPathBlockOffset(trainPath)
+    val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, trainPath)
     var blockPathLength = 0.meters
     for (block in blockPath)
         blockPathLength += blockInfra.getBlockLength(block).distance
@@ -141,7 +136,7 @@ fun run(
     val routeOccupancies = routeOccupancies(zoneOccupationChangeEvents, rawInfra, envelopeWithStops)
 
     // Compute energy consumed
-    val envelopePath = EnvelopeTrainPath.from(trainPath)
+    val envelopePath = EnvelopeTrainPath.from(fullInfra.rawInfra, trainPath)
     val mechanicalEnergyConsumed =
         EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock)
 
@@ -191,7 +186,7 @@ private fun routingRequirements(
     loadedSignalInfra: LoadedSignalInfra,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
-    rawInfra: SimInfraAdapter,
+    rawInfra: RawInfra,
     rollingStock: RollingStock,
 ): List<RoutingRequirement> {
     // count the number of zones in the path
@@ -365,16 +360,15 @@ fun EnvelopeTimeInterpolate.clampInterpolate(position: Distance): Double {
     return interpolateTotalTime(criticalPos)
 }
 
-
 private fun routeOccupancies(
     zoneOccupationChangeEvents: MutableList<ZoneOccupationChangeEvent>,
-    rawInfra: SimInfraAdapter,
+    simInfraAdapter: SimInfraAdapter,
     envelope: EnvelopeTimeInterpolate
 ): Map<String, ResultOccupancyTiming> {
     val routeOccupancies = mutableMapOf<String, ResultOccupancyTiming>()
     val zoneOccupationChangeEventsByRoute = mutableMapOf<String, MutableList<ZoneOccupationChangeEvent>>()
     for (event in zoneOccupationChangeEvents) {
-        for (route in rawInfra.zoneMap.inverse()[event.zone]!!.routes) {
+        for (route in simInfraAdapter.zoneMap.inverse()[event.zone]!!.routes) {
             zoneOccupationChangeEventsByRoute.getOrPut(route.id) { mutableListOf() }.add(event)
         }
     }
@@ -505,10 +499,18 @@ private fun pathSignalsInEnvelope(
  * Computes the offset between the beginning of the first block and the beginning of the train path - and
  * thus of the envelope
  */
-fun trainPathBlockOffset(trainPath: TrainPath): Distance {
-    val dist = -trainPath.routePath.first().pathOffset.meters
-    assert(dist >= 0.meters)
-    return dist
+fun trainPathBlockOffset(infra: RawInfra, blockInfra: BlockInfra,
+                         blockPath: MutableStaticIdxArrayList<Block>, trainPath: PathProperties): Distance {
+    val firstChunk = trainPath.chunks[0]
+    var prevChunksLength = 0.meters
+    for (zonePath in blockInfra.getBlockPath(blockPath[0])) {
+        for (dirChunk in infra.getZonePathChunks(zonePath)) {
+            if (dirChunk == firstChunk)
+                return prevChunksLength + trainPath.beginOffset
+            prevChunksLength += infra.getTrackChunkLength(dirChunk.value).distance
+        }
+    }
+    throw RuntimeException("Couldn't find first chunk on the block path")
 }
 
 private fun simplifyPositions(

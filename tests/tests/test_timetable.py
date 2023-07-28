@@ -7,6 +7,7 @@ import requests
 from .path import Path
 from .scenario import Scenario
 from .services import EDITOAST_URL
+from .utils.approximations import recursive_approx
 
 
 @dataclass(frozen=True)
@@ -156,6 +157,5 @@ def test_get_timetable(
             invalid_reasons=[],
         ),
     ]
-    assert expected_schedules == [
-        _TrainScheduleSummary(**train_schedule) for train_schedule in timetable.train_schedule_summaries
-    ]
+    actual_results = [_TrainScheduleSummary(**train_schedule) for train_schedule in timetable.train_schedule_summaries]
+    recursive_approx([x.__dict__ for x in expected_schedules], [x.__dict__ for x in actual_results])

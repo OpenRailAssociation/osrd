@@ -2,7 +2,6 @@ package fr.sncf.osrd.api.pathfinding;
 
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP;
 import static fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.STOP_TO_START;
-import static fr.sncf.osrd.sim_infra.api.PathPropertiesKt.buildPathPropertiesFrom;
 import static fr.sncf.osrd.utils.KtToJavaConverter.toIntList;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toDirection;
 import static fr.sncf.osrd.utils.indexing.DirStaticIdxKt.toValue;
@@ -13,6 +12,7 @@ import fr.sncf.osrd.api.pathfinding.response.CurveChartPointResult;
 import fr.sncf.osrd.api.pathfinding.response.PathWaypointResult;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.api.pathfinding.response.SlopeChartPointResult;
+import fr.sncf.osrd.api.utils.PathPropUtils;
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
@@ -20,12 +20,16 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.sim_infra.api.BlockInfra;
 import fr.sncf.osrd.sim_infra.api.PathProperties;
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra;
-import fr.sncf.osrd.sim_infra.api.TrackChunk;
+import fr.sncf.osrd.sim_infra.api.RawSignalingInfraKt;
 import fr.sncf.osrd.utils.Direction;
 import fr.sncf.osrd.utils.DistanceRangeMap;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -43,7 +47,7 @@ public class PathfindingResultConverter {
             Pathfinding.Result<Integer> rawPath,
             DiagnosticRecorderImpl warningRecorder
     ) {
-        var path = makePath(rawInfra, blockInfra, rawPath.ranges());
+        var path = PathPropUtils.makePathProps(rawInfra, blockInfra, rawPath.ranges());
         var result = new PathfindingResult(toMeters(path.getLength()));
         result.routePaths = makeRoutePath(blockInfra, rawInfra, rawPath.ranges());
         result.pathWaypoints = makePathWaypoint(path, rawPath, rawInfra, blockInfra);
@@ -53,30 +57,6 @@ public class PathfindingResultConverter {
         result.curves = makeCurves(path);
         result.warnings = warningRecorder.getWarnings();
         return result;
-    }
-
-    /** Creates a `Path` instance from a list of block range */
-    static PathProperties makePath(
-            RawSignalingInfra infra,
-            BlockInfra blockInfra,
-            List<Pathfinding.EdgeRange<Integer>> blockRanges
-    ) {
-        assert (blockRanges.size() > 0);
-        long totalBlockPathLength = 0;
-        var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
-        for (var range : blockRanges) {
-            var zonePaths = blockInfra.getBlockPath(range.edge());
-            for (var zonePath : toIntList(zonePaths)) {
-                chunks.addAll(infra.getZonePathChunks(zonePath));
-                var zoneLength = infra.getZonePathLength(zonePath);
-                totalBlockPathLength += zoneLength;
-            }
-        }
-        long startOffset = (long) blockRanges.get(0).start();
-        var lastRange = blockRanges.get(blockRanges.size() - 1);
-        var lastBlockLength = blockInfra.getBlockLength(lastRange.edge());
-        var endOffset = totalBlockPathLength - lastBlockLength + Math.round(lastRange.end());
-        return buildPathPropertiesFrom(infra, chunks, startOffset, endOffset);
     }
 
     /** Make the list of waypoints on the path, in order. Both user-defined waypoints and operational points. */
@@ -102,13 +82,13 @@ public class PathfindingResultConverter {
         var userDefinedWaypointsPerBlock = new HashMap<Integer, List<Long>>();
         for (var waypoint : rawPath.waypoints()) {
             var offsets = userDefinedWaypointsPerBlock.computeIfAbsent(waypoint.edge(), k -> new ArrayList<>());
-            offsets.add((long) waypoint.offset());
+            offsets.add(waypoint.offset());
         }
 
         var res = new ArrayList<PathWaypointResult>();
 
         long lengthPrevBlocks = 0;
-        long startFirstRange = Math.round(rawPath.ranges().get(0).start());
+        long startFirstRange = rawPath.ranges().get(0).start();
         for (var blockRange : rawPath.ranges()) {
             for (var waypoint : userDefinedWaypointsPerBlock.getOrDefault(blockRange.edge(), new ArrayList<>())) {
                 if (blockRange.start() <= waypoint && waypoint <= blockRange.end()) {
@@ -212,8 +192,8 @@ public class PathfindingResultConverter {
         var blocks = ranges.stream()
                 .map(Pathfinding.EdgeRange::edge)
                 .toList();
-        var chunkPath = new ArrayList<Integer>();
-        var routes = blocksToRoutes(chunkPath, blockInfra, rawInfra, blocks);
+        var chunkPath = chunksOnBlocks(blockInfra, blocks);
+        var routes = chunksToRoutes(rawInfra, chunkPath);
         var startOffset = findStartOffset(blockInfra, rawInfra, chunkPath.get(0), routes.get(0), ranges.get(0));
         var endOffset = findEndOffset(blockInfra, rawInfra, Iterables.getLast(chunkPath),
                 Iterables.getLast(routes), Iterables.getLast(ranges));
@@ -241,7 +221,7 @@ public class PathfindingResultConverter {
 
     /** Converts a single route to RJSRoutePath */
     private static RJSRoutePath convertRouteToRJS(
-            RawSignalingInfra infra,
+            RawSignalingInfra rawInfra,
             int route,
             Long startOffset,
             Long endOffset
@@ -249,10 +229,10 @@ public class PathfindingResultConverter {
         if (startOffset == null)
             startOffset = 0L;
         if (endOffset == null)
-            endOffset = getRouteLength(infra, route);
+            endOffset = rawInfra.getRouteLength(route);
         return new RJSRoutePath(
-                infra.getRouteName(route),
-                makeRJSTrackRanges(infra, route, startOffset, endOffset),
+                rawInfra.getRouteName(route),
+                makeRJSTrackRanges(rawInfra, route, startOffset, endOffset),
                 "BAL3"
         );
     }
@@ -311,13 +291,6 @@ public class PathfindingResultConverter {
         return res;
     }
 
-    /** Returns the route length */
-    private static long getRouteLength(RawSignalingInfra infra, int route) {
-        return toIntList(infra.getRoutePath(route)).stream()
-                .mapToLong(infra::getZonePathLength)
-                .sum();
-    }
-
     /** Returns the offset of the range start on the given route */
     private static long findStartOffset(
             BlockInfra blockInfra,
@@ -327,7 +300,7 @@ public class PathfindingResultConverter {
             Pathfinding.EdgeRange<Integer> range
     ) {
         return getRouteChunkOffset(rawInfra, routeStaticIdx, firstChunk) 
-                - getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range) + (long) range.start();
+                - getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range) + range.start();
     }
 
     /** Returns the offset of the range end on the given route */
@@ -339,7 +312,7 @@ public class PathfindingResultConverter {
             Pathfinding.EdgeRange<Integer> range
     ) {
         return getRouteChunkOffset(rawInfra, routeStaticIdx, lastChunk)
-                - getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range) + (long) range.end();
+                - getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range) + range.end();
     }
 
     private static long getBlockChunkOffset(BlockInfra blockInfra, RawSignalingInfra rawInfra, int chunk,
@@ -364,27 +337,28 @@ public class PathfindingResultConverter {
         return offset;
     }
 
-    /** Converts a list of blocks into a list of routes, ignoring ranges */
-    private static List<Integer> blocksToRoutes(
-            ArrayList<Integer> pathChunks,
-            BlockInfra blockInfra,
+    /** Returns the list of dir chunk id on the given block list */
+    private static List<Integer> chunksOnBlocks(BlockInfra blockInfra, List<Integer> blockIds) {
+        return blockIds.stream()
+                .flatMap(block -> toIntList(blockInfra.getTrackChunksFromBlock(block)).stream())
+                .toList();
+    }
+
+    /** Converts a list of dir chunks into a list of routes */
+    public static List<Integer> chunksToRoutes(
             RawSignalingInfra infra,
-            List<Integer> blocks
+            List<Integer> pathChunks
     ) {
-        for (var blockId : blocks)
-            for (var zonePathId : toIntList(blockInfra.getBlockPath(blockId)))
-                pathChunks.addAll(toIntList(infra.getZonePathChunks(zonePathId)));
         var chunkStartIndex = 0;
         var res = new ArrayList<Integer>();
-        while (true) {
+        while (chunkStartIndex < pathChunks.size()) {
             var route = findRoute(infra, pathChunks, chunkStartIndex, chunkStartIndex != 0);
             res.add(route);
             var chunkSetOnRoute = new HashSet<>(toIntList(infra.getChunksOnRoute(route)));
             while (chunkStartIndex < pathChunks.size() && chunkSetOnRoute.contains(pathChunks.get(chunkStartIndex)))
                 chunkStartIndex++; // Increase the index in the chunk path, for as long as it is covered by the route
-            if (chunkStartIndex >= pathChunks.size())
-                return res;
         }
+        return res;
     }
 
     /** Finds a valid route that follows the given path */

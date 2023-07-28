@@ -8,8 +8,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.pathfinding.LegacyPathfindingResultConverter;
-import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
+import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint;
+import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -91,10 +91,10 @@ public class StandaloneSimulationCommand implements CliCommand {
         var results = new HashMap<String, StandaloneSimResult>();
         for (var trainScheduleGroup : input.trainScheduleGroups) {
             logger.info("Running simulation for schedule group: {}", trainScheduleGroup.id);
-            var rawPathfindingResult = PathfindingRoutesEndpoint.runPathfinding(
-                    infra.java(), trainScheduleGroup.waypoints, rollingStocks.values());
-            var pathfindingResult = LegacyPathfindingResultConverter.convert(
-                    rawPathfindingResult, infra.java(), diagnosticRecorder);
+            var rawPathfindingResult = PathfindingBlocksEndpoint.runPathfinding(
+                    infra, trainScheduleGroup.waypoints, rollingStocks.values());
+            var pathfindingResult = PathfindingResultConverter.convert(
+                    infra.blockInfra(), infra.rawInfra(), rawPathfindingResult, diagnosticRecorder);
             var res = StandaloneSim.runFromRJS(
                     infra, null, new RJSTrainPath(pathfindingResult.routePaths), rollingStocks,
                     trainScheduleGroup.schedules, input.timeStep);

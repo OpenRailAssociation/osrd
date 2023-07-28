@@ -61,7 +61,7 @@ public class InfraManager extends APIClient {
             ERROR.transitions = new InfraStatus[]{DOWNLOADING};
         }
 
-        private InfraStatus(boolean isStable) {
+        InfraStatus(boolean isStable) {
             this.isStable = isStable;
         }
 
@@ -165,7 +165,7 @@ public class InfraManager extends APIClient {
 
             // Cache the infra
             logger.info("successfully cached {}", request.url());
-            cacheEntry.infra = new FullInfra(infra, rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
+            cacheEntry.infra = new FullInfra(rawInfra, loadedSignalInfra, blockInfra, signalingSimulator);
             cacheEntry.version = version;
             cacheEntry.transitionTo(InfraStatus.CACHED);
             return cacheEntry.infra;

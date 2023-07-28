@@ -9,9 +9,11 @@ import com.google.common.collect.RangeMap;
  * the next position and speed of the train.
  */
 public final class TrainPhysicsIntegrator {
-    // a position delta lower than this value will be considered zero
-    public static final double POSITION_EPSILON = 1E-6;
-    // a speed lower than this value will be considered zero
+    // A position delta lower than this value will be considered zero
+    // Going back and forth with Distance and double (meters) often causes 1e-3 errors,
+    // we need the tolerance to be higher than this
+    public static final double POSITION_EPSILON = 1E-2;
+    // A speed lower than this value will be considered zero
     public static final double SPEED_EPSILON = 1E-6;
 
     private final PhysicsRollingStock rollingStock;
