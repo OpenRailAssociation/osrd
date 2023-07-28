@@ -7,6 +7,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.meters
 import java.lang.RuntimeException
 
@@ -53,6 +54,10 @@ data class PathImpl(
         return getRangeMap { dirChunkId -> infra.getTrackChunkNeutralSections(dirChunkId) }
     }
 
+    override fun getSpeedLimits(trainTag: String?): DistanceRangeMap<Speed> {
+        return getRangeMap { dirChunkId -> infra.getTrackChunkSpeedSections(dirChunkId, trainTag) }
+    }
+
     override fun getLength(): Distance {
         return endOffset - beginOffset
     }
@@ -70,6 +75,10 @@ data class PathImpl(
             lengthPrevChunks += chunkLength
         }
         throw RuntimeException("The given path offset is larger than the path length")
+    }
+
+    override fun getElectricalProfiles(mapping: HashMap<String, DistanceRangeMap<String>>): DistanceRangeMap<String> {
+        return getRangeMapFromUndirected { chunkId -> infra.getTrackChunkElectricalProfile(chunkId, mapping) }
     }
 
     private fun projectLineString(getData: (chunkId: TrackChunkId) -> LineString): LineString {

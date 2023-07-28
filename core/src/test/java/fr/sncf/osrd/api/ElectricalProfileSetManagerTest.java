@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.external_generated_inputs.ElectricalProfileMappingTest.verifyProfileMap;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static fr.sncf.osrd.external_generated_inputs.LegacyElectricalProfileMappingTest.verifyProfileMap;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.reporting.exceptions.ErrorType;

@@ -33,7 +33,7 @@ public class AllowanceManager {
             return null; // No space to try the allowance
         var context = makeAllowanceContext(affectedEdges);
         var oldEnvelope = STDCMUtils.mergeEnvelopes(affectedEdges);
-        var newEnvelope = STDCMSimulations.findEngineeringAllowance(context, oldEnvelope, neededDelay);
+        var newEnvelope = LegacySTDCMSimulations.findEngineeringAllowance(context, oldEnvelope, neededDelay);
         if (newEnvelope == null)
             return null; // We couldn't find an envelope
         var newPreviousEdge = makeNewEdges(affectedEdges, newEnvelope);
@@ -101,7 +101,8 @@ public class AllowanceManager {
         var firstOffset = edges.get(0).route().getInfraRoute().getLength() - edges.get(0).envelope().getEndPos();
         for (var edge : edges)
             routes.add(edge.route());
-        return STDCMSimulations.makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
+        return LegacySTDCMSimulations.makeSimContext(
+                routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
     }
 
     /** Find on which edges to run the allowance */

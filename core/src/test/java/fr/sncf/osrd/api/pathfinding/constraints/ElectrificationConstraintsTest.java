@@ -44,7 +44,7 @@ public class ElectrificationConstraintsTest {
                 // No corresponding catenary ranges without dead sections
                 Arguments.of(0, Set.of(new Pathfinding.Range(0., chunk0Length))),
                 // Partially corresponding catenary ranges with dead section
-                Arguments.of(1, Set.of(new Pathfinding.Range(0., 140000.))),
+                Arguments.of(1, Set.of(new Pathfinding.Range(0., 30_000.))),
                 // Fully corresponding catenary ranges without dead sections
                 Arguments.of(2, new HashSet<>())
         );

@@ -11,9 +11,9 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
-import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
+import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
+import fr.sncf.osrd.external_generated_inputs.LegacyElectricalProfileMapping;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
@@ -61,8 +61,8 @@ public class StandaloneSim {
                 var rollingStock = trainSchedule.rollingStock;
 
                 // MRSP & SpeedLimits
-                var mrsp = MRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
-                var speedLimits = MRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
+                var mrsp = LegacyMRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
+                var speedLimits = LegacyMRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
                 mrsp = driverBehaviour.applyToMRSP(mrsp);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
@@ -125,7 +125,7 @@ public class StandaloneSim {
     /** Parse some railJSON arguments and run a standalone simulation */
     public static StandaloneSimResult runFromRJS(
             FullInfra infra,
-            ElectricalProfileMapping electricalProfileMap,
+            LegacyElectricalProfileMapping electricalProfileMap,
             RJSTrainPath rjsTrainPath,
             HashMap<String, RollingStock> rollingStocks,
             List<RJSStandaloneTrainSchedule> rjsSchedules,
@@ -133,7 +133,7 @@ public class StandaloneSim {
     ) {
         // Parse trainPath
         var trainPath = TrainPathBuilder.from(infra.java(), rjsTrainPath);
-        var envelopePath = EnvelopeTrainPath.from(trainPath, electricalProfileMap);
+        var envelopePath = LegacyEnvelopeTrainPath.from(trainPath, electricalProfileMap);
 
         // Parse train schedules
         var trainSchedules = new ArrayList<StandaloneTrainSchedule>();

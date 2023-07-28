@@ -3,24 +3,30 @@ package fr.sncf.osrd.utils.units
 private const val multiplier = 1000.0
 
 @JvmInline
-value class Speed(private val millimetersPerSeconds: ULong) {
-    val metersPerSeconds get() = millimetersPerSeconds.toDouble() / multiplier
+value class Speed(val millimetersPerSecond: ULong) {
+    val metersPerSecond get() = millimetersPerSecond.toDouble() / multiplier
 
     override fun toString(): String {
-        val metersPerSeconds = millimetersPerSeconds / multiplier.toUInt()
-        val decimal = metersPerSeconds % multiplier.toUInt()
+        val metersPerSecond = millimetersPerSecond / multiplier.toUInt()
+        val decimal = metersPerSecond % multiplier.toUInt()
         if (decimal == 0UL)
-            return String.format("%sm/s", metersPerSeconds)
+            return String.format("%sm/s", metersPerSecond)
         else
-            return String.format("%s.%sm/s", metersPerSeconds, decimal)
+            return String.format("%s.%sm/s", metersPerSecond, decimal)
     }
 
     companion object {
         @JvmStatic
-        fun fromMetersPerSeconds(metersPerSecond: Double): Speed {
-            return Speed(millimetersPerSeconds = (metersPerSecond * multiplier).toULong())
+        fun fromMetersPerSecond(metersPerSecond: Double): Speed {
+            return Speed(millimetersPerSecond = (metersPerSecond * multiplier).toULong())
+        }
+
+        @JvmStatic
+        @JvmName("toMetersPerSecond")
+        fun toMetersPerSecond(speed: Speed): Double {
+            return speed.metersPerSecond
         }
     }
 }
 
-val Double.metersPerSeconds: Distance get() = Distance((this * multiplier).toLong())
+val Double.metersPerSecond: Distance get() = Distance((this * multiplier).toLong())

@@ -56,7 +56,7 @@ public class BacktrackingManager {
      * The start time and any data related to delays will be updated accordingly.
      * */
     private STDCMEdge rebuildEdgeBackward(STDCMEdge old, double endSpeed) {
-        var newEnvelope = STDCMSimulations.simulateBackwards(
+        var newEnvelope = LegacySTDCMSimulations.simulateBackwards(
                 old.route(),
                 endSpeed,
                 old.envelopeStartOffset(),

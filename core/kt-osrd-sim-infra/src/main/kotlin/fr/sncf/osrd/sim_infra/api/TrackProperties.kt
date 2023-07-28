@@ -38,6 +38,9 @@ interface TrackProperties {
     fun getTrackChunkSpeedSections(trackChunk: DirTrackChunkId, trainTag: String?): DistanceRangeMap<Speed>
     @JvmName("getTrackChunkGeom")
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
+    fun getTrackChunkElectricalProfile(
+        trackChunk: TrackChunkId, mapping: HashMap<String, DistanceRangeMap<String>>
+    ): DistanceRangeMap<String>
 
     // Operational points
     fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): StaticIdxList<OperationalPointPart>

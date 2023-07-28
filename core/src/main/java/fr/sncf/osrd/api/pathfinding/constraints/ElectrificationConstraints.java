@@ -51,7 +51,8 @@ public record ElectrificationConstraints(
                 var blockingRanges = neutralSections.complement().subRangeSet(voltageInterval).asRanges();
 
                 for (var blockingRange : blockingRanges)
-                    res.add(new Pathfinding.Range(blockingRange.lowerEndpoint(), blockingRange.upperEndpoint()));
+                    if (blockingRange.lowerEndpoint() < blockingRange.upperEndpoint())
+                        res.add(new Pathfinding.Range(blockingRange.lowerEndpoint(), blockingRange.upperEndpoint()));
             }
         }
         return res;

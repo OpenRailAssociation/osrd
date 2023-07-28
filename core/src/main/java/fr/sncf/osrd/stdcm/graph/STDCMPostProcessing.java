@@ -6,7 +6,7 @@ import com.google.common.collect.Iterables;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.LegacyEnvelopeTrainPath;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
@@ -37,7 +37,7 @@ public class STDCMPostProcessing {
         var ranges = makeEdgeRange(path);
         var routeRanges = makeRouteRanges(ranges);
         var routeWaypoints = makeRouteWaypoints(path);
-        var physicsPath = EnvelopeTrainPath.from(makeTrackRanges(ranges));
+        var physicsPath = LegacyEnvelopeTrainPath.from(makeTrackRanges(ranges));
         var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
         var departureTime = computeDepartureTime(ranges, startTime);
         var stops = makeStops(ranges);
