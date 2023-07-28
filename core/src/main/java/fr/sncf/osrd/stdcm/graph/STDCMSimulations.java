@@ -20,7 +20,7 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
+import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
@@ -80,7 +80,7 @@ public class STDCMSimulations {
             stops = new double[]{stopPosition};
             length = Math.min(length, stopPosition);
         }
-        var mrsp = MRSP.from(
+        var mrsp = LegacyMRSP.from(
                 route.getInfraRoute().getTrackRanges(start, start + length),
                 rollingStock,
                 false,

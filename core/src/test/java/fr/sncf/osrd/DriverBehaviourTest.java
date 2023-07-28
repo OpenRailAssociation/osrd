@@ -1,6 +1,6 @@
 package fr.sncf.osrd;
 
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
+import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
 import fr.sncf.osrd.infra.InfraHelpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
@@ -22,7 +22,7 @@ public class DriverBehaviourTest {
         List<TrackRangeView> path = pathSenarioForTest();
         var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
         var driverBehaviour = new DriverBehaviour(16, 17);
-        var mrsp = MRSP.from(path, testRollingStock, true, null);
+        var mrsp = LegacyMRSP.from(path, testRollingStock, true, null);
         mrsp = driverBehaviour.applyToMRSP(mrsp);
         Assertions.assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
         Assertions.assertEquals(42, mrsp.interpolateSpeedRightDir(12, 1));
