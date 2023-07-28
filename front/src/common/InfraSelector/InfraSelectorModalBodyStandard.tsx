@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { FaLock } from 'react-icons/fa';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -8,21 +7,41 @@ import { getInfraID } from 'reducers/osrdconf/selectors';
 import { updateInfraID, deleteItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { Infra } from 'common/api/osrdEditoastApi';
+
+type InfraSelectorModalBodyStandardProps = {
+  filter: string;
+  setFilter: (filterInput: string) => void;
+  infrasList: Infra[];
+  onlySelectionMode: boolean;
+  onInfraChange?: (infraId: number) => void;
+};
 
 // Test coherence between actual & generated version, eg. if editoast is up to date with data
-export function editoastUpToDateIndicator(v, genv) {
-  return <span className={`ml-1 text-${v === genv ? 'success' : 'danger'}`}>●</span>;
+export function editoastUpToDateIndicator(
+  infraVersion: string,
+  infraGeneratedVersion: string | null
+) {
+  return (
+    <span className={`ml-1 text-${infraVersion === infraGeneratedVersion ? 'success' : 'danger'}`}>
+      ●
+    </span>
+  );
 }
 
-export default function InfraSelectorModalBodyStandard(props) {
-  const { infrasList, filter, setFilter, onlySelectionMode, onInfraChange } = props;
-
+export default function InfraSelectorModalBodyStandard({
+  filter = '',
+  setFilter,
+  infrasList,
+  onlySelectionMode = false,
+  onInfraChange,
+}: InfraSelectorModalBodyStandardProps) {
   const { t } = useTranslation(['translation', 'infraManagement']);
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID);
   const { closeModal } = useContext(ModalContext);
 
-  function setInfraID(id) {
+  function setInfraID(id: number) {
     dispatch(updateInfraID(id));
     if (onInfraChange) onInfraChange(id);
     dispatch(deleteItinerary());
@@ -83,17 +102,3 @@ export default function InfraSelectorModalBodyStandard(props) {
     </>
   );
 }
-
-InfraSelectorModalBodyStandard.defaultProps = {
-  filter: '',
-  onlySelectionMode: false,
-  onInfraChange: undefined,
-};
-
-InfraSelectorModalBodyStandard.propTypes = {
-  filter: PropTypes.string,
-  infrasList: PropTypes.array.isRequired,
-  setFilter: PropTypes.func.isRequired,
-  onlySelectionMode: PropTypes.bool,
-  onInfraChange: PropTypes.func,
-};
