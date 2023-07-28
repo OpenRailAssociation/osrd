@@ -5,6 +5,7 @@ import {
   LinearMetadataItem,
   fixLinearMetadataItems,
   getZoomedViewBox,
+  mergeIn,
   resizeSegment,
   splitAt,
   transalteViewBox,
@@ -221,6 +222,16 @@ export const IntervalsEditor = (props: IntervalsEditorProps) => {
                 setData(newData);
                 setSelected(null);
                 toggleSelectedTool(INTERVALS_EDITOR_TOOLS.DELETE_TOOL);
+              }
+              if (selectedTool === INTERVALS_EDITOR_TOOLS.MERGE_TOOL) {
+                if (clickTimeout) clearTimeout(clickTimeout);
+                setClickPrevent(true);
+                if (index !== data.length - 1) {
+                  const newData = mergeIn(data, index, 'right');
+                  setData(newData);
+                  setSelected(null);
+                  setSelectedTool(null);
+                }
               }
             }}
             onWheel={(e, _item, _index, point) => {
