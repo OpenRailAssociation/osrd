@@ -12,7 +12,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
+import fr.sncf.osrd.envelope_sim_infra.LegacyMRSP;
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
@@ -61,8 +61,8 @@ public class StandaloneSim {
                 var rollingStock = trainSchedule.rollingStock;
 
                 // MRSP & SpeedLimits
-                var mrsp = MRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
-                var speedLimits = MRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
+                var mrsp = LegacyMRSP.from(trainPath, rollingStock, true, trainSchedule.tag);
+                var speedLimits = LegacyMRSP.from(trainPath, rollingStock, false, trainSchedule.tag);
                 mrsp = driverBehaviour.applyToMRSP(mrsp);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 

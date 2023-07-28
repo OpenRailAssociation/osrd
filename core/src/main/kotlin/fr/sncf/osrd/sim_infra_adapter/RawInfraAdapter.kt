@@ -283,11 +283,11 @@ private fun makeChunk(
         for (entry in range.speedSections.asMapOfRanges()) {
             val legacySpeedLimit = entry.value
             val map = legacySpeedLimit.speedLimitByTag
-                .mapValues { mapEntry -> Speed.fromMetersPerSeconds(mapEntry.value!!) }
+                .mapValues { mapEntry -> Speed.fromMetersPerSecond(mapEntry.value!!) }
             res.put(
                 Distance.fromMeters(entry.key.lowerEndpoint()),
                 Distance.fromMeters(entry.key.upperEndpoint()),
-                SpeedSection(Speed.fromMetersPerSeconds(legacySpeedLimit.defaultSpeedLimit), map)
+                SpeedSection(Speed.fromMetersPerSecond(legacySpeedLimit.defaultSpeedLimit), map)
             )
         }
         return res
