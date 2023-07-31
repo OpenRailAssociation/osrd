@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.FullInfra;
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.DriverBehaviour;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -21,7 +20,7 @@ import fr.sncf.osrd.stdcm.preprocessing.implementation.UnavailableSpaceBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
-import fr.sncf.osrd.utils.graph.GraphAdapter;
+import fr.sncf.osrd.utils.graph.LegacyGraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +77,7 @@ public class STDCMHelpers {
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations
     ) {
-        var path = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+        var path = new Pathfinding<>(new LegacyGraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .runPathfinding(List.of(startLocations, endLocations));
         var routeList = path.ranges().stream()

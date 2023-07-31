@@ -66,6 +66,7 @@ interface BlockInfra {
     fun blockStopAtBufferStop(block: BlockId): Boolean
 
     fun getBlockSignalingSystem(block: BlockId): SignalingSystemId
+    @JvmName("getBlocksAtDetector")
     fun getBlocksAtDetector(detector: DirDetectorId): StaticIdxList<Block>
     fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block>
     fun getSignalsPositions(block: BlockId): DistanceList
