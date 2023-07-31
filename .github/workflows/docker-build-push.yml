@@ -13,7 +13,7 @@ on:
 jobs:
   build_push_core:
     name: Core
-    uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
+    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: core
       image_name: osrd/core
@@ -24,7 +24,7 @@ jobs:
 
   build_push_api:
     name: API
-    uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
+    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: python
       dockerfile: api/Dockerfile
@@ -36,7 +36,7 @@ jobs:
 
   build_push_front:
     name: Front
-    uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
+    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: front
       image_name: osrd/front
@@ -51,7 +51,7 @@ jobs:
 
   build_push_editoast:
     name: Editoast
-    uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
+    uses: osrd-project/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: editoast
       image_name: osrd/editoast

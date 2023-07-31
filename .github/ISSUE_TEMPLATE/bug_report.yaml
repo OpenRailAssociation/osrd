@@ -7,7 +7,7 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report!
         Before reporting a bug, please ensure that:
-          - Your problem is not already reported (access the list [here](https://github.com/DGEXSolutions/osrd/issues?q=is%3Aissue+is%3Aopen+label%3Akind%3Abug)).
+          - Your problem is not already reported (access the list [here](https://github.com/osrd-project/osrd/issues?q=is%3Aissue+is%3Aopen+label%3Akind%3Abug)).
           - Your problem is not already fixed on the `dev` branch, if you are able to check
 
   - type: textarea
