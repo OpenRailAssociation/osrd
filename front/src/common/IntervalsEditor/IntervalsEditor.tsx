@@ -2,7 +2,6 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { isNil, max } from 'lodash';
 
 import {
-  LinearMetadataItem,
   fixLinearMetadataItems,
   getZoomedViewBox,
   mergeIn,
@@ -13,6 +12,7 @@ import {
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
 import { notEmpty, tooltipPosition } from 'common/IntervalsDataViz/utils';
 
+import { LinearMetadataItem, OperationalPoint } from 'common/IntervalsDataViz/types';
 import IntervalsEditorTootlip from './IntervalsEditorTooltip';
 import IntervalsEditorCommonForm from './IntervalsEditorCommonForm';
 import {
@@ -31,6 +31,7 @@ import { createEmptySegmentAt, removeSegment } from './utils';
 type IntervalsEditorProps = {
   defaultValue: number | string;
   emptyValue: unknown;
+  operationalPoints: OperationalPoint[];
   setData: (newData: IntervalItem[]) => void;
   showValues?: boolean;
   title?: string;
@@ -67,6 +68,7 @@ export const IntervalsEditor = (props: IntervalsEditorProps) => {
     defaultValue,
     emptyValue,
     intervalType,
+    operationalPoints,
     setData,
     showValues = false,
     title,
@@ -182,9 +184,11 @@ export const IntervalsEditor = (props: IntervalsEditorProps) => {
             creating={selectedTool === INTERVALS_EDITOR_TOOLS.ADD_TOOL}
             data={resizingData}
             emptyValue={emptyValue}
-            viewBox={viewBox}
             highlighted={[hovered ? hovered.index : -1, selected ?? -1].filter((e) => e > -1)}
             intervalType={intervalType}
+            operationalPoints={operationalPoints}
+            options={options}
+            viewBox={viewBox}
             onMouseEnter={(_e, _item, index, point) => {
               if (mode === null) setHovered({ index, point });
             }}
@@ -270,7 +274,6 @@ export const IntervalsEditor = (props: IntervalsEditorProps) => {
               const newData = createEmptySegmentAt(data, point, defaultValue, intervalDefaultUnit);
               setData(newData);
             }}
-            options={options}
           />
           <ToolButtons
             selectedTool={selectedTool}

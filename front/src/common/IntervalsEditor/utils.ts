@@ -1,5 +1,5 @@
 import { last } from 'lodash';
-import { LinearMetadataItem } from 'common/IntervalsDataViz/data';
+import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 /**
  * Create a new empty segment for the intervals editor

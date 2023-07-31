@@ -1,10 +1,21 @@
 import { Feature, Point, LineString, Position } from 'geojson';
-import { last, differenceWith, cloneDeep, isEqual, sortBy, isArray, isNil, isObject } from 'lodash';
+import {
+  last,
+  differenceWith,
+  cloneDeep,
+  isEqual,
+  isArray,
+  isNil,
+  isObject,
+  isEmpty,
+  sortBy,
+} from 'lodash';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { utils } from '@rjsf/core';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
 import { EditorEntity } from 'types/editor';
+import { LinearMetadataItem, OperationalPoint } from './types';
 
 export const LINEAR_METADATA_FIELDS = ['slopes', 'curves'];
 // Min size of a linear metadata segment
@@ -15,14 +26,6 @@ export const DISTANCE_ERROR_RANGE = 0.01;
 const ZOOM_RATIO = 0.75;
 // Min size (in meter) of the viewbox
 const MIN_SIZE_TO_DISPLAY = 10;
-
-/**
- *  Generic type for Linear Metadata
- */
-export type LinearMetadataItem<T = { [key: string]: unknown }> = T & {
-  begin: number;
-  end: number;
-};
 
 /**
  * Cast a coordinate to its Feature representation.
@@ -54,6 +57,25 @@ function lineStringToFeature(line: LineString): Feature<LineString> {
  */
 export function getLineStringDistance(line: LineString): number {
   return Math.round(fnLength(lineStringToFeature(line)) * 1000);
+}
+
+/**
+ * Given a array of linearMetadata and a position, returns the first item
+ * containing the position
+ *
+ * @param linearMetadata linearMetadata in which we search
+ * @param hoveredPostion hoveredPosition
+ */
+export function getHoveredItem<T>(
+  linearMetadata: Array<LinearMetadataItem<T>>,
+  hoveredPostion: number
+): { hoveredItem: LinearMetadataItem<T>; hoveredItemIndex: number } | null {
+  const hoveredItemIndex = linearMetadata.findIndex(
+    (item) => item.begin <= hoveredPostion && hoveredPostion <= item.end
+  );
+  return hoveredItemIndex !== -1
+    ? { hoveredItem: linearMetadata[hoveredItemIndex], hoveredItemIndex }
+    : null;
 }
 
 /**
@@ -586,6 +608,58 @@ export function cropForDatavizViewbox(
         };
       })
   );
+}
+
+/**
+ * Given operationalPoints and viewbox, this function returns
+ * the cropped operationalPoints (and the computed position of the line in px)
+ */
+export function cropOperationPointsForDatavizViewbox(
+  operationalPoints: Array<OperationalPoint>,
+  currentViewBox: [number, number] | null,
+  wrapper: React.MutableRefObject<HTMLDivElement | null>,
+  fullLength: number
+): Array<OperationalPoint & { positionInPx: number }> {
+  if (wrapper.current !== null && fullLength > 0) {
+    const wrapperWidth = wrapper.current.offsetWidth;
+    return (
+      [...operationalPoints]
+        // we filter operational points that are inside the viewbox
+        .filter(({ position }) => {
+          if (!currentViewBox) return true;
+          return !(position < currentViewBox[0] || currentViewBox[1] < position);
+        })
+        // we compute the vertical line position in px
+        .map((operationalPoint) => {
+          const lengthToDisplay = currentViewBox
+            ? operationalPoint.position - currentViewBox[0]
+            : operationalPoint.position;
+          // subtract 2px for the display
+          const positionInPx = (lengthToDisplay * wrapperWidth) / fullLength - 2;
+          return {
+            ...operationalPoint,
+            positionInPx,
+          };
+        })
+    );
+  }
+  return [];
+}
+
+/**
+ * Given operationalPoints and a point, this function returns
+ * the closest operationalPoint if it is closer than 10px to the point, else return null
+ */
+export function getClosestOperationalPoint(
+  position: number,
+  operationalPoints: Array<OperationalPoint & { positionInPx: number }>
+): (OperationalPoint & { positionInPx: number }) | null {
+  if (isEmpty(operationalPoints)) return null;
+  const sortedOperationalPoints = sortBy(operationalPoints, (op) =>
+    Math.abs(position - op.positionInPx)
+  );
+  const closestPoint = sortedOperationalPoints[0];
+  return Math.abs(position - closestPoint.positionInPx) <= 10 ? closestPoint : null;
 }
 
 /**

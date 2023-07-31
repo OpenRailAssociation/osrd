@@ -1,6 +1,7 @@
 import { isNil, isNaN, omit, values } from 'lodash';
 import { CSSProperties } from 'react';
-import { LinearMetadataItem } from './data';
+
+import { LinearMetadataItem } from './types';
 
 /**
  * Simple function that take an input and try to convert it as a number.
@@ -155,6 +156,9 @@ export function computeStyleForDataValue(
 ): CSSProperties {
   if (typeof value !== 'number' || fullHeightItem)
     return {
+      alignItems: 'center',
+      display: 'flex',
+      justifyContent: 'center',
       height: `100%`,
       opacity: 0.8,
       zIndex: 2,
@@ -180,9 +184,9 @@ export function computeStyleForDataValue(
 }
 
 /**
- * Get the linear metadata mouse position from a react event.
+ * Get the linear metadata mouse position from a react event and the hovered segment.
  */
-export function getPositionFromMouseEvent(
+export function getPositionFromMouseEventAndSegment(
   event: React.MouseEvent<HTMLDivElement>,
   segment: LinearMetadataItem
 ): number {
@@ -191,4 +195,22 @@ export function getPositionFromMouseEvent(
   const pxOffset = event.nativeEvent.offsetX;
   const pxSize = target.offsetWidth;
   return Math.round(segment.begin + (pxOffset / pxSize) * (segment.end - segment.begin));
+}
+
+/**
+ * Get the linear metadata mouse position from a react event,
+ * the full length of the intervals displayed and the wrapper
+ *
+ * @param event
+ * @param fullLength
+ * @param wrapper
+ */
+export function getPositionFromMouseEvent(
+  event: React.MouseEvent<HTMLDivElement>,
+  fullLength: number,
+  wrapper: HTMLDivElement
+): number {
+  const pxOffset = event.clientX - wrapper.getBoundingClientRect().x;
+  const wrapperWidth = wrapper.offsetWidth;
+  return Math.round((pxOffset / wrapperWidth) * fullLength);
 }

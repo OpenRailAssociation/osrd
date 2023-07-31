@@ -2,9 +2,12 @@ import React from 'react';
 import cx from 'classnames';
 
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
-import { LinearMetadataItem } from './data';
-import { computeStyleForDataValue, getPositionFromMouseEvent, isNilObject } from './utils';
-import { IntervalItemBaseProps } from './types';
+import {
+  computeStyleForDataValue,
+  getPositionFromMouseEventAndSegment,
+  isNilObject,
+} from './utils';
+import { IntervalItemBaseProps, LinearMetadataItem } from './types';
 
 interface IntervalItemProps<T> extends IntervalItemBaseProps<T> {
   dragingStartAt: number | null;
@@ -14,9 +17,9 @@ interface IntervalItemProps<T> extends IntervalItemBaseProps<T> {
   resizing: { index: number | null; startAt: number } | null;
   segment: LinearMetadataItem & { index: number };
   setDraginStartAt: (dragingStartAt: number) => void;
-  setHoverAtx: (hoverAtx: number) => void;
-  setResizing: (resizing: { index: number | null; startAt: number } | null) => void;
-  wrapper: React.MutableRefObject<HTMLDivElement | null>;
+  setResizing: (
+    resizing: { index: number | null; startAt: number; startPosition: number } | null
+  ) => void;
 }
 
 const IntervalItem = <T extends { [key: string]: string | number }>({
@@ -34,16 +37,13 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
   onCreate,
   onDoubleClick,
   onMouseEnter,
-  onMouseMove,
   onMouseOver,
   onWheel,
   options,
   resizing,
   segment,
   setDraginStartAt,
-  setHoverAtx,
   setResizing,
-  wrapper,
 }: IntervalItemProps<T>) => {
   let valueText = '';
   if (field && segment[field]) {
@@ -79,14 +79,14 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
       onClick={(e) => {
         if (!dragingStartAt && onClick && data[segment.index]) {
           const item = data[segment.index];
-          const point = getPositionFromMouseEvent(e, item);
+          const point = getPositionFromMouseEventAndSegment(e, item);
           onClick(e, item, segment.index, point);
         }
       }}
       onDoubleClick={(e) => {
         if (!dragingStartAt && onDoubleClick && data[segment.index]) {
           const item = data[segment.index];
-          const point = getPositionFromMouseEvent(e, item);
+          const point = getPositionFromMouseEventAndSegment(e, item);
           onDoubleClick(e, item, segment.index, point);
         }
       }}
@@ -95,7 +95,7 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
           // handle mouse over
           if (onMouseOver && data[segment.index]) {
             const item = data[segment.index];
-            const point = getPositionFromMouseEvent(e, item);
+            const point = getPositionFromMouseEventAndSegment(e, item);
             onMouseOver(e, item, segment.index, point);
           }
         }
@@ -103,29 +103,19 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
       onFocus={() => undefined}
       role="button"
       tabIndex={0}
-      onMouseMove={(e) => {
-        // display vertical bar when hover element
-        setHoverAtx(e.clientX - (wrapper.current ? wrapper.current.getBoundingClientRect().x : 0));
-
-        if (!dragingStartAt && onMouseMove && data[segment.index]) {
-          const item = data[segment.index];
-          const point = getPositionFromMouseEvent(e, item);
-          onMouseMove(e, item, segment.index, point);
-        }
-      }}
       onMouseEnter={(e) => {
         if (!dragingStartAt && onMouseEnter && data[segment.index]) {
           const item = data[segment.index];
-          const point = getPositionFromMouseEvent(e, item);
+          const point = getPositionFromMouseEventAndSegment(e, item);
           onMouseEnter(e, item, segment.index, point);
         }
       }}
       onMouseDown={(e) => {
         if (onCreate && creating) {
           const item = data[segment.index];
-          const point = getPositionFromMouseEvent(e, item);
+          const point = getPositionFromMouseEventAndSegment(e, item);
           onCreate(point);
-          setResizing({ index: segment.index + 1, startAt: e.clientX });
+          setResizing({ index: segment.index + 1, startAt: e.clientX, startPosition: point + 1 });
         } else {
           // TODO use the frag tool context here
           setDraginStartAt(e.clientX);
@@ -136,7 +126,7 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
       onWheel={(e) => {
         if (!dragingStartAt && onWheel && data[segment.index]) {
           const item = data[segment.index];
-          const point = getPositionFromMouseEvent(e, item);
+          const point = getPositionFromMouseEventAndSegment(e, item);
           onWheel(e, item, segment.index, point);
         }
       }}
@@ -168,7 +158,7 @@ const IntervalItem = <T extends { [key: string]: string | number }>({
             e.preventDefault();
           }}
           onMouseDown={(e) => {
-            setResizing({ index: segment.index, startAt: e.clientX });
+            setResizing({ index: segment.index, startAt: e.clientX, startPosition: segment.end });
             e.stopPropagation();
             e.preventDefault();
           }}

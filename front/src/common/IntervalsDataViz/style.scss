@@ -195,7 +195,6 @@ $resize-width: 3px;
                 max-height: max(0px, calc((100% - 12px)*999));
                 overflow: hidden;
               }
-
             }
 
             div.resize {
@@ -210,6 +209,14 @@ $resize-width: 3px;
                 background-color: #000;
                 cursor: col-resize;
               }
+            }
+          }
+
+          .operational-point {
+            p {
+              font-size: medium;
+              padding-left: 3px;
+              color: var(--coolgray11);
             }
           }
         }

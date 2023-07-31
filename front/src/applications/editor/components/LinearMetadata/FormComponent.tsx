@@ -9,7 +9,6 @@ import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
 import {
-  LinearMetadataItem,
   getZoomedViewBox,
   transalteViewBox,
   splitAt,
@@ -22,6 +21,7 @@ import {
   getLineStringDistance,
   fixLinearMetadataItems,
 } from 'common/IntervalsDataViz/data';
+import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 import { LinearMetadataDataviz } from 'common/IntervalsDataViz/dataviz';
 import { useModal } from '../../../../common/BootstrapSNCF/ModalSNCF';
 import HelpModal from './HelpModal';
