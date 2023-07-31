@@ -1,6 +1,6 @@
 import React from 'react';
-import { LinearMetadataItem } from 'common/IntervalsDataViz/data';
 import { useTranslation } from 'react-i18next';
+import { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
 interface IntervalsEditorTooltip<T> {
   item: LinearMetadataItem<T>;

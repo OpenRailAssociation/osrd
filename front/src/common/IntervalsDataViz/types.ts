@@ -1,4 +1,10 @@
-import { LinearMetadataItem } from './data';
+/**
+ *  Generic type for Linear Metadata
+ */
+export type LinearMetadataItem<T = { [key: string]: unknown }> = T & {
+  begin: number;
+  end: number;
+};
 
 export interface IntervalItemBaseProps<T> {
   /**
@@ -64,16 +70,6 @@ export interface IntervalItemBaseProps<T> {
   ) => void;
 
   /**
-   * Event when the mouse move on a data item
-   */
-  onMouseMove?: (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    item: LinearMetadataItem<T>,
-    index: number,
-    point: number // point on the linear metadata
-  ) => void;
-
-  /**
    * Event when mouse over a data item
    */
   onMouseOver?: (
@@ -99,4 +95,10 @@ export interface IntervalItemBaseProps<T> {
    * stringValues: each interval has just a category ref, not a continuous value
    */
   options?: { resizingScale?: boolean; fullHeightItem?: boolean; showValues?: boolean };
+}
+
+export interface OperationalPoint {
+  id: string;
+  position: number;
+  name: string;
 }

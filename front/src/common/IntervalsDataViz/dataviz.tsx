@@ -2,14 +2,24 @@ import React, { useState, useEffect, useRef } from 'react';
 import { head, last, maxBy, minBy } from 'lodash';
 import cx from 'classnames';
 
-import { preventDefault, computeStyleForDataValue } from './utils';
-import { LinearMetadataItem, cropForDatavizViewbox } from './data';
+import { preventDefault, computeStyleForDataValue, getPositionFromMouseEvent } from './utils';
+import {
+  cropForDatavizViewbox,
+  cropOperationPointsForDatavizViewbox,
+  getClosestOperationalPoint,
+  getHoveredItem,
+} from './data';
 import { ResizingScale, SimpleScale } from './Scales';
 import IntervalItem from './IntervalItem';
-import { IntervalItemBaseProps } from './types';
+import { IntervalItemBaseProps, LinearMetadataItem, OperationalPoint } from './types';
 import './style.scss';
 
 export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {
+  /**
+   * List of special points to display on the chart
+   */
+  operationalPoints?: OperationalPoint[];
+
   /**
    * Part of the data which is visible
    */
@@ -26,6 +36,16 @@ export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> 
   onMouseLeave?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 
   /**
+   * Event when the mouse move on a data item
+   */
+  onMouseMove?: (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    item: LinearMetadataItem<T>,
+    index: number,
+    point: number // point on the linear metadata
+  ) => void;
+
+  /**
    * Event when the user is resizing an item
    */
   onResize?: (index: number, gap: number, finalized: boolean) => void;
@@ -40,9 +60,11 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   data = [],
   emptyValue = undefined,
   field = 'value',
-  intervalType,
-  viewBox,
   highlighted = [],
+  intervalType,
+  operationalPoints = [],
+  options = { resizingScale: false, fullHeightItem: false, showValues: false },
+  viewBox,
   onClick,
   onDoubleClick,
   onMouseMove,
@@ -53,7 +75,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   onDragX,
   onResize,
   onCreate,
-  options = { resizingScale: false, fullHeightItem: false, showValues: false },
 }: LinearMetadataDatavizProps<T>) => {
   // Html ref of the div wrapper
   const wrapper = useRef<HTMLDivElement | null>(null);
@@ -62,12 +83,19 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   // If the user is doing a drag'n'drop
   const [draginStartAt, setDraginStartAt] = useState<number | null>(null);
   // Store the data for the resizing:
-  const [resizing, setResizing] = useState<{ index: number | null; startAt: number } | null>(null);
+  const [resizing, setResizing] = useState<{
+    index: number | null;
+    startAt: number; // in px (on the screen)
+    startPosition: number; // in m
+  } | null>(null);
   // min & max of the data value
   const [min, setMin] = useState<number>(0);
   const [max, setMax] = useState<number>(0);
   // Computed data for the viz and the viewbox
   const [data4viz, setData4viz] = useState<Array<LinearMetadataItem & { index: number }>>([]);
+  const [operationalPoints4viz, setOperationalPoints4viz] = useState<
+    Array<OperationalPoint & { positionInPx: number }>
+  >([]);
   const [hoverAtx, setHoverAtx] = useState<number | null>(null);
 
   /**
@@ -92,15 +120,64 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   }, [data, field]);
 
   /**
-   * When data or viewbox change
+   * When data change
    * => we recompute the data for the viz
    * => we recompute the full length of the displayed data.
+   * => we recompute the operationalPoints4viz
    */
   useEffect(() => {
     const nData = cropForDatavizViewbox(data, viewBox);
+    const nFullLength = (last(nData)?.end || 0) - (head(nData)?.begin || 0);
+    const nOperationalPoints = cropOperationPointsForDatavizViewbox(
+      operationalPoints,
+      viewBox,
+      wrapper,
+      nFullLength
+    );
     setData4viz(nData);
-    setFullLength((last(nData)?.end || 0) - (head(nData)?.begin || 0));
+    setFullLength(nFullLength);
+    setOperationalPoints4viz(nOperationalPoints);
   }, [data, viewBox]);
+
+  /**
+   * When operationalPoints change
+   * => we recompute the operationalPoints4viz
+   */
+  useEffect(() => {
+    if (fullLength > 0) {
+      const nOperationalPoints = cropOperationPointsForDatavizViewbox(
+        operationalPoints,
+        viewBox,
+        wrapper,
+        fullLength
+      );
+      setOperationalPoints4viz(nOperationalPoints);
+    }
+  }, [operationalPoints, fullLength]);
+
+  /**
+   * When the window is resized horizontally
+   * => we recompute the operationalPoints4viz
+   */
+  useEffect(() => {
+    const debounceResize = () => {
+      let debounceTimeoutId;
+      clearTimeout(debounceTimeoutId);
+      debounceTimeoutId = setTimeout(() => {
+        const nOperationalPoints = cropOperationPointsForDatavizViewbox(
+          operationalPoints,
+          viewBox,
+          wrapper,
+          fullLength
+        );
+        setOperationalPoints4viz(nOperationalPoints);
+      }, 15);
+    };
+    window.addEventListener('resize', debounceResize);
+    return () => {
+      window.removeEventListener('resize', debounceResize);
+    };
+  }, [operationalPoints, viewBox, wrapper, fullLength]);
 
   /**
    * When the wrapper div change
@@ -163,15 +240,29 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
 
     if (onResize && wrapper.current && resizing) {
       const wrapperWidth = wrapper.current.offsetWidth;
+      const leftPadding = wrapper.current.getBoundingClientRect().x;
+
+      // function to compute delta (check for snapping to an operational point)
+      const computeDelta = (positionX: number) => {
+        const closestPoint = getClosestOperationalPoint(
+          positionX - leftPadding,
+          operationalPoints4viz
+        );
+        return closestPoint
+          ? Math.round(closestPoint.position - resizing.startPosition)
+          : Math.round(((positionX - resizing.startAt) / wrapperWidth) * fullLength);
+      };
+
       // function for key up
       fnUp = (e) => {
-        const delta = Math.round(((e.clientX - resizing.startAt) / wrapperWidth) * fullLength);
+        const delta = computeDelta(e.clientX);
         setResizing(null);
         if (resizing.index !== null) onResize(resizing.index, delta, true);
       };
+
       // function for move
       fnMove = (e) => {
-        const delta = Math.round(((e.clientX - resizing.startAt) / wrapperWidth) * fullLength);
+        const delta = computeDelta(e.clientX);
         if (resizing.index !== null) onResize(resizing.index, delta, false);
       };
 
@@ -190,12 +281,52 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   return (
     <div className={cx('linear-metadata-visualisation')}>
       <div
+        className={cx(
+          'data',
+          viewBox !== null && draginStartAt && 'dragging',
+          resizing && 'resizing',
+          (viewBox === null || viewBox[0] === 0) && 'start-visible',
+          (viewBox === null || viewBox[1] === last(data)?.end) && 'end-visible'
+        )}
+        style={{ height: '30px' }}
+      >
+        {/* Display the operational points */}
+        {operationalPoints4viz.map((operationalPoint) => (
+          <div
+            key={`op-${operationalPoint.id}`}
+            className="operational-point"
+            style={{
+              position: 'absolute',
+              height: '50px',
+              left: `${operationalPoint.positionInPx}px`,
+              borderLeft: '2px dashed #a0a0a0',
+            }}
+          >
+            <p>{operationalPoint.name}</p>
+          </div>
+        ))}
+      </div>
+      <div
         id="linear-metadata-dataviz-content"
         ref={wrapper}
         role="presentation"
         onMouseLeave={(e) => {
           setHoverAtx(null);
           if (onMouseLeave) onMouseLeave(e);
+        }}
+        onMouseMove={(e) => {
+          const wrapperObject = wrapper.current;
+          // display vertical bar when hover element
+          setHoverAtx(e.clientX - (wrapperObject ? wrapperObject.getBoundingClientRect().x : 0));
+
+          if (!draginStartAt && onMouseMove && wrapperObject) {
+            const point = getPositionFromMouseEvent(e, fullLength, wrapperObject);
+            const result = getHoveredItem(data, e.clientX);
+            if (result) {
+              const { hoveredItem, hoveredItemIndex } = result;
+              onMouseMove(e, hoveredItem, hoveredItemIndex, point);
+            }
+          }
         }}
         className={cx(
           'data',
@@ -227,6 +358,20 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
           />
         )}
 
+        {/* Display the operational points */}
+        {operationalPoints4viz.map((operationalPoint) => (
+          <div
+            key={`op-${operationalPoint.id}`}
+            className="operational-point"
+            style={{
+              position: 'absolute',
+              height: '100%',
+              left: `${operationalPoint.positionInPx}px`,
+              borderLeft: '2px dashed #a0a0a0',
+            }}
+          />
+        ))}
+
         {/* Create one div per item for the X axis */}
         {data4viz.map((segment) => (
           <IntervalItem
@@ -244,7 +389,6 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             onClick={onClick}
             onCreate={onCreate}
             onDoubleClick={onDoubleClick}
-            onMouseMove={onMouseMove}
             onMouseOver={onMouseOver}
             onMouseEnter={onMouseEnter}
             onWheel={onWheel}
@@ -252,9 +396,7 @@ export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
             resizing={resizing}
             segment={segment}
             setDraginStartAt={setDraginStartAt}
-            setHoverAtx={setHoverAtx}
             setResizing={setResizing}
-            wrapper={wrapper}
           />
         ))}
       </div>
