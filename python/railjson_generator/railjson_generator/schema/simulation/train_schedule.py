@@ -46,17 +46,17 @@ class TrainSchedule:
             allowance = StandardAllowance(*args, **kwargs)
         self.allowances.append(allowance)
 
-    def add_standard_single_value_allowance(self, value_kind: str, value: float, distribution: str = "LINEAR"):
+    def add_standard_single_value_allowance(self, value_type: str, value: float, distribution: str = "LINEAR"):
         """Add a standard allowance with a single value. For more information on allowances, see
         the documentation of the Allowance class in osrd_schemas."""
-        if value_kind == "time":
+        if value_type == "time":
             value = AllowanceTimeValue(seconds=value)
-        elif value_kind == "time_per_distance":
+        elif value_type == "time_per_distance":
             value = AllowanceTimePerDistanceValue(minutes=value)
-        elif value_kind == "percent":
+        elif value_type == "percentage":
             value = AllowancePercentValue(percentage=value)
         else:
-            raise ValueError(f"Unknown value kind {value_kind}")
+            raise ValueError(f"Unknown value kind {value_type}")
 
         distribution = AllowanceDistribution(distribution)
 
