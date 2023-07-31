@@ -68,8 +68,8 @@ pub enum TrainScheduleError {
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/train_schedule")
-        .service((get_results, standalone_simulation, delete_multiple))
-        .service(scope("/{id}").service((delete, get, patch, get_result)))
+        .service((get,get_results, standalone_simulation, delete_multiple))
+        .service(scope("/{id}").service((delete, patch, get_result)))
 }
 
 /// Return a specific timetable with its associated schedules
@@ -196,7 +196,7 @@ async fn patch(
 
 #[derive(Deserialize)]
 struct GetResultQuery {
-    path_id: i64,
+    path_id: Option<i64>,
 }
 
 #[get("/result")]
@@ -212,7 +212,7 @@ async fn get_result(
         None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
     };
 
-    let projection_path_id = query.into_inner().path_id;
+    let projection_path_id = query.into_inner().path_id.unwrap_or(train_schedule.path_id);
 
     let projection_path = match Pathfinding::retrieve(db_pool.clone(), projection_path_id).await? {
         Some(path) => path,

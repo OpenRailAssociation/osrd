@@ -22,6 +22,7 @@ pub struct SimulationReport {
     slopes: Vec<Slope>,
     curves: Vec<Curve>,
     base: ReportTrain,
+    #[serde(skip_serializing_if = "std::option::Option::is_none")]
     eco: Option<ReportTrain>,
     speed_limit_tags: Option<String>,
     electrification_ranges: JsonValue,
