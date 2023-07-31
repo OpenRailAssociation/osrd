@@ -8,7 +8,7 @@ pub mod rolling_stock;
 mod scenario;
 mod study;
 mod timetable;
-mod train_schedule;
+pub mod train_schedule;
 
 use crate::DbPool;
 use crate::{error::Result, views::pagination::PaginatedResponse};

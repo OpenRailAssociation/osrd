@@ -18,6 +18,7 @@ use diesel::Connection;
 use editoast_derive::EditoastError;
 use itertools::izip;
 use serde_derive::Deserialize;
+use serde_json::Value as JsonValue;
 
 use crate::core::simulation::{
     CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop,
