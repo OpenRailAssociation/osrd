@@ -69,7 +69,7 @@ export interface MapState {
     routes: boolean;
     signalingtype: boolean;
     sncf_lpv: boolean;
-    speedlimittag: unknown;
+    speedlimittag: string;
     speedlimits: boolean;
     switches: boolean;
     tvds: boolean;
@@ -119,7 +119,7 @@ export const initialState: MapState = {
     routes: false,
     signalingtype: true,
     sncf_lpv: false,
-    speedlimittag: undefined,
+    speedlimittag: '',
     speedlimits: false,
     switches: false,
     tvds: false,

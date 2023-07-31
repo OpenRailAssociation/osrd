@@ -189,7 +189,7 @@ const LayersModal: FC<LayersModalProps> = ({
             dispatch(
               updateLayersSettings({
                 ...layersSettings,
-                speedlimittag: speedLimitTag,
+                speedlimittag: speedLimitTag as string,
               })
             );
             onSubmit({ newLayers: selectedLayers });
