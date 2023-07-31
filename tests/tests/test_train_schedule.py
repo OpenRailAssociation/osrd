@@ -44,6 +44,7 @@ def test_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[
     assert "base" in simulation_report
     assert "eco" in simulation_report
 
+
 def test_editoast_get_and_update_schedule_result(west_to_south_east_simulation: Iterable[int]):
     schedule_id = west_to_south_east_simulation[0]
     response = requests.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/result/")
@@ -61,6 +62,7 @@ def test_editoast_get_and_update_schedule_result(west_to_south_east_simulation: 
     assert "base" in simulation_report
     assert "eco" in simulation_report
 
+
 def test_api_bulk_delete(small_scenario, west_to_south_east_simulations: Iterable[int]):
     ids = west_to_south_east_simulations[0:2]
     schedules = requests.get(f"{API_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
@@ -74,12 +76,12 @@ def test_api_bulk_delete(small_scenario, west_to_south_east_simulations: Iterabl
 
 def test_editoast_bulk_delete(small_scenario, west_to_south_east_simulations: Iterable[int]):
     ids = west_to_south_east_simulations[0:2]
-    schedules = requests.get(
-        f"{API_URL}train_schedule/results/?timetable_id={small_scenario.timetable}"
-    ).json()  # TODO: switch this to editoast
+    schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}")
+    print(schedules)
+    schedules = schedules.json()  # TODO: switch this to editoast
     old_len = len(schedules)
     r = requests.delete(f"{EDITOAST_URL}train_schedule/delete/", json={"ids": ids})
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(ids)}")
-    schedules = requests.get(f"{API_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
+    schedules = requests.get(f"{EDITOAST_URL}train_schedule/results/?timetable_id={small_scenario.timetable}").json()
     assert len(schedules) == old_len - 2

@@ -68,12 +68,12 @@ pub enum TrainScheduleError {
 
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/train_schedule")
-        .service((get,get_results, standalone_simulation, delete_multiple))
-        .service(scope("/{id}").service((delete, patch, get_result)))
+        .service((get_results, standalone_simulation, delete_multiple))
+        .service(scope("/{id}").service((delete, patch, get_result, get)))
 }
 
 /// Return a specific timetable with its associated schedules
-#[get("{id}")]
+#[get("")]
 async fn get(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<Json<TrainSchedule>> {
     let train_schedule_id = train_schedule_id.into_inner();
 
@@ -115,14 +115,24 @@ pub async fn delete_multiple(
     Ok(HttpResponse::NoContent().finish())
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum PatchRequest {
+    Single(TrainScheduleChangeset),
+    //Multiple(Vec<TrainScheduleChangeset>)
+}
+
 /// Patch a timetable
 #[patch("")]
 async fn patch(
     db_pool: Data<DbPool>,
-    train_schedules_changeset: Json<Vec<TrainScheduleChangeset>>,
+    train_schedules_changeset: Json<PatchRequest>,
     core: Data<CoreClient>,
 ) -> Result<HttpResponse> {
-    let train_schedules_changeset = train_schedules_changeset.into_inner();
+    let train_schedules_changeset = match train_schedules_changeset.into_inner() {
+        PatchRequest::Single(changeset) => vec![changeset],
+        //PatchRequest::Multiple(changesets) => changesets,
+    };
     if train_schedules_changeset.is_empty() {
         return Err(TrainScheduleError::NoTrainSchedules.into());
     }
