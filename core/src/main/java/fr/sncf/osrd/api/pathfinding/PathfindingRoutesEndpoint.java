@@ -20,7 +20,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.utils.graph.GraphAdapter;
+import fr.sncf.osrd.utils.graph.LegacyGraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
@@ -145,7 +145,7 @@ public class PathfindingRoutesEndpoint implements Take {
             List<EdgeToRanges<SignalingRoute>> constraintsList,
             List<AStarHeuristic<SignalingRoute>> remainingDistanceEstimators
     ) throws OSRDError {
-        var pathFound = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+        var pathFound = new Pathfinding<>(new LegacyGraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimators)
                 .addBlockedRangeOnEdges(constraintsList)
@@ -156,7 +156,7 @@ public class PathfindingRoutesEndpoint implements Take {
         }
         // check there is no path without adding constraints
         var possiblePathWithoutErrorNoConstraints =
-                new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+                new Pathfinding<>(new LegacyGraphAdapter<>(infra.getSignalingRouteGraph()))
                     .setEdgeToLength(route -> route.getInfraRoute().getLength())
                     .setRemainingDistanceEstimator(remainingDistanceEstimators)
                     .runPathfinding(waypoints);
@@ -165,7 +165,7 @@ public class PathfindingRoutesEndpoint implements Take {
         }
         // handling errors
         for (EdgeToRanges<SignalingRoute> currentConstraint : constraintsList) {
-            var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+            var possiblePathWithoutError = new Pathfinding<>(new LegacyGraphAdapter<>(infra.getSignalingRouteGraph()))
                     .setEdgeToLength(route -> route.getInfraRoute().getLength())
                     .addBlockedRangeOnEdges(currentConstraint)
                     .setRemainingDistanceEstimator(remainingDistanceEstimators)

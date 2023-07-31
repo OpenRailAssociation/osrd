@@ -32,7 +32,7 @@ public class AStarTests {
         var destination = Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0));
         var remainingDistanceEstimator = new LegacyRemainingDistanceEstimator(destination, 0.);
         var seen = new HashSet<SignalingRoute>();
-        new Pathfinding<>(new GraphAdapter<>(graph))
+        new Pathfinding<>(new LegacyGraphAdapter<>(graph))
                 .setEdgeToLength(x -> x.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(List.of((route, offset) -> {
                     seen.add(route);
@@ -57,7 +57,7 @@ public class AStarTests {
         var origin = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0));
         var destination = Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0));
         var seen = new HashSet<SignalingRoute>();
-        new Pathfinding<>(new GraphAdapter<>(graph))
+        new Pathfinding<>(new LegacyGraphAdapter<>(graph))
                 .setEdgeToLength(x -> x.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(List.of((route, offset) -> {
                     seen.add(route);
@@ -77,7 +77,7 @@ public class AStarTests {
             Collection<Pathfinding.EdgeLocation<SignalingRoute>> origin
     ) {
         var seen = new HashSet<SignalingRoute>();
-        var res = new Pathfinding<>(new GraphAdapter<>(graph))
+        var res = new Pathfinding<>(new LegacyGraphAdapter<>(graph))
                 .setEdgeToLength(x -> x.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(List.of((route, offset) -> {
                     seen.add(route);
