@@ -207,7 +207,7 @@ private fun spacingRequirements(
         if (lastConstrainingZone == null)
             continue
 
-        for (zoneIndex in signalZoneOffset until lastConstrainingZone) {
+        for (zoneIndex in signalZoneOffset .. lastConstrainingZone) {
             val prevRequiredTime = zoneRequirementTimes[zoneIndex]
             zoneRequirementTimes[zoneIndex] = min(sightTime, prevRequiredTime)
         }
