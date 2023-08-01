@@ -1,13 +1,13 @@
 {
   "actions": {
     "add": "Add",
-    "delete": "Remove",
+    "delete": "Delete",
     "reset": "Reset",
-    "split": "Split",
-    "translate": "Translate",
-    "zoom-in": "Zoom in",
-    "zoom-out": "Zoom out"
+    "split": "Cut in half",
+    "translate": "Shift",
+    "zoom-in": "Enlarge",
+    "Zoom-out": "Reduce"
   },
-  "begin": "Start",
+  "begin": "Started",
   "end": "End"
 }
