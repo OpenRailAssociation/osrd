@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union
+from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union, get_args
 
 from geojson_pydantic import LineString
 from pydantic import (
@@ -14,7 +14,9 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.3.1"
+
+RAILJSON_INFRA_VERSION_TYPE = Literal["3.3.1"]
+RAILJSON_INFRA_VERSION = get_args(RAILJSON_INFRA_VERSION_TYPE)[0]
 
 # Traits
 # Used as an input model in the definition of the following classes.
@@ -456,9 +458,7 @@ class DeadSection(BaseObjectTrait):
 class RailJsonInfra(BaseModel):
     """This class is used to build an infra."""
 
-    version: Literal[RAILJSON_INFRA_VERSION] = Field(
-        default=RAILJSON_INFRA_VERSION, description="Version of the schema"
-    )
+    version: RAILJSON_INFRA_VERSION_TYPE = Field(default=RAILJSON_INFRA_VERSION, description="Version of the schema")
     operational_points: List[OperationalPoint] = Field(
         description="List of operational points of the corresponding infra"
     )
