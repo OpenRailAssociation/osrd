@@ -673,7 +673,7 @@ pub mod tests {
         //Assert rolling_stock version is 1
         assert_eq!(rolling_stock.version.unwrap(), 1);
 
-        let expected_body = RollingStock::from(rolling_stock.clone());
+        let expected_body = RollingStock::from(rolling_stock);
         assert_eq!(response_body, expected_body);
     }
 

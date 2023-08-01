@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::core::{AsCoreRequest, CoreClient};
 use crate::error::{InternalError, Result};
+use crate::models::train_schedule::{Allowance, ScheduledPoint};
 use crate::models::{
     Create, Delete, Pathfinding, Retrieve, RollingStockModel, Scenario, SimulationOutput,
     SimulationOutputChangeset, TrainScheduleChangeset, Update,
@@ -19,6 +20,7 @@ use diesel::Connection;
 use editoast_derive::EditoastError;
 use itertools::izip;
 use serde_derive::Deserialize;
+use serde_json::Value as JsonValue;
 
 use crate::core::simulation::{
     CoreTrainSchedule, SimulationRequest, SimulationResponse, TrainStop,
@@ -72,11 +74,11 @@ pub enum TrainScheduleError {
 pub fn routes() -> impl HttpServiceFactory {
     web::scope("/train_schedule")
         .service((get_results, standalone_simulation, delete_multiple))
-        .service(scope("/{id}").service((delete, get, patch, get_result)))
+        .service(scope("/{id}").service((delete, patch, get_result, get)))
 }
 
 /// Return a specific timetable with its associated schedules
-#[get("{id}")]
+#[get("")]
 async fn get(db_pool: Data<DbPool>, train_schedule_id: Path<i64>) -> Result<Json<TrainSchedule>> {
     let train_schedule_id = train_schedule_id.into_inner();
 
@@ -199,7 +201,7 @@ async fn patch(
 
 #[derive(Deserialize)]
 struct GetResultQuery {
-    path_id: i64,
+    path_id: Option<i64>,
 }
 
 #[get("/result")]
@@ -215,7 +217,7 @@ async fn get_result(
         None => return Err(TrainScheduleError::NotFound { train_schedule_id }.into()),
     };
 
-    let projection_path_id = query.into_inner().path_id;
+    let projection_path_id = query.into_inner().path_id.unwrap_or(train_schedule.path_id);
 
     let projection_path = match Pathfinding::retrieve(db_pool.clone(), projection_path_id).await? {
         Some(path) => path,
@@ -319,24 +321,67 @@ async fn get_results(
     Ok(Json(res))
 }
 
+#[derive(Debug, Deserialize)]
+struct TrainScheduleBatch {
+    timetable: i64,
+    path: i64,
+    schedules: Vec<TrainScheduleBatchItem>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TrainScheduleBatchItem {
+    pub train_name: String,
+    pub labels: JsonValue,
+    pub departure_time: f64,
+    pub initial_speed: f64,
+    pub allowances: Vec<Allowance>,
+    pub scheduled_points: Vec<ScheduledPoint>,
+    pub comfort: Option<String>,
+    pub speed_limit_tags: Option<String>,
+    pub power_restriction_ranges: Option<JsonValue>,
+    pub options: Option<JsonValue>,
+    pub rolling_stock_id: i64,
+}
+
+impl From<TrainScheduleBatch> for Vec<TrainSchedule> {
+    fn from(batch: TrainScheduleBatch) -> Self {
+        let mut res = Vec::new();
+        for item in batch.schedules {
+            res.push(TrainSchedule {
+                id: None,
+                timetable_id: batch.timetable,
+                path_id: batch.path,
+                train_name: item.train_name,
+                labels: item.labels,
+                departure_time: item.departure_time,
+                initial_speed: item.initial_speed,
+                allowances: DieselJson(item.allowances),
+                scheduled_points: DieselJson(item.scheduled_points),
+                comfort: item.comfort.unwrap_or_default(),
+                speed_limit_tags: item.speed_limit_tags,
+                power_restriction_ranges: item.power_restriction_ranges,
+                options: item.options,
+                rolling_stock_id: item.rolling_stock_id,
+            });
+        }
+        res
+    }
+}
+
 #[post("/standalone_simulation")]
 async fn standalone_simulation(
     db_pool: Data<DbPool>,
-    train_schedules: Json<Vec<TrainSchedule>>,
+    request: Json<TrainScheduleBatch>,
     core: Data<CoreClient>,
 ) -> Result<Json<Vec<i64>>> {
-    let train_schedules = train_schedules.into_inner();
+    let request = request.into_inner();
+
+    let id_timetable = request.timetable;
+
+    let train_schedules: Vec<TrainSchedule> = request.into();
 
     if train_schedules.is_empty() {
         return Err(TrainScheduleError::NoTrainSchedules.into());
-    }
-
-    let id_timetable = train_schedules[0].timetable_id;
-    if train_schedules
-        .iter()
-        .any(|ts| ts.timetable_id != id_timetable)
-    {
-        return Err(TrainScheduleError::BatchShouldHaveSameTimetable.into());
     }
 
     let timetable = Timetable::retrieve(db_pool.clone(), id_timetable)
