@@ -34,7 +34,7 @@ export default function NeutralSections(props: NeutralSectionsProps) {
         'case',
         ['==', ['get', 'lower_pantograph'], true],
         colors[mapStyle].neutral_sections.lower_pantograph,
-        colors[mapStyle].neutral_sections.cut_off,
+        colors[mapStyle].neutral_sections.switch_off,
       ],
       'line-width': 6,
       'line-offset': 0,

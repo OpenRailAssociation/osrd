@@ -81,7 +81,7 @@ const colors: Record<string, Theme> = {
     },
     neutral_sections: {
       lower_pantograph: '#ff0000',
-      cut_off: '#000000',
+      switch_off: '#000000',
     },
     radio: {
       text: '#5596c8',
@@ -230,7 +230,7 @@ const colors: Record<string, Theme> = {
     },
     neutral_sections: {
       lower_pantograph: '#ff0000',
-      cut_off: '#000000',
+      switch_off: '#000000',
     },
     radio: {
       text: '#5596c8',
@@ -371,7 +371,7 @@ const colors: Record<string, Theme> = {
     },
     neutral_sections: {
       lower_pantograph: '#ff0000',
-      cut_off: '#000000',
+      switch_off: '#000000',
     },
     radio: {
       text: bpMedium,

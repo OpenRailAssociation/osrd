@@ -66,14 +66,14 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
               </div>
               <div className="mapkey-text">{t('map-key:lower_pantograph')}</div>
             </div>
-            <div className="mapkey-item" key="cut_off">
+            <div className="mapkey-item" key="switch_off">
               <div className="mapkey-icon">
                 <i
                   className="mapkey-line"
-                  style={{ background: colors[mapStyle].neutral_sections.cut_off }}
+                  style={{ background: colors[mapStyle].neutral_sections.switch_off }}
                 />
               </div>
-              <div className="mapkey-text">{t('map-key:cut_off')}</div>
+              <div className="mapkey-text">{t('map-key:switch_off')}</div>
             </div>
           </div>
         </div>
