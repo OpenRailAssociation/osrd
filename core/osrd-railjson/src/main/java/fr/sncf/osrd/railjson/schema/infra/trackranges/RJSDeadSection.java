@@ -11,9 +11,6 @@ public class RJSDeadSection {
     @Json(name = "track_ranges")
     public List<RJSDirectionalTrackRange> trackRanges;
 
-    @Json(name = "backside_pantograph_track_ranges")
-    public List<RJSDirectionalTrackRange> backsidePantographTrackRanges;
-
     @Json(name = "is_pantograph_drop_zone")
     public boolean isPantographDropZone;
 }

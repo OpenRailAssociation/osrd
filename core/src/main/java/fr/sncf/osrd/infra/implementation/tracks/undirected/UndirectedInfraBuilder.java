@@ -182,10 +182,7 @@ public class UndirectedInfraBuilder {
         if (deadSections == null)
             return;
         for (var deadSection : deadSections) {
-            var trackRanges = !deadSection.backsidePantographTrackRanges.isEmpty()
-                    ? deadSection.backsidePantographTrackRanges
-                    : deadSection.trackRanges;
-            for (var trackRange : trackRanges) {
+            for (var trackRange : deadSection.trackRanges) {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
                 assert track != null;
                 var dir = Direction.fromEdgeDir(trackRange.direction);
