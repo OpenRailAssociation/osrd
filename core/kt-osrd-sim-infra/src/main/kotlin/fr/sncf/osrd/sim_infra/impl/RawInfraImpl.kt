@@ -112,7 +112,7 @@ class SpeedSection(
 )
 
 class NeutralSection(
-    val isDropPantograph: Boolean,
+    val lowerPantograph: Boolean,
 )
 
 

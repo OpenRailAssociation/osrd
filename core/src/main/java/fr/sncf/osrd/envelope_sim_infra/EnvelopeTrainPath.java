@@ -100,7 +100,7 @@ public class EnvelopeTrainPath {
         res = updateRangeMap(res, catenaryModes,
                 (e, catenaryMode) -> catenaryMode.equals("") ? new NonElectrified() : new Electrified(catenaryMode));
         res = updateRangeMap(res, neutralSections,
-                (electrification, neutralSection) -> new Neutral(neutralSection.isDropPantograph(), electrification));
+                (electrification, neutralSection) -> new Neutral(neutralSection.lowerPantograph(), electrification));
         return ImmutableRangeMap.copyOf(res);
     }
 

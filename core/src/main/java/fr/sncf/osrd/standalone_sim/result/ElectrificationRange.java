@@ -90,7 +90,7 @@ public class ElectrificationRange {
                         Objects.equals(usedCond.electricalProfile(), e.profile));
             }
             if (seenCond instanceof Neutral n) {
-                return new NeutralUsage(n.isDropPantograph);
+                return new NeutralUsage(n.lowerPantograph);
             }
             throw new RuntimeException("Unknown electrification type");
         }

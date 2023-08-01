@@ -437,9 +437,9 @@
                     "title": "Id",
                     "type": "string"
                 },
-                "is_pantograph_drop_zone": {
+                "lower_pantograph": {
                     "description": "precise if the neutralSection is a pantograph drop zone or not",
-                    "title": "Is Pantograph Drop Zone",
+                    "title": "Lower Pantograph",
                     "type": "boolean"
                 },
                 "track_ranges": {
@@ -454,7 +454,7 @@
             "required": [
                 "id",
                 "track_ranges",
-                "is_pantograph_drop_zone"
+                "lower_pantograph"
             ],
             "title": "NeutralSection",
             "type": "object"

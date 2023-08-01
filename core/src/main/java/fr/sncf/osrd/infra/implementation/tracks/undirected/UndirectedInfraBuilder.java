@@ -187,7 +187,7 @@ public class UndirectedInfraBuilder {
                 assert track != null;
                 var dir = Direction.fromEdgeDir(trackRange.direction);
                 var range = Range.open(trackRange.begin, trackRange.end);
-                track.getNeutralSections(dir).put(range, new NeutralSection(neutralSection.isPantographDropZone));
+                track.getNeutralSections(dir).put(range, new NeutralSection(neutralSection.lowerPantograph));
             }
         }
     }
