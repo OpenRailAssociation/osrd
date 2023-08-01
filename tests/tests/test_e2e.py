@@ -72,7 +72,7 @@ ROLLING_STOCK_1500_JSON_PATH = (
         ),
     ]
 )
-@pytest.mark.usefixtures("small_scenario", "fast_rolling_stocks")
+@pytest.mark.usefixtures("small_scenario", "fast_rolling_stocks", "west_to_south_east_simulations")
 def test_e2e():
     result = subprocess.run(
         ["yarn", "--cwd", "front", "playwright", "test", "--reporter=line"],

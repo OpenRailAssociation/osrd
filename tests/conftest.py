@@ -80,6 +80,14 @@ def small_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -
     yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
 
 
+@pytest.fixture
+def mini_scenario(small_infra: Infra, foo_project_id: int, foo_study_id: int) -> Scenario:
+    scenario_id, timetable_id = create_scenario(
+        EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id, "_@Test integration scenario STDCM"
+    )
+    yield Scenario(foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id)
+
+
 def _create_fast_rolling_stocks(test_rolling_stocks: List[TestRollingStock] = None):
     if test_rolling_stocks is None:
         payload = json.loads(FAST_ROLLING_STOCK_JSON_PATH.read_text())
@@ -171,7 +179,7 @@ def west_to_south_east_simulation(
 
 @pytest.fixture
 def west_to_south_east_simulations(
-    small_scenario: Scenario,
+    mini_scenario: Scenario,
     west_to_south_east_path: TrainPath,
     fast_rolling_stock: int,
 ) -> List[int]:
@@ -187,7 +195,7 @@ def west_to_south_east_simulations(
     response = requests.post(
         f"{API_URL}train_schedule/standalone_simulation/",
         json={
-            "timetable": small_scenario.timetable,
+            "timetable": mini_scenario.timetable,
             "path": west_to_south_east_path.id,
             "schedules": [
                 {

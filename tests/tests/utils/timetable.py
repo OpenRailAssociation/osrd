@@ -13,8 +13,10 @@ def create_op_study(base_url, project_id: int) -> int:
     return res.json()["id"]
 
 
-def create_scenario(base_url, infra_id, project_id, op_study_id) -> Tuple[int, int]:
-    scenario_payload = {"name": "_@Test integration scenario", "infra_id": infra_id}
+def create_scenario(
+    base_url, infra_id, project_id, op_study_id, scenario_name="_@Test integration scenario"
+) -> Tuple[int, int]:
+    scenario_payload = {"name": scenario_name, "infra_id": infra_id}
     r = requests.post(
         base_url + f"projects/{project_id}/studies/{op_study_id}/scenarios/",
         json=scenario_payload,
