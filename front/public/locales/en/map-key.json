@@ -4,7 +4,7 @@
   "catenaries": "Electrification",
   "keyTitle": "Legend",
   "speedlimit": "Speed",
-  "dead_sections": "Dead sections",
+  "neutral_sections": "Neutral sections",
   "drop_pantograph": "Lower panto",
   "cut_off": "Switch-off power"
 }

@@ -129,8 +129,8 @@ impl Zone {
                     };
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.track);
                 }
-                OperationResult::Create(RailjsonObject::DeadSection { railjson: _ })
-                | OperationResult::Update(RailjsonObject::DeadSection { railjson: _ }) => {
+                OperationResult::Create(RailjsonObject::NeutralSection { railjson: _ })
+                | OperationResult::Update(RailjsonObject::NeutralSection { railjson: _ }) => {
                     // TODO
                 }
                 OperationResult::Update(RailjsonObject::SpeedSection { railjson })
@@ -243,7 +243,7 @@ impl Zone {
                     }
                 }
                 OperationResult::Delete(ObjectRef {
-                    obj_type: ObjectType::DeadSection,
+                    obj_type: ObjectType::NeutralSection,
                     obj_id: _,
                 }) => {
                     // TODO

@@ -97,7 +97,7 @@ table! {
 }
 
 table! {
-    osrd_infra_deadsectionlayer {
+    osrd_infra_neutralsectionlayer {
         id -> BigInt,
         obj_id -> Text,
         infra_id -> BigInt,
@@ -105,7 +105,7 @@ table! {
 }
 
 table! {
-    osrd_infra_backwardpantographdeadsectionlayer {
+    osrd_infra_backwardpantographneutralsectionlayer {
         id -> BigInt,
         obj_id -> Text,
         infra_id -> BigInt,
@@ -214,7 +214,7 @@ table! {
 }
 
 table! {
-    osrd_infra_deadsectionmodel(id) {
+    osrd_infra_neutralsectionmodel(id) {
         id -> BigInt,
         obj_id -> Text,
         data -> Jsonb,

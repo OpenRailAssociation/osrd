@@ -52,6 +52,6 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     /** Returns a voltage usable at any position */
     RangeMap<Double, String> getVoltages();
 
-    /** Returns the ranges covered by dead sections */
-    RangeMap<Double, DeadSection> getDeadSections(Direction direction);
+    /** Returns the ranges covered by neutral sections */
+    RangeMap<Double, NeutralSection> getNeutralSections(Direction direction);
 }

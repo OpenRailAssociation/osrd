@@ -1,5 +1,5 @@
 WITH track_ranges AS (
-    SELECT obj_id AS dead_section_id,
+    SELECT obj_id AS neutral_section_id,
         (
             jsonb_array_elements(data->'track_ranges')->'begin'
         )::float AS slice_begin,
@@ -7,11 +7,11 @@ WITH track_ranges AS (
             jsonb_array_elements(data->'track_ranges')->'end'
         )::float AS slice_end,
         jsonb_array_elements(data->'track_ranges')->>'track' AS track_id
-    FROM osrd_infra_deadsectionmodel
+    FROM osrd_infra_neutralsectionmodel
     WHERE infra_id = $1
 ),
 sliced_tracks AS (
-    SELECT track_ranges.dead_section_id,
+    SELECT track_ranges.neutral_section_id,
         ST_LineSubstring(
             tracks_layer.geographic,
             GREATEST(
@@ -56,12 +56,12 @@ sliced_tracks AS (
         INNER JOIN osrd_infra_tracksectionlayer AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO osrd_infra_deadsectionlayer (obj_id, infra_id, geographic, schematic)
-SELECT dead_section_id,
+INSERT INTO osrd_infra_neutralsectionlayer (obj_id, infra_id, geographic, schematic)
+SELECT neutral_section_id,
     $1,
     St_Collect(geo),
     St_Collect(sch)
 FROM sliced_tracks
 WHERE GeometryType(sliced_tracks.geo) = 'LINESTRING'
     AND GeometryType(sliced_tracks.sch) = 'LINESTRING'
-GROUP BY dead_section_id
+GROUP BY neutral_section_id

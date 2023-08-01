@@ -12,7 +12,7 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
@@ -53,10 +53,10 @@ public class PathfindingElectrificationTest extends ApiTest {
         middleTrack.getVoltages().put(Range.closed(middleTrack.getLength() * 0.1, middleTrack.getLength() * 0.9), "");
     }
 
-    private static void addMiddleDeadSection(Pathfinding.Result<SignalingRoute> normalPath, Direction direction) {
+    private static void addMiddleNeutralSection(Pathfinding.Result<SignalingRoute> normalPath, Direction direction) {
         var middleTrack = getMiddleTrackEdge(normalPath);
         var range = Range.closed(0., middleTrack.getLength() * 0.9);
-        middleTrack.getDeadSections(direction).put(range, new DeadSection(false));
+        middleTrack.getNeutralSections(direction).put(range, new NeutralSection(false));
     }
 
     @Test
@@ -122,9 +122,9 @@ public class PathfindingElectrificationTest extends ApiTest {
         assertEquals(exception.osrdErrorType, ErrorType.PathfindingElectrificationError);
     }
 
-    static Stream<Arguments> testDeadSectionArgs() {
+    static Stream<Arguments> testNeutralSectionArgs() {
         return Stream.of(
-                // With catenary, with dead section, dead section direction
+                // With catenary, with neutral section, neutral section direction
                 Arguments.of(true, true, Direction.FORWARD),
                 Arguments.of(true, true, Direction.BACKWARD),
                 Arguments.of(true, false, null),
@@ -135,9 +135,9 @@ public class PathfindingElectrificationTest extends ApiTest {
     }
 
     @ParameterizedTest
-    @MethodSource("testDeadSectionArgs")
-    public void testDeadSectionAndCatenaryPathfinding(boolean withCatenary, boolean withDeadSection,
-                                                      Direction deadSectionDirection)
+    @MethodSource("testNeutralSectionArgs")
+    public void testNeutralSectionAndCatenaryPathfinding(boolean withCatenary, boolean withNeutralSection,
+                                                      Direction neutralSectionDirection)
             throws IOException, URISyntaxException {
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
 
@@ -170,12 +170,12 @@ public class PathfindingElectrificationTest extends ApiTest {
             removeMiddleCatenary(normalPath);
         }
 
-        if (withDeadSection) {
-            // Add a dead section in the middle of the path
-            addMiddleDeadSection(normalPath, deadSectionDirection);
+        if (withNeutralSection) {
+            // Add a neutral section in the middle of the path
+            addMiddleNeutralSection(normalPath, neutralSectionDirection);
         }
 
-        if (withCatenary || (withDeadSection && deadSectionDirection == Direction.FORWARD)) {
+        if (withCatenary || (withNeutralSection && neutralSectionDirection == Direction.FORWARD)) {
             // Run another pathfinding with an electric train
             var electricPath = PathfindingRoutesEndpoint.runPathfinding(
                     infra,

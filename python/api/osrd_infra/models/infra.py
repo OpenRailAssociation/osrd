@@ -4,8 +4,8 @@ from osrd_schemas.infra import (
     RAILJSON_INFRA_VERSION,
     BufferStop,
     Catenary,
-    DeadSection,
     Detector,
+    NeutralSection,
     OperationalPoint,
     Route,
     Signal,
@@ -146,13 +146,13 @@ class DetectorModel(models.Model):
         unique_together = (("infra", "obj_id"),)
 
 
-class DeadSectionModel(models.Model):
+class NeutralSectionModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[PydanticValidator(DeadSection)])
+    data = models.JSONField(validators=[PydanticValidator(NeutralSection)])
 
     class Meta:
-        verbose_name_plural = "dead sections"
+        verbose_name_plural = "neutral sections"
         unique_together = (("infra", "obj_id"),)
 
 

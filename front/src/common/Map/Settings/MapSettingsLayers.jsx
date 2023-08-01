@@ -54,7 +54,7 @@ export default function MapSettingsLayers() {
         <FormatSwitch name="catenaries" icon={<GiElectric />} />
       </div>
       <div className="col-md-6">
-        <FormatSwitch name="dead_sections" icon={<GiUnplugged />} />
+        <FormatSwitch name="neutral_sections" icon={<GiUnplugged />} />
       </div>
       <div className="col-md-6">
         <FormatSwitch name="signalingtype" icon={<AiOutlineBlock />} disabled />

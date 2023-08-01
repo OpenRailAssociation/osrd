@@ -5,15 +5,15 @@ use super::GeneratedData;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 
-pub struct DeadSectionLayer;
+pub struct NeutralSectionLayer;
 
-impl GeneratedData for DeadSectionLayer {
+impl GeneratedData for NeutralSectionLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_deadsectionlayer"
+        "osrd_infra_neutralsectionlayer"
     }
 
     fn generate(conn: &mut PgConnection, infra: i64, _infra_cache: &InfraCache) -> Result<()> {
-        sql_query(include_str!("sql/generate_dead_section_layer.sql"))
+        sql_query(include_str!("sql/generate_neutral_section_layer.sql"))
             .bind::<BigInt, _>(infra)
             .execute(conn)?;
         Ok(())
@@ -25,7 +25,7 @@ impl GeneratedData for DeadSectionLayer {
         _operations: &[crate::schema::operation::OperationResult],
         _infra_cache: &crate::infra_cache::InfraCache,
     ) -> Result<()> {
-        // TODO: we don't manage the update of the dead_section layer for the moment
+        // TODO: we don't manage the update of the neutral_section layer for the moment
         Ok(())
     }
 }

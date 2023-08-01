@@ -6,8 +6,8 @@ from osrd_schemas import infra
 
 from railjson_generator.rjs_static import SWITCH_TYPES
 from railjson_generator.schema.infra.catenary import Catenary
-from railjson_generator.schema.infra.dead_section import DeadSection
 from railjson_generator.schema.infra.link import Link
+from railjson_generator.schema.infra.neutral_section import NeutralSection
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
 from railjson_generator.schema.infra.speed_section import SpeedSection
@@ -25,7 +25,7 @@ class Infra:
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
     catenaries: List[Catenary] = field(default_factory=list)
-    dead_sections: List[DeadSection] = field(default_factory=list)
+    neutral_sections: List[NeutralSection] = field(default_factory=list)
 
     VERSION = "3.3.1"
 
@@ -47,7 +47,7 @@ class Infra:
             switch_types=SWITCH_TYPES,
             speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
             catenaries=[catenary.to_rjs() for catenary in self.catenaries],
-            dead_sections=[dead_section.to_rjs() for dead_section in self.dead_sections],
+            neutral_sections=[neutral_section.to_rjs() for neutral_section in self.neutral_sections],
         )
 
     def save(self, path):

@@ -8308,9 +8308,9 @@
             "applicable_directions": "BOTH"
         }
     ],
-    "dead_sections": [
+    "neutral_sections": [
         {
-            "id": "dead_section.0",
+            "id": "neutral_section.0",
             "track_ranges": [
                 {
                     "track": "TG1",
@@ -8328,7 +8328,7 @@
               "is_pantograph_drop_zone": true
         },
         {
-            "id": "dead_section.1",
+            "id": "neutral_section.1",
             "track_ranges": [
                 {
                     "track": "TA0",
@@ -8340,7 +8340,7 @@
             "is_pantograph_drop_zone": true
         },
         {
-            "id": "dead_section.2",
+            "id": "neutral_section.2",
             "track_ranges": [
                 {
                     "track": "TA6",

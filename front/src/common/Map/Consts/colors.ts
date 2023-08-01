@@ -79,7 +79,7 @@ const colors: Record<string, Theme> = {
       color750V: '#86cf00',
       colorOther: '#000000',
     },
-    dead_sections: {
+    neutral_sections: {
       drop_pantograph: '#ff0000',
       cut_off: '#000000',
     },
@@ -228,7 +228,7 @@ const colors: Record<string, Theme> = {
       color750V: '#86cf00',
       colorOther: '#FFFFFF',
     },
-    dead_sections: {
+    neutral_sections: {
       drop_pantograph: '#ff0000',
       cut_off: '#000000',
     },
@@ -369,7 +369,7 @@ const colors: Record<string, Theme> = {
       color750V: bpLight,
       colorOther: bpLight,
     },
-    dead_sections: {
+    neutral_sections: {
       drop_pantograph: '#ff0000',
       cut_off: '#000000',
     },

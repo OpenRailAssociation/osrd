@@ -10,19 +10,19 @@ import { getMapStyle } from 'reducers/map/selectors';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-interface DeadSectionsProps {
+interface NeutralSectionsProps {
   geomType: string;
   layerOrder: number;
 }
 
-export default function DeadSections(props: DeadSectionsProps) {
+export default function NeutralSections(props: NeutralSectionsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const infraID = useSelector(getInfraID);
   const mapStyle = useSelector(getMapStyle);
   const { geomType, layerOrder } = props;
-  const deadSectionsParams: LayerProps = {
+  const neutralSectionsParams: LayerProps = {
     type: 'line',
-    'source-layer': 'dead_sections',
+    'source-layer': 'neutral_sections',
     minzoom: 5,
     maxzoom: 24,
     layout: {
@@ -33,8 +33,8 @@ export default function DeadSections(props: DeadSectionsProps) {
       'line-color': [
         'case',
         ['==', ['get', 'is_pantograph_drop_zone'], true],
-        colors[mapStyle].dead_sections.drop_pantograph,
-        colors[mapStyle].dead_sections.cut_off,
+        colors[mapStyle].neutral_sections.drop_pantograph,
+        colors[mapStyle].neutral_sections.cut_off,
       ],
       'line-width': 6,
       'line-offset': 0,
@@ -42,16 +42,16 @@ export default function DeadSections(props: DeadSectionsProps) {
     },
   };
 
-  if (layersSettings.dead_sections) {
+  if (layersSettings.neutral_sections) {
     return (
       <Source
-        id={`dead_sections_${geomType}`}
+        id={`neutral_sections_${geomType}`}
         type="vector"
-        url={`${MAP_URL}/layer/dead_sections/mvt/${geomType}/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/neutral_sections/mvt/${geomType}/?infra=${infraID}`}
       >
         <OrderedLayer
-          {...deadSectionsParams}
-          id={`chartis/dead_sections/${geomType}`}
+          {...neutralSectionsParams}
+          id={`chartis/neutral_sections/${geomType}`}
           layerOrder={layerOrder}
         />
       </Source>

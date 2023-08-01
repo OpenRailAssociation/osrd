@@ -61,7 +61,7 @@ export interface MapState {
   layersSettings: {
     bufferstops: boolean;
     catenaries: boolean;
-    dead_sections: boolean;
+    neutral_sections: boolean;
     detectors: boolean;
     operationalpoints: boolean;
     routes: boolean;
@@ -110,7 +110,7 @@ export const initialState: MapState = {
   layersSettings: {
     bufferstops: false,
     catenaries: false,
-    dead_sections: false,
+    neutral_sections: false,
     detectors: false,
     operationalpoints: false,
     routes: false,

@@ -20,7 +20,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.TrackNode
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.SpeedSection
-import fr.sncf.osrd.sim_infra.impl.DeadSection as SimDeadSection
+import fr.sncf.osrd.sim_infra.impl.NeutralSection as SimNeutralSection
 import fr.sncf.osrd.sim_infra.impl.TrackSectionBuilder
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.*
@@ -292,14 +292,14 @@ private fun makeChunk(
         }
         return res
     }
-    fun makeDeadSection(range: TrackRangeView): DistanceRangeMap<SimDeadSection> {
-        val res = distanceRangeMapOf<SimDeadSection>()
-        for (entry in range.deadSections.asMapOfRanges()) {
-            val legacyDeadSection = entry.value
+    fun makeNeutralSection(range: TrackRangeView): DistanceRangeMap<SimNeutralSection> {
+        val res = distanceRangeMapOf<SimNeutralSection>()
+        for (entry in range.neutralSections.asMapOfRanges()) {
+            val legacyNeutralSection = entry.value
             res.put(
                 Distance.fromMeters(entry.key.lowerEndpoint()),
                 Distance.fromMeters(entry.key.upperEndpoint()),
-                SimDeadSection(legacyDeadSection.isDropPantograph)
+                SimNeutralSection(legacyNeutralSection.isDropPantograph)
             )
         }
         return res
@@ -317,7 +317,7 @@ private fun makeChunk(
         makeDirectionalMap { range -> DistanceRangeMapImpl.from(range.gradients) },
         DistanceRangeMapImpl.from(rangeViewForward.blockedGaugeTypes),
         DistanceRangeMapImpl.from(rangeViewForward.catenaryVoltages),
-        makeDirectionalMap { range -> makeDeadSection(range) },
+        makeDirectionalMap { range -> makeNeutralSection(range) },
         makeDirectionalMap { range -> makeSpeedSections(range) },
     )
     trackSectionBuilder.chunk(chunkId)

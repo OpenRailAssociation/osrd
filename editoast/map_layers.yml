@@ -192,22 +192,22 @@ layers:
         cache_duration: 3600
         data_expr: layer.data
   
-  dead_sections:
-    table_name: osrd_infra_deadsectionlayer
+  neutral_sections:
+    table_name: osrd_infra_neutralsectionlayer
     id_field: id
     views:
       geo:
         on_field: geographic
         cache_duration: 3600
-        data_expr: dead_section.data
+        data_expr: neutral_section.data
         joins:
-          - inner join osrd_infra_deadsectionmodel dead_section on dead_section.obj_id = layer.obj_id and dead_section.infra_id = layer.infra_id
+          - inner join osrd_infra_neutralsectionmodel neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
       sch:
         on_field: schematic
         cache_duration: 3600
-        data_expr: dead_section.data
+        data_expr: neutral_section.data
         joins:
-          - inner join osrd_infra_deadsectionmodel dead_section on dead_section.obj_id = layer.obj_id and dead_section.infra_id = layer.infra_id
+          - inner join osrd_infra_neutralsectionmodel neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
 
   errors:
     table_name: osrd_infra_errorlayer
