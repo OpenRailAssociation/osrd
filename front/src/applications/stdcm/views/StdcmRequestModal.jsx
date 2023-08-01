@@ -24,7 +24,6 @@ import ReactModal from 'react-modal';
 import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
-import rabbit from 'assets/pictures/rabbit.png';
 import { setFailure } from 'reducers/main';
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateItinerary } from 'reducers/osrdconf';
@@ -143,28 +142,21 @@ export default function StdcmRequestModal(props) {
         <div className="modal-content">
           <ModalHeaderSNCF>
             <h1>{t('operationalStudies/manageTrainSchedule:stdcmComputation')}</h1>
-            <button className="btn btn-only-icon close" type="button" onClick={cancelStdcmRequest}>
-              <i className="icons-close" />
-            </button>
           </ModalHeaderSNCF>
           <ModalBodySNCF>
             <div className="d-flex flex-column text-center">
               {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
-                <>
-                  <img src={rabbit} alt="runnning stdcm" className="w-50" />
-                  <div className="p-1 text-info">
-                    {t('operationalStudies/manageTrainSchedule:searchingItinerary')}
-                  </div>
-                  <div className="p-1 text-info">
+                <div className="d-flex align-items-center justify-content-center mb-3">
+                  <span className="mr-2">
                     {t('operationalStudies/manageTrainSchedule:pleaseWait')}
-                  </div>
-                  <Spinner className="p-1" />
-                </>
+                  </span>
+                  <Spinner />
+                </div>
               )}
 
               <div className="text-center p-1">
                 <button
-                  className="btn btn-sm btn-primary "
+                  className="btn btn-sm btn-secondary"
                   type="button"
                   onClick={cancelStdcmRequest}
                 >
