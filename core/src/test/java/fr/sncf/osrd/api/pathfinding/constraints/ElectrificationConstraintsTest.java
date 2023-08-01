@@ -26,7 +26,7 @@ public class ElectrificationConstraintsTest {
     @BeforeAll
     public void setUp() {
         var infra = getSmallInfra();
-        electrificationConstraints = new ElectrificationConstraints(infra.rawInfra(), infra.blockInfra(),
+        electrificationConstraints = new ElectrificationConstraints(infra.blockInfra(), infra.rawInfra(),
                 List.of(TestTrains.FAST_ELECTRIC_TRAIN));
 
         chunk0Length = infra.rawInfra().getTrackChunkLength(0);

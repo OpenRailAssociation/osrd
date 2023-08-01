@@ -62,7 +62,7 @@ data class PathImpl(
         var lengthPrevChunks = 0.meters
         for (chunk in chunks) {
             val chunkLength = infra.getTrackChunkLength(chunk.value)
-            if (lengthPrevChunks + chunkLength > offset) {
+            if (lengthPrevChunks + chunkLength >= offset) {
                 val trackId = infra.getTrackFromChunk(chunk.value)
                 val startChunkOffset = infra.getTrackChunkOffset(chunk.value)
                 return TrackLocation(trackId, offset - lengthPrevChunks + startChunkOffset)

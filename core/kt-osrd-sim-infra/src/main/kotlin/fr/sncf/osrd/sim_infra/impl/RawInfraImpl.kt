@@ -149,6 +149,14 @@ class RawInfraImpl(
         return trackSectionPool[trackSection].chunks
     }
 
+    override fun getTrackSectionLength(trackSection: TrackSectionId): Distance {
+        var length = Distance(0)
+        for (trackChunk in getTrackSectionChunks(trackSection)) {
+            length += getTrackChunkLength(trackChunk)
+        }
+        return length
+    }
+
     override fun getTrackChunkLength(trackChunk: TrackChunkId): Distance {
         return trackChunkPool[trackChunk].length
     }

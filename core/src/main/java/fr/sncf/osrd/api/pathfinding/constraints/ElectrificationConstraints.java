@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public record ElectrificationConstraints(
-        RawSignalingInfra rawInfra,
         BlockInfra blockInfra,
+        RawSignalingInfra rawInfra,
         Collection<RollingStock> rollingStocks
 ) implements EdgeToRanges<Integer> {
 
@@ -46,7 +46,7 @@ public record ElectrificationConstraints(
         var res = new HashSet<Pathfinding.Range>();
         for (var voltageEntry : voltages) {
             var voltageInterval = Range.open(voltageEntry.getLower(), voltageEntry.getUpper());
-            if (Math.abs(voltageEntry.getLower() - voltageEntry.getUpper()) < 1e-5)
+            if (voltageEntry.getLower() == voltageEntry.getUpper())
                 continue;
             if (!stock.getModeNames().contains(voltageEntry.getValue())) {
                 var blockingRanges = deadSections.complement().subRangeSet(voltageInterval).asRanges();

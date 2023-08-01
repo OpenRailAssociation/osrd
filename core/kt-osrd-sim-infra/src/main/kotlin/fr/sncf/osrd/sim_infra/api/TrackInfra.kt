@@ -1,5 +1,6 @@
 package fr.sncf.osrd.sim_infra.api
 
+import fr.sncf.osrd.reporting.exceptions.OSRDError.newUnknownTrackSectionError
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
@@ -21,6 +22,8 @@ interface TrackInfra {
     fun getTrackSectionFromName(name: String): TrackSectionId?
     @JvmName("getTrackSectionChunks")
     fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
+    @JvmName("getTrackSectionLength")
+    fun getTrackSectionLength(trackSection: TrackSectionId): Distance
 }
 
 /** A directional detector encodes a direction over a detector */
@@ -46,5 +49,5 @@ fun <T> StaticIdxList<T>.dirIter(direction: Direction): Iterable<DirStaticIdx<T>
 
 /** Get existing track section from name, throw if not found **/
 fun getTrackSectionFromNameOrThrow(name: String, trackInfra: TrackInfra): TrackSectionId {
-    return trackInfra.getTrackSectionFromName(name) ?: throw RuntimeException("Track section $name not found.")
+    return trackInfra.getTrackSectionFromName(name) ?: throw newUnknownTrackSectionError(name)
 }

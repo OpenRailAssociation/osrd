@@ -16,9 +16,9 @@ import java.util.regex.Pattern;
 
 @ExtendWith(MockitoExtension.class)
 public class ApiTest {
-    public InfraManager infraHandlerMock = null;
+    public InfraManager infraManager;
 
-    ElectricalProfileSetManager electricalProfileSetManagerMock = null;
+    ElectricalProfileSetManager electricalProfileSetManager = null;
 
     private static OkHttpClient mockHttpClient(String regex) throws IOException {
         final OkHttpClient okHttpClient = mock(OkHttpClient.class);
@@ -57,8 +57,8 @@ public class ApiTest {
      */
     @BeforeEach
     public void setUp() throws IOException {
-        infraHandlerMock = new InfraManager("http://test.com/", "", mockHttpClient(".*/infra/(.*)/railjson.*"), true);
-        electricalProfileSetManagerMock = new ElectricalProfileSetManager("http://test.com/", "",
+        infraManager = new InfraManager("http://test.com/", "", mockHttpClient(".*/infra/(.*)/railjson.*"), true);
+        electricalProfileSetManager = new ElectricalProfileSetManager("http://test.com/", "",
                 mockHttpClient(".*/electrical_profile_set/(.*)/"));
 
     }

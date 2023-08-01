@@ -30,8 +30,10 @@ def _rand_range(a, b):
 def _add_detector_at(track: TrackSection, position: float):
     detector = track.add_detector(position=position)
     length = track.length
-    track.add_signal(max(0, detector.position - 25), ApplicableDirection.START_TO_STOP, detector)
-    track.add_signal(min(length, detector.position + 25), ApplicableDirection.STOP_TO_START, detector)
+    s1 = track.add_signal(max(0, detector.position), ApplicableDirection.START_TO_STOP, detector)
+    s2 = track.add_signal(min(length, detector.position), ApplicableDirection.STOP_TO_START, detector)
+    s1.add_logical_signal("BAL", settings={"Nf": "true"})
+    s2.add_logical_signal("BAL", settings={"Nf": "true"})
 
 
 def _endpoint_offset(endpoint: TrackEndpoint, offset: float):

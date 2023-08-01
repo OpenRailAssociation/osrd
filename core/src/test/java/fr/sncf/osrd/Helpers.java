@@ -105,6 +105,15 @@ public class Helpers {
         }
     }
 
+    /** Loads tiny infra as a FullInfra */
+    public static FullInfra getTinyInfra() {
+        try {
+            return Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /** returns the blocks on the given routes */
     public static List<Integer> getBlocksOnRoutes(FullInfra infra, List<String> names) {
         var res = new ArrayList<Integer>();

@@ -39,7 +39,7 @@ public class LoadingGaugeConstraintsTest {
         });
         var infra = fullInfraFromRJS(rjsInfra);
 
-        loadingGaugeConstraints = new LoadingGaugeConstraints(infra.rawInfra(), infra.blockInfra(),
+        loadingGaugeConstraints = new LoadingGaugeConstraints(infra.blockInfra(), infra.rawInfra(),
                 List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE));
 
         chunk0Length = infra.rawInfra().getTrackChunkLength(0);

@@ -74,6 +74,8 @@ interface BlockInfra {
     fun getBlocksFromTrackChunk(trackChunk: TrackChunkId, direction: Direction): MutableStaticIdxArraySet<Block>
     @JvmName("getTrackChunksFromBlock")
     fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk>
+    @JvmName("getBlockLength")
+    fun getBlockLength(block: BlockId): Distance
 }
 
 data class BlockPathElement(

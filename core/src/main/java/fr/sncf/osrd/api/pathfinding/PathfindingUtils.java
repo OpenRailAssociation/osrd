@@ -9,13 +9,13 @@ import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList;
 public class PathfindingUtils {
 
     /** Creates the path from a given block id */
-    public static Path makePath(BlockInfra blockInfra, RawSignalingInfra infra, Integer blockIdx) {
+    public static Path makePath(BlockInfra blockInfra, RawSignalingInfra rawInfra, Integer blockIdx) {
         var chunks = new MutableDirStaticIdxArrayList<TrackChunk>();
         long totalLength = 0;
         for (var zoneIdx : toIntList(blockInfra.getBlockPath(blockIdx))) {
-            chunks.addAll(infra.getZonePathChunks(zoneIdx));
-            totalLength += infra.getZonePathLength(zoneIdx);
+            chunks.addAll(rawInfra.getZonePathChunks(zoneIdx));
+            totalLength += rawInfra.getZonePathLength(zoneIdx);
         }
-        return buildPathFrom(infra, chunks, 0, totalLength);
+        return buildPathFrom(rawInfra, chunks, 0, totalLength);
     }
 }

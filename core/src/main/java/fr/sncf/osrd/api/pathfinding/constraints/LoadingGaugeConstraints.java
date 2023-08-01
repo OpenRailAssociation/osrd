@@ -13,8 +13,8 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public record LoadingGaugeConstraints(
-        RawSignalingInfra infra,
         BlockInfra blockInfra,
+        RawSignalingInfra infra,
         Collection<RollingStock> rollingStocks
 ) implements EdgeToRanges<Integer> {
 

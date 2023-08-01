@@ -100,7 +100,7 @@ public class StandaloneSimulationTest extends ApiTest {
 
         // process it
         var rawResponse =
-                readBodyResponse(new StandaloneSimulationEndpoint(infraHandlerMock, electricalProfileSetManagerMock)
+                readBodyResponse(new StandaloneSimulationEndpoint(infraManager, electricalProfileSetManager)
                         .act(new RqFake("POST", "/standalone_simulation", requestBody))
                 );
 

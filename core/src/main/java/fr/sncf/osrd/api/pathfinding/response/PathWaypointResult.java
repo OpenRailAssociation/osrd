@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
+import java.util.Objects;
 
 /**
  * One waypoint in the path, represents an operational point
@@ -80,6 +81,22 @@ public class PathWaypointResult {
         id = other.id;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PathWaypointResult pathWaypointResult)) return false;
+        return Objects.equals(id, pathWaypointResult.id)
+                && Objects.equals(suggestion, pathWaypointResult.suggestion)
+                && Objects.equals(location, pathWaypointResult.location)
+                && Double.compare(pathOffset, pathWaypointResult.pathOffset) == 0;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, suggestion, location, pathOffset);
+    }
+
     @SuppressFBWarnings("UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
     public static class PathWaypointLocation {
         @Json(name = "track_section")
@@ -89,6 +106,19 @@ public class PathWaypointResult {
         public PathWaypointLocation(String trackSection, double offset) {
             this.trackSection = trackSection;
             this.offset = offset;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof PathWaypointLocation location)) return false;
+            return Objects.equals(trackSection, location.trackSection)
+                    && Double.compare(offset, location.offset) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(trackSection, offset);
         }
     }
 }

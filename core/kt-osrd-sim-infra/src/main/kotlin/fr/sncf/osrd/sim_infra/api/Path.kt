@@ -59,7 +59,7 @@ fun buildPathFrom(
         if (totalLength >= endOffset)
             break
         val length = infra.getTrackChunkLength(dirChunkId.value)
-        if (totalLength + length >= beginOffset)
+        if (totalLength + length > beginOffset)
             filteredChunks.add(dirChunkId)
         else {
             mutBeginOffset -= length

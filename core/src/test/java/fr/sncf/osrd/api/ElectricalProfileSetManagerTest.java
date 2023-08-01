@@ -9,7 +9,7 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
     @Test
     public void testGetProfileMap() {
         var profileMap =
-                electricalProfileSetManagerMock.getProfileMap("small_infra/external_generated_inputs.json");
+                electricalProfileSetManager.getProfileMap("small_infra/external_generated_inputs.json");
 
         assert profileMap != null;
         verifyProfileMap(profileMap);
@@ -18,7 +18,7 @@ public class ElectricalProfileSetManagerTest extends ApiTest {
     @Test
     public void testGetProfileMapInvalid() {
         var profileMap =
-                electricalProfileSetManagerMock.getProfileMap("small_infra/invalid.json");
+                electricalProfileSetManager.getProfileMap("small_infra/invalid.json");
 
         assert profileMap == null;
     }

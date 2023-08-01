@@ -43,7 +43,7 @@ public class RemainingDistanceEstimatorTest {
             double expectedDistance,
             double blockOffset
     ) {
-        var estimator = new RemainingDistanceEstimator(smallInfra.rawInfra(), smallInfra.blockInfra(), edgeLocations,
+        var estimator = new RemainingDistanceEstimator(smallInfra.blockInfra(), smallInfra.rawInfra(), edgeLocations,
                 remainingDistance);
         assertEquals(expectedDistance, estimator.apply(block, blockOffset));
     }
