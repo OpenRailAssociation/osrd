@@ -2,7 +2,7 @@
   "all": "Tous les signaux",
   "bufferstops": "Heurtoirs",
   "catenaries": "Électrification",
-  "dead_sections": "BP / CC",
+  "neutral_sections": "BP / CC",
   "detectors": "Détecteurs",
   "jdz": "Joints de zone",
   "layers": "Couches de données",

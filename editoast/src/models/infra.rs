@@ -3,8 +3,8 @@ use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::{Identifiable, Retrieve};
 use crate::schema::{
-    BufferStop, Catenary, DeadSection, Detector, OperationalPoint, RailJson, RailjsonError, Route,
-    Signal, SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
+    BufferStop, Catenary, Detector, NeutralSection, OperationalPoint, RailJson, RailjsonError,
+    Route, Signal, SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl;
@@ -134,8 +134,8 @@ impl Infra {
                 SpeedSection::persist_batch(&railjson.speed_sections, infra_id, conn)?;
                 debug!("🛤️  Importing switch types");
                 SwitchType::persist_batch(&railjson.switch_types, infra_id, conn)?;
-                debug!("🛤️  Importing dead sections");
-                DeadSection::persist_batch(&railjson.dead_sections, infra_id, conn)?;
+                debug!("🛤️  Importing neutral sections");
+                NeutralSection::persist_batch(&railjson.neutral_sections, infra_id, conn)?;
                 Ok(infra)
             })
         })

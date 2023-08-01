@@ -32,7 +32,7 @@ import VirtualLayers from 'applications/operationalStudies/components/Simulation
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors';
 import Catenaries from 'common/Map/Layers/Catenaries';
-import DeadSections from 'common/Map/Layers/DeadSections';
+import NeutralSections from 'common/Map/Layers/NeutralSections';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
@@ -448,7 +448,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
             />
-            <DeadSections
+            <NeutralSections
               geomType="geo"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
             />
@@ -510,7 +510,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
             />
-            <DeadSections
+            <NeutralSections
               geomType="sch"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
             />

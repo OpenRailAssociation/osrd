@@ -1,5 +1,5 @@
 use super::{
-    BufferStop, Catenary, DeadSection, Detector, OSRDTyped, OperationalPoint, Route, Signal,
+    BufferStop, Catenary, Detector, NeutralSection, OSRDTyped, OperationalPoint, Route, Signal,
     SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use crate::models::RAILJSON_VERSION;
@@ -27,7 +27,7 @@ pub struct RailJson {
     pub track_section_links: Vec<TrackSectionLink>,
     pub track_sections: Vec<TrackSection>,
     pub speed_sections: Vec<SpeedSection>,
-    pub dead_sections: Vec<DeadSection>,
+    pub neutral_sections: Vec<NeutralSection>,
     pub catenaries: Vec<Catenary>,
     pub signals: Vec<Signal>,
     pub buffer_stops: Vec<BufferStop>,
@@ -123,7 +123,7 @@ pub mod test {
             track_section_links: (0..10).map(|_| Default::default()).collect(),
             track_sections: (0..10).map(|_| Default::default()).collect(),
             speed_sections: (0..10).map(|_| Default::default()).collect(),
-            dead_sections: (0..10).map(|_| Default::default()).collect(),
+            neutral_sections: (0..10).map(|_| Default::default()).collect(),
             catenaries: (0..10).map(|_| Default::default()).collect(),
             signals: (0..10).map(|_| Default::default()).collect(),
             detectors: (0..10).map(|_| Default::default()).collect(),
@@ -206,7 +206,7 @@ pub mod test {
             track_section_links: find_objects(conn, infra.id.unwrap()),
             track_sections: find_objects(conn, infra.id.unwrap()),
             speed_sections: find_objects(conn, infra.id.unwrap()),
-            dead_sections: find_objects(conn, infra.id.unwrap()),
+            neutral_sections: find_objects(conn, infra.id.unwrap()),
             catenaries: find_objects(conn, infra.id.unwrap()),
             signals: find_objects(conn, infra.id.unwrap()),
             buffer_stops: find_objects(conn, infra.id.unwrap()),

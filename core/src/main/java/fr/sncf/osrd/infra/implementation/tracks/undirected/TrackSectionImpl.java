@@ -25,7 +25,7 @@ public class TrackSectionImpl implements TrackSection {
     EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections;
     RangeMap<Double, String> catenaryVoltages = TreeRangeMap.create();
 
-    EnumMap<Direction, RangeMap<Double, DeadSection>> deadSections;
+    EnumMap<Direction, RangeMap<Double, NeutralSection>> neutralSections;
     EnumMap<Direction, RangeMap<Double, Double>> curves;
     EnumMap<Direction, RangeMap<Double, Double>> slopes;
     ImmutableList<Detector> detectors = ImmutableList.of();
@@ -59,9 +59,9 @@ public class TrackSectionImpl implements TrackSection {
         this.sch = sch;
         this.loadingGaugeConstraints = loadingGaugeConstraints;
         this.catenaryVoltages.put(Range.closed(0., length), "");
-        deadSections = new EnumMap<>(Direction.class);
+        neutralSections = new EnumMap<>(Direction.class);
         for (var dir : Direction.values()) {
-            deadSections.put(dir, TreeRangeMap.create());
+            neutralSections.put(dir, TreeRangeMap.create());
         }
     }
 
@@ -157,8 +157,8 @@ public class TrackSectionImpl implements TrackSection {
     }
 
     @Override
-    public RangeMap<Double, DeadSection> getDeadSections(Direction direction) {
-        return deadSections.get(direction);
+    public RangeMap<Double, NeutralSection> getNeutralSections(Direction direction) {
+        return neutralSections.get(direction);
     }
 
     @Override

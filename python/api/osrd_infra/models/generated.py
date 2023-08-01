@@ -117,15 +117,16 @@ class CatenaryLayer(models.Model):
         unique_together = (("infra", "obj_id"),)
 
 
-class DeadSectionLayer(models.Model):
+class NeutralSectionLayer(models.Model):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
     geographic = models.MultiLineStringField(srid=settings.MAPBOX_SRID)
     schematic = models.MultiLineStringField(srid=settings.MAPBOX_SRID)
 
     class Meta:
-        verbose_name_plural = "generated dead section layer"
+        verbose_name_plural = "generated neutral section layer"
         unique_together = (("infra", "obj_id"),)
+
 
 class LPVPanelLayer(models.Model):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)

@@ -38,7 +38,9 @@ class Migration(migrations.Migration):
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
-                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.DeadSection)]),
+                    models.JSONField(
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_schemas.infra.NeutralSection)]
+                    ),
                 ),
                 (
                     "infra",

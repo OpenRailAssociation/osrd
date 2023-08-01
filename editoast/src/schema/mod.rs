@@ -1,10 +1,10 @@
 mod buffer_stop;
 mod catenary;
-mod dead_section;
 mod detector;
 pub mod electrical_profiles;
 mod errors;
 mod geo_json;
+mod neutral_section;
 pub mod operation;
 mod operational_point;
 mod railjson;
@@ -20,12 +20,12 @@ mod track_section_link;
 pub mod utils;
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
-pub use dead_section::DeadSection;
 use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
 use enum_map::Enum;
 pub use errors::{InfraError, InfraErrorType};
 pub use geo_json::GeoJson;
+pub use neutral_section::NeutralSection;
 pub use operational_point::{
     OperationalPoint, OperationalPointCache, OperationalPointExtensions,
     OperationalPointIdentifierExtension, OperationalPointPart,
@@ -78,7 +78,7 @@ pub enum ObjectType {
     Signal,
     SpeedSection,
     Detector,
-    DeadSection,
+    NeutralSection,
     TrackSectionLink,
     Switch,
     SwitchType,
@@ -93,7 +93,7 @@ impl ObjectType {
         match *self {
             ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
             ObjectType::Signal => "osrd_infra_signalmodel",
-            ObjectType::DeadSection => "osrd_infra_deadsectionmodel",
+            ObjectType::NeutralSection => "osrd_infra_neutralsectionmodel",
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
             ObjectType::Detector => "osrd_infra_detectormodel",
             ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",

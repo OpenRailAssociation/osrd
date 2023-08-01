@@ -14,7 +14,7 @@ import fr.sncf.osrd.envelope_sim.electrification.Electrified;
 import fr.sncf.osrd.envelope_sim.electrification.Neutral;
 import fr.sncf.osrd.envelope_sim.electrification.NonElectrified;
 import fr.sncf.osrd.external_generated_inputs.ElectricalProfileMapping;
-import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import java.util.HashMap;
@@ -33,7 +33,7 @@ public class EnvelopeTrainPath {
         gradePositions.add(0);
         var gradeValues = new DoubleArrayList();
         var catenaries = TreeRangeMap.<Double, String>create();
-        var deadSections = TreeRangeMap.<Double, DeadSection>create();
+        var neutralSections = TreeRangeMap.<Double, NeutralSection>create();
         double length = 0;
 
         for (var range : trackSectionPath) {
@@ -48,9 +48,9 @@ public class EnvelopeTrainPath {
                 var catenariesInRange = range.getCatenaryVoltages().subRangeMap(Range.closed(0., range.getLength()));
                 transferRangeMap(catenariesInRange, catenaries, length);
 
-                // Add dead sections
-                var deadSectionsInRange = range.getDeadSections().subRangeMap(Range.closed(0., range.getLength()));
-                transferRangeMap(deadSectionsInRange, deadSections, length);
+                // Add neutral sections
+                var neutralInRange = range.getNeutralSections().subRangeMap(Range.closed(0., range.getLength()));
+                transferRangeMap(neutralInRange, neutralSections, length);
 
                 // Update length
                 length += range.getLength();
@@ -61,7 +61,7 @@ public class EnvelopeTrainPath {
             gradeValues.add(0);
         }
 
-        var electrificationMap = buildElectrificationMap(mergeRanges(catenaries), mergeRanges(deadSections), length);
+        var electrificationMap = buildElectrificationMap(mergeRanges(catenaries), mergeRanges(neutralSections), length);
 
         var electrificationMapByPowerClass = new HashMap<String, ImmutableRangeMap<Double, Electrification>>();
         if (electricalProfileMapping != null) {
@@ -93,14 +93,14 @@ public class EnvelopeTrainPath {
 
     private static ImmutableRangeMap<Double, Electrification> buildElectrificationMap(
             RangeMap<Double, String> catenaryModes,
-            RangeMap<Double, DeadSection> deadSections,
+            RangeMap<Double, NeutralSection> neutralSections,
             double length) {
         TreeRangeMap<Double, Electrification> res = TreeRangeMap.create();
         res.put(Range.closed(0.0, length), new NonElectrified());
         res = updateRangeMap(res, catenaryModes,
                 (e, catenaryMode) -> catenaryMode.equals("") ? new NonElectrified() : new Electrified(catenaryMode));
-        res = updateRangeMap(res, deadSections,
-                (electrification, deadSection) -> new Neutral(deadSection.isDropPantograph(), electrification));
+        res = updateRangeMap(res, neutralSections,
+                (electrification, neutralSection) -> new Neutral(neutralSection.isDropPantograph(), electrification));
         return ImmutableRangeMap.copyOf(res);
     }
 

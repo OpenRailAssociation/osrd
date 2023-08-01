@@ -9,7 +9,7 @@ import com.google.common.primitives.Doubles;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
@@ -27,7 +27,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDeadSection;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
@@ -162,7 +162,7 @@ public class UndirectedInfraBuilder {
         addSpeedSections(infra.speedSections, trackSectionsByID);
 
         loadCatenaries(infra.catenaries, trackSectionsByID);
-        loadDeadSections(infra.deadSections, trackSectionsByID);
+        loadNeutralSections(infra.neutralSections, trackSectionsByID);
 
         return TrackInfraImpl.from(switches.build(), builder.build());
     }
@@ -177,17 +177,17 @@ public class UndirectedInfraBuilder {
         }
     }
 
-    private void loadDeadSections(List<RJSDeadSection> deadSections,
+    private void loadNeutralSections(List<RJSNeutralSection> neutralSections,
                                   HashMap<String, TrackSectionImpl> trackSectionsByID) {
-        if (deadSections == null)
+        if (neutralSections == null)
             return;
-        for (var deadSection : deadSections) {
-            for (var trackRange : deadSection.trackRanges) {
+        for (var neutralSection : neutralSections) {
+            for (var trackRange : neutralSection.trackRanges) {
                 var track = trackSectionsByID.get(trackRange.trackSectionID);
                 assert track != null;
                 var dir = Direction.fromEdgeDir(trackRange.direction);
                 var range = Range.open(trackRange.begin, trackRange.end);
-                track.getDeadSections(dir).put(range, new DeadSection(deadSection.isPantographDropZone));
+                track.getNeutralSections(dir).put(range, new NeutralSection(neutralSection.isPantographDropZone));
             }
         }
     }

@@ -92,7 +92,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
             "routes": {routes},
             "operational_points": {operational_points},
             "catenaries": {catenaries},
-            "dead_sections": {dead_sections}
+            "neutral_sections": {neutral_sections}
         }}"#,
         version = infra_meta.railjson_version.unwrap(),
         track_sections = res[ObjectType::TrackSection],
@@ -106,7 +106,7 @@ async fn get_railjson(infra: Path<i64>, db_pool: Data<DbPool>) -> Result<impl Re
         routes = res[ObjectType::Route],
         operational_points = res[ObjectType::OperationalPoint],
         catenaries = res[ObjectType::Catenary],
-        dead_sections = res[ObjectType::DeadSection]
+        neutral_sections = res[ObjectType::NeutralSection]
     );
 
     Ok(HttpResponse::Ok()

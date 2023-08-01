@@ -7,7 +7,7 @@ import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.geom.LineString;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
-import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.sim_infra.api.LoadingGaugeConstraint;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
@@ -239,9 +239,9 @@ public class TrackRangeView {
         return convertMap(track.getEdge().getVoltages());
     }
 
-    /** Returns the ranges marked as dead section on the track */
-    public RangeMap<Double, DeadSection> getDeadSections() {
-        return convertMap(track.getEdge().getDeadSections(track.getDirection()));
+    /** Returns the ranges marked as neutral section on the track */
+    public RangeMap<Double, NeutralSection> getNeutralSections() {
+        return convertMap(track.getEdge().getNeutralSections(track.getDirection()));
     }
 
     /** Returns true if the element is inside the range */

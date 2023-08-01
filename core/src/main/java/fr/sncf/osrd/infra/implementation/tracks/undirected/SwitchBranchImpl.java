@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.DeadSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.NeutralSection;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
@@ -88,7 +88,7 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
-    public RangeMap<Double, DeadSection> getDeadSections(Direction direction) {
+    public RangeMap<Double, NeutralSection> getNeutralSections(Direction direction) {
         return ImmutableRangeMap.of();
     }
 

@@ -4,7 +4,7 @@
   "catenaries": "Électrification",
   "keyTitle": "Légende",
   "speedlimit": "Vitesse",
-  "dead_sections": "BP / CC",
+  "neutral_sections": "BP / CC",
   "drop_pantograph": "Baissez Panto",
   "cut_off": "Coupez Courant"
 }

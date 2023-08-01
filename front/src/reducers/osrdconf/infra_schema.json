@@ -168,38 +168,6 @@
             "title": "Curve",
             "type": "object"
         },
-        "DeadSection": {
-            "description": "Dead zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.\nInstead, trains have to rely on inertia to cross such sections.\n\nIf the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,\nand will start raising pantographs again once the train has entirely left the section.",
-            "properties": {
-                "id": {
-                    "description": "Unique identifier of the object",
-                    "maxLength": 255,
-                    "minLength": 1,
-                    "title": "Id",
-                    "type": "string"
-                },
-                "is_pantograph_drop_zone": {
-                    "description": "precise if the deadSection is a pantograph drop zone or not",
-                    "title": "Is Pantograph Drop Zone",
-                    "type": "boolean"
-                },
-                "track_ranges": {
-                    "description": "List of locations where the train cannot pull power from catenaries",
-                    "items": {
-                        "$ref": "#/definitions/DirectionalTrackRange"
-                    },
-                    "title": "Track Ranges",
-                    "type": "array"
-                }
-            },
-            "required": [
-                "id",
-                "track_ranges",
-                "is_pantograph_drop_zone"
-            ],
-            "title": "DeadSection",
-            "type": "object"
-        },
         "Detector": {
             "description": "This class defines detector object.\nA detector is characterized by its id and its corresponding track.\nA detector is used to locate a train\nin order to consider the section as occupied when there is a train.",
             "properties": {
@@ -457,6 +425,38 @@
                 "settings"
             ],
             "title": "LogicalSignal",
+            "type": "object"
+        },
+        "NeutralSection": {
+            "description": "Neutral zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.\nInstead, trains have to rely on inertia to cross such sections.\n\nIf the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,\nand will start raising pantographs again once the train has entirely left the section.",
+            "properties": {
+                "id": {
+                    "description": "Unique identifier of the object",
+                    "maxLength": 255,
+                    "minLength": 1,
+                    "title": "Id",
+                    "type": "string"
+                },
+                "is_pantograph_drop_zone": {
+                    "description": "precise if the neutralSection is a pantograph drop zone or not",
+                    "title": "Is Pantograph Drop Zone",
+                    "type": "boolean"
+                },
+                "track_ranges": {
+                    "description": "List of locations where the train cannot pull power from catenaries",
+                    "items": {
+                        "$ref": "#/definitions/DirectionalTrackRange"
+                    },
+                    "title": "Track Ranges",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "id",
+                "track_ranges",
+                "is_pantograph_drop_zone"
+            ],
+            "title": "NeutralSection",
             "type": "object"
         },
         "OperationalPoint": {
@@ -1347,20 +1347,20 @@
             "title": "Catenaries",
             "type": "array"
         },
-        "dead_sections": {
-            "description": "Dead sections of the infra",
-            "items": {
-                "$ref": "#/definitions/DeadSection"
-            },
-            "title": "Dead Sections",
-            "type": "array"
-        },
         "detectors": {
             "description": "Detectors of the infra",
             "items": {
                 "$ref": "#/definitions/Detector"
             },
             "title": "Detectors",
+            "type": "array"
+        },
+        "neutral_sections": {
+            "description": "Neutral sections of the infra",
+            "items": {
+                "$ref": "#/definitions/NeutralSection"
+            },
+            "title": "Neutral Sections",
             "type": "array"
         },
         "operational_points": {
@@ -1449,7 +1449,7 @@
         "signals",
         "buffer_stops",
         "detectors",
-        "dead_sections"
+        "neutral_sections"
     ],
     "title": "RailJsonInfra",
     "type": "object"

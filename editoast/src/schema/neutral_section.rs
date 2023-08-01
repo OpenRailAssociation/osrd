@@ -9,21 +9,21 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, InfraModel)]
 #[serde(deny_unknown_fields)]
-#[infra_model(table = "crate::tables::osrd_infra_deadsectionmodel")]
+#[infra_model(table = "crate::tables::osrd_infra_neutralsectionmodel")]
 #[derivative(Default)]
-pub struct DeadSection {
+pub struct NeutralSection {
     pub id: Identifier,
     pub track_ranges: Vec<DirectionalTrackRange>,
     pub is_pantograph_drop_zone: bool,
 }
 
-impl OSRDTyped for DeadSection {
+impl OSRDTyped for NeutralSection {
     fn get_type() -> ObjectType {
-        ObjectType::DeadSection
+        ObjectType::NeutralSection
     }
 }
 
-impl OSRDIdentified for DeadSection {
+impl OSRDIdentified for NeutralSection {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -31,7 +31,7 @@ impl OSRDIdentified for DeadSection {
 
 #[cfg(test)]
 mod test {
-    use super::DeadSection;
+    use super::NeutralSection;
     use crate::models::infra::tests::test_infra_transaction;
     use actix_web::test as actix_test;
 
@@ -39,10 +39,10 @@ mod test {
     async fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10)
-                .map(|_| DeadSection::default())
-                .collect::<Vec<DeadSection>>();
+                .map(|_| NeutralSection::default())
+                .collect::<Vec<NeutralSection>>();
 
-            assert!(DeadSection::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
+            assert!(NeutralSection::persist_batch(&data, infra.id.unwrap(), conn).is_ok());
         })
         .await;
     }

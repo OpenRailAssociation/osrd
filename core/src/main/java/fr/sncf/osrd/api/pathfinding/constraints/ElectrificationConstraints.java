@@ -36,13 +36,13 @@ public record ElectrificationConstraints(
         double offset = 0;
         for (var range : route.getTrackRanges()) {
             var voltages = range.getCatenaryVoltages();
-            var deadSections = rangeSetFromMap(range.getDeadSections());
+            var neutralSections = rangeSetFromMap(range.getNeutralSections());
             for (var section : voltages.asMapOfRanges().entrySet()) {
                 var interval = section.getKey();
                 if (Math.abs(interval.lowerEndpoint() - interval.upperEndpoint()) < 1e-5)
                     continue;
                 if (!stock.getModeNames().contains(section.getValue())) {
-                    var blockingRanges = deadSections.complement().subRangeSet(interval).asRanges();
+                    var blockingRanges = neutralSections.complement().subRangeSet(interval).asRanges();
 
                     for (var blockingRange : blockingRanges) {
                         res.add(new Pathfinding.Range(

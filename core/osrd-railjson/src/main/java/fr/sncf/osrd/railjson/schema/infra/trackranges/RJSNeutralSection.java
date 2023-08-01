@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RJSDeadSection {
+public class RJSNeutralSection {
     @Json(name = "track_ranges")
     public List<RJSDirectionalTrackRange> trackRanges;
 

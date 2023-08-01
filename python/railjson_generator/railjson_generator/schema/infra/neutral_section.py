@@ -7,9 +7,9 @@ from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.track_section import TrackSection
 
 
-def _dead_section_id():
-    res = f"dead_section.{DeadSection._INDEX}"
-    DeadSection._INDEX += 1
+def _neutral_section_id():
+    res = f"neutral_section.{NeutralSection._INDEX}"
+    NeutralSection._INDEX += 1
     return res
 
 
@@ -33,10 +33,10 @@ class PathElement:
 
 
 @dataclass
-class DeadSection:
+class NeutralSection:
     track_ranges: List[PathElement] = field(default_factory=list)
     is_pantograph_drop_zone: bool = field(default=False)
-    label: str = field(default_factory=_dead_section_id)
+    label: str = field(default_factory=_neutral_section_id)
 
     _INDEX = 0
 
@@ -51,7 +51,7 @@ class DeadSection:
         )
 
     def to_rjs(self):
-        return infra.DeadSection(
+        return infra.NeutralSection(
             id=self.label,
             track_ranges=[track.to_rjs() for track in self.track_ranges],
             is_pantograph_drop_zone=self.is_pantograph_drop_zone,

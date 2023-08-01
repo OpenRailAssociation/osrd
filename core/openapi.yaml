@@ -190,7 +190,7 @@ paths:
                       $ref: "#/components/schemas/ElectrificationRange"
                     minItems: 1
 
-                  dead_sections_on_path:
+                  neutral_sections_on_path:
                     type: array
                     items:
                       type: object

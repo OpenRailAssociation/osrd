@@ -434,9 +434,9 @@ class Panel(TrackLocationTrait):
     value: Optional[NonBlankStr] = Field(description="If the panel is an announcement, precise the value(s)")
 
 
-class DeadSection(BaseObjectTrait):
+class NeutralSection(BaseObjectTrait):
     """
-    Dead zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.
+    Neutral zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.
     Instead, trains have to rely on inertia to cross such sections.
 
     If the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,
@@ -446,7 +446,7 @@ class DeadSection(BaseObjectTrait):
     track_ranges: List[DirectionalTrackRange] = Field(
         description="List of locations where the train cannot pull power from catenaries"
     )
-    is_pantograph_drop_zone: bool = Field(description="precise if the deadSection is a pantograph drop zone or not")
+    is_pantograph_drop_zone: bool = Field(description="precise if the neutralSection is a pantograph drop zone or not")
 
 
 class RailJsonInfra(BaseModel):
@@ -466,7 +466,7 @@ class RailJsonInfra(BaseModel):
     signals: List[Signal] = Field(description="Signals of the infra")
     buffer_stops: List[BufferStop] = Field(description="Buffer stops of the infra")
     detectors: List[Detector] = Field(description="Detectors of the infra")
-    dead_sections: List[DeadSection] = Field(description="Dead sections of the infra")
+    neutral_sections: List[NeutralSection] = Field(description="Neutral sections of the infra")
 
 
 for t in BaseObjectTrait.__subclasses__():

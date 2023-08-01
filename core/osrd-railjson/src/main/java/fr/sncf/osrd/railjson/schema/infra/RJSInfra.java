@@ -8,7 +8,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDeadSection;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSNeutralSection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,8 +63,8 @@ public class RJSInfra {
 
     public List<RJSCatenary> catenaries;
 
-    @Json(name = "dead_sections")
-    public List<RJSDeadSection> deadSections;
+    @Json(name = "neutral_sections")
+    public List<RJSNeutralSection> neutralSections;
 
     /** Create a new serialized RailJSON file */
     public RJSInfra(
@@ -85,6 +85,6 @@ public class RJSInfra {
         this.detectors = detectors;
         this.speedSections = new ArrayList<>();
         this.catenaries = new ArrayList<>();
-        this.deadSections = new ArrayList<>();
+        this.neutralSections = new ArrayList<>();
     }
 }

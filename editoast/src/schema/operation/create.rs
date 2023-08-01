@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::schema::{
-    BufferStop, Catenary, DeadSection, Detector, OSRDIdentified, OSRDObject, ObjectType,
+    BufferStop, Catenary, Detector, NeutralSection, OSRDIdentified, OSRDObject, ObjectType,
     OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType, TrackSection,
     TrackSectionLink,
 };
@@ -16,7 +16,7 @@ use super::OperationError;
 pub enum RailjsonObject {
     TrackSection { railjson: TrackSection },
     Signal { railjson: Signal },
-    DeadSection { railjson: DeadSection },
+    NeutralSection { railjson: NeutralSection },
     SpeedSection { railjson: SpeedSection },
     TrackSectionLink { railjson: TrackSectionLink },
     Switch { railjson: Switch },
@@ -65,7 +65,7 @@ impl RailjsonObject {
         match self {
             RailjsonObject::TrackSection { railjson: obj } => obj,
             RailjsonObject::Signal { railjson: obj } => obj,
-            RailjsonObject::DeadSection { railjson: obj } => obj,
+            RailjsonObject::NeutralSection { railjson: obj } => obj,
             RailjsonObject::SpeedSection { railjson: obj } => obj,
             RailjsonObject::TrackSectionLink { railjson: obj } => obj,
             RailjsonObject::Switch { railjson: obj } => obj,
@@ -83,7 +83,7 @@ impl RailjsonObject {
             RailjsonObject::TrackSection { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::Signal { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::SpeedSection { railjson: obj } => serde_json::to_value(obj),
-            RailjsonObject::DeadSection { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::NeutralSection { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::TrackSectionLink { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::Switch { railjson: obj } => serde_json::to_value(obj),
             RailjsonObject::SwitchType { railjson: obj } => serde_json::to_value(obj),
