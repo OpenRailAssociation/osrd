@@ -169,16 +169,8 @@
             "type": "object"
         },
         "DeadSection": {
-            "description": "Dead zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.\nInstead, trains have to rely on inertia to cross such sections.\n\nIf the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,\nand will start raising pantographs again once the train has entirely left the section.\n\nIf a train has a pantograph which is not located at its head (we talk of push-pull trains) and moving in reverse\nmode, it will have to wait a special \"REV\" panel (for reversible) to start pulling power from catenaries again.",
+            "description": "Dead zones (or sections) are sections of track where electrical trains cannot pull power from catenaries.\nInstead, trains have to rely on inertia to cross such sections.\n\nIf the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,\nand will start raising pantographs again once the train has entirely left the section.",
             "properties": {
-                "backside_pantograph_track_ranges": {
-                    "description": "List of locations where the push-pull train moving in reverse cannot pull power from catenaries",
-                    "items": {
-                        "$ref": "#/definitions/DirectionalTrackRange"
-                    },
-                    "title": "Backside Pantograph Track Ranges",
-                    "type": "array"
-                },
                 "id": {
                     "description": "Unique identifier of the object",
                     "maxLength": 255,
@@ -203,7 +195,6 @@
             "required": [
                 "id",
                 "track_ranges",
-                "backside_pantograph_track_ranges",
                 "is_pantograph_drop_zone"
             ],
             "title": "DeadSection",

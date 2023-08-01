@@ -441,16 +441,10 @@ class DeadSection(BaseObjectTrait):
 
     If the section is designated as a pantograph drop zone, trains will lower pantographs before entering the section,
     and will start raising pantographs again once the train has entirely left the section.
-
-    If a train has a pantograph which is not located at its head (we talk of push-pull trains) and moving in reverse
-    mode, it will have to wait a special "REV" panel (for reversible) to start pulling power from catenaries again.
     """
 
     track_ranges: List[DirectionalTrackRange] = Field(
         description="List of locations where the train cannot pull power from catenaries"
-    )
-    backside_pantograph_track_ranges: List[DirectionalTrackRange] = Field(
-        description="List of locations where the push-pull train moving in reverse cannot pull power from catenaries"
     )
     is_pantograph_drop_zone: bool = Field(description="precise if the deadSection is a pantograph drop zone or not")
 

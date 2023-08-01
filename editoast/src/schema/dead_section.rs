@@ -14,7 +14,6 @@ use serde::{Deserialize, Serialize};
 pub struct DeadSection {
     pub id: Identifier,
     pub track_ranges: Vec<DirectionalTrackRange>,
-    pub backside_pantograph_track_ranges: Vec<DirectionalTrackRange>,
     pub is_pantograph_drop_zone: bool,
 }
 

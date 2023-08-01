@@ -8325,8 +8325,7 @@
                     "direction": "START_TO_STOP"
                 }
             ],
-            "backside_pantograph_track_ranges": [],
-            "is_pantograph_drop_zone": true
+              "is_pantograph_drop_zone": true
         },
         {
             "id": "dead_section.1",
@@ -8338,7 +8337,6 @@
                     "direction": "START_TO_STOP"
                 }
             ],
-            "backside_pantograph_track_ranges": [],
             "is_pantograph_drop_zone": true
         },
         {
@@ -8351,7 +8349,6 @@
                     "direction": "START_TO_STOP"
                 }
             ],
-            "backside_pantograph_track_ranges": [],
             "is_pantograph_drop_zone": false
         }
     ]
