@@ -48,5 +48,5 @@
   "conflictsCount_other": "{{count}} conflicts",
   "conflictsCount_zero": "No conflict",
   "Spacing": "Spacing conflict",
-  "Itinerary": "Itineraries conflict"
+  "Itinerary": "Route conflicts"
 }
