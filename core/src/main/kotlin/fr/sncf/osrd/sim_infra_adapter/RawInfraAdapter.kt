@@ -299,7 +299,7 @@ private fun makeChunk(
             res.put(
                 Distance.fromMeters(entry.key.lowerEndpoint()),
                 Distance.fromMeters(entry.key.upperEndpoint()),
-                SimNeutralSection(legacyNeutralSection.isDropPantograph)
+                SimNeutralSection(legacyNeutralSection.lowerPantograph)
             )
         }
         return res

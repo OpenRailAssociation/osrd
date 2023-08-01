@@ -201,7 +201,7 @@ paths:
                         stop:
                           type: number
                           format: double
-                        is_drop_pantograph:
+                        lower_pantograph:
                           type: boolean
                   warnings:
                     type: array

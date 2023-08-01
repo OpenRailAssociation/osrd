@@ -8325,7 +8325,7 @@
                     "direction": "START_TO_STOP"
                 }
             ],
-              "is_pantograph_drop_zone": true
+              "lower_pantograph": true
         },
         {
             "id": "neutral_section.1",
@@ -8337,7 +8337,7 @@
                     "direction": "START_TO_STOP"
                 }
             ],
-            "is_pantograph_drop_zone": true
+            "lower_pantograph": true
         },
         {
             "id": "neutral_section.2",
@@ -8349,7 +8349,7 @@
                     "direction": "START_TO_STOP"
                 }
             ],
-            "is_pantograph_drop_zone": false
+            "lower_pantograph": false
         }
     ]
 }

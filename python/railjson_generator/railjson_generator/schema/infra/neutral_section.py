@@ -35,7 +35,7 @@ class PathElement:
 @dataclass
 class NeutralSection:
     track_ranges: List[PathElement] = field(default_factory=list)
-    is_pantograph_drop_zone: bool = field(default=False)
+    lower_pantograph: bool = field(default=False)
     label: str = field(default_factory=_neutral_section_id)
 
     _INDEX = 0
@@ -54,5 +54,5 @@ class NeutralSection:
         return infra.NeutralSection(
             id=self.label,
             track_ranges=[track.to_rjs() for track in self.track_ranges],
-            is_pantograph_drop_zone=self.is_pantograph_drop_zone,
+            lower_pantograph=self.lower_pantograph,
         )

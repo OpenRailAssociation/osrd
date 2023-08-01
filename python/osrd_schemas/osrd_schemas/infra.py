@@ -446,7 +446,7 @@ class NeutralSection(BaseObjectTrait):
     track_ranges: List[DirectionalTrackRange] = Field(
         description="List of locations where the train cannot pull power from catenaries"
     )
-    is_pantograph_drop_zone: bool = Field(description="precise if the neutralSection is a pantograph drop zone or not")
+    lower_pantograph: bool = Field(description="precise if the neutralSection is a pantograph drop zone or not")
 
 
 class RailJsonInfra(BaseModel):

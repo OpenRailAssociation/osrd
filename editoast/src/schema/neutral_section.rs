@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 pub struct NeutralSection {
     pub id: Identifier,
     pub track_ranges: Vec<DirectionalTrackRange>,
-    pub is_pantograph_drop_zone: bool,
+    pub lower_pantograph: bool,
 }
 
 impl OSRDTyped for NeutralSection {

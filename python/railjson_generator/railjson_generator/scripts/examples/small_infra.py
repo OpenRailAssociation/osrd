@@ -592,15 +592,15 @@ builder.infra.catenaries.append(Catenary("catenary_1.5k", "1500", {ta0}))
 # ================================
 #  Neutral sections
 # ================================
-drop_pantograph_section_1 = builder.add_neutral_section(is_pantograph_drop_zone=True)
-drop_pantograph_section_1.add_track_range(tg1, 3000, tg1.length, Direction.START_TO_STOP)
-drop_pantograph_section_1.add_track_range(tg4, 0, 500, Direction.START_TO_STOP)
+lower_pantograph_section_1 = builder.add_neutral_section(lower_pantograph=True)
+lower_pantograph_section_1.add_track_range(tg1, 3000, tg1.length, Direction.START_TO_STOP)
+lower_pantograph_section_1.add_track_range(tg4, 0, 500, Direction.START_TO_STOP)
 
-drop_pantograph_section_2 = builder.add_neutral_section(is_pantograph_drop_zone=True)
-drop_pantograph_section_2.add_track_range(ta0, 1900, 1950, Direction.START_TO_STOP)
+lower_pantograph_section_2 = builder.add_neutral_section(lower_pantograph=True)
+lower_pantograph_section_2.add_track_range(ta0, 1900, 1950, Direction.START_TO_STOP)
 
-drop_pantograph_section_3 = builder.add_neutral_section(is_pantograph_drop_zone=False)
-drop_pantograph_section_3.add_track_range(ta6, 8500, 8600, Direction.START_TO_STOP)
+lower_pantograph_section_3 = builder.add_neutral_section(lower_pantograph=False)
+lower_pantograph_section_3.add_track_range(ta6, 8500, 8600, Direction.START_TO_STOP)
 
 
 # ================================

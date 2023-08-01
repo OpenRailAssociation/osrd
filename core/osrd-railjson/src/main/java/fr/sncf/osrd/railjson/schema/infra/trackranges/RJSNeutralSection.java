@@ -11,6 +11,6 @@ public class RJSNeutralSection {
     @Json(name = "track_ranges")
     public List<RJSDirectionalTrackRange> trackRanges;
 
-    @Json(name = "is_pantograph_drop_zone")
-    public boolean isPantographDropZone;
+    @Json(name = "lower_pantograph")
+    public boolean lowerPantograph;
 }

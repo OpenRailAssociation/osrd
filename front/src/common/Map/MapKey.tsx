@@ -57,14 +57,14 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
         <div className="col-lg-6">
           <div className="mapkey">
             <div className="mapkey-title">{t('map-key:neutral_sections')}</div>
-            <div className="mapkey-item" key="drop_pantograph">
+            <div className="mapkey-item" key="lower_pantograph">
               <div className="mapkey-icon">
                 <i
                   className="mapkey-line"
-                  style={{ background: colors[mapStyle].neutral_sections.drop_pantograph }}
+                  style={{ background: colors[mapStyle].neutral_sections.lower_pantograph }}
                 />
               </div>
-              <div className="mapkey-text">{t('map-key:drop_pantograph')}</div>
+              <div className="mapkey-text">{t('map-key:lower_pantograph')}</div>
             </div>
             <div className="mapkey-item" key="cut_off">
               <div className="mapkey-icon">

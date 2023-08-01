@@ -32,8 +32,8 @@ export default function NeutralSections(props: NeutralSectionsProps) {
     paint: {
       'line-color': [
         'case',
-        ['==', ['get', 'is_pantograph_drop_zone'], true],
-        colors[mapStyle].neutral_sections.drop_pantograph,
+        ['==', ['get', 'lower_pantograph'], true],
+        colors[mapStyle].neutral_sections.lower_pantograph,
         colors[mapStyle].neutral_sections.cut_off,
       ],
       'line-width': 6,
