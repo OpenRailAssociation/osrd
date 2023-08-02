@@ -41,6 +41,8 @@ class PlaywrightScenarioPage {
 
   readonly getTrainCountInput: Locator;
 
+  readonly getDeltaInput: Locator;
+
   readonly getAddTrainScheduleBtn: Locator;
 
   readonly getTrainScheduleNameInput: Locator;
@@ -102,6 +104,7 @@ class PlaywrightScenarioPage {
     this.getResultPathfindingDistance = page.getByTestId('result-pathfinding-distance');
     this.getInfraLoadState = page.locator('.infra-loading-state');
     this.getTrainCountInput = page.locator('#osrdconf-traincount');
+    this.getDeltaInput = page.locator('#osrdconf-delta');
     this.getAddTrainScheduleBtn = page.getByTestId('add-train-schedules');
     this.getTrainScheduleNameInput = page.locator('#trainSchedule-name');
     this.getTrainTimetable = page
@@ -177,6 +180,16 @@ class PlaywrightScenarioPage {
   async setNumberOfTrains(digits: string) {
     const splittedDigit = digits.split('');
     await this.getTrainCountInput.focus();
+    await this.page.keyboard.press('Backspace');
+    splittedDigit.forEach(async (digit) => {
+      await this.page.keyboard.press(digit);
+    });
+  }
+
+  async setDelta(digits: string) {
+    const splittedDigit = digits.split('');
+    await this.getDeltaInput.focus();
+    await this.page.keyboard.press('Backspace');
     await this.page.keyboard.press('Backspace');
     splittedDigit.forEach(async (digit) => {
       await this.page.keyboard.press(digit);

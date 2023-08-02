@@ -90,6 +90,7 @@ export default function OSRDConfig({
               <div className="osrd-config-stdcm-apply">
                 {/* TODO: use RTK request status */}
                 <button
+                  data-testid="applyStdcmButton"
                   className="btn btn-sm  btn-primary "
                   type="button"
                   disabled={infra?.state !== 'CACHED'}
