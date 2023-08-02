@@ -5,10 +5,12 @@ on:
   pull_request:
     paths:
       - core/**
+      - python/railjson_generator/**
       - .github/workflows/core.yml
   merge_group:
     paths:
       - core/**
+      - python/railjson_generator/**
       - .github/workflows/core.yml
   push:
     branches:
