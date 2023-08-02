@@ -30,14 +30,7 @@ class InfraBuilder:
         self.infra.track_sections.append(track)
         return track
 
-    def add_point_switch(
-        self,
-        base: TrackEndpoint,
-        left: TrackEndpoint,
-        right: TrackEndpoint,
-        signal_on_ports: Mapping[str, Tuple[str, str]] = None,
-        **kwargs
-    ):
+    def add_point_switch(self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, **kwargs):
         """
         Adds a switch as well as all links between concerned track sections.
         """
@@ -47,18 +40,10 @@ class InfraBuilder:
         l2 = self.add_link(base, right)
         self.switches_group_map[l2.get_key()] = (switch, "RIGHT")
         self.infra.switches.append(switch)
-        if signal_on_ports is not None:
-            switch.add_signals_detectors_to_ports(signal_on_ports)
         return switch
 
     def add_cross_switch(
-        self,
-        north: TrackEndpoint,
-        south: TrackEndpoint,
-        east: TrackEndpoint,
-        west: TrackEndpoint,
-        signal_on_ports: Mapping[str, Tuple[str, str]] = None,
-        **kwargs
+        self, north: TrackEndpoint, south: TrackEndpoint, east: TrackEndpoint, west: TrackEndpoint, **kwargs
     ):
         """
         Adds a switch as well as all links between concerned track sections.
@@ -69,18 +54,10 @@ class InfraBuilder:
         l2 = self.add_link(east, west)
         self.switches_group_map[l2.get_key()] = (switch, "static")
         self.infra.switches.append(switch)
-        if signal_on_ports is not None:
-            switch.add_signals_detectors_to_ports(signal_on_ports)
         return switch
 
     def add_double_cross_switch(
-        self,
-        north_1: TrackEndpoint,
-        north_2: TrackEndpoint,
-        south_1: TrackEndpoint,
-        south_2: TrackEndpoint,
-        signal_on_ports: Mapping[str, Tuple[str, str]] = None,
-        **kwargs
+        self, north_1: TrackEndpoint, north_2: TrackEndpoint, south_1: TrackEndpoint, south_2: TrackEndpoint, **kwargs
     ):
         """
         Adds a switch as well as all links between concerned track sections.
@@ -95,8 +72,6 @@ class InfraBuilder:
             link = self.add_link(src, dst)
             self.switches_group_map[link.get_key()] = (switch, group_name)
         self.infra.switches.append(switch)
-        if signal_on_ports is not None:
-            switch.add_signals_detectors_to_ports(signal_on_ports)
         return switch
 
     def add_link(self, *args, **kwargs):

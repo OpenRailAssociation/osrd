@@ -6,9 +6,9 @@
 
 - `__init__(self) -> InfraBuilder`: Instantiates an infra builder.
 - `add_track_section(self, length, label="track.X", waypoints=[], signals=[], operational_points=[]) -> TrackSection`: Add a track section.
-- `add_point_switch(self, base, left, right, label="switch.X", delay=0, signal_on_ports={"port": ("detector_label", "signal_label")}) -> Switch`: Add a point.
-- `add_cross_switch(self, north, south, east, west, label="switch.X", delay=0, signal_on_ports={"port": ("detector_label", "signal_label")) -> Switch`: Add a cross switch.
-- `add_double_cross_switch(self, north_1, north_2, south_1, south_2, label="switch.X", delay=0, signal_on_ports={"port": ("detector_label", "signal_label")) -> Switch`: Add a double cross switch.
+- `add_point_switch(self, base, left, right, label="switch.X", delay=0) -> Switch`: Add a point.
+- `add_cross_switch(self, north, south, east, west, label="switch.X", delay=0) -> Switch`: Add a cross switch.
+- `add_double_cross_switch(self, north_1, north_2, south_1, south_2, label="switch.X", delay=0) -> Switch`: Add a double cross switch.
 - `add_link(self, begin, end, navigability=ApplicableDirection.BOTH) -> Link`: Add a link.
 - `add_operational_point(self, label) -> OperationPoint`: Add an operation point.
 - `build(self) -> Infra`: Build an infra, generating tvd sections, routes and missing bufferstops.
