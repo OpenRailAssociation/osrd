@@ -30,15 +30,17 @@ class InfraBuilder:
         self.infra.track_sections.append(track)
         return track
 
+    def _register_switch_link(self, begin: TrackEndpoint, end: TrackEndpoint, switch: Switch, group: str):
+        self.switches_group_map[Link.format_link_key(begin, end)] = (switch, group)
+        TrackSection.register_link(begin, end)
+
     def add_point_switch(self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, **kwargs):
         """
         Adds a switch as well as all links between concerned track sections.
         """
         switch = PointSwitch(base=base, left=left, right=right, **kwargs)
-        l1 = self.add_link(base, left)
-        self.switches_group_map[l1.get_key()] = (switch, "LEFT")
-        l2 = self.add_link(base, right)
-        self.switches_group_map[l2.get_key()] = (switch, "RIGHT")
+        self._register_switch_link(base, left, switch, "LEFT")
+        self._register_switch_link(base, right, switch, "RIGHT")
         self.infra.switches.append(switch)
         return switch
 
@@ -49,10 +51,8 @@ class InfraBuilder:
         Adds a switch as well as all links between concerned track sections.
         """
         switch = CrossSwitch(north=north, south=south, east=east, west=west, **kwargs)
-        l1 = self.add_link(north, south)
-        self.switches_group_map[l1.get_key()] = (switch, "static")
-        l2 = self.add_link(east, west)
-        self.switches_group_map[l2.get_key()] = (switch, "static")
+        self._register_switch_link(north, south, switch, "static")
+        self._register_switch_link(east, west, switch, "static")
         self.infra.switches.append(switch)
         return switch
 
@@ -69,15 +69,14 @@ class InfraBuilder:
             ((north_2, south_1), "N2_S1"),
             ((north_2, south_2), "N2_S2"),
         ]:
-            link = self.add_link(src, dst)
-            self.switches_group_map[link.get_key()] = (switch, group_name)
+            self._register_switch_link(src, dst, switch, group_name)
         self.infra.switches.append(switch)
         return switch
 
     def add_link(self, *args, **kwargs):
         link = Link(*args, **kwargs)
         self.infra.links.append(link)
-        TrackSection.register_link(link)
+        TrackSection.register_link(link.begin, link.end)
         return link
 
     def add_operational_point(self, *args, **kwargs):
