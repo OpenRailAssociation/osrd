@@ -5,6 +5,11 @@ class Direction(IntEnum):
     START_TO_STOP = 0
     STOP_TO_START = 1
 
+    def opposite(self):
+        if self == Direction.START_TO_STOP:
+            return Direction.STOP_TO_START
+        return Direction.START_TO_STOP
+
 
 class ApplicableDirection(IntEnum):
     START_TO_STOP = 0

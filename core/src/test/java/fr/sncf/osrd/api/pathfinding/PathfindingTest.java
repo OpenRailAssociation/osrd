@@ -295,8 +295,12 @@ public class PathfindingTest extends ApiTest {
 
         // Removes catenary in the middle of the path
         var middleRoute = normalPath.ranges().get(normalPath.ranges().size() / 2);
-        var tracks = middleRoute.edge().getInfraRoute().getTrackRanges();
-        var middleTrack = tracks.get(tracks.size() / 2).track.getEdge();
+        var trackRanges = middleRoute.edge().getInfraRoute().getTrackRanges();
+        var trackSections = trackRanges.stream()
+                .map((edge) -> edge.track.getEdge())
+                .filter((edge) -> edge instanceof TrackSection)
+                .toList();
+        var middleTrack = trackSections.get(trackSections.size() / 2);
         middleTrack.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
 
         // Run another pathfinding with an electric train

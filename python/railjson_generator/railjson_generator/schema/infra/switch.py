@@ -13,6 +13,12 @@ def _switch_id():
 
 
 @dataclass
+class SwitchGroup:
+    switch: "Switch"
+    group: str
+
+
+@dataclass
 class Switch:
     _INDEX = 0
     # overridden by subclasses
@@ -25,6 +31,9 @@ class Switch:
     def set_coords(self, x: float, y: float):
         for port_name in self.PORT_NAMES:
             getattr(self, port_name).set_coords(x, y)
+
+    def group(self, group_id: str):
+        return SwitchGroup(self, group_id)
 
     def add_signal_on_port(self, port_name, port_distance, *args, **kwargs):
         port: TrackEndpoint = getattr(self, port_name)

@@ -122,7 +122,7 @@ def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSect
         neighbors = track.neighbors(direction)
         if not neighbors:
             break
-        next_track_endpoint = random.choice(neighbors)
+        (next_track_endpoint, _) = random.choice(neighbors)
         if next_track_endpoint.track_section.label in seen:
             break
         direction = (

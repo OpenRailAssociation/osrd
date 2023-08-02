@@ -27,7 +27,7 @@ station_foo.add_part(ne_micro_foo_a, 100)
 ne_micro_foo_a.add_buffer_stop(label="buffer_stop_a", position=0)
 tde_foo_a_switch_foo = ne_micro_foo_a.add_detector(label="tde.foo_a-switch_foo", position=175)
 signal = ne_micro_foo_a.add_signal(
-    label="il.sig.C1", position=150, direction=Direction.START_TO_STOP, linked_detector=tde_foo_a_switch_foo
+    label="il.sig.C1", position=150, direction=Direction.START_TO_STOP, is_route_delimiter=True
 )
 signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
@@ -38,7 +38,7 @@ station_foo.add_part(ne_micro_foo_b, 100)
 ne_micro_foo_b.add_buffer_stop(label="buffer_stop_b", position=0)
 tde_foo_b_switch_foo = ne_micro_foo_b.add_detector(label="tde.foo_b-switch_foo", position=175)
 signal = ne_micro_foo_b.add_signal(
-    label="il.sig.C3", position=150, direction=Direction.START_TO_STOP, linked_detector=tde_foo_b_switch_foo
+    label="il.sig.C3", position=150, direction=Direction.START_TO_STOP, is_route_delimiter=True
 )
 signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
@@ -47,11 +47,11 @@ station_bar.add_part(ne_micro_bar_a, 100)
 ne_micro_bar_a.add_buffer_stop(label="buffer_stop_c", position=200)
 tde_track_bar = ne_micro_bar_a.add_detector(label="tde.track-bar", position=25)
 signal = ne_micro_bar_a.add_signal(
-    label="il.sig.C2", position=50, direction=Direction.STOP_TO_START, linked_detector=tde_track_bar
+    label="il.sig.C2", position=50, direction=Direction.STOP_TO_START, is_route_delimiter=True
 )
 signal.add_logical_signal("BAL", settings={"Nf": "true"})
 signal = ne_micro_bar_a.add_signal(
-    label="il.sig.S7", position=0, direction=Direction.START_TO_STOP, linked_detector=tde_track_bar
+    label="il.sig.S7", position=0, direction=Direction.START_TO_STOP, is_route_delimiter=False
 )
 signal.add_logical_signal("BAL", settings={"Nf": "false"})
 
@@ -60,7 +60,7 @@ ne_micro_foo_to_bar.add_slope(0, 5000, 10)
 ne_micro_foo_to_bar.add_slope(5000, 10000, -10)
 tde_switch_foo_track = ne_micro_foo_to_bar.add_detector(label="tde.switch_foo-track", position=25)
 signal = ne_micro_foo_to_bar.add_signal(
-    label="il.sig.C6", position=50, direction=Direction.STOP_TO_START, linked_detector=tde_switch_foo_track
+    label="il.sig.C6", position=50, direction=Direction.STOP_TO_START, is_route_delimiter=True
 )
 signal.add_logical_signal("BAL", settings={"Nf": "true"})
 

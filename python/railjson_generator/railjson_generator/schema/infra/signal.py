@@ -4,7 +4,6 @@ from typing import Dict, List
 from osrd_schemas import infra
 
 from railjson_generator.schema.infra.direction import Direction
-from railjson_generator.schema.infra.waypoint import Detector
 
 
 def _signal_id():
@@ -31,7 +30,7 @@ class LogicalSignal:
 class Signal:
     position: float
     direction: Direction
-    linked_detector: Detector
+    is_route_delimiter: bool
 
     # relevant for simulation behavior
     sight_distance: float = field(default=400)
@@ -56,7 +55,7 @@ class Signal:
             direction=infra.Direction[self.direction.name],
             sight_distance=self.sight_distance,
             logical_signals=[sig.to_rjs() for sig in self.logical_signals],
-            linked_detector=self.linked_detector.id,
+            linked_detector=None,
             extensions={
                 "sncf": {
                     "aspects": [],

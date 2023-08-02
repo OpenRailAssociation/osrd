@@ -61,9 +61,9 @@ public class FullSTDCMTests {
         var fullInfra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
         var infra = fullInfra.java();
         var firstRoute = infra.findSignalingRoute("rt.buffer_stop.3->DB0", "BAL3");
-        var secondRoute = infra.findSignalingRoute("rt.DH1_2->buffer_stop.7", "BAL3");
+        var secondRoute = infra.findSignalingRoute("rt.DH2->buffer_stop.7", "BAL3");
         var start = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 1590));
-        var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 1137));
+        var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 5000));
         var occupancies = STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 0);
         occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(fullInfra, start, end, 600));
         var res = new STDCMPathfindingBuilder()
