@@ -73,21 +73,8 @@ public class StandaloneSimulationTest extends ApiTest {
         var trainPath = new RJSTrainPath();
         var trackRanges1 = new ArrayList<RJSDirectionalTrackRange>();
         trackRanges1.add(new RJSDirectionalTrackRange("TA0", 1820, 2000, EdgeDirection.START_TO_STOP));
-        trackRanges1.add(new RJSDirectionalTrackRange("TA6", 0, 1800, EdgeDirection.START_TO_STOP));
-        trainPath.routePath.add(new RJSRoutePath("rt.DA2->DA6_1", trackRanges1, "BAL3"));
-
-        for (int i = 1; i < 5; i++) {
-            var trackRanges2 = new ArrayList<RJSDirectionalTrackRange>();
-            trackRanges2.add(new RJSDirectionalTrackRange("TA6", 200 + 1600 * i, 200 + 1600 * (i + 1),
-                    EdgeDirection.START_TO_STOP));
-            trainPath.routePath.add(
-                    new RJSRoutePath("rt.DA6_" + i + "->DA6_" + (i + 1), trackRanges2, "BAL3"));
-        }
-
-        var trackRanges3 = new ArrayList<RJSDirectionalTrackRange>();
-        trackRanges3.add(new RJSDirectionalTrackRange("TA6", 8200, 9820, EdgeDirection.START_TO_STOP));
-        trainPath.routePath.add(new RJSRoutePath("rt.DA6_5->DA5", trackRanges3, "BAL3"));
-
+        trackRanges1.add(new RJSDirectionalTrackRange("TA6", 0, 9820, EdgeDirection.START_TO_STOP));
+        trainPath.routePath.add(new RJSRoutePath("rt.DA2->DA5", trackRanges1, "BAL3"));
         return trainPath;
     }
 
@@ -142,7 +129,7 @@ public class StandaloneSimulationTest extends ApiTest {
         var speeds = trainResult.speeds.toArray(new ResultSpeed[0]);
         for (int i = 1; i < speeds.length; i++)
             assertTrue(speeds[i - 1].position <= speeds[i].position);
-        assertEquals(8, trainResult.routeOccupancies.size());
+        assertEquals(7, trainResult.routeOccupancies.size());
 
         // check mrsp
         var mrsp = simResult.speedLimits.get(0);

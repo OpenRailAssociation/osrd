@@ -11,13 +11,15 @@
 - `add_double_cross_switch(self, north_1, north_2, south_1, south_2, label="switch.X", delay=0) -> Switch`: Add a double cross switch.
 - `add_link(self, begin, end) -> Link`: Add a link.
 - `add_operational_point(self, label) -> OperationPoint`: Add an operation point.
-- `build(self) -> Infra`: Build an infra, generating tvd sections, routes and missing bufferstops.
+- `generate_routes(self, progressive_release=True) -> Iterable[Route]`: Automatically generate routes, which must then be registered manually. When progressive_release is true, release points are added for all intermediate zones.
+- `register_route(self, route: Route)`: Register a route
+- `build(self, progressive_release=True) -> Infra`: Build an infra, generating tvd sections, routes and missing bufferstops.
 
 ### Track Section
 
 - `add_detector(self, position, label="detector.X", applicable_direction=ApplicableDirection.BOTH) -> Detector`: Add a detector.
 - `add_buffer_stop(self, position, label="buffer_stop.X") -> BufferStop`: Add a buffer_stop.
-- `add_signal(self, position, applicable_direction, linked_detector, label="signal.X", sight_distance=400) -> Signal`: Add a signal. Simulation won't work unless logical signals are added to the signal.
+- `add_signal(self, position, applicable_direction, is_route_delimiter, label="signal.X", sight_distance=400) -> Signal`: Add a signal. Simulation won't work unless logical signals are added to the signal. `is_route_delimiter` controls whether routes should stop at this signal.
 - `set_remaining_coords(self, [[x1, y1], [x2, y2], [x3, y3]])`: Sets the geometry coordinates for the track section. Sets values for extremities if none was already set, else only set values between extremities.
 
 ### Signal
@@ -27,6 +29,18 @@
 ### Switch / Link / TrackEndpoint
 
 - `set_coords(self, x, y)`: Set a geometry coordinates of the point
+
+### Route
+
+Route can either be manually created, or generated using `generate_routes`, and filtered to excluded unwanted paths.
+
+- `waypoints: List[Waypoint]`
+- `release_waypoints: List[Waypoint]`
+- `entry_point_direction: Direction`
+- `switches_directions: Mapping[str, str]`
+- `label: str`
+- `entry_point: Waypoint` is a getter for `waypoints[0]`
+- `exit_point: Waypoint` is a getter for `waypoints[-1]`
 
 ### Operation point
 

@@ -49,7 +49,7 @@ def place_regular_signals_detectors(
     n_detectors = ((max_offset - min_offset) // period) - 1
     detector_step = (max_offset - min_offset) / (n_detectors + 1)
     for i in range(1, n_detectors + 1):
-        detector = track_section.add_detector(
+        track_section.add_detector(
             label=f"D{label_suffix}_{i}",
             position=min_offset + i * detector_step,
         )
@@ -59,7 +59,7 @@ def place_regular_signals_detectors(
                 continue
             signal = track_section.add_signal(
                 label=f"S{label_suffix}_{i}" + "r" * is_reverse[d],
-                linked_detector=detector,
+                is_route_delimiter=False,
                 direction=direction,
                 position=min_offset + i * detector_step - 20 + 40 * d,
                 installation_type="S",
@@ -77,8 +77,8 @@ def add_signal_on_ports(switch, ports: Mapping[str, Tuple[str, str]]):
     DETECTOR_TO_SWITCH = 180
 
     for port, (det_label, sig_label) in ports.items():
-        detector = switch.add_detector_on_port(port, DETECTOR_TO_SWITCH, label=det_label)
-        signal = switch.add_signal_on_port(port, SIGNAL_TO_SWITCH, label=sig_label, linked_detector=detector)
+        switch.add_detector_on_port(port, DETECTOR_TO_SWITCH, label=det_label)
+        signal = switch.add_signal_on_port(port, SIGNAL_TO_SWITCH, label=sig_label, is_route_delimiter=True)
         signal.add_logical_signal(signaling_system="BAL", settings={"Nf": "true"})
 
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from osrd_schemas import infra
 from pydantic.error_wrappers import ValidationError
@@ -10,6 +10,7 @@ from railjson_generator.schema.infra.make_geo_data import make_geo_lines
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
 from railjson_generator.schema.infra.range_elements import Curve, Slope
 from railjson_generator.schema.infra.signal import Signal
+from railjson_generator.schema.infra.switch import SwitchGroup
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
 
 
@@ -34,8 +35,8 @@ class TrackSection:
     operational_points: List[OperationalPointPart] = field(default_factory=list)
     index: int = field(default=-1, repr=False)
     coordinates: List[Tuple[float, float]] = field(default_factory=lambda: [(None, None), (None, None)])
-    begining_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
-    end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
+    begining_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
+    end_links: List[Tuple[TrackEndpoint, Optional[SwitchGroup]]] = field(default_factory=list, repr=False)
     slopes: List[Slope] = field(default_factory=list)
     curves: List[Curve] = field(default_factory=list)
 
@@ -86,12 +87,6 @@ class TrackSection:
         if self.coordinates[-1] != (None, None):
             end -= 1
         self.coordinates[begin:end] = coordinates
-
-    @staticmethod
-    def register_link(begin: TrackEndpoint, end: TrackEndpoint):
-        """Add each linked trackEndPoint to its neighbor's neighbors list."""
-        begin.get_neighbors().append(end)
-        end.get_neighbors().append(begin)
 
     def neighbors(self, direction: Direction):
         if direction == Direction.START_TO_STOP:

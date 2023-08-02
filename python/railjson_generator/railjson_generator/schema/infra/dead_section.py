@@ -3,13 +3,33 @@ from typing import List
 
 from osrd_schemas import infra
 
-from railjson_generator.utils.pathfinding import PathElement
+from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.track_section import TrackSection
 
 
 def _dead_section_id():
     res = f"dead_section.{DeadSection._INDEX}"
     DeadSection._INDEX += 1
     return res
+
+
+@dataclass
+class PathElement:
+    track_section: TrackSection
+    direction: Direction
+    begin: float
+    end: float
+
+    def length(self):
+        return abs(self.begin - self.end)
+
+    def to_rjs(self):
+        return infra.DirectionalTrackRange(
+            track=self.track_section.id,
+            begin=min(self.begin, self.end),
+            end=max(self.begin, self.end),
+            direction=infra.Direction[self.direction.name],
+        )
 
 
 @dataclass

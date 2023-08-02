@@ -26,12 +26,7 @@ public class ConflictDetectionTest {
         var path = TrainPathBuilder.from(
                 List.of(
                         getSignalingRoute(infra, "rt.buffer_stop.1->DA0"),
-                        getSignalingRoute(infra, "rt.DA0->DA6_1"),
-                        getSignalingRoute(infra, "rt.DA6_1->DA6_2"),
-                        getSignalingRoute(infra, "rt.DA6_2->DA6_3"),
-                        getSignalingRoute(infra, "rt.DA6_3->DA6_4"),
-                        getSignalingRoute(infra, "rt.DA6_4->DA6_5"),
-                        getSignalingRoute(infra, "rt.DA6_5->DA5"),
+                        getSignalingRoute(infra, "rt.DA0->DA5"),
                         getSignalingRoute(infra, "rt.DA5->DC5")
                 ),
                 new TrackLocation(infra.getTrackSection("TA1"), 146.6269028126681),

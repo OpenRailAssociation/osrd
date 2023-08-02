@@ -40,8 +40,12 @@ public class PathfindingElectrificationTest extends ApiTest {
 
     private static TrackEdge getMiddleTrackEdge(Pathfinding.Result<SignalingRoute> normalPath) {
         var middleRoute = normalPath.ranges().get(normalPath.ranges().size() / 2);
-        var tracks = middleRoute.edge().getInfraRoute().getTrackRanges();
-        return tracks.get(tracks.size() / 2).track.getEdge();
+        var trackRanges = middleRoute.edge().getInfraRoute().getTrackRanges();
+        var trackSections = trackRanges.stream()
+                .map((edge) -> edge.track.getEdge())
+                .filter((edge) -> edge instanceof TrackSection)
+                .toList();
+        return trackSections.get(trackSections.size() / 2);
     }
 
     private static void removeMiddleCatenary(Pathfinding.Result<SignalingRoute> normalPath) {
