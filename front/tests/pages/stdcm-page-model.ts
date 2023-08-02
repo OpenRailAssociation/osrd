@@ -39,6 +39,9 @@ export class PlaywrightSTDCMPage {
 
   readonly getRollingstockSpanNames: Locator;
 
+  // STDCM
+  readonly getOriginTimeDelta: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.getBody = page.locator('body');
@@ -62,6 +65,9 @@ export class PlaywrightSTDCMPage {
     this.getRollingStockListItem = page.locator('.rollingstock-container');
     this.getRollingstockSpanNames = this.getRollingStockListItem.locator('.rollingstock-info-end');
     this.rollingstockTranslation = rollingstockTranslation;
+
+    // STDCM
+    this.getOriginTimeDelta = page.locator('#osrd-config-time-origin').first();
   }
 
   getTranslations(key: keyof typeof infraManagement) {
@@ -116,5 +122,14 @@ export class PlaywrightSTDCMPage {
 
   getRollingstockTranslations(key: keyof typeof rollingstockTranslation) {
     return this.rollingstockTranslation[key];
+  }
+
+  // STDCM
+  async setOriginTime(digits: string) {
+    const splittedDigit = digits.split('');
+    await this.getOriginTimeDelta.focus();
+    splittedDigit.forEach(async (digit) => {
+      await this.page.keyboard.press(digit);
+    });
   }
 }

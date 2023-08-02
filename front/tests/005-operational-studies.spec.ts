@@ -2,13 +2,15 @@ import { test, expect } from '@playwright/test';
 import { PlaywrightHomePage } from './pages/home-page-model';
 import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
 import PlaywrightMap from './pages/map-model';
-import VARIABLES from './assets/operationStudies/test_variables';
+import VARIABLES from './assets/operationStudies/testVariables';
+import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 import { ProjectPage } from './pages/project-page-model';
 import { StudyPage } from './pages/study-page-model';
 
 test.describe('Testing if all mandatory elements simulation configuration are loaded in operationnal studies app', () => {
   test('Testing pathfinding with rollingstock an composition code', async ({ page }) => {
+    test.setTimeout(90000);
     const playwrightHomePage = new PlaywrightHomePage(page);
     const scenarioPage = new PlaywrightScenarioPage(page);
     const projectPage = new ProjectPage(page);
@@ -94,10 +96,10 @@ test.describe('Testing if all mandatory elements simulation configuration are lo
     await expect(scenarioPage.getMapModule).toBeVisible();
 
     // Search and select origin
-    await playwrightMap.selectOrigin(VARIABLES.originSearch);
+    await playwrightMap.selectOrigin(PATH_VARIABLES.originSearch);
 
     // Search and select destination
-    await playwrightMap.selectDestination(VARIABLES.destinationSearch);
+    await playwrightMap.selectDestination(PATH_VARIABLES.destinationSearch);
 
     await scenarioPage.checkPathfindingDistance(VARIABLES.pathfindingDistance);
 

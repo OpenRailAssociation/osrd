@@ -7,7 +7,7 @@ import scenario from './assets/operationStudies/scenario.json';
 import { ProjectPage } from './pages/project-page-model';
 import { StudyPage } from './pages/study-page-model';
 import ScenarioPage from './pages/scenario-page-model';
-import VARIABLES from './assets/operationStudies/test_variables';
+import VARIABLES from './assets/operationStudies/testVariables';
 import PlaywrightCommonPage from './pages/common-page-model';
 
 test.describe('Test is operationnal study : scenario creation workflow is working properly', () => {

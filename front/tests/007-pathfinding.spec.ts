@@ -4,7 +4,8 @@ import { ProjectPage } from './pages/project-page-model';
 import { StudyPage } from './pages/study-page-model';
 import PlaywrightRollingstockModalPage from './pages/rollingstock-modal-model';
 import PlaywrightMap from './pages/map-model';
-import VARIABLES from './assets/operationStudies/test_variables';
+import VARIABLES from './assets/operationStudies/testVariables';
+import PATH_VARIABLES from './assets/operationStudies/testVariablesPaths';
 import PlaywrightScenarioPage from './pages/scenario-page-model';
 
 test.describe('Testing pathfinding', () => {
@@ -79,11 +80,13 @@ test.describe('Testing pathfinding', () => {
     // ***************** Choice Origin/Destination *****************
 
     // Search and select origin
-    await playwrightMap.selectOrigin(VARIABLES.originSearchQuimper || VARIABLES.originSearch);
+    await playwrightMap.selectOrigin(
+      PATH_VARIABLES.originSearchQuimper || PATH_VARIABLES.originSearch
+    );
 
     // Search and select destination
     await playwrightMap.selectDestination(
-      VARIABLES.destinationSearchBrest || VARIABLES.destinationSearch
+      PATH_VARIABLES.destinationSearchBrest || PATH_VARIABLES.destinationSearch
     );
 
     await scenarioPage.checkPathfingingStateText(
@@ -96,7 +99,7 @@ test.describe('Testing pathfinding', () => {
     // ***************** Choice Destination *****************
     // Search and select destination
     await playwrightMap.selectDestination(
-      VARIABLES.destinationSearchBrest || VARIABLES.destinationSearch
+      PATH_VARIABLES.destinationSearchBrest || PATH_VARIABLES.destinationSearch
     );
 
     await scenarioPage.addTrainSchedule();
@@ -108,7 +111,9 @@ test.describe('Testing pathfinding', () => {
     await scenarioPage.setTrainScheduleName('TrainSchedule missing destination');
     // ***************** Choice Origin *****************
     // Search and select origin
-    await playwrightMap.selectOrigin(VARIABLES.originSearchQuimper || VARIABLES.originSearch);
+    await playwrightMap.selectOrigin(
+      PATH_VARIABLES.originSearchQuimper || PATH_VARIABLES.originSearch
+    );
 
     await scenarioPage.addTrainSchedule();
     await scenarioPage.checkPathfingingStateText(

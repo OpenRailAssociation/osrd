@@ -1,7 +1,7 @@
 import { Locator, Page } from '@playwright/test';
 import { PlaywrightHomePage } from './home-page-model';
 
-interface selectPointOnMapProps {
+export interface selectPointOnMapProps {
   stationName: string;
   stationItemName: string | RegExp;
   positionClick: { x: number; y: number };
