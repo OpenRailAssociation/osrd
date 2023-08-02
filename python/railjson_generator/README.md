@@ -38,7 +38,7 @@
 
 ### Simulation Builder
 
-- `__init__(self, infra) -> SimulationBuilder`: Instantiates a simulation builder.
+- `__init__(self) -> SimulationBuilder`: Instantiates a simulation builder.
 - `add_train_schedule(self, *locations, label="train.X", rolling_stock="fast_rolling_stock", departure_time=0, initial_speed=0, stops=[]) -> TrainSchedule`: Add a new train schedule, generate path given positions.
 - `build(self) -> Simulation`: Build the simulation configuration.
 
