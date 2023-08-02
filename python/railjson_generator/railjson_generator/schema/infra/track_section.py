@@ -4,9 +4,8 @@ from typing import List, Tuple
 from osrd_schemas import infra
 from pydantic.error_wrappers import ValidationError
 
-from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
+from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
-from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.make_geo_data import make_geo_lines
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
 from railjson_generator.schema.infra.range_elements import Curve, Slope
@@ -89,12 +88,10 @@ class TrackSection:
         self.coordinates[begin:end] = coordinates
 
     @staticmethod
-    def register_link(link: Link):
+    def register_link(begin: TrackEndpoint, end: TrackEndpoint):
         """Add each linked trackEndPoint to its neighbor's neighbors list."""
-        if link.navigability != ApplicableDirection.STOP_TO_START:
-            link.begin.get_neighbors().append(link.end)
-        if link.navigability != ApplicableDirection.START_TO_STOP:
-            link.end.get_neighbors().append(link.begin)
+        begin.get_neighbors().append(end)
+        end.get_neighbors().append(begin)
 
     def neighbors(self, direction: Direction):
         if direction == Direction.START_TO_STOP:
