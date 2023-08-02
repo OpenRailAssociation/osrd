@@ -26,6 +26,8 @@ const invalidTrainValues: {
 };
 
 type Props = {
+  isSelectable: boolean;
+  isInSelection: boolean;
   train: ScheduledTrain;
   intervalPosition?: number;
   isSelected: boolean;
@@ -33,6 +35,7 @@ type Props = {
   projectionPathIsUsed: boolean;
   idx: number;
   changeSelectedTrainId: (trainId: number) => void;
+  toggleTrainSelection: (trainId: number) => void;
   deleteTrain: (train: ScheduledTrain) => void;
   selectPathProjection: (train: ScheduledTrain) => void;
   duplicateTrain: (train: ScheduledTrain) => void;
@@ -40,6 +43,8 @@ type Props = {
 };
 
 function TimetableTrainCard({
+  isSelectable,
+  isInSelection,
   train,
   intervalPosition,
   isSelected,
@@ -51,6 +56,7 @@ function TimetableTrainCard({
   selectPathProjection,
   duplicateTrain,
   setDisplayTrainScheduleManagement,
+  toggleTrainSelection,
 }: Props) {
   const [getTrainSchedule] = osrdMiddlewareApi.endpoints.getTrainScheduleById.useLazyQuery({});
   const [getRollingStock, { data: rollingStock }] =
@@ -81,9 +87,18 @@ function TimetableTrainCard({
           isSelected && 'selected',
           isModified && 'modified',
           train.invalid_reasons && train.invalid_reasons.length > 0 && 'invalid',
+          isInSelection && 'in-selection',
           `colored-border-${intervalPosition}`
         )}
       >
+        {isSelectable && (
+          <input
+            type="checkbox"
+            className="mr-2"
+            checked={isInSelection}
+            onChange={() => toggleTrainSelection(train.id)}
+          />
+        )}
         <div
           className="scenario-timetable-train-container"
           role="button"

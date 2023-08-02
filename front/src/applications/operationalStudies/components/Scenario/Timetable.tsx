@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { FaDownload, FaPlus } from 'react-icons/fa';
+import { FaDownload, FaPlus, FaTrash } from 'react-icons/fa';
+import { BiSelectMultiple } from 'react-icons/bi';
 import cx from 'classnames';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -28,6 +29,8 @@ import { durationInSeconds } from 'utils/timeManipulation';
 import { getSelectedTrainId } from 'reducers/osrdsimulation/selectors';
 import { isEmpty } from 'lodash';
 import { BsFillExclamationTriangleFill } from 'react-icons/bs';
+import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 import findTrainsDurationsIntervals from '../ManageTrainSchedule/helpers/trainsDurationsIntervals';
@@ -57,11 +60,16 @@ export default function Timetable({
   const [conflictsListExpanded, setConflictsListExpanded] = useState(false);
   const [timetable, setTimetable] = useState<GetTimetableByIdApiResponse>();
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [multiselectOn, setMultiselectOn] = useState<boolean>(false);
+  const [selectedTrainIds, setSelectedTrainIds] = useState<number[]>([]);
+  const { openModal } = useContext(ModalContext);
 
   const dispatch = useDispatch();
-  const { t } = useTranslation(['operationalStudies/scenario']);
+  const { t } = useTranslation(['operationalStudies/scenario', 'common/itemTypes']);
 
   const debouncedTerm = useDebounce(filter, 500) as string;
+
+  const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
   const [getTimetableWithTrainSchedulesDetails] = osrdEditoastApi.useLazyGetTimetableByIdQuery();
   const [getTimetableConflicts] = osrdEditoastApi.useLazyGetTimetableByIdConflictsQuery();
@@ -71,21 +79,24 @@ export default function Timetable({
     dispatch(updateMustRedraw(true));
   };
 
+  const refreshTimeTable = async () => {
+    dispatch(updateReloadTimetable(true));
+    const currentTimetable = await getTimetableWithTrainSchedulesDetails({
+      id: timetableID as number,
+    }).unwrap();
+    getTimetable(currentTimetable);
+    dispatch(updateReloadTimetable(false));
+  };
   const deleteTrain = async (train: ScheduledTrain) => {
     try {
       await deleteRequest(`${trainscheduleURI}${train.id}/`);
-      dispatch(updateReloadTimetable(true));
-      const currentTimetable = await getTimetableWithTrainSchedulesDetails({
-        id: timetableID as number,
-      }).unwrap();
-      getTimetable(currentTimetable);
+      refreshTimeTable();
       dispatch(
         setSuccess({
           title: t('timetable.trainDeleted', { name: train.train_name }),
           text: '',
         })
       );
-      dispatch(updateReloadTimetable(false));
     } catch (e) {
       console.error(e);
       if (e instanceof Error) {
@@ -127,19 +138,13 @@ export default function Timetable({
     }
     try {
       await post(`${trainscheduleURI}standalone_simulation/`, params);
-      dispatch(updateReloadTimetable(true));
-
-      const currentTimetable = await getTimetableWithTrainSchedulesDetails({
-        id: timetableID as number,
-      }).unwrap();
-      getTimetable(currentTimetable);
+      refreshTimeTable();
       dispatch(
         setSuccess({
           title: t('timetable.trainAdded'),
           text: `${trainName}`,
         })
       );
-      dispatch(updateReloadTimetable(false));
     } catch (e) {
       console.error(e);
       if (e instanceof Error) {
@@ -193,6 +198,63 @@ export default function Timetable({
 
   const timeTableHasInvalidTrain = (trains: ScheduledTrain[]) =>
     trains.some((train) => train.invalid_reasons && train.invalid_reasons.length > 0);
+
+  const toggleTrainSelection = (id: number) => {
+    const currentSelectedTrainIds = [...selectedTrainIds];
+    const index = currentSelectedTrainIds.indexOf(id); // Find the index of the ID in the array
+
+    if (index === -1) {
+      currentSelectedTrainIds.push(id);
+    } else {
+      currentSelectedTrainIds.splice(index, 1);
+    }
+
+    setSelectedTrainIds(currentSelectedTrainIds);
+  };
+
+  const selectAllTrains = () => {
+    if (
+      trainsList &&
+      trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length ===
+        selectedTrainIds.length
+    ) {
+      setSelectedTrainIds([]);
+    } else {
+      const trainIds = trainsList?.map((train) => train.id) || [];
+      setSelectedTrainIds(trainIds);
+    }
+  };
+
+  const handleTrainsDelete = async () => {
+    const trainsCount = selectedTrainIds.length;
+    await deleteTrainSchedules({ body: { ids: selectedTrainIds } })
+      .unwrap()
+      .then(() => {
+        refreshTimeTable();
+        setMultiselectOn(false);
+        dispatch(
+          setSuccess({
+            title: t('timetable.trainsSelectionDeletedCount', { count: trainsCount }),
+            text: '',
+          })
+        );
+      })
+      .catch((e) => {
+        console.error(e);
+        if (e instanceof Error) {
+          dispatch(
+            setFailure({
+              name: e.name,
+              message: e.message,
+            })
+          );
+        }
+      });
+  };
+
+  useEffect(() => {
+    if (!multiselectOn) setSelectedTrainIds([]);
+  }, [multiselectOn]);
 
   useEffect(() => {
     if (timetable && timetable.train_schedule_summaries) {
@@ -280,7 +342,20 @@ export default function Timetable({
         </button>
       </div>
       <div className="scenario-timetable-toolbar">
+        {multiselectOn && (
+          <input
+            type="checkbox"
+            className="mr-2"
+            checked={
+              trainsList &&
+              selectedTrainIds.length ===
+                trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length
+            }
+            onChange={() => selectAllTrains()}
+          />
+        )}
         <div className="small">
+          {multiselectOn && <span>{selectedTrainIds.length} / </span>}
           {t('trainCount', {
             count: trainsList
               ? trainsList.filter((train: ScheduledTrain) => !train.isFiltered).length
@@ -302,7 +377,36 @@ export default function Timetable({
             data-testid="scenarios-filter"
           />
         </div>
+        {!isEmpty(trainsList) && (
+          <button
+            type="button"
+            className={cx('multiselect-toggle', multiselectOn ? 'on' : '')}
+            onClick={() => setMultiselectOn(!multiselectOn)}
+          >
+            <BiSelectMultiple />
+          </button>
+        )}
+
+        {multiselectOn && (
+          <button
+            disabled={!selectedTrainIds.length}
+            className={cx('multiselect-delete', !selectedTrainIds.length && 'disabled')}
+            type="button"
+            onClick={() =>
+              openModal(
+                <DeleteModal
+                  handleDelete={handleTrainsDelete}
+                  items={t('common/itemTypes:trains', { count: selectedTrainIds.length })}
+                />,
+                'sm'
+              )
+            }
+          >
+            <FaTrash />
+          </button>
+        )}
       </div>
+
       <div
         className={cx(
           'scenario-timetable-trains',
@@ -318,6 +422,9 @@ export default function Timetable({
               (train: ScheduledTrain, idx: number) =>
                 !train.isFiltered && (
                   <TimetableTrainCard
+                    isSelectable={multiselectOn}
+                    isInSelection={selectedTrainIds.includes(train.id)}
+                    toggleTrainSelection={toggleTrainSelection}
                     train={train}
                     intervalPosition={valueToInterval(train.duration, trainsDurationsIntervals)}
                     key={`timetable-train-card-${train.id}-${train.path_id}`}
