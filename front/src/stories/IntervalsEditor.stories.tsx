@@ -23,15 +23,15 @@ const dataNumber = [
 ];
 
 const dataNumberWithUnit = [
-  { begin: 0, end: 6000 },
+  { begin: 0, end: 6000, unit: 's' },
   { begin: 6000, end: 7000, value: 3, unit: 's' },
   { begin: 7000, end: 8000, value: 6, unit: 's' },
   { begin: 8000, end: 9000, value: 3, unit: 's' },
-  { begin: 9000, end: 14000 },
+  { begin: 9000, end: 14000, unit: 's' },
   { begin: 14000, end: 15000, value: -3, unit: 's' },
   { begin: 15000, end: 16000, value: -6, unit: 's' },
   { begin: 16000, end: 17000, value: -3, unit: 'm' },
-  { begin: 17000, end: 25000 },
+  { begin: 17000, end: 25000, unit: 's' },
 ];
 
 const dataCategories = [
@@ -81,6 +81,7 @@ const IntervalsEditorWrapper: React.FC<IntervalsEditorProps> = (props) => {
         <IntervalsEditor
           {...props}
           data={data as LinearMetadataItem<{ value: number | string; unit: string }>[]}
+          defaultUnit={units[0]}
           defaultValue={defaultValue}
           fieldLabel={fieldLabel}
           intervalType={intervalType}
