@@ -40,7 +40,9 @@
     "stopsCount_other": "{{ count }} stops",
     "trainAdded": "Train added",
     "trainDeleted": "{{ name }} train has been deleted.",
-    "update": "Edit"
+    "update": "Edit",
+    "trainsSelectionDeleted": "The {{count}} trains have been deleted."
+
   },
   "trainCount_one": "1 train",
   "trainCount_other": "{{ count }} trains",

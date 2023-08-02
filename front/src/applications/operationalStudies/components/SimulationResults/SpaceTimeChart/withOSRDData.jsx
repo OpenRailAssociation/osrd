@@ -67,6 +67,7 @@ const withOSRDData = (Component) =>
     const allowancesSettings = useSelector(getAllowancesSettings);
     const positionValues = useSelector(getPositionValues);
     const selectedTrain = useSelector(getSelectedTrain);
+    // implement selector for all selected trains ids
     const selectedProjection = useSelector(getSelectedProjection);
     const timePosition = useSelector(getTimePosition);
     const simulation = useSelector(getPresentSimulation);
@@ -114,6 +115,7 @@ const withOSRDData = (Component) =>
         dispatchUpdateSelectedTrainId={dispatchUpdateSelectedTrainId}
         dispatchUpdateTimePositionValues={dispatchUpdateTimePositionValues}
         inputSelectedTrain={selectedTrain}
+        // add selected trains ids
         onOffsetTimeByDragging={onOffsetTimeByDragging}
         positionValues={positionValues}
         selectedProjection={selectedProjection}

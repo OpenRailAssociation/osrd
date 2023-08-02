@@ -6,7 +6,8 @@
     "split": "Split",
     "translate": "Translate",
     "zoom-in": "Zoom in",
-    "zoom-out": "Zoom out"
+    "zoom-out": "Zoom out",
+    "deleteSelectionCount": "Do you confirm the deletion of {{items}} ?"
   },
   "begin": "Start",
   "end": "End"

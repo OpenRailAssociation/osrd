@@ -40,7 +40,8 @@
     "stopsCount_other": "{{count}} arrêts",
     "trainAdded": "Train ajouté",
     "trainDeleted": "Le train {{name}} a bien été supprimé.",
-    "update": "Modifier"
+    "update": "Modifier",
+    "trainsSelectionDeleted": "Les {{count}} trains ont bien été supprimés."
   },
   "trainCount_one": "1 train",
   "trainCount_other": "{{count}} trains",
