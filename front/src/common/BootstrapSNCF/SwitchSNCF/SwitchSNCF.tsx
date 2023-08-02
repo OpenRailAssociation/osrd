@@ -38,7 +38,7 @@ export default function SwitchSNCF({
       return (
         <>
           {options.map((option) => {
-            const optionId = `${id}-${name}`;
+            const optionId = `${id}-${name}-${option.value}`;
             return (
               <div className="custom-control custom-radio" key={`option-${id}-${option.value}`}>
                 <input
@@ -77,7 +77,7 @@ export default function SwitchSNCF({
       return (
         <div className={`options-control ${warningClass}`}>
           {options.map((option) => {
-            const optionId = `${id}-${name}`;
+            const optionId = `${id}-${name}-${option.value}`;
             return (
               <div className="options-item" key={`option-${id}-${option.value}`}>
                 <input
@@ -102,7 +102,7 @@ export default function SwitchSNCF({
       return (
         <>
           {options.map((option) => {
-            const optionId = `${id}-${name}`;
+            const optionId = `${id}-${name}-${option.value}`;
             return (
               <div
                 className="custom-control custom-radio custom-control-inline"
