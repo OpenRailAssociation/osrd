@@ -3,7 +3,6 @@ import { isNil, max } from 'lodash';
 
 import {
   LinearMetadataItem,
-  createEmptySegmentAt,
   fixLinearMetadataItems,
   getZoomedViewBox,
   removeSegment,
@@ -27,6 +26,7 @@ import ZoomButtons from './ZoomButtons';
 import ToolButtons from './IntervalsEditorToolButtons';
 import IntervalsEditorMarginForm from './IntervalsEditorMarginForm';
 import IntervalsEditorSelectForm from './IntervalsEditorSelectForm';
+import { createEmptySegmentAt } from './utils';
 
 type IntervalsEditorProps = {
   defaultValue: number | string;
@@ -44,7 +44,7 @@ type IntervalsEditorProps = {
   | {
       intervalType: INTERVAL_TYPES.NUMBER_WITH_UNIT;
       data: LinearMetadataItem<{ value: number | string; unit: string }>[];
-      defaultUnit?: string;
+      defaultUnit: string;
       fieldLabel: string;
       units: string[];
     }
@@ -110,6 +110,14 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
     }),
     [showValues, intervalType]
   );
+
+  const intervalDefaultUnit = useMemo(() => {
+    if (intervalType === INTERVAL_TYPES.NUMBER_WITH_UNIT) {
+      const { defaultUnit } = props;
+      return defaultUnit;
+    }
+    return undefined;
+  }, [intervalType]);
 
   let formContent;
   if (selected !== null && data[selected]) {
@@ -250,10 +258,7 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
               }
             }}
             onCreate={(point) => {
-              const newData = createEmptySegmentAt(data, point, {
-                valueField: 'value',
-                defaultValue,
-              });
+              const newData = createEmptySegmentAt(data, point, defaultValue, intervalDefaultUnit);
               setData(newData);
             }}
             options={options}
