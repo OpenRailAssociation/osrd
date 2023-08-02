@@ -141,6 +141,19 @@ export const IntervalsEditor: React.FC<IntervalsEditorProps> = (props) => {
         );
         break;
       }
+      case INTERVAL_TYPES.NUMBER: {
+        const { fieldLabel } = props;
+        formContent = (
+          <IntervalsEditorMarginForm
+            data={data}
+            fieldLabel={fieldLabel}
+            interval={data[selected]}
+            selectedIntervalIndex={selected}
+            setData={setData}
+          />
+        );
+        break;
+      }
       default: {
         /* empty */
       }

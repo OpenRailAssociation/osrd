@@ -12,7 +12,7 @@ type IntervalsEditorMarginFormProps = {
   interval: IntervalItem;
   selectedIntervalIndex: number;
   setData: (newData: IntervalItem[]) => void;
-  units: string[];
+  units?: string[];
 };
 
 const IntervalsEditorMarginForm = ({
@@ -22,7 +22,7 @@ const IntervalsEditorMarginForm = ({
   interval,
   selectedIntervalIndex,
   setData,
-  units,
+  units = [],
 }: IntervalsEditorMarginFormProps) => (
   <div>
     <InputSNCF
