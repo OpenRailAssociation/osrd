@@ -33,7 +33,6 @@ const IntervalsEditorCommonForm = ({
     setEnd(interval.end);
   }, [interval]);
 
-  /** Resize segment from inputs */
   const resizeSegmentByInput = (newPosition: number, context: 'begin' | 'end') => {
     const gap = newPosition - interval[context];
     if (gap !== 0) {
