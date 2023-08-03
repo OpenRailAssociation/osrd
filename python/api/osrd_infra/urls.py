@@ -35,6 +35,8 @@ study_router.register("scenarios", ScenarioView, basename="scenarios")
 rolling_stock_router = routers.NestedSimpleRouter(router, "rolling_stock", lookup="rolling_stock")
 rolling_stock_router.register("livery", RollingStockLiveryView, basename="rolling_stock_livery")
 
+# Allow bulk delete by defining `list_delete` functions
+router.routes[0].mapping["delete"] = "list_delete"
 
 urlpatterns = [
     path("", include(router.urls)),

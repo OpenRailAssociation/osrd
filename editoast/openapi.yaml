@@ -4529,7 +4529,7 @@ paths:
       summary: Retrieve all conflicts for a specific timetable
       tags:
       - timetable
-  /train_schedule/delete/:
+  /train_schedule/:
     delete:
       requestBody:
         content:

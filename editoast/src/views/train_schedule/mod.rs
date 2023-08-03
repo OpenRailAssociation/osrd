@@ -105,7 +105,7 @@ pub struct BatchDeletionRequest {
     ids: Vec<i64>,
 }
 //Delete multiple train schedule
-#[delete("/delete")]
+#[delete("")]
 pub async fn delete_multiple(
     db_pool: Data<DbPool>,
     request: Json<BatchDeletionRequest>,
